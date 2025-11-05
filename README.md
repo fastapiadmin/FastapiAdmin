@@ -34,6 +34,13 @@
 
 > **设计初心**: 以模块化、松耦合为核心，追求丰富的功能模块、简洁易用的接口、详尽的开发文档和便捷的维护方式。通过统一框架和组件，降低技术选型成本，遵循开发规范和设计模式，构建强大的代码分层模型，搭配完善的本地中文化支持，专为团队和企业开发场景量身定制。
 
+## 🔗 源码仓库
+
+| 平台 | 仓库地址 |
+|------|----------|
+| GitHub | [FastapiAdmin主工程](https://github.com/1014TaoTao/FastapiAdmin.git) \| [FastDocs官网](https://github.com/1014TaoTao/FastDocs.git) \| [FastApp移动端](https://github.com/1014TaoTao/FastApp.git) |
+| Gitee  | [FastapiAdmin主工程](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs官网](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp移动端](https://gitee.com/tao__tao/FastApp.git) |
+
 ## 🎯 核心优势
 
 | 优势 | 描述 |

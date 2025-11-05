@@ -34,6 +34,13 @@ English | [简体中文](./README.md)
 
 > **Design Philosophy**: With modularity and loose coupling at its core, it pursues rich functional modules, simple and easy-to-use interfaces, detailed development documentation, and convenient maintenance methods. By unifying frameworks and components, it reduces the cost of technology selection, follows development specifications and design patterns, builds a powerful code hierarchical model, and comes with comprehensive local language support. It is specifically tailored for team and enterprise development scenarios.
 
+## 🔗 Source Repositories
+
+| Platform | Repository |
+|----------|------------|
+| GitHub | [FastapiAdmin Main](https://github.com/1014TaoTao/FastapiAdmin.git) \| [FastDocs Website](https://github.com/1014TaoTao/FastDocs.git) \| [FastApp Mobile](https://github.com/1014TaoTao/FastApp.git) |
+| Gitee  | [FastapiAdmin Main](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs Website](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp Mobile](https://gitee.com/tao__tao/FastApp.git) |
+
 ## 🎯 Core Advantages
 
 | Advantage | Description |
