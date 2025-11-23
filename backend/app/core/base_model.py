@@ -94,7 +94,6 @@ class ModelMixin(DateTimeMixin):
     __abstract__ = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment='主键ID')
-    uuid: Mapped[str] = mapped_column(String(64), unique=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default=None, comment="备注/描述")
 
 
