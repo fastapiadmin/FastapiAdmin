@@ -10,12 +10,9 @@ from sqlalchemy.engine.row import Row
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.sql.expression import TextClause, null
 
-
 from app.config.setting import settings
 from app.core.logger import log
 from app.core.exceptions import CustomException
-
-
 
 
 def import_module(module: str, desc: str) -> Any:
@@ -77,6 +74,11 @@ def get_random_character() -> str:
     - str: 随机字符串。
     """
     return uuid.uuid4().hex
+
+
+def uuid4_str() -> str:
+    """数据库引擎 UUID 类型兼容性解决方案"""
+    return str(uuid.uuid4())
 
 
 def get_parent_id_map(model_list: Sequence[DeclarativeBase]) -> Dict[int, int]:

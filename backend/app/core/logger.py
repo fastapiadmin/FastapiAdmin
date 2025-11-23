@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from typing_extensions import override
 from loguru import logger
 
 from app.config.path_conf import LOG_DIR
@@ -17,6 +18,7 @@ class InterceptHandler(logging.Handler):
     2. 重写 emit 方法处理日志记录
     3. 将标准库日志转换为 Loguru 格式
     """
+    @override
     def emit(self, record: logging.LogRecord) -> None:
         # 尝试获取日志级别名称
         try:
@@ -26,16 +28,16 @@ class InterceptHandler(logging.Handler):
 
         # 获取调用帧信息，增加None检查
         frame, depth = logging.currentframe(), 2
-        if frame is not None:
-            while frame and frame.f_code.co_filename == logging.__file__:
-                frame = frame.f_back
-                depth += 1
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
 
         # 使用 Loguru 记录日志
         logger.opt(depth=depth, exception=record.exc_info).log(
             level,
             record.getMessage()
         )
+        
 
 def setup_logging():
     """
@@ -48,7 +50,7 @@ def setup_logging():
     4. 异步日志记录
     """
     # 添加上下文信息
-    logger.configure(extra={"app_name": "FastapiAdmin"})
+    _ = logger.configure(extra={"app_name": "FastapiAdmin"})
     # 步骤1：移除默认处理器
     logger.remove()
 
@@ -65,7 +67,7 @@ def setup_logging():
     )
 
     # 步骤3：配置控制台输出
-    logger.add(
+    _ = logger.add(
         sys.stdout,
         format=log_format,
         level="DEBUG" if settings.DEBUG else "INFO",
@@ -81,7 +83,7 @@ def setup_logging():
     log_dir.mkdir(parents=True, exist_ok=True)
 
     # 步骤5：配置常规日志文件
-    logger.add(
+    _ = logger.add(
         str(log_dir / "info.log"),
         format=log_format,
         level="INFO",
@@ -93,7 +95,7 @@ def setup_logging():
     )
 
     # 步骤6：配置错误日志文件
-    logger.add(
+    _ = logger.add(
         str(log_dir / "error.log"),
         format=log_format,
         level="ERROR",

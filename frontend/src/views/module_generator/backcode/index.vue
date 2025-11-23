@@ -313,8 +313,21 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button v-hasPerm="['module_generator:dblist:query']" type="primary" icon="Search" @click="handleImportQuery">搜索</el-button>
-          <el-button v-hasPerm="['module_generator:dblist:query']" icon="Refresh" @click="handleImportReset">重置</el-button>
+          <el-button
+            v-hasPerm="['module_generator:dblist:query']"
+            type="primary"
+            icon="Search"
+            @click="handleImportQuery"
+          >
+            搜索
+          </el-button>
+          <el-button
+            v-hasPerm="['module_generator:dblist:query']"
+            icon="Refresh"
+            @click="handleImportReset"
+          >
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-row>
@@ -856,7 +869,7 @@ defineOptions({
 
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/mode/sql/sql.js";
-import "codemirror/theme/dracula.css"
+import "codemirror/theme/dracula.css";
 import { ref, reactive, computed, onActivated, onMounted, watch } from "vue";
 import { useClipboard } from "@vueuse/core";
 import { useRoute } from "vue-router";
@@ -998,13 +1011,10 @@ const tableColumns = ref<TableColumn[]>([
   { prop: "operation", label: "操作", show: true },
 ]);
 
-
 const settingsStore = useSettingsStore();
 
 // 主题计算属性
-const codeTheme = computed(() =>
-  settingsStore.theme === ThemeMode.DARK ? "dracula" : "default"
-);
+const codeTheme = computed(() => (settingsStore.theme === ThemeMode.DARK ? "dracula" : "default"));
 
 // 监听主题变化并更新CodeMirror实例
 watch(codeTheme, (newTheme) => {
@@ -1012,7 +1022,7 @@ watch(codeTheme, (newTheme) => {
   if (sqlRef.value && sqlRef.value.cminstance) {
     sqlRef.value.cminstance.setOption("theme", newTheme);
   }
-  
+
   // 更新代码预览编辑器主题
   if (cmRef.value && cmRef.value.cminstance) {
     cmRef.value.cminstance.setOption("theme", newTheme);

@@ -1,29 +1,62 @@
 # -*- coding: utf-8 -*-
-"""
-通知公告模型模块
-定义通知公告相关数据模型
-"""
 
-from typing import Optional
-from sqlalchemy import Boolean, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Text
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.core.base_model import CreatorMixin
+from app.core.base_model import ModelMixin, UserMixin, TenantMixin, CustomerMixin
+
+if TYPE_CHECKING:
+    from app.api.v1.module_system.tenant.model import TenantModel
+    from app.api.v1.module_system.user.model import UserModel
+    from app.api.v1.module_system.customer.model import CustomerModel
 
 
-class NoticeModel(CreatorMixin):
+class NoticeModel(ModelMixin, UserMixin, TenantMixin, CustomerMixin):
     """
-    通知公告模型
-
-    类型：
-    - 1: 通知
-    - 2: 公告
+    通知公告表
+    
+    通知公告隔离策略:
+    ==============
+    - 系统通知(tenant_id=1, customer_id=NULL):
+      * 平台级通知,发送给所有租户
+      * 如:系统维护公告、版本更新通知
+      
+    - 租户通知(tenant_id>1, customer_id=NULL):
+      * 租户级通知,发送给本租户所有用户
+      * 如:租户内部公告、政策通知
+      
+    - 客户通知(tenant_id>1, customer_id>1):
+      * 客户级通知,仅发送给特定客户的用户
+      * 如:针对某个客户的专属通知
+    
+    用于存储系统通知公告信息，包括：
+    - 通知标题、内容、类型和状态
+    - 创建人和创建时间
+    - 通知的可见范围和发布状态
     """
-    __tablename__ = "system_notice"
-    __table_args__ = ({'comment': '通知公告表'})
-    __loader_options__ = ["creator"]
+    __tablename__: str = "system_notice"
+    __table_args__: dict[str, str] = ({'comment': '通知公告表'})
+    __loader_options__: list[str] = ["creator"]
 
     notice_title: Mapped[str] = mapped_column(String(50), nullable=False, comment='公告标题')
     notice_type: Mapped[str] = mapped_column(String(50), nullable=False, comment='公告类型（1通知 2公告）')
-    notice_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True, comment='公告内容')
-    status: Mapped[bool] = mapped_column(Boolean(), default=True, nullable=False, comment="是否启用(True:启用 False:禁用)")
+    notice_content: Mapped[str | None] = mapped_column(Text, nullable=True, comment='公告内容')
+    
+    # 关联关系 (继承自UserMixin, TenantMixin, CustomerMixin)
+    tenant: Mapped["TenantModel"] = relationship(
+        foreign_keys="NoticeModel.tenant_id",
+        lazy="selectin"
+    )
+    customer: Mapped["CustomerModel | None"] = relationship(
+        foreign_keys="NoticeModel.customer_id",
+        lazy="selectin"
+    )
+    created_by: Mapped["UserModel | None"] = relationship(
+        foreign_keys="NoticeModel.created_id",
+        lazy="selectin"
+    )
+    updated_by: Mapped["UserModel | None"] = relationship(
+        foreign_keys="NoticeModel.updated_id",
+        lazy="selectin"
+    )

@@ -198,7 +198,7 @@
               <el-empty :image-size="80" description="暂无数据" />
             </template>
             <el-table-column type="selection" min-width="55" align="center" />
-            <el-table-column type="index" fixed label="序号" align="center" min-width="60">
+            <el-table-column type="index" fixed label="序号" min-width="60">
               <template #default="scope">
                 {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
               </template>
@@ -524,13 +524,7 @@
           >
             确定
           </el-button>
-          <el-button
-            v-else
-            type="primary"
-            @click="handleCloseDialog"
-          >
-            确定
-          </el-button>
+          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
           <el-button @click="handleCloseDialog">取消</el-button>
         </div>
       </template>

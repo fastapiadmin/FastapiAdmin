@@ -126,7 +126,11 @@
           fixed
           label="序号"
           min-width="60"
-        />
+        >
+          <template #default="scope">
+            {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
+          </template>
+        </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'session_id')?.show"
           key="session_id"

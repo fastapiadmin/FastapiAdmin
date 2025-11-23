@@ -136,12 +136,7 @@
             </el-col>
             <el-col :span="1.5">
               <el-tooltip content="刷新">
-                <el-button
-                  type="primary"
-                  icon="refresh"
-                  circle
-                  @click="handleRefresh"
-                />
+                <el-button type="primary" icon="refresh" circle @click="handleRefresh" />
               </el-tooltip>
             </el-col>
           </el-row>
@@ -164,7 +159,7 @@
           <el-empty :image-size="80" description="暂无数据" />
         </template>
         <el-table-column type="selection" align="center" min-width="55" />
-        <el-table-column type="index" label="序号" fixed min-width="60">
+        <el-table-column type="index" fixed label="序号" min-width="60">
           <template #default="scope">
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>

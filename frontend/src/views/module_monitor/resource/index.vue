@@ -163,7 +163,11 @@
           <el-empty :image-size="80" description="暂无数据" />
         </template>
         <el-table-column type="selection" min-width="40" align="center" />
-        <el-table-column type="index" fixed label="序号" min-width="40" />
+        <el-table-column type="index" fixed label="序号" min-width="50">
+          <template #default="scope">
+            {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
+          </template>
+        </el-table-column>
         <el-table-column label="名称" prop="name" min-width="200">
           <template #default="{ row }">
             <div class="file-name">
@@ -171,10 +175,7 @@
                 <Folder v-if="row.is_dir" />
                 <Document v-else />
               </el-icon>
-              <span
-                :class="{ 'file-name-clickable': true }"
-                @click="handleFileNameClick(row)"
-              >
+              <span :class="{ 'file-name-clickable': true }" @click="handleFileNameClick(row)">
                 {{ row.name }}
               </span>
             </div>

@@ -81,7 +81,14 @@
               </el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-button v-hasPerm="['module_application:job:delete']" type="warning" icon="delete" @click="handleClearLog">清空日志</el-button>
+              <el-button
+                v-hasPerm="['module_application:job:delete']"
+                type="warning"
+                icon="delete"
+                @click="handleClearLog"
+              >
+                清空日志
+              </el-button>
             </el-col>
           </el-row>
         </div>
@@ -90,7 +97,13 @@
             <el-col :span="1.5">
               <el-tooltip content="导出">
                 <!-- 将直接导出改为打开导出弹窗 -->
-                <el-button v-hasPerm="['module_application:job:export']" type="warning" icon="download" circle @click="handleOpenExportsModal" />
+                <el-button
+                  v-hasPerm="['module_application:job:export']"
+                  type="warning"
+                  icon="download"
+                  circle
+                  @click="handleOpenExportsModal"
+                />
               </el-tooltip>
             </el-col>
             <el-col :span="1.5">

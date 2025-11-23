@@ -38,11 +38,7 @@
                 @change="handleFileChange"
               >
                 <template #trigger>
-                  <el-button
-                    type="primary"
-                    :icon="Camera"
-                    class="upload-trigger"
-                  />
+                  <el-button type="primary" :icon="Camera" class="upload-trigger" />
                 </template>
               </el-upload>
             </div>

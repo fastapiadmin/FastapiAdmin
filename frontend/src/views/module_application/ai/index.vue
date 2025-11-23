@@ -16,19 +16,10 @@
             </el-icon>
             <span class="status-text">{{ connectionStatusText }}</span>
           </div>
-          <el-button
-            v-if="messages.length > 0"
-            text
-            :icon="Delete"
-            @click="clearCurrentChat"
-          >
+          <el-button v-if="messages.length > 0" text :icon="Delete" @click="clearCurrentChat">
             清空对话
           </el-button>
-          <el-button
-            text
-            :icon="Setting"
-            @click="toggleConnection"
-          >
+          <el-button text :icon="Setting" @click="toggleConnection">
             {{ isConnected ? "断开连接" : "重新连接" }}
           </el-button>
         </div>

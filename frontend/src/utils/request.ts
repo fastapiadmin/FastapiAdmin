@@ -71,16 +71,16 @@ httpRequest.interceptors.response.use(
     // 处理网络错误（连接拒绝、超时等）
     if (!error.response) {
       let errorMessage = "网络连接异常";
-      
+
       // 根据错误类型提供更友好的提示
-      if (error.message?.includes('ECONNREFUSED')) {
+      if (error.message?.includes("ECONNREFUSED")) {
         errorMessage = "服务器连接失败，请检查后端服务是否正常运行";
-      } else if (error.message?.includes('timeout')) {
+      } else if (error.message?.includes("timeout")) {
         errorMessage = "请求超时，请稍后重试";
-      } else if (error.message?.includes('Network Error')) {
+      } else if (error.message?.includes("Network Error")) {
         errorMessage = "网络连接错误，请检查您的网络设置";
       }
-      
+
       console.error("网络请求失败:", error);
       ElMessage.error(errorMessage);
       return Promise.reject(new Error(errorMessage));

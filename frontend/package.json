@@ -31,7 +31,7 @@
     "lint:eslint": "eslint --cache \"src/**/*.{vue,ts,js}\" --fix",
     "lint:prettier": "prettier --write \"**/*.{js,cjs,ts,json,css,scss,vue,html,md}\"",
     "lint:stylelint": "stylelint --cache \"**/*.{css,scss,vue}\" --fix",
-    "lint": "npm run lint:eslint && npm run lint:prettier && npm run lint:stylelint",
+    "lint": "pnpm run lint:eslint && pnpm run lint:prettier && pnpm run lint:stylelint",
     "preinstall": "npx only-allow pnpm",
     "commit": "git-cz"
   },

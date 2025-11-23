@@ -339,11 +339,7 @@ defineOptions({
 });
 
 import { ref, reactive, onMounted } from "vue";
-import DemoAPI, {
-  DemoTable,
-  DemoForm,
-  DemoPageQuery,
-} from "@/api/module_example/demo";
+import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_example/demo";
 import DatePicker from "@/components/DatePicker/index.vue";
 import { formatToDateTime } from "@/utils/dateUtil";
 
