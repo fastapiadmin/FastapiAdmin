@@ -179,7 +179,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             result: Result = await self.db.execute(sql.offset(offset).limit(limit))
             objs = result.scalars().all()
 
-            data = PageResultSchema(
+            data = PageResultSchema.model_construct(
+                _fields_set={"items", "total", "page_no", "page_size", "has_next"},
                 items=[out_schema.model_validate(obj).model_dump() for obj in objs],
                 total=total,
                 page_no=offset // limit + 1 if limit else 1,
