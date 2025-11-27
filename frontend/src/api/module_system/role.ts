@@ -72,49 +72,33 @@ export default RoleAPI;
 
 export interface TablePageQuery extends PageQuery {
   name?: string;
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  status?: string;
+  created_id?: number;
+  created_time?: string[];
 }
 
-export interface RoleTable {
-  index?: number;
-  id: number;
+export interface RoleTable extends BaseType {
   name: string;
   order?: number;
   code?: string;
   data_scope?: number;
-  status?: boolean;
   menus?: permissionMenuType[];
   depts?: permissionDeptType[];
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
+  tenant?: CommonType;
 }
 
-export interface RoleForm {
-  id?: number;
+export interface RoleForm extends BaseFormType {
   name?: string;
   order?: number;
   code?: string;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
-  menus?: permissionMenuType[];
-  depts?: permissionDeptType[];
 }
 
 export interface permissionDataType {
+  data_scope: number;
   role_ids: RoleTable["id"][];
   menu_ids: permissionMenuType["id"][];
-  data_scope: number;
   dept_ids: permissionDeptType["id"][];
 }
 

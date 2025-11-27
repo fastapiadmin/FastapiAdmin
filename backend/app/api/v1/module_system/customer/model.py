@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import TYPE_CHECKING
-from datetime import datetime
-from sqlalchemy import DateTime, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.core.base_model import ModelMixin, UserMixin, TenantMixin
@@ -32,8 +31,6 @@ class CustomerModel(ModelMixin, UserMixin, TenantMixin):
     
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment='客户名称')
     code: Mapped[str] = mapped_column(String(20), nullable=False, index=True, comment='客户编码')
-    start_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None, comment='开始时间')
-    end_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None, comment='结束时间')
     
     users: Mapped[list["UserModel"]] = relationship(
         back_populates="customer",

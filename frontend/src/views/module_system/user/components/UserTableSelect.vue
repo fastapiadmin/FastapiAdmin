@@ -99,10 +99,10 @@ interface IUser {
   gender?: string;
   avatar?: string;
   email?: string | null;
-  status?: boolean;
+  status?: string;
   dept_name?: string;
   role_names?: string[];
-  created_at?: string;
+  created_time?: string;
 }
 const selectedUser = ref<IUser>();
 function handleConfirm(data: IUser[]) {

@@ -84,7 +84,7 @@ class {{ class_name }}CRUD(CRUDBase[{{ class_name }}Model, {{ class_name }}Creat
         """
         return await self.delete(ids=ids)
     
-    async def set_available_{{ business_name }}_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_{{ business_name }}_crud(self, ids: List[int], status: str) -> None:
         """
         批量设置可用状态
         

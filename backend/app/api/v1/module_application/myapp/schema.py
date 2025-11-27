@@ -14,7 +14,7 @@ class ApplicationCreateSchema(BaseModel):
     name: str = Field(..., max_length=64, description='应用名称')
     access_url: str = Field(..., max_length=255, description="访问地址")
     icon_url: Optional[str] = Field(None, max_length=300, description="应用图标URL")
-    status: bool = Field(True, description="是否启用(True:启用 False:禁用)")
+    status: str = Field(True, description="是否启用(True:启用 False:禁用)")
     description: Optional[str] = Field(default=None, max_length=255, description="描述")
 
     @field_validator('access_url')
@@ -58,10 +58,9 @@ class ApplicationQueryParam:
     def __init__(
         self,
         name: Optional[str] = Query(None, description="应用名称"),
-        status: Optional[bool] = Query(None, description="是否启用"),
+        status: Optional[str] = Query(None, description="是否启用"),
         created_id: Optional[int] = Query(None, description="创建人"),
-        start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-        end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+        created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         
         # 模糊查询字段
@@ -72,5 +71,5 @@ class ApplicationQueryParam:
         self.created_id = created_id
 
         # 时间范围查询
-        if start_time and end_time:
-            self.created_time = ("between", (start_time, end_time))
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))

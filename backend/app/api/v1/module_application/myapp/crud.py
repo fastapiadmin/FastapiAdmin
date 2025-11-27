@@ -83,7 +83,7 @@ class ApplicationCRUD(CRUDBase[ApplicationModel, ApplicationCreateSchema, Applic
         """
         return await self.delete(ids=ids)
     
-    async def set_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_crud(self, ids: List[int], status: str) -> None:
         """
         批量设置可用状态
         

@@ -105,7 +105,7 @@
                       </el-tag>
                     </div>
                     <span class="text-xs text-[var(--el-text-color-regular)]">
-                      {{ formatTime(item.created_at) }}
+                      {{ formatTime(item.created_time) }}
                     </span>
                   </div>
                   <div class="text-sm text-[var(--el-text-color-regular)] mb-3 line-clamp-2">
@@ -113,7 +113,7 @@
                   </div>
                   <div class="flex justify-between items-center text-xs">
                     <span class="text-[var(--el-text-color-regular)]">
-                      {{ item.creator?.name }} 发布
+                      {{ item.created_by?.name }} 发布
                     </span>
                     <el-tooltip placement="top" :content="item.description || item.notice_content">
                       <ElButton target="_blank" type="primary" link @click="goToNotice()">

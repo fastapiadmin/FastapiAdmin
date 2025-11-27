@@ -5,11 +5,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy.sql import expression
 
 from app.config.setting import settings
-from app.core.base_model import ModelMixin, UserMixin, TenantMixin
+from app.core.base_model import ModelMixin
 from app.utils.common_util import SqlalchemyUtil
 
 
-class GenTableModel(ModelMixin, UserMixin, TenantMixin):
+class GenTableModel(ModelMixin):
     """
     代码生成表
     

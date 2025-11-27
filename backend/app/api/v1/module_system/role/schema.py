@@ -18,7 +18,7 @@ class RoleCreateSchema(BaseModel):
     code: Optional[str] = Field(default=None, max_length=40, description="角色编码")
     order: Optional[int] = Field(default=1, ge=1, description='显示排序')
     data_scope: Optional[int] = Field(default=1, ge=1, le=5, description='数据权限范围')
-    status: bool = Field(default=True, description="是否启用")
+    status: str = Field(default=True, description="是否启用")
     description: Optional[str] = Field(default=None, max_length=255, description="描述")
 
     @field_validator("code")
@@ -65,10 +65,9 @@ class RoleQueryParam:
     def __init__(
         self,
         name: Optional[str] = Query(None, description="角色名称"),
-        status: Optional[bool] = Query(None, description="是否可用"),
+        status: Optional[str] = Query(None, description="是否可用"),
         created_id: Optional[int] = Query(None, description="创建人"),
-        start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-        end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+        created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         
         # 模糊查询字段
@@ -79,5 +78,5 @@ class RoleQueryParam:
         self.status = status
         
         # 时间范围查询
-        if start_time and end_time:
-            self.created_time = ("between", (start_time, end_time))
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))

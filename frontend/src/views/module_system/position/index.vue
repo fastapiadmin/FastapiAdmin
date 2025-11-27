@@ -235,18 +235,18 @@
           min-width="120"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
-          key="created_at"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
+          key="created_time"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
           min-width="200"
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
-          key="updated_at"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
+          key="updated_time"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
           min-width="200"
           sortable
         />
@@ -257,7 +257,7 @@
           min-width="100"
         >
           <template #default="scope">
-            {{ scope.row.creator?.name }}
+            {{ scope.row.created_by?.name }}
           </template>
         </el-table-column>
 
@@ -334,13 +334,13 @@
             <el-tag v-else type="danger">停用</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="4">
             {{ detailFormData.description }}
@@ -443,8 +443,8 @@ const tableColumns = ref([
   { prop: "order", label: "岗位排序", show: true },
   { prop: "status", label: "状态", show: true },
   { prop: "description", label: "描述", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
   { prop: "creator", label: "创建人", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
@@ -680,8 +680,8 @@ const exportColumns = [
   { prop: "order", label: "岗位排序" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置（用于导出）
@@ -717,7 +717,7 @@ onMounted(() => {
 
 // 导出字段 const exportColumns = [ { prop: 'name', label: '岗位名称' }, { prop: 'order', label:
 '岗位排序' }, { prop: 'status', label: '状态' }, { prop: 'description', label: '描述' }, { prop:
-'created_at', label: '创建时间' }, { prop: 'updated_at', label: '更新时间' }, ]; //
+'created_time', label: '创建时间' }, { prop: 'updated_time', label: '更新时间' }, ]; //
 导入/导出配置（仅用于导出） const curdContentConfig = { permPrefix: 'module_system:position', cols:
 exportColumns as any, exportsAction: async (params: any) => { const query: any = { ...params }; if
 (typeof query.status === 'string') { query.status = query.status === 'true'; } query.page_no = 1;

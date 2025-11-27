@@ -205,8 +205,8 @@
           </template>
         </el-table-column>
         <el-table-column label="描述" prop="description" min-width="100" />
-        <el-table-column label="创建时间" prop="created_at" min-width="200" sortable />
-        <el-table-column label="更新时间" prop="updated_at" min-width="200" sortable />
+        <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
+        <el-table-column label="更新时间" prop="updated_time" min-width="200" sortable />
 
         <OperationColumn :list-data-length="pageTableData.length">
           <template #default="scope">
@@ -362,13 +362,13 @@
             {{ detailFormData.end_date }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="4">
             {{ detailFormData.description }}
@@ -944,8 +944,8 @@ const exportColumns = [
   { prop: "coalesce", label: "并发执行" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导出配置（用于导出弹窗）

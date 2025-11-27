@@ -22,7 +22,7 @@ class OperationLogCreateSchema(BaseModel):
     response_code: Optional[int] = Field(default=None, description="响应状态码")
     response_json: Optional[str] = Field(default=None, description="响应 JSON 数据")
     process_time: Optional[str] = Field(default=None, description="处理时间")
-    status: Optional[bool] = Field(default=True, description="是否成功")
+    status: Optional[str] = Field(default=True, description="是否成功")
     description: Optional[str] = Field(default=None, max_length=255, description="描述")
     created_id: Optional[int] = Field(default=None, description="创建人ID")
 
@@ -73,8 +73,7 @@ class OperationLogQueryParam:
         request_ip: Optional[str] = Query(None, description="请求IP"),
         response_code: Optional[int] = Query(None, description="响应状态码"),
         created_id: Optional[int] = Query(None, description="创建人"),
-        start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-        end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+        created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         
         # 模糊查询字段
@@ -88,9 +87,5 @@ class OperationLogQueryParam:
         self.type = type
         
         # 时间范围查询 - 增加对单个时间参数的处理
-        if start_time and end_time:
-            self.created_time = ("between", (start_time, end_time))
-        elif start_time:
-            self.created_time = (">=", start_time)
-        elif end_time:
-            self.created_time = ("<=", end_time)
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))

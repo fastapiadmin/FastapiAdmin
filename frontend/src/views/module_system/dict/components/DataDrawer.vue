@@ -190,11 +190,11 @@
           </template>
         </el-table-column>
         <el-table-column label="描述" prop="description" min-width="100" show-overflow-tooltip />
-        <el-table-column label="创建时间" prop="created_at" min-width="200" sortable />
-        <el-table-column label="更新时间" prop="updated_at" min-width="200" sortable />
+        <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
+        <el-table-column label="更新时间" prop="updated_time" min-width="200" sortable />
         <el-table-column label="创建人" prop="creator" min-width="100">
           <template #default="scope">
-            {{ scope.row.creator?.name }}
+            {{ scope.row.created_by?.name }}
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" min-width="200">
@@ -283,13 +283,13 @@
             {{ detailFormData.description }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -708,8 +708,8 @@ const exportColumns = [
   { prop: "is_default", label: "是否默认" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导出配置（用于导出弹窗）

@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from fastapi import Query
 
-from app.core.base_schema import BaseSchema, UserBySchema, TenantSchema
+from app.core.base_schema import BaseSchema
 
 
 class GenDBTableSchema(BaseModel):
@@ -52,7 +52,7 @@ class GenTableSchema(BaseModel):
         return v
 
 
-class GenTableOutSchema(GenTableSchema, BaseSchema, UserBySchema, TenantSchema):
+class GenTableOutSchema(GenTableSchema, BaseSchema):
     """业务表输出模型（面向控制器/前端）。
     """
     model_config = ConfigDict(from_attributes=True)
@@ -90,7 +90,7 @@ class GenTableColumnSchema(BaseModel):
     sort: int = Field(default=0, description='排序')
 
 
-class GenTableColumnOutSchema(GenTableColumnSchema, BaseSchema, UserBySchema, TenantSchema):
+class GenTableColumnOutSchema(GenTableColumnSchema, BaseSchema):
     """
     业务表字段输出模型
     """

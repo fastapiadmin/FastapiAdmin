@@ -77,7 +77,7 @@ const {{ class_name }}API = {
     });
   },
   // 批量启用/停用
-  batchAvailable{{ class_name }}(body: { ids: number[]; status: boolean }) {
+  batchAvailable{{ class_name }}(body: { ids: number[]; status: strean }) {
     return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
       method: "patch",

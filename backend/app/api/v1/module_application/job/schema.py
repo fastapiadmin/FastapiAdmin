@@ -25,7 +25,7 @@ class JobCreateSchema(BaseModel):
     start_date: Optional[str] = Field(default=None, description='开始时间')
     end_date: Optional[str] = Field(default=None, description='结束时间')
     description: Optional[str] = Field(default=None, max_length=255, description='描述')
-    status: Optional[bool] = Field(default=False, description='任务状态:启动,停止')
+    status: Optional[str] = Field(default=False, description='任务状态:启动,停止')
 
     @field_validator('trigger')
     @classmethod
@@ -77,7 +77,7 @@ class JobLogCreateSchema(BaseModel):
     job_trigger: Optional[str] = Field(default=None, description='任务触发器')
     job_message: Optional[str] = Field(default=None, description='日志信息')
     exception_info: Optional[str] = Field(default=None, description='异常信息')
-    status: Optional[bool] = Field(default=False, description='任务状态:正常,失败')
+    status: Optional[str] = Field(default=False, description='任务状态:正常,失败')
     create_time: Optional[DateTimeStr] = Field(default=None, description='创建时间')
 
 
@@ -99,10 +99,9 @@ class JobQueryParam:
     def __init__(
         self,
         name: Optional[str] = Query(None, description="任务名称"),
-        status: Optional[bool] = Query(None, description="状态: 启动,停止"),
+        status: Optional[str] = Query(None, description="状态: 启动,停止"),
         creator: Optional[int] = Query(None, description="创建人"),
-        start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-        end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+        created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         
         # 模糊查询字段
@@ -113,8 +112,8 @@ class JobQueryParam:
         self.status = status
         
         # 时间范围查询
-        if start_time and end_time:
-            self.created_time = ("between", (start_time, end_time))
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))
 
 
 class JobLogQueryParam:
@@ -124,9 +123,8 @@ class JobLogQueryParam:
             self,
             job_id: Optional[int] = Query(None, description="定时任务ID"),
             job_name: Optional[str] = Query(None, description="任务名称"),
-            status: Optional[bool] = Query(None, description="状态: 正常,失败"),
-            start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-            end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+            status: Optional[str] = Query(None, description="状态: 正常,失败"),
+            created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         # 定时任务ID查询
         self.job_id = job_id
@@ -135,5 +133,5 @@ class JobLogQueryParam:
         # 精确查询字段
         self.status = status
         # 时间范围查询
-        if start_time and end_time:
-            self.create_time = ("between", (start_time, end_time))
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))

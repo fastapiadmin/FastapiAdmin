@@ -48,7 +48,7 @@ class PositionCRUD(CRUDBase[PositionModel, PositionCreateSchema, PositionUpdateS
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def set_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_crud(self, ids: List[int], status: str) -> None:
         """
         批量设置岗位可用状态。
         

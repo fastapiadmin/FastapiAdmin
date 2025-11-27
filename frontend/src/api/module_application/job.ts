@@ -123,23 +123,16 @@ export default JobAPI;
 
 export interface JobPageQuery extends PageQuery {
   name?: string;
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  status?: string;
+  created_id?: number;
+  created_time?: string[];
 }
 
 export interface JobLogPageQuery extends PageQuery {
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  /** 任务ID */
   job_id?: number;
+  job_name?: string;
+  status?: string;
+  created_time?: string[];
 }
 
 export interface JobOptionData {
@@ -147,9 +140,7 @@ export interface JobOptionData {
   option?: number; //操作类型 1: 暂停 2: 恢复 3: 重启
 }
 
-export interface JobTable {
-  index?: number;
-  id: number;
+export interface JobTable extends BaseType {
   name: string;
   func?: string;
   trigger?: string;
@@ -162,15 +153,13 @@ export interface JobTable {
   trigger_args?: string;
   start_date?: string;
   end_date?: string;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
+  tenant?: CommonType;
+  customer?: CommonType;
 }
 
-export interface JobForm {
-  id?: number;
+export interface JobForm extends BaseFormType {
   name?: string;
   func?: string;
   trigger?: string;
@@ -183,13 +172,10 @@ export interface JobForm {
   trigger_args?: string;
   start_date?: string;
   end_date?: string;
-  status?: boolean;
-  description?: string;
 }
 
 // 定时任务运行日志接口（对应Scheduler实时状态）
-export interface JobRunLog {
-  id: string;
+export interface JobRunLog extends BaseType {
   name: string;
   trigger: string;
   executor: string;
@@ -201,12 +187,11 @@ export interface JobRunLog {
   coalesce: boolean;
   max_instances: number;
   next_run_time: string;
-  state: string;
+  tenant?: CommonType;
 }
 
 // 定时任务日志详情接口（对应数据库日志表）
-export interface JobLogDetail {
-  id: number;
+export interface JobLogDetail extends BaseType {
   job_name: string;
   job_group: string;
   job_executor: string;
@@ -215,15 +200,12 @@ export interface JobLogDetail {
   job_kwargs?: string;
   job_trigger?: string;
   job_message?: string;
-  status: boolean;
   exception_info?: string;
-  create_time: string;
+  tenant?: CommonType;
 }
 
 // 定时任务日志列表接口（对应数据库日志表）
-export interface JobLogTable {
-  index?: number;
-  id: number;
+export interface JobLogTable extends BaseType {
   job_name: string;
   job_group: string;
   job_executor: string;
@@ -232,7 +214,6 @@ export interface JobLogTable {
   job_kwargs?: string;
   job_trigger?: string;
   job_message?: string;
-  status: boolean;
   exception_info?: string;
-  create_time: string;
+  tenant?: CommonType;
 }

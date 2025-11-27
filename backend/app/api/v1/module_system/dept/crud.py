@@ -61,7 +61,7 @@ class DeptCRUD(CRUDBase[DeptModel, DeptCreateSchema, DeptUpdateSchema]):
         """
         return await self.tree_list(search=search, order_by=order_by, children_attr='children', preload=preload)
 
-    async def set_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_crud(self, ids: List[int], status: str) -> None:
         """
         批量设置部门可用状态。
         

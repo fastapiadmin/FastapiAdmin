@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-from typing import Optional
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -38,5 +36,3 @@ class NoticeModel(ModelMixin, UserMixin, TenantMixin, CustomerMixin):
     notice_title: Mapped[str] = mapped_column(String(50), nullable=False, comment='公告标题')
     notice_type: Mapped[str] = mapped_column(String(50), nullable=False, comment='公告类型(1通知 2公告)')
     notice_content: Mapped[str | None] = mapped_column(Text, nullable=True, comment='公告内容')
-    start_time: Mapped[Optional[datetime]] = mapped_column(nullable=True, comment='开始时间')
-    end_time: Mapped[Optional[datetime]] = mapped_column(nullable=True, comment='结束时间')

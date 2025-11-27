@@ -104,7 +104,7 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
             relationship.extend(depts)
         await self.db.flush()
 
-    async def set_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_crud(self, ids: List[int], status: str) -> None:
         """
         设置角色的可用状态
         

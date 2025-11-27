@@ -1,24 +1,24 @@
 import request from "@/utils/request";
 
-const API_PATH = "/example/demo";
+const API_PATH = "/system/customer";
 
-const DemoAPI = {
-  getDemoList(query: DemoPageQuery) {
-    return request<ApiResponse<PageResult<DemoTable[]>>>({
+const CustomerAPI = {
+  listCustomer(query: CustomerPageQuery) {
+    return request<ApiResponse<PageResult<CustomerTable[]>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,
     });
   },
 
-  getDemoDetail(query: number) {
-    return request<ApiResponse<DemoTable>>({
+  detailCustomer(query: number) {
+    return request<ApiResponse<CustomerTable>>({
       url: `${API_PATH}/detail/${query}`,
       method: "get",
     });
   },
 
-  createDemo(body: DemoForm) {
+  createCustomer(body: CustomerForm) {
     return request<ApiResponse>({
       url: `${API_PATH}/create`,
       method: "post",
@@ -26,7 +26,7 @@ const DemoAPI = {
     });
   },
 
-  updateDemo(id: number, body: DemoForm) {
+  updateCustomer(id: number, body: CustomerForm) {
     return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
       method: "put",
@@ -34,7 +34,7 @@ const DemoAPI = {
     });
   },
 
-  deleteDemo(body: number[]) {
+  deleteCustomer(body: number[]) {
     return request<ApiResponse>({
       url: `${API_PATH}/delete`,
       method: "delete",
@@ -42,7 +42,7 @@ const DemoAPI = {
     });
   },
 
-  batchDemo(body: BatchType) {
+  batchCustomer(body: BatchType) {
     return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
       method: "patch",
@@ -50,7 +50,7 @@ const DemoAPI = {
     });
   },
 
-  exportDemo(body: DemoPageQuery) {
+  exportCustomer(body: CustomerPageQuery) {
     return request<Blob>({
       url: `${API_PATH}/export`,
       method: "post",
@@ -59,7 +59,7 @@ const DemoAPI = {
     });
   },
 
-  downloadTemplateDemo() {
+  downloadCustomer() {
     return request<ApiResponse>({
       url: `${API_PATH}/download/template`,
       method: "post",
@@ -67,7 +67,7 @@ const DemoAPI = {
     });
   },
 
-  importDemo(body: FormData) {
+  importCustomer(body: FormData) {
     return request<ApiResponse>({
       url: `${API_PATH}/import`,
       method: "post",
@@ -79,27 +79,23 @@ const DemoAPI = {
   },
 };
 
-export default DemoAPI;
+export default CustomerAPI;
 
-export interface DemoPageQuery extends PageQuery {
-  /** 示例标题 */
+export interface CustomerPageQuery extends PageQuery {
   name?: string;
-  /** 示例状态 */
   status?: string;
-  /** 创建时间 */
   created_time?: string[];
-  // 创建人ID
-  created_id?: number;
 }
 
-export interface DemoTable extends BaseType {
+export interface CustomerTable extends BaseType { 
   name?: string;
+  code?: string;
   created_by?: creatorType;
   updated_by?: updatorType;
   tenant?: CommonType;
-  customer?: CommonType;
 }
 
-export interface DemoForm extends BaseFormType {
+export interface CustomerForm extends BaseFormType {
   name?: string;
+  code?: string;
 }

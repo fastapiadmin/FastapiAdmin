@@ -82,58 +82,30 @@ export default ApplicationAPI;
  * 应用分页查询参数
  */
 export interface ApplicationPageQuery extends PageQuery {
-  /** 应用名称 */
   name?: string;
-  /** 是否启用 */
-  status?: boolean;
-  /** 创建人 */
-  creator?: number;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  /** 排序字段,格式:[{'field':'asc/desc'}] */
-  order_by?: string;
+  status?: string;
+  created_id?: number;
+  created_time?: string[];
 }
 
 /**
  * 应用信息
  */
-export interface ApplicationInfo {
-  /** 应用ID */
-  id?: number;
-  /** 应用名称 */
+export interface ApplicationInfo extends BaseType {
   name?: string;
-  /** 访问地址 */
   access_url?: string;
-  /** 图标地址 */
   icon_url?: string;
-  /** 是否启用 */
-  status?: boolean;
-  /** 应用描述 */
-  description?: string;
-  /** 创建时间 */
-  created_at?: string;
-  /** 更新时间 */
-  updated_at?: string;
-  /** 创建人 */
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
+  tenant?: CommonType;
+  customer?: CommonType;
 }
 
 /**
  * 应用表单
  */
-export interface ApplicationForm {
-  /** 应用ID */
-  id?: number;
-  /** 应用名称 */
+export interface ApplicationForm extends BaseFormType {
   name: string;
-  /** 访问地址 */
   access_url: string;
-  /** 图标地址 */
   icon_url: string;
-  /** 是否启用 */
-  status: boolean;
-  /** 应用描述 */
-  description?: string;
 }

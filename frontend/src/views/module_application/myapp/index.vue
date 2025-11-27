@@ -150,11 +150,11 @@
                 <div class="card-footer">
                   <div class="footer-item">
                     <el-icon size="14" class="footer-icon"><User /></el-icon>
-                    <span class="footer-text">{{ app.creator?.name || "未知" }}</span>
+                    <span class="footer-text">{{ app.created_by?.name || "未知" }}</span>
                   </div>
                   <div class="footer-item">
                     <el-icon size="14" class="footer-icon"><Clock /></el-icon>
-                    <span class="footer-text">{{ formatTime(app.created_at) }}</span>
+                    <span class="footer-text">{{ formatTime(app.created_time) }}</span>
                   </div>
                 </div>
               </template>

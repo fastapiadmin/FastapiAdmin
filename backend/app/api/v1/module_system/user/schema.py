@@ -94,7 +94,7 @@ class UserCreateSchema(CurrentUserUpdateSchema):
     
     username: Optional[str] = Field(default=None, max_length=32, description="用户名")
     password: Optional[str] = Field(default=None, max_length=128, description="密码哈希值")
-    status: bool = Field(default=True, description="是否可用")
+    status: str = Field(default=True, description="是否可用")
     description: Optional[str] = Field(default=None, max_length=255, description="备注")
     user_type: Optional[str] = Field(default="0", max_length=32, description="用户类型")
     
@@ -136,9 +136,8 @@ class UserQueryParam:
         mobile: Optional[str] = Query(None, description="手机号", pattern=r'^1[3-9]\d{9}$'),
         email: Optional[str] = Query(None, description="邮箱", pattern=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'), 
         dept_id: Optional[int] = Query(None, description="部门ID"),
-        status: Optional[bool] = Query(None, description="是否可用"),
-        start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-        end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+        status: Optional[str] = Query(None, description="是否可用"),
+        created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
         created_id: Optional[int] = Query(None, description="创建人"),
     ) -> None:
         
@@ -154,5 +153,5 @@ class UserQueryParam:
         self.status = status
         
         # 时间范围查询
-        if start_time and end_time:
-            self.created_time = ("between", (start_time, end_time))
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))

@@ -44,14 +44,8 @@ class NoticeService:
         返回:
         - List[Dict]: 可用公告详情字典列表。
         """
-        # 构建搜索条件，包括状态为可用和当前时间在有效期内
-        current_time = datetime.now()
         search = {
             'status': True,
-            'and': [
-                {'or': [{'start_time': None}, {'start_time': {'le': current_time}}]},
-                {'or': [{'end_time': None}, {'end_time': {'ge': current_time}}]}
-            ]
         }
         
         notice_obj_list = await NoticeCRUD(auth).get_list_crud(search=search)
@@ -171,8 +165,6 @@ class NoticeService:
             'notice_content': '公告内容',
             'status': '状态',
             'description': '备注',
-            'start_time': '开始时间',
-            'end_time': '结束时间',
             'created_time': '创建时间',
             'updated_time': '更新时间',
             'created_id': '创建者ID',

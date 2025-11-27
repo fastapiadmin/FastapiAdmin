@@ -577,7 +577,7 @@ async function handleDelete(ids: number[]) {
 }
 
 // 批量启用/停用
-async function handleMoreClick(status: boolean) {
+async function handleMoreClick(status: strean) {
   if (selectIds.value.length) {
     ElMessageBox.confirm(`确认${status ? '启用' : '停用'}该项数据?`, '警告', {
       confirmButtonText: '确定',

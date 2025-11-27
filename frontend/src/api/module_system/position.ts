@@ -64,31 +64,20 @@ export default PositionAPI;
 
 export interface PositionPageQuery extends PageQuery {
   name?: string;
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  status?: string;
+  created_id?: number;
+  created_time?: string[];
 }
 
-export interface PositionTable {
-  index?: number;
-  id?: number;
+export interface PositionTable extends BaseType {
   name?: string;
   order?: number;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
+  tenant?: CommonType;
 }
 
-export interface PositionForm {
-  id?: number;
+export interface PositionForm extends BaseFormType {
   name?: string;
   order?: number;
-  status?: boolean;
-  description?: string;
 }

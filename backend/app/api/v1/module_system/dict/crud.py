@@ -91,7 +91,7 @@ class DictTypeCRUD(CRUDBase[DictTypeModel, DictTypeCreateSchema, DictTypeUpdateS
         """
         return await self.delete(ids=ids)
     
-    async def set_obj_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_obj_available_crud(self, ids: List[int], status: str) -> None:
         """
         设置数据字典类型的可用状态
         
@@ -226,7 +226,7 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         """
         return await self.delete(ids=ids)
     
-    async def set_obj_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_obj_available_crud(self, ids: List[int], status: str) -> None:
         """
         设置数据字典数据的可用状态
         
@@ -289,7 +289,7 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
             await self.delete(ids=ids)
         return len(ids)
     
-    async def get_obj_list_by_dict_type_crud(self, dict_type: str, status: Optional[bool] = True) -> List[DictDataModel]:
+    async def get_obj_list_by_dict_type_crud(self, dict_type: str, status: Optional[str] = True) -> List[DictDataModel]:
         """
         根据字典类型获取字典数据列表
         

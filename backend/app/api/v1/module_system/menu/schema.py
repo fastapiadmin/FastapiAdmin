@@ -27,7 +27,7 @@ class MenuCreateSchema(BaseModel):
     params: Optional[list[dict[str, str]]] = Field(default=None, description="路由参数，格式为[{key: string, value: string}]")
     affix: bool = Field(default=False, description="是否固定标签页(True:是 False:否)")
     parent_id: Optional[int] = Field(default=None, ge=1, description="父菜单ID")
-    status: bool = Field(default=True, description="是否启用(True:启用 False:禁用)")
+    status: str = Field(default=True, description="是否启用(True:启用 False:禁用)")
     description: Optional[str] = Field(default=None, max_length=255, description="描述")
 
     @model_validator(mode='before')
@@ -87,9 +87,8 @@ class MenuQueryParam:
         component_path: Optional[str] = Query(None, description="组件路径"),
         type: Optional[Literal['M', 'C', 'F']] = Query(None, description="菜单类型(M目录 C菜单 F按钮)"),
         permission: Optional[str] = Query(None, description="权限标识"),
-        status: Optional[bool] = Query(None, description="菜单状态(True正常 False停用)"),
-        start_time: Optional[DateTimeStr] = Query(None, description="开始时间", example="2025-01-01 00:00:00"),
-        end_time: Optional[DateTimeStr] = Query(None, description="结束时间", example="2025-12-31 23:59:59"),
+        status: Optional[str] = Query(None, description="菜单状态(True正常 False停用)"),
+        created_time: Optional[list[DateTimeStr]] = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         
         # 模糊查询字段
@@ -103,5 +102,5 @@ class MenuQueryParam:
         self.status = status
 
         # 时间范围查询
-        if start_time and end_time:
-            self.created_time = ("between", (start_time, end_time))
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))

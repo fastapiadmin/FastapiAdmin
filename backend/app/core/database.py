@@ -84,7 +84,7 @@ def create_async_engine_and_session(
 engine, db_session = create_engine_and_session(settings.DB_URI)
 async_engine, async_db_session = create_async_engine_and_session(settings.ASYNC_DB_URI)
 
-async def redis_connect(app: FastAPI, status: bool) -> Redis | None:
+async def redis_connect(app: FastAPI, status: str) -> Redis | None:
     """
     创建或关闭Redis连接。
     

@@ -195,10 +195,10 @@
         />
         <el-table-column label="系统" prop="request_os" min-width="100" />
         <el-table-column label="描述" prop="description" min-width="120" show-overflow-tooltip />
-        <el-table-column label="创建时间" prop="created_at" min-width="200" sortable />
+        <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
         <el-table-column label="创建人" prop="creator" min-width="120">
           <template #default="scope">
-            {{ scope.row.creator?.name }}
+            {{ scope.row.created_by?.name }}
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" align="center" min-width="150">
@@ -287,13 +287,13 @@
             {{ formData.login_location }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="4">
-            {{ formData.creator?.name }}
+            {{ formData.created_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="4">
-            {{ formData.created_at }}
+            {{ formData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="4">
-            {{ formData.updated_at }}
+            {{ formData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="8">
             {{ formData.description }}
@@ -540,8 +540,8 @@ const exportColumns = [
   { prop: "request_browser", label: "浏览器" },
   { prop: "request_os", label: "系统" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置（用于导出弹窗）

@@ -29,7 +29,7 @@ class BaseSchema(BaseModel):
 
     id: Optional[int] = Field(default=None, description="主键ID")
     uuid: Optional[str] = Field(default=None, description="UUID")
-    status: Optional[bool] = Field(default=None, description="状态")
+    status: Optional[str] = Field(default=None, description="状态")
     description: Optional[str] = Field(default=None, description="描述")
     created_time: Optional[DateTimeStr] = Field(default=None, description="创建时间")
     updated_time: Optional[DateTimeStr] = Field(default=None, description="更新时间")
@@ -62,7 +62,7 @@ class CustomerSchema(BaseModel):
 class BatchSetAvailable(BaseModel):
     """批量设置可用状态的请求模型"""
     ids: List[int] = Field(default_factory=list, description="ID列表")
-    status: bool = Field(default=True, description="是否可用")
+    status: str = Field(default=True, description="是否可用")
 
 
 class UploadResponseSchema(BaseModel):

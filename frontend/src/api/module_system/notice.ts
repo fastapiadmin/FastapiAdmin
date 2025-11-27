@@ -70,38 +70,25 @@ const NoticeAPI = {
 export default NoticeAPI;
 
 export interface NoticePageQuery extends PageQuery {
-  /** 通知标题 */
   notice_title?: string;
-  /** 通知类型 */
   notice_type?: string;
-  /** 通知状态 */
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  status?: string;
+  created_time?: string[];
+  created_id?: number;
 }
 
-export interface NoticeTable {
-  index?: number;
-  id?: number;
+export interface NoticeTable extends BaseType {
   notice_title?: string;
   notice_type?: string;
   notice_content?: string;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
+  tenant?: CommonType;
+  customer?: CommonType;
 }
 
-export interface NoticeForm {
-  id?: number;
+export interface NoticeForm extends BaseFormType {
   notice_title?: string;
   notice_type?: string;
   notice_content?: string;
-  status?: boolean;
-  description?: string;
 }

@@ -179,6 +179,7 @@ class CustomerService:
         mapping_dict = {
             'id': '编号',
             'name': '名称', 
+            'code': '编码',
             'status': '状态',
             'description': '备注',
             'created_time': '创建时间',

@@ -61,7 +61,7 @@ class MenuCRUD(CRUDBase[MenuModel, MenuCreateSchema, MenuUpdateSchema]):
         """
         return await self.tree_list(search=search, order_by=order_by, children_attr='children', preload=preload)
 
-    async def set_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_crud(self, ids: List[int], status: str) -> None:
         """
         批量设置菜单可用状态。
         

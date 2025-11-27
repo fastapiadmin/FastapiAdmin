@@ -194,14 +194,14 @@
           :show-overflow-tooltip="true"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
         />
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
@@ -1006,8 +1006,8 @@ const tableColumns = ref<TableColumn[]>([
   { prop: "table_name", label: "表名称", show: true },
   { prop: "table_comment", label: "表描述", show: true },
   { prop: "class_name", label: "实体", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
@@ -1410,8 +1410,8 @@ function loadExampleMysql(): void {
     \`creator_id\` int DEFAULT NULL COMMENT '创建人ID',
     \`id\` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     \`description\` text COLLATE utf8mb4_unicode_ci COMMENT '备注/描述',
-    \`created_at\` datetime DEFAULT NULL COMMENT '创建时间',
-    \`updated_at\` datetime DEFAULT NULL COMMENT '更新时间',
+    \`created_time\` datetime DEFAULT NULL COMMENT '创建时间',
+    \`updated_time\` datetime DEFAULT NULL COMMENT '更新时间',
     PRIMARY KEY (\`id\`),
     KEY \`ix_gen_demo01_creator_id\` (\`creator_id\`),
     CONSTRAINT \`gen_demo01_ibfk_1\` FOREIGN KEY (\`creator_id\`) REFERENCES \`system_users\` (\`id\`) ON DELETE SET NULL ON UPDATE CASCADE
@@ -1427,8 +1427,8 @@ function loadExamplePostgres(): void {
       creator_id integer,
       id SERIAL NOT NULL,
       description text,
-      created_at timestamp without time zone,
-      updated_at timestamp without time zone,
+      created_time timestamp without time zone,
+      updated_time timestamp without time zone,
       PRIMARY KEY(id),
       CONSTRAINT gen_demo01_creator_id_fkey FOREIGN key(creator_id) REFERENCES system_users(id)
   );
@@ -1439,8 +1439,8 @@ function loadExamplePostgres(): void {
   COMMENT ON COLUMN gen_demo01.creator_id IS '创建人ID';
   COMMENT ON COLUMN gen_demo01.id IS '主键ID';
   COMMENT ON COLUMN gen_demo01.description IS '备注/描述';
-  COMMENT ON COLUMN gen_demo01.created_at IS '创建时间';
-  COMMENT ON COLUMN gen_demo01.updated_at IS '更新时间';`;
+  COMMENT ON COLUMN gen_demo01.created_time IS '创建时间';
+  COMMENT ON COLUMN gen_demo01.updated_time IS '更新时间';`;
 
   createContent.value = exampleSql;
 }

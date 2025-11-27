@@ -221,8 +221,8 @@
         <el-table-column label="组件路径" prop="component_path" min-width="200" />
         <el-table-column label="路由参数" prop="params" min-width="100" />
         <el-table-column label="描述" prop="description" min-width="200" />
-        <el-table-column label="创建时间" prop="created_at" min-width="200" sortable />
-        <el-table-column label="更新时间" prop="updated_at" min-width="200" sortable />
+        <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
+        <el-table-column label="更新时间" prop="updated_time" min-width="200" sortable />
 
         <el-table-column fixed="right" label="操作" align="center" min-width="260">
           <template #default="scope">
@@ -365,10 +365,10 @@
             {{ detailFormData.order }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="4">
             {{ detailFormData.description }}

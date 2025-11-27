@@ -42,16 +42,11 @@ export interface LogPageQuery extends PageQuery {
   type?: number;
   request_path?: string;
   creator_name?: string;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  created_time?: string[];
+  created_id?: number;
 }
 
-export interface LogTable {
-  id?: number;
+export interface LogTable extends BaseType {
   type?: number; // 1 登录日志 2 操作日志
   request_path?: string;
   request_method?: string;
@@ -63,8 +58,8 @@ export interface LogTable {
   request_payload?: string;
   response_json?: string;
   process_time?: string;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
+  tenant?: CommonType;
+  customer?: CommonType;
 }

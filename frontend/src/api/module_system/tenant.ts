@@ -82,34 +82,26 @@ const TenantAPI = {
 export default TenantAPI;
 
 export interface TenantPageQuery extends PageQuery {
-  /** 示例标题 */
   name?: string;
-  /** 示例状态 */
-  status?: boolean;
-  /** 开始时间 */
+  status?: string;
+  created_time?: string[];
+}
+
+export interface TenantTable extends BaseType {
+  name?: string;
+  code?: string;
   start_time?: string;
-  /** 结束时间 */
   end_time?: string;
-  /** 创建人 */
-  creator?: number;
+  max_user_count?: number;
+  enable_quota_limit?: boolean;
+  current_user_count?: number;
 }
 
-export interface TenantTable {
-  index?: number;
-  id?: number;
+export interface TenantForm extends BaseFormType {
   name?: string;
   code?: string;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  // creator?: creatorType;
-}
-
-export interface TenantForm {
-  id?: number;
-  name?: string;
-  code?: string;
-  status?: boolean;
-  description?: string;
+  start_time?: string;
+  end_time?: string;
+  max_user_count?: number;
+  enable_quota_limit?: boolean;
 }

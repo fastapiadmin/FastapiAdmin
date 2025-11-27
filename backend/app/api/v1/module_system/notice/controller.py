@@ -164,9 +164,7 @@ async def export_obj_list_controller(
     return StreamResponse(
         data=bytes2file_response(export_result),
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers = {
-            'Content-Disposition': 'attachment; filename=notice.xlsx'
-        }
+        headers = {'Content-Disposition': 'attachment; filename=notice.xlsx'}
     )
 
 @NoticeRouter.get("/available", summary="获取全局启用公告", description="获取全局启用公告")

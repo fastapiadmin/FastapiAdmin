@@ -230,18 +230,18 @@
           min-width="120"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
-          key="created_at"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
+          key="created_time"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
           min-width="200"
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
-          key="updated_at"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
+          key="updated_time"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
           min-width="200"
           sortable
         />
@@ -252,7 +252,7 @@
           min-width="120"
         >
           <template #default="scope">
-            {{ scope.row.creator?.name }}
+            {{ scope.row.created_by?.name }}
           </template>
         </el-table-column>
         <el-table-column
@@ -334,13 +334,13 @@
             {{ detailFormData.description }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -451,8 +451,8 @@ const tableColumns = ref([
   { prop: "config_value", label: "配置值", show: true },
   { prop: "config_type", label: "系统内置", show: true },
   { prop: "description", label: "描述", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
   { prop: "creator", label: "创建人", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
@@ -675,8 +675,8 @@ const exportColumns = [
   { prop: "config_value", label: "配置值" },
   { prop: "config_type", label: "系统内置" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置（用于导出弹窗）

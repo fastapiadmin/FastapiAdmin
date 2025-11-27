@@ -77,31 +77,20 @@ export interface ConfigPageQuery extends PageQuery {
   config_key?: string;
   /** 配置类型 */
   config_type?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  /** 创建时间 */
+  created_time?: string[];
 }
 
-export interface ConfigTable {
-  id?: number;
+export interface ConfigTable extends BaseType {
   config_name?: string;
   config_key?: string;
   config_value?: string;
   config_type?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
 }
 
-export interface ConfigForm {
-  id?: number;
+export interface ConfigForm extends BaseFormType {
   config_name?: string;
   config_key?: string;
   config_value?: string;
   config_type?: boolean;
-  description?: string;
 }
