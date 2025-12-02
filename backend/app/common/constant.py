@@ -223,22 +223,22 @@ class CommonConstant:
     """
 
     # 域名相关
-    WWW = 'www.'
-    HTTP = 'http://'
-    HTTPS = 'https://'
+    WWW = "www."
+    HTTP = "http://"
+    HTTPS = "https://"
     
     # 远程调用
-    LOOKUP_RMI = 'rmi:'
-    LOOKUP_LDAP = 'ldap:'
-    LOOKUP_LDAPS = 'ldaps:'
+    LOOKUP_RMI = "rmi:"
+    LOOKUP_LDAP = "ldap:"
+    LOOKUP_LDAPS = "ldaps:"
     
     # 系统标识
-    YES = 'Y'
-    NO = 'N'
+    YES = "Y"
+    NO = "N"
     
     # 部门状态
-    DEPT_NORMAL = '0'  # 正常
-    DEPT_DISABLE = '1' # 停用
+    DEPT_NORMAL = "0"  # 正常
+    DEPT_DISABLE = "1" # 停用
     
     # 唯一性校验
     UNIQUE = True
@@ -254,51 +254,51 @@ class JobConstant:
     """
 
     JOB_ERROR_LIST = [
-        'app',
-        'config',
-        'exceptions',
-        'import ',
-        'middlewares',
-        'module_admin',
-        'open(',
-        'os.',
-        'server',
-        'sub_applications',
-        'subprocess.',
-        'sys.',
-        'utils',
-        'while ',
-        '__import__',
-        '"',
-        "'",
-        ',',
-        '?',
-        ':',
-        ';',
-        '/',
-        '|',
-        '+',
-        '-',
-        '=',
-        '~',
-        '!',
-        '#',
-        '$',
-        '%',
-        '^',
-        '&',
-        '*',
-        '<',
-        '>',
-        '(',
-        ')',
-        '[',
-        ']',
-        '{',
-        '}',
-        ' ',
+        "app",
+        "config",
+        "exceptions",
+        "import ",
+        "middlewares",
+        "module_admin",
+        "open(",
+        "os.",
+        "server",
+        "sub_applications",
+        "subprocess.",
+        "sys.",
+        "utils",
+        "while ",
+        "__import__",
+        """,
+        """,
+        ",",
+        "?",
+        ":",
+        ";",
+        "/",
+        "|",
+        "+",
+        "-",
+        "=",
+        "~",
+        "!",
+        "#",
+        "$",
+        "%",
+        "^",
+        "&",
+        "*",
+        "<",
+        ">",
+        "(",
+        ")",
+        "[",
+        "]",
+        "{",
+        "}",
+        " ",
     ]
-    JOB_WHITE_LIST = ['function_task']
+    JOB_WHITE_LIST = ["function_task"]
 
 
 class MenuConstant:
@@ -315,14 +315,14 @@ class MenuConstant:
     INNER_LINK: InnerLink组件标识
     """
 
-    TYPE_DIR = 'M'
-    TYPE_MENU = 'C'
-    TYPE_BUTTON = 'F'
+    TYPE_DIR = "M"
+    TYPE_MENU = "C"
+    TYPE_BUTTON = "F"
     YES_FRAME = 0
     NO_FRAME = 1
-    LAYOUT = 'Layout'
-    PARENT_VIEW = 'ParentView'
-    INNER_LINK = 'InnerLink'
+    LAYOUT = "Layout"
+    PARENT_VIEW = "ParentView"
+    INNER_LINK = "InnerLink"
 
 
 class GenConstant:
@@ -359,352 +359,348 @@ class GenConstant:
     
     # 数据库字符串类型
     COLUMNTYPE_STR = (
-        ['character varying', 'varchar', 'character', 'char']
-        if settings.DATABASE_TYPE == 'postgres'
-        else ['char', 'varchar', 'nvarchar', 'varchar2']
+        ["character varying", "varchar", "character", "char"]
+        if settings.DATABASE_TYPE == "postgres"
+        else ["char", "varchar", "nvarchar", "varchar2"]
     )
 
     # 数据库文本类型
     COLUMNTYPE_TEXT = (
-        ['text', 'citext'] if settings.DATABASE_TYPE == 'postgres' else ['tinytext', 'text', 'mediumtext', 'longtext']
+        ["text", "citext"] if settings.DATABASE_TYPE == "postgres" else ["tinytext", "text", "mediumtext", "longtext"]
     )
 
     # 数据库时间类型
     COLUMNTYPE_TIME = (
         [
-            'date',
-            'time',
-            'time with time zone',
-            'time without time zone',
-            'timestamp',
-            'timestamp with time zone',
-            'timestamp without time zone',
-            'interval',
+            "date",
+            "time",
+            "time with time zone",
+            "time without time zone",
+            "timestamp",
+            "timestamp with time zone",
+            "timestamp without time zone",
+            "interval",
         ]
-        if settings.DATABASE_TYPE == 'postgres'
-        else ['datetime', 'time', 'date', 'timestamp']
+        if settings.DATABASE_TYPE == "postgres"
+        else ["datetime", "time", "date", "timestamp"]
     )
 
     # 数据库字空间类型
     COLUMNTYPE_GEOMETRY = (
-        ['point', 'line', 'lseg', 'box', 'path', 'polygon', 'circle']
-        if settings.DATABASE_TYPE == 'postgres'
+        ["point", "line", "lseg", "box", "path", "polygon", "circle"]
+        if settings.DATABASE_TYPE == "postgres"
         else [
-            'geometry',
-            'point',
-            'linestring',
-            'polygon',
-            'multipoint',
-            'multilinestring',
-            'multipolygon',
-            'geometrycollection',
+            "geometry",
+            "point",
+            "linestring",
+            "polygon",
+            "multipoint",
+            "multilinestring",
+            "multipolygon",
+            "geometrycollection",
         ]
     )
 
     # 数据库数字类型
     COLUMNTYPE_NUMBER = [
-        'tinyint',
-        'smallint',
-        'mediumint',
-        'int',
-        'number',
-        'integer',
-        'bit',
-        'bigint',
-        'float',
-        'double',
-        'decimal',
-        'boolean',
-        'bool'
+        "tinyint",
+        "smallint",
+        "mediumint",
+        "int",
+        "number",
+        "integer",
+        "bit",
+        "bigint",
+        "float",
+        "double",
+        "decimal",
+        "boolean",
+        "bool"
     ]
     # 页面不需要显示的添加字段
-    COLUMNNAME_NOT_ADD_SHOW = ['created_time', 'updated_time']
+    COLUMNNAME_NOT_ADD_SHOW = ["created_time", "updated_time"]
 
     # 页面不需要显示的编辑字段
-    COLUMNNAME_NOT_EDIT_SHOW = ['updated_time']
+    COLUMNNAME_NOT_EDIT_SHOW = ["uuid"]
 
     # 页面不需要编辑字段
-    COLUMNNAME_NOT_EDIT = ["id", "description", "created_time", "updated_time"]
+    COLUMNNAME_NOT_EDIT = ["id", "uuid", "description", "created_time", "updated_time"]
     
     # 页面不需要显示的列表字段
-    COLUMNNAME_NOT_LIST = ["id", "description", "created_time", "updated_time"]
+    COLUMNNAME_NOT_LIST = ["id", "uuid", "description", "created_time", "updated_time"]
     
     # 页面不需要查询字段
-    COLUMNNAME_NOT_QUERY = ["id", "description", "created_time", "updated_time"]
+    COLUMNNAME_NOT_QUERY = ["id", "uuid", "description", "created_time", "updated_time"]
     
     # Crud基类字段
     CRUD_COLUMN_NOT_EDIT = ["create_by", "description", "created_time",  "updated_time"]
     
     # 实体基类字段
-    BASE_ENTITY = ['id', 'created_time', 'updated_time', "description"]
+    BASE_ENTITY = ["id", "uuid", "status",  "description", "created_time", "updated_time", "created_id", "updated_id"]
     
     # Tree基类字段
-    TREE_ENTITY = ['parent_name', 'parent_id', 'order', 'ancestors', 'children']
+    TREE_ENTITY = ["parent_name", "parent_id", "order", "ancestors", "children"]
     
     # 文本框
-    HTML_INPUT = 'input'
+    HTML_INPUT = "input"
     
     # 文本域
-    HTML_TEXTAREA = 'textarea'
+    HTML_TEXTAREA = "textarea"
     
     # 下拉框
-    HTML_SELECT = 'select'
+    HTML_SELECT = "select"
     
     # 单选框
-    HTML_RADIO = 'radio'
+    HTML_RADIO = "radio"
     
     # 复选框
-    HTML_CHECKBOX = 'checkbox'
+    HTML_CHECKBOX = "checkbox"
     
     # 日期控件
-    HTML_DATETIME = 'datetime'
+    HTML_DATETIME = "datetime"
     
     # 图片上传控件
-    HTML_IMAGE_UPLOAD = 'imageUpload'
+    HTML_IMAGE_UPLOAD = "imageUpload"
     
     # 文件上传控件
-    HTML_FILE_UPLOAD = 'fileUpload'
+    HTML_FILE_UPLOAD = "fileUpload"
     
     # 富文本控件
-    HTML_EDITOR = 'editor'
+    HTML_EDITOR = "editor"
     
     # 高精度计算类型
-    TYPE_DECIMAL = 'Decimal'
+    TYPE_DECIMAL = "Decimal"
     
     # 时间类型
-    TYPE_DATE = ['date', 'time', 'datetime']
+    TYPE_DATE = ["date", "time", "datetime"]
     
     # 模糊查询
-    QUERY_LIKE = 'LIKE'
+    QUERY_LIKE = "LIKE"
     
     # 相等查询
-    QUERY_EQ = 'EQ'
+    QUERY_EQ = "EQ"
     
     # 需要
     REQUIRE = True
     
     # 数据库类型与sqlalchemy类型映射
-    DB_TO_SQLALCHEMY = (
-        {
-            'boolean': 'Boolean',
-            'smallint': 'SmallInteger',
-            'integer': 'Integer',
-            'bigint': 'BigInteger',
-            'real': 'Float',
-            'double precision': 'Float',
-            'numeric': 'Numeric',
-            'character varying': 'String',
-            'character': 'String',
-            'text': 'Text',
-            'bytea': 'LargeBinary',
-            'date': 'Date',
-            'time': 'Time',
-            'time with time zone': 'Time',
-            'time without time zone': 'Time',
-            'timestamp': 'DateTime',
-            'timestamp with time zone': 'DateTime',
-            'timestamp without time zone': 'DateTime',
-            'interval': 'Interval',
-            'json': 'JSON',
-            'jsonb': 'JSONB',
-            'uuid': 'Uuid',
-            'inet': 'INET',
-            'cidr': 'CIDR',
-            'macaddr': 'MACADDR',
-            'point': 'Geometry',
-            'line': 'Geometry',
-            'lseg': 'Geometry',
-            'box': 'Geometry',
-            'path': 'Geometry',
-            'polygon': 'Geometry',
-            'circle': 'Geometry',
-            'bit': 'Bit',
-            'bit varying': 'Bit',
-            'tsvector': 'TSVECTOR',
-            'tsquery': 'TSQUERY',
-            'xml': 'String',
-            'array': 'ARRAY',
-            'composite': 'JSON',
-            'enum': 'Enum',
-            'range': 'Range',
-            'money': 'Numeric',
-            'pg_lsn': 'BigInteger',
-            'txid_snapshot': 'String',
-            'oid': 'BigInteger',
-            'regproc': 'String',
-            'regclass': 'String',
-            'regtype': 'String',
-            'regrole': 'String',
-            'regnamespace': 'String',
-            'int2vector': 'ARRAY',
-            'oidvector': 'ARRAY',
-            'pg_node_tree': 'Text',
-        }
-        if settings.DATABASE_TYPE == 'postgres'
-        else {
-            # 数值类型
-            'TINYINT': 'SmallInteger',
-            'SMALLINT': 'SmallInteger',
-            'MEDIUMINT': 'Integer',
-            'INT': 'Integer',
-            'INTEGER': 'Integer',
-            'BIGINT': 'BigInteger',
-            'FLOAT': 'Float',
-            'DOUBLE': 'Float',
-            'DECIMAL': 'DECIMAL',
-            'BIT': 'Integer',
-            "NUMERIC": "Numeric",
-            # 日期和时间类型
-            'DATE': 'Date',
-            'TIME': 'Time',
-            'DATETIME': 'DateTime',
-            'TIMESTAMP': 'TIMESTAMP',
-            'YEAR': 'Integer',
-            # 字符串类型
-            'CHAR': 'CHAR',
-            'VARCHAR': 'String',
-            'TINYTEXT': 'Text',
-            'TEXT': 'Text',
-            'MEDIUMTEXT': 'Text',
-            'LONGTEXT': 'Text',
-            'BINARY': 'BINARY',
-            'VARBINARY': 'VARBINARY',
-            'TINYBLOB': 'LargeBinary',
-            'BLOB': 'LargeBinary',
-            'MEDIUMBLOB': 'LargeBinary',
-            'LONGBLOB': 'LargeBinary',
-            # 枚举和集合类型
-            'ENUM': 'Enum',
-            'SET': 'String',
-            # JSON 类型
-            'JSON': 'JSON',
-            # 空间数据类型（需要扩展支持，如 GeoAlchemy2）
-            'GEOMETRY': 'Geometry',  # 需要安装 geoalchemy2
-            'POINT': 'Geometry',
-            'LINESTRING': 'Geometry',
-            'POLYGON': 'Geometry',
-            'MULTIPOINT': 'Geometry',
-            'MULTILINESTRING': 'Geometry',
-            'MULTIPOLYGON': 'Geometry',
-            'GEOMETRYCOLLECTION': 'Geometry',
-            # 其他类型
-            "BOOL": "Boolean",
-            "UUID": "String",
-        }
-    )
+    DB_TO_SQLALCHEMY = {
+        "boolean": "Boolean",
+        "smallint": "SmallInteger",
+        "integer": "Integer",
+        "int4": "Integer",
+        "bigint": "BigInteger",
+        "real": "Float",
+        "double precision": "Float",
+        "numeric": "Numeric",
+        "character varying": "String",
+        "varchar": "String",
+        "character": "String",
+        "text": "Text",
+        "bytea": "LargeBinary",
+        "date": "Date",
+        "time": "Time",
+        "time with time zone": "Time",
+        "time without time zone": "Time",
+        "timestamp": "DateTime",
+        "timestamp with time zone": "DateTime",
+        "timestamp without time zone": "DateTime",
+        "interval": "Interval",
+        "json": "JSON",
+        "jsonb": "JSONB",
+        "uuid": "Uuid",
+        "inet": "INET",
+        "cidr": "CIDR",
+        "macaddr": "MACADDR",
+        "point": "Geometry",
+        "line": "Geometry",
+        "lseg": "Geometry",
+        "box": "Geometry",
+        "path": "Geometry",
+        "polygon": "Geometry",
+        "circle": "Geometry",
+        "bit": "Bit",
+        "bit varying": "Bit",
+        "tsvector": "TSVECTOR",
+        "tsquery": "TSQUERY",
+        "xml": "String",
+        "array": "ARRAY",
+        "composite": "JSON",
+        "enum": "Enum",
+        "range": "Range",
+        "money": "Numeric",
+        "pg_lsn": "BigInteger",
+        "txid_snapshot": "String",
+        "oid": "BigInteger",
+        "regproc": "String",
+        "regclass": "String",
+        "regtype": "String",
+        "regrole": "String",
+        "regnamespace": "String",
+        "int2vector": "ARRAY",
+        "oidvector": "ARRAY",
+        "pg_node_tree": "Text",
+    } if settings.DATABASE_TYPE == "postgres" else {
+        # 数值类型
+        "TINYINT": "SmallInteger",
+        "SMALLINT": "SmallInteger",
+        "MEDIUMINT": "Integer",
+        "INT": "Integer",
+        "INTEGER": "Integer",
+        "BIGINT": "BigInteger",
+        "FLOAT": "Float",
+        "DOUBLE": "Float",
+        "DECIMAL": "DECIMAL",
+        "BIT": "Integer",
+        "NUMERIC": "Numeric",
+        # 日期和时间类型
+        "DATE": "Date",
+        "TIME": "Time",
+        "DATETIME": "DateTime",
+        "TIMESTAMP": "TIMESTAMP",
+        "YEAR": "Integer",
+        # 字符串类型
+        "CHAR": "CHAR",
+        "VARCHAR": "String",
+        "TINYTEXT": "Text",
+        "TEXT": "Text",
+        "MEDIUMTEXT": "Text",
+        "LONGTEXT": "Text",
+        "BINARY": "BINARY",
+        "VARBINARY": "VARBINARY",
+        "TINYBLOB": "LargeBinary",
+        "BLOB": "LargeBinary",
+        "MEDIUMBLOB": "LargeBinary",
+        "LONGBLOB": "LargeBinary",
+        # 枚举和集合类型
+        "ENUM": "Enum",
+        "SET": "String",
+        # JSON 类型
+        "JSON": "JSON",
+        # 空间数据类型（需要扩展支持，如 GeoAlchemy2）
+        "GEOMETRY": "Geometry",  # 需要安装 geoalchemy2
+        "POINT": "Geometry",
+        "LINESTRING": "Geometry",
+        "POLYGON": "Geometry",
+        "MULTIPOINT": "Geometry",
+        "MULTILINESTRING": "Geometry",
+        "MULTIPOLYGON": "Geometry",
+        "GEOMETRYCOLLECTION": "Geometry",
+        # 其他类型
+        "BOOL": "Boolean",
+        "UUID": "String",
+    }
     
     # 数据库类型与python类型映射
-    DB_TO_PYTHON = (
-        {
-            'boolean': 'bool',
-            'smallint': 'int',
-            'integer': 'int',
-            'bigint': 'int',
-            'real': 'float',
-            'double precision': 'float',
-            'numeric': 'Decimal',
-            'character varying': 'str',
-            'character': 'str',
-            'text': 'str',
-            'bytea': 'bytes',
-            'date': 'date',
-            'time': 'time',
-            'time with time zone': 'time',
-            'time without time zone': 'time',
-            'timestamp': 'datetime',
-            'timestamp with time zone': 'datetime',
-            'timestamp without time zone': 'datetime',
-            'interval': 'timedelta',
-            'json': 'dict',
-            'jsonb': 'dict',
-            'uuid': 'str',
-            'inet': 'str',
-            'cidr': 'str',
-            'macaddr': 'str',
-            'point': 'list',
-            'line': 'list',
-            'lseg': 'list',
-            'box': 'list',
-            'path': 'list',
-            'polygon': 'list',
-            'circle': 'list',
-            'bit': 'int',
-            'bit varying': 'int',
-            'tsvector': 'str',
-            'tsquery': 'str',
-            'xml': 'str',
-            'array': 'list',
-            'composite': 'dict',
-            'enum': 'str',
-            'range': 'list',
-            'money': 'Decimal',
-            'pg_lsn': 'int',
-            'txid_snapshot': 'str',
-            'oid': 'int',
-            'regproc': 'str',
-            'regclass': 'str',
-            'regtype': 'str',
-            'regrole': 'str',
-            'regnamespace': 'str',
-            'int2vector': 'list',
-            'oidvector': 'list',
-            'pg_node_tree': 'str',
-        }
-        if settings.DATABASE_TYPE == 'postgres'
-        else {
-            # 数值类型
-            'TINYINT': 'int',
-            'SMALLINT': 'int',
-            'MEDIUMINT': 'int',
-            'INT': 'int',
-            'INTEGER': 'int',
-            'BIGINT': 'int',
-            'FLOAT': 'float',
-            'DOUBLE': 'float',
-            "NUMERIC": "float",
-            'DECIMAL': 'Decimal',
-            'BIT': 'int',
-            # 日期和时间类型
-            'DATE': 'datetime.date',
-            'TIME': 'datetime.time',
-            'DATETIME': 'datetime.datetime',
-            'TIMESTAMP': 'datetime.datetime',
-            'YEAR': 'int',
-            "TINYINT UNSIGNED": "int",  # 无符号小整数类型
-            # 布尔类型
-            "BOOLEAN": "bool",
-            "BOOL": "bool",  # 布尔类型，通常与 BOOLEAN 相同
-            # UUID
-            "UUID": "str",  # UUID 一般作为字符串
-            # 字符串类型
-            'CHAR': 'str',
-            'VARCHAR': 'str',
-            'TINYTEXT': 'str',
-            'TEXT': 'str',
-            'MEDIUMTEXT': 'str',
-            'LONGTEXT': 'str',
-            'BINARY': 'bytes',
-            'VARBINARY': 'bytes',
-            'TINYBLOB': 'bytes',
-            'BLOB': 'bytes',
-            'MEDIUMBLOB': 'bytes',
-            'LONGBLOB': 'bytes',
-            # 枚举和集合类型
-            'ENUM': 'str',
-            'SET': 'list',
-            # JSON 类型
-            'JSON': 'dict',
-            # 空间数据类型（通常需要特殊处理）
-            "GEOMETRY": "bytes",  # 空间数据类型，通常存储为字节流
-            "POINT": "bytes",  # 点数据类型
-            "LINESTRING": "bytes",  # 线数据类型
-            "POLYGON": "bytes",  # 多边形数据类型
-            "MULTIPOINT": "bytes",  # 多点数据类型
-            "MULTILINESTRING": "bytes",  # 多线数据类型
-            "MULTIPOLYGON": "bytes",  # 多多边形数据类型
-            "GEOMETRYCOLLECTION": "bytes",  # 几何集合类型
-        }
-    )
+    DB_TO_PYTHON = {
+        "boolean": "bool",
+        "smallint": "int",
+        "integer": "int",
+        "int4": "int",
+        "bigint": "int",
+        "real": "float",
+        "double precision": "float",
+        "numeric": "Decimal",
+        "character varying": "str",
+        "varchar": "str",
+        "character": "str",
+        "text": "str",
+        "bytea": "bytes",
+        "date": "date",
+        "time": "time",
+        "time with time zone": "time",
+        "time without time zone": "time",
+        "timestamp": "datetime",
+        "timestamp with time zone": "datetime",
+        "timestamp without time zone": "datetime",
+        "interval": "timedelta",
+        "json": "dict",
+        "jsonb": "dict",
+        "uuid": "str",
+        "inet": "str",
+        "cidr": "str",
+        "macaddr": "str",
+        "point": "list",
+        "line": "list",
+        "lseg": "list",
+        "box": "list",
+        "path": "list",
+        "polygon": "list",
+        "circle": "list",
+        "bit": "int",
+        "bit varying": "int",
+        "tsvector": "str",
+        "tsquery": "str",
+        "xml": "str",
+        "array": "list",
+        "composite": "dict",
+        "enum": "str",
+        "range": "list",
+        "money": "Decimal",
+        "pg_lsn": "int",
+        "txid_snapshot": "str",
+        "oid": "int",
+        "regproc": "str",
+        "regclass": "str",
+        "regtype": "str",
+        "regrole": "str",
+        "regnamespace": "str",
+        "int2vector": "list",
+        "oidvector": "list",
+        "pg_node_tree": "str",
+    } if settings.DATABASE_TYPE == "postgres" else {
+        # 数值类型
+        "TINYINT": "int",
+        "SMALLINT": "int",
+        "MEDIUMINT": "int",
+        "INT": "int",
+        "INTEGER": "int",
+        "BIGINT": "int",
+        "FLOAT": "float",
+        "DOUBLE": "float",
+        "NUMERIC": "float",
+        "DECIMAL": "Decimal",
+        "BIT": "int",
+        # 日期和时间类型
+        "DATE": "datetime.date",
+        "TIME": "datetime.time",
+        "DATETIME": "datetime.datetime",
+        "TIMESTAMP": "datetime.datetime",
+        "YEAR": "int",
+        "TINYINT UNSIGNED": "int",  # 无符号小整数类型
+        # 布尔类型
+        "BOOLEAN": "bool",
+        "BOOL": "bool",  # 布尔类型，通常与 BOOLEAN 相同
+        # UUID
+        "UUID": "str",  # UUID 一般作为字符串
+        # 字符串类型
+        "CHAR": "str",
+        "VARCHAR": "str",
+        "TINYTEXT": "str",
+        "TEXT": "str",
+        "MEDIUMTEXT": "str",
+        "LONGTEXT": "str",
+        "BINARY": "bytes",
+        "VARBINARY": "bytes",
+        "TINYBLOB": "bytes",
+        "BLOB": "bytes",
+        "MEDIUMBLOB": "bytes",
+        "LONGBLOB": "bytes",
+        # 枚举和集合类型
+        "ENUM": "str",
+        "SET": "list",
+        # JSON 类型
+        "JSON": "dict",
+        # 空间数据类型（通常需要特殊处理）
+        "GEOMETRY": "bytes",  # 空间数据类型，通常存储为字节流
+        "POINT": "bytes",  # 点数据类型
+        "LINESTRING": "bytes",  # 线数据类型
+        "POLYGON": "bytes",  # 多边形数据类型
+        "MULTIPOINT": "bytes",  # 多点数据类型
+        "MULTILINESTRING": "bytes",  # 多线数据类型
+        "MULTIPOLYGON": "bytes",  # 多多边形数据类型
+        "GEOMETRYCOLLECTION": "bytes",  # 几何集合类型
+    }
 
 
 class TypedContextProtocol(Protocol):
