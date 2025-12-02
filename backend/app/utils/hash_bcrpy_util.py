@@ -2,7 +2,7 @@
 
 import hashlib
 import os
-from typing import Optional, Any
+from typing import Any
 
 from passlib.context import CryptContext
 from cryptography.hazmat.backends.openssl import backend
@@ -54,7 +54,7 @@ class PwdUtil:
         return PwdContext.hash(password)
 
     @classmethod
-    def check_password_strength(cls, password: str) -> Optional[str]:
+    def check_password_strength(cls, password: str) -> str | None:
         """
         检查密码强度
 
@@ -62,7 +62,7 @@ class PwdUtil:
         - password (str): 明文密码。
 
         返回:
-        - Optional[str]: 如果密码强度不够返回提示信息,否则返回None。
+        - str | None: 如果密码强度不够返回提示信息,否则返回None。
         """
         if len(password) < 6:
             return "密码长度至少6位"

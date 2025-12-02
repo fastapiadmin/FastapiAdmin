@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import io
-from typing import Any, List, Dict, Optional
+from typing import Any
 from fastapi import UploadFile
 import pandas as pd
 
@@ -11,8 +11,7 @@ from app.utils.excel_util import ExcelUtil
 from app.core.logger import log
 
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .schema import DemoCreateSchema, DemoUpdateSchema, DemoOutSchema
-from .param import DemoQueryParam
+from .schema import DemoCreateSchema, DemoUpdateSchema, DemoOutSchema, DemoQueryParam
 from .crud import DemoCRUD
 
 
@@ -22,7 +21,7 @@ class DemoService:
     """
     
     @classmethod
-    async def detail_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         详情
         
@@ -31,7 +30,7 @@ class DemoService:
         - id (int): 示例ID
         
         返回:
-        - Dict: 示例模型实例字典
+        - dict: 示例模型实例字典
         """
         obj = await DemoCRUD(auth).get_by_id_crud(id=id)
         if not obj:
@@ -39,24 +38,24 @@ class DemoService:
         return DemoOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def list_service(cls, auth: AuthSchema, search: Optional[DemoQueryParam] = None, order_by: Optional[List[Dict[str, str]]] = None) -> List[Dict]:
+    async def list_service(cls, auth: AuthSchema, search: DemoQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> list[dict]:
         """
         列表查询
         
         参数:
         - auth (AuthSchema): 认证信息模型
-        - search (Optional[DemoQueryParam]): 查询参数
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数
+        - search (DemoQueryParam | None): 查询参数
+        - order_by (list[dict[str, str]] | None): 排序参数
         
         返回:
-        - List[Dict]: 示例模型实例字典列表
+        - list[dict]: 示例模型实例字典列表
         """
         search_dict = search.__dict__ if search else None
         obj_list = await DemoCRUD(auth).list_crud(search=search_dict, order_by=order_by)
         return [DemoOutSchema.model_validate(obj).model_dump() for obj in obj_list]
     
     @classmethod
-    async def page_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: Optional[DemoQueryParam] = None, order_by: Optional[List[Dict[str, str]]] = None) -> Dict:
+    async def page_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: DemoQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> dict:
         """
         分页查询
         
@@ -64,11 +63,11 @@ class DemoService:
         - auth (AuthSchema): 认证信息模型
         - page_no (int): 页码
         - page_size (int): 每页数量
-        - search (Optional[DemoQueryParam]): 查询参数
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数
+        - search (DemoQueryParam | None): 查询参数
+        - order_by (list[dict[str, str]] | None): 排序参数
         
         返回:
-        - Dict: 分页数据
+        - dict: 分页数据
         """
         search_dict = search.__dict__ if search else {}
         order_by_list = order_by or [{'id': 'asc'}]
@@ -83,7 +82,7 @@ class DemoService:
         return result
     
     @classmethod
-    async def create_service(cls, auth: AuthSchema, data: DemoCreateSchema) -> Dict:
+    async def create_service(cls, auth: AuthSchema, data: DemoCreateSchema) -> dict:
         """
         创建
         
@@ -92,7 +91,7 @@ class DemoService:
         - data (DemoCreateSchema): 示例创建模型
         
         返回:
-        - Dict: 示例模型实例字典
+        - dict: 示例模型实例字典
         """
         obj = await DemoCRUD(auth).get(name=data.name)
         if obj:
@@ -101,7 +100,7 @@ class DemoService:
         return DemoOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def update_service(cls, auth: AuthSchema, id: int, data: DemoUpdateSchema) -> Dict:
+    async def update_service(cls, auth: AuthSchema, id: int, data: DemoUpdateSchema) -> dict:
         """
         更新
         
@@ -111,7 +110,7 @@ class DemoService:
         - data (DemoUpdateSchema): 示例更新模型
         
         返回:
-        - Dict: 示例模型实例字典
+        - dict: 示例模型实例字典
         """
         # 检查数据是否存在
         obj = await DemoCRUD(auth).get_by_id_crud(id=id)
@@ -127,13 +126,13 @@ class DemoService:
         return DemoOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def delete_service(cls, auth: AuthSchema, ids: List[int]) -> None:
+    async def delete_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """
         删除
         
         参数:
         - auth (AuthSchema): 认证信息模型
-        - ids (List[int]): 示例ID列表
+        - ids (list[int]): 示例ID列表
         
         返回:
         - None
@@ -164,12 +163,12 @@ class DemoService:
         await DemoCRUD(auth).set_available_crud(ids=data.ids, status=data.status)
     
     @classmethod
-    async def batch_export_service(cls, obj_list: List[Dict[str, Any]]) -> bytes:
+    async def batch_export_service(cls, obj_list: list[dict[str, Any]]) -> bytes:
         """
         批量导出
         
         参数:
-        - obj_list (List[Dict[str, Any]]): 示例模型实例字典列表
+        - obj_list (list[dict[str, Any]]): 示例模型实例字典列表
         
         返回:
         - bytes: Excel文件字节流
@@ -179,22 +178,22 @@ class DemoService:
             'name': '名称', 
             'status': '状态',
             'description': '备注',
-            'created_at': '创建时间',
-            'updated_at': '更新时间',
-            'creator': '创建者',
+            'created_time': '创建时间',
+            'updated_time': '更新时间',
+            'created_id': '创建者',
         }
 
         # 复制数据并转换状态
         data = obj_list.copy()
         for item in data:
             # 处理状态
-            item['status'] = '正常' if item.get('status') else '停用'
+            item['status'] = '启用' if item.get('status') == '0' else '停用'
             # 处理创建者
-            creator_info = item.get('creator')
+            creator_info = item.get('created_id')
             if isinstance(creator_info, dict):
-                item['creator'] = creator_info.get('name', '未知')
+                item['created_id'] = creator_info.get('name', '未知')
             else:
-                item['creator'] = '未知'
+                item['created_id'] = '未知'
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
 

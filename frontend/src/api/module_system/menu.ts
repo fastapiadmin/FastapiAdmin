@@ -55,16 +55,12 @@ export default MenuAPI;
 
 export interface MenuPageQuery {
   name?: string;
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
+  status?: string;
+  created_time?: string[];
+  updated_time?: string[];
 }
 
-export interface MenuTable {
-  index?: number;
-  id?: number;
+export interface MenuTable extends BaseType {
   name?: string;
   type?: number;
   icon?: string;
@@ -82,15 +78,10 @@ export interface MenuTable {
   title?: string;
   params?: { key: string; value: string }[];
   affix?: boolean;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
   children?: MenuTable[];
 }
 
-export interface MenuForm {
-  id?: number;
+export interface MenuForm extends BaseFormType {
   name?: string;
   type?: number;
   icon?: string;
@@ -107,8 +98,6 @@ export interface MenuForm {
   title?: string;
   params?: KeyValue[];
   affix?: boolean;
-  status?: boolean;
-  description?: string;
 }
 
 export interface KeyValue {

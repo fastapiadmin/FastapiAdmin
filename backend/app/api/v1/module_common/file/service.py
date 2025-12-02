@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 from typing import Dict
-from fastapi import UploadFile, BackgroundTasks
+from fastapi import UploadFile
 
 from app.core.exceptions import CustomException
 from app.core.base_schema import UploadResponseSchema, DownloadFileSchema

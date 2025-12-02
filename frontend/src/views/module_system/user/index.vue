@@ -31,17 +31,17 @@
                 style="width: 167.5px"
                 clearable
               >
-                <el-option value="true" label="启用" />
-                <el-option value="false" label="停用" />
+                <el-option value="0" label="启用" />
+                <el-option value="1" label="停用" />
               </el-select>
             </el-form-item>
             <!-- 时间范围，收起状态下隐藏 -->
             <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
               <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
             </el-form-item>
-            <el-form-item v-if="isExpand" prop="creator" label="创建人">
+            <el-form-item v-if="isExpand" prop="created_id" label="创建人">
               <UserTableSelect
-                v-model="queryFormData.creator"
+                v-model="queryFormData.created_id"
                 @confirm-click="handleConfirm"
                 @clear-click="handleQuery"
               />
@@ -130,10 +130,10 @@
                     </el-button>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item icon="Check" @click="handleMoreClick(true)">
+                        <el-dropdown-item icon="Check" @click="handleMoreClick('0')">
                           批量启用
                         </el-dropdown-item>
-                        <el-dropdown-item icon="CircleClose" @click="handleMoreClick(false)">
+                        <el-dropdown-item icon="CircleClose" @click="handleMoreClick('1')">
                           批量停用
                         </el-dropdown-item>
                       </el-dropdown-menu>
@@ -198,7 +198,7 @@
               <el-empty :image-size="80" description="暂无数据" />
             </template>
             <el-table-column type="selection" min-width="55" align="center" />
-            <el-table-column type="index" fixed label="序号" align="center" min-width="60">
+            <el-table-column type="index" fixed label="序号" min-width="60">
               <template #default="scope">
                 {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
               </template>
@@ -217,8 +217,8 @@
             <el-table-column label="用户名" prop="name" min-width="100" />
             <el-table-column label="状态" prop="status" min-width="100">
               <template #default="scope">
-                <el-tag :type="scope.row.status === true ? 'success' : 'danger'">
-                  {{ scope.row.status === true ? "启用" : "停用" }}
+                <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
+                  {{ scope.row.status === '0' ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -244,11 +244,16 @@
 
             <el-table-column label="手机号" prop="mobile" min-width="160" />
             <el-table-column label="邮箱" prop="email" min-width="160" />
-            <el-table-column label="创建时间" prop="created_at" min-width="200" />
-            <el-table-column label="更新时间" prop="updated_at" min-width="200" />
-            <el-table-column label="创建人" prop="creator" min-width="120">
+            <el-table-column label="创建时间" prop="created_time" min-width="200" />
+            <el-table-column label="更新时间" prop="updated_time" min-width="200" />
+            <el-table-column label="创建人" prop="created_id" min-width="120">
               <template #default="scope">
-                {{ scope.row.creator?.name }}
+                {{ scope.row.created_by?.name }}
+              </template>
+            </el-table-column>
+            <el-table-column label="更新人" prop="updated_id" min-width="120">
+              <template #default="scope">
+                {{ scope.row.updated_by?.name }}
               </template>
             </el-table-column>
             <el-table-column fixed="right" label="操作" align="center" min-width="280">
@@ -393,13 +398,16 @@
             {{ detailFormData.last_login }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新人" :span="2">
+            {{ detailFormData.updated_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="4">
             {{ detailFormData.description }}
@@ -497,8 +505,8 @@
 
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="formData.status">
-              <el-radio :value="true">启用</el-radio>
-              <el-radio :value="false">停用</el-radio>
+              <el-radio value="0">启用</el-radio>
+              <el-radio value="1">停用</el-radio>
             </el-radio-group>
           </el-form-item>
 
@@ -524,13 +532,7 @@
           >
             确定
           </el-button>
-          <el-button
-            v-else
-            type="primary"
-            @click="handleCloseDialog"
-          >
-            确定
-          </el-button>
+          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
           <el-button @click="handleCloseDialog">取消</el-button>
         </div>
       </template>
@@ -618,10 +620,9 @@ const queryFormData = reactive<UserPageQuery>({
   name: undefined,
   status: undefined,
   dept_id: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  // 创建人
-  creator: undefined,
+  created_time: undefined,
+  created_id: undefined,
+  updated_id: undefined,
 });
 
 // 表单
@@ -640,7 +641,7 @@ const formData = reactive<UserForm>({
   email: undefined,
   mobile: undefined,
   is_superuser: false, //默认不是超管
-  status: true,
+  status: '0',
   description: undefined,
 });
 
@@ -688,8 +689,8 @@ const exportColumns = [
   { prop: "mobile", label: "手机号" },
   { prop: "is_superuser", label: "是否超管" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置
@@ -726,11 +727,9 @@ function handleConfirm() {
 function handleDateRangeChange(range: [Date, Date]) {
   dateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
   }
 }
 
@@ -765,12 +764,11 @@ async function handleResetQuery() {
   queryFormRef.value.resetFields();
   // 额外清空不在 model 内的扩展查询项（如日期范围）
   dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  queryFormData.created_time = undefined;
   // 清空部门并重置页码
   queryFormData.dept_id = undefined;
   // 清空创建人
-  queryFormData.creator = undefined;
+  queryFormData.created_id = undefined;
   queryFormData.page_no = 1;
   // 重新加载数据
   loadingData();
@@ -792,7 +790,7 @@ const initialFormData: UserForm = {
   email: undefined,
   mobile: undefined,
   is_superuser: false, //默认不是超管
-  status: true,
+  status: '0',
   description: undefined,
 };
 
@@ -874,7 +872,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     .map((item) => ({
       value: item.id as number,
       label: item.name as string,
-      disabled: item.status === false || String(item.status) === "false",
+      disabled: item.status === "1",
     }))
     .filter((opt) => !opt.disabled);
 
@@ -885,7 +883,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     .map((item) => ({
       value: item.id as number,
       label: item.name as string,
-      disabled: item.status === false || String(item.status) === "false",
+      disabled: item.status === "1",
     }))
     .filter((opt) => !opt.disabled);
 }
@@ -947,7 +945,7 @@ async function handleDelete(ids: number[]) {
 }
 
 // 批量启用/停用
-async function handleMoreClick(status: boolean) {
+async function handleMoreClick(status: string) {
   if (selectIds.value.length) {
     ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
       confirmButtonText: "确定",

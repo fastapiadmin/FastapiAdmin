@@ -1,9 +1,9 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import io
 import os
 import zipfile
-from typing import Any, List, Dict, Literal, Optional
+from typing import Any
 from sqlglot.expressions import Add, Alter, Create, Delete, Drop, Expression, Insert, Table, TruncateTable, Update
 from sqlglot import parse as sqlglot_parse
 
@@ -15,8 +15,7 @@ from app.core.exceptions import CustomException
 from app.api.v1.module_system.auth.schema import AuthSchema
 from .tools.jinja2_template_util import Jinja2TemplateUtil
 from .tools.gen_util import GenUtils
-from .schema import GenTableSchema, GenTableOutSchema, GenTableColumnSchema,  GenTableColumnOutSchema
-from .param import GenTableQueryParam
+from .schema import GenTableSchema, GenTableOutSchema, GenTableColumnSchema,  GenTableColumnOutSchema, GenTableQueryParam
 from .crud import GenTableColumnCRUD, GenTableCRUD
 
 
@@ -36,7 +35,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def get_gen_table_detail_service(cls, auth: AuthSchema, table_id: int) -> Dict:
+    async def get_gen_table_detail_service(cls, auth: AuthSchema, table_id: int) -> dict:
         """获取业务表详细信息（含字段与其他表列表）。
         - 备注：优先解析`options`为`GenTableOptionSchema`，设置`parent_menu_id`等选项；保证`columns`与`tables`结构完整。
         """
@@ -45,7 +44,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def get_gen_table_list_service(cls, auth: AuthSchema, search: GenTableQueryParam) -> List[Dict]:
+    async def get_gen_table_list_service(cls, auth: AuthSchema, search: GenTableQueryParam) -> list[dict]:
         """
         获取代码生成业务表列表信息。
 
@@ -54,7 +53,7 @@ class GenTableService:
         - search (GenTableQueryParam): 查询参数模型。
 
         返回:
-        - List[Dict]: 包含业务表列表信息的字典列表。
+        - list[dict]: 包含业务表列表信息的字典列表。
         """
         gen_table_list_result = await GenTableCRUD(auth=auth).get_gen_table_list(search)
         return [GenTableOutSchema.model_validate(obj).model_dump() for obj in gen_table_list_result]
@@ -70,7 +69,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def get_gen_db_table_list_by_name_service(cls, auth: AuthSchema, table_names: List[str]) -> List[GenTableOutSchema]:
+    async def get_gen_db_table_list_by_name_service(cls, auth: AuthSchema, table_names: list[str]) -> list[GenTableOutSchema]:
         """根据表名称组获取数据库表信息。
         - 校验：如有不存在的表名，抛出明确异常；返回统一的`GenTableOutSchema`列表。
         """
@@ -91,7 +90,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def import_gen_table_service(cls, auth: AuthSchema, gen_table_list: List[GenTableOutSchema])  -> Literal[True] | None:
+    async def import_gen_table_service(cls, auth: AuthSchema, gen_table_list: list[GenTableOutSchema])  -> bool | None:
         """导入表结构到生成器（持久化并初始化列）。
         - 备注：避免重复导入；为每列调用`GenUtils.init_column_field`填充默认属性，保留语义一致性。
         """
@@ -136,7 +135,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def create_table_service(cls, auth: AuthSchema, sql: str) -> Literal[True] | None:
+    async def create_table_service(cls, auth: AuthSchema, sql: str) -> bool | None:
         """创建表结构并导入至代码生成模块。
         - 校验：使用`sqlglot`确保仅包含`CREATE TABLE`语句；失败抛出明确异常。
         - 唯一性检查：在创建前检查该表是否已存在于数据库中。
@@ -187,12 +186,12 @@ class GenTableService:
             raise CustomException(msg=f'创建表结构失败: {str(e)}')
     
     @classmethod
-    def __is_valid_create_table(cls, sql_statements: List[Expression | None]) -> bool:
+    def __is_valid_create_table(cls, sql_statements: list[Expression | None]) -> bool:
         """
         校验SQL语句是否为合法的建表语句。
     
         参数:
-        - sql_statements (List[Expression | None]): SQL的AST列表。
+        - sql_statements (list[Expression | None]): SQL的AST列表。
     
         返回:
         - bool: 校验结果。
@@ -210,15 +209,15 @@ class GenTableService:
         return True
     
     @classmethod
-    def __get_table_names(cls, sql_statements: List[Expression | None]) -> List[str]:
+    def __get_table_names(cls, sql_statements: list[Expression | None]) -> list[str]:
         """
         获取SQL语句中所有的建表表名。
     
         参数:
-        - sql_statements (List[Expression | None]): SQL的AST列表。
+        - sql_statements (list[Expression | None]): SQL的AST列表。
     
         返回:
-        - List[str]: 建表表名列表。
+        - list[str]: 建表表名列表。
         """
         table_names = []
         for sql_statement in sql_statements:
@@ -230,7 +229,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def update_gen_table_service(cls, auth: AuthSchema, data: GenTableSchema, table_id: int) -> Dict[str, Any]:
+    async def update_gen_table_service(cls, auth: AuthSchema, data: GenTableSchema, table_id: int) -> dict[str, Any]:
         """编辑业务表信息（含选项与字段）。
         - 备注：将`params`序列化写入`options`以持久化；仅更新存在`id`的列，避免误创建。
         """
@@ -256,7 +255,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def delete_gen_table_service(cls, auth: AuthSchema, ids: List[int]) -> None:
+    async def delete_gen_table_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """删除业务表信息（先删字段，再删表）。"""
         # 验证ID列表非空
         if not ids:
@@ -285,13 +284,12 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def get_gen_table_all_service(cls, auth: AuthSchema) -> List[GenTableOutSchema]:
+    async def get_gen_table_all_service(cls, auth: AuthSchema) -> list[GenTableOutSchema]:
         """获取所有业务表信息（列表）。"""
         gen_table_all = await GenTableCRUD(auth=auth).get_gen_table_all() or []
         result = []
         for gen_table in gen_table_all:
             try:
-                # 简化转换，利用schema层的默认值处理None情况
                 table_out = GenTableOutSchema.model_validate(gen_table)
                 result.append(table_out)
             except Exception as e:
@@ -301,7 +299,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def preview_code_service(cls, auth: AuthSchema, table_id: int) -> Dict[Any, Any]:
+    async def preview_code_service(cls, auth: AuthSchema, table_id: int) -> dict[str, Any]:
         """
         预览代码（根据模板渲染内存结果）。
         - 备注：构建Jinja2上下文；根据模板类型与前端类型选择模板清单；返回文件名到内容映射。
@@ -355,7 +353,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def batch_gen_code_service(cls, auth: AuthSchema, table_names: List[str]) -> bytes:
+    async def batch_gen_code_service(cls, auth: AuthSchema, table_names: list[str]) -> bytes:
         """
         批量生成代码并打包为ZIP。
         - 备注：内存生成并压缩，兼容多模板类型；供下载使用。
@@ -475,7 +473,7 @@ class GenTableService:
             gen_table.pk_column = gen_table.columns[0]
 
     @classmethod
-    async def __get_gen_render_info(cls, auth: AuthSchema, table_name: str) -> List[Any]:
+    async def __get_gen_render_info(cls, auth: AuthSchema, table_name: str) -> list[Any]:
         """
         获取生成代码渲染模板相关信息。
     
@@ -484,7 +482,7 @@ class GenTableService:
         - table_name (str): 业务表名称。
     
         返回:
-        - List[Any]: [模板列表, 输出文件名列表, 渲染上下文, 业务表对象]。
+        - list[Any]: [模板列表, 输出文件名列表, 渲染上下文, 业务表对象]。
     
         异常:
         - CustomException: 当业务表不存在或数据转换失败时抛出。
@@ -503,7 +501,7 @@ class GenTableService:
         return [template_list, output_files, context, gen_table]
 
     @classmethod
-    def __get_gen_path(cls, gen_table: GenTableOutSchema, template: str) -> Optional[str]:
+    def __get_gen_path(cls, gen_table: GenTableOutSchema, template: str) -> str | None:
         """根据GenTableOutSchema对象和模板名称生成路径。"""
         try:
             file_name = Jinja2TemplateUtil.get_file_name(template, gen_table)
@@ -528,7 +526,7 @@ class GenTableColumnService:
 
     @classmethod
     @handle_service_exception
-    async def get_gen_table_column_list_by_table_id_service(cls, auth: AuthSchema, table_id: int) -> List[Dict[str, Any]]:
+    async def get_gen_table_column_list_by_table_id_service(cls, auth: AuthSchema, table_id: int) -> list[dict[str, Any]]:
         """获取业务表字段列表信息（输出模型）。"""
         gen_table_column_list_result = await GenTableColumnCRUD(auth).list_gen_table_column_crud({"table_id": table_id})
         result = [GenTableColumnOutSchema.model_validate(gen_table_column).model_dump() for gen_table_column in gen_table_column_list_result]

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import List
 
 
 class CpuInfoSchema(BaseModel):
@@ -77,4 +76,4 @@ class ServerMonitorSchema(BaseModel):
     mem: MemoryInfoSchema = Field(description="内存信息")
     py: PyInfoSchema = Field(description="Python运行信息")
     sys: SysInfoSchema = Field(description="系统信息")
-    disks: List[DiskInfoSchema] = Field(default_factory=list, description="磁盘信息")
+    disks: list[DiskInfoSchema] = Field(default_factory=list, description="磁盘信息")

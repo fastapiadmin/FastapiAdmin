@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pickle
-from typing import Any, Awaitable, List, Optional
+from typing import Any, Awaitable
 from redis.asyncio.client import Redis
 
 from app.core.logger import log
@@ -68,13 +68,13 @@ class RedisCURD:
             log.error(f"获取缓存失败: {str(e)}")
             return None
 
-    async def set(self, key: str, value: Any, expire: Optional[int] = None) -> bool:
+    async def set(self, key: str, value: Any, expire: int | None = None) -> bool:
         """设置缓存
         
         参数:
         - key (str): 缓存键名
         - value (Any): 缓存值
-        - expire (Optional[int], optional): 过期时间,单位为秒,默认值为None。
+        - expire (int | None, optional): 过期时间,单位为秒,默认值为None。
             
         返回:
         - bool: 如果设置缓存成功则返回True,否则返回False
@@ -234,7 +234,7 @@ class RedisCURD:
             log.error(f"设置哈希缓存失败: {str(e)}")
             return False
         
-    async def hash_get(self, name: str, keys: list[str]) -> Awaitable[List[Any]] | List[Any]:
+    async def hash_get(self, name: str, keys: list[str]) -> Awaitable[list[Any]] | list[Any]:
         """获取哈希缓存
         
         参数:
@@ -242,7 +242,7 @@ class RedisCURD:
         - keys (list[str]): 哈希缓存键名列表
             
         返回:
-        - Awaitable[List[Any]] | List[Any]: 返回哈希缓存值列表,如果获取失败则返回空列表
+        - Awaitable[list[Any]] | list[Any]: 返回哈希缓存值列表,如果获取失败则返回空列表
         """
         try:
             data = self.redis.hmget(name=name, keys=keys)

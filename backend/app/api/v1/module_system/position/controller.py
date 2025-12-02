@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Body, Depends, Path, Query
+from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.common.response import StreamResponse, SuccessResponse
 from app.common.request import PaginationService
+from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 from app.core.base_params import PaginationQueryParam
-from app.core.router_class import OperationLogRoute
 from app.core.dependencies import AuthPermission
 from app.core.base_schema import BatchSetAvailable
 from app.core.logger import log
 
 from ..auth.schema import AuthSchema
 from .service import PositionService
-from .param import PositionQueryParam
 from .schema import (
     PositionCreateSchema,
-    PositionUpdateSchema
+    PositionUpdateSchema,
+    PositionQueryParam
 )
 
 

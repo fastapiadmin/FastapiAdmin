@@ -71,8 +71,7 @@ function handleNodeClick(data: { [key: string]: any }) {
 const queryFormData = reactive<DeptPageQuery>({
   name: undefined,
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
+  created_time: undefined,
 });
 
 const loading = ref(true);

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, List
 from app.common.constant import CommonConstant
 
 
@@ -87,13 +86,13 @@ class StringUtil:
         return False
 
     @classmethod
-    def contains_any_ignore_case(cls, search_str: str, compare_str_list: List[str]):
+    def contains_any_ignore_case(cls, search_str: str, compare_str_list: list[str]):
         """
         查找指定字符串是否包含列表中的任意一个字符串（忽略大小写）
 
         参数:
         - search_str (str): 查找的字符串。
-        - compare_str_list (List[str]): 比对的字符串列表。
+        - compare_str_list (list[str]): 比对的字符串列表。
 
         返回:
         - bool: 查找结果。
@@ -119,13 +118,13 @@ class StringUtil:
         return False
 
     @classmethod
-    def equals_any_ignore_case(cls, search_str: str, compare_str_list: List[str]):
+    def equals_any_ignore_case(cls, search_str: str, compare_str_list: list[str]):
         """
         判断指定字符串是否与列表中任意一个字符串相等（忽略大小写）
 
         参数:
         - search_str (str): 查找的字符串。
-        - compare_str_list (List[str]): 比对的字符串列表。
+        - compare_str_list (list[str]): 比对的字符串列表。
 
         返回:
         - bool: 比较结果。
@@ -151,13 +150,13 @@ class StringUtil:
         return False
 
     @classmethod
-    def startswith_any_case(cls, search_str: str, compare_str_list: List[str]):
+    def startswith_any_case(cls, search_str: str, compare_str_list: list[str]):
         """
         查找指定字符串是否以列表中任意一个字符串开头
 
         参数:
         - search_str (str): 查找的字符串。
-        - compare_str_list (List[str]): 比对的字符串列表。
+        - compare_str_list (list[str]): 比对的字符串列表。
 
         返回:
         - bool: 查找结果。
@@ -190,12 +189,12 @@ class StringUtil:
         return ''.join(result)
 
     @classmethod
-    def get_mapping_value_by_key_ignore_case(cls, mapping: Dict[str, str], key: str) -> str:
+    def get_mapping_value_by_key_ignore_case(cls, mapping: dict[str, str], key: str) -> str:
         """
         根据忽略大小写的键获取字典中的对应的值
 
         参数:
-        - mapping (Dict[str, str]): 字典。
+        - mapping (dict[str, str]): 字典。
         - key (str): 字典的键。
 
         返回:

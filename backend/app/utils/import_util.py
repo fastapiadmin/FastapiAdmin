@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from functools import lru_cache
 from sqlalchemy import inspect as sa_inspect
-from typing import Any, List, Set, Type
+from typing import Any, Type
 
 from app.config.path_conf import BASE_DIR
 
@@ -46,7 +46,7 @@ class ImportUtil:
 
     @classmethod
     @lru_cache(maxsize=256)
-    def find_models(cls, base_class: Type) -> List[Any]:
+    def find_models(cls, base_class: Type) -> list[Any]:
         """
         查找并过滤有效的模型类，避免重复和无效定义
 
@@ -157,7 +157,7 @@ class ImportUtil:
         return models
     
     @classmethod
-    def _find_apscheduler_model(cls, base_class: Type, models: List[Any], seen_models: Set[Any], seen_tables: Set[str]):
+    def _find_apscheduler_model(cls, base_class: Type, models: list[Any], seen_models: set[Any], seen_tables: set[str]):
         """
         专门查找APScheduler相关的模型
         

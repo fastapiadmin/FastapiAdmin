@@ -129,10 +129,49 @@ declare global {
   /**
    * 创建人
    */
+  interface CommonType {
+    id?: number;
+    name?: string;
+  }
+
+  /**
+   * 创建人
+   */
   interface creatorType {
     id?: number;
     name?: string;
     username?: string;
+  }
+
+  /**
+   * 更新人
+   */
+  interface updatorType {
+    id?: number;
+    name?: string;
+    username?: string;
+  }
+
+  /**
+   * 基础类型
+   */
+  interface BaseType {
+    index?: number;
+    id?: number;
+    uuid?: string;
+    status?: string;
+    description?: string;
+    created_time?: string;
+    updated_time?: string;
+  }
+
+  /**
+   * 基础类型
+   */
+  interface BaseFormType {
+    id?: number;
+    status?: string;
+    description?: string;
   }
 
   /**
@@ -150,7 +189,7 @@ declare global {
    */
   export interface BatchType {
     ids?: number[];
-    status?: boolean;
+    status?: string;
   }
 }
 export {};

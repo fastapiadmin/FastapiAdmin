@@ -15,13 +15,13 @@ from fastapi_limiter.depends import RateLimiter
 from math import ceil
 
 from app.config.setting import settings
-from app.core.ap_scheduler import SchedulerUtil
 from app.core.logger import log
 from app.core.discover import router
 from app.core.exceptions import CustomException, handle_exception
 from app.utils.common_util import import_module, import_modules_async
 from app.scripts.initialize import InitializeData
 
+from app.api.v1.module_application.job.tools.ap_scheduler import SchedulerUtil
 from app.api.v1.module_system.params.service import ParamsService
 from app.api.v1.module_system.dict.service import DictDataService
 
@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     """
     try:
         await InitializeData().init_db()
-        log.info(f"✅ 数据库初始化完成 ({settings.DATABASE_TYPE})")
+        log.info(f"✅ {settings.DATABASE_TYPE}数据库初始化完成")
         await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=True)
         log.info("✅ 全局事件模块加载完成")
         await ParamsService().init_config_service(redis=app.state.redis)
@@ -61,10 +61,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         
         # 导入并显示最终的启动信息面板
         from app.utils.console import run as console_run
+        from app.common.enums import EnvironmentEnum
         console_run(
             host=settings.SERVER_HOST,
             port=settings.SERVER_PORT,
-            reload=settings.RELOAD,
+            reload=True if settings.ENVIRONMENT == EnvironmentEnum.DEV else False,
             redis_ready=True,
             scheduler_jobs=scheduler_jobs_count,
             scheduler_status=scheduler_status,

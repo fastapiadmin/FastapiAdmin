@@ -33,7 +33,7 @@ def create_service_panel(
     service_info.append(f"\n运行环境 {settings.ENVIRONMENT.value if hasattr(settings.ENVIRONMENT, 'value') else settings.ENVIRONMENT}", style="bold red")
     service_info.append(f"\n重载配置: {'✅ 开启' if reload else '❌ 关闭'}", style="bold italic")
     service_info.append(f"\n调试模式: {'✅ 开启' if settings.DEBUG else '❌ 关闭'}", style="bold italic")
-    service_info.append(f"\n数据库类型: {settings.DATABASE_TYPE}", style="bold italic")
+    service_info.append(f"\n数据库类型: {settings.DATABASE_TYPE} 数据库", style="bold italic")
     service_info.append(f"\nRedis: {'✅ 已连接' if redis_ready else '❌ 未连接'}", style="bold italic")
     service_info.append(f"\n定时任务 {'✅ 运行中' if scheduler_status == 'running' else '⏸️ 暂停'} {scheduler_jobs}", style="bold italic")
     

@@ -6,23 +6,22 @@
 {% if table.sub %}
 from sqlalchemy.orm import relationship
 {% endif %}
-from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import CreatorMixin
+from app.core.base_model import ModelMixin, UserMixin
 
 
-class {{ class_name }}Model(CreatorMixin):
+class {{ class_name }}Model(ModelMixin, UserMixin):
     """
     {{ function_name }}表
     """
-    __tablename__ = '{{ table_name }}'
-    __table_args__ = {'comment': '{{ function_name }}'}
-    __loader_options__ = ["creator"]
+    __tablename__: str = '{{ table_name }}'
+    __table_args__: dict[str, str] = {'comment': '{{ function_name }}'}
+    __loader_options__: list[str] = ["created_by", "updated_by"]
 
     {% for column in columns %}
-    {% if column.column_name not in ['id', 'creator_id', 'description', 'created_at', 'updated_at'] %}
-    {{ column.column_name }}: Mapped[Optional[{{ column.python_type }}]] = mapped_column({{ column.column_type|get_sqlalchemy_type }}, {% if column.pk %}primary_key=True, {% endif %}{% if column.increment %}autoincrement=True, {% endif %}{% if column.required or column.pk %}nullable=False{% else %}nullable=True{% endif %}, comment='{{ column.column_comment }}')
+    {% if column.column_name not in ['id', 'uuid', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+    {{ column.column_name }}: Mapped[{{ column.python_type }} | None] = mapped_column({{ column.column_type|get_sqlalchemy_type }}, {% if column.pk %}primary_key=True, {% endif %}{% if column.increment %}autoincrement=True, {% endif %}{% if column.required or column.pk %}nullable=False{% else %}nullable=True{% endif %}, comment='{{ column.column_comment }}')
     {% endif %}
     {% endfor %}
 

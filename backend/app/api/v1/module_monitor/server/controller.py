@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse
 
 from app.common.response import SuccessResponse
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.core.logger import log
+from app.core.router_class import OperationLogRoute
 
 from .service import ServerService
 

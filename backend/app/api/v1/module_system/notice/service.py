@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, List, Dict, Optional
-
-
 from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 
 from ..auth.schema import AuthSchema
-from .schema import NoticeCreateSchema, NoticeUpdateSchema, NoticeOutSchema
-from .param import NoticeQueryParam
+from .schema import NoticeCreateSchema, NoticeUpdateSchema, NoticeOutSchema, NoticeQueryParam
 from .crud import NoticeCRUD
 
 
@@ -19,7 +15,7 @@ class NoticeService:
     """
     
     @classmethod
-    async def get_notice_detail_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def get_notice_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取公告详情。
         
@@ -32,9 +28,9 @@ class NoticeService:
         """
         notice_obj = await NoticeCRUD(auth).get_by_id_crud(id=id)
         return NoticeOutSchema.model_validate(notice_obj).model_dump()
-    
+        
     @classmethod
-    async def get_notice_list_available_service(cls, auth: AuthSchema) -> List[Dict]:
+    async def get_notice_list_available_service(cls, auth: AuthSchema) -> list[dict]:
         """
         获取可用的公告列表。
         
@@ -42,29 +38,29 @@ class NoticeService:
         - auth (AuthSchema): 认证信息模型。
         
         返回:
-        - List[Dict]: 可用公告详情字典列表。
+        - list[dict]: 可用公告详情字典列表。
         """
-        notice_obj_list = await NoticeCRUD(auth).get_list_crud(search={'status': True})
+        notice_obj_list = await NoticeCRUD(auth).get_list_crud(search={'status': '0',})
         return [NoticeOutSchema.model_validate(notice_obj).model_dump() for notice_obj in notice_obj_list]
 
     @classmethod
-    async def get_notice_list_service(cls, auth: AuthSchema, search: Optional[NoticeQueryParam] = None, order_by: Optional[List[Dict[str, str]]] = None) -> List[Dict]:
+    async def get_notice_list_service(cls, auth: AuthSchema, search: NoticeQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取公告列表。
         
         参数:
         - auth (AuthSchema): 认证信息模型。
-        - search (Optional[NoticeQueryParam]): 查询参数模型。
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数列表。
+        - search (NoticeQueryParam | None): 查询参数模型。
+        - order_by (list[dict] | None): 排序参数列表。
         
         返回:
-        - List[Dict]: 公告详情字典列表。
+        - list[dict]: 公告详情字典列表。
         """
         notice_obj_list = await NoticeCRUD(auth).get_list_crud(search=search.__dict__, order_by=order_by)
         return [NoticeOutSchema.model_validate(notice_obj).model_dump() for notice_obj in notice_obj_list]
     
     @classmethod
-    async def create_notice_service(cls, auth: AuthSchema, data: NoticeCreateSchema) -> Dict:
+    async def create_notice_service(cls, auth: AuthSchema, data: NoticeCreateSchema) -> dict:
         """
         创建公告。
         
@@ -73,7 +69,7 @@ class NoticeService:
         - data (NoticeCreateSchema): 创建公告负载模型。
         
         返回:
-        - Dict: 创建的公告详情字典。
+        - dict: 创建的公告详情字典。
         
         异常:
         - CustomException: 创建失败，该公告通知已存在。
@@ -85,7 +81,7 @@ class NoticeService:
         return NoticeOutSchema.model_validate(notice_obj).model_dump()
     
     @classmethod
-    async def update_notice_service(cls, auth: AuthSchema, id: int, data: NoticeUpdateSchema) -> Dict:
+    async def update_notice_service(cls, auth: AuthSchema, id: int, data: NoticeUpdateSchema) -> dict:
         """
         更新公告。
         
@@ -95,7 +91,7 @@ class NoticeService:
         - data (NoticeUpdateSchema): 更新公告负载模型。
         
         返回:
-        - Dict: 更新的公告详情字典。
+        - dict: 更新的公告详情字典。
         
         异常:
         - CustomException: 更新失败，该公告通知不存在或公告通知标题重复。
@@ -144,12 +140,12 @@ class NoticeService:
         await NoticeCRUD(auth).set_available_crud(ids=data.ids, status=data.status)
     
     @classmethod
-    async def export_notice_service(cls, notice_list: List[Dict[str, Any]]) -> bytes:
+    async def export_notice_service(cls, notice_list: list[dict]) -> bytes:
         """
         导出公告列表。
         
         参数:
-        - notice_list (List[Dict[str, Any]]): 公告详情字典列表。
+        - notice_list (list[dict]): 公告详情字典列表。
         
         返回:
         - bytes: Excel 文件的字节流。
@@ -161,17 +157,17 @@ class NoticeService:
             'notice_content': '公告内容',
             'status': '状态',
             'description': '备注',
-            'created_at': '创建时间',
-            'updated_at': '更新时间',
-            'creator_id': '创建者ID',
-            'creator': '创建者',
+            'created_time': '创建时间',
+            'updated_time': '更新时间',
+            'created_id': '创建者ID',
+            'updated_id': '更新者ID',
         }
 
         # 复制数据并转换状态
         data = notice_list.copy()
         for item in data:
             # 处理状态
-            item['status'] = '正常' if item.get('status') else '停用'
+            item['status'] = '启用' if item.get('status') == '0' else '停用'
             # 处理公告类型
             item['notice_type'] = '通知' if item.get('notice_type') == '1' else '公告'
             item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'

@@ -2,7 +2,7 @@
 
 import io
 import pandas as pd
-from typing import Any, Dict, List
+from typing import Any
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, PatternFill
@@ -13,30 +13,30 @@ class ExcelUtil:
     """Excel文件处理工具类"""
     
     @classmethod
-    def __mapping_list(cls, list_data: List[Dict[str, Any]], mapping_dict: Dict) -> List:
+    def __mapping_list(cls, list_data: list[dict[str, Any]], mapping_dict: dict) -> list:
         """
         工具方法：将列表数据中的字段名映射为对应的中文字段名。
 
         参数:
-        - list_data (List[Dict[str, Any]]): 数据列表。
-        - mapping_dict (Dict): 字段名映射字典。
+        - list_data (list[dict[str, Any]]): 数据列表。
+        - mapping_dict (dict): 字段名映射字典。
 
         返回:
-        - List: 映射后的数据列表。
+        - list: 映射后的数据列表。
         """
         mapping_data = [{mapping_dict.get(key): item.get(key) for key in mapping_dict} for item in list_data]
 
         return mapping_data
     
     @classmethod
-    def get_excel_template(cls, header_list: List[str], selector_header_list: List[str], option_list: List[Dict[str, List[str]]]) -> bytes:
+    def get_excel_template(cls, header_list: list[str], selector_header_list: list[str], option_list: list[dict[str, list[str]]]) -> bytes:
         """
         生成 Excel 模板文件。
 
         参数:
-        - header_list (List[str]): 表头列表。
-        - selector_header_list (List[str]): 需要设置下拉选择的表头列表。
-        - option_list (List[Dict[str, List[str]]]): 下拉选项配置列表。
+        - header_list (list[str]): 表头列表。
+        - selector_header_list (list[str]): 需要设置下拉选择的表头列表。
+        - option_list (list[dict[str, list[str]]]): 下拉选项配置列表。
 
         返回:
         - bytes: Excel 文件的二进制数据。
@@ -80,13 +80,13 @@ class ExcelUtil:
         return excel_data
     
     @classmethod
-    def export_list2excel(cls, list_data: List[Dict[str, Any]], mapping_dict: Dict) -> bytes:
+    def export_list2excel(cls, list_data: list[dict[str, Any]], mapping_dict: dict) -> bytes:
         """
         将列表数据导出为 Excel 文件。
 
         参数:
-        - list_data (List[Dict[str, Any]]): 要导出的数据列表。
-        - mapping_dict (Dict): 字段名映射字典。
+        - list_data (list[dict[str, Any]]): 要导出的数据列表。
+        - mapping_dict (dict): 字段名映射字典。
 
         返回:
         - bytes: Excel 文件的二进制数据。

@@ -23,7 +23,7 @@
 
               <!-- 时间 -->
               <div class="text-xs text-gray">
-                {{ item.created_at }}
+                {{ item.created_time }}
               </div>
             </div>
           </div>
@@ -67,13 +67,13 @@
           <el-icon>
             <User />
           </el-icon>
-          {{ noticeDetail.creator?.username }}
+          {{ noticeDetail.created_by?.username }}
         </span>
         <span class="ml-2 flex-y-center">
           <el-icon>
             <Timer />
           </el-icon>
-          {{ noticeDetail.created_at }}
+          {{ noticeDetail.created_time }}
         </span>
       </div>
 
@@ -113,7 +113,7 @@ function handleMarkAllAsRead() {
   const ids = noticeList.value
     .map((item) => item.id)
     .filter((id): id is number => id !== undefined);
-  NoticeAPI.batchNotice({ ids, status: false }).then(async () => {
+  NoticeAPI.batchNotice({ ids, status: '1' }).then(async () => {
     await noticeStore.getNotice();
     noticeList.value = noticeStore.noticeList;
   });

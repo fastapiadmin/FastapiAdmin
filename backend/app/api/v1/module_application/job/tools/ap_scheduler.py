@@ -3,7 +3,7 @@
 import json
 import importlib
 from datetime import datetime
-from typing import Union, List, Any, Optional
+from typing import Any
 from asyncio import iscoroutinefunction
 from apscheduler.job import Job
 from apscheduler.events import JobExecutionEvent, EVENT_ALL, JobEvent
@@ -60,7 +60,6 @@ class SchedulerUtil:
     """
     定时任务相关方法
     """
-
     @classmethod
     def scheduler_event_listener(cls, event: JobEvent | JobExecutionEvent) -> None:
         """
@@ -117,7 +116,8 @@ class SchedulerUtil:
                     job_message=job_message,
                     status=status,
                     exception_info=exception_info,
-                    create_time=datetime.now(),
+                    created_time=datetime.now(),
+                    updated_time=datetime.now(),
                     job_id=job_id,
                 )
                 
@@ -127,7 +127,7 @@ class SchedulerUtil:
                 executor.shutdown(wait=False)
 
     @classmethod
-    def _save_job_log_async_wrapper(cls, job_log):
+    def _save_job_log_async_wrapper(cls, job_log) -> None:
         """
         异步保存任务日志的包装器函数，在独立线程中运行
         
@@ -137,7 +137,7 @@ class SchedulerUtil:
         返回:
         - None
         """
-        with db_session() as session:
+        with db_session.begin() as session:
             try:
                 session.add(job_log)
                 session.commit()
@@ -148,7 +148,7 @@ class SchedulerUtil:
                 session.close()
 
     @classmethod
-    async def init_system_scheduler(cls):
+    async def init_system_scheduler(cls) -> None:
         """
         应用启动时初始化定时任务。
     
@@ -168,14 +168,14 @@ class SchedulerUtil:
                     cls.remove_job(job_id=item.id)  # 删除旧任务
                     cls.add_job(item)
                     # 根据数据库中保存的状态来设置任务状态
-                    if hasattr(item, 'status') and item.status is False:
+                    if hasattr(item, 'status') and item.status == "1":
                         # 如果任务状态为暂停，则立即暂停刚添加的任务
                         cls.pause_job(job_id=item.id)
         scheduler.add_listener(cls.scheduler_event_listener, EVENT_ALL)
         log.info('✅️ 系统初始定时任务加载成功')
 
     @classmethod
-    async def close_system_scheduler(cls):
+    async def close_system_scheduler(cls) -> None:
         """
         关闭系统定时任务。
     
@@ -192,7 +192,7 @@ class SchedulerUtil:
             log.error(f'关闭定时任务失败: {str(e)}')
 
     @classmethod
-    def get_job(cls, job_id: Union[str, int]) -> Optional[Job]:
+    def get_job(cls, job_id: str | int) -> Job | None:
         """
         根据任务ID获取任务对象。
     
@@ -200,17 +200,17 @@ class SchedulerUtil:
         - job_id (str | int): 任务ID。
     
         返回:
-        - Optional[Job]: 任务对象，未找到则为 None。
+        - Job | None: 任务对象，未找到则为 None。
         """
         return scheduler.get_job(job_id=str(job_id))
 
     @classmethod
-    def get_all_jobs(cls) -> List[Job]:
+    def get_all_jobs(cls) -> list[Job]:
         """
         获取全部调度任务列表。
     
         返回:
-        - List[Job]: 任务列表。
+        - list[Job]: 任务列表。
         """
         return scheduler.get_jobs()
 
@@ -227,7 +227,6 @@ class SchedulerUtil:
         """
         # 动态导入模块
         # 1. 解析调用目标
-        # app.module_task.scheduler_test.job
         module_path, func_name = str(job_info.func).rsplit('.', 1)
         module_path = "app.api.v1.module_application.job.function_task." + module_path
         try:
@@ -315,7 +314,7 @@ class SchedulerUtil:
             raise CustomException(msg=f"添加任务失败: {str(e)}")
 
     @classmethod
-    def remove_job(cls, job_id: Union[str, int]) -> None:
+    def remove_job(cls, job_id: str | int) -> None:
         """
         根据任务ID删除调度任务。
     
@@ -330,7 +329,7 @@ class SchedulerUtil:
             scheduler.remove_job(job_id=str(job_id))
 
     @classmethod
-    def clear_jobs(cls):
+    def clear_jobs(cls) -> None:
         """
         删除所有调度任务。
     
@@ -340,7 +339,7 @@ class SchedulerUtil:
         scheduler.remove_all_jobs()
 
     @classmethod
-    def modify_job(cls, job_id: Union[str, int]) -> Job:
+    def modify_job(cls, job_id: str | int) -> Job:
         """
         更新指定任务的配置（运行中的任务下次执行生效）。
     
@@ -359,7 +358,7 @@ class SchedulerUtil:
         return scheduler.modify_job(job_id=str(job_id))
 
     @classmethod
-    def pause_job(cls, job_id: Union[str, int]):
+    def pause_job(cls, job_id: str | int) -> None:
         """
         暂停指定任务（仅运行中可暂停，已终止不可）。
 
@@ -378,7 +377,7 @@ class SchedulerUtil:
         scheduler.pause_job(job_id=str(job_id))
 
     @classmethod
-    def resume_job(cls, job_id: Union[str, int]):
+    def resume_job(cls, job_id: str | int) -> None:
         """
         恢复指定任务（仅暂停中可恢复，已终止不可）。
 
@@ -397,7 +396,7 @@ class SchedulerUtil:
         scheduler.resume_job(job_id=str(job_id))
 
     @classmethod
-    def reschedule_job(cls, job_id: Union[str, int], trigger=None, **trigger_args) -> Optional[Job]:
+    def reschedule_job(cls, job_id: str | int, trigger=None, **trigger_args) -> Job | None:
         """
         重启指定任务的触发器。
 
@@ -427,7 +426,7 @@ class SchedulerUtil:
             return scheduler.reschedule_job(job_id=str(job_id), trigger=trigger, **trigger_args)
     
     @classmethod
-    def get_single_job_status(cls, job_id: Union[str, int]) -> str:
+    def get_single_job_status(cls, job_id: str | int) -> str:
         """
         获取单个任务的当前状态。
 
@@ -453,11 +452,11 @@ class SchedulerUtil:
 
     @classmethod
     def export_jobs(cls):
-        scheduler.export_jobs("/tmp/jobs.json")
+        scheduler.export_jobs("/temp/jobs.json")
 
     @classmethod
     def import_jobs(cls):
-        scheduler.import_jobs("/tmp/jobs.json")
+        scheduler.import_jobs("/temp/jobs.json")
 
     @classmethod
     def print_jobs(cls,jobstore: Any | None = None, out: Any | None = None):

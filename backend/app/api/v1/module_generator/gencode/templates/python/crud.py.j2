@@ -1,6 +1,6 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
-from typing import Dict, List, Optional, Sequence, Union, Any
+from typing import Sequence
 
 from app.core.base_crud import CRUDBase
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -20,34 +20,34 @@ class {{ class_name }}CRUD(CRUDBase[{{ class_name }}Model, {{ class_name }}Creat
         """
         super().__init__(model={{ class_name }}Model, auth=auth)
 
-    async def get_by_id_{{ business_name }}_crud(self, id: int, preload: Optional[List[Union[str, Any]]] = None) -> Optional[{{ class_name }}Model]:
+    async def get_by_id_{{ business_name }}_crud(self, id: int, preload: list | None = None) -> {{ class_name }}Model | None:
         """
         详情
         
         参数:
         - id (int): 对象ID
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Optional[{{ class_name }}Model]: 模型实例或None
+        - {{ class_name }}Model | None: 模型实例或None
         """
         return await self.get(id=id, preload=preload)
     
-    async def list_{{ business_name }}_crud(self, search: Optional[Dict] = None, order_by: Optional[List[Dict[str, str]]] = None, preload: Optional[List[Union[str, Any]]] = None) -> Sequence[{{ class_name }}Model]:
+    async def list_{{ business_name }}_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[{{ class_name }}Model]:
         """
         列表查询
         
         参数:
-        - search (Optional[Dict]): 查询参数
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 查询参数
+        - order_by (list[dict] | None): 排序参数，未提供时使用模型默认项
+        - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - Sequence[{{ class_name }}Model]: 模型实例序列
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
     
-    async def create_{{ business_name }}_crud(self, data: {{ class_name }}CreateSchema) -> Optional[{{ class_name }}Model]:
+    async def create_{{ business_name }}_crud(self, data: {{ class_name }}CreateSchema) -> {{ class_name }}Model | None:
         """
         创建
         
@@ -55,11 +55,11 @@ class {{ class_name }}CRUD(CRUDBase[{{ class_name }}Model, {{ class_name }}Creat
         - data ({{ class_name }}CreateSchema): 创建模型
         
         返回:
-        - Optional[{{ class_name }}Model]: 模型实例或None
+        - {{ class_name }}Model | None: 模型实例或None
         """
         return await self.create(data=data)
     
-    async def update_{{ business_name }}_crud(self, id: int, data: {{ class_name }}UpdateSchema) -> Optional[{{ class_name }}Model]:
+    async def update_{{ business_name }}_crud(self, id: int, data: {{ class_name }}UpdateSchema) -> {{ class_name }}Model | None:
         """
         更新
         
@@ -68,45 +68,45 @@ class {{ class_name }}CRUD(CRUDBase[{{ class_name }}Model, {{ class_name }}Creat
         - data ({{ class_name }}UpdateSchema): 更新模型
         
         返回:
-        - Optional[{{ class_name }}Model]: 模型实例或None
+        - {{ class_name }}Model | None: 模型实例或None
         """
         return await self.update(id=id, data=data)
     
-    async def delete_{{ business_name }}_crud(self, ids: List[int]) -> None:
+    async def delete_{{ business_name }}_crud(self, ids: list[int]) -> None:
         """
         批量删除
         
         参数:
-        - ids (List[int]): 对象ID列表
+        - ids (list[int]): 对象ID列表
         
         返回:
         - None
         """
         return await self.delete(ids=ids)
     
-    async def set_available_{{ business_name }}_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_{{ business_name }}_crud(self, ids: list[int], status: str) -> None:
         """
         批量设置可用状态
         
         参数:
-        - ids (List[int]): 对象ID列表
-        - status (bool): 可用状态
+        - ids (list[int]): 对象ID列表
+        - status (str): 可用状态
         
         返回:
         - None
         """
         return await self.set(ids=ids, status=status)
     
-    async def page_{{ business_name }}_crud(self, offset: int, limit: int, order_by: Optional[List[Dict[str, str]]] = None, search: Optional[Dict] = None, preload: Optional[List[Union[str, Any]]] = None) -> Dict:
+    async def page_{{ business_name }}_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
         """
         分页查询
         
         参数:
         - offset (int): 偏移量
         - limit (int): 每页数量
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数
-        - search (Optional[Dict]): 查询参数
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - order_by (list[dict] | None): 排序参数，未提供时使用模型默认项
+        - search (dict | None): 查询参数，未提供时查询所有
+        - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - Dict: 分页数据

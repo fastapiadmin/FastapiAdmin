@@ -2,16 +2,16 @@
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
-from typing import Optional
 
 
 class ImportFieldModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
-    base_column: Optional[str] = Field(description='数据库字段名')
-    excel_column: Optional[str] = Field(description='excel字段名', default=None)
-    default_value: Optional[str] = Field(description='默认值', default=None)
-    is_required: Optional[str] = Field(description='是否必传')
-    selected: Optional[bool] = Field(description='是否勾选')
+    
+    base_column: str | None = Field(description='数据库字段名', default=None)
+    excel_column: str | None = Field(description='excel字段名', default=None)
+    default_value: str | None = Field(description='默认值', default=None)
+    is_required: bool | None = Field(description='是否必传', default=None)
+    selected: bool | None = Field(description='是否勾选', default=None)
 
     @model_validator(mode='before')
     @classmethod
@@ -45,10 +45,11 @@ class ImportFieldModel(BaseModel):
 
 class ImportModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
-    table_name: Optional[str] = Field(description='表名')
-    sheet_name: Optional[str] = Field(description='Sheet名')
-    filed_info: Optional[list[ImportFieldModel]] = Field(description='字段关联表')
-    file_name: Optional[str] = Field(description='文件名')
+
+    table_name: str | None = Field(description='表名', default=None)
+    sheet_name: str | None = Field(description='Sheet名', default=None)
+    filed_info: list[ImportFieldModel] | None = Field(description='字段关联表', default=None)
+    file_name: str | None = Field(description='文件名', default=None)
 
     @model_validator(mode='after')
     def _validate(self):

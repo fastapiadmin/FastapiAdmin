@@ -3,7 +3,6 @@
 import os
 import shutil
 from datetime import datetime
-from typing import List, Dict, Any, Optional
 from pathlib import Path
 from urllib.parse import urlparse
 from fastapi import UploadFile
@@ -13,7 +12,6 @@ from app.core.logger import log
 from app.utils.excel_util import ExcelUtil
 from app.config.setting import settings
 
-from .param import ResourceSearchQueryParam
 from .schema import (
     ResourceItemSchema,
     ResourceDirectorySchema,
@@ -21,7 +19,8 @@ from .schema import (
     ResourceMoveSchema,
     ResourceCopySchema,
     ResourceRenameSchema,
-    ResourceCreateDirSchema
+    ResourceCreateDirSchema,
+    ResourceSearchQueryParam
 )
 
 
@@ -48,12 +47,12 @@ class ResourceService:
         return str(settings.STATIC_ROOT)
     
     @classmethod
-    def _get_safe_path(cls, path: Optional[str] = None) -> str:
+    def _get_safe_path(cls, path: str | None = None) -> str:
         """
         获取安全的文件路径
         
         参数:
-        - path (Optional[str]): 原始文件路径。
+        - path (str | None): 原始文件路径。
         
         返回:
         - str: 安全的文件路径。
@@ -123,13 +122,13 @@ class ResourceService:
             return False
     
     @classmethod
-    def _generate_http_url(cls, file_path: str, base_url: Optional[str] = None) -> str:
+    def _generate_http_url(cls, file_path: str, base_url: str | None = None) -> str:
         """
         生成文件的HTTP URL
         
         参数:
         - file_path (str): 文件的绝对路径。
-        - base_url (Optional[str]): 基础URL，用于生成完整URL。
+        - base_url (str | None): 基础URL，用于生成完整URL。
         
         返回:
         - str: 文件的HTTP URL。
@@ -145,7 +144,6 @@ class ResourceService:
         
         # 如果提供了base_url，使用它生成完整URL，否则使用settings.STATIC_URL
         if base_url:
-            from urllib.parse import urljoin
             # 修复URL生成逻辑
             base_part = base_url.rstrip('/')
             static_part = settings.STATIC_URL.lstrip('/')
@@ -159,16 +157,16 @@ class ResourceService:
         return http_url
     
     @classmethod
-    def _get_file_info(cls, file_path: str, base_url: Optional[str] = None) -> Dict[str, Any]:
+    def _get_file_info(cls, file_path: str, base_url: str | None = None) -> dict:
         """
         获取文件或目录的详细信息，如名称、大小、创建时间、修改时间、路径、深度、HTTP URL、是否隐藏、是否为目录等。
         
         参数:
         - file_path (str): 文件或目录的路径。
-        - base_url (Optional[str]): 基础URL，用于生成完整URL。
+        - base_url (str | None): 基础URL，用于生成完整URL。
         
         返回:
-        - Dict[str, Any]: 文件或目录的详细信息字典。
+        - dict: 文件或目录的详细信息字典。
         """
         try:
             safe_path = cls._get_safe_path(file_path)
@@ -220,17 +218,17 @@ class ResourceService:
             return {}
     
     @classmethod
-    async def get_directory_list_service(cls, path: Optional[str] = None, include_hidden: bool = False, base_url: Optional[str] = None) -> Dict:
+    async def get_directory_list_service(cls, path: str | None = None, include_hidden: bool = False, base_url: str | None = None) -> dict:
         """
         获取目录列表
         
         参数:
-        - path (Optional[str]): 目录路径。如果未指定，将使用静态文件根目录。
+        - path (str | None): 目录路径。如果未指定，将使用静态文件根目录。
         - include_hidden (bool): 是否包含隐藏文件。
-        - base_url (Optional[str]): 基础URL，用于生成完整URL。
+        - base_url (str | None): 基础URL，用于生成完整URL。
         
         返回:
-        - Dict: 包含目录列表和统计信息的字典。
+        - dict: 包含目录列表和统计信息的字典。
         """
         try:
             # 如果没有指定路径，使用静态文件根目录
@@ -289,17 +287,17 @@ class ResourceService:
             raise CustomException(msg=f'获取目录列表失败: {str(e)}')
 
     @classmethod
-    async def get_resources_list_service(cls, search: Optional[ResourceSearchQueryParam] = None, order_by: Optional[str] = None, base_url: Optional[str] = None) -> List[Dict]:
+    async def get_resources_list_service(cls, search: ResourceSearchQueryParam | None = None, order_by: str | None = None, base_url: str | None = None) -> list[dict]:
         """
         搜索资源列表（用于分页和导出）
         
         参数:
-        - search (Optional[ResourceSearchQueryParam]): 查询参数模型。
-        - order_by (Optional[str]): 排序参数。
-        - base_url (Optional[str]): 基础URL，用于生成完整URL。
+        - search (ResourceSearchQueryParam | None): 查询参数模型。
+        - order_by (str | None): 排序参数。
+        - base_url (str | None): 基础URL，用于生成完整URL。
         
         返回:
-        - List[Dict]: 资源详情字典列表。
+        - list[dict]: 资源详情字典列表。
         """
         try:
             # 确定搜索路径
@@ -353,12 +351,12 @@ class ResourceService:
             raise CustomException(msg=f'搜索资源失败: {str(e)}')
 
     @classmethod
-    async def export_resource_service(cls, data_list: List[Dict[str, Any]]) -> bytes:
+    async def export_resource_service(cls, data_list: list[dict]) -> bytes:
         """
         导出资源列表
         
         参数:
-        - data_list (List[Dict[str, Any]]): 资源详情字典列表。
+        - data_list (list[dict]): 资源详情字典列表。
         
         返回:
         - bytes: Excel文件的二进制数据。
@@ -383,7 +381,7 @@ class ResourceService:
         return ExcelUtil.export_list2excel(list_data=export_data, mapping_dict=mapping_dict)
 
     @classmethod
-    async def _get_directory_stats(cls, path: str, include_hidden: bool = False) -> Dict[str, int]:
+    async def _get_directory_stats(cls, path: str, include_hidden: bool = False) -> dict[str, int]:
         """
         递归获取目录统计信息
         
@@ -392,7 +390,7 @@ class ResourceService:
         - include_hidden (bool): 是否包含隐藏文件。
         
         返回:
-        - Dict[str, int]: 包含文件数、目录数和总大小的字典。
+        - dict[str, int]: 包含文件数、目录数和总大小的字典。
         """
         stats = {'files': 0, 'dirs': 0, 'size': 0}
         
@@ -419,16 +417,16 @@ class ResourceService:
         return stats
     
     @classmethod
-    def _sort_results(cls, results: List[Dict], order_by: Optional[str] = None) -> List[Dict]:
+    def _sort_results(cls, results: list[dict], order_by: str | None = None) -> list[dict]:
         """
         排序搜索结果
         
         参数:
-        - results (List[Dict]): 资源详情字典列表。
-        - order_by (Optional[str]): 排序参数。
+        - results (list[dict]): 资源详情字典列表。
+        - order_by (str | None): 排序参数。
         
         返回:
-        - List[Dict]: 排序后的资源详情字典列表。
+        - list[dict]: 排序后的资源详情字典列表。
         """
         try:
             # 默认按名称升序排序
@@ -469,17 +467,17 @@ class ResourceService:
             return results
 
     @classmethod
-    async def upload_file_service(cls,  file: UploadFile, target_path: Optional[str] = None, base_url: Optional[str] = None) -> Dict:
+    async def upload_file_service(cls,  file: UploadFile, target_path: str | None = None, base_url: str | None = None) -> dict:
         """
         上传文件到指定目录
         
         参数:
         - file (UploadFile): 上传的文件对象。
-        - target_path (Optional[str]): 目标目录路径。
-        - base_url (Optional[str]): 基础URL，用于生成完整URL。
+        - target_path (str | None): 目标目录路径。
+        - base_url (str | None): 基础URL，用于生成完整URL。
         
         返回:
-        - Dict: 包含文件信息的字典。
+        - dict: 包含文件信息的字典。
         """
         if not file or not file.filename:
             raise CustomException(msg="请选择要上传的文件")
@@ -542,13 +540,13 @@ class ResourceService:
             raise CustomException(msg=f"文件上传失败: {str(e)}")
 
     @classmethod
-    async def download_file_service(cls, file_path: str, base_url: Optional[str] = None) -> str:
+    async def download_file_service(cls, file_path: str, base_url: str | None = None) -> str:
         """
         下载文件（返回本地文件系统路径）
         
         参数:
         - file_path (str): 文件路径（可为相对路径、绝对路径或完整URL）。
-        - base_url (Optional[str]): 基础URL，用于生成完整URL（不再直接返回URL）。
+        - base_url (str | None): 基础URL，用于生成完整URL（不再直接返回URL）。
         
         返回:
         - str: 本地文件系统路径。
@@ -573,12 +571,12 @@ class ResourceService:
             raise CustomException(msg=f"下载文件失败: {str(e)}")
 
     @classmethod
-    async def delete_file_service(cls, paths: List[str]) -> None:
+    async def delete_file_service(cls, paths: list[str]) -> None:
         """
         删除文件或目录
         
         参数:
-        - paths (List[str]): 文件或目录路径列表。
+        - paths (list[str]): 文件或目录路径列表。
         
         返回:
         - None
@@ -606,7 +604,7 @@ class ResourceService:
                 raise CustomException(msg=f"删除失败 {path}: {str(e)}")
 
     @classmethod
-    async def batch_delete_service(cls, paths: List[str]) -> Dict[str, List[str]]:
+    async def batch_delete_service(cls, paths: list[str]) -> dict[str, list[str]]:
         """
         批量删除文件或目录
         

@@ -23,20 +23,13 @@
             style="width: 167.5px"
             clearable
           >
-            <el-option value="true" label="启用" />
-            <el-option value="false" label="停用" />
+            <el-option value="0" label="启用" />
+            <el-option value="1" label="停用" />
           </el-select>
         </el-form-item>
         <!-- 时间范围，收起状态下隐藏 -->
         <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
           <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
-          <UserTableSelect
-            v-model="queryFormData.creator"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
         </el-form-item>
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item class="search-buttons">
@@ -118,10 +111,10 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item icon="Check" @click="handleMoreClick(true)">
+                    <el-dropdown-item icon="Check" @click="handleMoreClick('0')">
                       批量启用
                     </el-dropdown-item>
-                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick(false)">
+                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick('1')">
                       批量停用
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -229,7 +222,7 @@
           min-width="80"
         >
           <template #default="scope">
-            <el-tag :type="scope.row.status === true ? 'success' : 'danger'">
+            <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
               {{ scope.row.status ? "启用" : "停用" }}
             </el-tag>
           </template>
@@ -243,31 +236,21 @@
           show-overflow-tooltip
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
-          key="created_at"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
+          key="created_time"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
           min-width="200"
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
-          key="updated_at"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
+          key="updated_time"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
           min-width="200"
           sortable
         />
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'creator')?.show"
-          label="创建人"
-          prop="creator"
-          min-width="120"
-        >
-          <template #default="scope">
-            {{ scope.row.creator?.name }}
-          </template>
-        </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
           fixed="right"
@@ -282,7 +265,7 @@
               size="small"
               link
               icon="document"
-              @click="handleDictDataDrawer(scope.row.dict_type, scope.row.dict_name)"
+              @click="handleDictDataDrawer(scope.row)"
             >
               字典
             </el-button>
@@ -347,20 +330,17 @@
             <el-tag type="primary">{{ detailFormData.dict_type }}</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
-            <el-tag v-if="detailFormData.status" type="success">启用</el-tag>
+            <el-tag v-if="detailFormData.status === '0'" type="success">启用</el-tag>
             <el-tag v-else type="danger">停用</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="2">
             {{ detailFormData.description }}
           </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
-          </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -382,8 +362,8 @@
           </el-form-item>
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="formData.status">
-              <el-radio :value="true">启用</el-radio>
-              <el-radio :value="false">停用</el-radio>
+              <el-radio value="0">启用</el-radio>
+              <el-radio value="1">停用</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="描述" prop="description">
@@ -403,20 +383,10 @@
         <div class="dialog-footer">
           <!-- 详情弹窗不需要确定按钮的提交逻辑 -->
           <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            @click="handleSubmit"
-          >
+          <el-button v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
             确定
           </el-button>
-          <el-button
-            v-else
-            type="primary"
-            @click="handleCloseDialog"
-          >
-            确定
-          </el-button>
+          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -426,6 +396,7 @@
       v-model="drawerVisible"
       :dict-type="currentDictType"
       :dict-label="currentDictLabel"
+      :dict-type-id="currentDictTypeId"
     />
     <ExportModal
       v-model="exportsDialogVisible"
@@ -445,7 +416,6 @@ defineOptions({
 
 import DictAPI, { DictTable, DictForm, DictPageQuery } from "@/api/module_system/dict";
 import DataDrawer from "@/views/module_system/dict/components/DataDrawer.vue";
-import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import { formatToDateTime } from "@/utils/dateUtil";
@@ -474,9 +444,8 @@ const tableColumns = ref([
   { prop: "dict_type", label: "字典类型", show: true },
   { prop: "status", label: "状态", show: true },
   { prop: "description", label: "描述", show: true },
-  { prop: "creator", label: "创建人", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
@@ -490,10 +459,8 @@ const queryFormData = reactive<DictPageQuery>({
   dict_name: undefined,
   dict_type: undefined,
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  // 创建人
-  creator: undefined,
+  created_time: undefined,
+  updated_time: undefined,
 });
 
 // 编辑表单
@@ -501,7 +468,7 @@ const formData = reactive<DictForm>({
   id: undefined,
   dict_name: "",
   dict_type: "",
-  status: true,
+  status: '0',
   description: undefined,
 });
 
@@ -526,11 +493,9 @@ const dateRange = ref<[Date, Date] | []>([]);
 function handleDateRangeChange(range: [Date, Date]) {
   dateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
   }
 }
 
@@ -547,6 +512,10 @@ const currentDictType = ref("");
 
 // 添加字典名称变量
 const currentDictLabel = ref("");
+
+// 添加字典类型ID变量
+const currentDictTypeId = ref(1);
+
 
 // 加载表格数据
 async function loadingData() {
@@ -568,19 +537,13 @@ async function handleQuery() {
   loadingData();
 }
 
-// 选择创建人后触发查询
-function handleConfirm() {
-  handleQuery();
-}
-
 // 重置查询
 async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
   // 额外清空日期范围与时间查询参数
   dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  queryFormData.created_time = undefined;
   loadingData();
 }
 
@@ -589,7 +552,7 @@ const initialFormData: DictForm = {
   id: undefined,
   dict_name: "",
   dict_type: "",
-  status: true,
+  status: '0',
   description: undefined,
 };
 
@@ -698,9 +661,9 @@ function handleOpenExportsModal() {
 }
 
 // 批量启用/停用
-async function handleMoreClick(status: boolean) {
+async function handleMoreClick(status: string) {
   if (selectIds.value.length) {
-    ElMessageBox.confirm(`确认${status ? "启用" : "停用"}该项数据?`, "警告", {
+    ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
@@ -722,9 +685,10 @@ async function handleMoreClick(status: boolean) {
   }
 }
 
-function handleDictDataDrawer(dictType: string, dictLabel: string) {
-  currentDictType.value = dictType;
-  currentDictLabel.value = dictLabel;
+function handleDictDataDrawer(dictType: DictTable) {
+  currentDictType.value = dictType.dict_type || "";
+  currentDictLabel.value = dictType.dict_name || "";
+  currentDictTypeId.value = dictType.id || 0;
   drawerVisible.value = true;
 }
 
@@ -734,8 +698,8 @@ const exportColumns = [
   { prop: "dict_type", label: "字典类型" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导出配置（用于导出弹窗）

@@ -135,7 +135,7 @@ cd backend
 # Install dependencies
 pip3 install -r requirements.txt
 
-# Start the backend service
+# Start the backend service: ensure that MySQL and Redis are running
 python main.py run
 # Or specify environment
 python main.py run --env=dev

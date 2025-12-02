@@ -2,7 +2,7 @@
 
 import re
 from datetime import datetime
-from typing import Any, List, Dict
+from typing import Any
 
 class TimeUtil:
     """
@@ -30,7 +30,7 @@ class TimeUtil:
         return obj
 
     @classmethod
-    def list_format_datetime(cls, lst: List[Any]) -> List[Any]:
+    def list_format_datetime(cls, lst: list[Any]) -> list[Any]:
         """
         格式化列表内每个对象的 datetime 属性。
         
@@ -38,20 +38,20 @@ class TimeUtil:
         - lst (List[Any]): 对象列表。
         
         返回:
-        - List[Any]: 格式化后的对象列表。
+        - list[Any]: 格式化后的对象列表。
         """
         return [cls.object_format_datetime(obj) for obj in lst]
 
     @classmethod
-    def format_datetime_dict_list(cls, dicts: List[Dict]) -> List[Dict]:
+    def format_datetime_dict_list(cls, dicts: list[dict]) -> list[dict]:
         """
         递归格式化字典列表中的 datetime 值为默认字符串格式。
         
         参数:
-        - dicts (List[Dict]): 字典列表。
+        - dicts (list[dict]): 字典列表。
         
         返回:
-        - List[Dict]: 格式化后的字典列表。
+        - list[dict]: 格式化后的字典列表。
         """
         def _format_value(value: Any) -> Any:
             if isinstance(value, dict):

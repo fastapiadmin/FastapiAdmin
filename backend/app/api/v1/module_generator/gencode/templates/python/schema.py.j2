@@ -1,21 +1,29 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
 {% if table.sub %}
-from typing import List, Optional
-{% else %}
-from typing import Optional
+from typing import List
 {% endif %}
 from pydantic import BaseModel, ConfigDict, Field
+from fastapi import Query
 
-from app.core.base_schema import BaseSchema
+{% if table.created_time %}
+from app.core.validator import DateTimeStr
+{% endif %}
+from app.core.base_schema import BaseSchema, UserBySchema
 
 class {{ class_name }}CreateSchema(BaseModel):
     """
     {{ function_name }}新增模型
     """
     {% for column in columns %}
-    {% if column.column_name not in ['id', 'creator_id', 'created_at', 'updated_at'] %}
-    {{ column.column_name }}: Optional[{{ column.python_type }}] = Field(default=None, description='{{ column.column_comment }}')
+    {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+    {% if column.column_name == 'status' %}
+    {{ column.column_name }}: {{ column.python_type }} = Field(default="0", description='{{ column.column_comment }}')
+    {% elif column.column_name == 'description' %}
+    {{ column.column_name }}: str | None = Field(default=None, max_length=255, description='{{ column.column_comment }}')
+    {% else %}
+    {{ column.column_name }}: {{ column.python_type }} = Field(default=..., description='{{ column.column_comment }}')
+    {% endif %}
     {% endif %}
     {% endfor %}
 
@@ -27,8 +35,62 @@ class {{ class_name }}UpdateSchema({{ class_name }}CreateSchema):
     ...
 
 
-class {{ class_name }}OutSchema({{ class_name }}CreateSchema, BaseSchema):
+class {{ class_name }}OutSchema({{ class_name }}CreateSchema, BaseSchema, UserBySchema):
     """
     {{ function_name }}响应模型
     """
     model_config = ConfigDict(from_attributes=True)
+
+
+class {{ class_name }}QueryParam:
+    """{{ function_name }}查询参数"""
+
+    def __init__(
+        self,
+        {% for column in columns %}
+        {% if column.query_type == 'LIKE' %}
+        {{ column.column_name }}: str | None = Query(None, description="{{ column.column_comment }}"),
+        {% endif %}
+        {% endfor %}
+        {% for column in columns %}
+        {% if column.query_type == 'EQ' and column.column_name != 'status' %}
+        {{ column.column_name }}: {{ column.python_type }} | None = Query(None, description="{{ column.column_comment }}"),
+        {% elif column.query_type == 'EQ' and column.column_name == 'status' %}
+        {{ column.column_name }}: str | None = Query(None, description="{{ column.column_comment }}"),
+        {% endif %}
+        {% endfor %}
+        {% if table.created_time %}
+        created_time: list[DateTimeStr] | None = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
+        created_id: int | None = Query(None, description="创建人"),
+        {% endif %}
+        {% if table.updated_time %}
+        updated_time: list[DateTimeStr] | None = Query(None, description="更新时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
+        updated_id: int | None = Query(None, description="更新人"),
+        {% endif %}
+    ) -> None:
+        
+        # 模糊查询字段
+        {% for column in columns %}
+        {% if column.query_type == 'LIKE' %}
+        self.{{ column.column_name }} = ("like", {{ column.column_name }})
+        {% endif %}
+        {% endfor %}
+
+        # 精确查询字段
+        {% for column in columns %}
+        {% if column.query_type == 'EQ' %}
+        self.{{ column.column_name }} = {{ column.column_name }}
+        {% endif %}
+        {% endfor %}
+
+        {% if table.created_time %}
+        self.created_id = created_id
+        # 时间范围查询
+        if created_time and len(created_time) == 2:
+            self.created_time = ("between", (created_time[0], created_time[1]))
+        {% endif %}
+        {% if table.updated_time %}
+        self.updated_id = updated_id
+        if updated_time and len(updated_time) == 2:
+            self.updated_time = ("between", (updated_time[0], updated_time[1]))
+        {% endif %}

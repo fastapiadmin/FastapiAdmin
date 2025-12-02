@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Optional
-
 from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 
 from ..auth.schema import AuthSchema
-from .param import PositionQueryParam
 from .crud import PositionCRUD
 from .schema import (
     PositionCreateSchema,
     PositionUpdateSchema,
     PositionOutSchema,
+    PositionQueryParam
 )
 
 
@@ -20,7 +18,7 @@ class PositionService:
     """岗位模块服务层"""
 
     @classmethod
-    async def get_position_detail_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def get_position_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取岗位详情
         
@@ -35,23 +33,23 @@ class PositionService:
         return PositionOutSchema.model_validate(position).model_dump()
 
     @classmethod
-    async def get_position_list_service(cls, auth: AuthSchema, search: Optional[PositionQueryParam] = None, order_by: Optional[List[Dict[str, str]]] = None) -> List[Dict]:
+    async def get_position_list_service(cls, auth: AuthSchema, search: PositionQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取岗位列表
         
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (PositionQueryParam | None): 查询参数对象
-        - order_by (List[Dict[str, str]] | None): 排序参数列表
+        - order_by (list[dict] | None): 排序参数列表
         
         返回:
-        - List[Dict]: 岗位列表对象
+        - list[dict]: 岗位列表对象
         """
         position_list = await PositionCRUD(auth).get_list_crud(search=search.__dict__, order_by=order_by)
         return [PositionOutSchema.model_validate(position).model_dump() for position in position_list]
 
     @classmethod
-    async def create_position_service(cls, auth: AuthSchema, data: PositionCreateSchema) -> Dict:
+    async def create_position_service(cls, auth: AuthSchema, data: PositionCreateSchema) -> dict:
         """
         创建岗位
         
@@ -69,7 +67,7 @@ class PositionService:
         return PositionOutSchema.model_validate(new_position).model_dump()
 
     @classmethod
-    async def update_position_service(cls, auth: AuthSchema, id:int, data: PositionUpdateSchema) -> Dict:
+    async def update_position_service(cls, auth: AuthSchema, id:int, data: PositionUpdateSchema) -> dict:
         """
         更新岗位
         
@@ -79,7 +77,7 @@ class PositionService:
         - data (PositionUpdateSchema): 岗位更新模型
         
         返回:
-        - Dict: 更新的岗位对象
+        - dict: 更新的岗位对象
         """
         position = await PositionCRUD(auth).get_by_id_crud(id=id)
         if not position:
@@ -125,12 +123,12 @@ class PositionService:
         await PositionCRUD(auth).set_available_crud(ids=data.ids, status=data.status)
 
     @classmethod
-    async def export_position_list_service(cls, position_list: List[Dict[str, Any]]) -> bytes:
+    async def export_position_list_service(cls, position_list: list[dict]) -> bytes:
         """
         导出岗位列表
         
         参数:
-        - position_list (List[Dict[str, Any]]): 岗位列表对象
+        - position_list (list[dict]): 岗位列表对象
         
         返回:
         - bytes: 导出的Excel文件字节流
@@ -141,16 +139,16 @@ class PositionService:
             'order': '显示顺序',
             'status': '状态',
             'description': '备注',
-            'created_at': '创建时间',
-            'updated_at': '更新时间',
-            'creator_id': '创建者ID',
-            'creator': '创建者',
+            'created_time': '创建时间',
+            'updated_time': '更新时间',
+            'created_id': '创建者ID',
+            'updated_id': '更新者ID',
         }
 
         # 复制数据并转换状态
         data = position_list.copy()
         for item in data:
-            item['status'] = '正常' if item.get('status') else '停用'
+            item['status'] = '启用' if item.get('status') == '0' else '停用'
             item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)

@@ -1,7 +1,7 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import io
-from typing import Any, List, Dict, Optional
+from typing import Any
 from fastapi import UploadFile
 import pandas as pd
 
@@ -10,8 +10,7 @@ from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 from app.core.logger import log
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .schema import {{ class_name }}CreateSchema, {{ class_name }}UpdateSchema, {{ class_name }}OutSchema
-from .param import {{ class_name }}QueryParam
+from .schema import {{ class_name }}CreateSchema, {{ class_name }}UpdateSchema, {{ class_name }}OutSchema, {{ class_name }}QueryParam
 from .crud import {{ class_name }}CRUD
 
 
@@ -21,7 +20,7 @@ class {{ class_name }}Service:
     """
     
     @classmethod
-    async def detail_{{ business_name }}_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def detail_{{ business_name }}_service(cls, auth: AuthSchema, id: int) -> dict:
         """详情"""
         obj = await {{ class_name }}CRUD(auth).get_by_id_{{ business_name }}_crud(id=id)
         if not obj:
@@ -29,14 +28,14 @@ class {{ class_name }}Service:
         return {{ class_name }}OutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def list_{{ business_name }}_service(cls, auth: AuthSchema, search: Optional[{{ class_name }}QueryParam] = None, order_by: Optional[List[Dict[str, str]]] = None) -> List[Dict]:
+    async def list_{{ business_name }}_service(cls, auth: AuthSchema, search: {{ class_name }}QueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """列表查询"""
         search_dict = search.__dict__ if search else None
         obj_list = await {{ class_name }}CRUD(auth).list_{{ business_name }}_crud(search=search_dict, order_by=order_by)
         return [{{ class_name }}OutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
-    async def page_{{ business_name }}_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: Optional[{{ class_name }}QueryParam] = None, order_by: Optional[List[Dict[str, str]]] = None) -> Dict:
+    async def page_{{ business_name }}_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: {{ class_name }}QueryParam | None = None, order_by: list[dict] | None = None) -> dict:
         """分页查询（数据库分页）"""
         search_dict = search.__dict__ if search else {}
         order_by_list = order_by or [{'id': 'asc'}]
@@ -50,7 +49,7 @@ class {{ class_name }}Service:
         return result
     
     @classmethod
-    async def create_{{ business_name }}_service(cls, auth: AuthSchema, data: {{ class_name }}CreateSchema) -> Dict:
+    async def create_{{ business_name }}_service(cls, auth: AuthSchema, data: {{ class_name }}CreateSchema) -> dict:
         """创建"""
         # 检查唯一性约束
         {% for column in columns %}
@@ -64,7 +63,7 @@ class {{ class_name }}Service:
         return {{ class_name }}OutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def update_{{ business_name }}_service(cls, auth: AuthSchema, id: int, data: {{ class_name }}UpdateSchema) -> Dict:
+    async def update_{{ business_name }}_service(cls, auth: AuthSchema, id: int, data: {{ class_name }}UpdateSchema) -> dict:
         """更新"""
         # 检查数据是否存在
         obj = await {{ class_name }}CRUD(auth).get_by_id_{{ business_name }}_crud(id=id)
@@ -84,7 +83,7 @@ class {{ class_name }}Service:
         return {{ class_name }}OutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def delete_{{ business_name }}_service(cls, auth: AuthSchema, ids: List[int]) -> None:
+    async def delete_{{ business_name }}_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """删除"""
         if len(ids) < 1:
             raise CustomException(msg='删除失败，删除对象不能为空')
@@ -100,20 +99,20 @@ class {{ class_name }}Service:
         await {{ class_name }}CRUD(auth).set_available_{{ business_name }}_crud(ids=data.ids, status=data.status)
     
     @classmethod
-    async def batch_export_{{ business_name }}_service(cls, obj_list: List[Dict[str, Any]]) -> bytes:
+    async def batch_export_{{ business_name }}_service(cls, obj_list: list[dict]) -> bytes:
         """批量导出"""
         mapping_dict = {
             {% for column in columns %}
             '{{ column.column_name }}': '{{ column.column_comment }}',
             {% endfor %}
-            'creator': '创建者',
+            'updated_id': '更新者ID',
         }
 
         data = obj_list.copy()
         for item in data:
             # 状态转换
             if 'status' in item:
-                item['status'] = '正常' if item.get('status') else '停用'
+                item['status'] = '启用' if item.get('status') == '0' else '停用'
             # 创建者转换
             creator_info = item.get('creator')
             if isinstance(creator_info, dict):
@@ -184,7 +183,7 @@ class {{ class_name }}Service:
                     {% endif %}
                     {% endfor %}
                     
-                    await {{ class_name }}CRUD(auth).create_crud(data=create_schema)
+                    await {{ class_name }}CRUD(auth).create_{{ business_name }}_crud(data=create_schema)
                     success_count += 1
                 except Exception as e:
                     error_msgs.append(f"第{count}行: {str(e)}")

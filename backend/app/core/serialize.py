@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pydantic import BaseModel
-from typing import TypeVar, Dict, Any, Type, Generic
+from typing import Any, TypeVar, Type, Generic
 from sqlalchemy.orm import DeclarativeBase
 
 ModelType = TypeVar("ModelType", bound=DeclarativeBase)
@@ -34,7 +34,7 @@ class Serialize(Generic[ModelType, SchemaType]):
             raise ValueError(f"序列化失败: {str(e)}")
 
     @classmethod
-    def model_to_dict(cls, model: Type[ModelType], schema: Type[SchemaType]) -> Dict[str, Any]:
+    def model_to_dict(cls, model: Type[ModelType], schema: Type[SchemaType]) -> dict[str, Any]:
         """
         将 SQLAlchemy 模型转换为 Pydantic Schema
         
@@ -43,7 +43,7 @@ class Serialize(Generic[ModelType, SchemaType]):
         - schema (Type[SchemaType]): Pydantic Schema 类。
             
         返回:
-        - Dict[str, Any]: 包含模型数据的字典。
+        - dict[str, Any]: 包含模型数据的字典。
             
         异常:
         - ValueError: 转换过程中可能抛出的异常。

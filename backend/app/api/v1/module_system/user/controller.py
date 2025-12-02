@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import urllib.parse
-from fastapi import APIRouter, Depends, Body, Path, Query, Form, File, UploadFile, Request
+from fastapi import APIRouter, Depends, Body, Path, UploadFile, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import StreamResponse, SuccessResponse
 from app.common.request import PaginationService
-from app.utils.common_util import bytes2file_response
 from app.core.router_class import OperationLogRoute
+from app.utils.common_util import bytes2file_response
 from app.core.dependencies import db_getter, get_current_user, AuthPermission
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import BatchSetAvailable
@@ -16,7 +16,6 @@ from app.core.logger import log
 
 from ..auth.schema import AuthSchema
 from .service import UserService
-from .param import UserQueryParam
 from .schema import (
     CurrentUserUpdateSchema,
     ResetPasswordSchema,
@@ -24,7 +23,8 @@ from .schema import (
     UserForgetPasswordSchema,
     UserRegisterSchema,
     UserUpdateSchema,
-    UserChangePasswordSchema
+    UserChangePasswordSchema,
+    UserQueryParam
 )
 
 

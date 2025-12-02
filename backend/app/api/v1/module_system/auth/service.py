@@ -2,7 +2,7 @@
 
 import json
 import uuid
-from typing import Dict, Union, NewType
+from typing import NewType
 from fastapi import Request
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -138,6 +138,11 @@ class LoginService:
         refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
         
         now = datetime.now()
+        
+        # 记录租户信息到日志
+        log.info(f"用户ID: {user.id}, 用户名: {user.username} 正在生成JWT令牌")
+        
+        # 生成会话信息
         session_info=OnlineOutSchema(
             session_id=session_id,
             user_id=user.id, 
@@ -214,6 +219,11 @@ class LoginService:
         # 用户认证
         auth = AuthSchema(db=db)
         user = await UserCRUD(auth).get_by_id_crud(id=user_id)
+        if not user:
+            raise CustomException(msg="刷新token失败，用户不存在")
+        
+        # 记录刷新令牌时的租户信息
+        log.info(f"用户ID: {user.id}, 用户名: {user.username} 正在刷新JWT令牌")
 
         # 设置新的 token
         access_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -225,13 +235,13 @@ class LoginService:
         access_token = create_access_token(payload=JWTPayloadSchema(
             sub=session_info_json,
             is_refresh=False,
-            exp=now + access_expires,
+            exp=now + access_expires
         ))
 
         refresh_token_new = create_access_token(payload=JWTPayloadSchema(
             sub=session_info_json,
             is_refresh=True,
-            exp=now + refresh_expires,
+            exp=now + refresh_expires
         ))
         
         # 覆盖写入 Redis
@@ -246,12 +256,12 @@ class LoginService:
             value=refresh_token_new,
             expire=int(refresh_expires.total_seconds())
         )
-
+        
         return JWTOutSchema(
             access_token=access_token,
             refresh_token=refresh_token_new,
-            expires_in=int(access_expires.total_seconds()),
-            token_type=settings.TOKEN_TYPE
+            token_type=settings.TOKEN_TYPE,
+            expires_in=int(access_expires.total_seconds())
         )
 
     @classmethod
@@ -289,7 +299,7 @@ class CaptchaService:
     """验证码服务"""
 
     @classmethod
-    async def get_captcha_service(cls, redis: Redis) -> Dict[str, Union[CaptchaKey, CaptchaBase64]]:
+    async def get_captcha_service(cls, redis: Redis) -> dict[str, CaptchaKey | CaptchaBase64]:
         """
         获取验证码
         
@@ -297,7 +307,7 @@ class CaptchaService:
         - redis (Redis): Redis客户端对象
             
         返回:
-        - Dict[str, Union[CaptchaKey, CaptchaBase64]]: 包含验证码key和base64图片的字典
+        - dict[str, CaptchaKey | CaptchaBase64]: 包含验证码key和base64图片的字典
             
         异常:
         - CustomException: 验证码服务未启用时抛出异常

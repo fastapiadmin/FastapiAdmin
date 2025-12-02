@@ -2,8 +2,6 @@
 
 import asyncio
 import json
-from pathlib import Path
-from typing import Dict, List
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +9,6 @@ from app.config.path_conf import SCRIPT_DIR
 from app.core.logger import log
 from app.core.database import async_db_session, async_engine
 from app.core.base_model import MappedBase
-from app.config.setting import settings
 
 from app.api.v1.module_system.user.model import UserModel, UserRolesModel
 from app.api.v1.module_system.role.model import RoleModel
@@ -32,15 +29,14 @@ class InitializeData:
         """
         # 按照依赖关系排序：先创建基础表，再创建关联表
         self.prepare_init_models = [
-            # 基础表（项目启动初始化数据表，部门和菜单必须先创建）
-            DeptModel,
             MenuModel,
+            ParamsModel,
+            DeptModel,
+            DictTypeModel,
+            DictDataModel,
             UserModel,
             RoleModel,
             UserRolesModel,
-            ParamsModel,
-            DictTypeModel,
-            DictDataModel
         ]
     
     async def __init_create_table(self) -> None:
@@ -66,6 +62,9 @@ class InitializeData:
         参数:
         - db (AsyncSession): 异步数据库会话。
         """
+        # 存储字典类型数据的映射，用于后续字典数据的初始化
+        dict_type_mapping = {}
+        
         for model in self.prepare_init_models:
             table_name = model.__tablename__
             
@@ -73,23 +72,43 @@ class InitializeData:
             count_result = await db.execute(select(func.count()).select_from(model))
             existing_count = count_result.scalar()
             if existing_count and existing_count > 0:
-                log.error(f"⚠️  跳过 {table_name} 表数据初始化（表已存在 {existing_count} 条记录）")
+                log.warning(f"⚠️  跳过 {table_name} 表数据初始化（表已存在 {existing_count} 条记录）")
                 continue
 
             data = await self.__get_data(table_name)
             if not data:
-                log.error(f"⚠️  跳过 {table_name} 表，无初始化数据")
+                log.warning(f"⚠️  跳过 {table_name} 表，无初始化数据")
                 continue
             
             try:
                 # 特殊处理具有嵌套 children 数据的表
-                if table_name in ["system_dept", "system_menu"]:
+                if table_name in ["sys_dept", "sys_menu"]:
                     # 获取对应的模型类
-                    model_class = DeptModel if table_name == "system_dept" else MenuModel
+                    model_class = DeptModel if table_name == "sys_dept" else MenuModel
                     objs = self.__create_objects_with_children(data, model_class)
+                # 处理字典类型表，保存类型映射
+                elif table_name == "sys_dict_type":
+                    objs = []
+                    for item in data:
+                        obj = model(**item)
+                        objs.append(obj)
+                        dict_type_mapping[item['dict_type']] = obj
+                # 处理字典数据表，添加dict_type_id关联
+                elif table_name == "sys_dict_data":
+                    objs = []
+                    for item in data:
+                        dict_type = item.get('dict_type')
+                        if dict_type in dict_type_mapping:
+                            # 添加dict_type_id关联
+                            item['dict_type_id'] = dict_type_mapping[dict_type].id
+                        else:
+                            log.warning(f"⚠️  未找到字典类型 {dict_type}，跳过该字典数据")
+                            continue
+                        objs.append(model(**item))
                 else:
                     # 表为空，直接插入全部数据
                     objs = [model(**item) for item in data]
+                
                 db.add_all(objs)
                 await db.flush()
                 log.info(f"✅️ 已向 {table_name} 表写入初始化数据")
@@ -98,20 +117,20 @@ class InitializeData:
                 log.error(f"❌️ 初始化 {table_name} 表数据失败: {str(e)}")
                 raise
 
-    def __create_objects_with_children(self, data: List[Dict], model_class) -> List:
+    def __create_objects_with_children(self, data: list[dict], model_class) -> list:
         """
         通用递归创建对象函数，处理嵌套的 children 数据
 
         参数:
-        - data (List[Dict]): 包含嵌套 children 数据的列表。
+        - data (list[dict]): 包含嵌套 children 数据的列表。
         - model_class: 对应的 SQLAlchemy 模型类。
 
         返回:
-        - List: 包含创建的对象的列表。
+        - list: 包含创建的对象的列表。
         """
         objs = []
         
-        def create_object(obj_data: Dict):
+        def create_object(obj_data: dict):
             # 分离 children 数据
             children_data = obj_data.pop('children', [])
             
@@ -129,7 +148,7 @@ class InitializeData:
             
         return objs
 
-    async def __get_data(self, filename: str) -> List[Dict]:
+    async def __get_data(self, filename: str) -> list[dict]:
         """
         读取初始化数据文件
 
@@ -137,7 +156,7 @@ class InitializeData:
         - filename (str): 文件名（不包含扩展名）。
 
         返回:
-        - List[Dict]: 解析后的 JSON 数据列表。
+        - list[dict]: 解析后的 JSON 数据列表。
         """
         json_path = SCRIPT_DIR / f'{filename}.json'
         if not json_path.exists():

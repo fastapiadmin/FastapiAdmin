@@ -1,0 +1,22 @@
+[
+  {
+    "name": "管理员角色",
+    "code": "ADMIN",
+    "status": "0",
+    "order": 1,
+    "data_scope": 4,
+    "description": "初始化角色",
+    "created_id": 1,
+    "updated_id": 1
+  },
+  {
+    "name": "普通角色",
+    "code": "COMMON",
+    "status": "0",
+    "order": 1,
+    "data_scope": 3,
+    "description": "初始化角色",
+    "created_id": 1,
+    "updated_id": 1
+  }
+]

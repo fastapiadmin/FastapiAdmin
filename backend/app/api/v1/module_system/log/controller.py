@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Body, Depends, Path, Query
+from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.common.request import PaginationService
 from app.common.response import SuccessResponse, StreamResponse
-from app.utils.common_util import bytes2file_response
 from app.core.router_class import OperationLogRoute
+from app.utils.common_util import bytes2file_response
 from app.core.dependencies import AuthPermission
 from app.core.base_params import PaginationQueryParam
 from app.core.logger import log
 
 from ..auth.schema import AuthSchema
-from .param import OperationLogQueryParam
+from .schema import OperationLogQueryParam
 from .service import OperationLogService
 
 
@@ -36,7 +36,7 @@ async def get_obj_list_controller(
     返回:
     - JSONResponse: 包含分页日志详情的 JSON 响应模型
     """
-    order_by = [{"created_at": "desc"}]
+    order_by = [{"created_time": "desc"}]
     if page.order_by:
         order_by = page.order_by
     result_dict_list = await OperationLogService.get_log_list_service(search=search, auth=auth, order_by=order_by)

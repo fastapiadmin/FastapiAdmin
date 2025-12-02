@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-from typing import Any, Dict, List, Optional
-
 from redis.asyncio.client import Redis
 from fastapi import UploadFile
 from redis.asyncio.client import Redis
@@ -17,8 +15,7 @@ from app.core.exceptions import CustomException
 from app.core.logger import log
 
 from ..auth.schema import AuthSchema
-from .param import ParamsQueryParam
-from .schema import ParamsOutSchema, ParamsUpdateSchema, ParamsCreateSchema
+from .schema import ParamsOutSchema, ParamsUpdateSchema, ParamsCreateSchema, ParamsQueryParam
 from .crud import ParamsCRUD
 
 
@@ -27,7 +24,7 @@ class ParamsService:
     配置管理模块服务层
     """
     @classmethod
-    async def get_obj_detail_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def get_obj_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取配置详情
         
@@ -36,13 +33,13 @@ class ParamsService:
         - id (int): 配置管理型ID
         
         返回:
-        - Dict: 配置管理型模型实例字典表示
+        - dict: 配置管理型模型实例字典表示
         """
         obj = await ParamsCRUD(auth).get_obj_by_id_crud(id=id)
         return ParamsOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def get_obj_by_key_service(cls, auth: AuthSchema, config_key: str) -> Dict:
+    async def get_obj_by_key_service(cls, auth: AuthSchema, config_key: str) -> dict:
         """
         根据配置键获取配置详情
         
@@ -76,17 +73,17 @@ class ParamsService:
         return obj.config_value
 
     @classmethod
-    async def get_obj_list_service(cls, auth: AuthSchema, search: Optional[ParamsQueryParam] = None, order_by: Optional[List[Dict[str, str]]]= None) -> List[Dict]:
+    async def get_obj_list_service(cls, auth: AuthSchema, search: ParamsQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取配置管理型列表
         
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (ParamsQueryParam | None): 查询参数对象
-        - order_by (List[Dict[str, str]] | None): 排序参数列表
+        - order_by (list[dict] | None): 排序参数列表
         
         返回:
-        - List[Dict]: 配置管理型模型实例字典列表表示
+        - list[dict]: 配置管理型模型实例字典列表表示
         """
         obj_list = None
         if search:
@@ -96,7 +93,7 @@ class ParamsService:
         return [ParamsOutSchema.model_validate(obj).model_dump() for obj in obj_list]
     
     @classmethod
-    async def create_obj_service(cls, auth: AuthSchema, redis: Redis, data: ParamsCreateSchema) -> Dict:
+    async def create_obj_service(cls, auth: AuthSchema, redis: Redis, data: ParamsCreateSchema) -> dict:
         """
         创建配置管理型
         
@@ -106,7 +103,7 @@ class ParamsService:
         - data (ParamsCreateSchema): 配置管理型创建模型
         
         返回:
-        - Dict: 新创建的配置管理型模型实例字典表示
+        - dict: 新创建的配置管理型模型实例字典表示
         """
         exist_obj = await ParamsCRUD(auth).get(config_key=data.config_key)
         if exist_obj:
@@ -132,7 +129,7 @@ class ParamsService:
         return new_obj_dict
     
     @classmethod
-    async def update_obj_service(cls, auth: AuthSchema, redis: Redis, id:int, data: ParamsUpdateSchema) -> Dict:
+    async def update_obj_service(cls, auth: AuthSchema, redis: Redis, id:int, data: ParamsUpdateSchema) -> dict:
         """
         更新配置管理型
         
@@ -213,12 +210,12 @@ class ParamsService:
                 raise CustomException(msg="删除字典类型失败")
     
     @classmethod
-    async def export_obj_service(cls, data_list: List[Dict[str, Any]]) -> bytes:
+    async def export_obj_service(cls, data_list: list[dict]) -> bytes:
         """
         导出系统配置列表
         
         参数:
-        - data_list (List[Dict[str, Any]]): 系统配置模型实例字典列表表示
+        - data_list (list[dict]): 系统配置模型实例字典列表表示
         
         返回:
         - bytes: Excel文件二进制数据
@@ -230,10 +227,10 @@ class ParamsService:
             'config_value': '参数键值',
             'config_type': '系统内置((True:是 False:否))',
             'description': '备注',
-            'created_at': '创建时间',
-            'updated_at': '更新时间',
-            'creator_id': '创建者ID',
-            'creator': '创建者',
+            'created_time': '创建时间',
+            'updated_time': '更新时间',
+            'created_id': '创建者ID',
+            'updated_id': '更新者ID',
         }
 
         # 复制数据并转换状态
@@ -246,7 +243,7 @@ class ParamsService:
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
     
     @classmethod
-    async def upload_service(cls, base_url: str, file: UploadFile) -> Dict:
+    async def upload_service(cls, base_url: str, file: UploadFile) -> dict:
         """
         上传文件
         
@@ -255,7 +252,7 @@ class ParamsService:
         - file (UploadFile): 上传的文件对象
         
         返回:
-        - Dict: 上传文件的响应模型实例字典表示
+        - dict: 上传文件的响应模型实例字典表示
         """
         filename, filepath, file_url = await UploadUtil.upload_file(file=file, base_url=base_url)
         
@@ -279,7 +276,8 @@ class ParamsService:
         """
         async with async_db_session() as session:
             async with session.begin():
-                auth = AuthSchema(db=session)
+                # 在初始化过程中，不需要检查数据权限
+                auth = AuthSchema(db=session, check_data_scope=False)
                 config_obj = await ParamsCRUD(auth).get_obj_list_crud()
                 if not config_obj:
                     raise CustomException(msg="系统配置不存在")
@@ -293,6 +291,7 @@ class ParamsService:
                             key=redis_key,
                             value=value,
                         )
+                        log.info(f"✅ 系统配置缓存成功: {config.config_key}")
                         if not result:
                             log.error(f"❌️ 初始化系统配置失败: {config_obj_dict}")
                             raise CustomException(msg="初始化系统配置失败")
@@ -301,7 +300,7 @@ class ParamsService:
                     raise CustomException(msg="初始化系统配置失败")
 
     @classmethod
-    async def get_init_config_service(cls, redis: Redis) -> List[Dict]:
+    async def get_init_config_service(cls, redis: Redis) -> list[dict]:
         """
         获取系统配置
         
@@ -309,7 +308,7 @@ class ParamsService:
         - redis (Redis): Redis 客户端实例
         
         返回:
-        - List[Dict]: 系统配置模型实例字典列表表示
+        - list[dict]: 系统配置模型实例字典列表表示
         """
         redis_keys = await RedisCURD(redis).get_keys(f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:*")
         redis_configs = await RedisCURD(redis).mget(redis_keys)
@@ -327,7 +326,7 @@ class ParamsService:
         return configs
     
     @classmethod
-    async def get_system_config_for_middleware(cls, redis: Redis) -> Dict[str, Any]:
+    async def get_system_config_for_middleware(cls, redis: Redis) -> dict:
         """
         获取中间件所需的系统配置
         
@@ -335,7 +334,7 @@ class ParamsService:
         - redis (Redis): Redis 客户端实例
         
         返回:
-        - Dict[str, Any]: 包含演示模式、IP白名单、API白名单和IP黑名单的配置字典
+        - dict: 包含演示模式、IP白名单、API白名单和IP黑名单的配置字典
         """
         # 定义需要获取的配置键
         config_keys = [

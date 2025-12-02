@@ -5,20 +5,18 @@ from fastapi.responses import JSONResponse, StreamingResponse
 import urllib.parse
 
 from app.common.response import StreamResponse, SuccessResponse
+from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.core.base_schema import BatchSetAvailable
 from app.core.logger import log
-
-
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .param import DemoQueryParam
 from .service import DemoService
 from .schema import (
     DemoCreateSchema,
-    DemoUpdateSchema
+    DemoUpdateSchema,
+    DemoQueryParam
 )
 
 
@@ -63,8 +61,8 @@ async def get_obj_list_controller(
     # 使用数据库分页而不是应用层分页
     result_dict = await DemoService.page_service(
         auth=auth, 
-        page_no=page.page_no if page.page_no is not None else 1, 
-        page_size=page.page_size if page.page_size is not None else 10, 
+        page_no=page.page_no, 
+        page_size=page.page_size, 
         search=search, 
         order_by=page.order_by
     )

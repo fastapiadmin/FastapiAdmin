@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Union
 from datetime import datetime
 from pydantic import ConfigDict, Field, BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..user.schema import UserOutSchema
+from ..user.model import UserModel
 
 
 class AuthSchema(BaseModel):
     """权限认证模型"""
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    user: Optional[UserOutSchema] = Field(default=None, description='用户信息')
+    user: UserModel | None = Field(default=None, description='用户信息')
     check_data_scope: bool = Field(default=True, description='是否检查数据权限')
     db: AsyncSession = Field(description='数据库会话')
 
@@ -21,7 +20,7 @@ class JWTPayloadSchema(BaseModel):
     """JWT载荷模型"""
     sub: str = Field(..., description='用户登录信息')
     is_refresh: bool = Field(default=False, description='是否刷新token')
-    exp: Union[datetime, int] = Field(..., description='过期时间')
+    exp: datetime | int = Field(..., description='过期时间')
 
     @model_validator(mode='after')
     def validate_fields(self):

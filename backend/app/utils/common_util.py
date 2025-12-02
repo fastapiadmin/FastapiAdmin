@@ -4,18 +4,15 @@ import importlib
 import re
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Union, Sequence, Optional, Generator
+from typing import Any, Literal, Sequence, Generator
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.sql.expression import TextClause, null
 
-
 from app.config.setting import settings
 from app.core.logger import log
 from app.core.exceptions import CustomException
-
-
 
 
 def import_module(module: str, desc: str) -> Any:
@@ -79,7 +76,12 @@ def get_random_character() -> str:
     return uuid.uuid4().hex
 
 
-def get_parent_id_map(model_list: Sequence[DeclarativeBase]) -> Dict[int, int]:
+def uuid4_str() -> str:
+    """数据库引擎 UUID 类型兼容性解决方案"""
+    return str(uuid.uuid4())
+
+
+def get_parent_id_map(model_list: Sequence[DeclarativeBase]) -> dict[int, int]:
     """
     获取父级 ID 映射字典
 
@@ -92,17 +94,17 @@ def get_parent_id_map(model_list: Sequence[DeclarativeBase]) -> Dict[int, int]:
     return {item.id: item.parent_id for item in model_list}
 
 
-def get_parent_recursion(id: int, id_map: Dict[int, int], ids: Optional[List[int]] = None) -> List[int]:
+def get_parent_recursion(id: int, id_map: dict[int, int], ids: list[int] | None = None) -> list[int]:
     """
     递归获取所有父级 ID
 
     参数:
     - id (int): 当前 ID。
-    - id_map (Dict[int, int]): ID 映射字典。
-    - ids (List[int] | None): 已收集的 ID 列表。
+    - id_map (dict[int, int]): ID 映射字典。
+    - ids (list[int] | None): 已收集的 ID 列表。
 
     返回:
-    - List[int]: 所有父级 ID 列表。
+    - list[int]: 所有父级 ID 列表。
     """
     ids = ids or []
     if id in ids:
@@ -114,7 +116,7 @@ def get_parent_recursion(id: int, id_map: Dict[int, int], ids: Optional[List[int
     return ids
 
 
-def get_child_id_map(model_list: Sequence[DeclarativeBase]) -> Dict[int, List[int]]:
+def get_child_id_map(model_list: Sequence[DeclarativeBase]) -> dict[int, list[int]]:
     """
     获取子级 ID 映射字典
 
@@ -132,17 +134,17 @@ def get_child_id_map(model_list: Sequence[DeclarativeBase]) -> Dict[int, List[in
     return data_map
 
 
-def get_child_recursion(id: int, id_map: Dict[int, List[int]], ids: Optional[List[int]] = None) -> List[int]:
+def get_child_recursion(id: int, id_map: dict[int, list[int]], ids: list[int] | None= None) -> list[int]:
     """
     递归获取所有子级 ID
 
     参数:
     - id (int): 当前 ID。
-    - id_map (Dict[int, List[int]]): ID 映射字典。
-    - ids (List[int] | None): 已收集的 ID 列表。
+    - id_map (dict[int, list[int]]): ID 映射字典。
+    - ids (list[int] | None): 已收集的 ID 列表。
 
     返回:
-    - List[int]: 所有子级 ID 列表。
+    - list[int]: 所有子级 ID 列表。
     """
     ids = ids or []
     ids.append(id)
@@ -197,7 +199,7 @@ def recursive_to_tree(nodes: list[dict[str, Any]], *, parent_id: int | None = No
 
     参数:
     - nodes (list[dict[str, Any]]): 树节点列表。
-    - parent_id (int | None): 父节点 ID，默认为 None 表示根节点。
+    - parent_id (int | None): 父节点 ID,默认为 None 表示根节点。
 
     返回:
     - list[dict[str, Any]]: 构造后的树形结构列表。
@@ -270,7 +272,7 @@ class SqlalchemyUtil:
 
     @classmethod
     def base_to_dict(
-        cls, obj: Union[DeclarativeBase, Dict], transform_case: Literal['no_case', 'snake_to_camel', 'camel_to_snake'] = 'no_case'
+        cls, obj: DeclarativeBase | dict[str, Any], transform_case: Literal['no_case', 'snake_to_camel', 'camel_to_snake'] = 'no_case'
     ):
         """
         将sqlalchemy模型对象转换为字典
@@ -324,7 +326,7 @@ class SqlalchemyUtil:
         return result
 
     @classmethod
-    def get_server_default_null(cls, dialect_name: str, need_explicit_null: bool = True) -> Optional[TextClause]:
+    def get_server_default_null(cls, dialect_name: str, need_explicit_null: bool = True) -> TextClause | None:
         """
         根据数据库方言动态返回值为null的server_default
 

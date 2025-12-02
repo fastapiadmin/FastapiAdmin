@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, List, Optional, Sequence, Union, Any
+from typing import Sequence
 
 from app.core.base_crud import CRUDBase
 
@@ -17,13 +17,13 @@ class MenuCRUD(CRUDBase[MenuModel, MenuCreateSchema, MenuUpdateSchema]):
         self.auth = auth
         super().__init__(model=MenuModel, auth=auth)
 
-    async def get_by_id_crud(self, id: int, preload: Optional[List[Union[str, Any]]] = None) -> Optional[MenuModel]:
+    async def get_by_id_crud(self, id: int, preload: list[str] | None = None) -> MenuModel | None:
         """
         根据 id 获取菜单信息。
         
         参数:
         - id (int): 菜单 ID。
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - MenuModel | None: 菜单信息，未找到返回 None。
@@ -33,41 +33,41 @@ class MenuCRUD(CRUDBase[MenuModel, MenuCreateSchema, MenuUpdateSchema]):
             return None
         return obj
 
-    async def get_list_crud(self, search: Optional[Dict] = None, order_by: Optional[List[Dict[str, str]]] = None, preload: Optional[List[Union[str, Any]]] = None) -> Sequence[MenuModel]:
+    async def get_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list[str] | None = None) -> Sequence[MenuModel]:
         """
         获取菜单列表。
         
         参数:
-        - search (Dict | None): 搜索条件。
-        - order_by (List[Dict[str, str]] | None): 排序字段列表。
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 搜索条件。
+        - order_by (list[dict] | None): 排序字段列表。
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - Sequence[MenuModel]: 菜单列表。
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def get_tree_list_crud(self, search: Optional[Dict] = None, order_by: Optional[List[Dict[str, str]]] = None, preload: Optional[List[Union[str, Any]]] = None) -> Sequence[MenuModel]:
+    async def get_tree_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list[str] | None = None) -> Sequence[MenuModel]:
         """
         获取菜单树形列表。
         
         参数:
-        - search (Dict | None): 搜索条件。
-        - order_by (List[Dict[str, str]] | None): 排序字段列表。
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 搜索条件。
+        - order_by (list[dict] | None): 排序字段列表。
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - Sequence[MenuModel]: 菜单树形列表。
         """
         return await self.tree_list(search=search, order_by=order_by, children_attr='children', preload=preload)
 
-    async def set_available_crud(self, ids: List[int], status: bool) -> None:
+    async def set_available_crud(self, ids: list[int], status: str) -> None:
         """
         批量设置菜单可用状态。
         
         参数:
-        - ids (List[int]): 菜单 ID 列表。
-        - status (bool): 可用状态。
+        - ids (list[int]): 菜单 ID 列表。
+        - status (str): 可用状态。
         
         返回:
         - None

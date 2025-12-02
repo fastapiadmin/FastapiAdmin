@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 from fastapi import status
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from starlette.background import BackgroundTask
@@ -12,7 +12,7 @@ class ResponseSchema(BaseModel):
     """响应模型"""
     code: int = Field(default=RET.OK.code, description="业务状态码")
     msg: str = Field(default=RET.OK.msg, description="响应消息")
-    data: Optional[Any] = Field(default=None, description="响应数据")
+    data: Any = Field(default=None, description="响应数据")
     status_code: int = Field(default=status.HTTP_200_OK, description="HTTP状态码")
     success: bool = Field(default=True, description='操作是否成功')
 
@@ -22,7 +22,7 @@ class SuccessResponse(JSONResponse):
 
     def __init__(
             self,
-            data: Optional[Any] = None,
+            data: Any = None,
             msg: str = RET.OK.msg,
             code: int = RET.OK.code,
             status_code: int = status.HTTP_200_OK,
@@ -56,7 +56,7 @@ class ErrorResponse(JSONResponse):
 
     def __init__(
             self,
-            data: Optional[Any] = None,
+            data: Any = None,
             msg: str = RET.ERROR.msg,
             code: int = RET.ERROR.code,
             status_code: int = status.HTTP_400_BAD_REQUEST,
@@ -66,7 +66,7 @@ class ErrorResponse(JSONResponse):
         初始化错误响应类
         
         参数:
-        - data (Any | None): 响应数据。
+        - data (Any): 响应数据。
         - msg (str): 响应消息。
         - code (int): 业务状态码。
         - status_code (int): HTTP 状态码。
@@ -127,8 +127,8 @@ class UploadFileResponse(FileResponse):
             file_path: str,
             filename: str,
             media_type: str = "application/octet-stream",
-            headers: Optional[Mapping[str, str]] = None,
-            background: Optional[BackgroundTask] = None,
+            headers: Mapping[str, str] | None = None,
+            background: BackgroundTask | None = None,
             status_code: int = 200
     ):
         """

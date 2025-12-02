@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Dict, Optional
-
 from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.common_util import (
@@ -13,12 +11,12 @@ from app.utils.common_util import (
 )
 
 from ..auth.schema import AuthSchema
-from .param import MenuQueryParam
 from .crud import MenuCRUD
 from .schema import (
     MenuCreateSchema,
     MenuUpdateSchema,
-    MenuOutSchema
+    MenuOutSchema,
+    MenuQueryParam
 )
 
 
@@ -28,7 +26,7 @@ class MenuService:
     """
 
     @classmethod
-    async def get_menu_detail_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def get_menu_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取菜单详情。
         
@@ -37,29 +35,30 @@ class MenuService:
         - id (int): 菜单ID。
         
         返回:
-        - Dict: 菜单详情对象。
+        - dict: 菜单详情对象。
         """
         menu = await MenuCRUD(auth).get_by_id_crud(id=id)
+        # 创建实例后再设置parent_name属性
+        menu_out = MenuOutSchema.model_validate(menu)
         if menu and menu.parent_id:
             parent = await MenuCRUD(auth).get_by_id_crud(id=menu.parent_id)
             if parent:
-                MenuOutSchema.parent_name = parent.name
+                menu_out.parent_name = parent.name
         
-        menu_dict = MenuOutSchema.model_validate(menu).model_dump()
-        return menu_dict
+        return menu_out.model_dump()
 
     @classmethod
-    async def get_menu_tree_service(cls, auth: AuthSchema, search: Optional[MenuQueryParam] = None, order_by: Optional[List[Dict]] = None) -> List[Dict]:
+    async def get_menu_tree_service(cls, auth: AuthSchema, search: MenuQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取菜单树形列表。
         
         参数:
         - auth (AuthSchema): 认证对象。
         - search (MenuQueryParam | None): 查询参数对象。
-        - order_by (List[Dict] | None): 排序参数列表。
+        - order_by (list[dict] | None): 排序参数列表。
         
         返回:
-        - List[Dict]: 菜单树形列表对象。
+        - list[dict]: 菜单树形列表对象。
         """
         # 使用树形结构查询，预加载children关系
         menu_list = await MenuCRUD(auth).get_tree_list_crud(search=search.__dict__, order_by=order_by)
@@ -69,7 +68,7 @@ class MenuService:
         return traversal_to_tree(menu_dict_list)
 
     @classmethod
-    async def create_menu_service(cls, auth: AuthSchema, data: MenuCreateSchema) -> Dict:
+    async def create_menu_service(cls, auth: AuthSchema, data: MenuCreateSchema) -> dict:
         """
         创建菜单。
         
@@ -78,7 +77,7 @@ class MenuService:
         - data (MenuCreateSchema): 创建参数对象。
         
         返回:
-        - Dict: 创建的菜单对象。
+        - dict: 创建的菜单对象。
         """
         menu = await MenuCRUD(auth).get(name=data.name)
         if menu:
@@ -89,7 +88,7 @@ class MenuService:
         return new_menu_dict
 
     @classmethod
-    async def update_menu_service(cls, auth: AuthSchema,id:int, data: MenuUpdateSchema) -> Dict:
+    async def update_menu_service(cls, auth: AuthSchema,id:int, data: MenuUpdateSchema) -> dict:
         """
         更新菜单。
         
@@ -99,7 +98,7 @@ class MenuService:
         - data (MenuUpdateSchema): 更新参数对象。
         
         返回:
-        - Dict: 更新的菜单对象。
+        - dict: 更新的菜单对象。
         """
         menu = await MenuCRUD(auth).get_by_id_crud(id=id)
         if not menu:

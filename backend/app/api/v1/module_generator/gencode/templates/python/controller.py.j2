@@ -1,10 +1,10 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Depends, UploadFile, Body, Path
+from fastapi import APIRouter, Depends, UploadFile, Body, Path, Query
 from fastapi.responses import StreamingResponse, JSONResponse
+
 from app.common.response import SuccessResponse, StreamResponse
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_params import PaginationQueryParam
 from app.utils.common_util import bytes2file_response
@@ -12,10 +12,9 @@ from app.core.logger import log
 from app.core.base_schema import BatchSetAvailable
 
 from .service import {{ class_name }}Service
-from .schema import {{ class_name }}CreateSchema, {{ class_name }}UpdateSchema
-from .param import {{ class_name }}QueryParam
+from .schema import {{ class_name }}CreateSchema, {{ class_name }}UpdateSchema, {{ class_name }}QueryParam
 
-{{ class_name }}Router = APIRouter(route_class=OperationLogRoute, prefix='/{{ business_name }}', tags=["{{ function_name }}模块"]) 
+{{ class_name }}Router = APIRouter(prefix='/{{ business_name }}', tags=["{{ function_name }}模块"]) 
 
 @{{ class_name }}Router.get("/detail/{id}", summary="获取{{ function_name }}详情", description="获取{{ function_name }}详情")
 async def get_{{ business_name }}_detail_controller(
@@ -34,7 +33,7 @@ async def get_{{ business_name }}_list_controller(
     auth: AuthSchema = Depends(AuthPermission(["{{ permission_prefix }}:query"]))
 ) -> JSONResponse:
     """查询{{ function_name }}列表接口（数据库分页）"""
-    result_dict = await {{ class_name }}Service.page_service(
+    result_dict = await {{ class_name }}Service.page_{{ business_name }}_service(
         auth=auth,
         page_no=page.page_no if page.page_no is not None else 1,
         page_size=page.page_size if page.page_size is not None else 10,
@@ -92,7 +91,7 @@ async def export_{{ business_name }}_list_controller(
 ) -> StreamingResponse:
     """导出{{ function_name }}接口"""
     result_dict_list = await {{ class_name }}Service.list_{{ business_name }}_service(search=search, auth=auth)
-    export_result = await {{ class_name }}Service.batch_export_service(obj_list=result_dict_list)
+    export_result = await {{ class_name }}Service.batch_export_{{ business_name }}_service(obj_list=result_dict_list)
     log.info('导出{{ function_name }}成功')
 
     return StreamResponse(

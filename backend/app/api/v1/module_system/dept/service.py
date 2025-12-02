@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Dict, Optional
-
 from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.common_util import (
@@ -14,11 +12,11 @@ from app.utils.common_util import (
 
 from ..auth.schema import AuthSchema
 from .crud import DeptCRUD
-from .param import DeptQueryParam
 from .schema import (
     DeptCreateSchema,
     DeptUpdateSchema,
-    DeptOutSchema
+    DeptOutSchema,
+    DeptQueryParam
 )
 
 
@@ -28,7 +26,7 @@ class DeptService:
     """
 
     @classmethod
-    async def get_dept_detail_service(cls, auth: AuthSchema, id: int) -> Dict:
+    async def get_dept_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取部门详情。
         
@@ -37,27 +35,28 @@ class DeptService:
         - id (int): 部门 ID。
         
         返回:
-        - Dict: 部门详情对象。
+        - dict: 部门详情对象。
         """
         dept = await DeptCRUD(auth).get_by_id_crud(id=id)
+        result = DeptOutSchema.model_validate(dept).model_dump()
         if dept and dept.parent_id:
             parent = await DeptCRUD(auth).get(id=dept.parent_id)
             if parent:
-                DeptOutSchema.parent_name = parent.name
-        return DeptOutSchema.model_validate(dept).model_dump()
+                result['parent_name'] = parent.name
+        return result
 
     @classmethod
-    async def get_dept_tree_service(cls, auth: AuthSchema, search: Optional[DeptQueryParam]= None, order_by: Optional[List[Dict]] = None) -> List[Dict]:
+    async def get_dept_tree_service(cls, auth: AuthSchema, search: DeptQueryParam | None= None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取部门树形列表。
         
         参数:
         - auth (AuthSchema): 认证对象。
         - search (DeptQueryParam | None): 查询参数对象。
-        - order_by (List[Dict] | None): 排序参数。
+        - order_by (list[dict] | None): 排序参数。
         
         返回:
-        - List[Dict]: 部门树形列表对象。
+        - list[dict]: 部门树形列表对象。
         """
         # 使用树形结构查询，预加载children关系
         dept_list = await DeptCRUD(auth).get_tree_list_crud(search=search.__dict__, order_by=order_by)
@@ -67,7 +66,7 @@ class DeptService:
         return traversal_to_tree(dept_dict_list)
 
     @classmethod
-    async def create_dept_service(cls, auth: AuthSchema, data: DeptCreateSchema) -> Dict:
+    async def create_dept_service(cls, auth: AuthSchema, data: DeptCreateSchema) -> dict:
         """
         创建部门。
         
@@ -76,7 +75,7 @@ class DeptService:
         - data (DeptCreateSchema): 部门创建对象。
         
         返回:
-        - Dict: 新创建的部门对象。
+        - dict: 新创建的部门对象。
         
         异常:
         - CustomException: 当部门已存在时抛出。
@@ -87,11 +86,14 @@ class DeptService:
         obj = await DeptCRUD(auth).get(code=data.code)
         if obj:
             raise CustomException(msg='创建失败，编码已存在')
+        # 检测循环引用
+        if data.parent_id:
+            await cls._check_circular_reference(auth, data.parent_id, id=None)
         dept = await DeptCRUD(auth).create(data=data)
         return DeptOutSchema.model_validate(dept).model_dump()
 
     @classmethod
-    async def update_dept_service(cls, auth: AuthSchema, id:int, data: DeptUpdateSchema) -> Dict:
+    async def update_dept_service(cls, auth: AuthSchema, id:int, data: DeptUpdateSchema) -> dict:
         """
         更新部门。
         
@@ -101,7 +103,7 @@ class DeptService:
         - data (DeptUpdateSchema): 部门更新对象。
         
         返回:
-        - Dict: 更新后的部门对象。
+        - dict: 更新后的部门对象。
         
         异常:
         - CustomException: 当部门不存在或名称重复时抛出。
@@ -112,12 +114,44 @@ class DeptService:
         exist_dept = await DeptCRUD(auth).get(name=data.name)
         if exist_dept and exist_dept.id != id:
             raise CustomException(msg='更新失败，部门名称重复')
+        # 检测循环引用
+        if data.parent_id is not None:
+            await cls._check_circular_reference(auth, data.parent_id, id=id)
         dept = await DeptCRUD(auth).update(id=id, data=data)
-        if data.status:
-            await cls.batch_set_available_service(auth=auth, data=BatchSetAvailable(ids=[id], status=True))
-        else:
-            await cls.batch_set_available_service(auth=auth, data=BatchSetAvailable(ids=[id], status=False))
         return DeptOutSchema.model_validate(dept).model_dump()
+
+    @classmethod
+    async def _check_circular_reference(cls, auth: AuthSchema, parent_id: int, id: int | None = None) -> None:
+        """
+        检测部门层级循环引用
+        
+        参数:
+        - auth (AuthSchema): 认证对象
+        - parent_id (int): 父部门ID
+        - id (int | None): 当前部门ID（用于更新时检测）
+        
+        异常:
+        - CustomException: 当检测到循环引用时抛出
+        """
+        if parent_id == id:
+            raise CustomException(msg='更新失败，不能将部门设置为自己的子部门')
+        
+        # 获取所有部门信息用于检测循环引用
+        all_depts = await DeptCRUD(auth).get_list_crud()
+        parent_map = {dept.id: dept.parent_id for dept in all_depts}
+        
+        # 检查循环引用
+        current_id = parent_id
+        visited = set()
+        
+        while current_id and current_id not in visited:
+            visited.add(current_id)
+            if current_id == id:
+                raise CustomException(msg='更新失败，检测到部门层级循环引用')
+            current_id = parent_map.get(current_id)
+        
+        if current_id == id:
+            raise CustomException(msg='更新失败，检测到部门层级循环引用')
 
     @classmethod
     async def delete_dept_service(cls, auth: AuthSchema, ids: list[int]) -> None:

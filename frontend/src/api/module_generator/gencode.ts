@@ -137,9 +137,7 @@ export interface GenTablePageQuery extends PageQuery {
 }
 
 /** 代码生成业务表模型 */
-export interface GenTableSchema {
-  /** 主键 */
-  id?: number;
+export interface GenTableSchema extends BaseType {
   /** 表名称 */
   table_name?: string;
   /** 表描述 */
@@ -160,8 +158,6 @@ export interface GenTableSchema {
   function_name?: string;
   /** 所属父级分类 */
   parent_menu_id?: number;
-  /** 表描述 */
-  description?: string;
   /** 表列信息 */
   columns: GenTableColumnSchema[];
   /** 主键信息 */
@@ -170,12 +166,12 @@ export interface GenTableSchema {
   sub_table?: GenTableSchema;
   /** 是否为子表 */
   sub?: boolean;
+  created_by?: creatorType;
+  updated_by?: updatorType;
 }
 
 /** 代码生成业务表列模型 */
-export interface GenTableColumnSchema {
-  /** 主键 */
-  id?: number;
+export interface GenTableColumnSchema extends BaseType {
   /** 归属表编号 */
   table_id?: number;
   /** 列名称 */
@@ -216,6 +212,6 @@ export interface GenTableColumnSchema {
   dict_type?: string;
   /** 排序 */
   sort?: number;
-  /** 功能描述 */
-  description?: string;
+  created_by?: creatorType;
+  updated_by?: updatorType;
 }

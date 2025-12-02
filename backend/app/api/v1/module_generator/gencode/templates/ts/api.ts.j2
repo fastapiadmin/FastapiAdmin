@@ -2,7 +2,6 @@ import request from "@/utils/request";
 
 const API_PATH = "/{{ module_name }}/{{ business_name|lower }}";
 
-// 参考 demo.ts 的风格，提供标准的 CRUD 与导入/导出 API（TypeScript）
 const {{ class_name }}API = {
   // 列表查询
   list{{ class_name }}(query: {{ class_name }}PageQuery) {
@@ -22,20 +21,20 @@ const {{ class_name }}API = {
   },
 
   // 新增
-  create{{ class_name }}(data: {{ class_name }}Form) {
+  create{{ class_name }}(body: {{ class_name }}Form) {
     return request<ApiResponse>({
       url: `${API_PATH}/create`,
       method: "post",
-      data,
+      data: body,
     });
   },
 
   // 修改（带主键）
-  update{{ class_name }}(id: number, data: {{ class_name }}Form) {
+  update{{ class_name }}(id: number, body: {{ class_name }}Form) {
     return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
       method: "put",
-      data,
+      data: body,
     });
   },
 
@@ -45,6 +44,15 @@ const {{ class_name }}API = {
       url: `${API_PATH}/delete`,
       method: "delete",
       data: ids,
+    });
+  },
+
+  // 批量启用/停用
+  batch{{ class_name }}(body: BatchType) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/available/setting`,
+      method: "patch",
+      data: body,
     });
   },
 
@@ -68,20 +76,12 @@ const {{ class_name }}API = {
   },
 
   // 导入
-  import{{ class_name }}(data: FormData) {
+  import{{ class_name }}(body: FormData) {
     return request<ApiResponse>({
       url: `${API_PATH}/import`,
       method: "post",
-      data,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  },
-  // 批量启用/停用
-  batchAvailable{{ class_name }}(body: { ids: number[]; status: boolean }) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/available/setting`,
-      method: "patch",
       data: body,
+      headers: { "Content-Type": "multipart/form-data" },
     });
   },
 };
@@ -96,19 +96,20 @@ export default {{ class_name }}API;
 export interface {{ class_name }}PageQuery extends PageQuery {
   {% for column in columns %}
   {% if column.is_query and column.column != "BETWEEN" %}
-  {{ column.python_field }}?: {{
+  {{ column.column_name }}?: {{
     'boolean' if ('status' in (column.python_field|lower)) or (column.html_type == 'radio')
     else 'number' if column.is_pk == '1'
+    else 'number' if column.column_name in ['created_id', 'updated_id']
     else 'string'
   }};
   {% endif %}
   {% endfor %}
-  start_time?: string;
-  end_time?: string;
+  created_time?: string[];
+  updated_time?: string[];
 }
 
 // 列表展示项
-export interface {{ class_name }}Table {
+export interface {{ class_name }}Table extends BaseType{
   index?: number;
   {% for column in columns %}
   {{ column.column_name }}?: {{
@@ -117,13 +118,14 @@ export interface {{ class_name }}Table {
     else 'string'
   }};
   {% endfor %}
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
 }
 
 // 新增/修改/详情表单参数
-export interface {{ class_name }}Form {
+export interface {{ class_name }}Form extends BaseFormType{
   {% for column in columns %}
-  {% if (column.is_insert == 1 or column.is_edit == 1) and column.column_name not in ['creator_id', 'created_at', 'updated_at'] %}
+  {% if (column.is_insert == 1 or column.is_edit == 1) and column.column_name not in ['id', 'uuid', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
   {{ column.column_name }}?: {{
     'boolean' if ('status' in (column.column_name|lower)) or (column.html_type == 'radio')
     else 'number' if column.is_pk == 1

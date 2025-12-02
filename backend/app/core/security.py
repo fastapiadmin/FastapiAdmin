@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import jwt
-from typing import Dict, Optional
 from fastapi import Form, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security.utils import get_authorization_scheme_param
 
 from app.core.exceptions import CustomException
 from app.config.setting import settings
-
 from app.api.v1.module_system.auth.schema import JWTPayloadSchema
 
 
@@ -18,9 +16,9 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
     def __init__(
             self,
             token_url: str,
-            scheme_name: Optional[str] = None,
-            scopes: Optional[Dict[str, str]] = None,
-            description: Optional[str] = None,
+            scheme_name: str | None = None,
+            scopes: dict[str, str] | None = None,
+            description: str | None = None,
             auto_error: bool = True
     ) -> None:
         super().__init__(
@@ -31,7 +29,7 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
             auto_error=auto_error
         )
 
-    async def __call__(self, request: Request) -> Optional[str]:
+    async def __call__(self, request: Request) -> str | None:
         """
         重写认证方法,校验token
 
@@ -39,7 +37,7 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
         - request (Request): FastAPI请求对象。
 
         返回:
-        - Optional[str]: 校验通过的token,如果校验失败则返回None。
+        - str | None: 校验通过的token,如果校验失败则返回None。
 
         异常:
         - CustomException: 认证失败时抛出,状态码为401。
@@ -61,26 +59,26 @@ class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
     参数:
     - grant_type (str | None): 授权类型,默认值为None,正则表达式为'password'。
     - scope (str): 作用域,默认值为空字符串。
-    - client_id (Optional[str]): 客户端ID,默认值为None。
-    - client_secret (Optional[str]): 客户端密钥,默认值为None。
+    - client_id (str | None): 客户端ID,默认值为None。
+    - client_secret (str | None): 客户端密钥,默认值为None。
     - username (str): 用户名。
     - password (str): 密码。
-    - captcha_key (Optional[str]): 验证码键,默认值为空字符串。
-    - captcha (Optional[str]): 验证码值,默认值为空字符串。
-    - login_type (Optional[str]): 登录类型,默认值为"PC端",描述为"PC端 | 移动端"。
+    - captcha_key (str | None): 验证码键,默认值为空字符串。
+    - captcha (str | None): 验证码值,默认值为空字符串。
+    - login_type (str | None): 登录类型,默认值为"PC端",描述为"PC端 | 移动端"。
     """
 
     def __init__(
             self,
             grant_type: str | None = Form(default=None, regex='password'),
             scope: str = Form(default=''),
-            client_id: Optional[str] = Form(default=None),
-            client_secret: Optional[str] = Form(default=None),
+            client_id: str | None = Form(default=None),
+            client_secret: str | None = Form(default=None),
             username: str = Form(),
             password: str = Form(),
-            captcha_key: Optional[str] = Form(default=""),
-            captcha: Optional[str] = Form(default=""),
-            login_type: Optional[str] = Form(default="PC端", description="PC端 | 移动端")
+            captcha_key: str | None = Form(default=""),
+            captcha: str | None = Form(default=""),
+            login_type: str | None = Form(default="PC端", description="PC端 | 移动端")
     ):
         super().__init__(
             grant_type=grant_type,

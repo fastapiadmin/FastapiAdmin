@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from urllib.parse import urlparse
+from fastapi import Query
 
 
 class ResourceItemSchema(BaseModel):
@@ -15,9 +15,9 @@ class ResourceItemSchema(BaseModel):
     relative_path: str = Field(..., description="相对路径")
     is_file: bool = Field(..., description="是否为文件")
     is_dir: bool = Field(..., description="是否为目录")
-    size: Optional[int] = Field(None, description="文件大小(字节)")
-    created_time: Optional[datetime] = Field(None, description="创建时间")
-    modified_time: Optional[datetime] = Field(None, description="修改时间")
+    size: int | None = Field(None, description="文件大小(字节)")
+    created_time: datetime | None = Field(None, description="创建时间")
+    modified_time: datetime | None = Field(None, description="修改时间")
     is_hidden: bool = Field(False, description="是否为隐藏文件")
 
     @field_validator('file_url')
@@ -54,7 +54,7 @@ class ResourceDirectorySchema(BaseModel):
     
     path: str = Field(..., description="目录路径")
     name: str = Field(..., description="目录名称")
-    items: List[ResourceItemSchema] = Field(default_factory=list, description="目录项")
+    items: list[ResourceItemSchema] = Field(default_factory=list, description="目录项")
     total_files: int = Field(0, description="文件总数")
     total_dirs: int = Field(0, description="目录总数")
     total_size: int = Field(0, description="总大小")
@@ -138,3 +138,19 @@ class ResourceCreateDirSchema(BaseModel):
             if '..' in value or value.startswith('/') or value.startswith('\\'):
                 raise ValueError("参数包含不安全字符")
         return value.strip()
+
+
+class ResourceSearchQueryParam:
+    """资源搜索查询参数"""
+
+    def __init__(
+        self,
+        name: str | None = Query(None, description="搜索关键词"),
+        path: str | None = Query(None, description="目录路径"),
+    ) -> None:
+        
+        # 模糊查询字段
+        self.name = ("like", name) if name else None
+        
+        # 精确查询字段
+        self.path = path

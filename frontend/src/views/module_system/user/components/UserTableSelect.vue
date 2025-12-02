@@ -7,8 +7,8 @@
     @clear-click="handleClearSelection"
   >
     <template #status="scope">
-      <el-tag :type="scope.row[scope.prop] === true ? 'success' : 'danger'">
-        {{ scope.row[scope.prop] === true ? "启用" : "停用" }}
+      <el-tag :type="scope.row[scope.prop] === '0' ? 'success' : 'danger'">
+        {{ scope.row[scope.prop] === '0' ? "启用" : "停用" }}
       </el-tag>
     </template>
   </table-select>
@@ -39,7 +39,7 @@ const selectConfig: ISelectConfig = {
       type: "select",
       label: "状态",
       prop: "status",
-      initialValue: true,
+      initialValue: '0',
       attrs: {
         placeholder: "全部",
         clearable: true,
@@ -48,8 +48,8 @@ const selectConfig: ISelectConfig = {
         },
       },
       options: [
-        { label: "启用", value: true },
-        { label: "停用", value: false },
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
       ],
     },
   ],
@@ -99,10 +99,10 @@ interface IUser {
   gender?: string;
   avatar?: string;
   email?: string | null;
-  status?: boolean;
+  status?: string;
   dept_name?: string;
   role_names?: string[];
-  created_at?: string;
+  created_time?: string;
 }
 const selectedUser = ref<IUser>();
 function handleConfirm(data: IUser[]) {

@@ -135,7 +135,7 @@ cd backend
 # 安装依赖
 pip3 install -r requirements.txt
 
-# 启动后端服务
+# 启动后端服务：启动之前保证mysql中创建好了数据库、redis服务
 python main.py run
 # 或指定环境
 python main.py run --env=dev

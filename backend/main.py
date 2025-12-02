@@ -55,11 +55,8 @@ def run(env: Annotated[EnvironmentEnum, typer.Option("--env", help="运行环境
     try:
         # 设置环境变量
         os.environ["ENVIRONMENT"] = env.value
+        typer.echo("项目启动中...")
         
-        # 显示启动横幅
-        from app.utils.banner import worship
-        typer.echo(worship(env.value))
-
         # 清除配置缓存，确保重新加载配置
         from app.config.setting import get_settings
         get_settings.cache_clear()
@@ -67,13 +64,17 @@ def run(env: Annotated[EnvironmentEnum, typer.Option("--env", help="运行环境
         
         from app.core.logger import setup_logging
         setup_logging()
+
+        # 显示启动横幅
+        from app.utils.banner import worship
+        worship(env.value)
         
         # 启动uvicorn服务
         uvicorn.run(
             app=f'main:create_app', 
             host=settings.SERVER_HOST,
             port=settings.SERVER_PORT,
-            reload=settings.RELOAD,
+            reload=True if env.value == EnvironmentEnum.DEV.value else False,
             factory=True,
             log_config=None
         )

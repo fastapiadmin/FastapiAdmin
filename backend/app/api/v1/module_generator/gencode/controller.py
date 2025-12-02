@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from typing import List
 from fastapi import APIRouter, Depends, Body, Path
@@ -6,15 +6,14 @@ from fastapi.responses import JSONResponse
 
 from app.common.response import SuccessResponse, StreamResponse
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.core.base_params import PaginationQueryParam
 from app.common.request import PaginationService
+from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 from app.core.logger import log
-
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .param import GenTableQueryParam
-from .schema import GenTableSchema
+
+from .schema import GenTableSchema, GenTableQueryParam
 from .service import GenTableService
 
 

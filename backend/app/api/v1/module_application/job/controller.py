@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Body, Depends, Path, Query
+from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.common.response import StreamResponse, SuccessResponse
 from app.common.request import PaginationService
+from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.core.logger import log
 
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .param import JobQueryParam, JobLogQueryParam
+from .tools.ap_scheduler import SchedulerUtil
 from .service import JobService, JobLogService
 from .schema import (
     JobCreateSchema,
-    JobUpdateSchema
+    JobUpdateSchema,
+    JobQueryParam,
+    JobLogQueryParam
 )
-from app.core.ap_scheduler import SchedulerUtil
 
 
 JobRouter = APIRouter(route_class=OperationLogRoute, prefix="/job", tags=["定时任务"])
@@ -256,7 +257,7 @@ async def get_job_log_list_controller(
     返回:
     - JSONResponse: 查询定时任务日志列表的JSON响应
     """
-    order_by = [{"create_time": "desc"}]
+    order_by = [{"created_time": "desc"}]
     result_dict_list = await JobLogService.get_job_log_list_service(auth=auth, search=search, order_by=order_by)
     result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
     log.info(f"查询定时任务日志列表成功")

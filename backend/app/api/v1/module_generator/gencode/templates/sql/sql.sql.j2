@@ -5,10 +5,10 @@
 {% set b_false = 0 if db_type == 'mysql' else false %}
 {% set order_col = '`order`' if db_type == 'mysql' else '"order"' %}
 {# 公共字段列表（按实际库字段） #}
-{# name, type, order, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at #}
+{# name, type, order, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time #}
 {% if db_type == 'mysql' %}
 -- 父菜单（类型=2：菜单）
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES (
   '{{ function_name }}',
   2,
@@ -36,21 +36,21 @@ VALUES (
 SELECT @parentId := LAST_INSERT_ID();
 
 -- 按钮权限（类型=3：按钮/权限）
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}查询', 3, 1, {{ b_true }}, '{{ permission_prefix }}:query',   NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}查询',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}新增', 3, 2, {{ b_true }}, '{{ permission_prefix }}:create',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}新增',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}修改', 3, 3, {{ b_true }}, '{{ permission_prefix }}:update',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}修改',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}删除', 3, 4, {{ b_true }}, '{{ permission_prefix }}:delete',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}删除',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}导出', 3, 5, {{ b_true }}, '{{ permission_prefix }}:export',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}导出',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}导入', 3, 6, {{ b_true }}, '{{ permission_prefix }}:import',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}导入',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}批量状态修改', 3, 7, {{ b_true }}, '{{ permission_prefix }}:patch',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}批量状态修改',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}下载导入模板', 3, 8, {{ b_true }}, '{{ permission_prefix }}:download',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}下载导入模板',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
 
 {% elif db_type == 'postgres' %}
@@ -63,7 +63,7 @@ BEGIN
   INSERT INTO public.system_menu ( 
     name, type, {{ order_col }}, status, permission, icon, route_name, route_path, 
     component_path, redirect, hidden, keep_alive, always_show, title, 
-    params, affix, parent_id, description, created_at, updated_at 
+    params, affix, parent_id, description, created_time, updated_time 
   ) 
   VALUES ( 
     '{{ function_name }}', 
@@ -92,7 +92,7 @@ BEGIN
   INSERT INTO public.system_menu ( 
     name, type, {{ order_col }}, status, permission, icon, route_name, route_path, 
     component_path, redirect, hidden, keep_alive, always_show, title, 
-    params, affix, parent_id, description, created_at, updated_at 
+    params, affix, parent_id, description, created_time, updated_time 
   ) VALUES 
     ('{{ function_name }}查询', 3, 1, {{ b_true }}, '{{ permission_prefix }}:query', NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}查询', NULL, {{ b_false }}, parent_id, NULL, NOW(), NOW()), 
     ('{{ function_name }}新增', 3, 2, {{ b_true }}, '{{ permission_prefix }}:create', NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}新增', NULL, {{ b_false }}, parent_id, NULL, NOW(), NOW()), 
@@ -109,23 +109,23 @@ END $$;
 
 {% else %}
 -- 未识别的数据库类型，默认按 MySQL 处理
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}', 2, 1, {{ b_true }}, '{{ permission_prefix }}:query', NULL, '{{ business_name|snake_to_camel }}', '/{{ module_name }}/{{ business_name }}', '{{ module_name }}/{{ business_name }}/index', NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}', NULL, {{ b_false }}, {{ parent_menu_id }}, '{{ function_name }}菜单', now(), now());
 SELECT @parentId := LAST_INSERT_ID();
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}查询', 3, 1, {{ b_true }}, '{{ permission_prefix }}:query',   NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}查询',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}新增', 3, 2, {{ b_true }}, '{{ permission_prefix }}:create',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}新增',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}修改', 3, 3, {{ b_true }}, '{{ permission_prefix }}:update',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}修改',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}删除', 3, 4, {{ b_true }}, '{{ permission_prefix }}:delete',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}删除',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}导出', 3, 5, {{ b_true }}, '{{ permission_prefix }}:export',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}导出',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}导入', 3, 6, {{ b_true }}, '{{ permission_prefix }}:import',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}导入',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}批量状态修改', 3, 7, {{ b_true }}, '{{ permission_prefix }}:patch',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}批量状态修改',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
-INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_at, updated_at)
+INSERT INTO `system_menu` (name, type, {{ order_col }}, status, permission, icon, route_name, route_path, component_path, redirect, hidden, keep_alive, always_show, title, params, affix, parent_id, description, created_time, updated_time)
 VALUES ('{{ function_name }}下载导入模板', 3, 8, {{ b_true }}, '{{ permission_prefix }}:download',  NULL, NULL, NULL, NULL, NULL, {{ b_false }}, {{ b_true }}, {{ b_false }}, '{{ function_name }}下载导入模板',   NULL, {{ b_false }}, @parentId, NULL, NOW(), NOW());
 {% endif %}

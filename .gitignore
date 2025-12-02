@@ -10,6 +10,8 @@ backend/.idea
 backend/.DS_Store
 backend/venv
 backend/.venv
+backend/.mypy_cache
+backend/.pytest_cache
 backend/logs
 backend/alembic/versions/*
 backend/*.db

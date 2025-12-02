@@ -24,20 +24,13 @@
             style="width: 167.5px"
             clearable
           >
-            <el-option value="true" label="启用" />
-            <el-option value="false" label="停用" />
+            <el-option value="0" label="启用" />
+            <el-option value="1" label="停用" />
           </el-select>
         </el-form-item>
         <!-- 时间范围，收起状态下隐藏 -->
         <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
           <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
-          <UserTableSelect
-            v-model="queryFormData.creator"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
         </el-form-item>
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item class="search-buttons">
@@ -106,10 +99,10 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item icon="Check" @click="handleMoreClick(true)">
+                    <el-dropdown-item icon="Check" @click="handleMoreClick('0')">
                       批量启用
                     </el-dropdown-item>
-                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick(false)">
+                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick('1')">
                       批量停用
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -164,8 +157,8 @@
         <el-table-column label="标签" prop="dict_label" min-width="150" show-overflow-tooltip />
         <el-table-column label="状态" prop="status" min-width="100" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag :type="scope.row.status === true ? 'success' : 'danger'">
-              {{ scope.row.status ? "启用" : "停用" }}
+            <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
+              {{ scope.row.status === '0' ? "启用" : "停用" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -190,13 +183,8 @@
           </template>
         </el-table-column>
         <el-table-column label="描述" prop="description" min-width="100" show-overflow-tooltip />
-        <el-table-column label="创建时间" prop="created_at" min-width="200" sortable />
-        <el-table-column label="更新时间" prop="updated_at" min-width="200" sortable />
-        <el-table-column label="创建人" prop="creator" min-width="100">
-          <template #default="scope">
-            {{ scope.row.creator?.name }}
-          </template>
-        </el-table-column>
+        <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
+        <el-table-column label="更新时间" prop="updated_time" min-width="200" sortable />
         <el-table-column fixed="right" label="操作" align="center" min-width="200">
           <template #default="scope">
             <el-button
@@ -273,7 +261,7 @@
             <el-tag v-else type="danger">否</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
-            <el-tag v-if="detailFormData.status" type="success">启用</el-tag>
+            <el-tag v-if="detailFormData.status === '0'" type="success">启用</el-tag>
             <el-tag v-else type="danger">停用</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="排序" :span="2">
@@ -282,14 +270,11 @@
           <el-descriptions-item label="描述" :span="2">
             {{ detailFormData.description }}
           </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
-          </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -364,8 +349,8 @@
             <el-switch
               v-model="formData.status"
               inline-prompt
-              :active-value="true"
-              :inactive-value="false"
+              :active-value="'0'"
+              :inactive-value="'1'"
             />
           </el-form-item>
 
@@ -414,13 +399,16 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  dictTypeId: {
+    type: Number,
+    required: true,
+  },
 });
 
 const drawerVisible = defineModel<boolean>();
 import DictAPI, { DictDataTable, DictDataForm, DictDataPageQuery } from "@/api/module_system/dict";
 import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
-import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import { formatToDateTime } from "@/utils/dateUtil";
@@ -454,10 +442,8 @@ const queryFormData = reactive<DictDataPageQuery>({
   dict_label: undefined,
   dict_type: props.dictType,
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  // 创建人
-  creator: undefined,
+  created_time: undefined,
+  updated_time: undefined,
 });
 
 // 编辑表单
@@ -470,8 +456,9 @@ const formData = reactive<DictDataForm>({
   css_class: "",
   list_class: undefined,
   is_default: false,
-  status: true,
+  status: '0',
   description: "",
+  dict_type_id: undefined,
 });
 
 // 弹窗状态
@@ -500,11 +487,9 @@ const dateRange = ref<[Date, Date] | []>([]);
 function handleDateRangeChange(range: [Date, Date]) {
   dateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
   }
 }
 
@@ -534,19 +519,13 @@ async function handleQuery() {
   loadingData();
 }
 
-// 选择创建人后触发查询
-function handleConfirm() {
-  handleQuery();
-}
-
 // 重置查询
 async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
   // 额外清空日期范围与时间查询参数
   dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  queryFormData.created_time = undefined;
   loadingData();
 }
 
@@ -560,8 +539,9 @@ const initialFormData: DictDataForm = {
   css_class: "",
   list_class: undefined,
   is_default: false,
-  status: true,
+  status: '0',
   description: "",
+  dict_type_id: props.dictTypeId,
 };
 
 // 重置表单
@@ -603,7 +583,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     // 重置为初始值并确保状态默认开启
     Object.assign(formData, initialFormData);
     formData.dict_type = props.dictType;
-    formData.status = true;
+    formData.status = '0';
     formData.id = undefined;
   }
   dialogVisible.visible = true;
@@ -673,9 +653,9 @@ function handleOpenExportsModal() {
 }
 
 // 批量启用/停用
-async function handleMoreClick(status: boolean) {
+async function handleMoreClick(status: string) {
   if (selectIds.value.length) {
-    ElMessageBox.confirm(`确认${status ? "启用" : "停用"}该项数据?`, "警告", {
+    ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
@@ -708,8 +688,8 @@ const exportColumns = [
   { prop: "is_default", label: "是否默认" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导出配置（用于导出弹窗）
@@ -718,8 +698,6 @@ const curdContentConfig = {
   cols: exportColumns as any,
   exportsAction: async (params: any) => {
     const query: any = { ...params };
-    if (typeof query.status === "string") query.status = query.status === "true";
-    // dict_type 已在查询表单中设置为 props.dictType
     query.page_no = 1;
     query.page_size = 1000;
     const all: any[] = [];

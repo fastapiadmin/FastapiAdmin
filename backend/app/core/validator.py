@@ -2,7 +2,7 @@
 
 import re
 from datetime import datetime
-from typing import Annotated, Optional, Union
+from typing import Annotated
 from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
 
 from app.common.constant import RET
@@ -33,7 +33,7 @@ Email = Annotated[
     WithJsonSchema({'type': 'string'}, mode='serialization')
 ]
 
-def datetime_validator(value: Union[str, datetime]) -> datetime:
+def datetime_validator(value: str | datetime) -> datetime:
     """
     日期格式验证器。
     
@@ -54,9 +54,6 @@ def datetime_validator(value: Union[str, datetime]) -> datetime:
             return value
     except Exception:
         raise CustomException(code=RET.ERROR.code, msg="无效的日期格式")
-
-    # 如果 value 是 None 或其他类型，抛出异常
-    raise CustomException(code=RET.ERROR.code, msg="无效的日期格式")
 
 
 def email_validator(value: str) -> str:
@@ -83,7 +80,7 @@ def email_validator(value: str) -> str:
     return value
 
 
-def mobile_validator(value: Optional[str]) -> Optional[str]:
+def mobile_validator(value: str | None) -> str | None:
     """
     手机号验证器。
     

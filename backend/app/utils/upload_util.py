@@ -3,7 +3,6 @@
 import random
 import mimetypes
 from datetime import datetime
-from typing import List, Dict, Tuple
 import aiofiles
 from fastapi import UploadFile
 from pathlib import Path
@@ -182,7 +181,7 @@ class UploadUtil:
             return False
     
     @classmethod
-    async def upload_file(cls, file: UploadFile, base_url: str) -> Tuple[str, Path, str]:
+    async def upload_file(cls, file: UploadFile, base_url: str) -> tuple[str, Path, str]:
         """
         文件上传。
         
@@ -191,7 +190,7 @@ class UploadUtil:
         - base_url (str): 基础 URL。
         
         返回:
-        - Tuple[str, Path, str]: (文件名, 文件路径, 文件 URL)。
+        - tuple[str, Path, str]: (文件名, 文件路径, 文件 URL)。
         
         异常:
         - CustomException: 当文件类型不支持或大小超限时抛出。
@@ -227,7 +226,7 @@ class UploadUtil:
             raise CustomException(msg='文件上传失败')
 
     @staticmethod
-    def get_file_tree(file_path: str) -> List[Dict]:
+    def get_file_tree(file_path: str) -> list[dict]:
         """
         获取文件树结构。
         
@@ -235,7 +234,7 @@ class UploadUtil:
         - file_path (str): 文件路径。
         
         返回:
-        - List[Dict]: 文件树列表。
+        - list[dict]: 文件树列表。
         """
         return [{"name": item.name, "is_dir": item.is_dir()} for item in Path(file_path).iterdir()]
 

@@ -5,9 +5,9 @@ from fastapi import APIRouter, BackgroundTasks, Body, Depends, UploadFile, Reque
 from fastapi.responses import JSONResponse, FileResponse
 
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.core.logger import log
 from app.common.response import SuccessResponse, UploadFileResponse
+from app.core.router_class import OperationLogRoute
 from app.utils.upload_util import UploadUtil
 
 from .service import FileService

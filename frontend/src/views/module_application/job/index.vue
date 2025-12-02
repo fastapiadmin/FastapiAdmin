@@ -25,12 +25,23 @@
           </el-select>
         </el-form-item>
         <!-- 时间范围，收起状态下隐藏 -->
-        <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
-          <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
+        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
+          <DatePicker v-model="createdDateRange" @update:model-value="handleCreatedDateRangeChange" />
         </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
+        <!-- 更新时间范围，收起状态下隐藏 -->
+        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
+          <DatePicker v-model="updatedDateRange" @update:model-value="handleUpdatedDateRangeChange" />
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
-            v-model="queryFormData.creator"
+            v-model="queryFormData.created_id"
+            @confirm-click="handleConfirm"
+            @clear-click="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="updated_id" label="更新人">
+          <UserTableSelect
+            v-model="queryFormData.updated_id"
             @confirm-click="handleConfirm"
             @clear-click="handleQuery"
           />
@@ -136,12 +147,7 @@
             </el-col>
             <el-col :span="1.5">
               <el-tooltip content="刷新">
-                <el-button
-                  type="primary"
-                  icon="refresh"
-                  circle
-                  @click="handleRefresh"
-                />
+                <el-button type="primary" icon="refresh" circle @click="handleRefresh" />
               </el-tooltip>
             </el-col>
           </el-row>
@@ -164,7 +170,7 @@
           <el-empty :image-size="80" description="暂无数据" />
         </template>
         <el-table-column type="selection" align="center" min-width="55" />
-        <el-table-column type="index" label="序号" fixed min-width="60">
+        <el-table-column type="index" fixed label="序号" min-width="60">
           <template #default="scope">
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
@@ -204,14 +210,15 @@
         </el-table-column>
         <el-table-column label="状态" prop="status" min-width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.status === true ? 'success' : 'danger'">
+            <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
               {{ scope.row.status === true ? "运行中" : "暂停" }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="描述" prop="description" min-width="100" />
-        <el-table-column label="创建时间" prop="created_at" min-width="200" sortable />
-        <el-table-column label="更新时间" prop="updated_at" min-width="200" sortable />
+        <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
+        <el-table-column label="更新时间" prop="updated_time" min-width="200" sortable />
+        
 
         <OperationColumn :list-data-length="pageTableData.length">
           <template #default="scope">
@@ -367,13 +374,13 @@
             {{ detailFormData.end_date }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="4">
             {{ detailFormData.description }}
@@ -662,10 +669,8 @@ const queryFormData = reactive<JobPageQuery>({
   page_size: 10,
   name: undefined,
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  // 创建人
-  creator: undefined,
+  created_time: undefined,
+  created_id: undefined,
 });
 
 // 编辑表单
@@ -708,17 +713,27 @@ const rules = reactive({
 });
 
 // 日期范围临时变量
-const dateRange = ref<[Date, Date] | []>([]);
+const createdDateRange = ref<[Date, Date] | []>([]);
+// 更新时间范围临时变量
+const updatedDateRange = ref<[Date, Date] | []>([]);
 
-// 处理日期范围变化
-function handleDateRangeChange(range: [Date, Date]) {
-  dateRange.value = range;
+// 处理创建时间范围变化
+function handleCreatedDateRangeChange(range: [Date, Date]) {
+  createdDateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
+  }
+}
+
+// 处理更新时间范围变化
+function handleUpdatedDateRangeChange(range: [Date, Date]) {
+  updatedDateRange.value = range;
+  if (range && range.length === 2) {
+    queryFormData.updated_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
+  } else {
+    queryFormData.updated_time = undefined;
   }
 }
 
@@ -757,9 +772,10 @@ async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
   // 额外清空日期范围与时间查询参数
-  dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  createdDateRange.value = [];
+  queryFormData.created_time = undefined;
+  updatedDateRange.value = [];
+  queryFormData.updated_time = undefined;
   loadingData();
 }
 
@@ -949,8 +965,8 @@ const exportColumns = [
   { prop: "coalesce", label: "并发执行" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导出配置（用于导出弹窗）

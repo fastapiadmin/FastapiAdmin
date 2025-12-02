@@ -133,76 +133,50 @@ const DictAPI = {
 export default DictAPI;
 
 export interface DictPageQuery extends PageQuery {
-  /** 通知标题 */
   dict_name?: string;
-  /** 通知类型 */
   dict_type?: string;
-  /** 通知状态 */
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  status?: string;
+  created_time?: string[];
+  updated_time?: string[];
 }
 
 export interface DictDataPageQuery extends PageQuery {
   dict_label?: string;
   dict_type?: string;
-  status?: boolean;
-  start_time?: string;
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  dict_type_id?: number;
+  status?: string;
+  created_time?: string[];
+  updated_time?: string[];
 }
 
-export interface DictTable {
-  index?: number;
-  id?: number;
+export interface DictTable extends BaseType {
   dict_name?: string;
   dict_type?: string;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
 }
 
-export interface DictForm {
-  id?: number;
+export interface DictForm extends BaseFormType {
   dict_name?: string;
   dict_type?: string;
-  status?: boolean;
-  description?: string;
 }
 
-export interface DictDataTable {
-  index?: number;
-  id?: number;
+export interface DictDataTable extends BaseType {
   dict_sort?: number;
   dict_label?: string;
   dict_value?: string;
+  dict_type_id?: number;
   dict_type?: string;
   css_class?: string;
   list_class?: string;
   is_default?: boolean;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
 }
 
-export interface DictDataForm {
-  id?: number;
+export interface DictDataForm extends BaseFormType {
   dict_sort?: number;
   dict_label?: string;
   dict_value?: string;
+  dict_type_id?: number;
   dict_type?: string;
   css_class?: string;
   list_class?: string;
   is_default?: boolean;
-  status?: boolean;
-  description?: string;
 }

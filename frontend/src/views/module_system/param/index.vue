@@ -31,13 +31,6 @@
         <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
           <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
         </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
-          <UserTableSelect
-            v-model="queryFormData.creator"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
-        </el-form-item>
         <el-form-item class="search-buttons">
           <el-button
             v-hasPerm="['module_system:param:query']"
@@ -230,31 +223,21 @@
           min-width="120"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
-          key="created_at"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
+          key="created_time"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
           min-width="200"
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
-          key="updated_at"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
+          key="updated_time"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
           min-width="200"
           sortable
         />
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'creator')?.show"
-          key="creator"
-          label="创建人"
-          min-width="120"
-        >
-          <template #default="scope">
-            {{ scope.row.creator?.name }}
-          </template>
-        </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
           fixed="right"
@@ -333,14 +316,11 @@
           <el-descriptions-item label="描述" :span="2">
             {{ detailFormData.description }}
           </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
-          </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -421,7 +401,6 @@ defineOptions({
 });
 
 import ParamsAPI, { ConfigTable, ConfigForm, ConfigPageQuery } from "@/api/module_system/params";
-import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import { formatToDateTime } from "@/utils/dateUtil";
@@ -451,14 +430,13 @@ const tableColumns = ref([
   { prop: "config_value", label: "配置值", show: true },
   { prop: "config_type", label: "系统内置", show: true },
   { prop: "description", label: "描述", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
-  { prop: "creator", label: "创建人", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
 // 详情表单
-const detailFormData = ref<ConfigTable>({});
+const detailFormData = ref<ConfigTable>({} as ConfigTable);
 
 // 分页查询参数
 const queryFormData = reactive<ConfigPageQuery>({
@@ -467,10 +445,7 @@ const queryFormData = reactive<ConfigPageQuery>({
   config_name: undefined,
   config_key: undefined,
   config_type: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  // 创建人
-  creator: undefined,
+  created_time: undefined,
 });
 
 // 编辑表单
@@ -505,11 +480,9 @@ const dateRange = ref<[Date, Date] | []>([]);
 function handleDateRangeChange(range: [Date, Date]) {
   dateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
   }
 }
 
@@ -538,19 +511,13 @@ async function handleQuery() {
   loadingData();
 }
 
-// 选择创建人后触发查询
-function handleConfirm() {
-  handleQuery();
-}
-
 // 重置查询
 async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
   // 额外清空日期范围与时间查询参数
   dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  queryFormData.created_time = undefined;
   loadingData();
 }
 
@@ -675,8 +642,8 @@ const exportColumns = [
   { prop: "config_value", label: "配置值" },
   { prop: "config_type", label: "系统内置" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置（用于导出弹窗）

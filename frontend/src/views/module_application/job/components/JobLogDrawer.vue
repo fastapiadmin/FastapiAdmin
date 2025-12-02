@@ -81,7 +81,14 @@
               </el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-button v-hasPerm="['module_application:job:delete']" type="warning" icon="delete" @click="handleClearLog">清空日志</el-button>
+              <el-button
+                v-hasPerm="['module_application:job:delete']"
+                type="warning"
+                icon="delete"
+                @click="handleClearLog"
+              >
+                清空日志
+              </el-button>
             </el-col>
           </el-row>
         </div>
@@ -90,7 +97,13 @@
             <el-col :span="1.5">
               <el-tooltip content="导出">
                 <!-- 将直接导出改为打开导出弹窗 -->
-                <el-button v-hasPerm="['module_application:job:export']" type="warning" icon="download" circle @click="handleOpenExportsModal" />
+                <el-button
+                  v-hasPerm="['module_application:job:export']"
+                  type="warning"
+                  icon="download"
+                  circle
+                  @click="handleOpenExportsModal"
+                />
               </el-tooltip>
             </el-col>
             <el-col :span="1.5">
@@ -127,8 +140,8 @@
         <el-table-column label="任务组名" prop="job_group" min-width="120" show-overflow-tooltip />
         <el-table-column label="执行状态" prop="status" min-width="100" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag :type="scope.row.status === true ? 'success' : 'danger'">
-              {{ scope.row.status ? "成功" : "失败" }}
+            <el-tag :type="scope.row.status === '0' ? 'primary' : 'success'">
+              {{ scope.row.status === '0' ? "运行中" : "完成" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -159,7 +172,8 @@
           show-overflow-tooltip
         />
         <el-table-column label="触发器" prop="job_trigger" min-width="120" show-overflow-tooltip />
-        <el-table-column label="创建时间" prop="create_time" min-width="180" sortable />
+        <el-table-column label="创建时间" prop="created_time" min-width="180" sortable />
+        <el-table-column label="更新时间" prop="updated_time" min-width="180" sortable />
         <el-table-column fixed="right" label="操作" align="center" min-width="150">
           <template #default="scope">
             <el-button
@@ -216,8 +230,8 @@
             {{ detailFormData.job_group }}
           </el-descriptions-item>
           <el-descriptions-item label="执行状态" :span="2">
-            <el-tag :type="detailFormData.status === true ? 'success' : 'danger'">
-              {{ detailFormData.status ? "成功" : "失败" }}
+            <el-tag :type="detailFormData.status === '0' ? 'primary' : 'success'">
+              {{ detailFormData.status === '0' ? "运行中" : "完成" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="执行信息" :span="2">
@@ -242,7 +256,10 @@
             {{ detailFormData.job_trigger || "-" }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.create_time }}
+            {{ detailFormData.created_time }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新时间" :span="2">
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -307,8 +324,7 @@ const queryFormData = reactive<JobLogPageQuery>({
   page_no: 1,
   page_size: 10,
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
+  created_time: undefined,
   job_id: props.jobId,
 });
 
@@ -326,11 +342,9 @@ const dateRange = ref<[Date, Date] | []>([]);
 function handleDateRangeChange(range: [Date, Date]) {
   dateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
   }
 }
 
@@ -365,8 +379,7 @@ async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
   queryFormData.status = undefined;
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  queryFormData.created_time = undefined;
   dateRange.value = [];
   loadingData();
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "集团总公司",
+    "code": "GROUP",
+    "order": 1,
+    "status": "0",
+    "leader": "部门负责人",
+    "phone": "1582112620",
+    "email": "deptadmin@example.com",
+    "description": "集团总公司",
+    "parent_id": null,
+    "children": []
+  }
+]

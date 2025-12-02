@@ -5,7 +5,6 @@ import psutil
 import socket
 import time
 from pathlib import Path
-from typing import List, Dict
 
 from app.utils.common_util import bytes2human
 
@@ -23,7 +22,7 @@ class ServerService:
     """服务监控模块服务层"""
 
     @classmethod
-    async def get_server_monitor_info_service(cls) -> Dict:
+    async def get_server_monitor_info_service(cls) -> dict:
         """
         获取服务器监控信息
         
@@ -118,12 +117,12 @@ class ServerService:
         )
 
     @classmethod
-    def _get_disk_info(cls) -> List[DiskInfoSchema]:
+    def _get_disk_info(cls) -> list[DiskInfoSchema]:
         """
         获取磁盘信息
         
         返回:
-        - List[DiskInfoSchema]: 磁盘信息模型列表。
+        - list[DiskInfoSchema]: 磁盘信息模型列表。
         """
         disk_info = []
         for partition in psutil.disk_partitions():

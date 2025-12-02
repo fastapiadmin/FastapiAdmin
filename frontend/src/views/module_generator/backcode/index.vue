@@ -194,14 +194,14 @@
           :show-overflow-tooltip="true"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
         />
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
@@ -313,8 +313,21 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button v-hasPerm="['module_generator:dblist:query']" type="primary" icon="Search" @click="handleImportQuery">搜索</el-button>
-          <el-button v-hasPerm="['module_generator:dblist:query']" icon="Refresh" @click="handleImportReset">重置</el-button>
+          <el-button
+            v-hasPerm="['module_generator:dblist:query']"
+            type="primary"
+            icon="Search"
+            @click="handleImportQuery"
+          >
+            搜索
+          </el-button>
+          <el-button
+            v-hasPerm="['module_generator:dblist:query']"
+            icon="Refresh"
+            @click="handleImportReset"
+          >
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-row>
@@ -856,7 +869,7 @@ defineOptions({
 
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/mode/sql/sql.js";
-import "codemirror/theme/dracula.css"
+import "codemirror/theme/dracula.css";
 import { ref, reactive, computed, onActivated, onMounted, watch } from "vue";
 import { useClipboard } from "@vueuse/core";
 import { useRoute } from "vue-router";
@@ -993,18 +1006,15 @@ const tableColumns = ref<TableColumn[]>([
   { prop: "table_name", label: "表名称", show: true },
   { prop: "table_comment", label: "表描述", show: true },
   { prop: "class_name", label: "实体", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
-
 
 const settingsStore = useSettingsStore();
 
 // 主题计算属性
-const codeTheme = computed(() =>
-  settingsStore.theme === ThemeMode.DARK ? "dracula" : "default"
-);
+const codeTheme = computed(() => (settingsStore.theme === ThemeMode.DARK ? "dracula" : "default"));
 
 // 监听主题变化并更新CodeMirror实例
 watch(codeTheme, (newTheme) => {
@@ -1012,7 +1022,7 @@ watch(codeTheme, (newTheme) => {
   if (sqlRef.value && sqlRef.value.cminstance) {
     sqlRef.value.cminstance.setOption("theme", newTheme);
   }
-  
+
   // 更新代码预览编辑器主题
   if (cmRef.value && cmRef.value.cminstance) {
     cmRef.value.cminstance.setOption("theme", newTheme);
@@ -1395,43 +1405,54 @@ async function handleDelete(row?: GenTableSchema): Promise<void> {
 function loadExampleMysql(): void {
   const exampleSql = `-- MySQL SQL案例
   CREATE TABLE \`gen_demo01\` (
-    \`name\` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '名称',
-    \`status\` tinyint(1) NOT NULL COMMENT '是否启用(True:启用 False:禁用)',
-    \`creator_id\` int DEFAULT NULL COMMENT '创建人ID',
+    \`name\` varchar(64) DEFAULT NULL COMMENT '名称',
     \`id\` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    \`description\` text COLLATE utf8mb4_unicode_ci COMMENT '备注/描述',
-    \`created_at\` datetime DEFAULT NULL COMMENT '创建时间',
-    \`updated_at\` datetime DEFAULT NULL COMMENT '更新时间',
+    \`uuid\` varchar(64) NOT NULL COMMENT 'UUID全局唯一标识',
+    \`status\` varchar(10) NOT NULL COMMENT '是否启用(0:启用 1:禁用)',
+    \`description\` text COMMENT '备注/描述',
+    \`created_time\` datetime NOT NULL COMMENT '创建时间',
+    \`updated_time\` datetime NOT NULL COMMENT '更新时间',
+    \`created_id\` int DEFAULT NULL COMMENT '创建人ID',
+    \`updated_id\` int DEFAULT NULL COMMENT '更新人ID',
     PRIMARY KEY (\`id\`),
-    KEY \`ix_gen_demo01_creator_id\` (\`creator_id\`),
-    CONSTRAINT \`gen_demo01_ibfk_1\` FOREIGN KEY (\`creator_id\`) REFERENCES \`system_users\` (\`id\`) ON DELETE SET NULL ON UPDATE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='示例表';`;
+    UNIQUE KEY \`uuid\` (\`uuid\`),
+    KEY \`ix_gen_demo01_created_id\` (\`created_id\`),
+    KEY \`ix_gen_demo01_updated_id\` (\`updated_id\`),
+    CONSTRAINT \`gen_demo01_ibfk_1\` FOREIGN KEY (\`created_id\`) REFERENCES \`sys_user\` (\`id\`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT \`gen_demo01_ibfk_2\` FOREIGN KEY (\`updated_id\`) REFERENCES \`sys_user\` (\`id\`) ON DELETE SET NULL ON UPDATE CASCADE
+  ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='示例表'`;
   createContent.value = exampleSql;
 }
 
 function loadExamplePostgres(): void {
   const exampleSql = `-- Psstgres SQL案例
   CREATE TABLE gen_demo01(
-      name varchar(64),
-      status boolean NOT NULL,
-      creator_id integer,
-      id SERIAL NOT NULL,
-      description text,
-      created_at timestamp without time zone,
-      updated_at timestamp without time zone,
-      PRIMARY KEY(id),
-      CONSTRAINT gen_demo01_creator_id_fkey FOREIGN key(creator_id) REFERENCES system_users(id)
+    id SERIAL NOT NULL,
+    uuid varchar(64) NOT NULL,
+    name varchar(64),
+    status varchar(10) NOT NULL,
+    description text,
+    created_time timestamp without time zone NOT NULL,
+    updated_time timestamp without time zone NOT NULL,
+    created_id integer,
+    updated_id integer,
+    PRIMARY KEY(id),
+    CONSTRAINT gen_demo01_created_id_fkey FOREIGN key(created_id) REFERENCES sys_user(id),
+    CONSTRAINT gen_demo01_updated_id_fkey FOREIGN key(updated_id) REFERENCES sys_user(id)
   );
-  CREATE INDEX ix_gen_demo01_creator_id ON public.gen_demo01 USING btree (creator_id);
+  CREATE UNIQUE INDEX en_demo01_uuid_key ON public.gen_demo01 USING btree (uuid);
+  CREATE INDEX ix_gen_demo01_created_id ON public.gen_demo01 USING btree (created_id);
+  CREATE INDEX ix_gen_demo01_updated_id ON public.gen_demo01 USING btree (updated_id);
   COMMENT ON TABLE gen_demo01 IS '示例表';
   COMMENT ON COLUMN gen_demo01.name IS '名称';
-  COMMENT ON COLUMN gen_demo01.status IS '是否启用(True:启用 False:禁用)';
-  COMMENT ON COLUMN gen_demo01.creator_id IS '创建人ID';
   COMMENT ON COLUMN gen_demo01.id IS '主键ID';
+  COMMENT ON COLUMN gen_demo01.uuid IS 'UUID全局唯一标识';
+  COMMENT ON COLUMN gen_demo01.status IS '是否启用(0:启用 1:禁用)';
   COMMENT ON COLUMN gen_demo01.description IS '备注/描述';
-  COMMENT ON COLUMN gen_demo01.created_at IS '创建时间';
-  COMMENT ON COLUMN gen_demo01.updated_at IS '更新时间';`;
-
+  COMMENT ON COLUMN gen_demo01.created_time IS '创建时间';
+  COMMENT ON COLUMN gen_demo01.updated_time IS '更新时间';
+  COMMENT ON COLUMN gen_demo01.created_id IS '创建人ID';
+  COMMENT ON COLUMN gen_demo01.updated_id IS '更新人ID';`;
   createContent.value = exampleSql;
 }
 

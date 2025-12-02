@@ -24,9 +24,16 @@
             <el-option label="停用" :value="false" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
+        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
-            v-model="queryFormData.creator"
+            v-model="queryFormData.created_id"
+            @confirm-click="handleConfirm"
+            @clear-click="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="updated_id" label="更新人">
+          <UserTableSelect
+            v-model="queryFormData.updated_id"
             @confirm-click="handleConfirm"
             @clear-click="handleQuery"
           />
@@ -92,7 +99,6 @@
           <div
             v-for="app in applicationList"
             :key="app.id"
-            class="app-grid-item"
             @mouseenter="app.id && (hoveredCard = app.id)"
             @mouseleave="hoveredCard = null"
             @click="app.status && app.id && openAppInternal(app)"
@@ -150,11 +156,11 @@
                 <div class="card-footer">
                   <div class="footer-item">
                     <el-icon size="14" class="footer-icon"><User /></el-icon>
-                    <span class="footer-text">{{ app.creator?.name || "未知" }}</span>
+                    <span class="footer-text">{{ app.created_by?.name || "未知" }}</span>
                   </div>
                   <div class="footer-item">
                     <el-icon size="14" class="footer-icon"><Clock /></el-icon>
-                    <span class="footer-text">{{ formatTime(app.created_at) }}</span>
+                    <span class="footer-text">{{ formatTime(app.created_time) }}</span>
                   </div>
                 </div>
               </template>
@@ -209,8 +215,8 @@
 
         <el-form-item label="应用状态" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio :value="true">启用</el-radio>
-            <el-radio :value="false">停用</el-radio>
+            <el-radio value="0">启用</el-radio>
+            <el-radio value="1">停用</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -275,8 +281,7 @@ const queryFormData = reactive<ApplicationPageQuery>({
   page_no: 1,
   page_size: 12,
   name: undefined,
-  status: undefined,
-  creator: undefined,
+  status: undefined,  created_id: undefined,
 });
 
 // 应用列表数据
@@ -287,7 +292,7 @@ const formData = reactive<ApplicationForm>({
   name: "",
   access_url: "",
   icon_url: "",
-  status: true,
+  status: '0',
   description: "",
 });
 
@@ -460,7 +465,7 @@ function resetForm() {
     name: "",
     access_url: "",
     icon_url: "",
-    status: true,
+    status: '0',
     description: "",
   });
   formRef.value?.resetFields();
@@ -528,6 +533,7 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
   padding: 0 2px;
+  justify-items: stretch;
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -540,16 +546,12 @@ onMounted(() => {
   }
 }
 
-// 卡片项
-.app-grid-item {
-  height: fit-content;
-}
-
 // 卡片样式
 .app-card {
   display: flex;
   flex-direction: column;
   height: 100%;
+  // min-height: 180px;
   overflow: hidden;
   cursor: pointer;
   background: linear-gradient(145deg, var(--el-bg-color) 0%, var(--el-bg-color-page) 100%);
@@ -688,7 +690,6 @@ onMounted(() => {
 
 .app-description {
   display: -webkit-box;
-  min-height: 2.8em;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;

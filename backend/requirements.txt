@@ -34,8 +34,7 @@ rich==13.9.4                # 终端打印美化
 sqlglot[rs]==27.8.0         # sql 解析
 pydantic_validation_decorator==0.1.4    # 模型验证
 loguru==0.7.3
+fastapi-limiter==0.1.6
 
 # amqp==5.3.1
-fastapi-limiter==0.1.6
-# fastapi-pagination==0.15.0
 # python-socketio==5.14.3

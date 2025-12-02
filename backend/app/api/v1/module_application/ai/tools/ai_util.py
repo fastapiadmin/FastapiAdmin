@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 
-from typing import Any, AsyncGenerator
+from typing import AsyncGenerator
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 import httpx

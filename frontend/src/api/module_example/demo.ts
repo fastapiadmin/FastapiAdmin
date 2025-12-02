@@ -82,32 +82,20 @@ const DemoAPI = {
 export default DemoAPI;
 
 export interface DemoPageQuery extends PageQuery {
-  /** 示例标题 */
   name?: string;
-  /** 示例状态 */
-  status?: boolean;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  /** 创建人 */
-  creator?: number;
+  status?: string;
+  created_time?: string[];
+  updated_time?: string[];
+  created_id?: number;
+  updated_id?: number;
 }
 
-export interface DemoTable {
-  index?: number;
-  id?: number;
+export interface DemoTable extends BaseType {
   name?: string;
-  status?: boolean;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
 }
 
-export interface DemoForm {
-  id?: number;
+export interface DemoForm extends BaseFormType {
   name?: string;
-  status?: boolean;
-  description?: string;
 }

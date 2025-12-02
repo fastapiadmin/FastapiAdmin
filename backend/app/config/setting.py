@@ -30,7 +30,6 @@ class Settings(BaseSettings):
     # ================================================= #
     SERVER_HOST: str = '0.0.0.0'        # 允许访问的IP地址
     SERVER_PORT: int = 8001             # 服务端口
-    RELOAD: bool = True                 # 是否自动重启
 
     # ================================================= #
     # ******************* API文档配置 ****************** #
@@ -208,7 +207,7 @@ class Settings(BaseSettings):
         elif self.DATABASE_TYPE == "postgres":
             return f"postgresql+psycopg2://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
         else:
-            raise ValueError(f"数据库驱动不支持: {self.DATABASE_TYPE}, 请选择 mysql、postgres")
+            raise ValueError(f"数据库驱动不支持: {self.DATABASE_TYPE}, 请选择 请选择 mysql、postgres")
     
     @property
     def REDIS_URI(self) -> str:

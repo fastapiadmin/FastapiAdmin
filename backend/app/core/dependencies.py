@@ -4,7 +4,7 @@ import json
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator
 from fastapi import Depends, Request
 from fastapi import Depends
 
@@ -15,7 +15,6 @@ from app.core.redis_crud import RedisCURD
 from app.core.security import OAuth2Schema, decode_access_token
 from app.core.logger import log
 
-from app.api.v1.module_system.user.schema import UserOutSchema
 from app.api.v1.module_system.user.model import UserModel
 from app.api.v1.module_system.role.model import RoleModel
 from app.api.v1.module_system.user.crud import UserCRUD
@@ -94,9 +93,9 @@ async def get_current_user(
         username=username, 
         preload=[
             "dept", 
-            selectinload(UserModel.roles).selectinload(RoleModel.creator),
+            selectinload(UserModel.roles).selectinload(RoleModel.created_by),
             "positions", 
-            "creator"
+            "created_by"
         ]
     )
     if not user:
@@ -114,19 +113,19 @@ async def get_current_user(
     if hasattr(user, 'positions'):
         user.positions = [pos for pos in user.positions if pos and pos.status]
 
-    auth.user = UserOutSchema.model_validate(user)
+    auth.user = user
     return auth
 
 
 class AuthPermission:
     """权限验证类"""
     
-    def __init__(self, permissions: Optional[list[str]] = None, check_data_scope: bool = True) -> None:
+    def __init__(self, permissions: list[str] | None = None, check_data_scope: bool = True) -> None:
         """
         初始化权限验证
         
         参数:
-        - permissions (Optional[list[str]]): 权限标识列表。
+        - permissions (list[str] | None): 权限标识列表。
         - check_data_scope (bool): 是否启用严格模式校验。
         """
         self.permissions = permissions or []

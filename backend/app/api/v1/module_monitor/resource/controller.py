@@ -2,23 +2,22 @@
 
 from fastapi import APIRouter, Body, Depends, Query, Request, UploadFile, Form
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
-from typing import List, Optional
 
 from app.common.response import StreamResponse, SuccessResponse
 from app.common.request import PaginationService
+from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
-from app.core.router_class import OperationLogRoute
 from app.core.logger import log
 
-from .param import ResourceSearchQueryParam
 from .service import ResourceService
 from .schema import (
     ResourceMoveSchema,
     ResourceCopySchema,
     ResourceRenameSchema,
-    ResourceCreateDirSchema
+    ResourceCreateDirSchema,
+    ResourceSearchQueryParam
 )
 
 
@@ -70,7 +69,7 @@ async def get_directory_list_controller(
 async def upload_file_controller(
     file: UploadFile,
     request: Request,
-    target_path: Optional[str] = Form(None, description="目标目录路径")
+    target_path: str | None = Form(None, description="目标目录路径")
 ) -> JSONResponse:
     """
     上传文件
@@ -78,7 +77,7 @@ async def upload_file_controller(
     参数:
     - file (UploadFile): 要上传的文件对象。
     - request (Request): FastAPI请求对象，用于获取基础URL。
-    - target_path (Optional[str]): 目标目录路径，默认为None。
+    - target_path (str | None): 目标目录路径，默认为None。
     
     返回:
     - JSONResponse: 包含上传文件信息的JSON响应。
@@ -136,13 +135,13 @@ async def download_file_controller(
     dependencies=[Depends(AuthPermission(["module_monitor:resource:delete"]))]
 )
 async def delete_files_controller(
-    paths: List[str] = Body(..., description="文件路径列表")
+    paths: list[str] = Body(..., description="文件路径列表")
 ) -> JSONResponse:
     """
     删除文件
     
     参数:
-    - paths (List[str]): 文件路径列表。
+    - paths (list[str]): 文件路径列表。
     
     返回:
     - JSONResponse: 包含删除结果的JSON响应。

@@ -126,7 +126,11 @@
           fixed
           label="序号"
           min-width="60"
-        />
+        >
+          <template #default="scope">
+            {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
+          </template>
+        </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'session_id')?.show"
           key="session_id"
@@ -152,7 +156,7 @@
         >
           <template #default="scope">
             <el-text>{{ scope.row.ipaddr }}</el-text>
-            <CopyButton v-if="scope.row.ipaddr" :text="scope.row.ipaddr" style="margin-left: 2px" />
+            <CopyButton v-if="scope.row.ipaddr" :text="scope.row.ipaddr" :style="{ marginLeft: '2px' }" />
           </template>
         </el-table-column>
         <el-table-column

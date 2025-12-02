@@ -20,20 +20,30 @@
             style="width: 170px"
             clearable
           >
-            <el-option value="true" label="启用" />
-            <el-option value="false" label="停用" />
+            <el-option value="0" label="启用" />
+            <el-option value="1" label="停用" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
+        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
-            v-model="queryFormData.creator"
+            v-model="queryFormData.created_id"
+            @confirm-click="handleConfirm"
+            @clear-click="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="updated_id" label="更新人">
+          <UserTableSelect
+            v-model="queryFormData.updated_id"
             @confirm-click="handleConfirm"
             @clear-click="handleQuery"
           />
         </el-form-item>
         <!-- 时间范围，收起状态下隐藏 -->
-        <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
-          <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
+        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
+          <DatePicker v-model="createdDateRange" @update:model-value="handleCreatedDateRangeChange" />
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
+          <DatePicker v-model="updatedDateRange" @update:model-value="handleUpdatedDateRangeChange" />
         </el-form-item>
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item>
@@ -115,10 +125,10 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item icon="Check" @click="handleMoreClick(true)">
+                    <el-dropdown-item icon="Check" @click="handleMoreClick('0')">
                       批量启用
                     </el-dropdown-item>
-                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick(false)">
+                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick('1')">
                       批量停用
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -245,25 +255,25 @@
           min-width="140"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
           min-width="180"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
           min-width="180"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'creator')?.show"
+          v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
           label="创建人"
-          prop="creator"
+          prop="created_id"
           min-width="120"
         >
           <template #default="scope">
-            <el-tag>{{ scope.row.creator?.name }}</el-tag>
+            <el-tag>{{ scope.row.created_by?.name }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -340,13 +350,16 @@
             {{ detailFormData.description }}
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新人" :span="2">
+            {{ detailFormData.updated_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -365,8 +378,8 @@
           </el-form-item>
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="formData.status">
-              <el-radio :value="true">启用</el-radio>
-              <el-radio :value="false">停用</el-radio>
+              <el-radio value="0">启用</el-radio>
+              <el-radio value="1">停用</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="描述" prop="description">
@@ -386,20 +399,10 @@
         <div class="dialog-footer">
           <!-- 详情弹窗不需要确定按钮的提交逻辑 -->
           <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            @click="handleSubmit"
-          >
+          <el-button v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
             确定
           </el-button>
-          <el-button
-            v-else
-            type="primary"
-            @click="handleCloseDialog"
-          >
-            确定
-          </el-button>
+          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -431,11 +434,7 @@ defineOptions({
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ResultEnum } from "@/enums/api/result.enum";
-import DemoAPI, {
-  DemoTable,
-  DemoForm,
-  DemoPageQuery,
-} from "@/api/module_example/demo";
+import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_example/demo";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
 import DatePicker from "@/components/DatePicker/index.vue";
@@ -463,9 +462,10 @@ const tableColumns = ref([
   { prop: "name", label: "名称", show: true },
   { prop: "status", label: "状态", show: true },
   { prop: "description", label: "描述", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
-  { prop: "creator", label: "创建人", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "created_id", label: "创建人", show: true },
+  { prop: "updated_id", label: "更新人", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
@@ -474,8 +474,8 @@ const exportColumns = [
   { prop: "name", label: "名称" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置
@@ -505,17 +505,27 @@ const curdContentConfig = {
 // 详情表单
 const detailFormData = ref<DemoTable>({});
 // 日期范围临时变量
-const dateRange = ref<[Date, Date] | []>([]);
+const createdDateRange = ref<[Date, Date] | []>([]);
+// 更新时间范围临时变量
+const updatedDateRange = ref<[Date, Date] | []>([]);
 
-// 处理日期范围变化
-function handleDateRangeChange(range: [Date, Date]) {
-  dateRange.value = range;
+// 处理创建时间范围变化
+function handleCreatedDateRangeChange(range: [Date, Date]) {
+  createdDateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
+  }
+}
+
+// 处理更新时间范围变化
+function handleUpdatedDateRangeChange(range: [Date, Date]) {
+  updatedDateRange.value = range;
+  if (range && range.length === 2) {
+    queryFormData.updated_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
+  } else {
+    queryFormData.updated_time = undefined;
   }
 }
 
@@ -525,16 +535,17 @@ const queryFormData = reactive<DemoPageQuery>({
   page_size: 10,
   name: undefined,
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  creator: undefined,
+  created_time: undefined,
+  updated_time: undefined,
+  created_id: undefined,
+  updated_id: undefined,
 });
 
 // 编辑表单
 const formData = reactive<DemoForm>({
   id: undefined,
   name: "",
-  status: true,
+  status: '0',
   description: undefined,
 });
 
@@ -602,9 +613,10 @@ async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
   // 重置日期范围选择器
-  dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  createdDateRange.value = [];
+  updatedDateRange.value = [];
+  queryFormData.created_time = undefined;
+  queryFormData.updated_time = undefined;
   loadingData();
 }
 
@@ -612,7 +624,7 @@ async function handleResetQuery() {
 const initialFormData: DemoForm = {
   id: undefined,
   name: "",
-  status: true,
+  status: '0',
   description: "",
 };
 
@@ -718,9 +730,9 @@ async function handleDelete(ids: number[]) {
 }
 
 // 批量启用/停用
-async function handleMoreClick(status: boolean) {
+async function handleMoreClick(status: string) {
   if (selectIds.value.length) {
-    ElMessageBox.confirm(`确认${status ? "启用" : "停用"}该项数据?`, "警告", {
+    ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",

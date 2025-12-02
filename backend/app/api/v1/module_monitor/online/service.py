@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 
 import json
-from typing import Dict, List, Optional
 from redis.asyncio.client import Redis
 
 from app.common.enums import RedisInitKeyConfig
 from app.core.redis_crud import RedisCURD
 from app.core.security import decode_access_token
 from app.core.logger import log
-from .param import OnlineQueryParam
+
+from .schema import OnlineQueryParam
 
 
 class OnlineService:
     """在线用户管理模块服务层"""
 
     @classmethod
-    async def get_online_list_service(cls, redis: Redis, search: Optional[OnlineQueryParam] = None) ->  List[Dict]:
+    async def get_online_list_service(cls, redis: Redis, search: OnlineQueryParam | None = None) ->  list[dict]:
         """
         获取在线用户列表信息（支持分页和搜索）
         
         参数:
         - redis (Redis): Redis异步客户端实例。
-        - search (Optional[OnlineQueryParam]): 查询参数模型。
+        - search (OnlineQueryParam | None): 查询参数模型。
         
         返回:
-        - List[Dict]: 在线用户详情字典列表。
+        - list[dict]: 在线用户详情字典列表。
         """
 
         keys = await RedisCURD(redis).get_keys(f"{RedisInitKeyConfig.ACCESS_TOKEN.key}:*")
@@ -88,13 +88,13 @@ class OnlineService:
 
     
     @staticmethod
-    def _match_search_conditions(online_info: Dict, search: Optional[OnlineQueryParam]) -> bool:
+    def _match_search_conditions(online_info: dict, search: OnlineQueryParam | None = None) -> bool:
         """
         检查是否匹配搜索条件
         
         参数:
-        - online_info (Dict): 在线用户信息字典。
-        - search (Optional[OnlineQueryParam]): 查询参数模型。
+        - online_info (dict): 在线用户信息字典。
+        - search (OnlineQueryParam | None): 查询参数模型。
         
         返回:
         - bool: 如果匹配则返回True，否则返回False。

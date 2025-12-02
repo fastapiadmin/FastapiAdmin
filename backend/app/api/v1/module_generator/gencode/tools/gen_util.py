@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import List
 
 from app.common.constant import GenConstant
 from app.utils.string_util import StringUtil
@@ -154,13 +153,13 @@ class GenUtils:
         return StringUtil.convert_to_camel_case(table_name)
 
     @classmethod
-    def replace_first(cls, input_string: str, search_list: List[str]) -> str:
+    def replace_first(cls, input_string: str, search_list: list[str]) -> str:
         """
         批量替换前缀
 
         参数:
         - input_string (str): 需要被替换的字符串。
-        - search_list (List[str]): 可替换的字符串列表。
+        - search_list (list[str]): 可替换的字符串列表。
 
         返回:
         - str: 替换后的字符串。
@@ -202,7 +201,7 @@ class GenUtils:
         return 0
 
     @classmethod
-    def split_column_type(cls, column_type: str) -> List[str]:
+    def split_column_type(cls, column_type: str) -> list[str]:
         """
         拆分列类型
 
@@ -210,7 +209,7 @@ class GenUtils:
         - column_type (str): 字段类型。
 
         返回:
-        - List[str]: 拆分结果。
+        - list[str]: 拆分结果。
         """
         if '(' in column_type and ')' in column_type:
             return column_type.split('(')[1].split(')')[0].split(',')
@@ -221,8 +220,11 @@ class GenUtils:
         """
         将字符串转换为驼峰命名
 
-        param text: 需要转换的字符串
-        :return: 驼峰命名
+        参数:
+        - text (str): 需要转换的字符串
+
+        返回:
+        - str: 驼峰命名
         """
         parts = text.split('_')
         return parts[0] + ''.join(word.capitalize() for word in parts[1:])

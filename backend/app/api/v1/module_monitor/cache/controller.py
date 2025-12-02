@@ -6,9 +6,9 @@ from redis.asyncio.client import Redis
 
 from app.common.response import SuccessResponse
 from app.core.exceptions import CustomException
-from app.core.router_class import OperationLogRoute
 from app.core.dependencies import AuthPermission, redis_getter
 from app.core.logger import log
+from app.core.router_class import OperationLogRoute
 
 from .service import CacheService
 

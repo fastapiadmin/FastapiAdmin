@@ -4,17 +4,17 @@ from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
 
 from app.common.response import SuccessResponse
-from app.core.router_class import OperationLogRoute
 from app.core.dependencies import AuthPermission
 from app.core.base_schema import BatchSetAvailable
 from app.core.logger import log
+from app.core.router_class import OperationLogRoute
 
 from ..auth.schema import AuthSchema
-from .param import DeptQueryParam
 from .service import DeptService
 from .schema import (
     DeptCreateSchema,
-    DeptUpdateSchema
+    DeptUpdateSchema,
+    DeptQueryParam
 )
 
 

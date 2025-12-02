@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, List, Optional, Sequence, Union, Any
+from typing import Sequence, Any
 
 from app.core.base_crud import CRUDBase
 
@@ -22,34 +22,34 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         self.auth = auth
         super().__init__(model=JobModel, auth=auth)
 
-    async def get_obj_by_id_crud(self, id: int, preload: Optional[List[Union[str, Any]]] = None) -> Optional[JobModel]:
+    async def get_obj_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> JobModel | None:
         """
         获取定时任务详情
         
         参数:
         - id (int): 定时任务ID
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Optional[JobModel]: 定时任务模型,如果不存在则为None
+        - JobModel | None: 定时任务模型,如果不存在则为None
         """
         return await self.get(id=id, preload=preload)
     
-    async def get_obj_list_crud(self, search: Optional[Dict] = None, order_by: Optional[List[Dict[str, str]]] = None, preload: Optional[List[Union[str, Any]]] = None) -> Sequence[JobModel]:
+    async def get_obj_list_crud(self, search: dict | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[JobModel]:
         """
         获取定时任务列表
         
         参数:
-        - search (Optional[Dict]): 查询参数字典
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数列表
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 查询参数字典
+        - order_by (list[dict[str, str]] | None): 排序参数列表
+        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - Sequence[JobModel]: 定时任务模型序列
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
     
-    async def create_obj_crud(self, data: JobCreateSchema) -> Optional[JobModel]:
+    async def create_obj_crud(self, data: JobCreateSchema) -> JobModel | None:
         """
         创建定时任务
         
@@ -57,11 +57,11 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         - data (JobCreateSchema): 创建定时任务模型
         
         返回:
-        - Optional[JobModel]: 创建的定时任务模型,如果创建失败则为None
+        - JobModel | None: 创建的定时任务模型,如果创建失败则为None
         """
         return await self.create(data=data)
     
-    async def update_obj_crud(self, id: int, data: JobUpdateSchema) -> Optional[JobModel]:
+    async def update_obj_crud(self, id: int, data: JobUpdateSchema) -> JobModel | None:
         """
         更新定时任务
         
@@ -70,25 +70,25 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         - data (JobUpdateSchema): 更新定时任务模型
         
         返回:
-        - Optional[JobModel]: 更新后的定时任务模型,如果更新失败则为None
+        - JobModel | None: 更新后的定时任务模型,如果更新失败则为None
         """
         return await self.update(id=id, data=data)
     
-    async def delete_obj_crud(self, ids: List[int]) -> None:
+    async def delete_obj_crud(self, ids: list[int]) -> None:
         """
         删除定时任务
         
         参数:
-        - ids (List[int]): 定时任务ID列表
+        - ids (list[int]): 定时任务ID列表
         """
         return await self.delete(ids=ids)
     
-    async def set_obj_field_crud(self, ids: List[int], **kwargs) -> None:
+    async def set_obj_field_crud(self, ids: list[int], **kwargs) -> None:
         """
         设置定时任务的可用状态
         
         参数:
-        - ids (List[int]): 定时任务ID列表
+        - ids (list[int]): 定时任务ID列表
         - kwargs: 其他要设置的字段,例如 available=True 或 available=False
         """
         return await self.set(ids=ids, **kwargs)
@@ -116,39 +116,39 @@ class JobLogCRUD(CRUDBase[JobLogModel, JobLogCreateSchema, JobLogUpdateSchema]):
         self.auth = auth
         super().__init__(model=JobLogModel, auth=auth)
 
-    async def get_obj_log_by_id_crud(self, id: int, preload: Optional[List[Union[str, Any]]] = None) -> Optional[JobLogModel]:
+    async def get_obj_log_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> JobLogModel | None:
         """
         获取定时任务日志详情
         
         参数:
         - id (int): 定时任务日志ID
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Optional[JobLogModel]: 定时任务日志模型,如果不存在则为None
+        - JobLogModel | None: 定时任务日志模型,如果不存在则为None
         """
         return await self.get(id=id, preload=preload)
     
-    async def get_obj_log_list_crud(self, search: Optional[Dict] = None, order_by: Optional[List[Dict[str, str]]] = None, preload: Optional[List[Union[str, Any]]] = None) -> Sequence[JobLogModel]:
+    async def get_obj_log_list_crud(self, search: dict | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[JobLogModel]:
         """
         获取定时任务日志列表
         
         参数:
-        - search (Optional[Dict]): 查询参数字典
-        - order_by (Optional[List[Dict[str, str]]]): 排序参数列表
-        - preload (Optional[List[Union[str, Any]]]): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 查询参数字典
+        - order_by (list[dict[str, str]] | None): 排序参数列表
+        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
         - Sequence[JobLogModel]: 定时任务日志模型序列
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
     
-    async def delete_obj_log_crud(self, ids: List[int]) -> None:
+    async def delete_obj_log_crud(self, ids: list[int]) -> None:
         """
         删除定时任务日志
         
         参数:
-        - ids (List[int]): 定时任务日志ID列表
+        - ids (list[int]): 定时任务日志ID列表
         """
         return await self.delete(ids=ids)
     

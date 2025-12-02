@@ -20,17 +20,17 @@
             style="width: 167.5px"
             clearable
           >
-            <el-option value="true" label="启用" />
-            <el-option value="false" label="停用" />
+            <el-option value="0" label="启用" />
+            <el-option value="1" label="停用" />
           </el-select>
         </el-form-item>
         <!-- 时间范围，收起状态下隐藏 -->
         <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
           <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
         </el-form-item>
-        <el-form-item v-if="isExpand" prop="creator" label="创建人">
+        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
-            v-model="queryFormData.creator"
+            v-model="queryFormData.created_id"
             @confirm-click="handleConfirm"
             @clear-click="handleQuery"
           />
@@ -115,10 +115,10 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu v-hasPerm="['module_system:position:filter']">
-                    <el-dropdown-item icon="Check" @click="handleMoreClick(true)">
+                    <el-dropdown-item icon="Check" @click="handleMoreClick('0')">
                       批量启用
                     </el-dropdown-item>
-                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick(false)">
+                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick('1')">
                       批量停用
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -214,8 +214,8 @@
           min-width="80"
         >
           <template #default="scope">
-            <el-tag :type="scope.row.status === true ? 'success' : 'danger'">
-              {{ scope.row.status === true ? "启用" : "停用" }}
+            <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
+              {{ scope.row.status === '0' ? "启用" : "停用" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -235,32 +235,41 @@
           min-width="120"
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_at')?.show"
-          key="created_at"
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
+          key="created_time"
           label="创建时间"
-          prop="created_at"
+          prop="created_time"
           min-width="200"
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_at')?.show"
-          key="updated_at"
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
+          key="updated_time"
           label="更新时间"
-          prop="updated_at"
+          prop="updated_time"
           min-width="200"
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'creator')?.show"
-          key="creator"
+          v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
+          key="created_id"
           label="创建人"
           min-width="100"
         >
           <template #default="scope">
-            {{ scope.row.creator?.name }}
+            {{ scope.row.created_by?.name }}
           </template>
         </el-table-column>
-
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show"
+          key="updated_id"
+          label="更新人"
+          min-width="100"
+        >
+          <template #default="scope">
+            {{ scope.row.updated_by?.name }}
+          </template>
+        </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
           fixed="right"
@@ -330,17 +339,20 @@
             {{ detailFormData.order }}
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
-            <el-tag v-if="detailFormData.status" type="success">启用</el-tag>
+            <el-tag v-if="detailFormData.status === '0'" type="success">启用</el-tag>
             <el-tag v-else type="danger">停用</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.creator?.name }}
+            {{ detailFormData.created_by?.name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新人" :span="2">
+            {{ detailFormData.updated_by?.name }}
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_at }}
+            {{ detailFormData.created_time }}
           </el-descriptions-item>
           <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_at }}
+            {{ detailFormData.updated_time }}
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="4">
             {{ detailFormData.description }}
@@ -365,8 +377,8 @@
           </el-form-item>
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="formData.status">
-              <el-radio :value="true">启用</el-radio>
-              <el-radio :value="false">停用</el-radio>
+              <el-radio value="0">启用</el-radio>
+              <el-radio value="1">停用</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="描述" prop="description">
@@ -386,20 +398,10 @@
         <div class="dialog-footer">
           <!-- 详情弹窗不需要确定按钮的提交逻辑 -->
           <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            @click="handleSubmit"
-          >
+          <el-button v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
             确定
           </el-button>
-          <el-button
-            v-else
-            type="primary"
-            @click="handleCloseDialog"
-          >
-            确定
-          </el-button>
+          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -453,9 +455,10 @@ const tableColumns = ref([
   { prop: "order", label: "岗位排序", show: true },
   { prop: "status", label: "状态", show: true },
   { prop: "description", label: "描述", show: true },
-  { prop: "created_at", label: "创建时间", show: true },
-  { prop: "updated_at", label: "更新时间", show: true },
-  { prop: "creator", label: "创建人", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "created_id", label: "创建人", show: true },
+  { prop: "updated_id", label: "更新人", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
@@ -468,10 +471,8 @@ const queryFormData = reactive<PositionPageQuery>({
   page_size: 10,
   name: "",
   status: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  // 创建人
-  creator: undefined,
+  created_time: undefined,
+  created_id: undefined,
 });
 
 // 编辑表单
@@ -479,7 +480,7 @@ const formData = reactive<PositionForm>({
   id: undefined,
   name: undefined,
   order: 1,
-  status: true,
+  status: '0',
   description: undefined,
 });
 
@@ -504,11 +505,9 @@ const dateRange = ref<[Date, Date] | []>([]);
 function handleDateRangeChange(range: [Date, Date]) {
   dateRange.value = range;
   if (range && range.length === 2) {
-    queryFormData.start_time = formatToDateTime(range[0]);
-    queryFormData.end_time = formatToDateTime(range[1]);
+    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
-    queryFormData.start_time = undefined;
-    queryFormData.end_time = undefined;
+    queryFormData.created_time = undefined;
   }
 }
 
@@ -548,8 +547,7 @@ async function handleResetQuery() {
   queryFormData.page_no = 1;
   // 额外清空日期范围与时间查询参数
   dateRange.value = [];
-  queryFormData.start_time = undefined;
-  queryFormData.end_time = undefined;
+  queryFormData.created_time = undefined;
   loadingData();
 }
 
@@ -558,7 +556,7 @@ const initialFormData: PositionForm = {
   id: undefined,
   name: undefined,
   order: 1,
-  status: true,
+  status: '0',
   description: undefined,
 };
 
@@ -660,9 +658,9 @@ async function handleOpenExportsModal() {
   exportsDialogVisible.value = true;
 }
 // 批量启用/停用
-async function handleMoreClick(status: boolean) {
+async function handleMoreClick(status: string) {
   if (selectIds.value.length) {
-    ElMessageBox.confirm(`确认${status ? "启用" : "停用"}该项数据?`, "警告", {
+    ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
@@ -690,8 +688,8 @@ const exportColumns = [
   { prop: "order", label: "岗位排序" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },
-  { prop: "created_at", label: "创建时间" },
-  { prop: "updated_at", label: "更新时间" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
 ];
 
 // 导入/导出配置（用于导出）
@@ -700,9 +698,6 @@ const curdContentConfig = {
   cols: exportColumns as any,
   exportsAction: async (params: any) => {
     const query: any = { ...params };
-    if (typeof query.status === "string") {
-      query.status = query.status === "true";
-    }
     query.page_no = 1;
     query.page_size = 1000;
     const all: any[] = [];
@@ -727,7 +722,7 @@ onMounted(() => {
 
 // 导出字段 const exportColumns = [ { prop: 'name', label: '岗位名称' }, { prop: 'order', label:
 '岗位排序' }, { prop: 'status', label: '状态' }, { prop: 'description', label: '描述' }, { prop:
-'created_at', label: '创建时间' }, { prop: 'updated_at', label: '更新时间' }, ]; //
+'created_time', label: '创建时间' }, { prop: 'updated_time', label: '更新时间' }, ]; //
 导入/导出配置（仅用于导出） const curdContentConfig = { permPrefix: 'module_system:position', cols:
 exportColumns as any, exportsAction: async (params: any) => { const query: any = { ...params }; if
 (typeof query.status === 'string') { query.status = query.status === 'true'; } query.page_no = 1;

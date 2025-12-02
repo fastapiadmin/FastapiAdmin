@@ -12,7 +12,6 @@ export const useDictStore = defineStore("dict", {
     },
 
     // 获取指定类型的字典数据，确保返回数组
-    // 获取指定类型的字典数据，确保返回有效的数组且项包含必需属性
     getDictArray() {
       return (type: string): Array<{ dict_value: string; dict_label: string }> => {
         return (this.dictData[type] || [])
@@ -25,7 +24,6 @@ export const useDictStore = defineStore("dict", {
     },
   },
   actions: {
-    // 批量获取字典数据
     // 批量获取字典数据
     async getDict(types: string[]): Promise<Record<string, DictDataTable[]>> {
       try {
@@ -66,6 +64,13 @@ export const useDictStore = defineStore("dict", {
         css_class: result.css_class,
         list_class: result.list_class,
         is_default: result.is_default,
+        dict_sort: result.dict_sort,
+        dict_type_id: result.dict_type_id,
+        uuid: result.uuid,
+        status: result.status,
+        description: result.description,
+        created_time: result.created_time,
+        updated_time: result.updated_time,
       };
       return dict_data;
     },

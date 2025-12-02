@@ -1,0 +1,10 @@
+[
+  {
+    "name": "运行管理平台",
+    "code": "SYSTEM",
+    "status": "0",
+    "start_time": null,
+    "end_time": null,
+    "description": "系统内置租户，用于管理平台全局配置和所有租户"
+  }
+]

@@ -38,11 +38,7 @@
                 @change="handleFileChange"
               >
                 <template #trigger>
-                  <el-button
-                    type="primary"
-                    :icon="Camera"
-                    class="upload-trigger"
-                  />
+                  <el-button type="primary" :icon="Camera" class="upload-trigger" />
                 </template>
               </el-upload>
             </div>
@@ -120,7 +116,7 @@
                   <span>加入时间</span>
                 </div>
               </template>
-              <span>{{ infoFormState.created_at }}</span>
+              <span>{{ infoFormState.created_time }}</span>
             </el-descriptions-item>
           </el-descriptions>
         </el-card>
@@ -344,7 +340,7 @@ const infoFormState = reactive<InfoFormState>({
   positions: [],
   roles: [],
   avatar: undefined,
-  created_at: undefined,
+  created_time: undefined,
 });
 
 // 修改密码表单

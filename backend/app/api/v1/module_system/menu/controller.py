@@ -6,15 +6,15 @@ from fastapi.responses import JSONResponse
 from app.common.response import SuccessResponse
 from app.core.dependencies import AuthPermission
 from app.core.base_schema import BatchSetAvailable
-from app.core.router_class import OperationLogRoute
 from app.core.logger import log
+from app.core.router_class import OperationLogRoute
 
 from ..auth.schema import AuthSchema
-from .param import MenuQueryParam
 from .service import MenuService
 from .schema import (
     MenuCreateSchema,
-    MenuUpdateSchema
+    MenuUpdateSchema,
+    MenuQueryParam
 )
 
 MenuRouter = APIRouter(route_class=OperationLogRoute, prefix="/menu", tags=["菜单管理"])

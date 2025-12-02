@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Body, Depends, Path, Query
+from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.common.response import StreamResponse, SuccessResponse
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission, get_current_user
-from app.core.router_class import OperationLogRoute
 from app.core.base_schema import BatchSetAvailable
 from app.core.logger import log
 from app.common.request import PaginationService
+from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
 from ..auth.schema import AuthSchema
-from .param import NoticeQueryParam
 from .service import NoticeService
 from .schema import (
     NoticeCreateSchema,
-    NoticeUpdateSchema
+    NoticeUpdateSchema,
+    NoticeQueryParam
 )
 
 
@@ -164,11 +164,8 @@ async def export_obj_list_controller(
     return StreamResponse(
         data=bytes2file_response(export_result),
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers = {
-            'Content-Disposition': 'attachment; filename=notice.xlsx'
-        }
+        headers = {'Content-Disposition': 'attachment; filename=notice.xlsx'}
     )
-
 
 @NoticeRouter.get("/available", summary="获取全局启用公告", description="获取全局启用公告")
 async def get_obj_list_available_controller(

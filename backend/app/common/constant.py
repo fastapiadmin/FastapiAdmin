@@ -418,25 +418,25 @@ class GenConstant:
         'bool'
     ]
     # 页面不需要显示的添加字段
-    COLUMNNAME_NOT_ADD_SHOW = ['created_at', 'updated_at']
+    COLUMNNAME_NOT_ADD_SHOW = ['created_time', 'updated_time']
 
     # 页面不需要显示的编辑字段
-    COLUMNNAME_NOT_EDIT_SHOW = ['updated_at']
+    COLUMNNAME_NOT_EDIT_SHOW = ['updated_time']
 
     # 页面不需要编辑字段
-    COLUMNNAME_NOT_EDIT = ["id", "description", "created_at", "updated_at"]
+    COLUMNNAME_NOT_EDIT = ["id", "description", "created_time", "updated_time"]
     
     # 页面不需要显示的列表字段
-    COLUMNNAME_NOT_LIST = ["id", "description", "created_at", "updated_at"]
+    COLUMNNAME_NOT_LIST = ["id", "description", "created_time", "updated_time"]
     
     # 页面不需要查询字段
-    COLUMNNAME_NOT_QUERY = ["id", "description", "created_at", "updated_at"]
+    COLUMNNAME_NOT_QUERY = ["id", "description", "created_time", "updated_time"]
     
     # Crud基类字段
-    CRUD_COLUMN_NOT_EDIT = ["create_by", "description", "created_at",  "updated_at"]
+    CRUD_COLUMN_NOT_EDIT = ["create_by", "description", "created_time",  "updated_time"]
     
     # 实体基类字段
-    BASE_ENTITY = ['id', 'created_at', 'updated_at', "description"]
+    BASE_ENTITY = ['id', 'created_time', 'updated_time', "description"]
     
     # Tree基类字段
     TREE_ENTITY = ['parent_name', 'parent_id', 'order', 'ancestors', 'children']

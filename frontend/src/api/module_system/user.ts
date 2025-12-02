@@ -141,6 +141,7 @@ export default UserAPI;
 export interface ForgetPasswordForm {
   username: string;
   new_password: string;
+  mobile?: string;
   confirmPassword: string;
 }
 
@@ -153,14 +154,13 @@ export interface RegisterForm {
 export interface UserPageQuery extends PageQuery {
   username?: string;
   name?: string;
-  status?: boolean;
+  mobile?: string;
+  email?: string;
   dept_id?: number;
-  /** 开始时间 */
-  start_time?: string;
-  /** 结束时间 */
-  end_time?: string;
-  // 创建人ID
-  creator?: number;
+  status?: string;
+  created_time?: string[];
+  created_id?: number;
+  updated_id?: number;
 }
 
 export interface searchSelectDataType {
@@ -168,9 +168,7 @@ export interface searchSelectDataType {
   status?: string;
 }
 
-export interface UserInfo {
-  index?: number;
-  id?: number;
+export interface UserInfo extends BaseType {
   username?: string;
   name?: string;
   avatar?: string;
@@ -189,12 +187,9 @@ export interface UserInfo {
   position_names?: positionSelectorType["name"][];
   position_ids?: positionSelectorType["id"][];
   is_superuser?: boolean;
-  status?: boolean;
-  description?: string;
   last_login?: string;
-  created_at?: string;
-  updated_at?: string;
-  creator?: creatorType;
+  created_by?: creatorType;
+  updated_by?: updatorType;
 }
 
 export interface deptTreeType {
@@ -208,7 +203,7 @@ export interface roleSelectorType {
   id?: number;
   name?: string;
   code?: string;
-  status?: boolean;
+  status?: string;
   description?: string;
   menus?: MenuForm[];
 }
@@ -216,7 +211,7 @@ export interface roleSelectorType {
 export interface positionSelectorType {
   id?: number;
   name?: string;
-  status?: boolean;
+  status?: string;
   description?: string;
 }
 
@@ -232,7 +227,8 @@ export interface InfoFormState {
   positions?: positionSelectorType[];
   roles?: roleSelectorType[];
   avatar?: string;
-  created_at?: string;
+  created_time?: string;
+  updated_time?: string;
 }
 
 export interface PasswordFormState {
@@ -246,8 +242,7 @@ export interface ResetPasswordForm {
   password: string;
 }
 
-export interface UserForm {
-  id?: number;
+export interface UserForm extends BaseFormType {
   username?: string;
   name?: string;
   dept_id?: number;
@@ -261,8 +256,6 @@ export interface UserForm {
   email?: string;
   mobile?: string;
   is_superuser?: boolean;
-  status?: boolean;
-  description?: string;
 }
 
 export interface CurrentUserFormState {

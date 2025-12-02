@@ -1,0 +1,22 @@
+[
+  {
+    "username": "admin",
+    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "name": "超级管理员",
+    "mobile": null,
+    "email": null,
+    "gender": "0",
+    "avatar": "https://service.fastapiadmin.com/api/v1/static/image/avatar.png",
+    "is_superuser": true,
+    "last_login": null,
+    "gitee_login": null,
+    "github_login": null,
+    "wx_login": null,
+    "qq_login": null,
+    "dept_id": 1,
+    "status": "0",
+    "description": "超级管理员",
+    "created_id": null,
+    "updated_id": null
+  }
+]
