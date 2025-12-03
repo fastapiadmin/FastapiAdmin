@@ -54,7 +54,7 @@
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item>
           <el-button
-            v-hasPerm="['module_example:demo:query']"
+            v-hasPerm="['module_gencode:demo:query']"
             type="primary"
             icon="search"
             @click="handleQuery"
@@ -62,7 +62,7 @@
             查询
           </el-button>
           <el-button
-            v-hasPerm="['module_example:demo:query']"
+            v-hasPerm="['module_gencode:demo:query']"
             icon="refresh"
             @click="handleResetQuery"
           >
@@ -105,7 +105,7 @@
           <el-row :gutter="10">
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_example:demo:create']"
+                v-hasPerm="['module_gencode:demo:create']"
                 type="success"
                 icon="plus"
                 @click="handleOpenDialog('create')"
@@ -115,7 +115,7 @@
             </el-col>
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_example:demo:delete']"
+                v-hasPerm="['module_gencode:demo:delete']"
                 type="danger"
                 icon="delete"
                 :disabled="selectIds.length === 0"
@@ -125,7 +125,7 @@
               </el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-dropdown v-hasPerm="['module_example:demo:patch']" trigger="click">
+              <el-dropdown v-hasPerm="['module_gencode:demo:patch']" trigger="click">
                 <el-button type="default" :disabled="selectIds.length === 0" icon="ArrowDown">
                   更多
                 </el-button>
@@ -148,7 +148,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导入">
                 <el-button
-                  v-hasPerm="['module_example:demo:import']"
+                  v-hasPerm="['module_gencode:demo:import']"
                   type="success"
                   icon="upload"
                   circle
@@ -159,7 +159,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导出">
                 <el-button
-                  v-hasPerm="['module_example:demo:export']"
+                  v-hasPerm="['module_gencode:demo:export']"
                   type="warning"
                   icon="download"
                   circle
@@ -181,7 +181,7 @@
             <el-col :span="1.5">
               <el-tooltip content="刷新">
                 <el-button
-                  v-hasPerm="['module_example:demo:query']"
+                  v-hasPerm="['module_gencode:demo:query']"
                   type="primary"
                   icon="refresh"
                   circle
@@ -291,7 +291,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_example:demo:query']"
+              v-hasPerm="['module_gencode:demo:query']"
               type="info"
               size="small"
               link
@@ -301,7 +301,7 @@
               详情
             </el-button>
             <el-button
-              v-hasPerm="['module_example:demo:update']"
+              v-hasPerm="['module_gencode:demo:update']"
               type="primary"
               size="small"
               link
@@ -311,7 +311,7 @@
               编辑
             </el-button>
             <el-button
-              v-hasPerm="['module_example:demo:delete']"
+              v-hasPerm="['module_gencode:demo:delete']"
               type="danger"
               size="small"
               link
@@ -440,7 +440,7 @@ defineOptions({
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ResultEnum } from "@/enums/api/result.enum";
-import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_example/demo";
+import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_gencode/demo";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
 import DatePicker from "@/components/DatePicker/index.vue";
@@ -486,7 +486,7 @@ const exportColumns = [
 
 // 导入/导出配置
 const curdContentConfig = {
-  permPrefix: "module_example:demo",
+  permPrefix: "module_gencode:demo",
   cols: exportColumns as any,
   importTemplate: () => DemoAPI.downloadTemplateDemo(),
   exportsAction: async (params: any) => {

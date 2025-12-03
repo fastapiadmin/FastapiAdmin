@@ -377,6 +377,7 @@
           {% set parentheseIndex = column_comment.find("（") %}
           {% set comment = column_comment[:parentheseIndex] if parentheseIndex != -1 else column_comment %}
           {% set required = 'true' if column.is_nullable == '1' else 'false' %}
+          {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
           {% if column.column_name == "status" %}
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
@@ -420,6 +421,7 @@
           <el-form-item label="{{ comment }}" prop="{{ column.column_name }}">
             <SingleImageUpload v-model="formData.{{ column.column_name }}" />
           </el-form-item>
+          {% endif %}
           {% endif %}
           {% endif %}
           {% endfor %}
@@ -486,7 +488,7 @@ const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
 const dictStore = useDictStore()
-const dictTypes = [
+const dictTypes: any = [
   {% for column in columns %}
   {% if column.dict_type %}
   '{{ column.dict_type }}',
@@ -584,7 +586,9 @@ const queryFormData = reactive<{{ class_name }}PageQuery>({
 const formData = reactive<{{ class_name }}Form>({
   {% for column in columns %}
   {% if column.is_insert == 1 or column.is_edit == 1 %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
   {{ column.column_name }}: undefined,
+  {% endif %}
   {% endif %}
   {% endfor %}
 });
@@ -670,7 +674,9 @@ async function handleResetQuery() {
 const initialFormData: {{ class_name }}Form = {
   {% for column in columns %}
   {% if column.is_insert == 1 or column.is_edit == 1 %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
   {{ column.column_name }}: undefined,
+  {% endif %}
   {% endif %}
   {% endfor %}
 };
@@ -713,7 +719,9 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     dialogVisible.title = "新增{{ class_name }}";
     {% for column in columns %}
     {% if column.is_insert == 1 or column.is_edit == 1 %}
+    {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
     formData.{{ column.column_name }} = undefined;
+    {% endif %}
     {% endif %}
     {% endfor %}
   }

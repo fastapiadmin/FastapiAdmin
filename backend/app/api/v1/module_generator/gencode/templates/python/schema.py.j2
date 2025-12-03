@@ -57,9 +57,9 @@ class {{ class_name }}QueryParam:
         {{ column.column_name }}: {{ column.python_type }} | None = Query(None, description="{{ column.column_comment }}"),
         {% elif column.query_type == 'EQ' and column.column_name == 'status' %}
         {{ column.column_name }}: str | None = Query(None, description="{{ column.column_comment }}"),
-        {% elif table.created_time and column.column_name == 'created_id' %}
+        {% elif table.created_time %}
         created_time: list[DateTimeStr] | None = Query(None, description="创建时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
-        {% elif table.updated_time and column.column_name == 'updated_id' %}
+        {% elif table.updated_time %}
         updated_time: list[DateTimeStr] | None = Query(None, description="更新时间范围", example=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
         {% endif %}
         {% endfor %}
@@ -70,24 +70,17 @@ class {{ class_name }}QueryParam:
         {% for column in columns %}
         {% if column.query_type == 'LIKE' %}
         self.{{ column.column_name }} = ("like", {{ column.column_name }})
-        {% endif %}
-        {% endfor %}
-
         # 精确查询字段
-        {% for column in columns %}
-        {% if column.query_type == 'EQ' %}
+        {% elif column.query_type == 'EQ' %}
         self.{{ column.column_name }} = {{ column.column_name }}
-        {% endif %}
-        {% endfor %}
-
-        {% if table.created_time %}
+        {% elif table.created_time %}
         self.created_id = created_id
         # 时间范围查询
         if created_time and len(created_time) == 2:
             self.created_time = ("between", (created_time[0], created_time[1]))
-        {% endif %}
-        {% if table.updated_time %}
+        {% elif table.updated_time %}
         self.updated_id = updated_id
         if updated_time and len(updated_time) == 2:
             self.updated_time = ("between", (updated_time[0], updated_time[1]))
         {% endif %}
+        {% endfor %}

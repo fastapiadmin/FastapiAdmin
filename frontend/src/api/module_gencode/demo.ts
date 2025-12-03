@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const API_PATH = "/example/demo";
+const API_PATH = "/gencode/demo";
 
 const DemoAPI = {
   getDemoList(query: DemoPageQuery) {

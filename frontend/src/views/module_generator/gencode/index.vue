@@ -434,7 +434,10 @@
                     <el-icon><QuestionFilled /></el-icon>
                   </el-tooltip>
                 </template>
-                <el-input v-model="info.package_name" />
+                <el-input v-model="info.package_name" disabled>
+                  <template #prepend>默认不允许修改</template>
+                  <template #append>目的为简化生成代码</template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -445,7 +448,10 @@
                     <el-icon><QuestionFilled /></el-icon>
                   </el-tooltip>
                 </template>
-                <el-input v-model="info.module_name" />
+                <el-input v-model="info.module_name" disabled>
+                  <template #prepend>默认不允许修改</template>
+                  <template #append>目的为简化生成代码</template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -481,7 +487,7 @@
                 <el-tree-select
                   v-model="info.parent_menu_id"
                   :data="menuOptions"
-                  placeholder="请选择系统菜单"
+                  placeholder="请选择系统菜单, 不选择默认分配到模块管理（id:7）"
                   check-strictly
                   filterable
                   :render-after-expand="false"

@@ -451,14 +451,6 @@ class SchedulerUtil:
         return 'running'
 
     @classmethod
-    def export_jobs(cls):
-        scheduler.export_jobs("/temp/jobs.json")
-
-    @classmethod
-    def import_jobs(cls):
-        scheduler.import_jobs("/temp/jobs.json")
-
-    @classmethod
     def print_jobs(cls,jobstore: Any | None = None, out: Any | None = None):
         """
         打印调度任务列表。

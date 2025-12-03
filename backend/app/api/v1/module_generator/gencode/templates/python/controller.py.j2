@@ -116,13 +116,11 @@ async def import_{{ business_name }}_list_controller(
 @{{ class_name }}Router.post('/download/template', summary="获取{{ function_name }}导入模板", description="获取{{ function_name }}导入模板", dependencies=[Depends(AuthPermission(["{{ permission_prefix }}:download"]))])
 async def export_{{ business_name }}_template_controller() -> StreamingResponse:
     """获取{{ function_name }}导入模板接口"""
-    example_import_template_result = await {{ class_name }}Service.import_template_download_{{ business_name }}_service()
+    import_template_result = await {{ class_name }}Service.import_template_download_{{ business_name }}_service()
     log.info('获取{{ function_name }}导入模板成功')
 
     return StreamResponse(
-        data=bytes2file_response(example_import_template_result),
+        data=bytes2file_response(import_template_result),
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            'Content-Disposition': 'attachment; filename={{ table_name }}_template.xlsx'
-        }
+        headers={'Content-Disposition': 'attachment; filename={{ table_name }}_template.xlsx'}
     )

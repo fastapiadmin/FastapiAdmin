@@ -10,7 +10,6 @@ from app.config.path_conf import TEMPLATE_DIR
 from app.config.setting import settings
 from app.utils.common_util import CamelCaseUtil, SnakeCaseUtil
 from app.utils.string_util import StringUtil
-from app.utils.common_util import uuid4_str
 
 from app.api.v1.module_generator.gencode.schema import GenTableOutSchema, GenTableColumnOutSchema
 
@@ -24,7 +23,7 @@ class Jinja2TemplateUtil:
     FRONTEND_PROJECT_PATH = 'frontend'
     BACKEND_PROJECT_PATH = 'backend'
     # 默认上级菜单，系统工具
-    DEFAULT_PARENT_MENU_ID = "3"
+    DEFAULT_PARENT_MENU_ID = 7
     
     # 环境对象
     _env = None
@@ -54,8 +53,7 @@ class Jinja2TemplateUtil:
                     {
                         'camel_to_snake': SnakeCaseUtil.camel_to_snake,
                         'snake_to_camel': CamelCaseUtil.snake_to_camel,
-                        'get_sqlalchemy_type': cls.get_sqlalchemy_type,
-                        'set_uuid': uuid4_str,
+                        'get_sqlalchemy_type': cls.get_sqlalchemy_type
                     }
                 )
             return cls._env
