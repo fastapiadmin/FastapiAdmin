@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-
 from sqlalchemy.engine.row import Row
 from sqlalchemy import and_, select, text
 from typing import Sequence
 from sqlglot.expressions import Expression
 
 from app.core.logger import log
+from app.core.exceptions import CustomException
 from app.config.setting import settings
 from app.core.base_crud import CRUDBase
+from app.core.base_params import PaginationQueryParam
 
 from app.api.v1.module_system.auth.schema import AuthSchema
 from .model import GenTableModel, GenTableColumnModel
@@ -16,7 +17,8 @@ from .schema import (
     GenTableColumnSchema,
     GenTableColumnOutSchema,
     GenDBTableSchema,
-    GenTableQueryParam
+    GenTableQueryParam,
+    GenTableOutSchema
 )
 
 
@@ -31,6 +33,67 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         - auth (AuthSchema): 认证信息模型
         """
         super().__init__(model=GenTableModel, auth=auth)
+
+    def _build_query(self) -> select:
+        # 使用更健壮的方式检测数据库方言
+        if settings.DATABASE_TYPE == "postgres":
+            query_sql = (
+                select(
+                    text("t.table_catalog as database_name"),
+                    text("t.table_name as table_name"),
+                    text("t.table_type as table_type"),
+                    text("pd.description as table_comment"),
+                )
+                .select_from(text(
+                    "information_schema.tables t \n"
+                    "LEFT JOIN pg_catalog.pg_class c ON c.relname = t.table_name \n"
+                    "LEFT JOIN pg_catalog.pg_namespace n ON n.nspname = t.table_schema AND c.relnamespace = n.oid \n"
+                    "LEFT JOIN pg_catalog.pg_description pd ON pd.objoid = c.oid AND pd.objsubid = 0"
+                ))
+                .where(
+                    and_(
+                        text("t.table_catalog = (select current_database())"),
+                        text("t.is_insertable_into = 'YES'"),
+                        text("t.table_schema = 'public'"),
+                    )
+                )
+            )
+        else:
+            query_sql = (
+                select(
+                    text("table_schema as database_name"),
+                    text("table_name as table_name"),
+                    text("table_type as table_type"),
+                    text("table_comment as table_comment"),
+                )
+                .select_from(text("information_schema.tables"))
+                .where(
+                    and_(
+                        text("table_schema = (select database())"),
+                    )
+                )
+            )
+        return query_sql
+    
+    def _build_params(self, query_sql: select, search: GenTableQueryParam | None) -> dict:
+        params = {}
+        if search and search.table_name:
+            query_sql = query_sql.where(
+                text("lower(table_name) like lower(:table_name)")
+            )
+            params['table_name'] = f"%{search.table_name}%"
+        if search and search.table_comment:
+            # 对于PostgreSQL，表注释字段是pd.description，而不是table_comment
+            if settings.DATABASE_TYPE == "postgres":
+                query_sql = query_sql.where(
+                    text("lower(pd.description) like lower(:table_comment)")
+                )
+            else:
+                query_sql = query_sql.where(
+                    text("lower(table_comment) like lower(:table_comment)")
+                )
+            params['table_comment'] = f"%{search.table_comment}%"
+        return params
 
     async def get_gen_table_by_id(self, table_id: int, preload: list | None = None) -> GenTableModel | None:
         """
@@ -82,6 +145,19 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         - Sequence[GenTableModel]: 业务表列表信息。
         """
         return await self.list(search=search.__dict__, order_by=[{"created_time": "desc"}], preload=preload)
+    
+    async def gen_table_page_crud(self, search: dict | None = None, page: PaginationQueryParam | None = None, preload: list | None = None) -> dict:
+        """
+        分页查询代码生成业务表列表信息。
+
+        参数:
+        - search (dict | None): 查询参数对象。
+        - page (PaginationQueryParam | None): 分页查询参数对象。
+
+        返回:
+        - dict: 包含分页信息的字典结果。
+        """
+        return await self.page(search=search, page=page, out_schema=GenTableOutSchema, preload=preload)
 
     async def add_gen_table(self, add_model: GenTableSchema) -> GenTableModel:
         """
@@ -128,64 +204,11 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         返回:
         - list[dict]: 数据库表列表信息（已转为可序列化字典）。
         """
-
-        # 使用更健壮的方式检测数据库方言
-        if settings.DATABASE_TYPE == "postgres":
-            query_sql = (
-                select(
-                    text("t.table_catalog as database_name"),
-                    text("t.table_name as table_name"),
-                    text("t.table_type as table_type"),
-                    text("pd.description as table_comment"),
-                )
-                .select_from(text(
-                    "information_schema.tables t \n"
-                    "LEFT JOIN pg_catalog.pg_class c ON c.relname = t.table_name \n"
-                    "LEFT JOIN pg_catalog.pg_namespace n ON n.nspname = t.table_schema AND c.relnamespace = n.oid \n"
-                    "LEFT JOIN pg_catalog.pg_description pd ON pd.objoid = c.oid AND pd.objsubid = 0"
-                ))
-                .where(
-                    and_(
-                        text("t.table_catalog = (select current_database())"),
-                        text("t.is_insertable_into = 'YES'"),
-                        text("t.table_schema = 'public'"),
-                    )
-                )
-            )
-        else:
-            query_sql = (
-                select(
-                    text("table_schema as database_name"),
-                    text("table_name as table_name"),
-                    text("table_type as table_type"),
-                    text("table_comment as table_comment"),
-                )
-                .select_from(text("information_schema.tables"))
-                .where(
-                    and_(
-                        text("table_schema = (select database())"),
-                    )
-                )
-            )
+        # 获取查询语句
+        query_sql = self._build_query()
         
         # 动态条件构造
-        params = {}
-        if search and search.table_name:
-            query_sql = query_sql.where(
-                text("lower(table_name) like lower(:table_name)")
-            )
-            params['table_name'] = f"%{search.table_name}%"
-        if search and search.table_comment:
-            # 对于PostgreSQL，表注释字段是pd.description，而不是table_comment
-            if settings.DATABASE_TYPE == "postgres":
-                query_sql = query_sql.where(
-                    text("lower(pd.description) like lower(:table_comment)")
-                )
-            else:
-                query_sql = query_sql.where(
-                    text("lower(table_comment) like lower(:table_comment)")
-                )
-            params['table_comment'] = f"%{search.table_comment}%"
+        params = self._build_params(query_sql, search)
 
         # 执行查询并绑定参数
         all_data = (await self.auth.db.execute(query_sql, params)).fetchall()
@@ -202,6 +225,45 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
                 dict_row = GenDBTableSchema(**dict(row)).model_dump()
                 dict_data.append(dict_row)
         return dict_data
+
+    async def db_table_page_crud(self, page: PaginationQueryParam, search: GenTableQueryParam | None = None) -> dict:
+        """
+        分页查询数据库表列表信息。
+
+        参数:
+        - search (dict | None): 查询参数对象。
+        - page (PaginationQueryParam | None): 分页查询参数对象。
+
+        返回:
+        - dict: 包含分页信息的字典结果。
+        """
+        try:
+            # 获取查询语句
+            query_sql = self._build_query()
+            # 动态条件构造
+            params = self._build_params(query_sql, search)
+
+            count_sql = f"SELECT COUNT(*) FROM ({query_sql}) AS subquery"
+            count_res = await self.auth.db.execute(text(count_sql), params)
+            total = count_res.scalar()
+
+            # 添加分页
+            offset = (page.page_no - 1) * page.page_size
+            limit = page.page_size
+
+            query_sql = query_sql.limit(page.page_size).offset(offset)
+            result = await self.auth.db.execute(query_sql, params)
+            rows = result.mappings().all()
+            return {
+                    "page_no": page.page_no,
+                    "page_size": page.page_size,
+                    "total": total,
+                    "has_next": offset + limit < total,
+                    "items": [GenDBTableSchema.model_validate(obj).model_dump() for obj in rows]
+                }
+        except Exception as e:
+            raise CustomException(msg=f"分页查询失败: {str(e)}")
+
 
     async def get_db_table_list_by_names(self, table_names: list[str]) -> list[GenDBTableSchema]:
         """

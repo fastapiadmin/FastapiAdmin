@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 from app.common.response import SuccessResponse, StreamResponse
 from app.core.dependencies import AuthPermission
 from app.core.base_params import PaginationQueryParam
-from app.common.request import PaginationService
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 from app.core.logger import log
@@ -20,14 +19,14 @@ from .service import GenTableService
 GenRouter = APIRouter(route_class=OperationLogRoute, prefix='/gencode', tags=["代码生成模块"])
 
 
-@GenRouter.get("/list", summary="查询代码生成业务表列表", description="查询代码生成业务表列表")
-async def gen_table_list_controller(
+@GenRouter.get("/page", summary="分页查询代码生成业务表列表", description="分页查询代码生成业务表列表")
+async def gen_table_page_controller(
     page: PaginationQueryParam = Depends(),
     search: GenTableQueryParam = Depends(),
     auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:query"]))
 ) -> JSONResponse:
     """
-    查询代码生成业务表列表
+    分页查询代码生成业务表列表
     
     参数:
     - page (PaginationQueryParam): 分页查询参数
@@ -37,20 +36,19 @@ async def gen_table_list_controller(
     返回:
     - JSONResponse: 包含查询结果和分页信息的JSON响应
     """
-    result_dict_list = await GenTableService.get_gen_table_list_service(auth=auth, search=search)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict = await GenTableService.get_gen_table_page_service(auth=auth, search=search, page=page)
     log.info('获取代码生成业务表列表成功')
     return SuccessResponse(data=result_dict, msg="获取代码生成业务表列表成功")
 
 
-@GenRouter.get("/db/list", summary="查询数据库表列表", description="查询数据库表列表")
-async def get_gen_db_table_list_controller(
+@GenRouter.get("/db/page", summary="分页查询数据库表列表", description="分页查询数据库表列表")
+async def get_gen_db_table_page_controller(
     page: PaginationQueryParam = Depends(),
     search: GenTableQueryParam = Depends(),
     auth: AuthSchema = Depends(AuthPermission(["module_generator:dblist:query"]))
 ) -> JSONResponse:
     """
-    查询数据库表列表
+    分页查询数据库表列表
     
     参数:
     - page (PaginationQueryParam): 分页查询参数
@@ -60,8 +58,7 @@ async def get_gen_db_table_list_controller(
     返回:
     - JSONResponse: 包含查询结果和分页信息的JSON响应
     """
-    result_dict_list = await GenTableService.get_gen_db_table_list_service(auth=auth, search=search)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict = await GenTableService.get_gen_db_table_page_service(auth=auth, search=search, page=page)
     log.info('获取数据库表列表成功')
     return SuccessResponse(data=result_dict, msg="获取数据库表列表成功")
 

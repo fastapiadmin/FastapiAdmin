@@ -4,7 +4,6 @@ from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
 
 from app.common.response import SuccessResponse
-from app.common.request import PaginationService
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
 from app.core.base_schema import BatchSetAvailable

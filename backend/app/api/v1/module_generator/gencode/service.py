@@ -11,6 +11,7 @@ from app.config.path_conf import BASE_DIR
 from app.config.setting import settings
 from app.core.logger import log
 from app.core.exceptions import CustomException
+from app.core.base_params import PaginationQueryParam
 
 from app.api.v1.module_system.auth.schema import AuthSchema
 from .tools.jinja2_template_util import Jinja2TemplateUtil
@@ -57,6 +58,16 @@ class GenTableService:
         """
         gen_table_list_result = await GenTableCRUD(auth=auth).get_gen_table_list(search)
         return [GenTableOutSchema.model_validate(obj).model_dump() for obj in gen_table_list_result]
+    
+    @classmethod
+    @handle_service_exception
+    async def get_gen_table_page_service(cls, auth: AuthSchema, page: PaginationQueryParam, search: GenTableQueryParam) -> dict:
+        """获取代码生成业务表分页列表信息。
+        - 备注：结合分页参数与查询参数，返回包含分页信息的字典结果。
+        """
+        search_dict = search.__dict__ if search else None
+        return await GenTableCRUD(auth).gen_table_page_crud(search=search_dict, page=page)
+        
 
     @classmethod
     @handle_service_exception
@@ -66,6 +77,15 @@ class GenTableService:
         """
         gen_db_table_list_result = await GenTableCRUD(auth=auth).get_db_table_list(search)
         return gen_db_table_list_result
+
+    @classmethod
+    @handle_service_exception
+    async def get_gen_db_table_page_service(cls, auth: AuthSchema, page: PaginationQueryParam, search: GenTableQueryParam) -> dict:
+        """获取数据库表分页列表（跨方言）。
+        - 备注：结合分页参数与查询参数，返回包含分页信息的字典结果。
+        """
+        return await GenTableCRUD(auth).db_table_page_crud(search=search, page=page)
+        
 
     @classmethod
     @handle_service_exception

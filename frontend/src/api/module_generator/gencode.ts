@@ -4,18 +4,18 @@ const API_PATH = "/generator/gencode";
 
 const GencodeAPI = {
   // 查询生成表数据
-  listTable(query: GenTablePageQuery) {
+  pageTable(query: GenTablePageQuery) {
     return request<ApiResponse<PageResult<GenTableSchema[]>>>({
-      url: `${API_PATH}/list`,
+      url: `${API_PATH}/page`,
       method: "get",
       params: query,
     });
   },
 
   // 查询db数据库列表
-  listDbTable(query: DBTablePageQuery) {
+  pageDbTable(query: DBTablePageQuery) {
     return request<ApiResponse<PageResult<DBTableSchema[]>>>({
-      url: `${API_PATH}/db/list`,
+      url: `${API_PATH}/db/page`,
       method: "get",
       params: query,
     });
