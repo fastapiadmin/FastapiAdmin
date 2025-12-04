@@ -236,9 +236,15 @@ class DemoService:
             
             # 验证必填字段
             required_fields = ['name', 'status']
+            errors = []
             for field in required_fields:
                 missing_rows = df[df[field].isnull()].index.tolist()
-                raise CustomException(msg=f"{[k for k,v in header_dict.items() if v == field][0]}不能为空，第{[i+1 for i in missing_rows]}行")
+                if missing_rows:
+                    field_name = [k for k,v in header_dict.items() if v == field][0]
+                    rows_str = "、".join([str(i+1) for i in missing_rows])
+                    errors.append(f"{field_name}不能为空，第{rows_str}行")
+            if errors:
+                raise CustomException(msg=f"导入失败，以下行缺少必要字段：\n{'; '.join(errors)}")
             
             error_msgs = []
             success_count = 0

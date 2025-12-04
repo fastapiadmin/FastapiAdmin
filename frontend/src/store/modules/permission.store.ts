@@ -149,20 +149,41 @@ export const usePermissionStore = defineStore("permission", () => {
  * 转换后端路由数据为Vue Router配置
  * 处理组件路径映射和Layout层级嵌套
  */
-const transformRoutes = (routes: RouteVO[]): RouteRecordRaw[] => {
+const transformRoutes = (routes: RouteVO[], isTopLevel: boolean = true): RouteRecordRaw[] => {
   return routes.map((route) => {
     // 创建路由对象，保留所有路由属性
     const normalizedRoute = { ...route } as RouteRecordRaw;
 
     // 处理组件路径映射
-    normalizedRoute.component = !normalizedRoute.component
-      ? Layout
-      : modules[`../../views/${normalizedRoute.component}.vue`] ||
-        modules["../../views/error/404.vue"];
+    // normalizedRoute.component = !normalizedRoute.component
+    //   ? Layout
+    //   : modules[`../../views/${normalizedRoute.component}.vue`] ||
+    //     modules["../../views/error/404.vue"];
 
-    // 递归处理子路由
+    // 关键优化：
+    // 1. 顶级路由（一级目录）使用Layout组件，确保菜单和navbar能正常显示
+    // 2. 二级及以上的父路由不使用Layout组件，只作为路由容器，避免Layout嵌套
+    // 3. 叶子路由使用实际组件
+    // 4. 递归处理子路由，实现无限层级菜单
     if (normalizedRoute.children && normalizedRoute.children.length > 0) {
-      normalizedRoute.children = transformRoutes(route.children);
+      // normalizedRoute.children = transformRoutes(route.children);
+    
+      // 非叶子路由
+      if (isTopLevel) {
+        // 顶级路由（一级目录），使用Layout组件
+        normalizedRoute.component = Layout;
+      } else {
+        // 二级及以上的父路由，不使用Layout组件，只作为路由容器
+        normalizedRoute.component = undefined;
+      }
+      // 递归处理子路由，标记为非顶级路由
+      normalizedRoute.children = transformRoutes(route.children, false);
+    } else {
+      // 叶子路由，使用实际组件
+      normalizedRoute.component = normalizedRoute.component
+        ? modules[`../../views/${normalizedRoute.component}.vue`] ||
+          modules["../../views/error/404.vue"]
+        : modules["../../views/error/404.vue"];
     }
 
     return normalizedRoute;

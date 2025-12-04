@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import time
 from starlette.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp
@@ -12,6 +13,7 @@ from app.common.response import ErrorResponse
 from app.config.setting import settings
 from app.core.logger import log
 from app.core.exceptions import CustomException
+from app.core.security import decode_access_token
 from app.api.v1.module_system.params.service import ParamsService
 
 
@@ -35,14 +37,60 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
 
+    @staticmethod
+    def _extract_session_id_from_request(request: Request) -> str | None:
+        """
+        从请求中提取session_id（支持从Token或已设置的scope中获取）
+        
+        参数:
+        - request (Request): 请求对象
+        
+        返回:
+        - str | None: 会话ID，如果无法提取则返回None
+        """
+        # 1. 先检查 scope 中是否已经有 session_id（登录接口会设置）
+        session_id = request.scope.get('session_id')
+        if session_id:
+            return session_id
+        
+        # 2. 尝试从 Authorization Header 中提取
+        try:
+            authorization = request.headers.get("Authorization")
+            if not authorization:
+                return None
+            
+            # 处理Bearer token
+            token = authorization.replace('Bearer ', '').strip()
+            
+            # 解码token
+            payload = decode_access_token(token)
+            if not payload or not hasattr(payload, 'sub'):
+                return None
+            
+            # 从payload中提取session_id
+            user_info = json.loads(payload.sub)
+            session_id = user_info.get("session_id")
+            
+            # 同时设置到request.scope中，避免后续重复解析
+            if session_id:
+                request.scope["session_id"] = session_id
+            
+            return session_id
+        except Exception:
+            # 解析失败静默处理，返回None（可能是未认证请求）
+            return None
+
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         start_time = time.time()
-        session_id = request.scope.get('session_id')
+        
+        # 尝试提取session_id
+        session_id = self._extract_session_id_from_request(request)
+        
         # 组装请求日志字段
         log_fields = [
-            f"会话ID: {session_id}",
+            
             f"请求来源: {request.client.host if request.client else '未知'}",
             f"请求方法: {request.method}",
             f"请求路径: {request.url.path}",
@@ -111,6 +159,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             if should_block:
                 # 增强安全审计：记录详细的拦截日志
                 log.warning([
+                    f"会话ID: {session_id or '未认证'}",
                     f"请求被拦截: {block_reason}",
                     f"请求来源: {request_ip}",
                     f"请求方法: {request.method}",

@@ -147,9 +147,14 @@ class {{ class_name }}Service:
             # 验证必填字段
             {% for column in columns %}
             {% if column.required == '1' %}
+            errors = []
             missing_rows = df[df['{{ column.column_name }}'].isnull()].index.tolist()
             if missing_rows:
-                raise CustomException(msg="{{ column.column_comment }}不能为空，第{0}行".format([i+1 for i in missing_rows]))
+                field_name = [k for k,v in header_dict.items() if v == field][0]
+                rows_str = "、".join([str(i+1) for i in missing_rows])
+                errors.append(f"{field_name}不能为空，第{rows_str}行")
+            if errors:
+                raise CustomException(msg=f"导入失败，以下行缺少必要字段：\n{'; '.join(errors)}")
             {% endif %}
             {% endfor %}
             

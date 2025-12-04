@@ -44,7 +44,7 @@ executors = {
 }
 # 配置默认参数
 job_defaults = {
-    'coalesce': False,  # 是否合并执行
+    'coalesce': True,  # 合并执行错过的任务
     'max_instances': 1,  # 最大实例数
 }
 # 配置调度器
@@ -166,7 +166,11 @@ class SchedulerUtil:
                 job_list = await JobCRUD(auth).get_obj_list_crud()
                 for item in job_list:
                     cls.remove_job(job_id=item.id)  # 删除旧任务
-                    cls.add_job(item)
+                    # 检查任务是否已经存在
+                    existing_job = cls.get_job(job_id=item.id)
+                    if not existing_job:
+                        # 任务不存在才添加
+                        cls.add_job(item)
                     # 根据数据库中保存的状态来设置任务状态
                     if hasattr(item, 'status') and item.status == "1":
                         # 如果任务状态为暂停，则立即暂停刚添加的任务
