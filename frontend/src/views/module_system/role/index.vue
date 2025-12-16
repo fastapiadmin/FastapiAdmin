@@ -268,26 +268,6 @@
           sortable
         />
         <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
-          key="created_id"
-          label="创建人"
-          min-width="120"
-        >
-          <template #default="scope">
-            {{ scope.row.created_by?.name }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show"
-          key="updated_id"
-          label="更新人"
-          min-width="120"
-        >
-          <template #default="scope">
-            {{ scope.row.updated_by?.name }}
-          </template>
-        </el-table-column>
-        <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
           fixed="right"
           label="操作"
@@ -522,8 +502,6 @@ const tableColumns = ref([
   { prop: "description", label: "描述", show: true },
   { prop: "created_time", label: "创建时间", show: true },
   { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人", show: true },
-  { prop: "updated_id", label: "更新人", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
