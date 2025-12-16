@@ -54,7 +54,13 @@
             <el-icon v-if="codeLoading" class="is-loading" size="20">
               <Loading />
             </el-icon>
-            <el-image v-else-if="captchaState.img_base" border-rd-4px object-cover :src="captchaState.img_base" @click="getCaptcha" />
+            <el-image
+              v-else-if="captchaState.img_base"
+              border-rd-4px
+              object-cover
+              :src="captchaState.img_base"
+              @click="getCaptcha"
+            />
             <el-text v-else type="info" size="small">点击获取验证码</el-text>
           </div>
         </div>

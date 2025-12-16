@@ -106,11 +106,9 @@
     </el-icon>
 
     <!-- 刷新按钮 -->
-    <el-tooltip class="item" :content="t('navbar.refreshCache')" placement="top">
-      <el-icon class="btn" @click="handleAction('refreshCache')">
-        <RefreshRight />
-      </el-icon>
-    </el-tooltip>
+    <el-icon class="btn" @click="handleAction('refreshCache')">
+      <RefreshRight />
+    </el-icon>
 
     <!-- 设置按钮 -->
     <el-dropdown class="btn" trigger="click">

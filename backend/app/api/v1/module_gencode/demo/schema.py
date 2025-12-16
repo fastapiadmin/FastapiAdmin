@@ -9,9 +9,9 @@ from app.core.base_schema import BaseSchema, UserBySchema
 
 class DemoCreateSchema(BaseModel):
     """新增模型"""
-    name: str = Field(..., min_length=2, max_length=50, description='名称')
+    name: str = Field(..., description='名称')
     status: str = Field(default="0", description="是否启用(0:启用 1:禁用)")
-    description: str | None = Field(default=None, max_length=255, description="描述")
+    description: str | None = Field(default=None, description="描述")
 
     @field_validator('name')
     @classmethod
@@ -34,6 +34,11 @@ class DemoCreateSchema(BaseModel):
         # 格式校验：名称只能包含字母、数字、下划线和中划线
         if not self.name.isalnum() and not all(c in '-_' for c in self.name):
             raise ValueError('名称只能包含字母、数字、下划线和中划线')
+        if self.status not in ["0", "1"]:
+            raise ValueError('是否启用必须为0或1')
+        # 描述校验：描述最大长度
+        if self.description and len(self.description) > 255:
+            raise ValueError('描述长度不能超过255个字符')
         
         return self
 

@@ -154,7 +154,8 @@
         :data="fileList"
         row-key="file_url"
         class="data-table__content"
-        :height="450"
+        height="450"
+        max-height="450px"
         border
         stripe
         @selection-change="handleSelectionChange"

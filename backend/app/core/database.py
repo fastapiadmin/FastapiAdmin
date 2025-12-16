@@ -122,5 +122,5 @@ async def redis_connect(app: FastAPI, status: str) -> Redis | None:
             log.error(f"❌ 数据库 Redis 连接错误: {e}")
             raise
     else:
-        await app.state.redis.aclose()
+        await app.state.redis.close()
         log.info('✅️ Redis连接已关闭')

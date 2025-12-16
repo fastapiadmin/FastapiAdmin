@@ -279,6 +279,8 @@ onMounted(() => {
 defineExpose({
   // 获取分页数据
   getQueryParams: () => queryParams,
+  // 显示/隐藏 SearchForm
+  toggleVisible: () => (visible.value = !visible.value),
 });
 </script>
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from re import T
 from starlette.responses import HTMLResponse
 from typing import Any, AsyncGenerator
 from fastapi import Depends, FastAPI, Request, Response
@@ -11,7 +12,8 @@ from fastapi.openapi.docs import (
     get_swagger_ui_oauth2_redirect_html
 )
 from fastapi_limiter import FastAPILimiter
-from fastapi_limiter.depends import RateLimiter
+from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
+from starlette.websockets import WebSocket
 from math import ceil
 
 from app.config.setting import settings
@@ -25,6 +27,8 @@ from app.api.v1.module_application.job.tools.ap_scheduler import SchedulerUtil
 from app.api.v1.module_system.params.service import ParamsService
 from app.api.v1.module_system.dict.service import DictDataService
 
+# 导入WebSocket路由器
+from app.api.v1.module_application.ai.ws import WS_AI
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
@@ -127,6 +131,9 @@ def register_routers(app: FastAPI) -> None:
     返回:
     - None
     """
+    # 手动注册WebSocket路由，不使用速率限制器
+    app.include_router(router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=1, seconds=5))])
+    # 先将动态路由注册到应用，使用速率限制器
     app.include_router(router=router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
 
 def register_files(app: FastAPI) -> None:
@@ -192,6 +199,18 @@ async def http_limit_callback(request: Request, response: Response, expire: int)
     expires = ceil(expire / 30)
     raise CustomException(
         status_code=429,
-        msg='请求过于频繁，请稍后重试',
+        msg='请求过于频繁，请稍后重试！',
         data={'Retry-After': str(expires)},
     )
+
+# 为WebSocket添加默认的回调函数
+async def ws_limit_callback(ws: WebSocket, expire: int):
+    """
+    WebSocket请求限制时的默认回调函数
+
+    :param ws: WebSocket连接对象
+    :param expire: 剩余毫秒数
+    :return:
+    """
+    expires = ceil(expire / 30)
+    await ws.close(code=1008, reason=f'请求过于频繁，请稍后重试！{expires} 秒后重试')

@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-view">
+  <div class="auth-view" :style="{ '--login-background-url': `url(${loginBackgroundUrl})` }">
     <!-- 右侧切换主题、语言按钮  -->
     <div class="auth-view__toolbar">
       <el-tooltip :content="t('login.themeToggle')" placement="bottom">
@@ -40,7 +40,7 @@
           </li>
         </ul>
       </section>
-      
+
       <!-- 登录页主体容器 -->
       <section class="auth-panel">
         <!-- 标题 -->
@@ -48,13 +48,18 @@
           <div class="auth-panel__logo-wrap">
             <!-- logo -->
             <!-- <el-image :src="logo" style="width: 84px" /> -->
-            <el-image :src="configStore.configData.sys_web_logo.config_value" class="auth-panel__logo" />
+            <el-image
+              :src="configStore.configData?.sys_web_logo?.config_value || ''"
+              class="auth-panel__logo"
+            />
           </div>
           <div class="auth-panel__meta">
             <div class="auth-panel__title-row">
-              <span class="auth-panel__title">{{ configStore.configData.sys_web_title.config_value }}</span>
+              <span class="auth-panel__title">
+                {{ configStore.configData?.sys_web_title?.config_value || "" }}
+              </span>
               <el-tooltip
-                :content="configStore.configData.sys_web_description.config_value"
+                :content="configStore.configData?.sys_web_description?.config_value || ''"
                 placement="bottom"
               >
                 <el-icon class="cursor-help"><QuestionFilled /></el-icon>
@@ -62,7 +67,9 @@
             </div>
             <div class="auth-panel__version-row">
               <span class="auth-panel__version-label">Version</span>
-              <span class="auth-panel__version-pill">v{{ configStore.configData.sys_web_version.config_value }}</span>
+              <span class="auth-panel__version-pill">
+                v{{ configStore.configData?.sys_web_version?.config_value || "" }}
+              </span>
             </div>
           </div>
         </div>
@@ -80,13 +87,19 @@
         <!-- 登录页底部版权 -->
         <footer class="auth-panel__footer">
           <el-text size="small">
-            <a :href="configStore.configData.sys_git_code.config_value" target="_blank">
-              {{ configStore.configData.sys_web_copyright.config_value }} |
+            <a :href="configStore.configData?.sys_git_code?.config_value || ''" target="_blank">
+              {{ configStore.configData?.sys_web_copyright?.config_value || "" }} |
             </a>
-            <a :href="configStore.configData.sys_help_doc.config_value" target="_blank">帮助 |</a>
-            <a :href="configStore.configData.sys_web_privacy.config_value" target="_blank">隐私 |</a>
-            <a :href="configStore.configData.sys_web_clause.config_value" target="_blank">条款</a>
-            {{ configStore.configData.sys_keep_record.config_value }}
+            <a :href="configStore.configData?.sys_help_doc?.config_value || ''" target="_blank">
+              帮助 |
+            </a>
+            <a :href="configStore.configData?.sys_web_privacy?.config_value || ''" target="_blank">
+              隐私 |
+            </a>
+            <a :href="configStore.configData?.sys_web_clause?.config_value || ''" target="_blank">
+              条款
+            </a>
+            {{ configStore.configData?.sys_keep_record?.config_value || "" }}
           </el-text>
         </footer>
       </section>
@@ -102,6 +115,15 @@ import DarkModeSwitch from "@/components/DarkModeSwitch/index.vue";
 import { useConfigStore } from "@/store";
 
 const configStore = useConfigStore();
+
+// 添加计算属性处理背景图片URL
+const loginBackgroundUrl = computed(() => {
+  // 使用可选链操作符确保安全访问
+  return (
+    configStore.configData?.sys_login_background?.config_value ||
+    new URL("@/assets/images/login-bg.svg", import.meta.url).href
+  );
+});
 
 type LayoutMap = "login" | "register" | "resetPwd";
 
@@ -135,9 +157,11 @@ const showVoteNotification = () => {
   });
 };
 
+// 组件初始化时就加载配置，而不是在onMounted中
+configStore.getConfig();
+
 onMounted(() => {
   setTimeout(showVoteNotification, 500);
-  configStore.getConfig();
 });
 
 onBeforeUnmount(() => {
@@ -167,7 +191,7 @@ onBeforeUnmount(() => {
     inset: 0;
     z-index: -2;
     content: "";
-    background: url("@/assets/images/login-bg.svg") center/cover no-repeat;
+    background: var(--login-background-url) center/cover no-repeat;
   }
 
   &::after {

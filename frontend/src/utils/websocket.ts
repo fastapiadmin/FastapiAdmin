@@ -7,10 +7,9 @@
  * - 在线用户计数 WebSocket
  * - 其他业务 WebSocket
  *
- * @author 有来技术团队
+ * @author fastapiadmin
  */
 
-import { useDictSync } from "@/composables";
 import { Auth } from "@/utils/auth";
 
 /**
@@ -32,7 +31,6 @@ const websocketInstances = new Map<string, WebSocketService>();
  * 防止重复初始化的状态标记
  */
 let isInitialized = false;
-let dictWebSocketInstance: ReturnType<typeof useDictSync> | null = null;
 
 /**
  * 注册 WebSocket 实例
@@ -63,8 +61,6 @@ export function setupWebSocket() {
   }
 
   try {
-    dictWebSocketInstance = useDictSync();
-    registerWebSocketInstance("dict-sync", dictWebSocketInstance);
     isInitialized = true;
     console.log("[WebSocket] 初始化成功");
   } catch (error) {
@@ -94,7 +90,6 @@ export function cleanupWebSocket() {
   });
 
   websocketInstances.clear();
-  dictWebSocketInstance = null;
   isInitialized = false;
   console.log("[WebSocket] 清理完成");
 }

@@ -147,7 +147,8 @@
         :data="tableList"
         highlight-current-row
         class="data-table__content"
-        :height="450"
+        height="450"
+        max-height="450px"
         border
         stripe
         @selection-change="handleTableSelectionChange"
@@ -542,8 +543,8 @@
                 <el-button size="small" type="primary" plain>查询</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="bulkSet('is_query', '1')">全选</el-dropdown-item>
-                    <el-dropdown-item @click="bulkSet('is_query', '0')">全不选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_query', true)">全选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_query', false)">全不选</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -551,8 +552,8 @@
                 <el-button size="small" type="success" plain>列表</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="bulkSet('is_list', '1')">全选</el-dropdown-item>
-                    <el-dropdown-item @click="bulkSet('is_list', '0')">全不选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_list', true)">全选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_list', false)">全不选</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -560,8 +561,8 @@
                 <el-button size="small" type="warning" plain>新增</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="bulkSet('is_insert', '1')">全选</el-dropdown-item>
-                    <el-dropdown-item @click="bulkSet('is_insert', '0')">全不选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_insert', true)">全选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_insert', false)">全不选</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -569,8 +570,8 @@
                 <el-button size="small" type="danger" plain>编辑</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="bulkSet('is_edit', '1')">全选</el-dropdown-item>
-                    <el-dropdown-item @click="bulkSet('is_edit', '0')">全不选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_edit', true)">全选</el-dropdown-item>
+                    <el-dropdown-item @click="bulkSet('is_edit', false)">全不选</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -590,35 +591,35 @@
             <template #empty>
               <el-empty :image-size="80" description="暂无数据" />
             </template>
-            <el-table-column label="序号" type="index" min-width="7%" fixed />
+            <el-table-column label="序号" type="index" width="60" fixed />
             <el-table-column
               label="列名"
               prop="column_name"
-              min-width="10%"
+              min-width="100"
               :show-overflow-tooltip="true"
             />
             <el-table-column
               label="类型"
               prop="column_type"
-              min-width="10%"
+              min-width="80"
               :show-overflow-tooltip="true"
             />
             <el-table-column
               label="长度"
               prop="column_length"
-              min-width="8%"
+              width="80"
               :show-overflow-tooltip="true"
             >
               <template #default="scope">
                 <el-input v-model="scope.row.column_length" :disabled="scope.row.is_pk === '1'" />
               </template>
             </el-table-column>
-            <el-table-column label="注释" min-width="10%">
+            <el-table-column label="注释" min-width="120">
               <template #default="scope">
                 <el-input v-model="scope.row.column_comment"></el-input>
               </template>
             </el-table-column>
-            <el-table-column label="后端类型" min-width="12%">
+            <el-table-column label="后端类型" min-width="100">
               <template #default="scope">
                 <el-select v-model="scope.row.python_type">
                   <el-option label="str" value="str" />
@@ -634,32 +635,32 @@
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column label="后端属性" min-width="12%">
+            <el-table-column label="后端属性" min-width="120">
               <template #default="scope">
                 <el-input v-model="scope.row.python_field"></el-input>
               </template>
             </el-table-column>
-            <el-table-column label="新增" min-width="10%">
+            <el-table-column label="新增" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_insert" />
               </template>
             </el-table-column>
-            <el-table-column label="编辑" min-width="10%">
+            <el-table-column label="编辑" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_edit" />
               </template>
             </el-table-column>
-            <el-table-column label="列表" min-width="10%">
+            <el-table-column label="列表" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_list" />
               </template>
             </el-table-column>
-            <el-table-column label="查询" min-width="10%">
+            <el-table-column label="查询" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_query" />
               </template>
             </el-table-column>
-            <el-table-column label="查询方式" min-width="12%">
+            <el-table-column label="查询方式" min-width="100">
               <template #default="scope">
                 <el-select v-model="scope.row.query_type">
                   <el-option label="=" value="EQ" />
@@ -676,29 +677,29 @@
             <el-table-column
               label="默认值"
               prop="column_default"
-              min-width="10%"
+              min-width="100"
               :show-overflow-tooltip="true"
             >
               <template #default="scope">
                 <el-input v-model="scope.row.column_default" :disabled="scope.row.is_pk === '1'" />
               </template>
             </el-table-column>
-            <el-table-column label="自增" min-width="10%">
+            <el-table-column label="自增" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_increment" />
               </template>
             </el-table-column>
-            <el-table-column label="允许空" min-width="10%">
+            <el-table-column label="允许空" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_nullable" />
               </template>
             </el-table-column>
-            <el-table-column label="唯一" min-width="10%">
+            <el-table-column label="唯一" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_unique" />
               </template>
             </el-table-column>
-            <el-table-column label="主键" min-width="10%">
+            <el-table-column label="主键" width="50">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.is_pk" />
               </template>

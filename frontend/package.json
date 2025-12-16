@@ -64,7 +64,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^13.5.0",
-    "@wangeditor-next/editor": "^5.6.42",
+    "@wangeditor-next/editor": "^5.6.49",
     "@wangeditor-next/editor-for-vue": "^5.1.14",
     "animate.css": "^4.1.1",
     "axios": "^1.10.0",
@@ -111,6 +111,7 @@
     "eslint-plugin-prettier": "^5.5.3",
     "eslint-plugin-vue": "^10.4.0",
     "fs-extra": "^11.2.0",
+    "globals": "^15.15.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "postcss": "^8.5.6",

@@ -150,30 +150,3 @@ async def delete_controller(
     await McpService.delete_service(auth=auth, ids=ids)
     log.info(f"删除 MCP 服务器成功: {ids}")
     return SuccessResponse(msg="删除 MCP 服务器成功")
-
-
-@AIRouter.websocket("/ws/chat", name="WebSocket聊天")
-async def websocket_chat_controller(
-    websocket: WebSocket,
-):
-    """
-    WebSocket聊天接口
-    
-    ws://127.0.0.1:8001/api/v1/ai/mcp/ws/chat
-    """
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-            # 流式发送响应
-            try:
-                async for chunk in McpService.chat_query(query=ChatQuerySchema(message=data)):
-                    if chunk:
-                        await websocket.send_text(chunk)
-            except Exception as e:
-                log.error(f"处理聊天查询出错: {str(e)}")
-                await websocket.send_text(f"抱歉，处理您的请求时出现了错误: {str(e)}")
-    except Exception as e:
-        log.error(f"WebSocket聊天出错: {str(e)}")
-    finally:
-        await websocket.close()

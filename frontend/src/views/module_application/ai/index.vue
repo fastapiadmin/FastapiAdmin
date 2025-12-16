@@ -189,7 +189,7 @@ const messagesContainer = ref<HTMLElement>();
 
 // WebSocket 连接
 let ws: WebSocket | null = null;
-const WS_URL = import.meta.env.VITE_APP_WS_ENDPOINT + "/api/v1/application/ai/ws/chat";
+const WS_URL = import.meta.env.VITE_APP_WS_ENDPOINT + "/api/v1/application/ai/ws";
 
 // 计算属性
 const connectionStatusText = computed(() => {
