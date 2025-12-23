@@ -1887,7 +1887,7 @@ COMMENT ON COLUMN public.sys_menu."order" IS '显示排序';
 -- Name: COLUMN sys_menu.permission; Type: COMMENT; Schema: public; Owner: tao
 --
 
-COMMENT ON COLUMN public.sys_menu.permission IS '权限标识(如:module_system:user:list)';
+COMMENT ON COLUMN public.sys_menu.permission IS '权限标识(如:module_system:user:query)';
 
 
 --

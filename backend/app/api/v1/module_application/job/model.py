@@ -3,10 +3,10 @@
 from sqlalchemy import Boolean, String, Integer, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.base_model import ModelMixin, UserMixin
+from app.core.base_model import ModelMixin, TenantMixin, UserMixin
 
 
-class JobModel(ModelMixin, UserMixin):
+class JobModel(ModelMixin, TenantMixin, UserMixin):
     """
     定时任务调度表
     - 0: 运行中
@@ -14,7 +14,7 @@ class JobModel(ModelMixin, UserMixin):
     """
     __tablename__: str = 'app_job'
     __table_args__: dict[str, str] = ({'comment': '定时任务调度表'})
-    __loader_options__: list[str] = ["job_logs", "created_by", "updated_by"]
+    __loader_options__: list[str] = ["job_logs", "created_by", "updated_by", "tenant"]
 
     name: Mapped[str | None] = mapped_column(String(64), nullable=True, default='', comment='任务名称')
     jobstore: Mapped[str | None] = mapped_column(String(64), nullable=True, default='default', comment='存储器')
@@ -36,13 +36,13 @@ class JobModel(ModelMixin, UserMixin):
     )
 
 
-class JobLogModel(ModelMixin):
+class JobLogModel(ModelMixin, TenantMixin):
     """
     定时任务调度日志表
     """
     __tablename__: str = 'app_job_log'
     __table_args__: dict[str, str] = ({'comment': '定时任务调度日志表'})
-    __loader_options__: list[str] = ["job"]
+    __loader_options__: list[str] = ["job", "tenant"]
 
     job_name: Mapped[str] = mapped_column(String(64), nullable=False, comment='任务名称')
     job_group: Mapped[str] = mapped_column(String(64), nullable=False, comment='任务组名')

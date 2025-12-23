@@ -48,7 +48,7 @@ async def get_obj_list_controller(
 @LogRouter.get("/detail/{id}", summary="日志详情", description="日志详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="操作日志ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:log:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:log:detail"]))
 ) -> JSONResponse:
     """ 
     获取日志详情 

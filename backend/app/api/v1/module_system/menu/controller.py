@@ -43,7 +43,7 @@ async def get_menu_tree_controller(
 @MenuRouter.get("/detail/{id}", summary="查询菜单详情", description="查询菜单详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="菜单ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:menu:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:menu:detail"]))
 ) -> JSONResponse:
     """
     查询菜单详情。
@@ -55,8 +55,8 @@ async def get_obj_detail_controller(
     - JSONResponse: 包含菜单详情的 JSON 响应。
     """
     result_dict = await MenuService.get_menu_detail_service(id=id, auth=auth)
-    log.info(f"查询菜单情成功 {id}")
-    return SuccessResponse(data=result_dict, msg="获取菜单成功")
+    log.info(f"查询菜单详情成功 {id}")
+    return SuccessResponse(data=result_dict, msg="查询菜单详情成功")
 
 
 @MenuRouter.post("/create", summary="创建菜单", description="创建菜单")

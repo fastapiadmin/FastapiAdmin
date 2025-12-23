@@ -480,7 +480,7 @@ CREATE TABLE `sys_menu` (
   `name` varchar(50) NOT NULL COMMENT '菜单名称',
   `type` int NOT NULL COMMENT '菜单类型(1:目录 2:菜单 3:按钮/权限 4:链接)',
   `order` int NOT NULL COMMENT '显示排序',
-  `permission` varchar(100) DEFAULT NULL COMMENT '权限标识(如:module_system:user:list)',
+  `permission` varchar(100) DEFAULT NULL COMMENT '权限标识(如:module_system:user:query)',
   `icon` varchar(50) DEFAULT NULL COMMENT '菜单图标',
   `route_name` varchar(100) DEFAULT NULL COMMENT '路由名称',
   `route_path` varchar(200) DEFAULT NULL COMMENT '路由路径',

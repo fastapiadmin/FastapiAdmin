@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -11,9 +10,10 @@ from app.core.validator import DateTimeStr
 class TenantCreateSchema(BaseModel):
     """新增模型"""
     name: str = Field(..., description='租户名称')
-    code: Optional[str] = Field(default=None, description='租户编码')
+    code: str | None = Field(default=None, description='租户编码')
+    domain: str | None = Field(default=None, description='租户域名')
     status: str = Field(default="0", description="是否启用(0:启用 1:禁用)")
-    description: Optional[str] = Field(default=None, description="描述")
+    description: str | None = Field(default=None, description="描述")
     
     @field_validator('name')    
     @classmethod

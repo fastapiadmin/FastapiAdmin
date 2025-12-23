@@ -195,7 +195,7 @@ async def get_obj_list_controller(
 @UserRouter.get("/detail/{id}", summary="查询用户详情", description="查询用户详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="用户ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:user:query"])),
+    auth: AuthSchema = Depends(AuthPermission(["module_system:user:detail"])),
 ) -> JSONResponse:
     """
     查询用户详情
@@ -298,7 +298,7 @@ async def batch_set_available_obj_controller(
     return SuccessResponse(msg="批量修改用户状态成功")
 
 
-@UserRouter.post('/import/template', summary="获取用户导入模板", description="获取用户导入模板", dependencies=[Depends(AuthPermission(["module_system:user:import"]))])
+@UserRouter.post('/import/template', summary="获取用户导入模板", description="获取用户导入模板", dependencies=[Depends(AuthPermission(["module_system:user:download"]))])
 async def export_obj_template_controller()-> StreamingResponse:
     """
     获取用户导入模板

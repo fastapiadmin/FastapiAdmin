@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Body, Depends, Path, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
-import urllib.parse
+from fastapi import APIRouter, Body, Depends, Path
+from fastapi.responses import JSONResponse
 
-from app.common.response import StreamResponse, SuccessResponse
+from app.common.response import SuccessResponse
 from app.core.router_class import OperationLogRoute
-from app.utils.common_util import bytes2file_response
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
 from app.core.base_schema import BatchSetAvailable
@@ -25,17 +23,17 @@ TokenRouter = APIRouter(route_class=OperationLogRoute, prefix="/token", tags=["�
 @TokenRouter.get("/detail/{id}", summary="获取令牌详情", description="获取令牌详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="令牌ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:demo:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:token:detail"]))
 ) -> JSONResponse:
     """
-    获取示例详情
+    获取令牌详情
     
     参数:
-    - id (int): 示例ID
+    - id (int): 令牌ID
     - auth (AuthSchema): 认证信息模型
     
     返回:
-    - JSONResponse: 包含示例详情的JSON响应
+    - JSONResponse: 包含令牌详情的JSON响应
     """
     result_dict = await TokenService.detail_service(id=id, auth=auth)
     log.info(f"获取令牌详情成功 {id}")

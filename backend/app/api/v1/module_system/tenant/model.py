@@ -15,7 +15,8 @@ class TenantModel(ModelMixin):
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, comment='租户名称')
     code: Mapped[str] = mapped_column(String(20), nullable=False, unique=True, comment='租户编码')
-    
+    domain: Mapped[str | None] = mapped_column(String(100), unique=True, comment="租户域名")
+
     @validates('name')
     def validate_name(self, key: str, name: str) -> str:
         """验证名称不为空"""

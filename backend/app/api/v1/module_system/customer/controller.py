@@ -26,7 +26,7 @@ CustomerRouter = APIRouter(route_class=OperationLogRoute, prefix="/customer", ta
 @CustomerRouter.get("/detail/{id}", summary="获取客户详情", description="获取客户详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="客户ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:customer:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:customer:detail"]))
 ) -> JSONResponse:
     """
     获取客户详情

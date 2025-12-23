@@ -25,7 +25,7 @@ DemoRouter = APIRouter(route_class=OperationLogRoute, prefix="/demo", tags=["示
 @DemoRouter.get("/detail/{id}", summary="获取示例详情", description="获取示例详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="示例ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_gencode:demo:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_gencode:demo:detail"]))
 ) -> JSONResponse:
     """
     获取示例详情

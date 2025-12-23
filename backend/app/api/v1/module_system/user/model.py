@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.core.base_model import MappedBase, ModelMixin, UserMixin
+from app.core.base_model import MappedBase, ModelMixin, TenantMixin, UserMixin
 
 if TYPE_CHECKING:
     from app.api.v1.module_system.dept.model import DeptModel
@@ -59,13 +59,13 @@ class UserPositionsModel(MappedBase):
     )
 
 
-class UserModel(ModelMixin, UserMixin):
+class UserModel(ModelMixin, TenantMixin, UserMixin):
     """
     用户模型
     """
     __tablename__: str = "sys_user"
     __table_args__: dict[str, str] = ({'comment': '用户表'})
-    __loader_options__: list[str] = ["dept", "roles", "positions", "created_by", "updated_by"]
+    __loader_options__: list[str] = ["dept", "roles", "positions", "created_by", "updated_by", "tenant"]
 
     username: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, comment="用户名/登录账号")
     password: Mapped[str] = mapped_column(String(255), nullable=False, comment="密码哈希")

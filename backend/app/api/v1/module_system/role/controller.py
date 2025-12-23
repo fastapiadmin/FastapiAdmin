@@ -54,7 +54,7 @@ async def get_obj_list_controller(
 @RoleRouter.get("/detail/{id}", summary="查询角色详情", description="查询角色详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="角色ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:role:query"])),
+    auth: AuthSchema = Depends(AuthPermission(["module_system:role:detail"])),
 ) -> JSONResponse:
     """
     查询角色详情

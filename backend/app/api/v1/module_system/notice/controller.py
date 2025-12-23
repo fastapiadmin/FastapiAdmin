@@ -26,7 +26,7 @@ NoticeRouter = APIRouter(route_class=OperationLogRoute, prefix="/notice", tags=[
 @NoticeRouter.get("/detail/{id}", summary="获取公告详情", description="获取公告详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="公告ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:notice:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:notice:detail"]))
 ) -> JSONResponse:
     """
     获取公告详情。

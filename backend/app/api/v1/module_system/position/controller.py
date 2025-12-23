@@ -53,7 +53,7 @@ async def get_obj_list_controller(
 @PositionRouter.get("/detail/{id}", summary="查询岗位详情", description="查询岗位详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="岗位ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:query"])),
+    auth: AuthSchema = Depends(AuthPermission(["module_system:position:detail"])),
 ) -> JSONResponse:
     """
     查询岗位详情

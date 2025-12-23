@@ -25,7 +25,7 @@ MyAppRouter = APIRouter(route_class=OperationLogRoute, prefix="/myapp", tags=["�
 @MyAppRouter.get("/detail/{id}", summary="获取应用详情", description="获取应用详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="应用ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_application:myapp:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_application:myapp:detail"]))
 ) -> JSONResponse:
     """
     获取应用详情

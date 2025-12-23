@@ -2,6 +2,7 @@
   {
     "name": "运行管理平台",
     "code": "SYSTEM",
+    "domain": null,
     "status": "0",
     "start_time": null,
     "end_time": null,

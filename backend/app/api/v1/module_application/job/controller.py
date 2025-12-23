@@ -27,7 +27,7 @@ JobRouter = APIRouter(route_class=OperationLogRoute, prefix="/job", tags=["定�
 @JobRouter.get("/detail/{id}", summary="获取定时任务详情", description="获取定时任务详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="定时任务ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_application:job:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_application:job:detail"]))
 ) -> JSONResponse:
     """
     获取定时任务详情

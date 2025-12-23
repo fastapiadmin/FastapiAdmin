@@ -30,7 +30,7 @@ DictRouter = APIRouter(route_class=OperationLogRoute, prefix="/dict", tags=["字
 @DictRouter.get("/type/detail/{id}", summary="获取字典类型详情", description="获取字典类型详情")
 async def get_type_detail_controller(
     id: int = Path(..., description="字典类型ID", ge=1),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:dict_type:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:dict_type:detail"]))
 ) -> JSONResponse:
     """
     获取字典类型详情
@@ -224,7 +224,7 @@ async def export_type_list_controller(
 @DictRouter.get("/data/detail/{id}", summary="获取字典数据详情", description="获取字典数据详情")
 async def get_data_detail_controller(
     id: int = Path(..., description="字典数据ID", ge=1),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:dict_data:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:dict_data:detail"]))
 ) -> JSONResponse:
     """
     获取字典数据详情

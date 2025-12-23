@@ -22,7 +22,7 @@ ParamsRouter = APIRouter(route_class=OperationLogRoute, prefix="/param", tags=["
 @ParamsRouter.get("/detail/{id}", summary="获取参数详情", description="获取参数详情")
 async def get_type_detail_controller(
     id: int = Path(..., description="参数ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:param:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:param:detail"]))
 ) -> JSONResponse:
     """
     获取参数详情

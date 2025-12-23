@@ -48,7 +48,7 @@ async def get_dept_tree_controller(
 @DeptRouter.get("/detail/{id}", summary="查询部门详情", description="查询部门详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="部门ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:dept:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:dept:detail"]))
 ) -> JSONResponse:
     """
     查询部门详情

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.core.base_model import MappedBase, ModelMixin
+from app.core.base_model import MappedBase, ModelMixin, TenantMixin
 
 if TYPE_CHECKING:
     from app.api.v1.module_system.menu.model import MenuModel
@@ -59,13 +59,13 @@ class RoleDeptsModel(MappedBase):
     )
 
 
-class RoleModel(ModelMixin):
+class RoleModel(ModelMixin, TenantMixin):
     """
     角色模型
     """
     __tablename__: str = "sys_role"
     __table_args__: dict[str, str] = ({'comment': '角色表'})
-    __loader_options__: list[str] = ["menus", "depts"]
+    __loader_options__: list[str] = ["menus", "depts", "tenant"]
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="角色名称")
     code: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True, comment="角色编码")

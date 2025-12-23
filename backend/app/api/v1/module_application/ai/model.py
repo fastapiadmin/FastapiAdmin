@@ -3,10 +3,10 @@
 from sqlalchemy import JSON, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import ModelMixin, UserMixin
+from app.core.base_model import ModelMixin, TenantMixin, UserMixin
 
 
-class McpModel(ModelMixin, UserMixin):
+class McpModel(ModelMixin, TenantMixin, UserMixin):
     """
     MCP 服务器表
     MCP类型:
@@ -15,7 +15,7 @@ class McpModel(ModelMixin, UserMixin):
     """
     __tablename__: str = 'app_ai_mcp'
     __table_args__: dict[str, str] = ({'comment': 'MCP 服务器表'})
-    __loader_options__: list[str] = ["created_by", "updated_by"]
+    __loader_options__: list[str] = ["created_by", "updated_by", "tenant"]
 
     name: Mapped[str] = mapped_column(String(50), comment='MCP 名称')
     type: Mapped[int] = mapped_column(Integer, default=0, comment='MCP 类型(0:stdio 1:sse)')

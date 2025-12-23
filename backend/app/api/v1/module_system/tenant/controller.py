@@ -26,7 +26,7 @@ TenantRouter = APIRouter(route_class=OperationLogRoute, prefix="/tenant", tags=[
 @TenantRouter.get("/detail/{id}", summary="获取租户详情", description="获取租户详情")
 async def get_obj_detail_controller(
     id: int = Path(..., description="租户ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:tenant:query"]))
+    auth: AuthSchema = Depends(AuthPermission(["module_system:tenant:detail"]))
 ) -> JSONResponse:
     """
     获取租户详情

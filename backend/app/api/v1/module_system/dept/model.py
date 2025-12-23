@@ -4,19 +4,21 @@ from typing import TYPE_CHECKING
 from sqlalchemy import String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.core.base_model import ModelMixin
+from app.core.base_model import ModelMixin, TenantMixin
 
 if TYPE_CHECKING:
     from app.api.v1.module_system.role.model import RoleModel
     from app.api.v1.module_system.user.model import UserModel
 
 
-class DeptModel(ModelMixin):
+class DeptModel(ModelMixin, TenantMixin):
     """
     部门模型
     """
     __tablename__: str = "sys_dept"
     __table_args__: dict[str, str] = ({'comment': '部门表'})
+    __loader_options__: list[str] = ["tenant"]
+
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="部门名称")
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=999, comment="显示排序")

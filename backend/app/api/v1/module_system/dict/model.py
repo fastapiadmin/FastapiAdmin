@@ -3,15 +3,16 @@
 from sqlalchemy import String, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.base_model import ModelMixin
+from app.core.base_model import ModelMixin, TenantMixin
 
 
-class DictTypeModel(ModelMixin):
+class DictTypeModel(ModelMixin, TenantMixin):
     """
     字典类型表
     """
     __tablename__: str = "sys_dict_type"
     __table_args__: dict[str, str] = ({'comment': '字典类型表'})
+    __loader_options__: list[str] = ["tenant"]
 
     dict_name: Mapped[str] = mapped_column(String(64), nullable=False, comment='字典名称')
     dict_type: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, comment='字典类型')
@@ -20,12 +21,13 @@ class DictTypeModel(ModelMixin):
     dict_data_list: Mapped[list["DictDataModel"]] = relationship("DictDataModel", back_populates="dict_type_obj", cascade="all, delete-orphan")
 
 
-class DictDataModel(ModelMixin):
+class DictDataModel(ModelMixin, TenantMixin):
     """
     字典数据表
     """
     __tablename__: str = "sys_dict_data"
     __table_args__: dict[str, str] = ({'comment': '字典数据表'})
+    __loader_options__: list[str] = ["tenant"]
     
     dict_sort: Mapped[int] = mapped_column(Integer, nullable=False, default=0, comment='字典排序')
     dict_label: Mapped[str] = mapped_column(String(255), nullable=False, comment='字典标签')

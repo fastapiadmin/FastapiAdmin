@@ -43,7 +43,7 @@ class TokenCRUD(CRUDBase[TokenModel, TokenCreateSchema, TokenUpdateSchema]):
         - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Sequence[DemoModel]: 示例模型实例序列
+        - Sequence[TokenModel]: 示例模型实例序列
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
     

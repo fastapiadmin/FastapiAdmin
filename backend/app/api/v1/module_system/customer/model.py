@@ -9,13 +9,13 @@ if TYPE_CHECKING:
     from app.api.v1.module_system.user.model import UserModel
 
 
-class CustomerModel(ModelMixin, UserMixin):
+class CustomerModel(ModelMixin, TenantMixin, UserMixin):
     """
     客户表
     """
     __tablename__: str = 'sys_customer'
     __table_args__: dict[str, str] = ({'comment': '客户表'})
-    __loader_options__: list[str] = ["created_by", "updated_by"]
+    __loader_options__: list[str] = ["created_by", "updated_by", "tenant"]
     
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment='客户名称')
     code: Mapped[str] = mapped_column(String(20), nullable=False, index=True, comment='客户编码')
