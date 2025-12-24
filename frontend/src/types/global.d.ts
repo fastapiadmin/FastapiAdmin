@@ -7,6 +7,7 @@ declare global {
     data: T;
     msg: string;
     status_code: number;
+    success: boolean;
   }
 
   /**

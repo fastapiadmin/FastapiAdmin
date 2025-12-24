@@ -238,7 +238,7 @@
               新增
             </el-button>
             <el-button
-              v-hasPerm="['module_system:menu:query']"
+              v-hasPerm="['module_system:menu:detail']"
               type="info"
               size="small"
               link

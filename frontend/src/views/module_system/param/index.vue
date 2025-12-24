@@ -248,7 +248,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_system:param:query']"
+              v-hasPerm="['module_system:param:detail']"
               type="info"
               size="small"
               link

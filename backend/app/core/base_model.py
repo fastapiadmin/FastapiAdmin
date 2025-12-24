@@ -9,8 +9,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.api.v1.module_system.user.model import UserModel
-    from app.api.v1.module_system.customer.model import CustomerModel
-    from app.api.v1.module_system.tenant.model import TenantModel
 
 from app.utils.common_util import uuid4_str
 
@@ -61,12 +59,12 @@ class ModelMixin(MappedBase):
     __abstract__: bool = True
     
     # 基础字段
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment='主键ID')
-    uuid: Mapped[str] = mapped_column(String(64), default=uuid4_str, nullable=False, unique=True, comment='UUID全局唯一标识')
-    status: Mapped[str] = mapped_column(String(10), default='0', nullable=False, comment="是否启用(0:启用 1:禁用)")
-    description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注/描述")
-    created_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False, comment='创建时间')
-    updated_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False, comment='更新时间')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment='主键ID', index=True)
+    uuid: Mapped[str] = mapped_column(String(64), default=uuid4_str, nullable=False, unique=True, comment='UUID全局唯一标识', index=True)
+    status: Mapped[str] = mapped_column(String(10), default='0', nullable=False, comment="是否启用(0:启用 1:禁用)", index=True)
+    description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注/描述", index=True)
+    created_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False, comment='创建时间', index=True)
+    updated_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False, comment='更新时间', index=True)
 
 
 class UserMixin(MappedBase):
@@ -116,64 +114,5 @@ class UserMixin(MappedBase):
             "UserModel",
             lazy="selectin",
             foreign_keys=lambda: cls.updated_id,
-            uselist=False
-        )
-
-
-class TenantMixin(MappedBase):
-    """
-    租户字段 Mixin
-    """
-    __abstract__: bool = True
-
-    tenant_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey('sys_tenant.id', ondelete="CASCADE", onupdate="CASCADE"),
-        nullable=False,
-        index=True,
-        comment="所属租户ID"
-    )
-
-    @declared_attr
-    def tenant(cls) -> Mapped["TenantModel"]:
-        """
-        租户关联关系（延迟加载，避免循环依赖）
-        """
-        return relationship(
-            "TenantModel",
-            primaryjoin=f"{cls.__name__}.tenant_id == TenantModel.id",
-            lazy="selectin",
-            foreign_keys=lambda: [cls.tenant_id],
-            viewonly=True,
-            uselist=False
-        )
-
-
-class CustomerMixin(MappedBase):
-    """
-    客户隔离字段 Mixin
-    """
-    __abstract__: bool = True
-
-    customer_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey('sys_customer.id', ondelete="CASCADE", onupdate="CASCADE"),
-        default=None,
-        nullable=True,
-        index=True,
-        comment="所属客户ID(NULL表示租户级数据,>0表示客户级数据)"
-    )
-
-    @declared_attr
-    def customer(cls) -> Mapped["CustomerModel"]:
-        """
-        客户关联关系（延迟加载，避免循环依赖）
-        """
-        return relationship(
-            "CustomerModel",
-            primaryjoin=f"{cls.__name__}.customer_id == CustomerModel.id",
-            lazy="selectin",
-            foreign_keys=lambda: [cls.customer_id],
-            viewonly=True,
             uselist=False
         )

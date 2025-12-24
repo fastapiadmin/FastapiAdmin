@@ -280,7 +280,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_system:position:query']"
+              v-hasPerm="['module_system:position:detail']"
               type="info"
               size="small"
               link

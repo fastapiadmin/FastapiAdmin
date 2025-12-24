@@ -271,7 +271,7 @@
               字典
             </el-button>
             <el-button
-              v-hasPerm="['module_system:dict_type:query']"
+              v-hasPerm="['module_system:dict_type:detail']"
               type="info"
               size="small"
               link

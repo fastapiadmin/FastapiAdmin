@@ -210,7 +210,7 @@
         <el-table-column label="操作" fixed="right" align="center" min-width="150">
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_system:log:query']"
+              v-hasPerm="['module_system:log:detail']"
               type="info"
               size="small"
               link

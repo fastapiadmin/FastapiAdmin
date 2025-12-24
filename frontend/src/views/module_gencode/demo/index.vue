@@ -302,7 +302,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_gencode:demo:query']"
+              v-hasPerm="['module_gencode:demo:detail']"
               type="info"
               size="small"
               link

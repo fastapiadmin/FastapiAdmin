@@ -253,7 +253,7 @@
               新增
             </el-button>
             <el-button
-              v-hasPerm="['module_system:dept:query']"
+              v-hasPerm="['module_system:dept:detail']"
               type="info"
               size="small"
               link

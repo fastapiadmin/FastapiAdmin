@@ -291,7 +291,7 @@
               分配权限
             </el-button>
             <el-button
-              v-hasPerm="['module_system:role:query']"
+              v-hasPerm="['module_system:role:detail']"
               type="info"
               size="small"
               link

@@ -249,6 +249,7 @@
                 立即执行
               </el-button>
               <el-button
+                v-hasPerm="['module_application:job:detail']"
                 type="info"
                 size="small"
                 link

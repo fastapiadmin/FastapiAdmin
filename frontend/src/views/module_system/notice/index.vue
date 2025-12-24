@@ -308,7 +308,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_system:notice:query']"
+              v-hasPerm="['module_system:notice:detail']"
               type="info"
               size="small"
               link

@@ -302,7 +302,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_system:token:query']"
+              v-hasPerm="['module_system:token:detail']"
               type="info"
               size="small"
               link

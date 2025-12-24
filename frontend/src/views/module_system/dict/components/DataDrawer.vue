@@ -188,7 +188,7 @@
         <el-table-column fixed="right" label="操作" align="center" min-width="200">
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_system:dict_data:query']"
+              v-hasPerm="['module_system:dict_data:detail']"
               type="info"
               size="small"
               link
