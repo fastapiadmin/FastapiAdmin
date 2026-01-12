@@ -267,97 +267,274 @@ docker compose down
 
 ### 后端开发
 
-1. **编写实体类层**：在 `backend/app/api/v1/module_generator/demo/model.py` 中创建 example 的 ORM 模型（对应 Spring Boot 中的实体类层）
-2. **编写数据模型层**：在 `backend/app/api/v1/module_generator/demo/schema.py` 中创建 example 数据模型（对应 Spring Boot 中的 DTO 层）
-3. **编写查询参数模型层**：在 `backend/app/api/v1/module_generator/demo/param.py` 中创建 example 的查询参数模型（对应 Spring Boot 中的 DTO 层）
-4. **编写持久化层**：在 `backend/app/api/v1/cruds/module_generator/crud.py` 中创建 example 数据层（对应 Spring Boot 中的 Mapper 或 DAO 层）
-5. **编写业务层**：在 `backend/app/api/v1/services/module_generator/service.py` 中创建 example 数据层（对应 Spring Boot 中的 Service 层）
-6. **编写接口层**：在 `backend/app/api/v1/controllers/module_generator/controller.py` 中创建 example 数据层（对应 Spring Boot 中的 Controller 层）
-7. **将 demo 模块添加至系统初始化脚本**：在 `backend/app/scripts/initialize.py` 中添加（如果需要可以把 demo 的菜单权限，配置到 `backend/app/scripts/data/system_menu.json` 和 `backend/app/scripts/data/system_role_menus.json` 或从前端页面菜单中新增）
-8.  **将 demo 模块添加至数据库迁移脚本中**：在 `backend/app/alembic/env.py` 中添加
+项目采用**插件化架构设计**，二次开发建议在 `backend/app/plugin` 目录下进行，系统会**自动发现并注册**所有符合规范的路由，便于模块管理和升级维护。
 
-### 代码生成教程
+#### 插件化架构特性
 
-代码生成模块是本项目的核心功能之一，可以帮助开发者快速生成完整的 CRUD 代码，大幅提升开发效率。该模块基于 Jinja2 模板引擎，可生成前后端一体化的完整功能模块。
+- **自动路由发现**：系统会自动扫描 `backend/app/plugin/` 目录下所有 `controller.py` 文件
+- **自动路由注册**：所有路由会被自动注册到对应的前缀路径 (module_xxx -> /xxx)
+- **模块化管理**：按功能模块组织代码，便于维护和扩展
+- **支持多层级嵌套**：支持模块内部多层级嵌套结构
 
-#### 代码生成流程
+#### 插件目录结构
 
-1. **创建或导入数据表**：
-   - 方式一：通过"创建表"功能直接在系统中创建新表
-   - 方式二：通过"导入"功能将现有数据库表导入到代码生成器中
+```sh
+backend/app/plugin/
+├── module_application/  # 应用模块（自动映射为 /application）
+│   └── ai/              # AI子模块
+│       ├── controller.py # 控制器文件
+│       ├── model.py      # 数据模型文件
+│       ├── schema.py     # 数据验证文件
+│       ├── service.py    # 业务逻辑文件
+│       └── crud.py       # 数据访问文件
+├── module_example/      # 示例模块（自动映射为 /example）
+│   └── demo/            # 子模块
+│       ├── controller.py # 控制器文件
+│       ├── model.py      # 数据模型文件
+│       ├── schema.py     # 数据验证文件
+│       ├── service.py    # 业务逻辑文件
+│       └── crud.py       # 数据访问文件
+├── module_generator/    # 代码生成模块（自动映射为 /generator）
+└── init_app.py          # 插件初始化文件
+```
 
-2. **配置生成参数**：
-   - 基础配置：
-     - 表名称、表描述、实体类名称
-   - 生成配置：
-     - 生成包路径（package_name）：如 `student`
-     - 生成模块名（module_name）：如 `student`
-     - 生成业务名（business_name）：如 `student`
-     - 生成功能名（function_name）：如 `学生管理`
-     - 生成代码方式：zip压缩包下载 或 项目目录写入
-     - 上级菜单：选择生成功能所属的菜单分类
+#### 自动路由注册机制
 
-3. **字段配置**：
-   - 配置每个字段的：
-     - 字段列类型、Python类型、Python字段名
-     - 是否为主键、是否自增、是否必填
-     - 是否为插入字段、编辑字段、列表字段、查询字段
-     - 查询方式（等于、不等于、大于、小于、范围）
-     - 显示类型（文本框、文本域、下选框、复选框、单选框、日期控件）
-     - 字典类型（用于下拉框数据源）
+系统会**自动发现并注册**所有符合以下条件的路由：
+1. 控制器文件必须命名为 `controller.py`
+2. 路由会自动映射：`module_xxx` -> `/xxx`
+3. 支持多个 `APIRouter` 实例
+4. 自动处理路由去重
 
-4. **代码预览**：
-   - 预览将要生成的代码内容
-   - 支持预览后端（Python）、前端（Vue/TS）、数据库（SQL）代码
-   - 可按类型筛选预览内容
+#### 二次开发步骤
 
-5. **生成代码**：
-   - 点击"下载代码"生成并下载zip压缩包
-   - 点击"写入本地"直接写入到项目目录中
+1. **创建插件模块**：在 `backend/app/plugin/` 目录下创建新的模块目录，如 `module_yourfeature`
+2. **编写数据模型**：在 `model.py` 中定义数据库模型
+3. **编写数据验证**：在 `schema.py` 中定义数据验证模型
+4. **编写数据访问层**：在 `crud.py` 中编写数据库操作逻辑
+5. **编写业务逻辑层**：在 `service.py` 中编写业务逻辑
+6. **编写控制器**：在 `controller.py` 中定义路由和处理函数
+7. **自动注册**：系统会自动扫描并注册所有路由，无需手动配置
 
-#### 生成的文件结构
+#### 控制器示例
 
-代码生成器会生成完整的前后端代码结构：
+```python
+# backend/app/plugin/module_yourfeature/yourcontroller/controller.py
+from fastapi import APIRouter, Depends, Path
+from fastapi.responses import JSONResponse
 
-**后端文件**：
-- 控制器层：`backend/app/api/v1/module_{module_name}/{business_name}/controller.py`
-- 服务层：`backend/app/api/v1/module_{module_name}/{business_name}/service.py`
-- 数据访问层：`backend/app/api/v1/module_{module_name}/{business_name}/crud.py`
-- 数据模型层：`backend/app/api/v1/module_{module_name}/{business_name}/model.py`
-- 数据模式层：`backend/app/api/v1/module_{module_name}/{business_name}/schema.py`
+from app.common.response import SuccessResponse
+from app.core.router_class import OperationLogRoute
+from app.core.dependencies import AuthPermission
+from app.api.v1.module_system.auth.schema import AuthSchema
+from .service import YourFeatureService
 
-**前端文件**：
-- API接口文件：`frontend/src/api/module_{module_name}/{business_name}.ts`
-- 页面组件文件：`frontend/src/views/module_{module_name}/{business_name}/index.vue`
+# 创建路由实例
+YourFeatureRouter = APIRouter(
+    route_class=OperationLogRoute, 
+    prefix="/yourcontroller", 
+    tags=["你的功能模块"]
+)
 
-**数据库文件**：
-- 菜单SQL文件：`backend/sql/module_{module_name}/{business_name}_menu.sql`
+@YourFeatureRouter.get("/detail/{id}", summary="获取详情")
+async def get_detail(
+    id: int = Path(..., description="功能ID"),
+    auth: AuthSchema = Depends(AuthPermission(["module_yourfeature:yourcontroller:detail"]))
+) -> JSONResponse:
+    result = await YourFeatureService.detail_service(id=id, auth=auth)
+    return SuccessResponse(data=result)
 
-#### 使用示例
+@YourFeatureRouter.get("/list", summary="获取列表")
+async def get_list(
+    auth: AuthSchema = Depends(AuthPermission(["module_yourfeature:yourcontroller:list"]))
+) -> JSONResponse:
+    result = await YourFeatureService.list_service(auth=auth)
+    return SuccessResponse(data=result)
+```
 
-1. 在数据库中创建新表，如 `sys_student`
-2. 登录系统，进入**代码生成**模块
-3. 点击"导入"，选择 `sys_student` 表
-4. 配置生成参数：
-   - 生成包路径：`student`
-   - 生成模块名：`student`
-   - 生成业务名：`student`
-   - 生成功能名：`学生管理`
-   - 上级菜单：系统管理
-5. 配置字段属性（如设置哪些字段需要显示、查询、编辑等）
-6. 点击"预览代码"查看生成的代码
-7. 点击"下载代码"或"写入本地"生成完整功能模块
-8. 重启服务，新功能模块即可使用
+#### 开发规范
+
+1. **命名规范**：模块名采用 `module_xxx` 格式，控制器名采用驼峰命名法
+2. **权限控制**：所有API接口必须添加权限控制装饰器
+3. **日志记录**：使用 `OperationLogRoute` 类自动记录操作日志
+4. **返回格式**：统一使用 `SuccessResponse` 或 `ErrorResponse` 返回响应
+5. **代码注释**：为所有API接口添加详细的文档字符串
+
+#### 注意事项
+
+- 插件模块名必须以 `module_` 开头
+- 控制器文件必须命名为 `controller.py`
+- 路由会自动映射到对应的前缀路径
+- 无需手动注册路由，系统会自动发现并注册
 
 ### 前端部分
 
-1. **前端接入后端接口地址**：在 `frontend/src/api/demo/example.ts` 中配置
-2. **编写前端页面**：在 `frontend/src/views/demo/example/index.vue` 中编写
+1. **配置前端API**：在 `frontend/src/api/` 目录下创建对应的API文件
+2. **编写页面组件**：在 `frontend/src/views/` 目录下创建页面组件
+3. **注册路由**：在 `frontend/src/router/index.ts` 中注册路由
 
 ### 移动端部分
 
-1. **移动端接入后端接口地址**：在 `fastapp/src/api` 中编写
-2. **编写移动端页面**：在 `fastapp/src/pages` 中编写
+1. **配置移动端API**：在 `fastapp/src/api/` 目录下创建对应的API文件
+2. **编写页面组件**：在 `fastapp/src/pages/` 目录下创建页面组件
+3. **注册路由**：在 `fastapp/src/router/index.ts` 中注册路由
+
+### 代码生成器使用
+
+项目内置代码生成器，可以根据数据库表结构自动生成前后端代码，大幅提升开发效率。
+
+#### 生成步骤
+
+1. **登录系统**：使用管理员账号登录系统
+2. **进入代码生成模块**：在左侧菜单中点击"代码生成"
+3. **导入表结构**：选择要生成代码的数据库表
+4. **配置生成参数**：填写模块名称、功能名称等
+5. **生成代码**：点击"生成代码"按钮
+6. **下载或写入**：选择下载代码包或直接写入项目目录
+
+#### 生成文件结构
+
+```sh
+# 后端文件
+backend/app/plugin/module_yourmodule/
+└── yourfeature/
+    ├── controller.py # 控制器文件
+    ├── model.py      # 数据模型文件
+    ├── schema.py     # 数据验证文件
+    ├── service.py    # 业务逻辑文件
+    └── crud.py       # 数据访问文件
+
+# 前端文件
+frontend/src/
+├── api/module_yourmodule/
+│   └── yourfeature.ts # API调用文件
+└── views/module_yourmodule/
+    └── yourfeature/
+        └── index.vue # 页面组件
+```
+
+#### 生成代码示例
+
+```python
+# 生成的控制器代码示例
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
+
+from app.common.response import SuccessResponse
+from app.core.router_class import OperationLogRoute
+from app.core.dependencies import AuthPermission
+from app.api.v1.module_system.auth.schema import AuthSchema
+from .service import YourFeatureService
+from .schema import (
+    YourFeatureCreateSchema,
+    YourFeatureUpdateSchema,
+    YourFeatureQueryParam
+)
+
+YourFeatureRouter = APIRouter(
+    route_class=OperationLogRoute, 
+    prefix="/yourfeature", 
+    tags=["你的功能模块"]
+)
+
+@YourFeatureRouter.get("/detail/{id}")
+async def get_detail(
+    id: int, 
+    auth: AuthSchema = Depends(AuthPermission(["module_yourmodule:yourfeature:detail"]))
+) -> JSONResponse:
+    result = await YourFeatureService.detail_service(id=id, auth=auth)
+    return SuccessResponse(data=result)
+```
+
+### 开发工具
+
+- **代码生成器**：自动生成前后端CRUD代码
+- **API文档**：自动生成Swagger/Redoc API文档
+- **数据库迁移**：支持Alembic数据库迁移
+- **日志系统**：内置日志记录和查询功能
+- **监控系统**：内置服务器监控和缓存监控功能
+
+### 开发流程
+
+1. **需求分析**：明确功能需求和业务逻辑
+2. **数据库设计**：设计数据库表结构
+3. **代码生成**：使用代码生成器生成基础代码
+4. **业务逻辑开发**：完善业务逻辑和接口
+5. **前端开发**：开发前端页面和交互
+6. **测试**：进行单元测试和集成测试
+7. **部署**：部署到生产环境
+
+### 开发注意事项
+
+1. **权限控制**：所有API接口必须添加权限控制
+2. **数据验证**：所有输入数据必须进行验证
+3. **异常处理**：统一处理API异常
+4. **日志记录**：关键操作必须记录日志
+5. **性能优化**：注意API性能优化，避免慢查询
+6. **代码规范**：遵循PEP8和项目代码规范
+
+### 部署说明
+
+#### 本地开发
+
+```bash
+# 启动后端服务
+cd backend
+python main.py run --env=dev
+
+# 启动前端服务
+cd frontend
+pnpm run dev
+
+# 启动移动端服务
+cd fastapp
+pnpm run dev:h5
+```
+
+#### Docker部署
+
+```bash
+# 执行一键部署脚本
+./deploy.sh
+
+# 查看运行状态
+docker compose ps
+
+# 查看日志
+docker logs -f <container_name>
+```
+
+### 技术支持
+
+- **官方文档**：https://service.fastapiadmin.com
+- **GitHub**：https://github.com/1014TaoTao/FastapiAdmin
+- **Gitee**：https://gitee.com/tao__tao/FastapiAdmin
+
+### 常见问题
+
+#### Q：如何添加新功能模块？
+A：按照二次开发步骤，在 `backend/app/plugin/` 目录下创建新的模块目录，编写相关代码即可。
+
+#### Q：如何配置数据库？
+A：在 `backend/env/.env.dev` 或 `backend/env/.env.prod` 文件中配置数据库连接信息。
+
+#### Q：如何配置Redis？
+A：在 `backend/env/.env.dev` 或 `backend/env/.env.prod` 文件中配置Redis连接信息。
+
+#### Q：如何生成数据库迁移文件？
+A：使用 `python main.py revision --env=dev` 命令生成迁移文件。
+
+#### Q：如何应用数据库迁移？
+A：使用 `python main.py upgrade --env=dev` 命令应用迁移。
+
+#### Q：如何启动开发服务器？
+A：使用 `python main.py run --env=dev` 命令启动开发服务器。
+
+#### Q：如何构建前端生产版本？
+A：使用 `pnpm run build` 命令构建前端生产版本。
+
+#### Q：如何部署到生产环境？
+A：使用 `./deploy.sh` 脚本一键部署到生产环境。
 
 ## ℹ️ 帮助
 

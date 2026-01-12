@@ -297,10 +297,10 @@
             />
           </el-form-item>
           <el-form-item label="数据标签" prop="dict_label">
-            <el-input v-model="formData.dict_label" placeholder="请输入数据标签" :maxlength="50" />
+            <el-input v-model="formData.dict_label" placeholder="请输入数据标签" :maxlength="255" />
           </el-form-item>
           <el-form-item label="数据值" prop="dict_value">
-            <el-input v-model="formData.dict_value" placeholder="请输入数据值" :maxlength="50" />
+            <el-input v-model="formData.dict_value" placeholder="请输入数据值" :maxlength="255" />
           </el-form-item>
           <el-form-item label="样式属性" prop="css_class">
             <el-select

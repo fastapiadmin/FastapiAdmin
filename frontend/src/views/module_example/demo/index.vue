@@ -495,6 +495,7 @@
           label-suffix=":"
           label-width="auto"
           label-position="right"
+          inline
         >
           <el-form-item label="名称" prop="name">
             <el-input v-model="formData.name" placeholder="请输入名称" :maxlength="50" />

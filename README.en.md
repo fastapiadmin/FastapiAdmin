@@ -263,101 +263,295 @@ docker compose down
 
 ## 🛠️ Secondary Development Tutorial
 
-### Backend Part
+### Backend Development
 
-1. **Write the Entity Class Layer**: Create the ORM model for the demo in `backend/app/api/v1/models/demo/example_model.py` (corresponding to the entity class layer in Spring Boot).
-2. **Write the Data Model Layer**: Create the demo data model in `backend/app/api/v1/schemas/demo/example_schema.py` (corresponding to the DTO layer in Spring Boot).
-3. **Write the Persistence Layer**: Create the demo data layer in `backend/app/api/v1/cruds/demo/example_crud.py` (corresponding to the Mapper or DAO layer in Spring Boot).
-4. **Write the Business Layer**: Create the demo data layer in `backend/app/api/v1/services/demo/example_service.py` (corresponding to the Service layer in Spring Boot).
-5. **Write the Interface Layer**: Create the demo data layer in `backend/app/api/v1/controllers/demo/example_controller.py` (corresponding to the Controller layer in Spring Boot).
-6. **Register Backend Routes**: Register the demo routes in `backend/app/api/v1/urls/demo_url.py`.
-7. **Register Routes to the FastAPI Service**: Register the routes in `backend/plugin/init_app.py`.
-8. **Add the Demo Module to the System Initialization Script**: Add it in `backend/app/scripts/initialize.py` (if necessary, you can configure the demo menu permissions in `backend/app/scripts/data/system_menu.json` and `backend/app/scripts/data/system_role_menus.json` or from the frontend page menu).
-9.  **Add the Demo Module to the Database Migration Script**: Add it in `backend/app/alembic/env.py`.
+The project adopts a **plugin-based architecture design**, and it is recommended to carry out secondary development in the `backend/app/plugin` directory. The system will **automatically discover and register** all routes that meet the specifications, facilitating module management and upgrade maintenance.
 
-### Code Generation Tutorial
+#### Plugin Architecture Features
 
-The code generation module is one of the core features of this project, which can help developers quickly generate complete CRUD code and greatly improve development efficiency. This module is based on the Jinja2 template engine and can generate integrated front-end and back-end functional modules.
+- **Automatic Route Discovery**: The system automatically scans all `controller.py` files in the `backend/app/plugin/` directory
+- **Automatic Route Registration**: All routes are automatically registered to the corresponding prefix path (module_xxx -> /xxx)
+- **Modular Management**: Code is organized by functional modules for easy maintenance and extension
+- **Support for Multi-level Nesting**: Support for multi-level nested structures within modules
 
-#### Code Generation Process
+#### Plugin Directory Structure
 
-1. **Create or Import Data Tables**:
-   - Method 1: Create a new table directly in the system through the "Create Table" function
-   - Method 2: Import existing database tables into the code generator through the "Import" function
+```sh
+backend/app/plugin/
+├── module_application/  # Application module (automatically mapped to /application)
+│   └── ai/              # AI submodule
+│       ├── controller.py # Controller file
+│       ├── model.py      # Data model file
+│       ├── schema.py     # Data validation file
+│       ├── service.py    # Business logic file
+│       └── crud.py       # Data access file
+├── module_example/      # Example module (automatically mapped to /example)
+│   └── demo/            # Submodule
+│       ├── controller.py # Controller file
+│       ├── model.py      # Data model file
+│       ├── schema.py     # Data validation file
+│       ├── service.py    # Business logic file
+│       └── crud.py       # Data access file
+├── module_generator/    # Code generation module (automatically mapped to /generator)
+└── init_app.py          # Plugin initialization file
+```
 
-2. **Configure Generation Parameters**:
-   - Basic Configuration:
-     - Table name, table description, entity class name
-   - Generation Configuration:
-     - Generation package path (package_name): e.g., `student`
-     - Generation module name (module_name): e.g., `student`
-     - Generation business name (business_name): e.g., `student`
-     - Generation function name (function_name): e.g., `Student Management`
-     - Code generation method: zip package download or project directory write
-     - Parent menu: Select the menu category to which the generated function belongs
+#### Automatic Route Registration Mechanism
 
-3. **Field Configuration**:
-   - Configure each field:
-     - Field column type, Python type, Python field name
-     - Whether it is a primary key, auto-increment, required
-     - Whether it is an insert field, edit field, list field, query field
-     - Query method (equal, not equal, greater than, less than, range)
-     - Display type (text box, text area, dropdown box, checkbox, radio button, date control)
-     - Dictionary type (for dropdown data source)
+The system will **automatically discover and register** all routes that meet the following conditions:
+1. Controller files must be named `controller.py`
+2. Routes are automatically mapped: `module_xxx` -> `/xxx`
+3. Support for multiple `APIRouter` instances
+4. Automatic route deduplication
 
-4. **Code Preview**:
-   - Preview the code to be generated
-   - Support preview of backend (Python), frontend (Vue/TS), and database (SQL) code
-   - Filter preview content by type
+#### Secondary Development Steps
 
-5. **Code Generation**:
-   - Click "Download Code" to generate and download a zip package
-   - Click "Write to Local" to write directly to the project directory
+1. **Create Plugin Module**: Create a new module directory under `backend/app/plugin/`, such as `module_yourfeature`
+2. **Write Data Model**: Define database models in `model.py`
+3. **Write Data Validation**: Define data validation models in `schema.py`
+4. **Write Data Access Layer**: Write database operation logic in `crud.py`
+5. **Write Business Logic Layer**: Write business logic in `service.py`
+6. **Write Controller**: Define routes and handling functions in `controller.py`
+7. **Automatic Registration**: The system automatically scans and registers all routes, no manual configuration required
 
-#### Generated File Structure
+#### Controller Example
 
-The code generator will generate a complete front-end and back-end code structure:
+```python
+# backend/app/plugin/module_yourfeature/yourcontroller/controller.py
+from fastapi import APIRouter, Depends, Path
+from fastapi.responses import JSONResponse
 
-**Backend Files**:
-- Controller layer: `backend/app/api/v1/module_{module_name}/{business_name}/controller.py`
-- Service layer: `backend/app/api/v1/module_{module_name}/{business_name}/service.py`
-- Data access layer: `backend/app/api/v1/module_{module_name}/{business_name}/crud.py`
-- Data model layer: `backend/app/api/v1/module_{module_name}/{business_name}/model.py`
-- Data schema layer: `backend/app/api/v1/module_{module_name}/{business_name}/schema.py`
-- Query parameter layer: `backend/app/api/v1/module_{module_name}/{business_name}/param.py`
+from app.common.response import SuccessResponse
+from app.core.router_class import OperationLogRoute
+from app.core.dependencies import AuthPermission
+from app.api.v1.module_system.auth.schema import AuthSchema
+from .service import YourFeatureService
 
-**Frontend Files**:
-- API interface file: `frontend/src/api/module_{module_name}/{business_name}.ts`
-- Page component file: `frontend/src/views/module_{module_name}/{business_name}/index.vue`
+# Create route instance
+YourFeatureRouter = APIRouter(
+    route_class=OperationLogRoute, 
+    prefix="/yourcontroller", 
+    tags=["Your Feature Module"]
+)
 
-**Database Files**:
-- Menu SQL file: `backend/sql/module_{module_name}/{business_name}_menu.sql`
+@YourFeatureRouter.get("/detail/{id}", summary="Get Detail")
+async def get_detail(
+    id: int = Path(..., description="Feature ID"),
+    auth: AuthSchema = Depends(AuthPermission(["module_yourfeature:yourcontroller:detail"]))
+) -> JSONResponse:
+    """
+    Get feature detail
+    
+    Parameters:
+    - id (int): Feature ID
+    - auth (AuthSchema): Authentication information model
+    
+    Returns:
+    - JSONResponse: JSON response containing feature detail
+    """
+    result = await YourFeatureService.detail_service(id=id, auth=auth)
+    return SuccessResponse(data=result)
 
-#### Usage Example
+@YourFeatureRouter.get("/list", summary="Get List")
+async def get_list(
+    auth: AuthSchema = Depends(AuthPermission(["module_yourfeature:yourcontroller:list"]))
+) -> JSONResponse:
+    """
+    Get feature list
+    
+    Parameters:
+    - auth (AuthSchema): Authentication information model
+    
+    Returns:
+    - JSONResponse: JSON response containing feature list
+    """
+    result = await YourFeatureService.list_service(auth=auth)
+    return SuccessResponse(data=result)
+```
 
-1. Create a new table in the database, such as `sys_student`
-2. Log in to the system and enter the **Code Generation** module
-3. Click "Import" and select the `sys_student` table
-4. Configure generation parameters:
-   - Generation package path: `student`
-   - Generation module name: `student`
-   - Generation business name: `student`
-   - Generation function name: `Student Management`
-   - Parent menu: System Management
-5. Configure field properties (such as setting which fields need to be displayed, queried, edited, etc.)
-6. Click "Preview Code" to view the generated code
-7. Click "Download Code" or "Write to Local" to generate a complete functional module
-8. Restart the service, and the new function module is ready to use
+#### Development Specifications
+
+1. **Naming Convention**: Module names use `module_xxx` format, controller names use camelCase naming
+2. **Permission Control**: All API interfaces must add permission control decorators
+3. **Log Recording**: Use `OperationLogRoute` class to automatically record operation logs
+4. **Return Format**: Use `SuccessResponse` or `ErrorResponse` uniformly for responses
+5. **Code Comments**: Add detailed docstrings for all API interfaces
+
+#### Notes
+
+- Plugin module names must start with `module_`
+- Controller files must be named `controller.py`
+- Routes are automatically mapped to corresponding prefix paths
+- No manual route registration required, the system automatically discovers and registers
 
 ### Frontend Part
 
-1. **Configure the Frontend to Access the Backend Interface Address**: Configure it in `frontend/src/api/demo/example.ts`.
-2. **Write the Frontend Page**: Write it in `frontend/src/views/demo/example/index.vue`.
+1. **Configure Frontend API**: Create corresponding API files in `frontend/src/api/` directory
+2. **Write Page Components**: Create page components in `frontend/src/views/` directory
+3. **Register Routes**: Register routes in `frontend/src/router/index.ts`
 
 ### Mobile Part
 
-1. **Configure the mobile access address for backend interfaces**: Write the code in `fastapp/src/api`.
-2. **Write mobile pages**: Write the code in `fastapp/src/pages`.
+1. **Configure Mobile API**: Create corresponding API files in `fastapp/src/api/` directory
+2. **Write Page Components**: Create page components in `fastapp/src/pages/` directory
+3. **Register Routes**: Register routes in `fastapp/src/router/index.ts`
+
+### Code Generator Usage
+
+The project has a built-in code generator that can automatically generate front-end and back-end code based on database table structures, greatly improving development efficiency.
+
+#### Generation Steps
+
+1. **Login System**: Login to the system using an administrator account
+2. **Enter Code Generation Module**: Click "Code Generation" in the left menu
+3. **Import Table Structure**: Select the database table to generate code for
+4. **Configure Generation Parameters**: Fill in module name, function name, etc.
+5. **Generate Code**: Click the "Generate Code" button
+6. **Download or Write**: Choose to download the code package or write directly to the project directory
+
+#### Generated File Structure
+
+```sh
+# Backend files
+backend/app/plugin/module_yourmodule/
+└── yourfeature/
+    ├── controller.py # Controller file
+    ├── model.py      # Data model file
+    ├── schema.py     # Data validation file
+    ├── service.py    # Business logic file
+    └── crud.py       # Data access file
+
+# Frontend files
+frontend/src/
+├── api/module_yourmodule/
+│   └── yourfeature.ts # API call file
+└── views/module_yourmodule/
+    └── yourfeature/
+        └── index.vue # Page component
+```
+
+#### Generated Code Example
+
+```python
+# Generated controller code example
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
+
+from app.common.response import SuccessResponse
+from app.core.router_class import OperationLogRoute
+from app.core.dependencies import AuthPermission
+from app.api.v1.module_system.auth.schema import AuthSchema
+from .service import YourFeatureService
+from .schema import (
+    YourFeatureCreateSchema,
+    YourFeatureUpdateSchema,
+    YourFeatureQueryParam
+)
+
+YourFeatureRouter = APIRouter(
+    route_class=OperationLogRoute, 
+    prefix="/yourfeature", 
+    tags=["Your Feature Module"]
+)
+
+@YourFeatureRouter.get("/detail/{id}")
+async def get_detail(
+    id: int, 
+    auth: AuthSchema = Depends(AuthPermission(["module_yourmodule:yourfeature:detail"]))
+) -> JSONResponse:
+    result = await YourFeatureService.detail_service(id=id, auth=auth)
+    return SuccessResponse(data=result)
+```
+
+### Development Tools
+
+- **Code Generator**: Automatically generate front-end and back-end CRUD code
+- **API Documentation**: Automatically generate Swagger/Redoc API documentation
+- **Database Migration**: Support for Alembic database migration
+- **Log System**: Built-in log recording and query functions
+- **Monitoring System**: Built-in server monitoring and cache monitoring functions
+
+### Development Process
+
+1. **Requirement Analysis**: Clarify functional requirements and business logic
+2. **Database Design**: Design database table structure
+3. **Code Generation**: Use code generator to generate basic code
+4. **Business Logic Development**: Perfect business logic and interfaces
+5. **Frontend Development**: Develop frontend pages and interactions
+6. **Testing**: Conduct unit testing and integration testing
+7. **Deployment**: Deploy to production environment
+
+### Development Notes
+
+1. **Permission Control**: All API interfaces must add permission control
+2. **Data Validation**: All input data must be validated
+3. **Exception Handling**: Uniformly handle API exceptions
+4. **Log Recording**: Key operations must be logged
+5. **Performance Optimization**: Pay attention to API performance optimization, avoid slow queries
+6. **Code Specification**: Follow PEP8 and project code specifications
+
+### Deployment Instructions
+
+#### Local Development
+
+```bash
+# Start backend service
+cd backend
+python main.py run --env=dev
+
+# Start frontend service
+cd frontend
+pnpm run dev
+
+# Start mobile service
+cd fastapp
+pnpm run dev:h5
+```
+
+#### Docker Deployment
+
+```bash
+# Execute one-click deployment script
+./deploy.sh
+
+# View running status
+docker compose ps
+
+# View logs
+docker logs -f <container_name>
+```
+
+### Technical Support
+
+- **Official Documentation**: https://service.fastapiadmin.com
+- **GitHub**: https://github.com/1014TaoTao/FastapiAdmin
+- **Gitee**: https://gitee.com/tao__tao/FastapiAdmin
+
+### Common Questions
+
+#### Q: How to add a new functional module?
+A: Follow the secondary development steps, create a new module directory under `backend/app/plugin/` directory, and write related code.
+
+#### Q: How to configure the database?
+A: Configure database connection information in `backend/env/.env.dev` or `backend/env/.env.prod` files.
+
+#### Q: How to configure Redis?
+A: Configure Redis connection information in `backend/env/.env.dev` or `backend/env/.env.prod` files.
+
+#### Q: How to generate database migration files?
+A: Use the command `python main.py revision --env=dev` to generate migration files.
+
+#### Q: How to apply database migrations?
+A: Use the command `python main.py upgrade --env=dev` to apply migrations.
+
+#### Q: How to start the development server?
+A: Use the command `python main.py run --env=dev` to start the development server.
+
+#### Q: How to build the frontend production version?
+A: Use the command `pnpm run build` to build the frontend production version.
+
+#### Q: How to deploy to production environment?
+A: Use the `./deploy.sh` script for one-click deployment to production environment.
 
 ## ℹ️ Help
 
