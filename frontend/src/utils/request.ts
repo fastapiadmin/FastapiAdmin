@@ -17,7 +17,7 @@ const httpRequest: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
   timeout: import.meta.env.VITE_TIMEOUT,
   headers: { "Content-Type": "application/json;charset=utf-8" },
-  paramsSerializer: (params) => qs.stringify(params),
+  paramsSerializer: (params) => qs.stringify(params, { indices: false }),
 });
 
 /**
