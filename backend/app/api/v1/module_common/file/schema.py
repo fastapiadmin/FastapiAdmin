@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel
 
 
 class ImportFieldModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
-    
+
     base_column: str | None = Field(description='数据库字段名', default=None)
     excel_column: str | None = Field(description='excel字段名', default=None)
     default_value: str | None = Field(description='默认值', default=None)
@@ -63,4 +61,3 @@ class ImportModel(BaseModel):
                         raise ValueError('excel字段名存在重复')
                     seen.add(key)
         return self
-

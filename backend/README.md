@@ -110,6 +110,19 @@ python main.py run --env=dev (不加默认为dev)
 python main.py run --env=prod (不加默认为dev)
 ```
 
+#### 3.代码格式化
+
+```bash
+# 检查当前目录所有 Python 文件
+ruff check
+
+# 检查并自动修复问题
+ruff check --fix
+
+# 监听文件变化并重新检查
+ruff check --watch
+```
+
 ## 📜 相关链接
 
 - **FastAPI 官方文档**: [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/)

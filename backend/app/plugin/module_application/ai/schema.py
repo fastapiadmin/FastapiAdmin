@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import ConfigDict, Field, HttpUrl, BaseModel
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from app.core.base_schema import BaseSchema
-from app.common.enums import McpLLMProvider
+from app.common.enums import McpLLMProvider, McpType
 from app.core.base_schema import BaseSchema, UserBySchema
-from app.common.enums import McpType
 from app.core.validator import DateTimeStr
 
 
@@ -28,7 +24,6 @@ class McpCreateSchema(BaseModel):
 
 class McpUpdateSchema(McpCreateSchema):
     """更新 MCP 服务器参数"""
-    ...
 
 
 class McpOutSchema(McpCreateSchema, BaseSchema, UserBySchema):

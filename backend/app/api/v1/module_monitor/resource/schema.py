@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from urllib.parse import urlparse
+
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ResourceItemSchema(BaseModel):
     """资源项目模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     name: str = Field(..., description="文件名")
     file_url: str = Field(..., description="文件URL路径")
     relative_path: str = Field(..., description="相对路径")
@@ -51,7 +50,7 @@ class ResourceItemSchema(BaseModel):
 class ResourceDirectorySchema(BaseModel):
     """资源目录模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     path: str = Field(..., description="目录路径")
     name: str = Field(..., description="目录名称")
     items: list[ResourceItemSchema] = Field(default_factory=list, description="目录项")
@@ -63,7 +62,7 @@ class ResourceDirectorySchema(BaseModel):
 class ResourceUploadSchema(BaseModel):
     """资源上传响应模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     filename: str = Field(..., description="文件名")
     file_url: str = Field(..., description="访问URL")
     file_size: int = Field(..., description="文件大小")
@@ -73,11 +72,11 @@ class ResourceUploadSchema(BaseModel):
 class ResourceMoveSchema(BaseModel):
     """资源移动模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     source_path: str = Field(..., description="源路径")
     target_path: str = Field(..., description="目标路径")
     overwrite: bool = Field(False, description="是否覆盖")
-    
+
     @field_validator('source_path', 'target_path')
     @classmethod
     def validate_paths(cls, value: str):
@@ -88,16 +87,15 @@ class ResourceMoveSchema(BaseModel):
 
 class ResourceCopySchema(ResourceMoveSchema):
     """资源复制模型"""
-    pass
 
 
 class ResourceRenameSchema(BaseModel):
     """资源重命名模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     old_path: str = Field(..., description="原路径")
     new_name: str = Field(..., description="新名称")
-    
+
     @field_validator('old_path', 'new_name')
     @classmethod
     def validate_inputs(cls, value: str):
@@ -117,10 +115,10 @@ class ResourceRenameSchema(BaseModel):
 class ResourceCreateDirSchema(BaseModel):
     """创建目录模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     parent_path: str = Field(..., description="父目录路径")
     dir_name: str = Field(..., description="目录名称", max_length=255)
-    
+
     @field_validator('parent_path', 'dir_name')
     @classmethod
     def validate_inputs(cls, value: str, info):
@@ -135,7 +133,7 @@ class ResourceCreateDirSchema(BaseModel):
         else:  # 对于dir_name仍然严格检查
             if not value or len(value.strip()) == 0:
                 raise ValueError("参数不能为空")
-            if '..' in value or value.startswith('/') or value.startswith('\\'):
+            if '..' in value or value.startswith(('/', '\\')):
                 raise ValueError("参数包含不安全字符")
         return value.strip()
 
@@ -148,9 +146,9 @@ class ResourceSearchQueryParam:
         name: str | None = Query(None, description="搜索关键词"),
         path: str | None = Query(None, description="目录路径"),
     ) -> None:
-        
+
         # 模糊查询字段
         self.name = ("like", name) if name else None
-        
+
         # 精确查询字段
         self.path = path

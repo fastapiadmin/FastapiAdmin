@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from datetime import date, time, datetime
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.base_schema import BaseSchema, UserBySchema
-from app.core.validator import DateTimeStr, DateStr, TimeStr
+from app.core.validator import DateStr, DateTimeStr, TimeStr
 
 
 class DemoCreateSchema(BaseModel):
@@ -54,7 +51,6 @@ class DemoCreateSchema(BaseModel):
 
 class DemoUpdateSchema(DemoCreateSchema):
     """更新模型"""
-    ...
 
 
 class DemoOutSchema(DemoCreateSchema, BaseSchema, UserBySchema):

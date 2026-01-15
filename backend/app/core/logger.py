@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
+import atexit
 import logging
 import sys
-import atexit
-from typing_extensions import override
+
 from loguru import logger
+from typing_extensions import override
 
 from app.config.path_conf import LOG_DIR
 from app.config.setting import settings
@@ -16,7 +15,7 @@ _logger_handlers = []
 class InterceptHandler(logging.Handler):
     """
     日志拦截处理器：将所有 Python 标准日志重定向到 Loguru
-    
+
     工作原理：
     1. 继承自 logging.Handler
     2. 重写 emit 方法处理日志记录
@@ -41,35 +40,35 @@ class InterceptHandler(logging.Handler):
             level,
             record.getMessage()
         )
-        
 
-def cleanup_logging():
+
+def cleanup_logging() -> None:
     """
     清理日志资源
     在程序退出时调用,确保所有日志处理器被正确关闭
     """
     global _logger_handlers
-    
+
     for handler_id in _logger_handlers:
         try:
             logger.remove(handler_id)
         except Exception:
             pass
-    
+
     _logger_handlers.clear()
 
 
-def setup_logging():
+def setup_logging() -> None:
     """
     配置日志系统
-    
+
     功能：
     1. 控制台彩色输出
     2. 文件日志轮转
     3. 错误日志单独存储
     """
     global _logger_handlers
-    
+
     # 添加上下文信息
     _ = logger.configure(extra={"app_name": "FastapiAdmin"})
     # 步骤1：移除默认处理器
@@ -86,7 +85,7 @@ def setup_logging():
         # 日志消息
         "<level>{message}</level>"
     )
-    
+
     # 步骤3：配置控制台输出
     handler_id = logger.add(
         sys.stdout,
@@ -128,15 +127,16 @@ def setup_logging():
 
     # 步骤7：配置标准库日志
     logging.basicConfig(handlers=[InterceptHandler()], level=settings.LOGGER_LEVEL, force=True)
-    logger_name_list = [name for name in logging.root.manager.loggerDict]
-    
+    logger_name_list = list(logging.root.manager.loggerDict)
+
     # 步骤8：配置第三方库日志
     for logger_name in logger_name_list:
-        _logger = logging.getLogger(logger_name)
-        _logger.handlers = [InterceptHandler()]
-        _logger.propagate = False
-    
+        logger_ = logging.getLogger(logger_name)
+        logger_.handlers = [InterceptHandler()]
+        logger_.propagate = False
+
     # 注册退出清理函数
     atexit.register(cleanup_logging)
+
 
 log = logger

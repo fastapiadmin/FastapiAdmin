@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 from app.config.path_conf import BANNER_FILE
 from app.core.logger import log
+
 
 def worship(env: str) -> None:
     """

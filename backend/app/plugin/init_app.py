@@ -1,40 +1,37 @@
-# -*- coding: utf-8 -*-
+from collections.abc import AsyncGenerator
+from math import ceil
+from typing import Any, NoReturn
 
-from typing import Any, AsyncGenerator
 from fastapi import Depends, FastAPI, Request, Response
+from fastapi.concurrency import asynccontextmanager
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.concurrency import asynccontextmanager
-from fastapi.openapi.docs import (
-    get_redoc_html,
-    get_swagger_ui_html,
-    get_swagger_ui_oauth2_redirect_html
-)
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
 from starlette.websockets import WebSocket
-from math import ceil
 
 from app.config.setting import settings
-from app.core.logger import log
 from app.core.exceptions import CustomException, handle_exception
-from app.utils.common_util import import_module, import_modules_async
+from app.core.logger import log
 from app.scripts.initialize import InitializeData
+from app.utils.common_util import import_module, import_modules_async
 from app.utils.console import console_close, console_run
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     """
     自定义 FastAPI 应用生命周期。
-    
+
     参数:
     - app (FastAPI): FastAPI 应用实例。
-    
+
     返回:
     - AsyncGenerator[Any, Any]: 生命周期上下文生成器。
     """
-    from app.api.v1.module_system.params.service import ParamsService
     from app.api.v1.module_system.dict.service import DictDataService
+    from app.api.v1.module_system.params.service import ParamsService
     from app.plugin.module_application.job.tools.ap_scheduler import SchedulerUtil
 
     try:
@@ -47,10 +44,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         await DictDataService().init_dict_service(redis=app.state.redis)
         log.info("✅ Redis数据字典初始化完成")
         await SchedulerUtil.init_system_scheduler(redis=app.state.redis)
-        log.info(f"✅ 定时任务调度器初始化完成")
+        log.info("✅ 定时任务调度器初始化完成")
         await FastAPILimiter.init(redis=app.state.redis, prefix=settings.REQUEST_LIMITER_REDIS_PREFIX, http_callback=http_limit_callback, ws_callback=ws_limit_callback)
         log.info("✅ 请求限流器初始化完成")
-        
+
         # 导入并显示最终的启动信息面板
         from app.common.enums import EnvironmentEnum
         scheduler_jobs_count = len(SchedulerUtil.get_all_jobs())
@@ -58,18 +55,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         console_run(
             host=settings.SERVER_HOST,
             port=settings.SERVER_PORT,
-            reload=True if settings.ENVIRONMENT == EnvironmentEnum.DEV else False,
+            reload=settings.ENVIRONMENT == EnvironmentEnum.DEV,
             redis_ready=True,
             scheduler_jobs=scheduler_jobs_count,
             scheduler_status=scheduler_status,
         )
-        
+
     except Exception as e:
-        log.error(f"❌ 应用初始化失败: {str(e)}")
+        log.error(f"❌ 应用初始化失败: {e!s}")
         raise
 
     yield
-    
+
     try:
         await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
         log.info("✅ 全局事件模块卸载完成")
@@ -80,7 +77,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         console_close()
 
     except Exception as e:
-        log.error(f"❌ 应用关闭过程中发生错误: {str(e)}")
+        log.error(f"❌ 应用关闭过程中发生错误: {e!s}")
+
 
 def register_middlewares(app: FastAPI) -> None:
     """
@@ -98,6 +96,7 @@ def register_middlewares(app: FastAPI) -> None:
         middleware = import_module(middleware, desc="中间件")
         app.add_middleware(middleware)
 
+
 def register_exceptions(app: FastAPI) -> None:
     """
     统一注册异常处理器。
@@ -110,6 +109,7 @@ def register_exceptions(app: FastAPI) -> None:
     """
     handle_exception(app)
 
+
 def register_routers(app: FastAPI) -> None:
     """
     注册根路由。
@@ -121,13 +121,13 @@ def register_routers(app: FastAPI) -> None:
     - None
     """
     from app.api.v1.module_common import common_router
-    from app.api.v1.module_system import system_router
     from app.api.v1.module_monitor import monitor_router
-    
+    from app.api.v1.module_system import system_router
+
     app.include_router(common_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
     app.include_router(system_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
     app.include_router(monitor_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
-    
+
     from app.plugin.module_application.ai.ws import WS_AI
     # 手动注册WebSocket路由，不使用速率限制器
     app.include_router(router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=1, seconds=5))])
@@ -135,6 +135,7 @@ def register_routers(app: FastAPI) -> None:
     from app.core.discover import get_dynamic_router
     # 获取动态路由实例
     app.include_router(router=get_dynamic_router(), dependencies=[Depends(RateLimiter(times=5, seconds=10))])
+
 
 def register_files(app: FastAPI) -> None:
     """
@@ -151,6 +152,7 @@ def register_files(app: FastAPI) -> None:
         # 确保日志目录存在
         settings.STATIC_ROOT.mkdir(parents=True, exist_ok=True)
         app.mount(path=settings.STATIC_URL, app=StaticFiles(directory=settings.STATIC_ROOT), name=settings.STATIC_DIR)
+
 
 def reset_api_docs(app: FastAPI) -> None:
     """
@@ -187,7 +189,8 @@ def reset_api_docs(app: FastAPI) -> None:
             redoc_favicon_url=settings.FAVICON_URL,
         )
 
-async def http_limit_callback(request: Request, response: Response, expire: int):
+
+async def http_limit_callback(request: Request, response: Response, expire: int) -> NoReturn:
     """
     请求限制时的默认回调函数
 
@@ -203,7 +206,8 @@ async def http_limit_callback(request: Request, response: Response, expire: int)
         data={'Retry-After': str(expires)},
     )
 
-async def ws_limit_callback(ws: WebSocket, expire: int):
+
+async def ws_limit_callback(ws: WebSocket, expire: int) -> None:
     """
     WebSocket请求限制时的默认回调函数
 

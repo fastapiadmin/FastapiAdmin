@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 测试文件
 
@@ -7,10 +6,11 @@
 """
 
 import pytest
+
 from fastapi.testclient import TestClient
 
 
-def test_check_health(test_client: TestClient):
+def test_check_health(test_client: TestClient) -> None:
     """测试健康检查接口"""
     response = test_client.get("/common/health")
     assert response.status_code == 200

@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.core.validator import DateTimeStr
 from app.core.base_schema import BaseSchema
+from app.core.validator import DateTimeStr
 
 
 class DeptCreateSchema(BaseModel):
@@ -43,13 +41,12 @@ class DeptCreateSchema(BaseModel):
 
 class DeptUpdateSchema(DeptCreateSchema):
     """部门更新模型"""
-    ...
 
 
 class DeptOutSchema(DeptCreateSchema, BaseSchema):
     """部门响应模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     parent_name: str | None = Field(default=None, max_length=64, description="父部门名称")
 
 
@@ -63,7 +60,7 @@ class DeptQueryParam:
         created_time: list[DateTimeStr] | None = Query(None, description="创建时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
         updated_time: list[DateTimeStr] | None = Query(None, description="更新时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
-        
+
         # 模糊查询字段
         self.name = ("like", name)
 

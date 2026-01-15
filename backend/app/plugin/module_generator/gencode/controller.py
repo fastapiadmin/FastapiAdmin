@@ -1,39 +1,37 @@
-# -*- coding: utf-8 -*-
+from typing import Annotated
 
-from typing import List
-from fastapi import APIRouter, Depends, Body, Path
+from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
 
-from app.common.response import SuccessResponse, StreamResponse
-from app.core.dependencies import AuthPermission
-from app.core.base_params import PaginationQueryParam
+from app.api.v1.module_system.auth.schema import AuthSchema
 from app.common.request import PaginationService
+from app.common.response import StreamResponse, SuccessResponse
+from app.core.base_params import PaginationQueryParam
+from app.core.dependencies import AuthPermission
+from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
-from app.core.logger import log
-from app.api.v1.module_system.auth.schema import AuthSchema
 
-from .schema import GenTableSchema, GenTableQueryParam
+from .schema import GenTableQueryParam, GenTableSchema
 from .service import GenTableService
-
 
 GenRouter = APIRouter(route_class=OperationLogRoute, prefix='/gencode', tags=["代码生成模块"])
 
 
 @GenRouter.get("/list", summary="查询代码生成业务表列表", description="查询代码生成业务表列表")
 async def gen_table_list_controller(
-    page: PaginationQueryParam = Depends(),
-    search: GenTableQueryParam = Depends(),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:query"]))
+    page: Annotated[PaginationQueryParam, Depends()],
+    search: Annotated[GenTableQueryParam, Depends()],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:query"]))]
 ) -> JSONResponse:
     """
     查询代码生成业务表列表
-    
+
     参数:
     - page (PaginationQueryParam): 分页查询参数
     - search (GenTableQueryParam): 搜索参数
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含查询结果和分页信息的JSON响应
     """
@@ -45,18 +43,18 @@ async def gen_table_list_controller(
 
 @GenRouter.get("/db/list", summary="查询数据库表列表", description="查询数据库表列表")
 async def get_gen_db_table_list_controller(
-    page: PaginationQueryParam = Depends(),
-    search: GenTableQueryParam = Depends(),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:dblist:query"]))
+    page: Annotated[PaginationQueryParam, Depends()],
+    search: Annotated[GenTableQueryParam, Depends()],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:dblist:query"]))]
 ) -> JSONResponse:
     """
     查询数据库表列表
-    
+
     参数:
     - page (PaginationQueryParam): 分页查询参数
     - search (GenTableQueryParam): 搜索参数
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含查询结果和分页信息的JSON响应
     """
@@ -68,16 +66,16 @@ async def get_gen_db_table_list_controller(
 
 @GenRouter.post("/import", summary="导入表结构", description="导入表结构")
 async def import_gen_table_controller(
-    table_names: List[str] = Body(..., description="表名列表"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:import"])),
+    table_names: Annotated[list[str], Body(description="表名列表")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:import"]))],
 ) -> JSONResponse:
     """
     导入表结构
-    
+
     参数:
     - table_names (List[str]): 表名列表
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含导入结果和导入的表结构列表的JSON响应
     """
@@ -89,16 +87,16 @@ async def import_gen_table_controller(
 
 @GenRouter.get("/detail/{table_id}", summary="获取业务表详细信息", description="获取业务表详细信息")
 async def gen_table_detail_controller(
-    table_id: int = Path(..., description="业务表ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:query"]))
+    table_id: Annotated[int, Path(description="业务表ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:query"]))]
 ) -> JSONResponse:
     """
     获取业务表详细信息
-    
+
     参数:
     - table_id (int): 业务表ID
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含业务表详细信息的JSON响应
     """
@@ -109,16 +107,16 @@ async def gen_table_detail_controller(
 
 @GenRouter.post("/create", summary="创建表结构", description="创建表结构")
 async def create_table_controller(
-    sql: str = Body(..., description="SQL语句，用于创建表结构"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:create"])),
+    sql: Annotated[str, Body(description="SQL语句，用于创建表结构")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:create"]))],
 ) -> JSONResponse:
     """
     创建表结构
-    
+
     参数:
     - sql (str): SQL语句，用于创建表结构
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含创建结果的JSON响应
     """
@@ -129,18 +127,18 @@ async def create_table_controller(
 
 @GenRouter.put("/update/{table_id}", summary="编辑业务表信息", description="编辑业务表信息")
 async def update_gen_table_controller(
-    table_id: int = Path(..., description="业务表ID"),
-    data: GenTableSchema = Body(..., description="业务表信息"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:update"])),
+    table_id: Annotated[int, Path(description="业务表ID")],
+    data: Annotated[GenTableSchema, Body(description="业务表信息")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:update"]))],
 ) -> JSONResponse:
     """
     编辑业务表信息
-    
+
     参数:
     - table_id (int): 业务表ID
     - data (GenTableSchema): 业务表信息模型
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含编辑结果的JSON响应
     """
@@ -151,16 +149,16 @@ async def update_gen_table_controller(
 
 @GenRouter.delete("/delete", summary="删除业务表信息", description="删除业务表信息")
 async def delete_gen_table_controller(
-    ids: List[int] = Body(..., description="业务表ID列表"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:delete"]))
+    ids: Annotated[list[int], Body(description="业务表ID列表")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:delete"]))]
 ) -> JSONResponse:
     """
     删除业务表信息
-    
+
     参数:
     - ids (List[int]): 业务表ID列表
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含删除结果的JSON响应
     """
@@ -171,16 +169,16 @@ async def delete_gen_table_controller(
 
 @GenRouter.patch("/batch/output", summary="批量生成代码", description="批量生成代码")
 async def batch_gen_code_controller(
-    table_names: List[str] = Body(..., description="表名列表"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:patch"]))
+    table_names: Annotated[list[str], Body(description="表名列表")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:patch"]))]
 ) -> StreamResponse:
     """
     批量生成代码
-    
+
     参数:
     - table_names (List[str]): 表名列表
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - StreamResponse: 包含批量生成代码的ZIP文件流响应
     """
@@ -195,16 +193,16 @@ async def batch_gen_code_controller(
 
 @GenRouter.post("/output/{table_name}", summary="生成代码到指定路径", description="生成代码到指定路径")
 async def gen_code_local_controller(
-    table_name: str = Path(..., description="表名"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:code"]))
+    table_name: Annotated[str, Path(description="表名")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:code"]))]
 ) -> JSONResponse:
     """
     生成代码到指定路径
-    
+
     参数:
     - table_name (str): 表名
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含生成结果的JSON响应
     """
@@ -215,16 +213,16 @@ async def gen_code_local_controller(
 
 @GenRouter.get("/preview/{table_id}", summary="预览代码", description="预览代码")
 async def preview_code_controller(
-    table_id: int = Path(..., description="业务表ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:gencode:query"]))
+    table_id: Annotated[int, Path(description="业务表ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:gencode:query"]))]
 ) -> JSONResponse:
     """
     预览代码
-    
+
     参数:
     - table_id (int): 业务表ID
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含预览代码的JSON响应
     """
@@ -235,16 +233,16 @@ async def preview_code_controller(
 
 @GenRouter.post("/sync_db/{table_name}", summary="同步数据库", description="同步数据库")
 async def sync_db_controller(
-    table_name: str = Path(..., description="表名"),
-    auth: AuthSchema = Depends(AuthPermission(["module_generator:db:sync"]))
+    table_name: Annotated[str, Path(description="表名")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_generator:db:sync"]))]
 ) -> JSONResponse:
     """
     同步数据库
-    
+
     参数:
     - table_name (str): 表名
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 包含同步数据库结果的JSON响应
     """

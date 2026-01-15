@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*- 
-
 import importlib
 import inspect
 import os
-from pathlib import Path
+
 from functools import lru_cache
+from pathlib import Path
+from typing import Any
+
 from sqlalchemy import inspect as sa_inspect
-from typing import Any, Type
 
 from app.config.path_conf import BASE_DIR
 
@@ -22,7 +22,7 @@ class ImportUtil:
         return BASE_DIR
 
     @classmethod
-    def is_valid_model(cls, obj: Any, base_class: Type) -> bool:
+    def is_valid_model(cls, obj: Any, base_class: type) -> bool:
         """
         验证是否为有效的SQLAlchemy模型类
 
@@ -46,7 +46,7 @@ class ImportUtil:
 
     @classmethod
     @lru_cache(maxsize=256)
-    def find_models(cls, base_class: Type) -> list[Any]:
+    def find_models(cls, base_class: type) -> list[Any]:
         """
         查找并过滤有效的模型类，避免重复和无效定义
 
@@ -60,7 +60,7 @@ class ImportUtil:
         seen_tables = set()
         # 记录已经处理过的model.py文件路径
         processed_model_files = set()
-        
+
         project_root = cls.find_project_root()
         print(f"⏰️ 开始在项目根目录 {project_root} 中查找模型...")
 
@@ -96,7 +96,7 @@ class ImportUtil:
         for root, dirs, files in os.walk(project_root):
             # 过滤排除目录
             dirs[:] = [d for d in dirs if d not in exclude_dirs]
-            
+
             for file in files:
                 if file in model_dir_patterns:
                     file_path = Path(root) / file
@@ -113,19 +113,19 @@ class ImportUtil:
             # 确保文件路径没有被处理过
             if str(file_path) in processed_model_files:
                 continue
-                
+
             processed_model_files.add(str(file_path))
-            
+
             # 构建模块名（将路径分隔符转换为点）
-            module_parts = relative_path.parts[:-1] + (relative_path.stem,)
+            module_parts = (*relative_path.parts[:-1], relative_path.stem)
             module_name = '.'.join(module_parts)
 
             try:
                 # 导入模块
                 module = importlib.import_module(module_name)
-                
+
                 # 获取模块中的所有类
-                for name, obj in inspect.getmembers(module, inspect.isclass):
+                for _name, obj in inspect.getmembers(module, inspect.isclass):
                     # 验证模型有效性
                     if not cls.is_valid_model(obj, base_class):
                         continue
@@ -155,12 +155,12 @@ class ImportUtil:
         cls._find_apscheduler_model(base_class, models, seen_models, seen_tables)
 
         return models
-    
+
     @classmethod
-    def _find_apscheduler_model(cls, base_class: Type, models: list[Any], seen_models: set[Any], seen_tables: set[str]):
+    def _find_apscheduler_model(cls, base_class: type, models: list[Any], seen_models: set[Any], seen_tables: set[str]) -> None:
         """
         专门查找APScheduler相关的模型
-        
+
         :param base_class: SQLAlchemy的Base类
         :param models: 模型列表
         :param seen_models: 已处理的模型集合
@@ -172,7 +172,7 @@ class ImportUtil:
             for module_name in ['app.core.ap_scheduler', 'app.module_task.scheduler_test']:
                 try:
                     module = importlib.import_module(module_name)
-                    for name, obj in inspect.getmembers(module, inspect.isclass):
+                    for _name, obj in inspect.getmembers(module, inspect.isclass):
                         if cls.is_valid_model(obj, base_class) and hasattr(obj, '__tablename__') and obj.__tablename__ == 'apscheduler_jobs':
                             if obj not in seen_models and 'apscheduler_jobs' not in seen_tables:
                                 seen_models.add(obj)

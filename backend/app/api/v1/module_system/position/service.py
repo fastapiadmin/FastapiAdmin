@@ -1,17 +1,10 @@
-# -*- coding: utf-8 -*-
-
+from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 
-from ..auth.schema import AuthSchema
 from .crud import PositionCRUD
-from .schema import (
-    PositionCreateSchema,
-    PositionUpdateSchema,
-    PositionOutSchema,
-    PositionQueryParam
-)
+from .schema import PositionCreateSchema, PositionOutSchema, PositionQueryParam, PositionUpdateSchema
 
 
 class PositionService:
@@ -21,11 +14,11 @@ class PositionService:
     async def get_position_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取岗位详情
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 岗位ID
-        
+
         返回:
         - Dict: 岗位详情对象
         """
@@ -36,12 +29,12 @@ class PositionService:
     async def get_position_list_service(cls, auth: AuthSchema, search: PositionQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取岗位列表
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (PositionQueryParam | None): 查询参数对象
         - order_by (list[dict] | None): 排序参数列表
-        
+
         返回:
         - list[dict]: 岗位列表对象
         """
@@ -52,11 +45,11 @@ class PositionService:
     async def create_position_service(cls, auth: AuthSchema, data: PositionCreateSchema) -> dict:
         """
         创建岗位
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (PositionCreateSchema): 岗位创建模型
-        
+
         返回:
         - Dict: 创建的岗位对象
         """
@@ -67,15 +60,15 @@ class PositionService:
         return PositionOutSchema.model_validate(new_position).model_dump()
 
     @classmethod
-    async def update_position_service(cls, auth: AuthSchema, id:int, data: PositionUpdateSchema) -> dict:
+    async def update_position_service(cls, auth: AuthSchema, id: int, data: PositionUpdateSchema) -> dict:
         """
         更新岗位
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 岗位ID
         - data (PositionUpdateSchema): 岗位更新模型
-        
+
         返回:
         - dict: 更新的岗位对象
         """
@@ -92,11 +85,11 @@ class PositionService:
     async def delete_position_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """
         删除岗位
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - ids (list[int]): 岗位ID列表
-        
+
         返回:
         - None
         """
@@ -112,11 +105,11 @@ class PositionService:
     async def set_position_available_service(cls, auth: AuthSchema, data: BatchSetAvailable) -> None:
         """
         设置岗位状态
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (BatchSetAvailable): 批量设置状态模型
-        
+
         返回:
         - None
         """
@@ -126,16 +119,16 @@ class PositionService:
     async def export_position_list_service(cls, position_list: list[dict]) -> bytes:
         """
         导出岗位列表
-        
+
         参数:
         - position_list (list[dict]): 岗位列表对象
-        
+
         返回:
         - bytes: 导出的Excel文件字节流
         """
         mapping_dict = {
             'id': '编号',
-            'name': '岗位名称', 
+            'name': '岗位名称',
             'order': '显示顺序',
             'status': '状态',
             'description': '备注',

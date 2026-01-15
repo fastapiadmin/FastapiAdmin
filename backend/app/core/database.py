@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
-
-from redis.asyncio import Redis
-from redis import exceptions
 from fastapi import FastAPI
-from sqlalchemy import create_engine, Engine
+from redis import exceptions
+from redis.asyncio import Redis
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, AsyncEngine
 
-from app.core.logger import log
 from app.config.setting import settings
-from app.core.exceptions import CustomException
 from app.core.base_model import MappedBase
+from app.core.exceptions import CustomException
+from app.core.logger import log
 
 
 def create_engine_and_session(
@@ -18,10 +16,10 @@ def create_engine_and_session(
 ) -> tuple[Engine, sessionmaker]:
     """
     创建同步数据库引擎和会话工厂。
-    
+
     参数:
     - db_url (str): 数据库连接URL,默认从配置中获取。
-    
+
     返回:
     - tuple[Engine, sessionmaker]: 同步数据库引擎和会话工厂。
     """
@@ -43,12 +41,13 @@ def create_engine_and_session(
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         return engine, SessionLocal
 
+
 def create_async_engine_and_session(
     db_url: str = settings.ASYNC_DB_URI
 ) -> tuple[AsyncEngine, async_sessionmaker[AsyncSession]]:
     """
     获取异步数据库会话连接。
-    
+
     返回:
     - tuple[AsyncEngine, async_sessionmaker[AsyncSession]]: 异步数据库引擎和会话工厂。
     """
@@ -92,27 +91,31 @@ def create_async_engine_and_session(
         )
         return async_engine, AsyncSessionLocal
 
+
 engine, db_session = create_engine_and_session(settings.DB_URI)
 async_engine, async_db_session = create_async_engine_and_session(settings.ASYNC_DB_URI)
+
 
 async def create_tables() -> None:
     """创建数据库表"""
     async with async_engine.begin() as coon:
         await coon.run_sync(MappedBase.metadata.create_all)
 
+
 async def drop_tables() -> None:
     """删除数据库表"""
     async with async_engine.begin() as conn:
         await conn.run_sync(MappedBase.metadata.drop_all)
 
+
 async def redis_connect(app: FastAPI, status: str) -> Redis | None:
     """
     创建或关闭Redis连接。
-    
+
     参数:
     - app (FastAPI): FastAPI应用实例。
     - status (bool): 连接状态,True为创建连接,False为关闭连接。
-    
+
     返回:
     - Redis | None: Redis连接实例,如果连接失败则返回None。
     """

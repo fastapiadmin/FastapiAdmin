@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import enum
-from sqlalchemy import JSON, String, Integer, BIGINT, Float, Boolean, Date, Time, DateTime, Enum, Text
+
+from datetime import date, datetime, time
+
+from sqlalchemy import BIGINT, JSON, Boolean, Date, DateTime, Float, Integer, String, Text, Time
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import date, time, datetime
 
 from app.core.base_model import ModelMixin, UserMixin
 
@@ -33,4 +33,3 @@ class DemoModel(ModelMixin, UserMixin):
     g: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, comment='日期时间')
     h: Mapped[str | None] = mapped_column(Text, nullable=True, comment='长文本')
     i: Mapped[dict | None] = mapped_column(JSON, nullable=True, comment='元数据(JSON格式)')
-    

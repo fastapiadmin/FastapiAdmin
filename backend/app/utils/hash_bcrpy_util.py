@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 import hashlib
 import os
+
 from typing import Any
 
-from passlib.context import CryptContext
 from cryptography.hazmat.backends.openssl import backend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from itsdangerous import URLSafeSerializer
+from passlib.context import CryptContext
 
 from app.core.logger import log
-
 
 # 密码加密配置
 PwdContext = CryptContext(
@@ -40,7 +38,7 @@ class PwdUtil:
         """
         return PwdContext.verify(plain_password, password_hash)
 
-    @classmethod 
+    @classmethod
     def set_password_hash(cls, password: str) -> str:
         """
         对密码进行加密
@@ -69,7 +67,7 @@ class PwdUtil:
         if not any(c.isupper() for c in password):
             return "密码需要包含大写字母"
         if not any(c.islower() for c in password):
-            return "密码需要包含小写字母" 
+            return "密码需要包含小写字母"
         if not any(c.isdigit() for c in password):
             return "密码需要包含数字"
         return None
@@ -176,7 +174,7 @@ class ItsDCipher:
 
         返回:
         - str: 加密后的密文（URL安全）。
-        
+
         异常:
         - Exception: 加密失败时使用 MD5 作为降级，错误已记录。
         """
@@ -197,7 +195,7 @@ class ItsDCipher:
 
         返回:
         - Any: 解密后的明文；失败时返回原密文。
-        
+
         异常:
         - Exception: 解密失败时记录错误并返回原密文。
         """

@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from typing import Optional
 from datetime import datetime
-from sqlalchemy import DateTime, String, Integer, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, declared_attr, relationship
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from typing import TYPE_CHECKING
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.api.v1.module_system.user.model import UserModel
@@ -34,7 +32,7 @@ class ModelMixin(MappedBase):
     模型混入类 - 提供通用字段和功能
 
     基础模型混合类 Mixin: 一种面向对象编程概念, 使结构变得更加清晰
-    
+
     数据隔离设计原则：
     ==================
     数据权限 (created_id/updated_id):
@@ -44,7 +42,7 @@ class ModelMixin(MappedBase):
         - 3:本部门及以下
         - 4:全部数据
         - 5:自定义
-    
+
     SQLAlchemy加载策略说明:
     - select(默认): 延迟加载,访问时单独查询
     - joined: 使用LEFT JOIN预加载
@@ -57,7 +55,7 @@ class ModelMixin(MappedBase):
     - dynamic: 返回查询对象,支持进一步过滤
     """
     __abstract__: bool = True
-    
+
     # 基础字段
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment='主键ID', index=True)
     uuid: Mapped[str] = mapped_column(String(64), default=uuid4_str, nullable=False, unique=True, comment='UUID全局唯一标识', index=True)
@@ -70,12 +68,12 @@ class ModelMixin(MappedBase):
 class UserMixin(MappedBase):
     """
     用户审计字段 Mixin
-    
+
     用于记录数据的创建者和更新者
     用于实现数据权限中的"仅本人数据权限"
     """
     __abstract__: bool = True
-    
+
     created_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey('sys_user.id', ondelete="SET NULL", onupdate="CASCADE"),

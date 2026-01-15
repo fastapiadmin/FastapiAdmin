@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import re
 
 from app.common.constant import GenConstant
+from app.plugin.module_generator.gencode.schema import GenTableColumnSchema, GenTableOutSchema, GenTableSchema
 from app.utils.string_util import StringUtil
-
-from app.plugin.module_generator.gencode.schema import GenTableOutSchema, GenTableSchema, GenTableColumnSchema
 
 
 class GenUtils:
@@ -49,10 +46,10 @@ class GenUtils:
         column.python_field = cls.to_camel_case(column_name)
         # 只有当python_type为None时才设置默认类型
         column.python_type = StringUtil.get_mapping_value_by_key_ignore_case(GenConstant.DB_TO_PYTHON, data_type)
-        
+
         if column.column_length is None:
             column.column_length = ''
-        
+
         if column.column_default is None:
             column.column_default = ''
 
@@ -90,19 +87,19 @@ class GenUtils:
             column.is_insert = GenConstant.REQUIRE
         else:
             column.is_insert = False
-            
+
         # 只有当is_edit为None时才设置编辑字段
         if not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_EDIT, column_name) and not column.is_pk:
             column.is_edit = GenConstant.REQUIRE
         else:
             column.is_edit = False
-            
+
         # 只有当is_list为None时才设置列表字段
         if not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_LIST, column_name) and not column.is_pk:
             column.is_list = GenConstant.REQUIRE
         else:
             column.is_list = False
-            
+
         # 只有当is_query为None时才设置查询字段
         if not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_QUERY, column_name) and not column.is_pk:
             column.is_query = GenConstant.REQUIRE
@@ -119,7 +116,7 @@ class GenUtils:
     def arrays_contains(cls, arr, target_value) -> bool:
         """
         检查目标值是否在数组中
-        
+
         注意：从根本上解决问题，现在确保传入的参数都是正确的类型：
         - arr 是列表类型，且在GenConstant中定义
         - target_value 不会是None
@@ -134,12 +131,12 @@ class GenUtils:
         # 从根本上解决问题，不再需要复杂的防御性检查
         # 因为现在我们确保传入的arr是GenConstant中定义的列表常量
         # 并且target_value在调用前已经被处理过不会是None
-        
+
         # 对于包含括号的类型（如TINYINT(1)），需要特殊处理
         # 先获取基本类型名称（不含括号）用于比较
         target_str = str(target_value).lower()
         target_base_type = target_str.split('(')[0] if '(' in target_str else target_str
-        
+
         for item in arr:
             item_str = str(item).lower()
             item_base_type = item_str.split('(')[0] if '(' in item_str else item_str
@@ -225,7 +222,7 @@ class GenUtils:
         if '(' in column_type and ')' in column_type:
             return column_type.split('(')[1].split(')')[0].split(',')
         return []
-    
+
     @classmethod
     def to_camel_case(cls, text: str) -> str:
         """

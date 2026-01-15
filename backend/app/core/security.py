@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
 import jwt
+
 from fastapi import Form, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security.utils import get_authorization_scheme_param
 
-from app.core.exceptions import CustomException
-from app.config.setting import settings
 from app.api.v1.module_system.auth.schema import JWTPayloadSchema
+from app.config.setting import settings
+from app.core.exceptions import CustomException
 
 
 class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
@@ -79,7 +78,7 @@ class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
             captcha_key: str | None = Form(default=""),
             captcha: str | None = Form(default=""),
             login_type: str | None = Form(default="PC端", description="PC端 | 移动端")
-    ):
+    ) -> None:
         super().__init__(
             grant_type=grant_type,
             scope=scope,

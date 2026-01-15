@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.base_schema import BaseSchema, UserBySchema
 from app.core.validator import DateTimeStr
@@ -33,7 +31,6 @@ class NoticeCreateSchema(BaseModel):
 
 class NoticeUpdateSchema(NoticeCreateSchema):
     """公告通知更新模型"""
-    ...
 
 
 class NoticeOutSchema(NoticeCreateSchema, BaseSchema, UserBySchema):
@@ -78,4 +75,3 @@ class NoticeQueryParam:
             self.created_id = ("eq", created_id)
         if updated_id:
             self.updated_id = ("eq", updated_id)
-

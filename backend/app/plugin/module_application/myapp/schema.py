@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 from urllib.parse import urlparse
-from fastapi import Query
 
-from app.core.validator import DateTimeStr
+from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from app.core.base_schema import BaseSchema, UserBySchema
+from app.core.validator import DateTimeStr
 
 
 class ApplicationCreateSchema(BaseModel):
@@ -43,7 +42,6 @@ class ApplicationCreateSchema(BaseModel):
 
 class ApplicationUpdateSchema(ApplicationCreateSchema):
     """应用更新模型"""
-    ...
 
 
 class ApplicationOutSchema(ApplicationCreateSchema, BaseSchema, UserBySchema):

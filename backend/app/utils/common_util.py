@@ -1,18 +1,19 @@
-# -*- coding: utf-8 -*-
-
 import importlib
 import re
 import uuid
+
+from collections.abc import Generator, Sequence
 from pathlib import Path
-from typing import Any, Literal, Sequence, Generator
-from sqlalchemy.orm import DeclarativeBase
+from typing import Any, Literal
+
 from sqlalchemy.engine.row import Row
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.sql.expression import TextClause, null
 
 from app.config.setting import settings
-from app.core.logger import log
 from app.core.exceptions import CustomException
+from app.core.logger import log
 
 
 def import_module(module: str, desc: str) -> Any:
@@ -134,7 +135,7 @@ def get_child_id_map(model_list: Sequence[DeclarativeBase]) -> dict[int, list[in
     return data_map
 
 
-def get_child_recursion(id: int, id_map: dict[int, list[int]], ids: list[int] | None= None) -> list[int]:
+def get_child_recursion(id: int, id_map: dict[int, list[int]], ids: list[int] | None = None) -> list[int]:
     """
     递归获取所有子级 ID
 
@@ -170,7 +171,7 @@ def traversal_to_tree(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
         # 确保每个节点都有children字段，即使没有子节点也设置为null
         if 'children' not in node:
             node['children'] = None
-            
+
         parent_id = node['parent_id']
         if parent_id is None:
             tree.append(node)
@@ -184,7 +185,7 @@ def traversal_to_tree(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
             else:
                 if node not in tree:
                     tree.append(node)
-    
+
     # 确保所有节点都有children字段
     for node in tree:
         if 'children' not in node:
@@ -238,7 +239,7 @@ def bytes2human(n: int, format_str: str = '%(value).1f%(symbol)s') -> str:
         if n >= prefix[symbol]:
             value = float(n) / prefix[symbol]
             return format_str % locals()
-    return format_str % dict(symbol=symbols[0], value=n)
+    return format_str % {"symbol": symbols[0], "value": n}
 
 
 def bytes2file_response(bytes_info: bytes) -> Generator[bytes, Any, None]:
@@ -291,7 +292,7 @@ class SqlalchemyUtil:
             base_dict = obj.copy()
         if transform_case == 'snake_to_camel':
             return {CamelCaseUtil.snake_to_camel(k): v for k, v in base_dict.items()}
-        elif transform_case == 'camel_to_snake':
+        if transform_case == 'camel_to_snake':
             return {SnakeCaseUtil.camel_to_snake(k): v for k, v in base_dict.items()}
 
         return base_dict
@@ -309,20 +310,19 @@ class SqlalchemyUtil:
         """
         if isinstance(result, (DeclarativeBase, dict)):
             return cls.base_to_dict(result, transform_case)
-        elif isinstance(result, list):
+        if isinstance(result, list):
             return [cls.serialize_result(row, transform_case) for row in result]
-        elif isinstance(result, Row):
-            if all([isinstance(row, DeclarativeBase) for row in result]):
+        if isinstance(result, Row):
+            if all(isinstance(row, DeclarativeBase) for row in result):
                 return [cls.base_to_dict(row, transform_case) for row in result]
-            elif any([isinstance(row, DeclarativeBase) for row in result]):
+            if any(isinstance(row, DeclarativeBase) for row in result):
                 return [cls.serialize_result(row, transform_case) for row in result]
-            else:
-                result_dict = result._asdict()
-                if transform_case == 'snake_to_camel':
-                    return {CamelCaseUtil.snake_to_camel(k): v for k, v in result_dict.items()}
-                elif transform_case == 'camel_to_snake':
-                    return {SnakeCaseUtil.camel_to_snake(k): v for k, v in result_dict.items()}
-                return result_dict
+            result_dict = result._asdict()
+            if transform_case == 'snake_to_camel':
+                return {CamelCaseUtil.snake_to_camel(k): v for k, v in result_dict.items()}
+            if transform_case == 'camel_to_snake':
+                return {SnakeCaseUtil.camel_to_snake(k): v for k, v in result_dict.items()}
+            return result_dict
         return result
 
     @classmethod
@@ -384,8 +384,8 @@ class SnakeCaseUtil:
         :return: 下划线形式字符串
         """
         # 在大写字母前添加一个下划线，然后将整个字符串转为小写
-        words = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel_str)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', words).lower()
+        words = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', camel_str)
+        return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', words).lower()
 
     @classmethod
     def transform_result(cls, result: Any):
@@ -396,4 +396,3 @@ class SnakeCaseUtil:
         :return: 小驼峰形式结果
         """
         return SqlalchemyUtil.serialize_result(result=result, transform_case='camel_to_snake')
-

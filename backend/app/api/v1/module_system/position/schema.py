@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.core.validator import DateTimeStr
 from app.core.base_schema import BaseSchema, UserBySchema
+from app.core.validator import DateTimeStr
 
 
 class PositionCreateSchema(BaseModel):
@@ -26,13 +23,11 @@ class PositionCreateSchema(BaseModel):
 
 class PositionUpdateSchema(PositionCreateSchema):
     """岗位更新模型"""
-    ...
 
 
 class PositionOutSchema(PositionCreateSchema, BaseSchema, UserBySchema):
     """岗位信息响应模型"""
     model_config = ConfigDict(from_attributes=True)
-    ...
 
 
 class PositionQueryParam:
@@ -40,7 +35,7 @@ class PositionQueryParam:
 
     def __init__(
         self,
-        name: Optional[str] = Query(None, description="岗位名称"),
+        name: str | None = Query(None, description="岗位名称"),
         description: str | None = Query(None, description="描述"),
         status: str | None = Query(None, description="是否启用"),
         created_time: list[DateTimeStr] | None = Query(None, description="创建时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),

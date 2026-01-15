@@ -12,7 +12,7 @@ interface SettingsState {
   showAppLogo: boolean;
   showWatermark: boolean;
   showSettings: boolean;
-  showGuide: boolean; // 引导功能开关
+  showGuide: boolean;
 
   // 桌面端工具显示设置
   showMenuSearch: boolean;
@@ -24,6 +24,8 @@ interface SettingsState {
   // 布局设置
   layout: LayoutMode;
   sidebarColorScheme: string;
+  grayMode: boolean;
+  userEnableAi: boolean;
 
   // 主题设置
   theme: ThemeMode;
@@ -102,6 +104,11 @@ export const useSettingsStore = defineStore("setting", () => {
   // 主题模式
   const theme = useStorage<ThemeMode>(SETTINGS_KEYS.THEME, defaultSettings.theme);
 
+  // 是否开启灰色模式
+  const grayMode = useStorage<boolean>(SETTINGS_KEYS.GRAY_MODE, defaultSettings.grayMode);
+  // 是否开启AI助手
+  const userEnableAi = useStorage<boolean>(SETTINGS_KEYS.AI_ENABLED, defaultSettings.aiEnabled);
+
   // 🎯 设置项映射
   const settingsMap = {
     showTagsView,
@@ -116,6 +123,8 @@ export const useSettingsStore = defineStore("setting", () => {
     showNotification,
     sidebarColorScheme,
     layout,
+    grayMode,
+    userEnableAi,
   } as const;
 
   // 🎯 监听器 - 主题变化
@@ -134,6 +143,15 @@ export const useSettingsStore = defineStore("setting", () => {
     [sidebarColorScheme],
     ([newSidebarColorScheme]) => {
       toggleSidebarColor(newSidebarColorScheme === SidebarColor.CLASSIC_BLUE);
+    },
+    { immediate: true }
+  );
+
+  // 灰色模式监听
+  watch(
+    grayMode,
+    (v) => {
+      document.documentElement.style.filter = v ? "grayscale(100%)" : "";
     },
     { immediate: true }
   );
@@ -181,6 +199,16 @@ export const useSettingsStore = defineStore("setting", () => {
     settingsVisible.value = false;
   }
 
+  // 更新AI助手状态
+  function updateUserEnableAi(newValue: boolean): void {
+    userEnableAi.value = newValue;
+  }
+
+  // 更新灰色模式状态
+  function updateGrayMode(newValue: boolean): void {
+    grayMode.value = newValue;
+  }
+
   // 🎯 批量重置设置
   function resetSettings(): void {
     // 界面显示设置
@@ -202,6 +230,10 @@ export const useSettingsStore = defineStore("setting", () => {
     layout.value = defaultSettings.layout as LayoutMode;
     themeColor.value = defaultSettings.themeColor;
     theme.value = defaultSettings.theme;
+
+    // 系统设置
+    grayMode.value = defaultSettings.grayMode;
+    userEnableAi.value = defaultSettings.aiEnabled;
   }
 
   return {
@@ -239,6 +271,14 @@ export const useSettingsStore = defineStore("setting", () => {
     toggleSettingsPanel,
     showSettingsPanel,
     hideSettingsPanel,
+
+    // 🎯 系统设置状态
+    grayMode,
+    userEnableAi,
+
+    // 🎯 更新系统设置方法
+    updateUserEnableAi,
+    updateGrayMode,
 
     // 🎯 重置功能
     resetSettings,

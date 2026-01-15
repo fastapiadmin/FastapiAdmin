@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.validator import DateTimeStr
 
@@ -30,11 +28,11 @@ class OnlineQueryParam:
 
     def __init__(
         self,
-        name: str | None = Query(None, description="登录名称"), 
+        name: str | None = Query(None, description="登录名称"),
         ipaddr: str | None = Query(None, description="登陆IP地址"),
         login_location: str | None = Query(None, description="登录所属地"),
     ) -> None:
-        
+
         # 模糊查询字段
         self.name = ("like", f"%{name}%") if name else None
         self.login_location = ("like", f"%{login_location}%") if login_location else None

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from enum import Enum
 from typing import Protocol
 
@@ -9,7 +7,7 @@ from app.config.setting import settings
 class RET(Enum):
     """
     系统返回码枚举
-    
+
     0~200: 成功状态码
     400~600: HTTP标准错误码
     4000+: 自定义业务错误码
@@ -55,11 +53,11 @@ class RET(Enum):
     UNKOWNERR = (4501, "未知错误")
     TIMEOUT = (4502, "请求超时")
     RATE_LIMIT_EXCEEDED = (4503, "访问频率超限")
-    
+
     # Token相关错误码
     INVALID_TOKEN = (4504, "无效令牌")
     EXPIRED_TOKEN = (4505, "令牌过期")
-    
+
     # 认证授权错误码
     INVALID_CREDENTIALS = (4506, "无效凭证")
     INVALID_REQUEST = (4507, "无效请求")
@@ -70,7 +68,7 @@ class RET(Enum):
     INVALID_PERMISSION = (4512, "权限错误")
     INVALID_RESOURCE = (4513, "资源错误")
     INVALID_CONFIGURATION = (4514, "配置错误")
-    
+
     # 会话安全错误码
     INVALID_SESSION = (4515, "会话错误")
     INVALID_LICENSE = (4516, "许可证错误")
@@ -80,13 +78,13 @@ class RET(Enum):
     INVALID_DECRYPTION = (4520, "解密错误")
     INVALID_COMPRESSION = (4521, "压缩错误")
     INVALID_DECOMPRESSION = (4522, "解压错误")
-    
+
     # 权限相关错误码
     INVALID_AUTHENTICATION = (4523, "认证错误")
     INVALID_AUTHORIZATION = (4524, "授权错误")
     INVALID_ACCESS = (4525, "访问错误")
     INVALID_SECURITY = (4526, "安全错误")
-    
+
     # 系统组件错误码
     INVALID_NETWORK = (4527, "网络错误")
     INVALID_DATABASE = (4528, "数据库错误")
@@ -97,13 +95,13 @@ class RET(Enum):
     INVALID_LOG = (4533, "日志错误")
     INVALID_MONITORING = (4534, "监控错误")
     INVALID_NOTIFICATION = (4535, "通知错误")
-    
+
     # 任务调度错误码
     INVALID_SCHEDULING = (4536, "调度错误")
     INVALID_TASK = (4537, "任务错误")
     INVALID_JOB = (4538, "作业错误")
     INVALID_WORKFLOW = (4539, "工作流错误")
-    
+
     # 开发相关错误码
     INVALID_SCRIPT = (4540, "脚本错误")
     INVALID_PLUGIN = (4541, "插件错误")
@@ -118,13 +116,13 @@ class RET(Enum):
     INVALID_ENUM = (4550, "枚举错误")
     INVALID_INTERFACE = (4551, "接口错误")
     INVALID_PROTOCOL = (4552, "协议错误")
-    
+
     # 服务相关错误码
     INVALID_SERVICE = (4553, "服务错误")
     INVALID_CLIENT = (4554, "客户端错误")
     INVALID_SERVER = (4555, "服务器错误")
     INVALID_SYSTEM = (4556, "系统错误")
-    
+
     # 用户权限错误码
     INVALID_USER = (4557, "用户错误")
     INVALID_GROUP = (4558, "用户组错误")
@@ -179,14 +177,14 @@ class RET(Enum):
     INVALID_PERMISSION_SERVER = (4607, "权限服务器错误")
     INVALID_PERMISSION_SYSTEM = (4608, "权限系统错误")
 
-    def __init__(self, code: int, msg: str):
+    def __init__(self, code: int, msg: str) -> None:
         """
         初始化返回码。
-        
+
         参数:
         - code (int): 错误码。
         - msg (str): 错误信息。
-        
+
         返回:
         - None
         """
@@ -207,7 +205,7 @@ class RET(Enum):
 class CommonConstant:
     """
     常用常量
-    
+
     WWW: www主域名
     HTTP: http请求
     HTTPS: https请求
@@ -226,20 +224,20 @@ class CommonConstant:
     WWW = "www."
     HTTP = "http://"
     HTTPS = "https://"
-    
+
     # 远程调用
     LOOKUP_RMI = "rmi:"
     LOOKUP_LDAP = "ldap:"
     LOOKUP_LDAPS = "ldaps:"
-    
+
     # 系统标识
     YES = "Y"
     NO = "N"
-    
+
     # 部门状态
     DEPT_NORMAL = "0"  # 正常
-    DEPT_DISABLE = "1" # 停用
-    
+    DEPT_DISABLE = "1"  # 停用
+
     # 唯一性校验
     UNIQUE = True
     NOT_UNIQUE = False
@@ -356,7 +354,7 @@ class GenConstant:
     DB_TO_SQLALCHEMY_TYPE_MAPPING: 数据库类型与sqlalchemy类型映射
     DB_TO_PYTHON_TYPE_MAPPING: 数据库类型与python类型映射
     """
-    
+
     # 数据库字符串类型
     COLUMNTYPE_STR = (
         ["character varying", "varchar", "character", "char"]
@@ -425,64 +423,64 @@ class GenConstant:
 
     # 页面不需要编辑字段
     COLUMNNAME_NOT_EDIT = ["id", "uuid", "created_time", "updated_time"]
-    
+
     # 页面不需要显示的列表字段
     COLUMNNAME_NOT_LIST = ["id", "uuid"]
-    
+
     # 页面不需要查询字段
     COLUMNNAME_NOT_QUERY = ["id", "uuid", "description"]
-    
+
     # Crud基类字段
-    CRUD_COLUMN_NOT_EDIT = ["create_by", "description", "created_time",  "updated_time"]
-    
+    CRUD_COLUMN_NOT_EDIT = ["create_by", "description", "created_time", "updated_time"]
+
     # 实体基类字段
-    BASE_ENTITY = ["id", "uuid", "status",  "description", "created_time", "updated_time", "created_id", "updated_id"]
-    
+    BASE_ENTITY = ["id", "uuid", "status", "description", "created_time", "updated_time", "created_id", "updated_id"]
+
     # Tree基类字段
     TREE_ENTITY = ["parent_name", "parent_id", "order", "ancestors", "children"]
-    
+
     # 文本框
     HTML_INPUT = "input"
-    
+
     # 文本域
     HTML_TEXTAREA = "textarea"
-    
+
     # 下拉框
     HTML_SELECT = "select"
-    
+
     # 单选框
     HTML_RADIO = "radio"
-    
+
     # 复选框
     HTML_CHECKBOX = "checkbox"
-    
+
     # 日期控件
     HTML_DATETIME = "datetime"
-    
+
     # 图片上传控件
     HTML_IMAGE_UPLOAD = "imageUpload"
-    
+
     # 文件上传控件
     HTML_FILE_UPLOAD = "fileUpload"
-    
+
     # 富文本控件
     HTML_EDITOR = "editor"
-    
+
     # 高精度计算类型
     TYPE_DECIMAL = "Decimal"
-    
+
     # 时间类型
     TYPE_DATE = ["date", "time", "datetime"]
-    
+
     # 模糊查询
     QUERY_LIKE = "LIKE"
-    
+
     # 相等查询
     QUERY_EQ = "EQ"
-    
+
     # 需要
     REQUIRE = True
-    
+
     # 数据库类型与sqlalchemy类型映射
     DB_TO_SQLALCHEMY = {
         "boolean": "Boolean",
@@ -591,7 +589,7 @@ class GenConstant:
         "BOOL": "Boolean",
         "UUID": "String",
     }
-    
+
     # 数据库类型与python类型映射
     DB_TO_PYTHON = {
         "boolean": "bool",
@@ -719,6 +717,6 @@ class TypedContextProtocol(Protocol):
     device: str | None
 
     permission: str | None
-    
+
 # if __name__ == "__main__":
 #     print(RET.OK.msg)  # 输出: 成功

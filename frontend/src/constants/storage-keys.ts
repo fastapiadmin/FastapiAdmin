@@ -1,6 +1,9 @@
 /**
- * 存储键常量统一管理
- * 包括 localStorage、sessionStorage 等各种存储的键名
+ * 存储键名常量
+ *
+ * @description
+ * 统一管理所有 localStorage/sessionStorage 的键名
+ * 命名规则：{APP_PREFIX}:{分类}:{具体名称}
  */
 
 // 🔐 用户认证相关
@@ -26,6 +29,8 @@ export const LAYOUT_KEY = "layout";
 export const SIDEBAR_COLOR_SCHEME_KEY = "sidebarColorScheme";
 export const THEME_KEY = "theme";
 export const THEME_COLOR_KEY = "themeColor";
+export const GRAY_MODE_KEY = "grayMode";
+export const AI_ENABLED_KEY = "aiEnabled";
 
 export const ROLE_ROOT = "ADMIN"; // 超级管理员角色
 
@@ -59,6 +64,8 @@ export const SETTINGS_KEYS = {
   LAYOUT: LAYOUT_KEY,
   THEME_COLOR: THEME_COLOR_KEY,
   THEME: THEME_KEY,
+  GRAY_MODE: GRAY_MODE_KEY,
+  AI_ENABLED: AI_ENABLED_KEY,
 } as const;
 
 // 📦 所有存储键的统一集合

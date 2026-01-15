@@ -1,33 +1,19 @@
-# -*- coding: utf-8 -*-
+from typing import Annotated
 
-from typing import Union, Dict
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio.client import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ErrorResponse, SuccessResponse
+from app.config.setting import settings
+from app.core.dependencies import db_getter, get_current_user, redis_getter
+from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.core.security import CustomOAuth2PasswordRequestForm
-from app.core.logger import log
-from app.config.setting import settings
-from app.core.dependencies import (
-    db_getter,
-    get_current_user,
-    redis_getter
-)
 
-from .service import (
-    LoginService,
-    CaptchaService
-)
-from .schema import (
-    CaptchaOutSchema,
-    JWTOutSchema,
-    RefreshTokenPayloadSchema,
-    LogoutPayloadSchema
-)
-
+from .schema import CaptchaOutSchema, JWTOutSchema, LogoutPayloadSchema, RefreshTokenPayloadSchema
+from .service import CaptchaService, LoginService
 
 AuthRouter = APIRouter(route_class=OperationLogRoute, prefix="/auth", tags=["认证授权"])
 
@@ -35,10 +21,10 @@ AuthRouter = APIRouter(route_class=OperationLogRoute, prefix="/auth", tags=["认
 @AuthRouter.post("/login", summary="登录", description="登录", response_model=JWTOutSchema)
 async def login_for_access_token_controller(
     request: Request,
-    redis: Redis = Depends(redis_getter), 
-    login_form: CustomOAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(db_getter),
-) -> Union[JSONResponse, Dict]:
+    redis: Annotated[Redis, Depends(redis_getter)],
+    login_form: Annotated[CustomOAuth2PasswordRequestForm, Depends()],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+) -> JSONResponse | dict:
     """
     用户登录
 
@@ -46,10 +32,10 @@ async def login_for_access_token_controller(
     - request (Request): FastAPI请求对象
     - login_form (CustomOAuth2PasswordRequestForm): 登录表单数据
     - db (AsyncSession): 数据库会话对象
-        
+
     返回:
     - JWTOutSchema: 包含访问令牌和刷新令牌的响应模型
-        
+
     异常:
     - CustomException: 认证失败时抛出异常。
     """
@@ -67,8 +53,8 @@ async def login_for_access_token_controller(
 async def get_new_token_controller(
     request: Request,
     payload: RefreshTokenPayloadSchema,
-    db: AsyncSession = Depends(db_getter),
-    redis: Redis = Depends(redis_getter) 
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     刷新token
@@ -76,10 +62,10 @@ async def get_new_token_controller(
     参数:
     - request (Request): FastAPI请求对象
     - payload (RefreshTokenPayloadSchema): 刷新令牌负载模型
-        
+
     返回:
     - JWTOutSchema: 包含新的访问令牌和刷新令牌的响应模型
-        
+
     异常:
     - CustomException: 刷新令牌失败时抛出异常。
     """
@@ -92,30 +78,30 @@ async def get_new_token_controller(
 
 @AuthRouter.get("/captcha/get", summary="获取验证码", description="获取登录验证码", response_model=CaptchaOutSchema)
 async def get_captcha_for_login_controller(
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     获取登录验证码
 
     参数:
     - redis (Redis): Redis客户端对象
-        
+
     返回:
     - CaptchaOutSchema: 包含验证码图片和key的响应模型
-        
+
     异常:
     - CustomException: 获取验证码失败时抛出异常。
     """
     # 获取验证码
     captcha = await CaptchaService.get_captcha_service(redis=redis)
-    log.info(f"获取验证码成功")
+    log.info("获取验证码成功")
     return SuccessResponse(data=captcha, msg="获取验证码成功")
 
 
 @AuthRouter.post('/logout', summary="退出登录", description="退出登录", dependencies=[Depends(get_current_user)])
 async def logout_controller(
     payload: LogoutPayloadSchema,
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     退出登录
@@ -123,10 +109,10 @@ async def logout_controller(
     参数:
     - payload (LogoutPayloadSchema): 退出登录负载模型
     - redis (Redis): Redis客户端对象
-        
+
     返回:
     - JSONResponse: 包含退出登录结果的响应模型
-        
+
     异常:
     - CustomException: 退出登录失败时抛出异常。
     """

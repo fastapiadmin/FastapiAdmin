@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import base64
 import random
 import string
+
 from io import BytesIO
-from typing import Tuple
+
 from PIL import Image, ImageDraw, ImageFont
 
 from app.config.setting import settings
@@ -14,11 +13,11 @@ class CaptchaUtil:
     """
     验证码工具类
     """
-    @classmethod 
-    def generate_captcha(cls) -> Tuple[str, str]:
+    @classmethod
+    def generate_captcha(cls) -> tuple[str, str]:
         """
         生成带有噪声和干扰的验证码图片（4位随机字符）。
-        
+
         返回:
         - Tuple[str, str]: [base64图片字符串, 验证码值]。
         """
@@ -48,14 +47,14 @@ class CaptchaUtil:
         for char in captcha_value:
             # 使用深色文字,增加对比度
             text_color = tuple(random.randint(0, 80) for _ in range(3))
-            
+
             # 随机偏移,增加干扰
             x_offset = x + random.uniform(-2, 2)
             y_offset = y_start + random.uniform(-2, 2)
-            
+
             # 绘制字符
             draw.text((x_offset, y_offset), char, font=font, fill=text_color)
-            
+
             # 更新x坐标,增加字符间距的随机性
             x += draw.textbbox((0, 0), char, font=font)[2] + random.uniform(1, 5)
 
@@ -77,14 +76,14 @@ class CaptchaUtil:
         buffer = BytesIO()
         image.save(buffer, format='PNG', optimize=True)
         base64_string = base64.b64encode(buffer.getvalue()).decode()
-        
+
         return base64_string, captcha_value
-    
+
     @classmethod
-    def captcha_arithmetic(cls) -> Tuple[str, int]:
+    def captcha_arithmetic(cls) -> tuple[str, int]:
         """
         创建验证码图片（加减乘运算）。
-        
+
         返回:
         - Tuple[str, int]: [base64图片字符串, 计算结果]。
         """
@@ -99,7 +98,7 @@ class CaptchaUtil:
         # 生成运算数字和运算符
         operators = ['+', '-', '*']
         operator = random.choice(operators)
-        
+
         # 对于减法,确保num1大于num2
         if operator == '-':
             num1 = random.randint(6, 10)
@@ -107,7 +106,7 @@ class CaptchaUtil:
         else:
             num1 = random.randint(1, 9)
             num2 = random.randint(1, 9)
-        
+
         # 计算结果
         result_map = {
             '+': lambda x, y: x + y,

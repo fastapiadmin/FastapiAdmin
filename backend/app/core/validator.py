@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
 import re
-from datetime import datetime, date, time
+
+from datetime import date, datetime, time
 from typing import Annotated
+
 from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
 
 from app.common.constant import RET
 from app.core.exceptions import CustomException
-
 
 # 自定义日期时间字符串类型
 DateTimeStr = Annotated[
@@ -47,16 +46,17 @@ Email = Annotated[
     WithJsonSchema({'type': 'string'}, mode='serialization')
 ]
 
+
 def datetime_validator(value: str | datetime) -> datetime:
     """
     日期格式验证器。
-    
+
     参数:
     - value (str | datetime): 日期值。
-    
+
     返回:
     - datetime: 格式化后的日期。
-    
+
     异常:
     - CustomException: 日期格式无效时抛出。
     """
@@ -64,7 +64,7 @@ def datetime_validator(value: str | datetime) -> datetime:
     try:
         if isinstance(value, str):
             return datetime.strptime(value, pattern)
-        elif isinstance(value, datetime):
+        if isinstance(value, datetime):
             return value
     except Exception:
         raise CustomException(code=RET.ERROR.code, msg="无效的日期格式")
@@ -73,13 +73,13 @@ def datetime_validator(value: str | datetime) -> datetime:
 def email_validator(value: str) -> str:
     """
     邮箱地址验证器。
-    
+
     参数:
     - value (str): 邮箱地址。
-    
+
     返回:
     - str: 验证后的邮箱地址。
-    
+
     异常:
     - CustomException: 邮箱格式无效时抛出。
     """
@@ -97,13 +97,13 @@ def email_validator(value: str) -> str:
 def mobile_validator(value: str | None) -> str | None:
     """
     手机号验证器。
-    
+
     参数:
     - value (str | None): 手机号。
-    
+
     返回:
     - str | None: 验证后的手机号。
-    
+
     异常:
     - CustomException: 手机号格式无效时抛出。
     """
@@ -124,13 +124,13 @@ def mobile_validator(value: str | None) -> str | None:
 def code_validator(value: str | None) -> str | None:
     """
     编码验证器。
-    
+
     参数:
     - value (str | None): 编码。
-    
+
     返回:
     - str | None: 验证后的编码。
-    
+
     异常:
     - CustomException: 编码格式无效时抛出。
     """
@@ -145,13 +145,13 @@ def code_validator(value: str | None) -> str | None:
 def menu_request_validator(data):
     """
     菜单请求数据验证器。
-    
+
     参数:
     - data (Any): 请求数据。
-    
+
     返回:
     - Any: 验证后的请求数据。
-    
+
     异常:
     - CustomException: 请求数据无效时抛出。
     """
@@ -159,44 +159,44 @@ def menu_request_validator(data):
 
     if data.type not in menu_types:
         raise CustomException(code=RET.ERROR.code, msg=f"菜单类型必须为: {','.join(map(str, menu_types.keys()))}")
-    
+
     if data.type in [1, 2]:
         if not data.route_name:
             raise CustomException(code=RET.ERROR.code, msg="路由名称不能为空")
         if not data.route_path:
             raise CustomException(code=RET.ERROR.code, msg="路由路径不能为空")
-            
+
     if data.type == 2 and not data.component_path:
         raise CustomException(code=RET.ERROR.code, msg="组件路径不能为空")
-        
+
     return data
 
 
 def role_permission_request_validator(data):
     """
     角色权限设置数据验证器。
-    
+
     参数:
     - data (Any): 请求数据。
-    
+
     返回:
     - Any: 验证后的请求数据。
-    
+
     异常:
     - CustomException: 请求数据无效时抛出。
     """
     data_scopes = {
         1: "仅本人数据权限",
-        2: "本部门数据权限", 
+        2: "本部门数据权限",
         3: "本部门及以下数据权限",
         4: "全部数据权限",
         5: "自定义数据权限"
     }
-    
+
     if data.data_scope not in data_scopes:
         raise CustomException(code=RET.ERROR.code, msg=f"数据权限范围必须为: {','.join(map(str, data_scopes.keys()))}")
-        
+
     if not data.role_ids:
         raise CustomException(code=RET.ERROR.code, msg="角色不能为空")
-        
+
     return data

@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import time
+
 from datetime import datetime
 
 from app.core.logger import log
+
 
 def job(*args, **kwargs) -> None:
     """
@@ -21,6 +21,7 @@ def job(*args, **kwargs) -> None:
         log.error(f"同步任务执行失败: {e}")
         raise
 
+
 async def async_job(*args, **kwargs) -> None:
     """
     定时任务执行异步函数示例
@@ -36,4 +37,3 @@ async def async_job(*args, **kwargs) -> None:
     except Exception as e:
         log.error(f"异步任务执行失败: {e}")
         raise
-

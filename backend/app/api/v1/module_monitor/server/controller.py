@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 
 from fastapi import APIRouter, Depends
@@ -11,8 +10,8 @@ from app.core.router_class import OperationLogRoute
 
 from .service import ServerService
 
-
 ServerRouter = APIRouter(route_class=OperationLogRoute, prefix="/server", tags=["服务器监控"])
+
 
 @ServerRouter.get(
     '/info',
@@ -23,7 +22,7 @@ ServerRouter = APIRouter(route_class=OperationLogRoute, prefix="/server", tags=[
 async def get_monitor_server_info_controller() -> JSONResponse:
     """
     查询服务器监控信息
-    
+
     返回:
     - JSONResponse: 包含服务器监控信息的JSON响应。
     """

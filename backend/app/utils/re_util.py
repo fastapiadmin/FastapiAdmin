@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
 import re
+
 
 def search_string(pattern: str, text: str) -> re.Match[str] | None:
     """

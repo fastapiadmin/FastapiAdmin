@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.validator import DateTimeStr
@@ -46,7 +44,7 @@ class UploadResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     file_path: str | None = Field(default=None, description='新文件映射路径')
-    file_name: str | None = Field(default=None, description='新文件名称') 
+    file_name: str | None = Field(default=None, description='新文件名称')
     origin_name: str | None = Field(default=None, description='原文件名称')
     file_url: str | None = Field(default=None, description='新文件访问地址')
 

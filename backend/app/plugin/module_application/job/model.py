@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from sqlalchemy import Boolean, String, Integer, Text, ForeignKey
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base_model import ModelMixin, UserMixin
@@ -28,10 +26,10 @@ class JobModel(ModelMixin, UserMixin):
     max_instances: Mapped[int] = mapped_column(Integer, nullable=True, default=1, comment='最大实例数:允许的最大并发执行实例数')
     start_date: Mapped[str | None] = mapped_column(String(64), nullable=True, comment='开始时间')
     end_date: Mapped[str | None] = mapped_column(String(64), nullable=True, comment='结束时间')
-    
+
     # 关联关系
     job_logs: Mapped[list['JobLogModel'] | None] = relationship(
-        back_populates="job", 
+        back_populates="job",
         lazy="selectin"
     )
 
@@ -53,16 +51,16 @@ class JobLogModel(ModelMixin):
     job_trigger: Mapped[str | None] = mapped_column(String(255), nullable=True, default='', comment='任务触发器')
     job_message: Mapped[str | None] = mapped_column(String(500), nullable=True, default='', comment='日志信息')
     exception_info: Mapped[str | None] = mapped_column(String(2000), nullable=True, default='', comment='异常信息')
-    
+
     # 任务关联
     job_id: Mapped[int | None] = mapped_column(
-        ForeignKey('app_job.id', ondelete="CASCADE"), 
+        ForeignKey('app_job.id', ondelete="CASCADE"),
         nullable=True,
         index=True,
         comment='任务ID'
     )
-    
+
     job: Mapped["JobModel | None"] = relationship(
-        back_populates="job_logs", 
+        back_populates="job_logs",
         lazy="selectin"
     )

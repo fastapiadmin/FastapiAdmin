@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 from typing import TYPE_CHECKING
-from sqlalchemy import Boolean, String, Integer, JSON, ForeignKey
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+
+from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base_model import ModelMixin
 
@@ -13,10 +12,10 @@ if TYPE_CHECKING:
 class MenuModel(ModelMixin):
     """
     菜单表 - 用于存储系统菜单信息
-    
+
     菜单类型说明:
     - 1: 目录(一级菜单)
-    - 2: 菜单(二级菜单) 
+    - 2: 菜单(二级菜单)
     - 3: 按钮/权限(页面内按钮权限)
     - 4: 外部链接
     """
@@ -39,30 +38,30 @@ class MenuModel(ModelMixin):
     title: Mapped[str | None] = mapped_column(String(50), comment='菜单标题')
     params: Mapped[list[dict[str, str]] | None] = mapped_column(JSON, comment='路由参数(JSON对象)')
     affix: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment='是否固定标签页(True:是 False:否)')
-    
+
     # 树形结构
     parent_id: Mapped[int | None] = mapped_column(
-        Integer, 
-        ForeignKey('sys_menu.id', ondelete='SET NULL'), 
-        default=None, 
-        index=True, 
+        Integer,
+        ForeignKey('sys_menu.id', ondelete='SET NULL'),
+        default=None,
+        index=True,
         comment='父菜单ID'
     )
-    
+
     # 关联关系
     parent: Mapped["MenuModel | None"] = relationship(
-        back_populates='children', 
-        remote_side="MenuModel.id", 
+        back_populates='children',
+        remote_side="MenuModel.id",
         foreign_keys="MenuModel.parent_id",
         uselist=False
     )
     children: Mapped[list["MenuModel"] | None] = relationship(
-        back_populates='parent', 
+        back_populates='parent',
         foreign_keys="MenuModel.parent_id",
         order_by="MenuModel.order"
     )
     roles: Mapped[list["RoleModel"]] = relationship(
-        secondary="sys_role_menus", 
-        back_populates="menus", 
+        secondary="sys_role_menus",
+        back_populates="menus",
         lazy="selectin"
     )

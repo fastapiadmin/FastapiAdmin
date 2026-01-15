@@ -1,18 +1,18 @@
-# -*- coding: utf-8 -*-
-
-import json
 import importlib
+import json
+
+from asyncio import iscoroutinefunction
 from datetime import datetime
 from typing import Any
-from asyncio import iscoroutinefunction
-from apscheduler.job import Job
-from apscheduler.events import JobExecutionEvent, EVENT_ALL, JobEvent
+
+from apscheduler.events import EVENT_ALL, JobEvent, JobExecutionEvent
 from apscheduler.executors.asyncio import AsyncIOExecutor
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.job import Job
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.redis import RedisJobStore
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore 
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -20,17 +20,16 @@ from redis.asyncio.client import Redis
 
 from app.common.enums import RedisInitKeyConfig
 from app.config.setting import settings
-from app.core.database import engine, db_session, async_db_session
+from app.core.database import async_db_session, db_session, engine
 from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.core.redis_crud import RedisCURD
-from app.utils.cron_util import CronUtil
-
 from app.plugin.module_application.job.model import JobModel
+from app.utils.cron_util import CronUtil
 
 job_stores = {
     'default': MemoryJobStore(),
-    'sqlalchemy': SQLAlchemyJobStore(url=settings.DB_URI, engine=engine), 
+    'sqlalchemy': SQLAlchemyJobStore(url=settings.DB_URI, engine=engine),
     'redis': RedisJobStore(
         host=settings.REDIS_HOST,
         port=int(settings.REDIS_PORT),
@@ -41,7 +40,7 @@ job_stores = {
 }
 # 配置执行器
 executors = {
-    'default': AsyncIOExecutor(), 
+    'default': AsyncIOExecutor(),
     'processpool': ProcessPoolExecutor(max_workers=1)  # 减少进程数量以减少资源消耗
 }
 # 配置默认参数
@@ -52,11 +51,12 @@ job_defaults = {
 # 配置调度器
 scheduler = AsyncIOScheduler()
 scheduler.configure(
-    jobstores=job_stores, 
-    executors=executors, 
+    jobstores=job_stores,
+    executors=executors,
     job_defaults=job_defaults,
     timezone='Asia/Shanghai'
 )
+
 
 class SchedulerUtil:
     """
@@ -64,14 +64,15 @@ class SchedulerUtil:
     """
     # 类变量，存储应用的Redis连接
     redis_instance = None
+
     @classmethod
     def scheduler_event_listener(cls, event: JobEvent | JobExecutionEvent) -> None:
         """
         监听任务执行事件并记录详细执行信息。
-    
+
         参数:
         - event (JobEvent | JobExecutionEvent): 任务事件对象。
-    
+
         返回:
         - None
         """
@@ -79,44 +80,44 @@ class SchedulerUtil:
             # 只处理任务执行相关事件，不处理任务添加、删除等事件
             if not isinstance(event, JobExecutionEvent):
                 return
-                
+
             # 延迟导入避免循环导入
             from app.plugin.module_application.job.model import JobLogModel
-            
+
             # 获取事件类型和任务ID
             event_type = event.__class__.__name__
-            
+
             # 初始化任务状态
             status = "0"
             exception_info = ''
             if hasattr(event, 'exception') and event.exception:
                 exception_info = str(event.exception)
                 status = "1"
-            
+
             if hasattr(event, 'job_id'):
                 job_id = event.job_id
                 query_job = cls.get_job(job_id=job_id)
-                
+
                 if query_job:
                     # 解析任务的实际执行函数和参数
                     actual_func = None
                     actual_args = []
                     actual_kwargs = {}
-                    
+
                     try:
                         if hasattr(query_job, 'args') and len(query_job.args) >= 2:
                             actual_func = query_job.args[0]
                             actual_args = query_job.args[2:]
-                            
+
                         if hasattr(query_job, 'kwargs'):
                             actual_kwargs = query_job.kwargs
                     except Exception as e:
-                        log.error(f"解析任务 {job_id} 参数失败: {str(e)}")
-                    
+                        log.error(f"解析任务 {job_id} 参数失败: {e!s}")
+
                     # 格式化参数显示
                     formatted_args = str(actual_args) if actual_args else "()"
                     formatted_kwargs = str(actual_kwargs) if actual_kwargs else "{}"
-                    
+
                     # 获取实际的执行函数信息
                     actual_func_module = ''
                     actual_func_name = ''
@@ -125,8 +126,8 @@ class SchedulerUtil:
                             actual_func_module = getattr(actual_func, '__module__', '')
                             actual_func_name = getattr(actual_func, '__name__', '')
                     except Exception as e:
-                        log.error(f"获取任务 {job_id} 函数信息失败: {str(e)}")
-                    
+                        log.error(f"获取任务 {job_id} 函数信息失败: {e!s}")
+
                     # 构建详细的任务消息
                     scheduled_time_str = "未知"
                     try:
@@ -137,7 +138,7 @@ class SchedulerUtil:
                             scheduled_time_str = str(event.scheduled_run_time)
                         except Exception:
                             pass
-                    
+
                     try:
                         event_type = event_type
                         func_info = f"{actual_func_module}.{actual_func_name}" if actual_func else "未知"
@@ -152,7 +153,7 @@ class SchedulerUtil:
                             job_message += f", 错误={exception_info[:500]}..."
                     except Exception as e:
                         job_message = f"任务 {job_id} 执行事件，状态={'成功' if status == '0' else '失败'}"
-                        log.error(f"构建任务 {job_id} 消息失败: {str(e)}")
+                        log.error(f"构建任务 {job_id} 消息失败: {e!s}")
 
                     # 创建日志记录
                     try:
@@ -163,7 +164,7 @@ class SchedulerUtil:
                                 invoke_target = f"{getattr(query_job.func, '__module__', '')}.{getattr(query_job.func, '__name__', '')}"
                             except Exception:
                                 invoke_target = "未知"
-                        
+
                         job_log = JobLogModel(
                             job_name=query_job.name,
                             job_group=query_job._jobstore_alias,
@@ -188,11 +189,11 @@ class SchedulerUtil:
                                 log.info(f"任务 {job_id} 执行日志已保存")
                             except Exception as e:
                                 session.rollback()
-                                log.error(f"保存任务 {job_id} 执行日志失败: {str(e)}")
+                                log.error(f"保存任务 {job_id} 执行日志失败: {e!s}")
                     except Exception as e:
-                        log.error(f"创建任务 {job_id} 日志记录失败: {str(e)}")
+                        log.error(f"创建任务 {job_id} 日志记录失败: {e!s}")
         except Exception as e:
-            log.error(f"处理任务执行事件失败: {str(e)}")
+            log.error(f"处理任务执行事件失败: {e!s}")
             import traceback
             traceback.print_exc()
 
@@ -200,13 +201,13 @@ class SchedulerUtil:
     async def init_system_scheduler(cls, redis: Redis) -> None:
         """
         应用启动时初始化定时任务。
-    
+
         返回:
         - None
         """
         # 延迟导入避免循环导入
-        from app.plugin.module_application.job.crud import JobCRUD
         from app.api.v1.module_system.auth.schema import AuthSchema
+        from app.plugin.module_application.job.crud import JobCRUD
         log.info('🔎 开始启动定时任务...')
         # 保存Redis连接到类变量
         cls.redis_instance = redis
@@ -249,7 +250,7 @@ class SchedulerUtil:
     async def close_system_scheduler(cls) -> None:
         """
         关闭系统定时任务。
-    
+
         返回:
         - None
         """
@@ -260,16 +261,16 @@ class SchedulerUtil:
             scheduler.shutdown(wait=True)
             log.info('✅️ 关闭定时任务成功')
         except Exception as e:
-            log.error(f'关闭定时任务失败: {str(e)}')
+            log.error(f'关闭定时任务失败: {e!s}')
 
     @classmethod
     def get_job(cls, job_id: str | int) -> Job | None:
         """
         根据任务ID获取任务对象。
-    
+
         参数:
         - job_id (str | int): 任务ID。
-    
+
         返回:
         - Job | None: 任务对象，未找到则为 None。
         """
@@ -279,7 +280,7 @@ class SchedulerUtil:
     def get_all_jobs(cls) -> list[Job]:
         """
         获取全部调度任务列表。
-    
+
         返回:
         - list[Job]: 任务列表。
         """
@@ -293,7 +294,7 @@ class SchedulerUtil:
         if not cls.redis_instance:
             log.error(f"任务 {job_id} 执行失败：Redis连接未初始化")
             return None
-        
+
         redis_client = RedisCURD(redis=cls.redis_instance)
         lock_key = f"{RedisInitKeyConfig.APSCHEDULER_LOCK_KEY.key}:{job_id}"
         lock_acquired = False
@@ -301,7 +302,7 @@ class SchedulerUtil:
         renewal_task = None
 
         # 定义锁续约函数
-        async def renew_lock():
+        async def renew_lock() -> None:
             """定期续约锁的过期时间"""
             try:
                 while True:
@@ -317,7 +318,7 @@ class SchedulerUtil:
             except asyncio.CancelledError:
                 log.info(f"任务 {job_id} 锁续约任务已取消")
             except Exception as e:
-                log.error(f"任务 {job_id} 锁续约失败: {str(e)}")
+                log.error(f"任务 {job_id} 锁续约失败: {e!s}")
 
         try:
             # 获取分布式锁，使用原子性的lock方法
@@ -326,22 +327,21 @@ class SchedulerUtil:
                 log.info(f"任务 {job_id} 获取执行锁成功")
                 # 启动锁续约任务
                 renewal_task = asyncio.create_task(renew_lock())
-                
+
                 # 执行任务
                 if iscoroutinefunction(func):
                     return await func(*args, **kwargs)
-                else:
-                    # 对于同步函数，使用线程池执行
-                    log.info(f"任务 {job_id} 开始执行同步函数: {func.__name__}, 参数: {args}-{kwargs}")
-                    try:
-                        loop = asyncio.get_running_loop()
-                        # 使用lambda包装函数调用，以支持关键字参数
-                        result = await loop.run_in_executor(None, lambda: func(*args, **kwargs))
-                        log.info(f"任务 {job_id} 同步函数执行完成，结果: {result}")
-                        return result
-                    except Exception as e:
-                        log.error(f"任务 {job_id} 同步函数执行失败: {str(e)}")
-                        raise
+                # 对于同步函数，使用线程池执行
+                log.info(f"任务 {job_id} 开始执行同步函数: {func.__name__}, 参数: {args}-{kwargs}")
+                try:
+                    loop = asyncio.get_running_loop()
+                    # 使用lambda包装函数调用，以支持关键字参数
+                    result = await loop.run_in_executor(None, lambda: func(*args, **kwargs))
+                    log.info(f"任务 {job_id} 同步函数执行完成，结果: {result}")
+                    return result
+                except Exception as e:
+                    log.error(f"任务 {job_id} 同步函数执行失败: {e!s}")
+                    raise
             else:
                 # 获取锁失败，记录日志
                 log.info(f"任务 {job_id} 获取执行锁失败，跳过本次执行")
@@ -354,12 +354,12 @@ class SchedulerUtil:
                     await renewal_task
                 except asyncio.CancelledError:
                     pass
-            
+
             # 释放锁
             if lock_acquired:
                 await redis_client.unlock(lock_key, lock_value)
                 log.info(f"任务 {job_id} 释放执行锁")
-    
+
     @classmethod
     def add_job(cls, job_info: JobModel) -> Job:
         """
@@ -378,20 +378,20 @@ class SchedulerUtil:
         try:
             module = importlib.import_module(module_path)
             job_func = getattr(module, func_name)
-            
+
             # 2. 确定任务存储器：优先使用redis，确保分布式环境中任务同步
             if job_info.jobstore is None:
                 job_info.jobstore = 'redis'  # 改为默认使用redis存储
-            
+
             # 3. 确定执行器
             job_executor = job_info.executor
             if job_executor is None:
                 job_executor = 'default'
-            
+
             # 异步函数必须使用默认执行器
             if iscoroutinefunction(job_func):
                 job_executor = 'default'
-            
+
             # 4. 创建触发器
             trigger = None
             if job_info.trigger is None or job_info.trigger.lower() == 'now':
@@ -459,11 +459,11 @@ class SchedulerUtil:
                 args_str = str(job_info.args).strip()
                 if args_str:
                     job_args = args_str.split(',')
-            
+
             job = scheduler.add_job(
                 func=cls._task_wrapper,
                 trigger=trigger,
-                args=[job_func, str(job_info.id)] + job_args,
+                args=[job_func, str(job_info.id), *job_args],
                 kwargs=json.loads(job_info.kwargs) if job_info.kwargs else {},
                 id=str(job_info.id),
                 name=job_info.name,
@@ -479,16 +479,16 @@ class SchedulerUtil:
         except AttributeError:
             raise ValueError(f"未找到该模块下的方法：{func_name}")
         except Exception as e:
-            raise CustomException(msg=f"添加任务失败: {str(e)}")
+            raise CustomException(msg=f"添加任务失败: {e!s}")
 
     @classmethod
     def remove_job(cls, job_id: str | int) -> None:
         """
         根据任务ID删除调度任务。
-    
+
         参数:
         - job_id (str | int): 任务ID。
-    
+
         返回:
         - None
         """
@@ -500,7 +500,7 @@ class SchedulerUtil:
     def clear_jobs(cls) -> None:
         """
         删除所有调度任务。
-    
+
         返回:
         - None
         """
@@ -510,17 +510,17 @@ class SchedulerUtil:
     def modify_job(cls, job_id: str | int) -> Job:
         """
         更新指定任务的配置（运行中的任务下次执行生效）。
-    
+
         参数:
         - job_id (str | int): 任务ID。
-    
+
         返回:
         - Job: 更新后的任务对象。
-    
+
         异常:
         - CustomException: 当任务不存在时抛出。
         """
-        query_job = cls.get_job(job_id=str(job_id)) 
+        query_job = cls.get_job(job_id=str(job_id))
         if not query_job:
             raise CustomException(msg=f"未找到该任务：{job_id}")
         return scheduler.modify_job(job_id=str(job_id))
@@ -582,17 +582,16 @@ class SchedulerUtil:
         query_job = cls.get_job(job_id=str(job_id))
         if not query_job:
             raise CustomException(msg=f"未找到该任务：{job_id}")
-        
+
         # 如果没有提供新的触发器，则使用现有触发器
         if trigger is None:
             # 获取当前任务的触发器配置
             current_trigger = query_job.trigger
             # 重新调度任务，使用当前的触发器
             return scheduler.reschedule_job(job_id=str(job_id), trigger=current_trigger)
-        else:
-            # 使用新提供的触发器
-            return scheduler.reschedule_job(job_id=str(job_id), trigger=trigger, **trigger_args)
-    
+        # 使用新提供的触发器
+        return scheduler.reschedule_job(job_id=str(job_id), trigger=trigger, **trigger_args)
+
     @classmethod
     def get_single_job_status(cls, job_id: str | int) -> str:
         """
@@ -607,26 +606,26 @@ class SchedulerUtil:
         job = cls.get_job(job_id=str(job_id))
         if not job:
             return 'unknown'
-        
+
         # 检查任务是否在暂停列表中
         if job_id in scheduler._jobstores[job._jobstore_alias]._paused_jobs:
             return 'paused'
-        
+
         # 检查调度器状态
         if scheduler.state == 0:  # STATE_STOPPED
             return 'stopped'
-        
+
         return 'running'
 
     @classmethod
-    def print_jobs(cls,jobstore: Any | None = None, out: Any | None = None):
+    def print_jobs(cls, jobstore: Any | None = None, out: Any | None = None) -> None:
         """
         打印调度任务列表。
-    
+
         参数:
         - jobstore (Any | None): 任务存储别名。
         - out (Any | None): 输出目标。
-    
+
         返回:
         - None
         """
@@ -636,7 +635,7 @@ class SchedulerUtil:
     def get_job_status(cls) -> str:
         """
         获取调度器当前状态。
-    
+
         返回:
         - str: 状态字符串（'stopped' | 'running' | 'paused' | 'unknown'）。
         """
@@ -648,12 +647,11 @@ class SchedulerUtil:
         STATE_PAUSED = 2
         if scheduler.state == STATE_STOPPED:
             return 'stopped'
-        elif scheduler.state == STATE_RUNNING:
+        if scheduler.state == STATE_RUNNING:
             return 'running'
-        elif scheduler.state == STATE_PAUSED:
+        if scheduler.state == STATE_PAUSED:
             return 'paused'
-        else:
-            return 'unknown'
+        return 'unknown'
 
     @classmethod
     def run_job_now(cls, job_id: str | int) -> None:
@@ -672,7 +670,7 @@ class SchedulerUtil:
         job = cls.get_job(job_id=str(job_id))
         if not job:
             raise ValueError(f"未找到该任务：{job_id}")
-        
+
         # 立即执行任务
         scheduler.modify_job(job_id=str(job_id), next_run_time=datetime.now())
         log.info(f"任务 {job_id} 已设置为立即执行")
