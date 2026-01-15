@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import re
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.base_schema import BaseSchema, UserBySchema
 from app.core.validator import DateTimeStr

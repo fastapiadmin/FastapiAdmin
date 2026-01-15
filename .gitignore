@@ -17,6 +17,8 @@ backend/alembic/versions/*
 backend/*.db
 backend/env/.env.dev
 backend/env/.env.prod
+backend/.ruff_cache
+backend/.ruff.toml
 
 frontend/__pycache__
 frontend/.vscode

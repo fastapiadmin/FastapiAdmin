@@ -1,14 +1,16 @@
 import asyncio
+
 from logging.config import fileConfig
+
+from alembic import context
+from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import pool
-from alembic import context
 
 from app.config.path_conf import ALEMBIC_VERSION_DIR
-from app.utils.import_util import ImportUtil
-from app.core.base_model import MappedBase
 from app.config.setting import settings
+from app.core.base_model import MappedBase
+from app.utils.import_util import ImportUtil
 
 # 确保 alembic 版本目录存在
 ALEMBIC_VERSION_DIR.mkdir(parents=True, exist_ok=True)
@@ -64,7 +66,7 @@ def run_migrations_offline() -> None:
     # 确保URL不为None
     if url is None:
         raise ValueError("数据库URL未正确配置，请检查环境配置文件")
-        
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -87,16 +89,16 @@ def run_migrations_online() -> None:
     # 确保URL不为None
     if url is None:
         raise ValueError("数据库URL未正确配置，请检查环境配置文件")
-        
+
     connectable = create_async_engine(url, poolclass=pool.NullPool)
-    
-    async def run_async_migrations():
+
+    async def run_async_migrations() -> None:
         async with connectable.connect() as connection:
             await connection.run_sync(do_run_migrations)
         await connectable.dispose()
 
     def do_run_migrations(connection: Connection) -> None:
-        def process_revision_directives(context, revision, directives):
+        def process_revision_directives(context, revision, directives) -> None:
             script = directives[0]
 
             # 检查所有操作集是否为空
@@ -120,7 +122,6 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
-
 
     asyncio.run(run_async_migrations())
 

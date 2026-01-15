@@ -1,15 +1,9 @@
-# -*- coding: utf-8 -*-
-
+from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 
-from ..auth.schema import AuthSchema
 from .crud import OperationLogCRUD
-from .schema import (
-    OperationLogCreateSchema,
-    OperationLogOutSchema,
-    OperationLogQueryParam
-)
+from .schema import OperationLogCreateSchema, OperationLogOutSchema, OperationLogQueryParam
 
 
 class OperationLogService:
@@ -21,11 +15,11 @@ class OperationLogService:
     async def get_log_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取日志详情
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 日志 ID
-        
+
         返回:
         - dict: 日志详情字典
         """
@@ -37,16 +31,16 @@ class OperationLogService:
     async def get_log_list_service(cls, auth: AuthSchema, search: OperationLogQueryParam | None = None, order_by: list | None = None) -> list[dict]:
         """
         获取日志列表
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (OperationLogQueryParam | None): 日志查询参数模型
         - order_by (list | None): 排序字段列表
-        
+
         返回:
         - list[dict]: 日志详情字典列表
         """
-            
+
         log_list = await OperationLogCRUD(auth).get_list_crud(search=search.__dict__, order_by=order_by)
         log_dict_list = [OperationLogOutSchema.model_validate(log).model_dump() for log in log_list]
         return log_dict_list
@@ -55,27 +49,27 @@ class OperationLogService:
     async def create_log_service(cls, auth: AuthSchema, data: OperationLogCreateSchema) -> dict:
         """
         创建日志
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (OperationLogCreateSchema): 日志创建模型
-        
+
         返回:
         - dict: 日志详情字典
         """
         new_log = await OperationLogCRUD(auth).create(data=data)
         new_log_dict = OperationLogOutSchema.model_validate(new_log).model_dump()
         return new_log_dict
-    
+
     @classmethod
     async def delete_log_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """
         删除日志
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - ids (list[int]): 日志 ID 列表
-        
+
         返回:
         - None
         """
@@ -90,7 +84,7 @@ class OperationLogService:
 
         参数:
         - operation_log_list (list[dict]): 操作日志信息列表
-        
+
         返回:
         - bytes: 操作日志信息excel的二进制数据
         """

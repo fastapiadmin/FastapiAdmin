@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from sqlalchemy import String, Integer, Text
+from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import ModelMixin, UserMixin

@@ -1,21 +1,14 @@
-# -*- coding: utf-8 -*-
-
 import platform
-import psutil
 import socket
 import time
+
 from pathlib import Path
+
+import psutil
 
 from app.utils.common_util import bytes2human
 
-from .schema import (
-    CpuInfoSchema,
-    MemoryInfoSchema,
-    PyInfoSchema,
-    ServerMonitorSchema,
-    DiskInfoSchema,
-    SysInfoSchema
-)
+from .schema import CpuInfoSchema, DiskInfoSchema, MemoryInfoSchema, PyInfoSchema, ServerMonitorSchema, SysInfoSchema
 
 
 class ServerService:
@@ -25,7 +18,7 @@ class ServerService:
     async def get_server_monitor_info_service(cls) -> dict:
         """
         获取服务器监控信息
-        
+
         返回:
         - Dict: 包含服务器监控信息的字典。
         """
@@ -41,12 +34,12 @@ class ServerService:
     def _get_cpu_info(cls) -> CpuInfoSchema:
         """
         获取CPU信息
-        
+
         返回:
         - CpuInfoSchema: CPU信息模型。
         """
         cpu_times = psutil.cpu_times_percent()
-        cpu_num=psutil.cpu_count(logical=True)
+        cpu_num = psutil.cpu_count(logical=True)
         if not cpu_num:
             cpu_num = 1
         return CpuInfoSchema(
@@ -60,7 +53,7 @@ class ServerService:
     def _get_memory_info(cls) -> MemoryInfoSchema:
         """
         获取内存信息
-        
+
         返回:
         - MemoryInfoSchema: 内存信息模型。
         """
@@ -76,7 +69,7 @@ class ServerService:
     def _get_system_info(cls) -> SysInfoSchema:
         """
         获取系统信息
-        
+
         返回:
         - SysInfoSchema: 系统信息模型。
         """
@@ -93,17 +86,17 @@ class ServerService:
     def _get_python_info(cls) -> PyInfoSchema:
         """
         获取Python解释器信息
-        
+
         返回:
         - PyInfoSchema: Python解释器信息模型。
         """
         current_process = psutil.Process()
         memory = psutil.virtual_memory()
         process_memory = current_process.memory_info()
-        
+
         start_time = current_process.create_time()
         run_time = ServerService._calculate_run_time(start_time)
-        
+
         return PyInfoSchema(
             name=current_process.name(),
             version=platform.python_version(),
@@ -120,7 +113,7 @@ class ServerService:
     def _get_disk_info(cls) -> list[DiskInfoSchema]:
         """
         获取磁盘信息
-        
+
         返回:
         - list[DiskInfoSchema]: 磁盘信息模型列表。
         """
@@ -147,13 +140,13 @@ class ServerService:
         return disk_info
 
     @classmethod
-    def _calculate_run_time(cls,start_time: float) -> str:
+    def _calculate_run_time(cls, start_time: float) -> str:
         """
         计算运行时间
-        
+
         参数:
         - start_time (float): 进程启动时间（时间戳）
-        
+
         返回:
         - str: 格式化后的运行时间字符串（例如："1天2小时3分钟"）
         """

@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from redis.asyncio.client import Redis
 
 from app.common.response import SuccessResponse
-from app.core.exceptions import CustomException
 from app.core.dependencies import AuthPermission, redis_getter
+from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
 from .service import CacheService
-
 
 CacheRouter = APIRouter(route_class=OperationLogRoute, prefix="/cache", tags=["缓存监控"])
 
@@ -23,11 +22,11 @@ CacheRouter = APIRouter(route_class=OperationLogRoute, prefix="/cache", tags=["�
     description="获取缓存监控信息"
 )
 async def get_monitor_cache_info_controller(
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     获取缓存监控统计信息
-    
+
     返回:
     - JSONResponse: 包含缓存监控统计信息的JSON响应
     """
@@ -45,7 +44,7 @@ async def get_monitor_cache_info_controller(
 async def get_monitor_cache_name_controller() -> JSONResponse:
     """
     获取缓存名称列表
-    
+
     返回:
     - JSONResponse: 包含缓存名称列表的JSON响应
     """
@@ -62,14 +61,14 @@ async def get_monitor_cache_name_controller() -> JSONResponse:
 )
 async def get_monitor_cache_key_controller(
     cache_name: str,
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
     ) -> JSONResponse:
     """
     获取指定缓存名称下的键名列表
-    
+
     参数:
     - cache_name (str): 缓存名称
-    
+
     返回:
     - JSONResponse: 包含缓存键名列表的JSON响应
     """
@@ -85,17 +84,17 @@ async def get_monitor_cache_key_controller(
     description="获取缓存值"
 )
 async def get_monitor_cache_value_controller(
-    cache_name: str, 
+    cache_name: str,
     cache_key: str,
-    redis: Redis = Depends(redis_getter)
-)-> JSONResponse:
+    redis: Annotated[Redis, Depends(redis_getter)]
+) -> JSONResponse:
     """
     获取指定缓存键的值
-    
+
     参数:
     - cache_name (str): 缓存名称
     - cache_key (str): 缓存键
-    
+
     返回:
     - JSONResponse: 包含缓存值的JSON响应
     """
@@ -112,14 +111,14 @@ async def get_monitor_cache_value_controller(
 )
 async def clear_monitor_cache_name_controller(
     cache_name: str,
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     清除指定缓存名称下的所有缓存
-    
+
     参数:
     - cache_name (str): 缓存名称
-    
+
     返回:
     - JSONResponse: 包含清除结果的JSON响应
     """
@@ -138,14 +137,14 @@ async def clear_monitor_cache_name_controller(
 )
 async def clear_monitor_cache_key_controller(
     cache_key: str,
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     清除指定缓存键
-    
+
     参数:
     - cache_key (str): 缓存键
-    
+
     返回:
     - JSONResponse: 包含清除结果的JSON响应
     """
@@ -163,11 +162,11 @@ async def clear_monitor_cache_key_controller(
     description="清除所有缓存"
 )
 async def clear_monitor_cache_all_controller(
-    redis: Redis = Depends(redis_getter)
+    redis: Annotated[Redis, Depends(redis_getter)]
 ) -> JSONResponse:
     """
     清除所有缓存
-    
+
     返回:
     - JSONResponse: 包含清除结果的JSON响应
     """

@@ -11,7 +11,7 @@
     <div class="action-bar">
       <el-tooltip :content="t('login.themeToggle')" placement="bottom">
         <CommonWrapper>
-          <DarkModeSwitch />
+          <ThemeSwitch />
         </CommonWrapper>
       </el-tooltip>
       <el-tooltip :content="t('login.languageToggle')" placement="bottom">
@@ -79,7 +79,7 @@
 // import logo from "@/assets/logo.png";
 // import { defaultSettings } from "@/settings";
 import CommonWrapper from "@/components/CommonWrapper/index.vue";
-import DarkModeSwitch from "@/components/DarkModeSwitch/index.vue";
+import ThemeSwitch from "@/components/ThemeSwitch/index.vue";
 import { useConfigStore } from "@/store";
 
 const configStore = useConfigStore();

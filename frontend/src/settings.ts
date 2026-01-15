@@ -1,15 +1,17 @@
 import { LayoutMode, ComponentSize, SidebarColor, ThemeMode, LanguageEnum } from "./enums";
 
+const env = import.meta.env;
 const { pkg } = __APP_INFO__;
 
 // 检查用户的操作系统是否使用深色模式
-const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 export const defaultSettings: AppSettings = {
+  name: pkg.name as string,
   // 系统Title
-  title: pkg.name,
+  title: (env.VITE_APP_TITLE as string) || pkg.name,
   // 系统版本
-  version: pkg.version,
+  version: pkg.version as string,
   // 是否显示设置按钮
   showSettings: true,
   // 桌面端工具项单独控制
@@ -26,7 +28,7 @@ export const defaultSettings: AppSettings = {
   // 布局方式，默认为左侧布局
   layout: LayoutMode.LEFT,
   // 主题，根据操作系统的色彩方案自动选择
-  theme: mediaQueryList.matches ? ThemeMode.DARK : ThemeMode.LIGHT,
+  theme: prefersDark ? ThemeMode.DARK : ThemeMode.LIGHT,
   // 组件大小 default | medium | small | large
   size: ComponentSize.DEFAULT,
   // 语言
@@ -34,7 +36,7 @@ export const defaultSettings: AppSettings = {
   // 主题颜色 - 修改此值时需同步修改 src/styles/variables.scss
   themeColor: "#4080FF",
   // 是否显示水印 (修改默认开启水印)
-  showWatermark: true,
+  showWatermark: false,
   // 水印内容
   watermarkContent: pkg.name,
   // 侧边栏配色方案
@@ -43,6 +45,10 @@ export const defaultSettings: AppSettings = {
   guideVisible: false,
   /** 是否启动引导 */
   showGuide: true,
+  /** 是否开启AI助手 */
+  aiEnabled: false,
+  /** 是否开启灰色模式 */
+  grayMode: false,
 };
 
 // 主题色预设 - 现代化配色方案

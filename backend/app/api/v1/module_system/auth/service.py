@@ -1,39 +1,35 @@
-# -*- coding: utf-8 -*-
-
 import json
 import uuid
+
+from datetime import datetime, timedelta
 from typing import NewType
+
 from fastapi import Request
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
 from user_agents import parse
 
+from app.api.v1.module_monitor.online.schema import OnlineOutSchema
+from app.api.v1.module_system.user.crud import UserCRUD
+from app.api.v1.module_system.user.model import UserModel
 from app.common.enums import RedisInitKeyConfig
-from app.utils.common_util import get_random_character
-from app.utils.captcha_util import CaptchaUtil
-from app.utils.ip_local_util import IpLocalUtil
-from app.utils.hash_bcrpy_util import PwdUtil
-from app.core.redis_crud import RedisCURD
+from app.config.setting import settings
 from app.core.exceptions import CustomException
 from app.core.logger import log
-from app.config.setting import settings
-from app.core.security import (
-    CustomOAuth2PasswordRequestForm,
-    create_access_token,
-    decode_access_token
-)
+from app.core.redis_crud import RedisCURD
+from app.core.security import CustomOAuth2PasswordRequestForm, create_access_token, decode_access_token
+from app.utils.captcha_util import CaptchaUtil
+from app.utils.common_util import get_random_character
+from app.utils.hash_bcrpy_util import PwdUtil
+from app.utils.ip_local_util import IpLocalUtil
 
-from app.api.v1.module_monitor.online.schema import OnlineOutSchema
-from ..user.crud import UserCRUD
-from ..user.model import UserModel
 from .schema import (
-    JWTPayloadSchema,
-    JWTOutSchema,
     AuthSchema,
     CaptchaOutSchema,
+    JWTOutSchema,
+    JWTPayloadSchema,
     LogoutPayloadSchema,
-    RefreshTokenPayloadSchema
+    RefreshTokenPayloadSchema,
 )
 
 CaptchaKey = NewType('CaptchaKey', str)
@@ -47,22 +43,22 @@ class LoginService:
     async def authenticate_user_service(cls, request: Request, redis: Redis, login_form: CustomOAuth2PasswordRequestForm, db: AsyncSession) -> JWTOutSchema:
         """
         用户认证
-        
+
         参数:
         - request (Request): FastAPI请求对象
         - login_form (CustomOAuth2PasswordRequestForm): 登录表单数据
         - db (AsyncSession): 数据库会话对象
-            
+
         返回:
         - JWTOutSchema: 包含访问令牌和刷新令牌的响应模型
-            
+
         异常:
         - CustomException: 认证失败时抛出异常。
         """
         # 判断是否来自API文档
         referer = request.headers.get('referer', '')
         request_from_docs = referer.endswith(('docs', 'redoc'))
-        
+
         # 验证码校验
         if settings.CAPTCHA_ENABLE and not request_from_docs:
             if not login_form.captcha_key or not login_form.captcha:
@@ -81,7 +77,7 @@ class LoginService:
 
         if user.status == "1":
             raise CustomException(msg="用户已被停用")
-        
+
         # 更新最后登录时间
         user = await UserCRUD(auth).update_last_login_crud(id=user.id)
         if not user:
@@ -98,16 +94,16 @@ class LoginService:
     async def create_token_service(cls, request: Request, redis: Redis, user: UserModel, login_type: str) -> JWTOutSchema:
         """
         创建访问令牌和刷新令牌
-        
+
         参数:
         - request (Request): FastAPI请求对象
         - redis (Redis): Redis客户端对象
         - user (UserModel): 用户模型对象
         - login_type (str): 登录类型
-            
+
         返回:
         - JWTOutSchema: 包含访问令牌和刷新令牌的响应模型
-            
+
         异常:
         - CustomException: 创建令牌失败时抛出异常。
         """
@@ -123,35 +119,32 @@ class LoginService:
             request_ip = x_forwarded_for.split(',')[0].strip()
         else:
             # 若没有 X-Forwarded-For 头，则使用 request.client.host
-            if request.client:
-                request_ip = request.client.host
-            else:
-                request_ip = "127.0.0.1"
+            request_ip = request.client.host if request.client else "127.0.0.1"
 
         login_location = await IpLocalUtil.get_ip_location(request_ip)
         request.scope["login_location"] = login_location
-        
+
         # 确保在请求上下文中设置用户名和会话ID
         request.scope["user_username"] = user.username
 
         access_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-        
+
         now = datetime.now()
-        
+
         # 记录租户信息到日志
         log.info(f"用户ID: {user.id}, 用户名: {user.username} 正在生成JWT令牌")
-        
+
         # 生成会话信息
-        session_info=OnlineOutSchema(
+        session_info = OnlineOutSchema(
             session_id=session_id,
-            user_id=user.id, 
+            user_id=user.id,
             name=user.name,
             user_name=user.username,
             ipaddr=request_ip,
             login_location=login_location,
             os=user_agent.os.family,
-            browser = user_agent.browser.family,
+            browser=user_agent.browser.family,
             login_time=user.last_login,
             login_type=login_type
         ).model_dump_json()
@@ -191,23 +184,23 @@ class LoginService:
     async def refresh_token_service(cls, db: AsyncSession, redis: Redis, request: Request, refresh_token: RefreshTokenPayloadSchema) -> JWTOutSchema:
         """
         刷新访问令牌
-        
+
         参数:
         - db (AsyncSession): 数据库会话对象
         - redis (Redis): Redis客户端对象
         - request (Request): FastAPI请求对象
         - refresh_token (RefreshTokenPayloadSchema): 刷新令牌数据
-            
+
         返回:
         - JWTOutSchema: 新的令牌对象
-            
+
         异常:
         - CustomException: 刷新令牌无效时抛出异常
         """
-        token_payload: JWTPayloadSchema = decode_access_token(token = refresh_token.refresh_token)
+        token_payload: JWTPayloadSchema = decode_access_token(token=refresh_token.refresh_token)
         if not token_payload.is_refresh:
             raise CustomException(msg="非法凭证，请传入刷新令牌")
-        
+
         # 去 Redis 查完整信息
         session_info = json.loads(token_payload.sub)
         session_id = session_info.get("session_id")
@@ -221,7 +214,7 @@ class LoginService:
         user = await UserCRUD(auth).get_by_id_crud(id=user_id)
         if not user:
             raise CustomException(msg="刷新token失败，用户不存在")
-        
+
         # 记录刷新令牌时的租户信息
         log.info(f"用户ID: {user.id}, 用户名: {user.username} 正在刷新JWT令牌")
 
@@ -243,7 +236,7 @@ class LoginService:
             is_refresh=True,
             exp=now + refresh_expires
         ))
-        
+
         # 覆盖写入 Redis
         await RedisCURD(redis).set(
             key=f'{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}',
@@ -256,7 +249,7 @@ class LoginService:
             value=refresh_token_new,
             expire=int(refresh_expires.total_seconds())
         )
-        
+
         return JWTOutSchema(
             access_token=access_token,
             refresh_token=refresh_token_new,
@@ -268,28 +261,28 @@ class LoginService:
     async def logout_service(cls, redis: Redis, token: LogoutPayloadSchema) -> bool:
         """
         退出登录
-        
+
         参数:
         - redis (Redis): Redis客户端对象
         - token (LogoutPayloadSchema): 退出登录令牌数据
-            
+
         返回:
         - bool: 退出成功返回True
-            
+
         异常:
         - CustomException: 令牌无效时抛出异常
         """
         payload: JWTPayloadSchema = decode_access_token(token=token.token)
         session_info = json.loads(payload.sub)
         session_id = session_info.get("session_id")
-        
+
         if not session_id:
             raise CustomException(msg="非法凭证,无法获取会话编号")
 
         # 删除Redis中的在线用户、访问令牌、刷新令牌
         await RedisCURD(redis).delete(f"{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}")
         await RedisCURD(redis).delete(f"{RedisInitKeyConfig.REFRESH_TOKEN.key}:{session_id}")
-        
+
         log.info(f"用户退出登录成功,会话编号:{session_id}")
 
         return True
@@ -302,13 +295,13 @@ class CaptchaService:
     async def get_captcha_service(cls, redis: Redis) -> dict[str, CaptchaKey | CaptchaBase64]:
         """
         获取验证码
-        
+
         参数:
         - redis (Redis): Redis客户端对象
-            
+
         返回:
         - dict[str, CaptchaKey | CaptchaBase64]: 包含验证码key和base64图片的字典
-            
+
         异常:
         - CustomException: 验证码服务未启用时抛出异常
         """
@@ -340,15 +333,15 @@ class CaptchaService:
     async def check_captcha_service(cls, redis: Redis, key: str, captcha: str) -> bool:
         """
         校验验证码
-        
+
         参数:
         - redis (Redis): Redis客户端对象
         - key (str): 验证码key
         - captcha (str): 用户输入的验证码
-            
+
         返回:
         - bool: 验证通过返回True
-            
+
         异常:
         - CustomException: 验证码无效或错误时抛出异常
         """
@@ -357,7 +350,7 @@ class CaptchaService:
 
         # 获取Redis中存储的验证码
         redis_key = f'{RedisInitKeyConfig.CAPTCHA_CODES.key}:{key}'
-        
+
         captcha_value = await RedisCURD(redis).get(redis_key)
         if not captcha_value:
             log.error('验证码已过期或不存在')

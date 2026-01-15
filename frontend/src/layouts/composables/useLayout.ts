@@ -1,5 +1,6 @@
 import { useAppStore, useSettingsStore } from "@/store";
 import { defaultSettings } from "@/settings";
+import { DeviceEnum } from "@/enums";
 
 /**
  * 布局相关的通用逻辑
@@ -24,13 +25,13 @@ export function useLayout() {
   const isShowLogo = computed(() => settingsStore.showAppLogo);
 
   // 是否移动设备
-  const isMobile = computed(() => appStore.device === "mobile");
+  const isMobile = computed(() => appStore.device === DeviceEnum.MOBILE);
 
   // 布局CSS类
   const layoutClass = computed(() => ({
     hideSidebar: !appStore.sidebar.opened,
     openSidebar: appStore.sidebar.opened,
-    mobile: appStore.device === "mobile",
+    mobile: appStore.device === DeviceEnum.MOBILE,
     [`layout-${settingsStore.layout}`]: true,
   }));
 

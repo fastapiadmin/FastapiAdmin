@@ -140,7 +140,17 @@
           <el-switch v-model="settingsStore.showWatermark" />
         </div>
 
-        <!-- 桌面端工具项控制 -->
+        <div class="flex-x-between">
+          <span class="text-xs">灰色模式</span>
+          <el-switch v-model="settingsStore.grayMode" />
+        </div>
+
+        <div class="flex-x-between">
+          <span class="text-xs">AI 助手</span>
+          <el-switch v-model="settingsStore.userEnableAi" />
+        </div>
+
+        <!-- 工具控制 -->
         <el-divider>{{ t("settings.showDesktopTools") }}</el-divider>
 
         <div class="flex-x-between">
@@ -218,11 +228,9 @@
 import { DocumentCopy, RefreshLeft, Check } from "@element-plus/icons-vue";
 
 const { t } = useI18n();
-import { LayoutMode, SidebarColor, ThemeMode } from "@/enums";
-import { useSettingsStore } from "@/store";
+import { LayoutMode, SidebarColor, ThemeMode, DeviceEnum } from "@/enums";
+import { useSettingsStore, useAppStore } from "@/store";
 import { themeColorPresets } from "@/settings";
-import { useAppStore } from "@/store/modules/app.store";
-import { DeviceEnum } from "@/enums/settings/device.enum";
 
 const appStore = useAppStore();
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "400px" : "90%"));
@@ -375,6 +383,8 @@ const generateSettingsCode = (): string => {
     showWatermark: settingsStore.showWatermark,
     watermarkContent: "pkg.name",
     sidebarColorScheme: `SidebarColor.${settingsStore.sidebarColorScheme.toUpperCase().replace("-", "_")}`,
+    grayMode: settingsStore.grayMode,
+    userEnableAi: settingsStore.userEnableAi,
   };
 
   return `const defaultSettings: AppSettings = {
@@ -396,6 +406,8 @@ const generateSettingsCode = (): string => {
   showWatermark: ${settings.showWatermark},
   watermarkContent: ${settings.watermarkContent},
   sidebarColorScheme: ${settings.sidebarColorScheme},
+  grayMode: ${settings.grayMode},
+  userEnableAi: ${settings.userEnableAi},
 };`;
 };
 
@@ -412,6 +424,8 @@ const handleCloseDrawer = () => {
 .settings-drawer {
   :deep(.el-drawer__body) {
     position: relative;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     padding: 0;
     overflow: hidden;
@@ -420,9 +434,8 @@ const handleCloseDrawer = () => {
 
 /* 设置内容区域 */
 .settings-content {
-  height: calc(100vh - 120px); /* 减去头部和底部按钮的高度 */
+  flex: 1 1 auto;
   padding: 20px;
-  padding-bottom: 20px;
   overflow-y: auto;
 }
 
@@ -448,11 +461,11 @@ const handleCloseDrawer = () => {
     border: none;
     border-radius: 0;
 
+    /* 底部操作区域样式 */
     .action-buttons {
       display: flex;
-      gap: 12px;
 
-      .action-btn {
+      & > .el-button {
         flex: 1;
         font-size: 14px;
         border-radius: 8px;
@@ -554,7 +567,11 @@ const handleCloseDrawer = () => {
     position: absolute;
     left: 4px;
     width: 12px;
-    background: var(--el-color-primary-light-3);
+    background: linear-gradient(
+      180deg,
+      var(--el-color-primary-dark-2) 0%,
+      var(--el-color-primary) 100%
+    );
     border-radius: 2px;
   }
 
@@ -637,7 +654,11 @@ const handleCloseDrawer = () => {
   }
 
   &.is-active {
-    background: var(--el-color-primary-light-9);
+    background: linear-gradient(
+      145deg,
+      var(--el-color-primary-light-9) 0%,
+      var(--el-color-primary-light-8) 100%
+    );
     border-color: var(--el-color-primary);
     transform: translateY(-2px) scale(1.08);
 

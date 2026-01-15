@@ -21,12 +21,21 @@
       <div v-if="settingStore.showLangSelect" class="navbar-actions__item">
         <LangSelect />
       </div>
-    </template>
 
-    <!-- 通知 -->
-    <div v-if="settingStore.showNotification" class="navbar-actions__item">
-      <Notification />
-    </div>
+      <!-- 通知 -->
+      <div v-if="settingStore.showNotification" class="navbar-actions__item">
+        <Notification />
+      </div>
+
+      <!-- 系统设置按钮 -->
+      <div
+        v-if="settingStore.showSettings"
+        class="navbar-actions__item"
+        @click="handleSettingsClick"
+      >
+        <div class="i-svg:setting" />
+      </div>
+    </template>
 
     <!-- 用户菜单,不管桌面还是移动端都显示 -->
     <div class="navbar-actions__item">
@@ -147,6 +156,13 @@ function handleDocumentClick() {
 }
 
 /**
+ * 打开系统设置页面
+ */
+function handleSettingsClick() {
+  settingStore.settingsVisible = true;
+}
+
+/**
  * Gitee 项目地址
  */
 function handleGiteeClick() {
@@ -259,7 +275,6 @@ function logout() {
     justify-content: center;
     min-width: 44px; /* 增加最小点击区域到44px，符合人机交互标准 */
     height: 100%;
-    min-height: 44px;
     padding: 0 8px;
     text-align: center;
     cursor: pointer;
@@ -280,6 +295,15 @@ function logout() {
       justify-content: center;
       width: 100%;
       height: 100%;
+    }
+
+    :deep(.i-svg\:language) {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+      line-height: 18px;
+      background-size: 18px 18px;
     }
 
     // 图标样式
@@ -303,6 +327,7 @@ function logout() {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 44px;
     padding: 0 8px;
 
     &__avatar-wrapper {
@@ -313,6 +338,9 @@ function logout() {
     }
 
     &__avatar {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
     }
 

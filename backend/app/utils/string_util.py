@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from app.common.constant import CommonConstant
 
 
@@ -24,11 +22,7 @@ class StringUtil:
         str_len = len(string)
         if str_len == 0:
             return True
-        else:
-            for i in range(str_len):
-                if string[i] != ' ':
-                    return False
-            return True
+        return all(string[i] == ' ' for i in range(str_len))
 
     @classmethod
     def is_empty(cls, string) -> bool:
@@ -67,7 +61,7 @@ class StringUtil:
         返回:
         - bool: 是否为 http(s):// 开头。
         """
-        return link.startswith(CommonConstant.HTTP) or link.startswith(CommonConstant.HTTPS)
+        return link.startswith((CommonConstant.HTTP, CommonConstant.HTTPS))
 
     @classmethod
     def contains_ignore_case(cls, search_str: str, compare_str: str):
@@ -98,7 +92,7 @@ class StringUtil:
         - bool: 查找结果。
         """
         if search_str and compare_str_list:
-            return any([cls.contains_ignore_case(search_str, compare_str) for compare_str in compare_str_list])
+            return any(cls.contains_ignore_case(search_str, compare_str) for compare_str in compare_str_list)
         return False
 
     @classmethod
@@ -130,7 +124,7 @@ class StringUtil:
         - bool: 比较结果。
         """
         if search_str and compare_str_list:
-            return any([cls.equals_ignore_case(search_str, compare_str) for compare_str in compare_str_list])
+            return any(cls.equals_ignore_case(search_str, compare_str) for compare_str in compare_str_list)
         return False
 
     @classmethod
@@ -162,7 +156,7 @@ class StringUtil:
         - bool: 查找结果。
         """
         if search_str and compare_str_list:
-            return any([cls.startswith_case(search_str, compare_str) for compare_str in compare_str_list])
+            return any(cls.startswith_case(search_str, compare_str) for compare_str in compare_str_list)
         return False
 
     @classmethod
@@ -203,5 +197,5 @@ class StringUtil:
         for k, v in mapping.items():
             if key.lower() == k.lower():
                 return v
-        
+
         return ''

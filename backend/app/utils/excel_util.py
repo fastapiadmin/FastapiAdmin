@@ -1,17 +1,18 @@
-# -*- coding: utf-8 -*-
-
 import io
-import pandas as pd
+
 from typing import Any
+
+import pandas as pd
+
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, PatternFill
+from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 
 class ExcelUtil:
     """Excel文件处理工具类"""
-    
+
     @classmethod
     def __mapping_list(cls, list_data: list[dict[str, Any]], mapping_dict: dict) -> list:
         """
@@ -27,7 +28,7 @@ class ExcelUtil:
         mapping_data = [{mapping_dict.get(key): item.get(key) for key in mapping_dict} for item in list_data]
 
         return mapping_data
-    
+
     @classmethod
     def get_excel_template(cls, header_list: list[str], selector_header_list: list[str], option_list: list[dict[str, list[str]]]) -> bytes:
         """
@@ -62,10 +63,10 @@ class ExcelUtil:
         # 设置下拉选择
         for selector_header in selector_header_list:
             col_idx = header_list.index(selector_header) + 1
-            
+
             # 获取当前表头的选项列表
             header_options = next((opt.get(selector_header) for opt in option_list if selector_header in opt), [])
-            
+
             if header_options:
                 dv = DataValidation(type='list', formula1=f'"{",".join(header_options)}"')
                 dv.add(f'{get_column_letter(col_idx)}2:{get_column_letter(col_idx)}1048576')
@@ -78,7 +79,7 @@ class ExcelUtil:
         # 读取字节数据
         excel_data = buffer.getvalue()
         return excel_data
-    
+
     @classmethod
     def export_list2excel(cls, list_data: list[dict[str, Any]], mapping_dict: dict) -> bytes:
         """

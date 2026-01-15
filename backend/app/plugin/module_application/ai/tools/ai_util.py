@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*- 
+from collections.abc import AsyncGenerator
+from typing import Any
 
-from typing import Any, AsyncGenerator
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
 
 from app.config.setting import settings
 from app.core.logger import log
@@ -13,10 +13,10 @@ class AIClient:
     AI客户端类，用于与OpenAI API交互。
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # 使用LangChain的ChatOpenAI类
         self.model = ChatOpenAI(
-            api_key=lambda: settings.OPENAI_API_KEY,
+            api_key=settings.OPENAI_API_KEY,
             model=settings.OPENAI_MODEL,
             base_url=settings.OPENAI_BASE_URL,
             temperature=0.7,
@@ -41,16 +41,16 @@ class AIClient:
                 SystemMessage(content=system_prompt),
                 HumanMessage(content=query)
             ]
-            
+
             # 使用LangChain的流式响应
             async for chunk in self.model.astream(messages):
                 yield chunk.text
 
         except Exception as e:
             # 记录详细错误，返回友好提示
-            log.error(f"AI处理查询失败: {str(e)}")
+            log.error(f"AI处理查询失败: {e!s}")
             yield self._friendly_error_message(e)
-    
+
     def _friendly_error_message(self, e: Exception) -> str:
         """将 OpenAI 或网络异常转换为友好的中文提示。"""
         # 尝试获取状态码与错误体

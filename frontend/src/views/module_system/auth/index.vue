@@ -4,7 +4,7 @@
     <div class="auth-view__toolbar">
       <el-tooltip :content="t('login.themeToggle')" placement="bottom">
         <CommonWrapper>
-          <DarkModeSwitch />
+          <ThemeSwitch />
         </CommonWrapper>
       </el-tooltip>
       <el-tooltip :content="t('login.languageToggle')" placement="bottom">
@@ -27,15 +27,19 @@
         </p>
         <ul class="auth-feature__highlights">
           <li>
-            <span>⦿</span>
+            <span>✓</span>
             统一身份认证与权限管理
           </li>
           <li>
-            <span>⦿</span>
+            <span>✓</span>
+            支持定时任务与任务调度
+          </li>
+          <li>
+            <span>✓</span>
             数据安全与操作审计
           </li>
           <li>
-            <span>⦿</span>
+            <span>✓</span>
             灵活扩展与高可用架构
           </li>
         </ul>
@@ -87,14 +91,17 @@
         <footer class="auth-panel__footer">
           <el-text size="small">
             <a :href="configStore.configData?.sys_git_code?.config_value || ''" target="_blank">
-              {{ configStore.configData?.sys_web_copyright?.config_value || "" }} |
+              {{ configStore.configData?.sys_web_copyright?.config_value || "" }}
             </a>
+            |
             <a :href="configStore.configData?.sys_help_doc?.config_value || ''" target="_blank">
-              帮助 |
+              帮助
             </a>
+            |
             <a :href="configStore.configData?.sys_web_privacy?.config_value || ''" target="_blank">
-              隐私 |
+              隐私
             </a>
+            |
             <a :href="configStore.configData?.sys_web_clause?.config_value || ''" target="_blank">
               条款
             </a>
@@ -110,7 +117,7 @@
 // import logo from "@/assets/logo.png";
 // import { defaultSettings } from "@/settings";
 import CommonWrapper from "@/components/CommonWrapper/index.vue";
-import DarkModeSwitch from "@/components/DarkModeSwitch/index.vue";
+import ThemeSwitch from "@/components/ThemeSwitch/index.vue";
 import { useConfigStore } from "@/store";
 
 const configStore = useConfigStore();
@@ -181,6 +188,7 @@ onBeforeUnmount(() => {
   height: 100%;
   padding: clamp(1rem, 3vw, 2rem);
   overflow: hidden;
+  background-color: #f5f7ff;
 
   &::before {
     position: fixed;
@@ -214,6 +222,7 @@ onBeforeUnmount(() => {
     box-shadow 0.3s ease;
 
   &:hover {
+    box-shadow: 0 16px 40px rgba(22, 93, 255, 0.18);
     transform: translateY(-2px);
   }
 
@@ -255,8 +264,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   justify-content: center;
   padding: clamp(1.5rem, 3vw, 3rem);
-  color: rgba(20, 40, 80, 0.95);
-  text-shadow: 0 4px 16px rgba(15, 60, 110, 0.12);
+  color: var(--el-text-color-primary);
   animation: featureFade 0.8s ease-out;
 }
 
@@ -273,6 +281,9 @@ onBeforeUnmount(() => {
   .auth-panel {
     width: 100%;
     margin-inline: 0;
+    box-shadow:
+      0 12px 32px rgba(22, 93, 255, 0.18),
+      0 2px 8px rgba(22, 93, 255, 0.12);
   }
 }
 
@@ -283,7 +294,7 @@ onBeforeUnmount(() => {
   width: fit-content;
   padding: 0.3rem 0.9rem;
   font-size: 0.875rem;
-  color: rgba(22, 93, 255, 0.95);
+  color: var(--el-color-primary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   background: rgba(22, 93, 255, 0.1);
@@ -293,7 +304,7 @@ onBeforeUnmount(() => {
 .auth-feature__dot {
   width: 0.5rem;
   height: 0.5rem;
-  background: #165dff;
+  background: var(--el-color-primary);
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(22, 93, 255, 0.7);
 }
@@ -309,7 +320,7 @@ onBeforeUnmount(() => {
   margin-bottom: 1.5rem;
   font-size: 1rem;
   line-height: 1.7;
-  color: rgba(35, 40, 65, 0.85);
+  color: var(--el-text-color-regular);
 }
 
 .auth-feature__highlights {
@@ -325,9 +336,9 @@ onBeforeUnmount(() => {
     align-items: flex-start;
     padding: 0.75rem 1rem;
     font-weight: 500;
-    color: rgba(26, 32, 48, 0.9);
-    background: rgba(230, 236, 255, 0.85);
-    border: 1px solid rgba(86, 140, 255, 0.28);
+    color: var(--el-text-color-primary);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(64, 128, 255, 0.08);
     border-radius: 12px;
     backdrop-filter: blur(6px);
 
@@ -380,9 +391,13 @@ onBeforeUnmount(() => {
   gap: 1rem;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 1.25rem;
-  margin-bottom: 1.5rem;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid rgba(22, 93, 255, 0.06);
+
+  @media (prefers-color-scheme: dark) {
+    border-color: rgba(64, 128, 255, 0.12);
+  }
 }
 
 .auth-panel__logo-wrap {
@@ -486,11 +501,34 @@ onBeforeUnmount(() => {
 }
 
 .auth-panel__footer {
-  padding-top: 1.25rem;
-  margin-top: 0.25rem;
+  padding-top: 0.875rem;
+  margin-top: 0.125rem;
   font-size: 0.875rem;
   text-align: center;
   border-top: 1px solid rgba(22, 93, 255, 0.06);
+
+  a {
+    margin-left: 0.1rem;
+    color: var(--el-text-color-regular);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: rgba(22, 93, 255, 1);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    border-color: rgba(64, 128, 255, 0.12);
+
+    a {
+      color: rgba(140, 170, 255, 0.88);
+
+      &:hover {
+        color: rgba(160, 190, 255, 1);
+      }
+    }
+  }
 }
 
 @keyframes featureFade {

@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from sqlalchemy import String, Boolean
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import ModelMixin

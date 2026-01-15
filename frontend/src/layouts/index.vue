@@ -15,9 +15,8 @@ import TopLayout from "./views/TopLayout.vue";
 import MixLayout from "./views/MixLayout.vue";
 import Settings from "./components/Settings/index.vue";
 import { LayoutMode } from "@/enums/settings/layout.enum";
-import { defaultSettings } from "@/settings";
 
-const { currentLayout } = useLayout();
+const { currentLayout, isShowSettings } = useLayout();
 
 // 根据当前布局模式选择对应的组件
 const currentLayoutComponent = computed(() => {
@@ -31,9 +30,6 @@ const currentLayoutComponent = computed(() => {
       return LeftLayout;
   }
 });
-
-// 是否显示设置面板
-const isShowSettings = computed(() => defaultSettings.showSettings);
 </script>
 
 <style lang="scss" scoped>

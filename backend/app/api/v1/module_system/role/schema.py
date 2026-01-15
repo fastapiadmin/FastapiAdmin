@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.api.v1.module_system.dept.schema import DeptOutSchema
+from app.api.v1.module_system.menu.schema import MenuOutSchema
 from app.core.base_schema import BaseSchema
 from app.core.validator import DateTimeStr, code_validator, role_permission_request_validator
-
-from ..dept.schema import DeptOutSchema
-from ..menu.schema import MenuOutSchema
 
 
 class RoleCreateSchema(BaseModel):
@@ -31,7 +28,7 @@ class RolePermissionSettingSchema(BaseModel):
     role_ids: list[int] = Field(default_factory=list, description='角色ID列表')
     menu_ids: list[int] = Field(default_factory=list, description='菜单ID列表')
     dept_ids: list[int] = Field(default_factory=list, description='部门ID列表')
-    
+
     @model_validator(mode='after')
     def validate_fields(self):
         """验证权限配置字段"""
@@ -40,13 +37,12 @@ class RolePermissionSettingSchema(BaseModel):
 
 class RoleUpdateSchema(RoleCreateSchema):
     """角色更新模型"""
-    ...
 
 
 class RoleOutSchema(RoleCreateSchema, BaseSchema):
     """角色信息响应模型"""
     model_config = ConfigDict(from_attributes=True)
-    
+
     menus: list[MenuOutSchema] = Field(default_factory=list, description='角色菜单列表')
     depts: list[DeptOutSchema] = Field(default_factory=list, description='角色部门列表')
 

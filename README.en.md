@@ -126,6 +126,9 @@ git clone https://gitee.com/tao__tao/FastapiAdmin.git
 git clone https://github.com/1014TaoTao/FastapiAdmin.git
 ```
 
+> **Backend Note**: After cloning the code, you need to rename the `.env.dev.example` file in the `backend/env` directory to `.env.dev`, and rename the `.env.prod.example` file in the `backend/env` directory to `.env.prod`. Then modify the database connection information, Redis connection information, etc., according to the actual situation.
+> **Frontend Note**: After cloning the code, you need to rename the `.env.development.example` file in the `frontend` directory to `.env.development`, and rename the `.env.production.example` file in the `frontend` directory to `.env.production`. Then modify the interface address, etc., according to the actual situation.
+
 ### Backend Setup
 
 ```bash
@@ -227,39 +230,15 @@ docker compose down
 
 | Module | Screenshot |
 |------------|---------------------------------|
-| Login      | ![Login](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/login.png) |
 | Dashboard  | ![Dashboard](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/dashboard.png) |
-| Analysis   | ![Analysis](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/analysis.png) |
-| Menu       | ![Menu](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/menu.png) |
-| Department | ![Department](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/dept.png) |
-| Position   | ![Position](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/position.png) |
-| Role       | ![Role](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/role.png) |
-| User       | ![User](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/user.png) |
-| Log        | ![Log](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/log.png) |
-| Config     | ![Config](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/config.png) |
-| OnlineUser | ![OnlineUser](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/online.png) |
-| Server     | ![Server](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/service.png) |
-| Cache      | ![Cache](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/cache.png) |
-| Task       | ![Task](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/job.png) |
-| Dict       | ![Dict](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/dict.png) |
-| API Docs   | ![API Docs](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/docs.png) |
-| Theme      | ![Theme](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/theme.png) |
-| Document   | ![Document](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/help.png) |
-| Lock       | ![Lock](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/lock.png) |
-| Form       | ![Form](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/form.png) |
 | Generator  | ![Generator](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/gencode.png) |
-| Workflow   | ![Workflow](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/workflow.png) |
-| File       | ![File](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/file.png) |
-| MyApps    | ![MyApps](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/myapp.png) |
-| Setting  | ![Setting](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/setting.png) |
 | AI       | ![AI](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/ai.png) |
 
 ### Mobile
 
-| Module <div style="width:60px"/> | Details | Module <div style="width:60px"/> | Details | Module <div style="width:60px"/> | Details |
-|----------|------|----------|------|----------|------|
-| Login    | ![Mobile Login](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_login.png) | Home      | ![Mobile Home](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_home.png) | Profile      | ![Mobile Profile](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_mine.png) |
-| Personal  | ![Mobile Personal Info](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_profile.png) | Settings   | ![Mobile Settings](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_setting.png) | Workbench      | ![Mobile Workbench](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_work.png) |
+| Login <div style="width:60px"/> | Home <div style="width:60px"/> | Profile <div style="width:60px"/> |
+|----------|----------|----------|
+| ![Mobile Login](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_login.png) | ![Mobile Home](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_home.png) | ![Mobile Personal Info](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_mine.png) |
 
 ## 🛠️ Secondary Development Tutorial
 

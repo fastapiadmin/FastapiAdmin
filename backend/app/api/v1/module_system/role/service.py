@@ -1,19 +1,12 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any
+
+from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 
-from ..auth.schema import AuthSchema
 from .crud import RoleCRUD
-from .schema import (
-    RoleCreateSchema,
-    RoleUpdateSchema,
-    RolePermissionSettingSchema,
-    RoleOutSchema,
-    RoleQueryParam
-)
+from .schema import RoleCreateSchema, RoleOutSchema, RolePermissionSettingSchema, RoleQueryParam, RoleUpdateSchema
 
 
 class RoleService:
@@ -23,11 +16,11 @@ class RoleService:
     async def get_role_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取角色详情
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 角色ID
-        
+
         返回:
         - dict: 角色详情字典
         """
@@ -38,12 +31,12 @@ class RoleService:
     async def get_role_list_service(cls, auth: AuthSchema, search: RoleQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> list[dict]:
         """
         获取角色列表
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (RoleQueryParam | None): 查询参数模型
         - order_by (list[dict[str, str]] | None): 排序参数列表
-        
+
         返回:
         - list[dict]: 角色详情字典列表
         """
@@ -54,11 +47,11 @@ class RoleService:
     async def create_role_service(cls, auth: AuthSchema, data: RoleCreateSchema) -> dict:
         """
         创建角色
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (RoleCreateSchema): 创建角色模型
-        
+
         返回:
         - dict: 新创建的角色详情字典
         """
@@ -75,12 +68,12 @@ class RoleService:
     async def update_role_service(cls, auth: AuthSchema, id: int, data: RoleUpdateSchema) -> dict:
         """
         更新角色
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 角色ID
         - data (RoleUpdateSchema): 更新角色模型
-        
+
         返回:
         - dict: 更新后的角色详情字典
         """
@@ -97,11 +90,11 @@ class RoleService:
     async def delete_role_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """
         删除角色
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - ids (list[int]): 角色ID列表
-        
+
         返回:
         - None
         """
@@ -117,20 +110,20 @@ class RoleService:
     async def set_role_permission_service(cls, auth: AuthSchema, data: RolePermissionSettingSchema) -> None:
         """
         设置角色权限
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (RolePermissionSettingSchema): 角色权限设置模型
-        
+
         返回:
         - None
         """
         # 设置角色菜单权限
         await RoleCRUD(auth).set_role_menus_crud(role_ids=data.role_ids, menu_ids=data.menu_ids)
-        
+
         # 设置数据权限范围
         await RoleCRUD(auth).set_role_data_scope_crud(role_ids=data.role_ids, data_scope=data.data_scope)
-        
+
         # 设置自定义数据权限部门
         if data.data_scope == 5 and data.dept_ids:
             await RoleCRUD(auth).set_role_depts_crud(role_ids=data.role_ids, dept_ids=data.dept_ids)
@@ -141,11 +134,11 @@ class RoleService:
     async def set_role_available_service(cls, auth: AuthSchema, data: BatchSetAvailable) -> None:
         """
         设置角色可用状态
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (BatchSetAvailable): 批量设置可用状态模型
-        
+
         返回:
         - None
         """
@@ -155,10 +148,10 @@ class RoleService:
     async def export_role_list_service(cls, role_list: list[dict[str, Any]]) -> bytes:
         """
         导出角色列表
-        
+
         参数:
         - role_list (list[dict[str, Any]]): 角色详情字典列表
-        
+
         返回:
         - bytes: Excel文件字节流
         """
@@ -166,7 +159,7 @@ class RoleService:
         mapping_dict = {
             'id': '角色编号',
             'name': '角色名称',
-            'order': '显示顺序', 
+            'order': '显示顺序',
             'data_scope': '数据权限',
             'status': '状态',
             'description': '备注',
@@ -193,4 +186,3 @@ class RoleService:
             item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
-        

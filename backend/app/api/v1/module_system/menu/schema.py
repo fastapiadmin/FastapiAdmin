@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-from fastapi import Query
 
-from app.core.validator import DateTimeStr, menu_request_validator
+from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
 from app.core.base_schema import BaseSchema
+from app.core.validator import DateTimeStr, menu_request_validator
 
 
 class MenuCreateSchema(BaseModel):
@@ -79,7 +78,7 @@ class MenuQueryParam:
         name: str | None = Query(None, description="菜单名称"),
         route_path: str | None = Query(None, description="路由地址"),
         component_path: str | None = Query(None, description="组件路径"),
-        type: Literal[1,2,3,4] | None = Query(None, description="菜单类型(1:目录 2:菜单 3:按钮 4:外链)"),
+        type: Literal[1, 2, 3, 4] | None = Query(None, description="菜单类型(1:目录 2:菜单 3:按钮 4:外链)"),
         permission: str | None = Query(None, description="权限标识"),
         description: str | None = Query(None, description="描述"),
         status: str | None = Query(None, description="是否启用"),

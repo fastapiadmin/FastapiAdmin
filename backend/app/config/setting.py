@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-
 import os
+
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, List, Optional, Literal
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Any, Literal
 from urllib.parse import quote_plus
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.common.enums import EnvironmentEnum
 from app.config.path_conf import BASE_DIR, ENV_DIR
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
         env_file=ENV_DIR / f".env.{os.getenv('ENVIRONMENT')}",
         env_file_encoding="utf-8",
         extra='ignore',
-        case_sensitive=True, # 区分大小写
+        case_sensitive=True,  # 区分大小写
     )
 
     # ================================================= #
@@ -52,9 +52,9 @@ class Settings(BaseSettings):
     # ******************** 跨域配置 ******************** #
     # ================================================= #
     CORS_ORIGIN_ENABLE: bool = True    # 是否启用跨域
-    ALLOW_ORIGINS: List[str] = ["*"]   # 允许的域名列表
-    ALLOW_METHODS: List[str] = ["*"]   # 允许的HTTP方法
-    ALLOW_HEADERS: List[str] = ["*"]   # 允许的请求头
+    ALLOW_ORIGINS: list[str] = ["*"]   # 允许的域名列表
+    ALLOW_METHODS: list[str] = ["*"]   # 允许的HTTP方法
+    ALLOW_HEADERS: list[str] = ["*"]   # 允许的请求头
     ALLOW_CREDENTIALS: bool = True     # 是否允许携带cookie
     CORS_EXPOSE_HEADERS: list[str] = ['X-Request-ID']
 
@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 60 * 24 * 7                    # refresh_token过期时间(秒)7 天
     TOKEN_TYPE: str = "bearer"                                              # token类型
     TOKEN_REQUEST_PATH_EXCLUDE: list[str] = ['api/v1/auth/login']           # JWT / RBAC 路由白名单
-    
+
     # ================================================= #
     # ******************** 数据库配置 ******************* #
     # ================================================= #
@@ -115,8 +115,8 @@ class Settings(BaseSettings):
     # ********************* 日志配置 ******************* #
     # ================================================= #
     OPERATION_LOG_RECORD: bool = True                                                               # 是否记录操作日志
-    IGNORE_OPERATION_FUNCTION: List[str] = ["get_captcha_for_login"]                                # 忽略记录的函数
-    OPERATION_RECORD_METHOD: List[str] = ["POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]      # 需要记录的请求方法
+    IGNORE_OPERATION_FUNCTION: list[str] = ["get_captcha_for_login"]                                # 忽略记录的函数
+    OPERATION_RECORD_METHOD: list[str] = ["POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]      # 需要记录的请求方法
 
     # ================================================= #
     # ******************* Gzip压缩配置 ******************* #
@@ -167,10 +167,10 @@ class Settings(BaseSettings):
     # ******************* 重构配置 ******************* #
     # ================================================= #
     @property
-    def MIDDLEWARE_LIST(self) -> List[Optional[str]]:
+    def MIDDLEWARE_LIST(self) -> list[str | None]:
         """获取项目根目录"""
         # 中间件列表
-        MIDDLEWARES: List[Optional[str]] = [
+        MIDDLEWARES: list[str | None] = [
             "app.core.middlewares.CustomCORSMiddleware" if self.CORS_ORIGIN_ENABLE else None,
             "app.core.middlewares.RequestLogMiddleware" if self.OPERATION_LOG_RECORD else None,
             "app.core.middlewares.CustomGZipMiddleware" if self.GZIP_ENABLE else None,
@@ -178,9 +178,9 @@ class Settings(BaseSettings):
         return MIDDLEWARES
 
     @property
-    def EVENT_LIST(self) -> List[Optional[str]]:
+    def EVENT_LIST(self) -> list[str | None]:
         """获取事件列表"""
-        EVENTS: List[Optional[str]] = [
+        EVENTS: list[str | None] = [
             "app.core.database.redis_connect" if self.REDIS_ENABLE else None,
         ]
         return EVENTS
@@ -190,32 +190,30 @@ class Settings(BaseSettings):
         """获取异步数据库连接"""
         if self.DATABASE_TYPE == "mysql":
             return f"mysql+asyncmy://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}?charset=utf8mb4"
-        elif self.DATABASE_TYPE == "postgres":
+        if self.DATABASE_TYPE == "postgres":
             return f"postgresql+asyncpg://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
-        elif self.DATABASE_TYPE == "sqlite":
+        if self.DATABASE_TYPE == "sqlite":
             return f"sqlite+aiosqlite:///{self.DATABASE_NAME}.db"
-        else:
-            raise ValueError(f"数据库驱动不支持: {self.DATABASE_TYPE}, 异步数据库请选择 mysql、postgres、sqlite")
+        raise ValueError(f"数据库驱动不支持: {self.DATABASE_TYPE}, 异步数据库请选择 mysql、postgres、sqlite")
 
     @property
     def DB_URI(self) -> str:
         """获取同步数据库连接"""
         if self.DATABASE_TYPE == "mysql":
             return f"mysql+pymysql://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}?charset=utf8mb4"
-        elif self.DATABASE_TYPE == "postgres":
+        if self.DATABASE_TYPE == "postgres":
             return f"postgresql+psycopg2://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
-        elif self.DATABASE_TYPE == "sqlite":
+        if self.DATABASE_TYPE == "sqlite":
             return f"sqlite+pysqlite:///{self.DATABASE_NAME}.db"
-        elif self.DATABASE_TYPE == "dm":
+        if self.DATABASE_TYPE == "dm":
             return f"dm+dmPython://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
-        else:
-            raise ValueError(f"数据库驱动不支持: {self.DATABASE_TYPE}, 同步数据库请选择 mysql、postgres、sqlite、dm")
-    
+        raise ValueError(f"数据库驱动不支持: {self.DATABASE_TYPE}, 同步数据库请选择 mysql、postgres、sqlite、dm")
+
     @property
     def REDIS_URI(self) -> str:
         """获取Redis连接"""
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB_NAME}"
-    
+
     @property
     def FASTAPI_CONFIG(self) -> dict[str, Any]:
         """获取FastAPI应用属性"""
@@ -229,11 +227,12 @@ class Settings(BaseSettings):
             "redoc_url": None,
             "root_path": self.ROOT_PATH
         }
-    
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """获取配置实例"""
     return Settings()
+
 
 settings = get_settings()

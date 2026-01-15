@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any
-from pydantic import ConfigDict, Field, BaseModel
+
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from app.common.constant import RET
@@ -13,7 +12,7 @@ class PageResultSchema(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
 
     page_no: int | None = Field(default=None, ge=1, description="页码，默认为1")
-    page_size: int | None = Field(default=None, ge=1, description="页面大小，默认为10") 
+    page_size: int | None = Field(default=None, ge=1, description="页面大小，默认为10")
     total: int = Field(default=0, ge=0, description="总记录数")
     has_next: bool | None = Field(default=False, description="是否有下一页")
     items: list[Any] = Field(default_factory=list, description="分页后的数据列表")
@@ -51,7 +50,7 @@ class PaginationService:
         # 验证分页参数
         if page_no < 1 or page_size < 1:
             raise CustomException(code=RET.ERROR.code, msg="分页参数不合法")
-        
+
         # 计算起始索引和结束索引
         start = (page_no - 1) * page_size
         end = min(start + page_size, total)

@@ -59,6 +59,8 @@ declare global {
    * 系统设置
    */
   interface AppSettings {
+    /** 系统名称 */
+    name: string;
     /** 系统标题 */
     title: string;
     /** 系统版本 */
@@ -99,6 +101,10 @@ declare global {
     guideVisible: boolean;
     /** 是否启动引导 */
     showGuide: boolean;
+    /** 是否开启AI助手 */
+    aiEnabled: boolean;
+    /** 是否开启灰色模式 */
+    grayMode: boolean;
   }
 
   /**

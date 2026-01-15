@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
-from pydantic import ConfigDict, Field, BaseModel, model_validator
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..user.model import UserModel
+from app.api.v1.module_system.user.model import UserModel
 
 
 class AuthSchema(BaseModel):

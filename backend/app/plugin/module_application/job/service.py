@@ -1,89 +1,81 @@
-# -*- coding: utf-8 -*-
-
+from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
 from app.utils.cron_util import CronUtil
 from app.utils.excel_util import ExcelUtil
-from app.api.v1.module_system.auth.schema import AuthSchema
-from .tools.ap_scheduler import SchedulerUtil
+
 from .crud import JobCRUD, JobLogCRUD
-from .schema import (
-    JobCreateSchema,
-    JobUpdateSchema,
-    JobOutSchema,
-    JobLogOutSchema,
-    JobQueryParam,
-    JobLogQueryParam
-)
+from .schema import JobCreateSchema, JobLogOutSchema, JobLogQueryParam, JobOutSchema, JobQueryParam, JobUpdateSchema
+from .tools.ap_scheduler import SchedulerUtil
 
 
 class JobService:
     """
     定时任务管理模块服务层
     """
-    
+
     @classmethod
     async def get_job_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取定时任务详情
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 定时任务ID
-        
+
         返回:
         - Dict: 定时任务详情字典
         """
         obj = await JobCRUD(auth).get_obj_by_id_crud(id=id)
         return JobOutSchema.model_validate(obj).model_dump()
-    
+
     @classmethod
     async def get_job_list_service(cls, auth: AuthSchema, search: JobQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> list[dict]:
         """
         获取定时任务列表
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (JobQueryParam | None): 查询参数模型
         - order_by (list[dict[str, str]] | None): 排序参数列表
-        
+
         返回:
         - List[Dict]: 定时任务详情字典列表
         """
         obj_list = await JobCRUD(auth).get_obj_list_crud(search=search.__dict__, order_by=order_by)
         return [JobOutSchema.model_validate(obj).model_dump() for obj in obj_list]
-    
+
     @classmethod
     async def create_job_service(cls, auth: AuthSchema, data: JobCreateSchema) -> dict:
         """
         创建定时任务
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - data (JobCreateSchema): 定时任务创建模型
-        
+
         返回:
         - Dict: 定时任务详情字典
         """
         exist_obj = await JobCRUD(auth).get(name=data.name)
         if exist_obj:
             raise CustomException(msg='创建失败，该定时任务已存在')
-        
+
         obj = await JobCRUD(auth).create_obj_crud(data=data)
         if not obj:
             raise CustomException(msg='创建失败，该数据定时任务不存在')
         SchedulerUtil().add_job(job_info=obj)
         return JobOutSchema.model_validate(obj).model_dump()
-    
+
     @classmethod
-    async def update_job_service(cls, auth: AuthSchema, id:int, data: JobUpdateSchema) -> dict:
+    async def update_job_service(cls, auth: AuthSchema, id: int, data: JobUpdateSchema) -> dict:
         """
         更新定时任务
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 定时任务ID
         - data (JobUpdateSchema): 定时任务更新模型
-        
+
         返回:
         - dict: 定时任务详情字典
         """
@@ -97,12 +89,12 @@ class JobService:
             raise CustomException(msg='更新失败，该数据定时任务不存在')
         SchedulerUtil().modify_job(job_id=obj.id)
         return JobOutSchema.model_validate(obj).model_dump()
-    
+
     @classmethod
     async def delete_job_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """
         删除定时任务
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - ids (list[int]): 定时任务ID列表
@@ -119,13 +111,12 @@ class JobService:
 
             SchedulerUtil().remove_job(job_id=id)
         await JobCRUD(auth).delete_obj_crud(ids=ids)
-        
 
     @classmethod
     async def clear_job_service(cls, auth: AuthSchema) -> None:
         """
         清空所有定时任务
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         """
@@ -137,7 +128,7 @@ class JobService:
     async def option_job_service(cls, auth: AuthSchema, id: int, option: int) -> None:
         """
         操作定时任务
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 定时任务ID
@@ -168,10 +159,10 @@ class JobService:
     async def export_job_service(cls, data_list: list[dict]) -> bytes:
         """
         导出定时任务列表
-        
+
         参数:
         - data_list (list[dict]): 定时任务列表
-        
+
         返回:
         - bytes: Excel文件字节流
         """
@@ -200,7 +191,7 @@ class JobService:
         data = data_list.copy()
         for item in data:
             item['status'] = '运行中' if item['status'] == '0' else '暂停中' if item['status'] == '1' else '未知状态'
-    
+
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
 
 
@@ -208,43 +199,43 @@ class JobLogService:
     """
     定时任务日志管理模块服务层
     """
-    
+
     @classmethod
     async def get_job_log_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取定时任务日志详情
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - id (int): 定时任务日志ID
-        
+
         返回:
         - dict: 定时任务日志详情字典
         """
         obj = await JobLogCRUD(auth).get_obj_log_by_id_crud(id=id)
         return JobLogOutSchema.model_validate(obj).model_dump()
-    
+
     @classmethod
     async def get_job_log_list_service(cls, auth: AuthSchema, search: JobLogQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """
         获取定时任务日志列表
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - search (JobLogQueryParam | None): 查询参数模型, 包含分页信息和查询条件
         - order_by (list[dict] | None): 排序参数列表, 每个元素为一个字典, 包含字段名和排序方向
-        
+
         返回:
         - list[dict]: 定时任务日志详情字典列表
         """
         obj_list = await JobLogCRUD(auth).get_obj_log_list_crud(search=search.__dict__, order_by=order_by)
         return [JobLogOutSchema.model_validate(obj).model_dump() for obj in obj_list]
-    
+
     @classmethod
     async def delete_job_log_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """
         删除定时任务日志
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         - ids (list[int]): 定时任务日志ID列表
@@ -256,12 +247,12 @@ class JobLogService:
             if not exist_obj:
                 raise CustomException(msg=f'删除失败，该定时任务日志ID为{id}的记录不存在')
         await JobLogCRUD(auth).delete_obj_log_crud(ids=ids)
-    
+
     @classmethod
     async def clear_job_log_service(cls, auth: AuthSchema) -> None:
         """
         清空定时任务日志
-        
+
         参数:
         - auth (AuthSchema): 认证信息模型
         """
@@ -275,10 +266,10 @@ class JobLogService:
     async def export_job_log_service(cls, data_list: list[dict]) -> bytes:
         """
         导出定时任务日志列表
-        
+
         参数:
         - data_list (List[Dict[str, Any]]): 定时任务日志列表
-        
+
         返回:
         - bytes: Excel文件字节流
         """
@@ -304,4 +295,3 @@ class JobLogService:
             item['status'] = '成功' if item.get('status') == '0' else '失败'
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
-    

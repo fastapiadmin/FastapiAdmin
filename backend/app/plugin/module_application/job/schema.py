@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.base_schema import BaseSchema, UserBySchema
 from app.core.validator import DateTimeStr, datetime_validator
@@ -16,7 +14,7 @@ class JobCreateSchema(BaseModel):
     trigger: str = Field(..., description='触发器:控制此作业计划的 trigger 对象')
     args: str | None = Field(default=None, description='位置参数')
     kwargs: str | None = Field(default=None, description='关键字参数')
-    coalesce: bool | None = Field(..., description='是否合并运行:是否在多个运行时间到期时仅运行作业一次')   
+    coalesce: bool | None = Field(..., description='是否合并运行:是否在多个运行时间到期时仅运行作业一次')
     max_instances: int | None = Field(default=1, ge=1, description='最大实例数:允许的最大并发执行实例数')
     jobstore: str | None = Field(..., max_length=64, description='任务存储')
     executor: str | None = Field(..., max_length=64, description='任务执行器:将运行此作业的执行程序的名称')
@@ -51,13 +49,11 @@ class JobCreateSchema(BaseModel):
 
 class JobUpdateSchema(JobCreateSchema):
     """定时任务更新模型"""
-    ...
-    
+
 
 class JobOutSchema(JobCreateSchema, BaseSchema, UserBySchema):
     """定时任务响应模型"""
     model_config = ConfigDict(from_attributes=True)
-    ...
 
 
 class JobLogCreateSchema(BaseModel):
@@ -84,14 +80,12 @@ class JobLogCreateSchema(BaseModel):
 
 class JobLogUpdateSchema(JobLogCreateSchema):
     """定时任务调度日志表更新模型"""
-    ...
     id: int | None = Field(default=None, description='任务日志ID')
 
 
 class JobLogOutSchema(JobLogUpdateSchema, BaseSchema, UserBySchema):
     """定时任务调度日志表响应模型"""
     model_config = ConfigDict(from_attributes=True)
-    ...
 
 
 class JobQueryParam:
@@ -106,15 +100,15 @@ class JobQueryParam:
         created_id: int | None = Query(None, description="创建人"),
         updated_id: int | None = Query(None, description="更新人"),
     ) -> None:
-        
+
         # 模糊查询字段
         self.name = ("like", f"%{name}%") if name else None
-        
+
         # 精确查询字段
         self.created_id = created_id
         self.updated_id = updated_id
         self.status = status
-        
+
         # 时间范围查询
         if created_time and len(created_time) == 2:
             self.created_time = ("between", (created_time[0], created_time[1]))

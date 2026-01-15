@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.base_schema import BaseSchema
 
@@ -65,7 +63,7 @@ class GenTableSchema(BaseModel):
     """
     model_config = ConfigDict(from_attributes=True)
 
-    table_name: str= Field(..., description='表名称')
+    table_name: str = Field(..., description='表名称')
     table_comment: str | None = Field(default=None, description='表描述')
     class_name: str | None = Field(default=None, description='实体类名称')
     package_name: str | None = Field(default=None, description='生成包路径')

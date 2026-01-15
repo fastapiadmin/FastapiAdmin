@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
+from collections.abc import Mapping
+from typing import Any
 
-from typing import Any, Mapping
 from fastapi import status
-from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
-from pydantic import Field, BaseModel
 
 from app.common.constant import RET
+
 
 class ResponseSchema(BaseModel):
     """响应模型"""
@@ -30,14 +31,14 @@ class SuccessResponse(JSONResponse):
     ) -> None:
         """
         初始化成功响应类
-        
+
         参数:
         - data (Any | None): 响应数据。
         - msg (str): 响应消息。
         - code (int): 业务状态码。
         - status_code (int): HTTP 状态码。
         - success (bool): 操作是否成功。
-        
+
         返回:
         - None
         """
@@ -64,14 +65,14 @@ class ErrorResponse(JSONResponse):
     ) -> None:
         """
         初始化错误响应类
-        
+
         参数:
         - data (Any): 响应数据。
         - msg (str): 响应消息。
         - code (int): 业务状态码。
         - status_code (int): HTTP 状态码。
         - success (bool): 操作是否成功。
-        
+
         返回:
         - None
         """
@@ -98,23 +99,23 @@ class StreamResponse(StreamingResponse):
     ) -> None:
         """
         初始化流式响应类
-        
+
         参数:
         - data (Any): 响应数据。
         - status_code (int): HTTP 状态码。
         - headers (Mapping[str, str] | None): 响应头。
         - media_type (str | None): 媒体类型。
         - background (BackgroundTask | None): 后台任务。
-        
+
         返回:
         - None
         """
         super().__init__(
-            content=data, 
-            status_code=status_code, 
-            media_type=media_type, # 文件类型
-            headers=headers, # 文件名
-            background=background # 文件大小
+            content=data,
+            status_code=status_code,
+            media_type=media_type,  # 文件类型
+            headers=headers,  # 文件名
+            background=background  # 文件大小
         )
 
 
@@ -130,10 +131,10 @@ class UploadFileResponse(FileResponse):
             headers: Mapping[str, str] | None = None,
             background: BackgroundTask | None = None,
             status_code: int = 200
-    ):
+    ) -> None:
         """
         初始化文件响应类
-        
+
         参数:
         - file_path (str): 文件路径。
         - filename (str): 文件名。
@@ -141,7 +142,7 @@ class UploadFileResponse(FileResponse):
         - headers (Mapping[str, str] | None): 响应头。
         - background (BackgroundTask | None): 后台任务。
         - status_code (int): HTTP 状态码。
-        
+
         返回:
         - None
         """

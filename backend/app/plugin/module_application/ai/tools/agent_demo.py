@@ -1,16 +1,28 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
+
 from langchain.agents import AgentState, create_agent
-from langchain.agents.middleware import ModelRequest, ModelResponse, after_model, before_model, dynamic_prompt, wrap_model_call
-from langchain.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage
-from langchain.tools import tool, ToolRuntime
+from langchain.agents.middleware import (
+    ModelRequest,
+    ModelResponse,
+    after_model,
+    before_model,
+    dynamic_prompt,
+    wrap_model_call,
+)
+from langchain.agents.structured_output import (
+    MultipleStructuredOutputsError,
+    StructuredOutputValidationError,
+    ToolStrategy,
+)
 from langchain.chat_models import init_chat_model
+from langchain.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage
+from langchain.tools import ToolRuntime, tool
 from langgraph.checkpoint.memory import InMemorySaver
-from langchain.agents.structured_output import MultipleStructuredOutputsError, StructuredOutputValidationError, ToolStrategy
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.runtime import Runtime
 from pydantic import BaseModel, Field
-
 
 # =================定义提示词=================
 SYSTEM_PROMPT = """You are an expert weather forecaster, who speaks in puns.
@@ -23,16 +35,19 @@ You have access to two tools:
 If a user asks you for the weather, make sure you know the location. If you can tell from the question that they mean wherever they are, use the get_user_location tool to find their location.
 """
 
+
 # =================定义工具=================
 @tool
 def get_weather_for_location(city: str) -> str:
     """Get weather for a given city."""
     return f"It's always sunny in {city}!"
 
+
 @dataclass
 class Context:
     """Custom runtime context schema."""
     user_id: str
+
 
 @tool
 def get_user_location(runtime: ToolRuntime[Context]) -> str:
@@ -58,8 +73,10 @@ class ResponseFormat(BaseModel):
     punny_response: str
     weather_conditions: str | None = None
 
+
 # =================定义存储记忆=================
 checkpointer = InMemorySaver()
+
 
 # =================定义动态提示词=================
 @dynamic_prompt
@@ -67,6 +84,7 @@ def dynamic_system_prompt(request: ModelRequest) -> str:
     user_name = getattr(request.runtime.context, "user_name", "User")
     system_prompt = f"You are a helpful assistant. Address the user as {user_name}."
     return system_prompt
+
 
 @before_model
 def trim_messages(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
@@ -78,7 +96,7 @@ def trim_messages(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
 
     first_msg = messages[0]
     recent_messages = messages[-3:] if len(messages) % 2 == 0 else messages[-4:]
-    new_messages = [first_msg] + recent_messages
+    new_messages = [first_msg, *recent_messages]
 
     return {
         "messages": [
@@ -86,6 +104,7 @@ def trim_messages(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
             *new_messages
         ]
     }
+
 
 @after_model
 def validate_response(state: AgentState, runtime: Runtime) -> dict | None:
@@ -96,6 +115,7 @@ def validate_response(state: AgentState, runtime: Runtime) -> dict | None:
         return {"messages": [RemoveMessage(id=last_message.id or "")]}
     return None
 
+
 @wrap_model_call
 def inject_file_context(
     request: ModelRequest,
@@ -103,15 +123,11 @@ def inject_file_context(
 ) -> ModelResponse:
     """Inject context about files user has uploaded this session."""
     # Read from State: get uploaded files metadata
-    uploaded_files = request.state.get("uploaded_files", [])  
+    uploaded_files = request.state.get("uploaded_files", [])
 
     if uploaded_files:
         # Build context about available files
-        file_descriptions = []
-        for file in uploaded_files:
-            file_descriptions.append(
-                f"- {file['name']} ({file['type']}): {file['summary']}"
-            )
+        file_descriptions = [f"- {file['name']} ({file['type']}): {file['summary']}" for file in uploaded_files]
 
         file_context = f"""Files you have access to in this conversation:
 {chr(10).join(file_descriptions)}
@@ -119,20 +135,20 @@ def inject_file_context(
 Reference these files when answering questions."""
 
         # Inject file context before recent messages
-        messages = [  
+        messages = [
             *request.messages,
             {"role": "user", "content": file_context},
         ]
-        request = request.override(messages=messages)  
+        request = request.override(messages=messages)
 
 
 def custom_error_handler(error: Exception) -> str:
     if isinstance(error, StructuredOutputValidationError):
         return "There was an issue with the format. Try again."
-    elif isinstance(error, MultipleStructuredOutputsError):
+    if isinstance(error, MultipleStructuredOutputsError):
         return "Multiple structured outputs were returned. Pick the most relevant one."
-    else:
-        return f"Error: {str(error)}"
+    return f"Error: {error!s}"
+
 
 # =================定义智能体=================
 agent = create_agent(
@@ -141,7 +157,7 @@ agent = create_agent(
     tools=[get_user_location, get_weather_for_location],
     middleware=[dynamic_system_prompt, trim_messages, validate_response, inject_file_context],
     context_schema=Context,
-    response_format=ToolStrategy(schema=ResponseFormat,handle_errors=(ValueError, TypeError, custom_error_handler)),
+    response_format=ToolStrategy(schema=ResponseFormat, handle_errors=(ValueError, TypeError, custom_error_handler)),
     checkpointer=checkpointer
 )
 

@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-
 import re
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from fastapi import Query
 
-from app.core.validator import DateTimeStr
+from fastapi import Query
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
 from app.core.base_schema import BaseSchema
+from app.core.validator import DateTimeStr
 
 
 class DictTypeCreateSchema(BaseModel):
@@ -36,7 +35,6 @@ class DictTypeCreateSchema(BaseModel):
 
 class DictTypeUpdateSchema(DictTypeCreateSchema):
     """字典类型更新模型"""
-    ...
 
 
 class DictTypeOutSchema(DictTypeCreateSchema, BaseSchema):
@@ -56,14 +54,14 @@ class DictTypeQueryParam:
         updated_time: list[DateTimeStr] | None = Query(None, description="更新时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
         super().__init__()
-        
+
         # 模糊查询字段
         self.dict_name = ("like", f"%{dict_name.strip()}%") if dict_name and dict_name.strip() else None
-        
+
         # 精确查询字段
         self.dict_type = dict_type.strip() if dict_type else None
         self.status = status
-        
+
         # 时间范围查询
         if created_time and len(created_time) == 2:
             self.created_time = ("between", (created_time[0], created_time[1]))
@@ -85,7 +83,7 @@ class DictDataCreateSchema(BaseModel):
     is_default: bool = Field(default=False, description='是否默认（True是 False否）')
     status: str = Field(default='0', description='状态（0正常 1停用）')
     description: str | None = Field(default=None, max_length=255, description="描述")
-    
+
     @model_validator(mode='after')
     def validate_after(self):
         if not self.dict_label or not self.dict_label.strip():
@@ -96,18 +94,17 @@ class DictDataCreateSchema(BaseModel):
             raise ValueError('字典类型不能为空')
         if not hasattr(self, 'dict_type_id') or self.dict_type_id <= 0:
             raise ValueError('字典类型ID不能为空且必须大于0')
-        
+
         # 确保字符串字段被正确处理
         self.dict_label = self.dict_label.strip()
         self.dict_value = self.dict_value.strip()
         self.dict_type = self.dict_type.strip()
-        
+
         return self
 
 
 class DictDataUpdateSchema(DictDataCreateSchema):
     """字典数据更新模型"""
-    ...
 
 
 class DictDataOutSchema(DictDataCreateSchema, BaseSchema):
@@ -127,15 +124,15 @@ class DictDataQueryParam:
         created_time: list[DateTimeStr] | None = Query(default=None, description="创建时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
         updated_time: list[DateTimeStr] | None = Query(default=None, description="更新时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
     ) -> None:
-        
+
         # 模糊查询字段
         self.dict_label = ("like", f"%{dict_label.strip()}%") if dict_label and dict_label.strip() else None
-        
+
         # 精确查询字段
         self.dict_type = dict_type.strip() if dict_type else None
         self.dict_type_id = dict_type_id
         self.status = status
-        
+
         # 时间范围查询
         if created_time and len(created_time) == 2:
             self.created_time = ("between", (created_time[0], created_time[1]))

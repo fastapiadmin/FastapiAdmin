@@ -1,43 +1,38 @@
-# -*- coding: utf-8 -*-
+from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from app.common.response import StreamResponse, SuccessResponse
+from app.api.v1.module_system.auth.schema import AuthSchema
 from app.common.request import PaginationService
+from app.common.response import StreamResponse, SuccessResponse
+from app.core.base_params import PaginationQueryParam
+from app.core.base_schema import BatchSetAvailable
+from app.core.dependencies import AuthPermission
+from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
-from app.core.base_params import PaginationQueryParam
-from app.core.dependencies import AuthPermission
-from app.core.base_schema import BatchSetAvailable
-from app.core.logger import log
 
-from ..auth.schema import AuthSchema
+from .schema import PositionCreateSchema, PositionQueryParam, PositionUpdateSchema
 from .service import PositionService
-from .schema import (
-    PositionCreateSchema,
-    PositionUpdateSchema,
-    PositionQueryParam
-)
-
 
 PositionRouter = APIRouter(route_class=OperationLogRoute, prefix="/position", tags=["岗位管理"])
 
 
 @PositionRouter.get("/list", summary="查询岗位", description="查询岗位")
 async def get_obj_list_controller(
-    page: PaginationQueryParam = Depends(),
-    search: PositionQueryParam = Depends(),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:query"])),
+    page: Annotated[PaginationQueryParam, Depends()],
+    search: Annotated[PositionQueryParam, Depends()],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:query"]))],
 ) -> JSONResponse:
     """
     查询岗位列表
-    
+
     参数:
     - page (PaginationQueryParam): 分页查询参数
     - search (PositionQueryParam): 查询参数
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 分页查询结果
     """
@@ -45,23 +40,23 @@ async def get_obj_list_controller(
     if page.order_by:
         order_by = page.order_by
     result_dict_list = await PositionService.get_position_list_service(search=search, auth=auth, order_by=order_by)
-    result_dict = await PaginationService.paginate(data_list= result_dict_list, page_no= page.page_no, page_size = page.page_size)
-    log.info(f"查询岗位列表成功")
+    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    log.info("查询岗位列表成功")
     return SuccessResponse(data=result_dict, msg="查询岗位列表成功")
 
 
 @PositionRouter.get("/detail/{id}", summary="查询岗位详情", description="查询岗位详情")
 async def get_obj_detail_controller(
-    id: int = Path(..., description="岗位ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:detail"])),
+    id: Annotated[int, Path(description="岗位ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:detail"]))],
 ) -> JSONResponse:
     """
     查询岗位详情
-    
+
     参数:
     - id (int): 岗位ID
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 岗位详情对象
     """
@@ -73,15 +68,15 @@ async def get_obj_detail_controller(
 @PositionRouter.post("/create", summary="创建岗位", description="创建岗位")
 async def create_obj_controller(
     data: PositionCreateSchema,
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:create"])),
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:create"]))],
 ) -> JSONResponse:
     """
     创建岗位
-    
+
     参数:
     - data (PositionCreateSchema): 创建岗位模型
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 岗位详情对象
     """
@@ -93,17 +88,17 @@ async def create_obj_controller(
 @PositionRouter.put("/update/{id}", summary="修改岗位", description="修改岗位")
 async def update_obj_controller(
     data: PositionUpdateSchema,
-    id: int = Path(..., description="岗位ID"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:update"])),
+    id: Annotated[int, Path(description="岗位ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:update"]))],
 ) -> JSONResponse:
     """
     修改岗位
-    
+
     参数:
     - data (PositionUpdateSchema): 修改岗位模型
     - id (int): 岗位ID
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 岗位详情对象
     """
@@ -114,16 +109,16 @@ async def update_obj_controller(
 
 @PositionRouter.delete("/delete", summary="删除岗位", description="删除岗位")
 async def delete_obj_controller(
-    ids: list[int] = Body(..., description="ID列表"),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:delete"])),
+    ids: Annotated[list[int], Body(description="ID列表")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:delete"]))],
 ) -> JSONResponse:
     """
     删除岗位
-    
+
     参数:
     - ids (list[int]): ID列表
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 成功消息
     """
@@ -135,15 +130,15 @@ async def delete_obj_controller(
 @PositionRouter.patch("/available/setting", summary="批量修改岗位状态", description="批量修改岗位状态")
 async def batch_set_available_obj_controller(
     data: BatchSetAvailable,
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:patch"])),
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:patch"]))],
 ) -> JSONResponse:
     """
     批量修改岗位状态
-    
+
     参数:
     - data (BatchSetAvailable): 批量修改岗位状态模型
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - JSONResponse: 成功消息
     """
@@ -154,16 +149,16 @@ async def batch_set_available_obj_controller(
 
 @PositionRouter.post('/export', summary="导出岗位", description="导出岗位")
 async def export_obj_list_controller(
-    search: PositionQueryParam = Depends(),
-    auth: AuthSchema = Depends(AuthPermission(["module_system:position:export"])),
+    search: Annotated[PositionQueryParam, Depends()],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:export"]))],
 ) -> StreamingResponse:
     """
     导出岗位
-    
+
     参数:
     - search (PositionQueryParam): 查询参数
     - auth (AuthSchema): 认证信息模型
-    
+
     返回:
     - StreamingResponse: 岗位Excel文件流
     """
@@ -174,7 +169,7 @@ async def export_obj_list_controller(
     return StreamResponse(
         data=bytes2file_response(position_export_result),
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers = {
+        headers={
             'Content-Disposition': 'attachment; filename=position.xlsx'
         }
     )
