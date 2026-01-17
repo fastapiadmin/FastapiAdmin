@@ -1,7 +1,10 @@
 import json
 import time
 
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.base import (
+    BaseHTTPMiddleware,
+    RequestResponseEndpoint,
+)
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
@@ -18,6 +21,7 @@ from app.core.security import decode_access_token
 
 class CustomCORSMiddleware(CORSMiddleware):
     """CORS跨域中间件"""
+
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(
             app,
@@ -33,6 +37,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
     """
     记录请求日志中间件: 提供一个基础的中间件类，允许你自定义请求和响应处理逻辑。
     """
+
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
 
@@ -48,7 +53,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
         - str | None: 会话ID，如果无法提取则返回None
         """
         # 1. 先检查 scope 中是否已经有 session_id（登录接口会设置）
-        session_id = request.scope.get('session_id')
+        session_id = request.scope.get("session_id")
         if session_id:
             return session_id
 
@@ -59,11 +64,11 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                 return None
 
             # 处理Bearer token
-            token = authorization.replace('Bearer ', '').strip()
+            token = authorization.replace("Bearer ", "").strip()
 
             # 解码token
             payload = decode_access_token(token)
-            if not payload or not hasattr(payload, 'sub'):
+            if not payload or not hasattr(payload, "sub"):
                 return None
 
             # 从payload中提取session_id
@@ -79,21 +84,18 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             # 解析失败静默处理，返回None（可能是未认证请求）
             return None
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start_time = time.time()
 
         # 尝试提取session_id
         session_id = self._extract_session_id_from_request(request)
 
         # 组装请求日志字段
-        log_fields = [
-
-            f"请求来源: {request.client.host if request.client else '未知'}",
-            f"请求方法: {request.method}",
-            f"请求路径: {request.url.path}",
-        ]
+        log_fields = (
+            f"请求来源: {request.client.host if request.client else '未知'},"
+            f"请求方法: {request.method},"
+            f"请求路径: {request.url.path}"
+        )
         log.info(log_fields)
 
         try:
@@ -105,14 +107,13 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 
             # 尝试获取客户端真实IP
             request_ip = None
-            x_forwarded_for = request.headers.get('X-Forwarded-For')
-            if x_forwarded_for:
-                # 取第一个 IP 地址，通常为客户端真实 IP
-                request_ip = x_forwarded_for.split(',')[0].strip()
-            else:
-                # 若没有 X-Forwarded-For 头，则使用 request.client.host
-                request_ip = request.client.host if request.client else None
-
+            request_ip = (
+                x_forwarded_for.split(",")[0].strip()
+                if (x_forwarded_for := request.headers.get("X-Forwarded-For"))
+                else request.client.host
+                if request.client
+                else None
+            )
             # 检查是否启用演示模式
             demo_enable = False
             ip_white_list = []
@@ -123,7 +124,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                 # 从应用实例获取Redis连接
                 redis = request.app.state.redis
                 if not redis:
-                    raise Exception("无法获取Redis连接")
+                    raise CustomException(msg="无法获取Redis连接")
 
                 # 使用ParamsService获取系统配置
                 system_config = await ParamsService.get_system_config_for_middleware(redis)
@@ -164,7 +165,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                     f"请求方法: {request.method}",
                     f"请求路径: {path}",
                     f"用户代理: {request.headers.get('user-agent', '未知')}",
-                    f"演示模式: {demo_enable}"
+                    f"演示模式: {demo_enable}",
                 ])
                 # 拦截请求
                 return ErrorResponse(msg="演示环境，禁止操作")
@@ -177,12 +178,8 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 
             # 构建响应日志信息
 
-            content_length = response.headers.get('content-length', '0')
-            response_info = (
-                f"响应状态: {response.status_code}, "
-                f"响应内容长度: {content_length}, "
-                f"处理时间: {round(process_time * 1000, 3)}ms"
-            )
+            content_length = response.headers.get("content-length", "0")
+            response_info = f"响应状态: {response.status_code}, 响应内容长度: {content_length}, 处理时间: {round(process_time * 1000, 3)}ms"
             log.info(response_info)
 
             return response
@@ -194,9 +191,10 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 
 class CustomGZipMiddleware(GZipMiddleware):
     """GZip压缩中间件"""
+
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(
             app,
             minimum_size=settings.GZIP_MIN_SIZE,
-            compresslevel=settings.GZIP_COMPRESS_LEVEL
+            compresslevel=settings.GZIP_COMPRESS_LEVEL,
         )

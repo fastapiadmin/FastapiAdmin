@@ -1,6 +1,5 @@
 import json
 import time
-
 from collections.abc import Callable, Coroutine
 from typing import Any
 
@@ -25,7 +24,9 @@ from app.utils.ip_local_util import IpLocalUtil
 class OperationLogRoute(APIRoute):
     """操作日志路由装饰器"""
 
-    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+    def get_route_handler(
+        self,
+    ) -> Callable[[Request], Coroutine[Any, Any, Response]]:
         """
         自定义路由处理程序,在每个路由处理之前或之后执行特定的操作。
 
@@ -66,10 +67,13 @@ class OperationLogRoute(APIRoute):
             req_content_type = request.headers.get("Content-Type", "")
 
             if req_content_type and (
-                req_content_type.startswith(('multipart/form-data', 'application/x-www-form-urlencoded'))
+                req_content_type.startswith((
+                    "multipart/form-data",
+                    "application/x-www-form-urlencoded",
+                ))
             ):
                 form_data = await request.form()
-                oper_param = '\n'.join([f'{k}: {v}' for k, v in form_data.items()])
+                oper_param = "\n".join([f"{k}: {v}" for k, v in form_data.items()])
                 payload = oper_param  # 直接使用字符串格式的参数
             else:
                 payload = await request.body()
@@ -79,21 +83,25 @@ class OperationLogRoute(APIRoute):
                 # 处理请求体数据
                 if payload:
                     try:
-                        oper_param['body'] = json.loads(payload.decode())
+                        oper_param["body"] = json.loads(payload.decode())
                     except (json.JSONDecodeError, UnicodeDecodeError):
-                        oper_param['body'] = payload.decode('utf-8', errors='ignore')
+                        oper_param["body"] = payload.decode("utf-8", errors="ignore")
 
                 # 处理路径参数
                 if path_params:
-                    oper_param['path_params'] = dict(path_params)
+                    oper_param["path_params"] = dict(path_params)
 
                 payload = json.dumps(oper_param, ensure_ascii=False)
 
                 # 日志表请求参数字段长度最大为2000，因此在此处判断长度
                 if len(payload) > 2000:
-                    payload = '请求参数过长'
+                    payload = "请求参数过长"
 
-            response_data = response.body if "application/json" in response.headers.get("Content-Type", "") else b"{}"
+            response_data = (
+                response.body
+                if "application/json" in response.headers.get("Content-Type", "")
+                else b"{}"
+            )
             process_time = f"{(time.time() - start_time):.2f}s"
 
             # 获取当前用户ID,如果是登录接口则为空
@@ -106,10 +114,10 @@ class OperationLogRoute(APIRoute):
                 log_type = 2
 
             request_ip = None
-            x_forwarded_for = request.headers.get('X-Forwarded-For')
+            x_forwarded_for = request.headers.get("X-Forwarded-For")
             if x_forwarded_for:
                 # 取第一个 IP 地址，通常为客户端真实 IP
-                request_ip = x_forwarded_for.split(',')[0].strip()
+                request_ip = x_forwarded_for.split(",")[0].strip()
             else:
                 # 若没有 X-Forwarded-For 头，则使用 request.client.host
                 if request.client:
@@ -118,9 +126,9 @@ class OperationLogRoute(APIRoute):
             login_location = await IpLocalUtil.get_ip_location(request_ip) if request_ip else None
 
             # 判断请求是否来自api文档
-            referer = request.headers.get('referer')
-            request_from_swagger = referer and referer.endswith('docs')
-            request_from_redoc = referer and referer.endswith('redoc')
+            referer = request.headers.get("referer")
+            request_from_swagger = referer and referer.endswith("docs")
+            request_from_redoc = referer and referer.endswith("redoc")
 
             if request_from_swagger or request_from_redoc:
                 # 如果请求来自api文档，则不记录日志
@@ -129,22 +137,27 @@ class OperationLogRoute(APIRoute):
                 async with async_db_session() as session:
                     async with session.begin():
                         auth = AuthSchema(db=session)
-                        await OperationLogService.create_log_service(data=OperationLogCreateSchema(
-                            type=log_type,
-                            request_path=request.url.path,
-                            request_method=request.method,
-                            request_payload=payload,
-                            request_ip=request_ip,
-                            login_location=login_location,
-                            request_os=user_agent.os.family,
-                            request_browser=user_agent.browser.family,
-                            response_code=response.status_code,
-                            response_json=response_data.decode() if isinstance(response_data, (bytes, bytearray)) else str(response_data),
-                            process_time=process_time,
-                            description=route.summary,
-                            created_id=current_user_id,
-                            updated_id=current_user_id,
-                        ), auth=auth)
+                        await OperationLogService.create_log_service(
+                            data=OperationLogCreateSchema(
+                                type=log_type,
+                                request_path=request.url.path,
+                                request_method=request.method,
+                                request_payload=payload,
+                                request_ip=request_ip,
+                                login_location=login_location,
+                                request_os=user_agent.os.family,
+                                request_browser=user_agent.browser.family,
+                                response_code=response.status_code,
+                                response_json=response_data.decode()
+                                if isinstance(response_data, (bytes, bytearray))
+                                else str(response_data),
+                                process_time=process_time,
+                                description=route.summary,
+                                created_id=current_user_id,
+                                updated_id=current_user_id,
+                            ),
+                            auth=auth,
+                        )
 
             return response
 

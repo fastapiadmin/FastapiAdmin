@@ -9,7 +9,13 @@ from app.core.base_crud import CRUDBase
 from app.core.logger import log
 
 from .model import GenTableColumnModel, GenTableModel
-from .schema import GenDBTableSchema, GenTableColumnOutSchema, GenTableColumnSchema, GenTableQueryParam, GenTableSchema
+from .schema import (
+    GenDBTableSchema,
+    GenTableColumnOutSchema,
+    GenTableColumnSchema,
+    GenTableQueryParam,
+    GenTableSchema,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.engine.reflection import Inspector
@@ -27,7 +33,9 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         """
         super().__init__(model=GenTableModel, auth=auth)
 
-    async def get_gen_table_by_id(self, table_id: int, preload: list | None = None) -> GenTableModel | None:
+    async def get_gen_table_by_id(
+        self, table_id: int, preload: list | None = None
+    ) -> GenTableModel | None:
         """
         根据业务表ID获取需要生成的业务表信息。
 
@@ -40,7 +48,9 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         """
         return await self.get(id=table_id, preload=preload)
 
-    async def get_gen_table_by_name(self, table_name: str, preload: list | None = None) -> GenTableModel | None:
+    async def get_gen_table_by_name(
+        self, table_name: str, preload: list | None = None
+    ) -> GenTableModel | None:
         """
         根据业务表名称获取需要生成的业务表信息。
 
@@ -65,7 +75,11 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         """
         return await self.list(preload=preload)
 
-    async def get_gen_table_list(self, search: GenTableQueryParam | None = None, preload: list | None = None) -> Sequence[GenTableModel]:
+    async def get_gen_table_list(
+        self,
+        search: GenTableQueryParam | None = None,
+        preload: list | None = None,
+    ) -> Sequence[GenTableModel]:
         """
         根据查询参数获取代码生成业务表列表信息。
 
@@ -76,7 +90,11 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         返回:
         - Sequence[GenTableModel]: 业务表列表信息。
         """
-        return await self.list(search=search.__dict__, order_by=[{"created_time": "desc"}], preload=preload)
+        return await self.list(
+            search=search.__dict__,
+            order_by=[{"created_time": "desc"}],
+            preload=preload,
+        )
 
     async def add_gen_table(self, add_model: GenTableSchema) -> GenTableModel:
         """
@@ -102,7 +120,10 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         - GenTableSchema: 修改后的业务表信息模型。
         """
         # 排除嵌套对象字段，避免SQLAlchemy尝试直接将字典设置到模型实例上
-        return await self.update(id=table_id, data=edit_model.model_dump(exclude_unset=True, exclude={"columns"}))
+        return await self.update(
+            id=table_id,
+            data=edit_model.model_dump(exclude_unset=True, exclude={"columns"}),
+        )
 
     async def delete_gen_table(self, ids: list[int]) -> None:
         """
@@ -127,6 +148,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         database_type = settings.DATABASE_TYPE
 
         from app.core.database import engine
+
         inspector: Inspector = inspect(engine)
         table_names = inspector.get_table_names()
 
@@ -134,7 +156,11 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         for table_name in table_names:
             try:
                 table_comment = inspector.get_table_comment(table_name)
-                comment = table_comment.get('text', '') if isinstance(table_comment, dict) else table_comment
+                comment = (
+                    table_comment.get("text", "")
+                    if isinstance(table_comment, dict)
+                    else table_comment
+                )
                 table_comment = comment or ""
             except Exception as e:
                 log.warning(f"获取表 {table_name} 的注释失败: {e}")
@@ -153,7 +179,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
                 "database_name": database_name,
                 "table_name": table_name,
                 "table_type": database_type,
-                "table_comment": table_comment
+                "table_comment": table_comment,
             }
 
             dict_data.append(GenDBTableSchema(**table_info).model_dump())
@@ -197,6 +223,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         - bool: 如果表存在返回True，否则返回False。
         """
         from app.core.database import engine
+
         inspector: Inspector = inspect(engine)
         return inspector.has_table(table_name)
 
@@ -232,7 +259,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         super().__init__(model=GenTableColumnModel, auth=auth)
 
     @staticmethod
-    def _sync_get_table_columns(database_type, table_name):
+    def _sync_get_table_columns(database_type: str, table_name: str) -> list[dict]:
         """
         同步函数：获取数据库表的列信息
 
@@ -245,6 +272,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         # 使用SQLAlchemy Inspector获取表列信息
         from app.core.database import engine
+
         inspector: Inspector = inspect(engine)
 
         # 获取列信息
@@ -253,61 +281,62 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         # 获取主键信息
         try:
             pk_constraint = inspector.get_pk_constraint(table_name)
-            primary_keys = set(pk_constraint.get("constrained_columns", [])) if pk_constraint else set()
+            primary_keys = (
+                set(pk_constraint.get("constrained_columns", [])) if pk_constraint else set()
+            )
         except Exception:
             primary_keys = set()
 
         # 获取唯一约束信息
         unique_columns = set()
-        try:
-            unique_constraints = inspector.get_unique_constraints(table_name)
-            for constraint in unique_constraints:
-                unique_columns.update(constraint.get("column_names", []))
-        except Exception:
-            pass
+        unique_constraints = inspector.get_unique_constraints(table_name)
+        for constraint in unique_constraints:
+            unique_columns.update(constraint.get("column_names", []))
 
         # 处理列信息
         columns_list = []
         for idx, column in enumerate(columns):
             # 获取列的基本信息
-            column_name = column['name']
-            column_type = str(column['type'])
-            is_nullable = column.get('nullable', True)
-            column_default = column.get('default', None)
+            column_name = column["name"]
+            column_type = str(column["type"])
+            is_nullable = column.get("nullable", True)
+            column_default = column.get("default", None)
             # 获取列注释（如果有的话）
-            column_comment = column.get('comment', '')
+            column_comment = column.get("comment", "")
             # 判断是否为主键
             is_pk = column_name in primary_keys
             # 判断是否为唯一约束
             is_unique = column_name in unique_columns
             # 判断是否为自增列（基于数据库类型和列类型）
-            is_increment = column.get('autoincrement', False) in (True, 'auto')
+            is_increment = column.get("autoincrement", False) in (True, "auto")
             # 获取列长度（如果适用）
             column_length = None
             # 使用getattr安全地获取length属性，避免访问不存在时抛出AttributeError
-            column_length = getattr(column['type'], 'length', None)
+            column_length = getattr(column["type"], "length", None)
             if column_length is not None:
-                column_length = str(getattr(column['type'], 'length', ''))
+                column_length = str(getattr(column["type"], "length", ""))
 
             # 构造列信息字典
             column_info = {
                 "column_name": column_name,
-                "column_comment": column_comment or '',
+                "column_comment": column_comment or "",
                 "column_type": column_type,
-                "column_length": column_length or '',
-                "column_default": str(column_default) if column_default is not None else '',
+                "column_length": column_length or "",
+                "column_default": str(column_default) if column_default is not None else "",
                 "sort": idx + 1,  # 序号从1开始
                 "is_pk": 1 if is_pk else 0,
                 "is_increment": 1 if is_increment else 0,
                 "is_nullable": 1 if is_nullable else 0,
-                "is_unique": 1 if is_unique else 0
+                "is_unique": 1 if is_unique else 0,
             }
 
             columns_list.append(column_info)
 
         return columns_list
 
-    async def get_gen_table_column_by_id(self, id: int, preload: list | None = None) -> GenTableColumnModel | None:
+    async def get_gen_table_column_by_id(
+        self, id: int, preload: list | None = None
+    ) -> GenTableColumnModel | None:
         """根据业务表字段ID获取业务表字段信息。
 
         参数:
@@ -319,7 +348,9 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_gen_table_column_list_by_table_id(self, table_id: int, preload: list | None = None) -> GenTableColumnModel | None:
+    async def get_gen_table_column_list_by_table_id(
+        self, table_id: int, preload: list | None = None
+    ) -> GenTableColumnModel | None:
         """根据业务表ID获取业务表字段列表信息。
 
         参数:
@@ -331,7 +362,12 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.get(table_id=table_id, preload=preload)
 
-    async def list_gen_table_column_crud_by_table_id(self, table_id: int, order_by: list | None = None, preload: list | None = None) -> Sequence[GenTableColumnModel]:
+    async def list_gen_table_column_crud_by_table_id(
+        self,
+        table_id: int,
+        order_by: list | None = None,
+        preload: list | None = None,
+    ) -> Sequence[GenTableColumnModel]:
         """根据业务表ID查询业务表字段列表。
 
         参数:
@@ -344,7 +380,9 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.list(search={"table_id": table_id}, order_by=order_by, preload=preload)
 
-    async def get_gen_db_table_columns_by_name(self, table_name: str | None) -> list[GenTableColumnOutSchema]:
+    async def get_gen_db_table_columns_by_name(
+        self, table_name: str | None
+    ) -> list[GenTableColumnOutSchema]:
         """
         根据业务表名称获取业务表字段列表信息。
 
@@ -361,8 +399,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         try:
             # 直接调用同步方法获取列信息
             columns_info = GenTableColumnCRUD._sync_get_table_columns(
-                settings.DATABASE_TYPE,
-                table_name
+                settings.DATABASE_TYPE, table_name
             )
 
             # 转换为GenTableColumnOutSchema对象列表
@@ -374,7 +411,12 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
             # 确保即使出错也返回空列表而不是None
             raise
 
-    async def list_gen_table_column_crud(self, search: dict | None = None, order_by: list | None = None, preload: list | None = None) -> Sequence[GenTableColumnModel]:
+    async def list_gen_table_column_crud(
+        self,
+        search: dict | None = None,
+        order_by: list | None = None,
+        preload: list | None = None,
+    ) -> Sequence[GenTableColumnModel]:
         """根据业务表字段查询业务表字段列表。
 
         参数:
@@ -387,7 +429,9 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def create_gen_table_column_crud(self, data: GenTableColumnSchema) -> GenTableColumnModel | None:
+    async def create_gen_table_column_crud(
+        self, data: GenTableColumnSchema
+    ) -> GenTableColumnModel | None:
         """创建业务表字段。
 
         参数:
@@ -398,7 +442,9 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.create(data=data)
 
-    async def update_gen_table_column_crud(self, id: int, data: GenTableColumnSchema) -> GenTableColumnModel | None:
+    async def update_gen_table_column_crud(
+        self, id: int, data: GenTableColumnSchema
+    ) -> GenTableColumnModel | None:
         """更新业务表字段。
 
         参数:

@@ -11,7 +11,12 @@ from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
-from .schema import ChatQuerySchema, McpCreateSchema, McpQueryParam, McpUpdateSchema
+from .schema import (
+    ChatQuerySchema,
+    McpCreateSchema,
+    McpQueryParam,
+    McpUpdateSchema,
+)
 from .service import McpService
 
 AIRouter = APIRouter(route_class=OperationLogRoute, prefix="/ai", tags=["MCP智能助手"])
@@ -20,7 +25,7 @@ AIRouter = APIRouter(route_class=OperationLogRoute, prefix="/ai", tags=["MCP智�
 @AIRouter.post("/chat", summary="智能对话", description="与MCP智能助手进行对话")
 async def chat_controller(
     query: ChatQuerySchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:chat"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:chat"]))],
 ) -> StreamingResponse:
     """
     智能对话接口
@@ -39,7 +44,7 @@ async def chat_controller(
             async for chunk in McpService.chat_query(query=query):
                 # 确保返回的是字节串
                 if chunk:
-                    yield chunk.encode('utf-8') if isinstance(chunk, str) else chunk
+                    yield (chunk.encode("utf-8") if isinstance(chunk, str) else chunk)
         except Exception as e:
             log.error(f"流式响应出错: {e!s}")
             yield f"抱歉，处理您的请求时出现了错误: {e!s}".encode()
@@ -47,10 +52,14 @@ async def chat_controller(
     return StreamResponse(generate_response(), media_type="text/plain; charset=utf-8")
 
 
-@AIRouter.get("/detail/{id}", summary="获取 MCP 服务器详情", description="获取 MCP 服务器详情")
+@AIRouter.get(
+    "/detail/{id}",
+    summary="获取 MCP 服务器详情",
+    description="获取 MCP 服务器详情",
+)
 async def detail_controller(
     id: Annotated[int, Path(description="MCP ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:query"]))],
 ) -> JSONResponse:
     """
     获取 MCP 服务器详情接口
@@ -70,7 +79,7 @@ async def detail_controller(
 async def list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[McpQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:query"]))],
 ) -> JSONResponse:
     """
     查询 MCP 服务器列表接口
@@ -83,8 +92,14 @@ async def list_controller(
     返回:
     - JSONResponse: 包含 MCP 服务器列表的 JSON 响应
     """
-    result_dict_list = await McpService.list_service(auth=auth, search=search, order_by=page.order_by)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict_list = await McpService.list_service(
+        auth=auth, search=search, order_by=page.order_by
+    )
+    result_dict = await PaginationService.paginate(
+        data_list=result_dict_list,
+        page_no=page.page_no,
+        page_size=page.page_size,
+    )
     log.info("查询 MCP 服务器列表成功")
     return SuccessResponse(data=result_dict, msg="查询 MCP 服务器列表成功")
 
@@ -92,7 +107,7 @@ async def list_controller(
 @AIRouter.post("/create", summary="创建 MCP 服务器", description="创建 MCP 服务器")
 async def create_controller(
     data: McpCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:create"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:create"]))],
 ) -> JSONResponse:
     """
     创建 MCP 服务器接口
@@ -113,7 +128,7 @@ async def create_controller(
 async def update_controller(
     data: McpUpdateSchema,
     id: Annotated[int, Path(description="MCP ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:update"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:update"]))],
 ) -> JSONResponse:
     """
     修改 MCP 服务器接口
@@ -134,7 +149,7 @@ async def update_controller(
 @AIRouter.delete("/delete", summary="删除 MCP 服务器", description="删除 MCP 服务器")
 async def delete_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:delete"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:ai:delete"]))],
 ) -> JSONResponse:
     """
     删除 MCP 服务器接口

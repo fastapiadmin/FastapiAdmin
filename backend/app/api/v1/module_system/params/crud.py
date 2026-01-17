@@ -33,7 +33,9 @@ class ParamsCRUD(CRUDBase[ParamsModel, ParamsCreateSchema, ParamsUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_obj_by_key_crud(self, key: str, preload: list | None = None) -> ParamsModel | None:
+    async def get_obj_by_key_crud(
+        self, key: str, preload: list | None = None
+    ) -> ParamsModel | None:
         """
         根据key获取配置管理型详情
 
@@ -46,7 +48,12 @@ class ParamsCRUD(CRUDBase[ParamsModel, ParamsCreateSchema, ParamsUpdateSchema]):
         """
         return await self.get(config_key=key, preload=preload)
 
-    async def get_obj_list_crud(self, search: dict | None = None, order_by: list | None = None, preload: list | None = None) -> Sequence[ParamsModel]:
+    async def get_obj_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list | None = None,
+        preload: list | None = None,
+    ) -> Sequence[ParamsModel]:
         """
         获取配置管理型列表
 

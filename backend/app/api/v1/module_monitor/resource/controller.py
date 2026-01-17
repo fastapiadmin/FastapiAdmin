@@ -27,7 +27,7 @@ ResourceRouter = APIRouter(route_class=OperationLogRoute, prefix="/resource", ta
     "/list",
     summary="获取目录列表",
     description="获取指定目录下的文件和子目录列表",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:query"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:query"]))],
 )
 async def get_directory_list_controller(
     request: Request,
@@ -47,14 +47,13 @@ async def get_directory_list_controller(
     """
     # 获取资源列表（与案例模块保持一致的分页实现）
     result_dict_list = await ResourceService.get_resources_list_service(
-        search=search,
-        base_url=str(request.base_url)
+        search=search, base_url=str(request.base_url)
     )
     # 使用分页服务进行分页处理（与案例模块保持一致）
     result_dict = await PaginationService.paginate(
         data_list=result_dict_list,
         page_no=page.page_no,
-        page_size=page.page_size
+        page_size=page.page_size,
     )
 
     log.info(f"获取目录列表成功: {getattr(search, 'name', None) or ''}")
@@ -65,11 +64,12 @@ async def get_directory_list_controller(
     "/upload",
     summary="上传文件",
     description="上传文件到指定目录",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:upload"]))])
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:upload"]))],
+)
 async def upload_file_controller(
     file: UploadFile,
     request: Request,
-    target_path: Annotated[str | None, Form(description="目标目录路径")] = None
+    target_path: Annotated[str | None, Form(description="目标目录路径")] = None,
 ) -> JSONResponse:
     """
     上传文件
@@ -83,9 +83,7 @@ async def upload_file_controller(
     - JSONResponse: 包含上传文件信息的JSON响应。
     """
     result_dict = await ResourceService.upload_file_service(
-        file=file,
-        target_path=target_path,
-        base_url=str(request.base_url)
+        file=file, target_path=target_path, base_url=str(request.base_url)
     )
     log.info(f"上传文件成功: {result_dict['filename']}")
     return SuccessResponse(data=result_dict, msg="上传文件成功")
@@ -95,11 +93,10 @@ async def upload_file_controller(
     "/download",
     summary="下载文件",
     description="下载指定文件",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:download"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:download"]))],
 )
 async def download_file_controller(
-    request: Request,
-    path: Annotated[str, Query(description="文件路径")]
+    request: Request, path: Annotated[str, Query(description="文件路径")]
 ) -> FileResponse:
     """
     下载文件
@@ -112,19 +109,19 @@ async def download_file_controller(
     - FileResponse: 包含文件内容的文件响应。
     """
     file_path = await ResourceService.download_file_service(
-        file_path=path,
-        base_url=str(request.base_url)
+        file_path=path, base_url=str(request.base_url)
     )
 
     # 获取文件名
     import os
+
     filename = os.path.basename(file_path)
 
     log.info(f"下载文件成功: {filename}")
     return FileResponse(
         path=file_path,
         filename=filename,
-        media_type='application/octet-stream'
+        media_type="application/octet-stream",
     )
 
 
@@ -132,10 +129,10 @@ async def download_file_controller(
     "/delete",
     summary="删除文件",
     description="删除指定文件或目录",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:delete"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:delete"]))],
 )
 async def delete_files_controller(
-    paths: Annotated[list[str], Body(description="文件路径列表")]
+    paths: Annotated[list[str], Body(description="文件路径列表")],
 ) -> JSONResponse:
     """
     删除文件
@@ -155,11 +152,9 @@ async def delete_files_controller(
     "/move",
     summary="移动文件",
     description="移动文件或目录",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:move"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:move"]))],
 )
-async def move_file_controller(
-    data: ResourceMoveSchema
-) -> JSONResponse:
+async def move_file_controller(data: ResourceMoveSchema) -> JSONResponse:
     """
     移动文件
 
@@ -178,11 +173,9 @@ async def move_file_controller(
     "/copy",
     summary="复制文件",
     description="复制文件或目录",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:copy"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:copy"]))],
 )
-async def copy_file_controller(
-    data: ResourceCopySchema
-) -> JSONResponse:
+async def copy_file_controller(data: ResourceCopySchema) -> JSONResponse:
     """
     复制文件
 
@@ -201,11 +194,9 @@ async def copy_file_controller(
     "/rename",
     summary="重命名文件",
     description="重命名文件或目录",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:rename"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:rename"]))],
 )
-async def rename_file_controller(
-    data: ResourceRenameSchema
-) -> JSONResponse:
+async def rename_file_controller(data: ResourceRenameSchema) -> JSONResponse:
     """
     重命名文件
 
@@ -224,10 +215,10 @@ async def rename_file_controller(
     "/create-dir",
     summary="创建目录",
     description="在指定路径创建新目录",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:create_dir"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:create_dir"]))],
 )
 async def create_directory_controller(
-    data: ResourceCreateDirSchema
+    data: ResourceCreateDirSchema,
 ) -> JSONResponse:
     """
     创建目录
@@ -247,11 +238,10 @@ async def create_directory_controller(
     "/export",
     summary="导出资源列表",
     description="导出资源列表",
-    dependencies=[Depends(AuthPermission(["module_monitor:resource:export"]))]
+    dependencies=[Depends(AuthPermission(["module_monitor:resource:export"]))],
 )
 async def export_resource_list_controller(
-    request: Request,
-    search: Annotated[ResourceSearchQueryParam, Depends()]
+    request: Request, search: Annotated[ResourceSearchQueryParam, Depends()]
 ) -> StreamingResponse:
     """
     导出资源列表
@@ -265,16 +255,13 @@ async def export_resource_list_controller(
     """
     # 获取搜索结果
     result_dict_list = await ResourceService.get_resources_list_service(
-        search=search,
-        base_url=str(request.base_url)
+        search=search, base_url=str(request.base_url)
     )
     export_result = await ResourceService.export_resource_service(data_list=result_dict_list)
 
     log.info("导出资源列表成功")
     return StreamResponse(
         data=bytes2file_response(export_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            'Content-Disposition': 'attachment; filename=resource_list.xlsx'
-        }
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=resource_list.xlsx"},
     )

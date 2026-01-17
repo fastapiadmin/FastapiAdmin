@@ -1,9 +1,7 @@
 import io
-
 from typing import Any
 
 import pandas as pd
-
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, PatternFill
 from openpyxl.utils import get_column_letter
@@ -25,12 +23,19 @@ class ExcelUtil:
         返回:
         - list: 映射后的数据列表。
         """
-        mapping_data = [{mapping_dict.get(key): item.get(key) for key in mapping_dict} for item in list_data]
+        mapping_data = [
+            {mapping_dict.get(key): item.get(key) for key in mapping_dict} for item in list_data
+        ]
 
         return mapping_data
 
     @classmethod
-    def get_excel_template(cls, header_list: list[str], selector_header_list: list[str], option_list: list[dict[str, list[str]]]) -> bytes:
+    def get_excel_template(
+        cls,
+        header_list: list[str],
+        selector_header_list: list[str],
+        option_list: list[dict[str, list[str]]],
+    ) -> bytes:
         """
         生成 Excel 模板文件。
 
@@ -48,15 +53,15 @@ class ExcelUtil:
             raise ValueError("不存在活动工作表")
 
         # 设置表头样式
-        header_fill = PatternFill(start_color='ababab', end_color='ababab', fill_type='solid')
+        header_fill = PatternFill(start_color="ababab", end_color="ababab", fill_type="solid")
 
         # 写入表头
         for col_num, header in enumerate(header_list, 1):
             cell = ws.cell(row=1, column=col_num)
-            cell.value = header
+            cell.value = header  # pyright: ignore[reportAttributeAccessIssue]
             cell.fill = header_fill
             # 设置水平居中对齐
-            cell.alignment = Alignment(horizontal='center')
+            cell.alignment = Alignment(horizontal="center")
             # 设置列宽度为16
             ws.column_dimensions[get_column_letter(col_num)].width = 12
 
@@ -65,11 +70,14 @@ class ExcelUtil:
             col_idx = header_list.index(selector_header) + 1
 
             # 获取当前表头的选项列表
-            header_options = next((opt.get(selector_header) for opt in option_list if selector_header in opt), [])
+            header_options = next(
+                (opt.get(selector_header) for opt in option_list if selector_header in opt),
+                [],
+            )
 
             if header_options:
-                dv = DataValidation(type='list', formula1=f'"{",".join(header_options)}"')
-                dv.add(f'{get_column_letter(col_idx)}2:{get_column_letter(col_idx)}1048576')
+                dv = DataValidation(type="list", formula1=f'"{",".join(header_options)}"')
+                dv.add(f"{get_column_letter(col_idx)}2:{get_column_letter(col_idx)}1048576")
                 ws.add_data_validation(dv)
 
         # 导出为二进制数据
@@ -95,6 +103,6 @@ class ExcelUtil:
         mapping_data = cls.__mapping_list(list_data, mapping_dict)
         df = pd.DataFrame(mapping_data)
         buffer = io.BytesIO()
-        df.to_excel(buffer, index=False, engine='openpyxl')
+        df.to_excel(buffer, index=False, engine="openpyxl")  # pyright: ignore[reportArgumentType]
         binary_data = buffer.getvalue()
         return binary_data

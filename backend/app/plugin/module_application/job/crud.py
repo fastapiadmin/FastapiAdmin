@@ -5,7 +5,12 @@ from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_crud import CRUDBase
 
 from .model import JobLogModel, JobModel
-from .schema import JobCreateSchema, JobLogCreateSchema, JobLogUpdateSchema, JobUpdateSchema
+from .schema import (
+    JobCreateSchema,
+    JobLogCreateSchema,
+    JobLogUpdateSchema,
+    JobUpdateSchema,
+)
 
 
 class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
@@ -21,7 +26,9 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         self.auth = auth
         super().__init__(model=JobModel, auth=auth)
 
-    async def get_obj_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> JobModel | None:
+    async def get_obj_by_id_crud(
+        self, id: int, preload: list[str | Any] | None = None
+    ) -> JobModel | None:
         """
         获取定时任务详情
 
@@ -34,7 +41,12 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_obj_list_crud(self, search: dict | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[JobModel]:
+    async def get_obj_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict[str, str]] | None = None,
+        preload: list[str | Any] | None = None,
+    ) -> Sequence[JobModel]:
         """
         获取定时任务列表
 
@@ -115,7 +127,9 @@ class JobLogCRUD(CRUDBase[JobLogModel, JobLogCreateSchema, JobLogUpdateSchema]):
         self.auth = auth
         super().__init__(model=JobLogModel, auth=auth)
 
-    async def get_obj_log_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> JobLogModel | None:
+    async def get_obj_log_by_id_crud(
+        self, id: int, preload: list[str | Any] | None = None
+    ) -> JobLogModel | None:
         """
         获取定时任务日志详情
 
@@ -128,7 +142,12 @@ class JobLogCRUD(CRUDBase[JobLogModel, JobLogCreateSchema, JobLogUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_obj_log_list_crud(self, search: dict | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[JobLogModel]:
+    async def get_obj_log_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict[str, str]] | None = None,
+        preload: list[str | Any] | None = None,
+    ) -> Sequence[JobLogModel]:
         """
         获取定时任务日志列表
 

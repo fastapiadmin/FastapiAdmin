@@ -47,7 +47,7 @@
           v-model="command"
           type="textarea"
           :rows="3"
-          placeholder="试试说：修改test用户的姓名为测试人员&#10;或者：跳转到用户管理&#10;按 Ctrl+Enter 快速发送"
+          placeholder="试试说：打开角色管理页面&#10;或者：跳转到用户管理&#10;按 Ctrl+Enter 快速发送"
           :disabled="loading"
           @keydown.ctrl.enter="handleExecute"
         />
@@ -294,10 +294,10 @@ const scheduleUpdateFabPositionBurst = (frames = 18) => {
 
 // 快捷命令示例
 const examples = [
-  "修改test用户的姓名为测试人员",
-  "获取姓名为张三的用户信息",
   "跳转到用户管理",
   "打开角色管理页面",
+  "修改test用户的姓名为测试人员",
+  "获取姓名为张三的用户信息",
 ];
 
 // 打开对话框

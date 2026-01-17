@@ -1,7 +1,11 @@
 import re
 
 from app.common.constant import GenConstant
-from app.plugin.module_generator.gencode.schema import GenTableColumnSchema, GenTableOutSchema, GenTableSchema
+from app.plugin.module_generator.gencode.schema import (
+    GenTableColumnSchema,
+    GenTableOutSchema,
+    GenTableSchema,
+)
 from app.utils.string_util import StringUtil
 
 
@@ -21,10 +25,10 @@ class GenUtils:
         """
         # 只有当字段为None时才设置默认值
         gen_table.class_name = cls.convert_class_name(gen_table.table_name or "")
-        gen_table.package_name = 'gencode'
-        gen_table.module_name = f'module_{gen_table.package_name}'
+        gen_table.package_name = "gencode"
+        gen_table.module_name = f"module_{gen_table.package_name}"
         gen_table.business_name = gen_table.table_name
-        gen_table.function_name = re.sub(r'(?:表|测试)', '', gen_table.table_comment or "")
+        gen_table.function_name = re.sub(r"(?:表|测试)", "", gen_table.table_comment or "")
 
     @classmethod
     def init_column_field(cls, column: GenTableColumnSchema, table: GenTableOutSchema) -> None:
@@ -45,13 +49,15 @@ class GenUtils:
         column.table_id = table.id
         column.python_field = cls.to_camel_case(column_name)
         # 只有当python_type为None时才设置默认类型
-        column.python_type = StringUtil.get_mapping_value_by_key_ignore_case(GenConstant.DB_TO_PYTHON, data_type)
+        column.python_type = StringUtil.get_mapping_value_by_key_ignore_case(
+            GenConstant.DB_TO_PYTHON, data_type
+        )
 
         if column.column_length is None:
-            column.column_length = ''
+            column.column_length = ""
 
         if column.column_default is None:
-            column.column_default = ''
+            column.column_default = ""
 
         if column.html_type is None:
             if cls.arrays_contains(GenConstant.COLUMNTYPE_STR, data_type) or cls.arrays_contains(
@@ -61,7 +67,8 @@ class GenUtils:
                 column_length = cls.get_column_length(column.column_type or "")
                 html_type = (
                     GenConstant.HTML_TEXTAREA
-                    if column_length >= 500 or cls.arrays_contains(GenConstant.COLUMNTYPE_TEXT, data_type)
+                    if column_length >= 500
+                    or cls.arrays_contains(GenConstant.COLUMNTYPE_TEXT, data_type)
                     else GenConstant.HTML_INPUT
                 )
                 column.html_type = html_type
@@ -89,22 +96,35 @@ class GenUtils:
             column.is_insert = False
 
         # 只有当is_edit为None时才设置编辑字段
-        if not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_EDIT, column_name) and not column.is_pk:
+        if (
+            not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_EDIT, column_name)
+            and not column.is_pk
+        ):
             column.is_edit = GenConstant.REQUIRE
         else:
             column.is_edit = False
 
         # 只有当is_list为None时才设置列表字段
-        if not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_LIST, column_name) and not column.is_pk:
+        if (
+            not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_LIST, column_name)
+            and not column.is_pk
+        ):
             column.is_list = GenConstant.REQUIRE
         else:
             column.is_list = False
 
         # 只有当is_query为None时才设置查询字段
-        if not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_QUERY, column_name) and not column.is_pk:
+        if (
+            not cls.arrays_contains(GenConstant.COLUMNNAME_NOT_QUERY, column_name)
+            and not column.is_pk
+        ):
             column.is_query = GenConstant.REQUIRE
             # 直接设置查询类型，因为我们已经确定这是一个查询字段
-            if column_name.lower().endswith('name') or data_type in ['varchar', 'char', 'text']:
+            if column_name.lower().endswith("name") or data_type in [
+                "varchar",
+                "char",
+                "text",
+            ]:
                 column.query_type = GenConstant.QUERY_LIKE
             else:
                 column.query_type = GenConstant.QUERY_EQ
@@ -113,7 +133,7 @@ class GenUtils:
             column.query_type = None
 
     @classmethod
-    def arrays_contains(cls, arr, target_value) -> bool:
+    def arrays_contains(cls, arr: list, target_value: str) -> bool:
         """
         检查目标值是否在数组中
 
@@ -135,11 +155,11 @@ class GenUtils:
         # 对于包含括号的类型（如TINYINT(1)），需要特殊处理
         # 先获取基本类型名称（不含括号）用于比较
         target_str = str(target_value).lower()
-        target_base_type = target_str.split('(')[0] if '(' in target_str else target_str
+        target_base_type = target_str.split("(")[0] if "(" in target_str else target_str
 
         for item in arr:
             item_str = str(item).lower()
-            item_base_type = item_str.split('(')[0] if '(' in item_str else item_str
+            item_base_type = item_str.split("(")[0] if "(" in item_str else item_str
             if target_base_type == item_base_type:
                 return True
         return False
@@ -171,7 +191,7 @@ class GenUtils:
         """
         for search_string in search_list:
             if input_string.startswith(search_string):
-                return input_string.replace(search_string, '', 1)
+                return input_string.replace(search_string, "", 1)
         return input_string
 
     @classmethod
@@ -186,10 +206,10 @@ class GenUtils:
         - str: 数据库类型。
         """
         # 特殊处理tinyint(1)，保留括号和长度信息以便识别为布尔类型
-        if column_type.lower().startswith('tinyint(1)'):
+        if column_type.lower().startswith("tinyint(1)"):
             return column_type
-        if '(' in column_type:
-            return column_type.split('(')[0]
+        if "(" in column_type:
+            return column_type.split("(")[0]
         return column_type
 
     @classmethod
@@ -203,8 +223,8 @@ class GenUtils:
         返回:
         - int: 字段长度（优先取第一个长度值，无法解析时返回0）。
         """
-        if '(' in column_type:
-            length = len(column_type.split('(')[1].split(')')[0])
+        if "(" in column_type:
+            length = len(column_type.split("(")[1].split(")")[0])
             return length
         return 0
 
@@ -219,8 +239,8 @@ class GenUtils:
         返回:
         - list[str]: 拆分结果。
         """
-        if '(' in column_type and ')' in column_type:
-            return column_type.split('(')[1].split(')')[0].split(',')
+        if "(" in column_type and ")" in column_type:
+            return column_type.split("(")[1].split(")")[0].split(",")
         return []
 
     @classmethod
@@ -234,5 +254,5 @@ class GenUtils:
         返回:
         - str: 驼峰命名
         """
-        parts = text.split('_')
-        return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+        parts = text.split("_")
+        return parts[0] + "".join(word.capitalize() for word in parts[1:])

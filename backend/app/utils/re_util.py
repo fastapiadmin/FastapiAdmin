@@ -50,7 +50,7 @@ def is_phone(number: str) -> re.Match[str] | None:
     if not number:
         return None
 
-    phone_pattern = r'^1[3-9]\d{9}$'
+    phone_pattern = r"^1[3-9]\d{9}$"
     return match_string(phone_pattern, number)
 
 
@@ -67,5 +67,5 @@ def is_git_url(url: str) -> re.Match[str] | None:
     if not url:
         return None
 
-    git_pattern = r'^(?!(git\+ssh|ssh)://|git@)(?P<scheme>git|https?|file)://(?P<host>[^/]*)(?P<path>(?:/[^/]*)*/)(?P<repo>[^/]+?)(?:\.git)?$'
+    git_pattern = r"^(?!(git\+ssh|ssh)://|git@)(?P<scheme>git|https?|file)://(?P<host>[^/]*)(?P<path>(?:/[^/]*)*/)(?P<repo>[^/]+?)(?:\.git)?$"
     return match_string(git_pattern, url)

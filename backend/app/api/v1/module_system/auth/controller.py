@@ -12,13 +12,23 @@ from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.core.security import CustomOAuth2PasswordRequestForm
 
-from .schema import CaptchaOutSchema, JWTOutSchema, LogoutPayloadSchema, RefreshTokenPayloadSchema
+from .schema import (
+    CaptchaOutSchema,
+    JWTOutSchema,
+    LogoutPayloadSchema,
+    RefreshTokenPayloadSchema,
+)
 from .service import CaptchaService, LoginService
 
 AuthRouter = APIRouter(route_class=OperationLogRoute, prefix="/auth", tags=["认证授权"])
 
 
-@AuthRouter.post("/login", summary="登录", description="登录", response_model=JWTOutSchema)
+@AuthRouter.post(
+    "/login",
+    summary="登录",
+    description="登录",
+    response_model=JWTOutSchema,
+)
 async def login_for_access_token_controller(
     request: Request,
     redis: Annotated[Redis, Depends(redis_getter)],
@@ -39,7 +49,9 @@ async def login_for_access_token_controller(
     异常:
     - CustomException: 认证失败时抛出异常。
     """
-    login_token = await LoginService.authenticate_user_service(request=request, redis=redis, login_form=login_form, db=db)
+    login_token = await LoginService.authenticate_user_service(
+        request=request, redis=redis, login_form=login_form, db=db
+    )
 
     log.info(f"用户{login_form.username}登录成功")
 
@@ -49,12 +61,18 @@ async def login_for_access_token_controller(
     return SuccessResponse(data=login_token.model_dump(), msg="登录成功")
 
 
-@AuthRouter.post("/token/refresh", summary="刷新token", description="刷新token", response_model=JWTOutSchema, dependencies=[Depends(get_current_user)])
+@AuthRouter.post(
+    "/token/refresh",
+    summary="刷新token",
+    description="刷新token",
+    response_model=JWTOutSchema,
+    dependencies=[Depends(get_current_user)],
+)
 async def get_new_token_controller(
     request: Request,
     payload: RefreshTokenPayloadSchema,
     db: Annotated[AsyncSession, Depends(db_getter)],
-    redis: Annotated[Redis, Depends(redis_getter)]
+    redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
     """
     刷新token
@@ -70,15 +88,22 @@ async def get_new_token_controller(
     - CustomException: 刷新令牌失败时抛出异常。
     """
     # 解析当前的访问Token以获取用户名
-    new_token = await LoginService.refresh_token_service(db=db, request=request, redis=redis, refresh_token=payload)
+    new_token = await LoginService.refresh_token_service(
+        db=db, request=request, redis=redis, refresh_token=payload
+    )
     token_dict = new_token.model_dump()
     log.info(f"刷新token成功: {token_dict}")
     return SuccessResponse(data=token_dict, msg="刷新成功")
 
 
-@AuthRouter.get("/captcha/get", summary="获取验证码", description="获取登录验证码", response_model=CaptchaOutSchema)
+@AuthRouter.get(
+    "/captcha/get",
+    summary="获取验证码",
+    description="获取登录验证码",
+    response_model=CaptchaOutSchema,
+)
 async def get_captcha_for_login_controller(
-    redis: Annotated[Redis, Depends(redis_getter)]
+    redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
     """
     获取登录验证码
@@ -98,10 +123,15 @@ async def get_captcha_for_login_controller(
     return SuccessResponse(data=captcha, msg="获取验证码成功")
 
 
-@AuthRouter.post('/logout', summary="退出登录", description="退出登录", dependencies=[Depends(get_current_user)])
+@AuthRouter.post(
+    "/logout",
+    summary="退出登录",
+    description="退出登录",
+    dependencies=[Depends(get_current_user)],
+)
 async def logout_controller(
     payload: LogoutPayloadSchema,
-    redis: Annotated[Redis, Depends(redis_getter)]
+    redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
     """
     退出登录
@@ -117,6 +147,6 @@ async def logout_controller(
     - CustomException: 退出登录失败时抛出异常。
     """
     if await LoginService.logout_service(redis=redis, token=payload):
-        log.info('退出成功')
-        return SuccessResponse(msg='退出成功')
-    return ErrorResponse(msg='退出失败')
+        log.info("退出成功")
+        return SuccessResponse(msg="退出成功")
+    return ErrorResponse(msg="退出失败")

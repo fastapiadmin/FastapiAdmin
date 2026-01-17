@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from app.common.response import ResponseSchema as ResponseSchema
+
 from .auth.controller import AuthRouter
 from .dept.controller import DeptRouter
 from .dict.controller import DictRouter

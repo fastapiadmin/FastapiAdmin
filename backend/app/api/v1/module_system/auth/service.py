@@ -1,6 +1,5 @@
 import json
 import uuid
-
 from datetime import datetime, timedelta
 from typing import NewType
 
@@ -17,7 +16,11 @@ from app.config.setting import settings
 from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.core.redis_crud import RedisCURD
-from app.core.security import CustomOAuth2PasswordRequestForm, create_access_token, decode_access_token
+from app.core.security import (
+    CustomOAuth2PasswordRequestForm,
+    create_access_token,
+    decode_access_token,
+)
 from app.utils.captcha_util import CaptchaUtil
 from app.utils.common_util import get_random_character
 from app.utils.hash_bcrpy_util import PwdUtil
@@ -32,15 +35,21 @@ from .schema import (
     RefreshTokenPayloadSchema,
 )
 
-CaptchaKey = NewType('CaptchaKey', str)
-CaptchaBase64 = NewType('CaptchaBase64', str)
+CaptchaKey = NewType("CaptchaKey", str)
+CaptchaBase64 = NewType("CaptchaBase64", str)
 
 
 class LoginService:
     """登录认证服务"""
 
     @classmethod
-    async def authenticate_user_service(cls, request: Request, redis: Redis, login_form: CustomOAuth2PasswordRequestForm, db: AsyncSession) -> JWTOutSchema:
+    async def authenticate_user_service(
+        cls,
+        request: Request,
+        redis: Redis,
+        login_form: CustomOAuth2PasswordRequestForm,
+        db: AsyncSession,
+    ) -> JWTOutSchema:
         """
         用户认证
 
@@ -56,14 +65,18 @@ class LoginService:
         - CustomException: 认证失败时抛出异常。
         """
         # 判断是否来自API文档
-        referer = request.headers.get('referer', '')
-        request_from_docs = referer.endswith(('docs', 'redoc'))
+        referer = request.headers.get("referer", "")
+        request_from_docs = referer.endswith(("docs", "redoc"))
 
         # 验证码校验
         if settings.CAPTCHA_ENABLE and not request_from_docs:
             if not login_form.captcha_key or not login_form.captcha:
                 raise CustomException(msg="验证码不能为空")
-            await CaptchaService.check_captcha_service(redis=redis, key=login_form.captcha_key, captcha=login_form.captcha)
+            await CaptchaService.check_captcha_service(
+                redis=redis,
+                key=login_form.captcha_key,
+                captcha=login_form.captcha,
+            )
 
         # 用户认证
         auth = AuthSchema(db=db)
@@ -72,7 +85,9 @@ class LoginService:
         if not user:
             raise CustomException(msg="用户不存在")
 
-        if not PwdUtil.verify_password(plain_password=login_form.password, password_hash=user.password):
+        if not PwdUtil.verify_password(
+            plain_password=login_form.password, password_hash=user.password
+        ):
             raise CustomException(msg="账号或密码错误")
 
         if user.status == "1":
@@ -86,12 +101,19 @@ class LoginService:
             raise CustomException(msg="登录类型不能为空")
 
         # 创建token
-        token = await cls.create_token_service(request=request, redis=redis, user=user, login_type=login_form.login_type)
+        token = await cls.create_token_service(
+            request=request,
+            redis=redis,
+            user=user,
+            login_type=login_form.login_type,
+        )
 
         return token
 
     @classmethod
-    async def create_token_service(cls, request: Request, redis: Redis, user: UserModel, login_type: str) -> JWTOutSchema:
+    async def create_token_service(
+        cls, request: Request, redis: Redis, user: UserModel, login_type: str
+    ) -> JWTOutSchema:
         """
         创建访问令牌和刷新令牌
 
@@ -113,10 +135,10 @@ class LoginService:
 
         user_agent = parse(request.headers.get("user-agent"))
         request_ip = None
-        x_forwarded_for = request.headers.get('X-Forwarded-For')
+        x_forwarded_for = request.headers.get("X-Forwarded-For")
         if x_forwarded_for:
             # 取第一个 IP 地址，通常为客户端真实 IP
-            request_ip = x_forwarded_for.split(',')[0].strip()
+            request_ip = x_forwarded_for.split(",")[0].strip()
         else:
             # 若没有 X-Forwarded-For 头，则使用 request.client.host
             request_ip = request.client.host if request.client else "127.0.0.1"
@@ -127,8 +149,8 @@ class LoginService:
         # 确保在请求上下文中设置用户名和会话ID
         request.scope["user_username"] = user.username
 
-        access_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+        access_expires = timedelta(seconds=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_expires = timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
 
         now = datetime.now()
 
@@ -146,42 +168,52 @@ class LoginService:
             os=user_agent.os.family,
             browser=user_agent.browser.family,
             login_time=user.last_login,
-            login_type=login_type
+            login_type=login_type,
         ).model_dump_json()
 
-        access_token = create_access_token(payload=JWTPayloadSchema(
-            sub=session_info,
-            is_refresh=False,
-            exp=now + access_expires,
-        ))
-        refresh_token = create_access_token(payload=JWTPayloadSchema(
-            sub=session_info,
-            is_refresh=True,
-            exp=now + refresh_expires,
-        ))
+        access_token = create_access_token(
+            payload=JWTPayloadSchema(
+                sub=session_info,
+                is_refresh=False,
+                exp=now + access_expires,
+            )
+        )
+        refresh_token = create_access_token(
+            payload=JWTPayloadSchema(
+                sub=session_info,
+                is_refresh=True,
+                exp=now + refresh_expires,
+            )
+        )
 
         # 设置新的token
         await RedisCURD(redis).set(
-            key=f'{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}',
+            key=f"{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}",
             value=access_token,
-            expire=int(access_expires.total_seconds())
+            expire=int(access_expires.total_seconds()),
         )
 
         await RedisCURD(redis).set(
-            key=f'{RedisInitKeyConfig.REFRESH_TOKEN.key}:{session_id}',
+            key=f"{RedisInitKeyConfig.REFRESH_TOKEN.key}:{session_id}",
             value=refresh_token,
-            expire=int(refresh_expires.total_seconds())
+            expire=int(refresh_expires.total_seconds()),
         )
 
         return JWTOutSchema(
             access_token=access_token,
             refresh_token=refresh_token,
             expires_in=int(access_expires.total_seconds()),
-            token_type=settings.TOKEN_TYPE
+            token_type=settings.TOKEN_TYPE,
         )
 
     @classmethod
-    async def refresh_token_service(cls, db: AsyncSession, redis: Redis, request: Request, refresh_token: RefreshTokenPayloadSchema) -> JWTOutSchema:
+    async def refresh_token_service(
+        cls,
+        db: AsyncSession,
+        redis: Redis,
+        request: Request,
+        refresh_token: RefreshTokenPayloadSchema,
+    ) -> JWTOutSchema:
         """
         刷新访问令牌
 
@@ -219,42 +251,46 @@ class LoginService:
         log.info(f"用户ID: {user.id}, 用户名: {user.username} 正在刷新JWT令牌")
 
         # 设置新的 token
-        access_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+        access_expires = timedelta(seconds=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_expires = timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
         now = datetime.now()
 
         session_info_json = json.dumps(session_info)
 
-        access_token = create_access_token(payload=JWTPayloadSchema(
-            sub=session_info_json,
-            is_refresh=False,
-            exp=now + access_expires
-        ))
+        access_token = create_access_token(
+            payload=JWTPayloadSchema(
+                sub=session_info_json,
+                is_refresh=False,
+                exp=now + access_expires,
+            )
+        )
 
-        refresh_token_new = create_access_token(payload=JWTPayloadSchema(
-            sub=session_info_json,
-            is_refresh=True,
-            exp=now + refresh_expires
-        ))
+        refresh_token_new = create_access_token(
+            payload=JWTPayloadSchema(
+                sub=session_info_json,
+                is_refresh=True,
+                exp=now + refresh_expires,
+            )
+        )
 
         # 覆盖写入 Redis
         await RedisCURD(redis).set(
-            key=f'{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}',
+            key=f"{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}",
             value=access_token,
-            expire=int(access_expires.total_seconds())
+            expire=int(access_expires.total_seconds()),
         )
 
         await RedisCURD(redis).set(
-            key=f'{RedisInitKeyConfig.REFRESH_TOKEN.key}:{session_id}',
+            key=f"{RedisInitKeyConfig.REFRESH_TOKEN.key}:{session_id}",
             value=refresh_token_new,
-            expire=int(refresh_expires.total_seconds())
+            expire=int(refresh_expires.total_seconds()),
         )
 
         return JWTOutSchema(
             access_token=access_token,
             refresh_token=refresh_token_new,
             token_type=settings.TOKEN_TYPE,
-            expires_in=int(access_expires.total_seconds())
+            expires_in=int(access_expires.total_seconds()),
         )
 
     @classmethod
@@ -317,7 +353,7 @@ class CaptchaService:
         await RedisCURD(redis).set(
             key=redis_key,
             value=captcha_value,
-            expire=settings.CAPTCHA_EXPIRE_SECONDS
+            expire=settings.CAPTCHA_EXPIRE_SECONDS,
         )
 
         log.info(f"生成验证码成功,验证码:{captcha_value}")
@@ -326,7 +362,7 @@ class CaptchaService:
         return CaptchaOutSchema(
             enable=settings.CAPTCHA_ENABLE,
             key=CaptchaKey(captcha_key),
-            img_base=CaptchaBase64(f"data:image/png;base64,{captcha_base64}")
+            img_base=CaptchaBase64(f"data:image/png;base64,{captcha_base64}"),
         ).model_dump()
 
     @classmethod
@@ -349,19 +385,19 @@ class CaptchaService:
             raise CustomException(msg="验证码不能为空")
 
         # 获取Redis中存储的验证码
-        redis_key = f'{RedisInitKeyConfig.CAPTCHA_CODES.key}:{key}'
+        redis_key = f"{RedisInitKeyConfig.CAPTCHA_CODES.key}:{key}"
 
         captcha_value = await RedisCURD(redis).get(redis_key)
         if not captcha_value:
-            log.error('验证码已过期或不存在')
+            log.error("验证码已过期或不存在")
             raise CustomException(msg="验证码已过期")
 
         # 验证码不区分大小写比对
         if captcha.lower() != captcha_value.lower():
-            log.error(f'验证码错误,用户输入:{captcha},正确值:{captcha_value}')
+            log.error(f"验证码错误,用户输入:{captcha},正确值:{captcha_value}")
             raise CustomException(msg="验证码错误")
 
         # 验证成功后删除验证码,避免重复使用
         await RedisCURD(redis).delete(redis_key)
-        log.info(f'验证码校验成功,key:{key}')
+        log.info(f"验证码校验成功,key:{key}")
         return True

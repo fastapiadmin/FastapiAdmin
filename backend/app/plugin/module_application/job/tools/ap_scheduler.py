@@ -1,7 +1,7 @@
 import importlib
 import json
-
 from asyncio import iscoroutinefunction
+from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
@@ -28,9 +28,9 @@ from app.plugin.module_application.job.model import JobModel
 from app.utils.cron_util import CronUtil
 
 job_stores = {
-    'default': MemoryJobStore(),
-    'sqlalchemy': SQLAlchemyJobStore(url=settings.DB_URI, engine=engine),
-    'redis': RedisJobStore(
+    "default": MemoryJobStore(),
+    "sqlalchemy": SQLAlchemyJobStore(url=settings.DB_URI, engine=engine),
+    "redis": RedisJobStore(
         host=settings.REDIS_HOST,
         port=int(settings.REDIS_PORT),
         username=settings.REDIS_USER,
@@ -40,13 +40,13 @@ job_stores = {
 }
 # 配置执行器
 executors = {
-    'default': AsyncIOExecutor(),
-    'processpool': ProcessPoolExecutor(max_workers=1)  # 减少进程数量以减少资源消耗
+    "default": AsyncIOExecutor(),
+    "processpool": ProcessPoolExecutor(max_workers=1),  # 减少进程数量以减少资源消耗
 }
 # 配置默认参数
 job_defaults = {
-    'coalesce': True,  # 合并执行错过的任务
-    'max_instances': 1,  # 最大实例数
+    "coalesce": True,  # 合并执行错过的任务
+    "max_instances": 1,  # 最大实例数
 }
 # 配置调度器
 scheduler = AsyncIOScheduler()
@@ -54,7 +54,7 @@ scheduler.configure(
     jobstores=job_stores,
     executors=executors,
     job_defaults=job_defaults,
-    timezone='Asia/Shanghai'
+    timezone="Asia/Shanghai",
 )
 
 
@@ -62,6 +62,7 @@ class SchedulerUtil:
     """
     定时任务相关方法
     """
+
     # 类变量，存储应用的Redis连接
     redis_instance = None
 
@@ -89,12 +90,12 @@ class SchedulerUtil:
 
             # 初始化任务状态
             status = "0"
-            exception_info = ''
-            if hasattr(event, 'exception') and event.exception:
+            exception_info = ""
+            if hasattr(event, "exception") and event.exception:
                 exception_info = str(event.exception)
                 status = "1"
 
-            if hasattr(event, 'job_id'):
+            if hasattr(event, "job_id"):
                 job_id = event.job_id
                 query_job = cls.get_job(job_id=job_id)
 
@@ -105,11 +106,11 @@ class SchedulerUtil:
                     actual_kwargs = {}
 
                     try:
-                        if hasattr(query_job, 'args') and len(query_job.args) >= 2:
+                        if hasattr(query_job, "args") and len(query_job.args) >= 2:
                             actual_func = query_job.args[0]
                             actual_args = query_job.args[2:]
 
-                        if hasattr(query_job, 'kwargs'):
+                        if hasattr(query_job, "kwargs"):
                             actual_kwargs = query_job.kwargs
                     except Exception as e:
                         log.error(f"解析任务 {job_id} 参数失败: {e!s}")
@@ -119,40 +120,45 @@ class SchedulerUtil:
                     formatted_kwargs = str(actual_kwargs) if actual_kwargs else "{}"
 
                     # 获取实际的执行函数信息
-                    actual_func_module = ''
-                    actual_func_name = ''
+                    actual_func_module = ""
+                    actual_func_name = ""
                     try:
                         if actual_func:
-                            actual_func_module = getattr(actual_func, '__module__', '')
-                            actual_func_name = getattr(actual_func, '__name__', '')
+                            actual_func_module = getattr(actual_func, "__module__", "")
+                            actual_func_name = getattr(actual_func, "__name__", "")
                     except Exception as e:
                         log.error(f"获取任务 {job_id} 函数信息失败: {e!s}")
 
                     # 构建详细的任务消息
                     scheduled_time_str = "未知"
                     try:
-                        if hasattr(event, 'scheduled_run_time') and event.scheduled_run_time:
-                            scheduled_time_str = event.scheduled_run_time.strftime('%Y-%m-%d %H:%M:%S')
+                        if hasattr(event, "scheduled_run_time") and event.scheduled_run_time:
+                            scheduled_time_str = event.scheduled_run_time.strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            )
                     except Exception:
-                        try:
-                            scheduled_time_str = str(event.scheduled_run_time)
-                        except Exception:
-                            pass
+                        scheduled_time_str = str(event.scheduled_run_time)
 
                     try:
                         event_type = event_type
-                        func_info = f"{actual_func_module}.{actual_func_name}" if actual_func else "未知"
+                        func_info = (
+                            f"{actual_func_module}.{actual_func_name}" if actual_func else "未知"
+                        )
                         job_message = f"任务 {job_id} ({query_job.name}) 执行完成: "
                         job_message += f"状态={'成功' if status == '0' else '失败'}, "
                         job_message += f"执行函数={func_info}, "
                         job_message += f"参数={formatted_args}, "
                         job_message += f"关键字参数={formatted_kwargs}, "
                         job_message += f"计划时间={scheduled_time_str}, "
-                        job_message += f"实际执行时间={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                        job_message += (
+                            f"实际执行时间={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                        )
                         if exception_info:
                             job_message += f", 错误={exception_info[:500]}..."
                     except Exception as e:
-                        job_message = f"任务 {job_id} 执行事件，状态={'成功' if status == '0' else '失败'}"
+                        job_message = (
+                            f"任务 {job_id} 执行事件，状态={'成功' if status == '0' else '失败'}"
+                        )
                         log.error(f"构建任务 {job_id} 消息失败: {e!s}")
 
                     # 创建日志记录
@@ -195,6 +201,7 @@ class SchedulerUtil:
         except Exception as e:
             log.error(f"处理任务执行事件失败: {e!s}")
             import traceback
+
             traceback.print_exc()
 
     @classmethod
@@ -208,7 +215,8 @@ class SchedulerUtil:
         # 延迟导入避免循环导入
         from app.api.v1.module_system.auth.schema import AuthSchema
         from app.plugin.module_application.job.crud import JobCRUD
-        log.info('🔎 开始启动定时任务...')
+
+        log.info("🔎 开始启动定时任务...")
         # 保存Redis连接到类变量
         cls.redis_instance = redis
         # 启动调度器
@@ -221,7 +229,7 @@ class SchedulerUtil:
                 job_list = await JobCRUD(auth).get_obj_list_crud()
                 # 使用Redis锁确保只有一个实例执行任务初始化
                 redis_client = RedisCURD(redis)
-                lock_key = f'{RedisInitKeyConfig.APSCHEDULER_LOCK_KEY.key}:job'
+                lock_key = f"{RedisInitKeyConfig.APSCHEDULER_LOCK_KEY.key}:job"
                 # 尝试获取锁，过期时间10秒
                 lock_acquired, lock_value = await redis_client.lock(lock_key, 10)
                 if lock_acquired:
@@ -243,8 +251,9 @@ class SchedulerUtil:
                 else:
                     # 等待其他实例完成初始化
                     import asyncio
+
                     await asyncio.sleep(2)
-                    log.info('✅️ 定时任务已由其他实例初始化完成')
+                    log.info("✅️ 定时任务已由其他实例初始化完成")
 
     @classmethod
     async def close_system_scheduler(cls) -> None:
@@ -259,9 +268,9 @@ class SchedulerUtil:
             scheduler.remove_all_jobs()
             # 等待所有任务完成后再关闭
             scheduler.shutdown(wait=True)
-            log.info('✅️ 关闭定时任务成功')
+            log.info("✅️ 关闭定时任务成功")
         except Exception as e:
-            log.error(f'关闭定时任务失败: {e!s}')
+            log.error(f"关闭定时任务失败: {e!s}")
 
     @classmethod
     def get_job(cls, job_id: str | int) -> Job | None:
@@ -287,9 +296,10 @@ class SchedulerUtil:
         return scheduler.get_jobs()
 
     @classmethod
-    async def _task_wrapper(cls, func, job_id, *args, **kwargs):
+    async def _task_wrapper(cls, func: Callable, job_id: str | int, *args, **kwargs):
         """任务执行包装器，添加分布式锁防止并发执行"""
         import asyncio
+
         # 使用类变量中的Redis连接
         if not cls.redis_instance:
             log.error(f"任务 {job_id} 执行失败：Redis连接未初始化")
@@ -373,7 +383,7 @@ class SchedulerUtil:
         """
         # 动态导入模块
         # 1. 解析调用目标
-        module_path, func_name = str(job_info.func).rsplit('.', 1)
+        module_path, func_name = str(job_info.func).rsplit(".", 1)
         module_path = "app.plugin.module_application.job.function_task." + module_path
         try:
             module = importlib.import_module(module_path)
@@ -381,34 +391,36 @@ class SchedulerUtil:
 
             # 2. 确定任务存储器：优先使用redis，确保分布式环境中任务同步
             if job_info.jobstore is None:
-                job_info.jobstore = 'redis'  # 改为默认使用redis存储
+                job_info.jobstore = "redis"  # 改为默认使用redis存储
 
             # 3. 确定执行器
             job_executor = job_info.executor
             if job_executor is None:
-                job_executor = 'default'
+                job_executor = "default"
 
             # 异步函数必须使用默认执行器
             if iscoroutinefunction(job_func):
-                job_executor = 'default'
+                job_executor = "default"
 
             # 4. 创建触发器
             trigger = None
-            if job_info.trigger is None or job_info.trigger.lower() == 'now':
+            if job_info.trigger is None or job_info.trigger.lower() == "now":
                 # 立即执行作业：省略trigger或使用'now'时，使用date触发器立即执行
                 trigger = DateTrigger(run_date=datetime.now())
-            elif job_info.trigger == 'date':
+            elif job_info.trigger == "date":
                 if job_info.trigger_args is None:
                     raise ValueError("date触发器缺少执行时间参数")
                 trigger = DateTrigger(run_date=job_info.trigger_args)
-            elif job_info.trigger == 'interval':
+            elif job_info.trigger == "interval":
                 if job_info.trigger_args is None:
                     raise ValueError("interval触发器缺少参数")
                 # 将传入的 interval 表达式拆分为不同的字段
                 fields = job_info.trigger_args.strip().split()
                 if len(fields) != 5:
                     raise ValueError("无效的 interval 表达式")
-                second, minute, hour, day, week = tuple([int(field) if field != '*' else 0 for field in fields])
+                second, minute, hour, day, week = tuple(
+                    int(field) if field != "*" else 0 for field in fields
+                )
                 # 秒、分、时、天、周（* * * * 1）
                 trigger = IntervalTrigger(
                     weeks=week,
@@ -418,10 +430,10 @@ class SchedulerUtil:
                     seconds=second,
                     start_date=job_info.start_date,
                     end_date=job_info.end_date,
-                    timezone='Asia/Shanghai',
-                    jitter=None
+                    timezone="Asia/Shanghai",
+                    jitter=None,
                 )
-            elif job_info.trigger == 'cron':
+            elif job_info.trigger == "cron":
                 if job_info.trigger_args is None:
                     raise ValueError("cron触发器缺少参数")
                 # 秒、分、时、天、月、星期几、年 ()
@@ -429,12 +441,12 @@ class SchedulerUtil:
                 if len(fields) not in (6, 7):
                     raise ValueError("无效的 Cron 表达式")
                 if not CronUtil.validate_cron_expression(job_info.trigger_args):
-                    raise ValueError(f'定时任务{job_info.name}, Cron表达式不正确')
+                    raise ValueError(f"定时任务{job_info.name}, Cron表达式不正确")
 
                 # 将Cron表达式中的"?"替换为"*"以兼容APScheduler
-                parsed_fields = [field if field != '?' else '*' for field in fields]
+                parsed_fields = [field if field != "?" else "*" for field in fields]
                 if len(fields) == 6:
-                    parsed_fields.append('*')  # 如果没有年份字段，添加None
+                    parsed_fields.append("*")  # 如果没有年份字段，添加None
 
                 second, minute, hour, day, month, day_of_week, year = tuple(parsed_fields)
                 trigger = CronTrigger(
@@ -447,7 +459,7 @@ class SchedulerUtil:
                     year=year,
                     start_date=job_info.start_date,
                     end_date=job_info.end_date,
-                    timezone='Asia/Shanghai'
+                    timezone="Asia/Shanghai",
                 )
             else:
                 raise ValueError("无效的 trigger 触发器")
@@ -458,7 +470,7 @@ class SchedulerUtil:
             if job_info.args:
                 args_str = str(job_info.args).strip()
                 if args_str:
-                    job_args = args_str.split(',')
+                    job_args = args_str.split(",")
 
             job = scheduler.add_job(
                 func=cls._task_wrapper,
@@ -564,17 +576,19 @@ class SchedulerUtil:
         scheduler.resume_job(job_id=str(job_id))
 
     @classmethod
-    def reschedule_job(cls, job_id: str | int, trigger=None, **trigger_args) -> Job | None:
+    def reschedule_job(
+        cls, job_id: str | int, trigger: str | None = None, **trigger_args
+    ) -> Job | None:
         """
         重启指定任务的触发器。
 
         参数:
         - job_id (str | int): 任务ID。
-        - trigger: 触发器类型
+        - trigger: 触发器类型（'date', 'interval', 'cron'）
         - **trigger_args: 触发器参数
 
         返回:
-        - Job: 更新后的任务对象
+        - Job | None: 更新后的任务对象，未找到任务时返回 None。
 
         异常:
         - CustomException: 当任务不存在时抛出。
@@ -605,17 +619,17 @@ class SchedulerUtil:
         """
         job = cls.get_job(job_id=str(job_id))
         if not job:
-            return 'unknown'
+            return "unknown"
 
         # 检查任务是否在暂停列表中
         if job_id in scheduler._jobstores[job._jobstore_alias]._paused_jobs:
-            return 'paused'
+            return "paused"
 
         # 检查调度器状态
         if scheduler.state == 0:  # STATE_STOPPED
-            return 'stopped'
+            return "stopped"
 
-        return 'running'
+        return "running"
 
     @classmethod
     def print_jobs(cls, jobstore: Any | None = None, out: Any | None = None) -> None:
@@ -639,19 +653,13 @@ class SchedulerUtil:
         返回:
         - str: 状态字符串（'stopped' | 'running' | 'paused' | 'unknown'）。
         """
-        #: constant indicating a scheduler's stopped state
-        STATE_STOPPED = 0
-        #: constant indicating a scheduler's running state (started and processing jobs)
-        STATE_RUNNING = 1
-        #: constant indicating a scheduler's paused state (started but not processing jobs)
-        STATE_PAUSED = 2
-        if scheduler.state == STATE_STOPPED:
-            return 'stopped'
-        if scheduler.state == STATE_RUNNING:
-            return 'running'
-        if scheduler.state == STATE_PAUSED:
-            return 'paused'
-        return 'unknown'
+        if scheduler.state == 0:
+            return "stopped"
+        if scheduler.state == 1:
+            return "running"
+        if scheduler.state == 2:
+            return "paused"
+        return "unknown"
 
     @classmethod
     def run_job_now(cls, job_id: str | int) -> None:

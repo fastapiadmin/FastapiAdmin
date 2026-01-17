@@ -17,15 +17,13 @@ class StringUtil:
         返回:
         - bool: 校验结果。
         """
-        if string is None:
-            return False
         str_len = len(string)
         if str_len == 0:
             return True
-        return all(string[i] == ' ' for i in range(str_len))
+        return all(string[i] == " " for i in range(str_len))
 
     @classmethod
-    def is_empty(cls, string) -> bool:
+    def is_empty(cls, string: str | None) -> bool:
         """
         校验字符串是否为''或None
 
@@ -92,7 +90,10 @@ class StringUtil:
         - bool: 查找结果。
         """
         if search_str and compare_str_list:
-            return any(cls.contains_ignore_case(search_str, compare_str) for compare_str in compare_str_list)
+            return any(
+                cls.contains_ignore_case(search_str, compare_str)
+                for compare_str in compare_str_list
+            )
         return False
 
     @classmethod
@@ -124,7 +125,9 @@ class StringUtil:
         - bool: 比较结果。
         """
         if search_str and compare_str_list:
-            return any(cls.equals_ignore_case(search_str, compare_str) for compare_str in compare_str_list)
+            return any(
+                cls.equals_ignore_case(search_str, compare_str) for compare_str in compare_str_list
+            )
         return False
 
     @classmethod
@@ -156,7 +159,9 @@ class StringUtil:
         - bool: 查找结果。
         """
         if search_str and compare_str_list:
-            return any(cls.startswith_case(search_str, compare_str) for compare_str in compare_str_list)
+            return any(
+                cls.startswith_case(search_str, compare_str) for compare_str in compare_str_list
+            )
         return False
 
     @classmethod
@@ -171,16 +176,16 @@ class StringUtil:
         - str: 转换后的驼峰式命名的字符串。
         """
         if not name:
-            return ''
-        if '_' not in name:
+            return ""
+        if "_" not in name:
             return name[0].upper() + name[1:]
-        parts = name.split('_')
+        parts = name.split("_")
         result = []
         for part in parts:
             if not part:
                 continue
             result.append(part[0].upper() + part[1:].lower())
-        return ''.join(result)
+        return "".join(result)
 
     @classmethod
     def get_mapping_value_by_key_ignore_case(cls, mapping: dict[str, str], key: str) -> str:
@@ -198,4 +203,4 @@ class StringUtil:
             if key.lower() == k.lower():
                 return v
 
-        return ''
+        return ""

@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from redis import exceptions
 from redis.asyncio import Redis
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import sessionmaker
 
 from app.config.setting import settings
@@ -12,7 +17,7 @@ from app.core.logger import log
 
 
 def create_engine_and_session(
-    db_url: str = settings.DB_URI
+    db_url: str = settings.DB_URI,
 ) -> tuple[Engine, sessionmaker]:
     """
     创建同步数据库引擎和会话工厂。
@@ -25,7 +30,10 @@ def create_engine_and_session(
     """
     try:
         if not settings.SQL_DB_ENABLE:
-            raise CustomException(msg="请先开启数据库连接", data="请启用 app/config/setting.py: SQL_DB_ENABLE")
+            raise CustomException(
+                msg="请先开启数据库连接",
+                data="请启用 app/config/setting.py: SQL_DB_ENABLE",
+            )
         # 同步数据库引擎
         engine: Engine = create_engine(
             url=db_url,
@@ -34,7 +42,7 @@ def create_engine_and_session(
             pool_recycle=settings.POOL_RECYCLE,
         )
     except Exception as e:
-        log.error(f'❌ 数据库连接失败 {e}')
+        log.error(f"❌ 数据库连接失败 {e}")
         raise
     else:
         # 同步数据库会话工厂
@@ -43,7 +51,7 @@ def create_engine_and_session(
 
 
 def create_async_engine_and_session(
-    db_url: str = settings.ASYNC_DB_URI
+    db_url: str = settings.ASYNC_DB_URI,
 ) -> tuple[AsyncEngine, async_sessionmaker[AsyncSession]]:
     """
     获取异步数据库会话连接。
@@ -53,9 +61,12 @@ def create_async_engine_and_session(
     """
     try:
         if not settings.SQL_DB_ENABLE:
-            raise CustomException(msg="请先开启数据库连接", data="请启用 app/config/setting.py: SQL_DB_ENABLE")
+            raise CustomException(
+                msg="请先开启数据库连接",
+                data="请启用 app/config/setting.py: SQL_DB_ENABLE",
+            )
         # 异步数据库引擎
-        if settings.DATABASE_TYPE == 'sqlite':
+        if settings.DATABASE_TYPE == "sqlite":
             async_engine = create_async_engine(
                 url=db_url,
                 echo=settings.DATABASE_ECHO,
@@ -78,7 +89,7 @@ def create_async_engine_and_session(
                 pool_use_lifo=settings.POOL_USE_LIFO,
             )
     except Exception as e:
-        log.error(f'❌ 数据库连接失败 {e}')
+        log.error(f"❌ 数据库连接失败 {e}")
         raise
     else:
         # 异步数据库会话工厂
@@ -87,7 +98,7 @@ def create_async_engine_and_session(
             autocommit=settings.AUTOCOMMIT,
             autoflush=settings.AUTOFETCH,
             expire_on_commit=settings.EXPIRE_ON_COMMIT,
-            class_=AsyncSession
+            class_=AsyncSession,
         )
         return async_engine, AsyncSessionLocal
 
@@ -120,20 +131,23 @@ async def redis_connect(app: FastAPI, status: str) -> Redis | None:
     - Redis | None: Redis连接实例,如果连接失败则返回None。
     """
     if not settings.REDIS_ENABLE:
-        raise CustomException(msg="请先开启Redis连接", data="请启用 app/core/config.py: REDIS_ENABLE")
+        raise CustomException(
+            msg="请先开启Redis连接",
+            data="请启用 app/core/config.py: REDIS_ENABLE",
+        )
 
     if status:
         try:
             rd = await Redis.from_url(
                 url=settings.REDIS_URI,
-                encoding='utf-8',
+                encoding="utf-8",
                 decode_responses=True,
                 health_check_interval=20,
                 max_connections=settings.POOL_SIZE,
-                socket_timeout=settings.POOL_TIMEOUT
+                socket_timeout=settings.POOL_TIMEOUT,
             )
             app.state.redis = rd
-            if await rd.ping():
+            if await rd.ping():  # pyright: ignore[reportGeneralTypeIssues]
                 return rd
         except exceptions.AuthenticationError as e:
             log.error(f"❌ 数据库 Redis 认证失败: {e}")
@@ -146,4 +160,4 @@ async def redis_connect(app: FastAPI, status: str) -> Redis | None:
             raise
     else:
         await app.state.redis.close()
-        log.info('✅️ Redis连接已关闭')
+        log.info("✅️ Redis连接已关闭")

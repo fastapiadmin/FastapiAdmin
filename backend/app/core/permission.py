@@ -95,7 +95,7 @@ class Permission:
         for role in roles:
             data_scopes.add(role.data_scope)
             # 收集自定义权限（data_scope=5）关联的部门ID
-            if role.data_scope == self.DATA_SCOPE_CUSTOM and hasattr(role, 'depts') and role.depts:
+            if role.data_scope == self.DATA_SCOPE_CUSTOM and hasattr(role, "depts") and role.depts:
                 custom_dept_ids.update(dept.id for dept in role.depts)
 
         # 权限优先级处理：全部数据权限最高优先级
@@ -133,7 +133,7 @@ class Permission:
         if accessible_dept_ids:
             creator_rel = getattr(self.model, "created_by", None)
             # 优先使用关系过滤（性能更好）
-            if creator_rel is not None and hasattr(UserModel, 'dept_id'):
+            if creator_rel is not None and hasattr(UserModel, "dept_id"):
                 return creator_rel.has(UserModel.dept_id.in_(list(accessible_dept_ids)))
             # 降级方案：如果模型没有created_by关系但有created_id，则只能查看自己的数据
             created_id_attr = getattr(self.model, "created_id", None)

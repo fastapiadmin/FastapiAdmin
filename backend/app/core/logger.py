@@ -21,6 +21,7 @@ class InterceptHandler(logging.Handler):
     2. 重写 emit 方法处理日志记录
     3. 将标准库日志转换为 Loguru 格式
     """
+
     @override
     def emit(self, record: logging.LogRecord) -> None:
         # 尝试获取日志级别名称
@@ -36,10 +37,7 @@ class InterceptHandler(logging.Handler):
             depth += 1
 
         # 使用 Loguru 记录日志
-        logger.opt(depth=depth, exception=record.exc_info).log(
-            level,
-            record.getMessage()
-        )
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
 def cleanup_logging() -> None:
@@ -52,8 +50,8 @@ def cleanup_logging() -> None:
     for handler_id in _logger_handlers:
         try:
             logger.remove(handler_id)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.opt(depth=1).warning(f"移除日志处理器 {handler_id} 时出错: {e}")
 
     _logger_handlers.clear()
 
@@ -87,11 +85,7 @@ def setup_logging() -> None:
     )
 
     # 步骤3：配置控制台输出
-    handler_id = logger.add(
-        sys.stdout,
-        format=log_format,
-        level=settings.LOGGER_LEVEL
-    )
+    handler_id = logger.add(sys.stdout, format=log_format, level=settings.LOGGER_LEVEL)
     _logger_handlers.append(handler_id)
 
     # 步骤4：创建日志目录
@@ -105,7 +99,7 @@ def setup_logging() -> None:
         format=log_format,
         level="INFO",
         rotation="00:00",  # 每天午夜轮转
-        retention=30,      # 日志保留天数，超过此天数的日志文件将被自动清理
+        retention=30,  # 日志保留天数，超过此天数的日志文件将被自动清理
         compression="gz",
         encoding="utf-8",
     )
@@ -117,11 +111,11 @@ def setup_logging() -> None:
         format=log_format,
         level="ERROR",
         rotation="00:00",  # 每天午夜轮转
-        retention=30,      # 日志保留天数，超过此天数的日志文件将被自动清理
+        retention=30,  # 日志保留天数，超过此天数的日志文件将被自动清理
         compression="gz",
         encoding="utf-8",
         backtrace=True,
-        diagnose=True
+        diagnose=True,
     )
     _logger_handlers.append(handler_id)
 

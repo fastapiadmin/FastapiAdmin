@@ -1,18 +1,21 @@
 from collections.abc import AsyncGenerator
-from math import ceil
-from typing import Any, NoReturn
+from typing import Any
 
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import Depends, FastAPI
 from fastapi.concurrency import asynccontextmanager
-from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
+from fastapi.openapi.docs import (
+    get_redoc_html,
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
-from starlette.websockets import WebSocket
 
 from app.config.setting import settings
-from app.core.exceptions import CustomException, handle_exception
+from app.core.exceptions import handle_exception
+from app.core.http_limit import http_limit_callback, ws_limit_callback
 from app.core.logger import log
 from app.scripts.initialize import InitializeData
 from app.utils.common_util import import_module, import_modules_async
@@ -37,7 +40,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     try:
         await InitializeData().init_db()
         log.info(f"✅ {settings.DATABASE_TYPE}数据库初始化完成")
-        await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=True)
+        await import_modules_async(
+            modules=settings.EVENT_LIST, desc="全局事件", app=app, status=True
+        )
         log.info("✅ 全局事件模块加载完成")
         await ParamsService().init_config_service(redis=app.state.redis)
         log.info("✅ Redis系统配置初始化完成")
@@ -45,11 +50,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         log.info("✅ Redis数据字典初始化完成")
         await SchedulerUtil.init_system_scheduler(redis=app.state.redis)
         log.info("✅ 定时任务调度器初始化完成")
-        await FastAPILimiter.init(redis=app.state.redis, prefix=settings.REQUEST_LIMITER_REDIS_PREFIX, http_callback=http_limit_callback, ws_callback=ws_limit_callback)
+        await FastAPILimiter.init(
+            redis=app.state.redis,
+            prefix=settings.REQUEST_LIMITER_REDIS_PREFIX,
+            http_callback=http_limit_callback,
+            ws_callback=ws_limit_callback,
+        )
         log.info("✅ 请求限流器初始化完成")
 
         # 导入并显示最终的启动信息面板
         from app.common.enums import EnvironmentEnum
+
         scheduler_jobs_count = len(SchedulerUtil.get_all_jobs())
         scheduler_status = SchedulerUtil.get_job_status()
         console_run(
@@ -68,7 +79,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     yield
 
     try:
-        await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
+        await import_modules_async(
+            modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False
+        )
         log.info("✅ 全局事件模块卸载完成")
         await SchedulerUtil.close_system_scheduler()
         log.info("✅ 定时任务调度器已关闭")
@@ -129,12 +142,19 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(monitor_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
 
     from app.plugin.module_application.ai.ws import WS_AI
+
     # 手动注册WebSocket路由，不使用速率限制器
-    app.include_router(router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=1, seconds=5))])
+    app.include_router(
+        router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=1, seconds=5))]
+    )
     # 先将动态路由注册到应用，使用速率限制器
     from app.core.discover import get_dynamic_router
+
     # 获取动态路由实例
-    app.include_router(router=get_dynamic_router(), dependencies=[Depends(RateLimiter(times=5, seconds=10))])
+    app.include_router(
+        router=get_dynamic_router(),
+        dependencies=[Depends(RateLimiter(times=5, seconds=10))],
+    )
 
 
 def register_files(app: FastAPI) -> None:
@@ -151,7 +171,11 @@ def register_files(app: FastAPI) -> None:
     if settings.STATIC_ENABLE:
         # 确保日志目录存在
         settings.STATIC_ROOT.mkdir(parents=True, exist_ok=True)
-        app.mount(path=settings.STATIC_URL, app=StaticFiles(directory=settings.STATIC_ROOT), name=settings.STATIC_DIR)
+        app.mount(
+            path=settings.STATIC_URL,
+            app=StaticFiles(directory=settings.STATIC_ROOT),
+            name=settings.STATIC_DIR,
+        )
 
 
 def reset_api_docs(app: FastAPI) -> None:
@@ -188,32 +212,3 @@ def reset_api_docs(app: FastAPI) -> None:
             redoc_js_url=settings.REDOC_JS_URL,
             redoc_favicon_url=settings.FAVICON_URL,
         )
-
-
-async def http_limit_callback(request: Request, response: Response, expire: int) -> NoReturn:
-    """
-    请求限制时的默认回调函数
-
-    :param request: FastAPI 请求对象
-    :param response: FastAPI 响应对象
-    :param expire: 剩余毫秒数
-    :return:
-    """
-    expires = ceil(expire / 30)
-    raise CustomException(
-        status_code=429,
-        msg='请求过于频繁，请稍后重试！',
-        data={'Retry-After': str(expires)},
-    )
-
-
-async def ws_limit_callback(ws: WebSocket, expire: int) -> None:
-    """
-    WebSocket请求限制时的默认回调函数
-
-    :param ws: WebSocket连接对象
-    :param expire: 剩余毫秒数
-    :return:
-    """
-    expires = ceil(expire / 30)
-    await ws.close(code=1008, reason=f'请求过于频繁，请稍后重试！{expires} 秒后重试')

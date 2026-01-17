@@ -1,5 +1,4 @@
 import json
-
 from collections.abc import AsyncGenerator
 
 from fastapi import Depends, Request
@@ -62,11 +61,11 @@ async def get_current_user(
         raise CustomException(msg="认证已失效", code=10401, status_code=401)
 
     # 处理Bearer token
-    if token.startswith('Bearer'):
-        token = token.split(' ')[1]
+    if token.startswith("Bearer"):
+        token = token.split(" ")[1]
 
     payload = decode_access_token(token)
-    if not payload or not hasattr(payload, 'is_refresh') or payload.is_refresh:
+    if not payload or not hasattr(payload, "is_refresh") or payload.is_refresh:
         raise CustomException(msg="非法凭证", code=10401, status_code=401)
 
     online_user_info = payload.sub
@@ -78,7 +77,9 @@ async def get_current_user(
         raise CustomException(msg="认证已失效", code=10401, status_code=401)
 
     # 检查用户是否在线
-    online_ok = await RedisCURD(redis).exists(key=f'{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}')
+    online_ok = await RedisCURD(redis).exists(
+        key=f"{RedisInitKeyConfig.ACCESS_TOKEN.key}:{session_id}"
+    )
     if not online_ok:
         raise CustomException(msg="认证已失效", code=10401, status_code=401)
 
@@ -94,8 +95,8 @@ async def get_current_user(
             "dept",
             selectinload(UserModel.roles),
             "positions",
-            "created_by"
-        ]
+            "created_by",
+        ],
     )
     if not user:
         raise CustomException(msg="用户不存在", code=10401, status_code=401)
@@ -107,9 +108,9 @@ async def get_current_user(
     request.scope["user_username"] = user.username
 
     # 过滤可用的角色和职位
-    if hasattr(user, 'roles'):
+    if hasattr(user, "roles"):
         user.roles = [role for role in user.roles if role and role.status]
-    if hasattr(user, 'positions'):
+    if hasattr(user, "positions"):
         user.positions = [pos for pos in user.positions if pos and pos.status]
 
     auth.user = user
@@ -119,7 +120,11 @@ async def get_current_user(
 class AuthPermission:
     """权限验证类"""
 
-    def __init__(self, permissions: list[str] | None = None, check_data_scope: bool = True) -> None:
+    def __init__(
+        self,
+        permissions: list[str] | None = None,
+        check_data_scope: bool = True,
+    ) -> None:
         """
         初始化权限验证
 

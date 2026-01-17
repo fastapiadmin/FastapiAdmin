@@ -21,7 +21,9 @@ class ApplicationCRUD(CRUDBase[ApplicationModel, ApplicationCreateSchema, Applic
         self.auth = auth
         super().__init__(model=ApplicationModel, auth=auth)
 
-    async def get_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> ApplicationModel | None:
+    async def get_by_id_crud(
+        self, id: int, preload: list[str | Any] | None = None
+    ) -> ApplicationModel | None:
         """
         根据id获取应用详情
 
@@ -34,7 +36,12 @@ class ApplicationCRUD(CRUDBase[ApplicationModel, ApplicationCreateSchema, Applic
         """
         return await self.get(id=id, preload=preload)
 
-    async def list_crud(self, search: dict[str, Any] | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[ApplicationModel]:
+    async def list_crud(
+        self,
+        search: dict[str, Any] | None = None,
+        order_by: list[dict[str, str]] | None = None,
+        preload: list[str | Any] | None = None,
+    ) -> Sequence[ApplicationModel]:
         """
         列表查询应用
 

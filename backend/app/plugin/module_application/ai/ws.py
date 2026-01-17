@@ -6,7 +6,11 @@ from app.core.router_class import OperationLogRoute
 from .schema import ChatQuerySchema
 from .service import McpService
 
-WS_AI = APIRouter(route_class=OperationLogRoute, prefix="/application/ai", tags=["MCP智能助手WebSocket"])
+WS_AI = APIRouter(
+    route_class=OperationLogRoute,
+    prefix="/application/ai",
+    tags=["MCP智能助手WebSocket"],
+)
 
 
 @WS_AI.websocket("/ws", name="WebSocket聊天")

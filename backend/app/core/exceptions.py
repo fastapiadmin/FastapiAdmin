@@ -23,7 +23,7 @@ class CustomException(Exception):
         code: int = RET.EXCEPTION.code,
         status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
         data: Any | None = None,
-        success: bool = False
+        success: bool = False,
     ) -> None:
         """
         初始化异常对象。
@@ -64,6 +64,7 @@ def handle_exception(app: FastAPI) -> None:
     返回:
     - None
     """
+
     @app.exception_handler(CustomException)
     async def CustomExceptionHandler(request: Request, exc: CustomException) -> JSONResponse:
         """
@@ -76,8 +77,15 @@ def handle_exception(app: FastAPI) -> None:
         返回:
         - JSONResponse: 包含错误信息的 JSON 响应。
         """
-        log.error(f"[自定义异常] {request.method} {request.url.path} | 错误码: {exc.code} | 错误信息: {exc.msg} | 详情: {exc.data}")
-        return ErrorResponse(msg=exc.msg, code=exc.code, status_code=exc.status_code, data=exc.data)
+        log.error(
+            f"[自定义异常] {request.method} {request.url.path} | 错误码: {exc.code} | 错误信息: {exc.msg} | 详情: {exc.data}"
+        )
+        return ErrorResponse(
+            msg=exc.msg,
+            code=exc.code,
+            status_code=exc.status_code,
+            data=exc.data,
+        )
 
     @app.exception_handler(HTTPException)
     async def HttpExceptionHandler(request: Request, exc: HTTPException) -> JSONResponse:
@@ -91,11 +99,15 @@ def handle_exception(app: FastAPI) -> None:
         返回:
         - JSONResponse: 包含错误信息的 JSON 响应。
         """
-        log.error(f"[HTTP异常] {request.method} {request.url.path} | 状态码: {exc.status_code} | 错误信息: {exc.detail}")
+        log.error(
+            f"[HTTP异常] {request.method} {request.url.path} | 状态码: {exc.status_code} | 错误信息: {exc.detail}"
+        )
         return ErrorResponse(msg=exc.detail, status_code=exc.status_code)
 
     @app.exception_handler(RequestValidationError)
-    async def ValidationExceptionHandler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def ValidationExceptionHandler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
         """
         请求参数验证异常处理器
 
@@ -111,18 +123,30 @@ def handle_exception(app: FastAPI) -> None:
             "value is not a valid list": "类型错误，提交参数应该为列表！",
             "value is not a valid int": "类型错误，提交参数应该为整数！",
             "value could not be parsed to a boolean": "类型错误，提交参数应该为布尔值！",
-            "Input should be a valid list": "类型错误，输入应该是一个有效的列表！"
+            "Input should be a valid list": "类型错误，输入应该是一个有效的列表！",
         }
-        raw_msg = exc.errors()[0].get('msg')
+        raw_msg = exc.errors()[0].get("msg")
         msg = error_mapping.get(raw_msg, raw_msg)
         # 去掉Pydantic默认的前缀“Value error”, 仅保留具体提示内容
         if isinstance(msg, str) and msg.startswith("Value error"):
-            msg = msg.split(",", 1)[1].strip() if "," in msg else msg.replace("Value error", "").strip()
-        log.error(f"[参数验证异常] {request.method} {request.url.path} | 错误信息: {msg} | 原始错误: {exc.errors()}")
-        return ErrorResponse(msg=str(msg), status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, data=exc.body)
+            msg = (
+                msg.split(",", 1)[1].strip()
+                if "," in msg
+                else msg.replace("Value error", "").strip()
+            )
+        log.error(
+            f"[参数验证异常] {request.method} {request.url.path} | 错误信息: {msg} | 原始错误: {exc.errors()}"
+        )
+        return ErrorResponse(
+            msg=str(msg),
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            data=exc.body,
+        )
 
     @app.exception_handler(ResponseValidationError)
-    async def ResponseValidationHandle(request: Request, exc: ResponseValidationError) -> JSONResponse:
+    async def ResponseValidationHandle(
+        request: Request, exc: ResponseValidationError
+    ) -> JSONResponse:
         """
         响应参数验证异常处理器
 
@@ -133,8 +157,14 @@ def handle_exception(app: FastAPI) -> None:
         返回:
         - JSONResponse: 包含错误信息的 JSON 响应。
         """
-        log.error(f"[响应验证异常] {request.method} {request.url.path} | 错误信息: 响应数据格式错误 | 详情: {exc.errors()}")
-        return ErrorResponse(msg="服务器响应格式错误", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, data=exc.body)
+        log.error(
+            f"[响应验证异常] {request.method} {request.url.path} | 错误信息: 响应数据格式错误 | 详情: {exc.errors()}"
+        )
+        return ErrorResponse(
+            msg="服务器响应格式错误",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            data=exc.body,
+        )
 
     @app.exception_handler(SQLAlchemyError)
     async def SQLAlchemyExceptionHandler(request: Request, exc: SQLAlchemyError) -> JSONResponse:
@@ -148,12 +178,18 @@ def handle_exception(app: FastAPI) -> None:
         返回:
         - JSONResponse: 包含错误信息的 JSON 响应。
         """
-        error_msg = '数据库操作失败'
+        error_msg = "数据库操作失败"
         exc_type = type(exc).__name__
 
         # 对于生产环境，返回通用错误消息
-        log.error(f"[数据库异常] {request.method} {request.url.path} | 错误类型: {exc_type} | 错误详情: {exc!s}")
-        return ErrorResponse(msg=f'{error_msg}: {exc_type}', status_code=status.HTTP_400_BAD_REQUEST, data=str(exc))
+        log.error(
+            f"[数据库异常] {request.method} {request.url.path} | 错误类型: {exc_type} | 错误详情: {exc!s}"
+        )
+        return ErrorResponse(
+            msg=f"{error_msg}: {exc_type}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            data=str(exc),
+        )
 
     @app.exception_handler(ValueError)
     async def ValueExceptionHandler(request: Request, exc: ValueError) -> JSONResponse:
@@ -171,7 +207,9 @@ def handle_exception(app: FastAPI) -> None:
         return ErrorResponse(msg=str(exc), status_code=status.HTTP_400_BAD_REQUEST)
 
     @app.exception_handler(FieldValidationError)
-    async def FieldValidationExceptionHandler(request: Request, exc: FieldValidationError) -> JSONResponse:
+    async def FieldValidationExceptionHandler(
+        request: Request, exc: FieldValidationError
+    ) -> JSONResponse:
         """
         字段验证异常处理器
 
@@ -198,6 +236,12 @@ def handle_exception(app: FastAPI) -> None:
         - JSONResponse: 包含错误信息的 JSON 响应。
         """
         exc_type = type(exc).__name__
-        log.error(f"[未捕获异常] {request.method} {request.url.path} | 错误类型: {exc_type} | 错误详情: {exc!s}")
+        log.error(
+            f"[未捕获异常] {request.method} {request.url.path} | 错误类型: {exc_type} | 错误详情: {exc!s}"
+        )
         # 对于未捕获的异常，返回通用错误信息
-        return ErrorResponse(msg='服务器内部错误', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, data=None)
+        return ErrorResponse(
+            msg="服务器内部错误",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            data=None,
+        )

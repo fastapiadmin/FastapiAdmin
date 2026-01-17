@@ -40,22 +40,25 @@ class BusinessType(Enum):
 class RedisInitKeyConfig(Enum):
     """系统内置Redis键名枚举"""
 
-    ACCESS_TOKEN = {'key': 'access_token', 'remark': '登录令牌信息'}
-    REFRESH_TOKEN = {'key': 'refresh_token', 'remark': '刷新令牌信息'}
-    CAPTCHA_CODES = {'key': 'captcha_codes', 'remark': '图片验证码'}
-    SYSTEM_CONFIG = {'key': 'system_config', 'remark': '系统配置'}
-    SYSTEM_DICT = {'key': 'system_dict', 'remark': '数据字典'}
-    APSCHEDULER_LOCK_KEY = {'key': 'scheduler_job_lock', 'remark': '定时任务初始化锁'}
+    ACCESS_TOKEN = {"key": "access_token", "remark": "登录令牌信息"}
+    REFRESH_TOKEN = {"key": "refresh_token", "remark": "刷新令牌信息"}
+    CAPTCHA_CODES = {"key": "captcha_codes", "remark": "图片验证码"}
+    SYSTEM_CONFIG = {"key": "system_config", "remark": "系统配置"}
+    SYSTEM_DICT = {"key": "system_dict", "remark": "数据字典"}
+    APSCHEDULER_LOCK_KEY = {
+        "key": "scheduler_job_lock",
+        "remark": "定时任务初始化锁",
+    }
 
     @property
     def key(self) -> str:
         """获取Redis键名"""
-        return self.value.get('key', '')
+        return self.value.get("key", "")
 
     @property
     def remark(self) -> str:
         """获取Redis键名说明"""
-        return self.value.get('remark', '')
+        return self.value.get("remark", "")
 
 
 class McpType(Enum):
@@ -68,8 +71,8 @@ class McpType(Enum):
 class McpLLMProvider(Enum):
     """MCP 大语言模型供应商"""
 
-    openai = 'openai'
-    deepseek = 'deepseek'
-    anthropic = 'anthropic'
-    gemini = 'gemini'
-    qwen = 'qwen'
+    openai = "openai"
+    deepseek = "deepseek"
+    anthropic = "anthropic"
+    gemini = "gemini"
+    qwen = "qwen"

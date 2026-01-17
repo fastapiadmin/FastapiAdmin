@@ -11,22 +11,23 @@ from app.core.dependencies import AuthPermission, redis_getter
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
-from .schema import OnlineQueryParam
+from .schema import OnlineOutSchema, OnlineQueryParam
 from .service import OnlineService
 
 OnlineRouter = APIRouter(route_class=OperationLogRoute, prefix="/online", tags=["在线用户"])
 
 
 @OnlineRouter.get(
-    '/list',
-    dependencies=[Depends(AuthPermission(['module_monitor:online:query']))],
+    "/list",
+    dependencies=[Depends(AuthPermission(["module_monitor:online:query"]))],
     summary="获取在线用户列表",
-    description="获取在线用户列表"
+    description="获取在线用户列表",
+    response_model=list[OnlineOutSchema],
 )
 async def get_online_list_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     paging_query: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[OnlineQueryParam, Depends()]
+    search: Annotated[OnlineQueryParam, Depends()],
 ) -> JSONResponse:
     """
     获取在线用户列表
@@ -40,17 +41,21 @@ async def get_online_list_controller(
     - JSONResponse: 包含在线用户列表的JSON响应。
     """
     result_dict_list = await OnlineService.get_online_list_service(redis=redis, search=search)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=paging_query.page_no, page_size=paging_query.page_size)
-    log.info('获取成功')
+    result_dict = await PaginationService.paginate(
+        data_list=result_dict_list,
+        page_no=paging_query.page_no,
+        page_size=paging_query.page_size,
+    )
+    log.info("获取成功")
 
-    return SuccessResponse(data=result_dict, msg='获取成功')
+    return SuccessResponse(data=result_dict, msg="获取成功")
 
 
 @OnlineRouter.delete(
-    '/delete',
-    dependencies=[Depends(AuthPermission(['module_monitor:online:delete']))],
+    "/delete",
+    dependencies=[Depends(AuthPermission(["module_monitor:online:delete"]))],
     summary="强制下线",
-    description="强制下线"
+    description="强制下线",
 )
 async def delete_online_controller(
     session_id: Annotated[str, Body(description="会话编号")],
@@ -75,10 +80,10 @@ async def delete_online_controller(
 
 
 @OnlineRouter.delete(
-    '/clear',
-    dependencies=[Depends(AuthPermission(['module_monitor:online:delete']))],
+    "/clear",
+    dependencies=[Depends(AuthPermission(["module_monitor:online:delete"]))],
     summary="清除所有在线用户",
-    description="清除所有在线用户"
+    description="清除所有在线用户",
 )
 async def clear_online_controller(
     redis: Annotated[Redis, Depends(redis_getter)],

@@ -9,6 +9,7 @@ from app.core.validator import DateTimeStr
 
 class OperationLogCreateSchema(BaseModel):
     """日志创建模型"""
+
     type: int | None = Field(default=None, description="日志类型(1登录日志 2操作日志)")
     request_path: str | None = Field(default=None, description="请求路径")
     request_method: str | None = Field(default=None, description="请求方法")
@@ -58,6 +59,7 @@ class OperationLogCreateSchema(BaseModel):
 
 class OperationLogOutSchema(OperationLogCreateSchema, BaseSchema, UserBySchema):
     """日志响应模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -73,10 +75,18 @@ class OperationLogQueryParam:
         response_code: int | None = Query(None, description="响应状态码"),
         description: str | None = Query(None, description="描述"),
         status: str | None = Query(None, description="是否启用"),
-        created_time: list[DateTimeStr] | None = Query(None, description="创建时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
-        updated_time: list[DateTimeStr] | None = Query(None, description="更新时间范围", examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"]),
+        created_time: list[DateTimeStr] | None = Query(
+            None,
+            description="创建时间范围",
+            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
+        ),
+        updated_time: list[DateTimeStr] | None = Query(
+            None,
+            description="更新时间范围",
+            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
+        ),
         created_id: int | None = Query(None, description="创建人"),
-        updated_id: int | None = Query(None, description="更新人")
+        updated_id: int | None = Query(None, description="更新人"),
     ) -> None:
         # 模糊查询字段
         self.request_path = ("like", f"%{request_path}%") if request_path else None

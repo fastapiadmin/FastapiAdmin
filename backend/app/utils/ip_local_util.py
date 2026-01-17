@@ -21,7 +21,9 @@ class IpLocalUtil:
         返回:
         - bool: 是否合法。
         """
-        ip_pattern = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+        ip_pattern = (
+            r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+        )
         return bool(re.match(ip_pattern, ip))
 
     @classmethod
@@ -35,7 +37,7 @@ class IpLocalUtil:
         返回:
         - bool: 是否为内网IP。
         """
-        priv_pattern = r'^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)'
+        priv_pattern = r"^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)"
         return bool(re.match(priv_pattern, ip))
 
     @classmethod
@@ -56,23 +58,23 @@ class IpLocalUtil:
 
         # 内网IP直接返回
         if cls.is_private_ip(ip):
-            return '内网IP'
+            return "内网IP"
 
         try:
             # 使用ip-api.com API获取IP归属地信息
             async with httpx.AsyncClient(timeout=10.0) as client:
                 # 尝试使用 ip9.com.cn API
-                url = f'https://ip9.com.cn/get?ip={ip}'
+                url = f"https://ip9.com.cn/get?ip={ip}"
                 response = await cls._make_api_request(client, url)
-                if response and response.json().get('ret') == 200:
-                    result = response.json().get('data', {})
+                if response and response.json().get("ret") == 200:
+                    result = response.json().get("data", {})
                     return f"{result.get('country', '')}-{result.get('prov', '')}-{result.get('city', '')}-{result.get('area', '')}-{result.get('isp', '')}"
 
                 # 尝试使用百度 API
-                url = f'https://qifu-api.baidubce.com/ip/geo/v1/district?ip={ip}'
+                url = f"https://qifu-api.baidubce.com/ip/geo/v1/district?ip={ip}"
                 response = await cls._make_api_request(client, url)
-                if response and response.json().get('code') == "Success":
-                    data = response.json().get('data', {})
+                if response and response.json().get("code") == "Success":
+                    data = response.json().get("data", {})
                     # 修正原代码中的格式错误
                     return f"{data.get('country', '')}-{data.get('prov', '')}-{data.get('city', '')}-{data.get('district', '')}-{data.get('isp', '')}"
 
@@ -81,7 +83,7 @@ class IpLocalUtil:
             return "未知"
 
     @classmethod
-    async def _make_api_request(cls, client, url):
+    async def _make_api_request(cls, client: httpx.AsyncClient, url: str):
         """
         单独的 API 请求方法，包含重试机制。
 
@@ -101,5 +103,5 @@ class IpLocalUtil:
             except Exception as e:
                 if attempt < max_retries - 1:
                     continue
-                log.error(f"请求 {url} 失败: {e}")
+                log.error(f"API 请求失败: {e}")
         return None

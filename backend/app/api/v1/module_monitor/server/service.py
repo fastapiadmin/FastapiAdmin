@@ -1,14 +1,20 @@
 import platform
 import socket
 import time
-
 from pathlib import Path
 
 import psutil
 
 from app.utils.common_util import bytes2human
 
-from .schema import CpuInfoSchema, DiskInfoSchema, MemoryInfoSchema, PyInfoSchema, ServerMonitorSchema, SysInfoSchema
+from .schema import (
+    CpuInfoSchema,
+    DiskInfoSchema,
+    MemoryInfoSchema,
+    PyInfoSchema,
+    ServerMonitorSchema,
+    SysInfoSchema,
+)
 
 
 class ServerService:
@@ -27,7 +33,7 @@ class ServerService:
             mem=cls._get_memory_info(),
             sys=cls._get_system_info(),
             py=cls._get_python_info(),
-            disks=cls._get_disk_info()
+            disks=cls._get_disk_info(),
         ).model_dump()
 
     @classmethod
@@ -46,7 +52,7 @@ class ServerService:
             cpu_num=cpu_num,
             used=cpu_times.user,
             sys=cpu_times.system,
-            free=cpu_times.idle
+            free=cpu_times.idle,
         )
 
     @classmethod
@@ -62,7 +68,7 @@ class ServerService:
             total=bytes2human(memory.total),
             used=bytes2human(memory.used),
             free=bytes2human(memory.free),
-            usage=memory.percent
+            usage=memory.percent,
         )
 
     @classmethod
@@ -79,7 +85,7 @@ class ServerService:
             computer_name=platform.node(),
             os_arch=platform.machine(),
             os_name=platform.platform(),
-            user_dir=str(Path.cwd())
+            user_dir=str(Path.cwd()),
         )
 
     @classmethod
@@ -100,13 +106,13 @@ class ServerService:
         return PyInfoSchema(
             name=current_process.name(),
             version=platform.python_version(),
-            start_time=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
+            start_time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time)),
             run_time=run_time,
             home=str(Path(current_process.exe())),
             memory_total=bytes2human(memory.available),
             memory_used=bytes2human(process_memory.rss),
             memory_free=bytes2human(memory.available - process_memory.rss),
-            memory_usage=round((process_memory.rss / memory.available) * 100, 2)
+            memory_usage=round((process_memory.rss / memory.available) * 100, 2),
         )
 
     @classmethod
@@ -127,11 +133,11 @@ class ServerService:
                     DiskInfoSchema(
                         dir_name=mount_point,  # 使用mountpoint替代device
                         sys_type_name=partition.fstype,
-                        type_name=f'本地固定磁盘（{mount_point}）',
+                        type_name=f"本地固定磁盘（{mount_point}）",
                         total=bytes2human(usage.total),
                         used=bytes2human(usage.used),
                         free=bytes2human(usage.free),
-                        usage=usage.percent  # 直接使用数字而不是字符串
+                        usage=usage.percent,  # 直接使用数字而不是字符串
                     )
                 )
             except (PermissionError, FileNotFoundError):
@@ -154,4 +160,4 @@ class ServerService:
         days = int(difference // (24 * 60 * 60))
         hours = int((difference % (24 * 60 * 60)) // (60 * 60))
         minutes = int((difference % (60 * 60)) // 60)
-        return f'{days}天{hours}小时{minutes}分钟'
+        return f"{days}天{hours}小时{minutes}分钟"

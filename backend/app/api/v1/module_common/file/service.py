@@ -11,7 +11,9 @@ class FileService:
     """
 
     @classmethod
-    async def upload_service(cls, base_url: str, file: UploadFile, upload_type: str = 'local') -> dict:
+    async def upload_service(
+        cls, base_url: str, file: UploadFile, upload_type: str = "local"
+    ) -> dict:
         """
         上传文件。
 
@@ -26,18 +28,18 @@ class FileService:
         异常:
         - CustomException: 当未选择文件或上传类型错误时抛出。
         """
-        if not file:
-            raise CustomException(msg="请选择要上传的文件")
-        if upload_type == 'local':
-            filename, filepath, file_url = await UploadUtil.upload_file(file=file, base_url=base_url)
+        if upload_type == "local":
+            filename, filepath, file_url = await UploadUtil.upload_file(
+                file=file, base_url=base_url
+            )
         else:
             raise CustomException(msg="上传类型错误")
 
         return UploadResponseSchema(
-            file_path=f'{filepath}',
+            file_path=f"{filepath}",
             file_name=filename,
             origin_name=file.filename,
-            file_url=f'{file_url}',
+            file_url=f"{file_url}",
         ).model_dump()
 
     @classmethod

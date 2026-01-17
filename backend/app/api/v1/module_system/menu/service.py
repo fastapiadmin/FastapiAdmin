@@ -10,7 +10,12 @@ from app.utils.common_util import (
 )
 
 from .crud import MenuCRUD
-from .schema import MenuCreateSchema, MenuOutSchema, MenuQueryParam, MenuUpdateSchema
+from .schema import (
+    MenuCreateSchema,
+    MenuOutSchema,
+    MenuQueryParam,
+    MenuUpdateSchema,
+)
 
 
 class MenuService:
@@ -41,7 +46,12 @@ class MenuService:
         return menu_out.model_dump()
 
     @classmethod
-    async def get_menu_tree_service(cls, auth: AuthSchema, search: MenuQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
+    async def get_menu_tree_service(
+        cls,
+        auth: AuthSchema,
+        search: MenuQueryParam | None = None,
+        order_by: list[dict] | None = None,
+    ) -> list[dict]:
         """
         获取菜单树形列表。
 
@@ -54,7 +64,9 @@ class MenuService:
         - list[dict]: 菜单树形列表对象。
         """
         # 使用树形结构查询，预加载children关系
-        menu_list = await MenuCRUD(auth).get_tree_list_crud(search=search.__dict__, order_by=order_by)
+        menu_list = await MenuCRUD(auth).get_tree_list_crud(
+            search=search.__dict__, order_by=order_by
+        )
         # 转换为字典列表
         menu_dict_list = [MenuOutSchema.model_validate(menu).model_dump() for menu in menu_list]
         # 使用traversal_to_tree构建树形结构
@@ -74,7 +86,7 @@ class MenuService:
         """
         menu = await MenuCRUD(auth).get(name=data.name)
         if menu:
-            raise CustomException(msg='创建失败，该菜单已存在')
+            raise CustomException(msg="创建失败，该菜单已存在")
 
         new_menu = await MenuCRUD(auth).create(data=data)
         new_menu_dict = MenuOutSchema.model_validate(new_menu).model_dump()
@@ -95,19 +107,21 @@ class MenuService:
         """
         menu = await MenuCRUD(auth).get_by_id_crud(id=id)
         if not menu:
-            raise CustomException(msg='更新失败，该菜单不存在')
+            raise CustomException(msg="更新失败，该菜单不存在")
         exist_menu = await MenuCRUD(auth).get(name=data.name)
         if exist_menu and exist_menu.id != id:
-            raise CustomException(msg='更新失败，菜单名称重复')
+            raise CustomException(msg="更新失败，菜单名称重复")
 
         if data.parent_id:
             parent_menu = await MenuCRUD(auth).get_by_id_crud(id=data.parent_id)
             if not parent_menu:
-                raise CustomException(msg='更新失败，父级菜单不存在')
+                raise CustomException(msg="更新失败，父级菜单不存在")
             data.parent_name = parent_menu.name
         new_menu = await MenuCRUD(auth).update(id=id, data=data)
 
-        await cls.set_menu_available_service(auth=auth, data=BatchSetAvailable(ids=[id], status=data.status))
+        await cls.set_menu_available_service(
+            auth=auth, data=BatchSetAvailable(ids=[id], status=data.status)
+        )
 
         new_menu_dict = MenuOutSchema.model_validate(new_menu).model_dump()
         return new_menu_dict
@@ -125,7 +139,7 @@ class MenuService:
         - None
         """
         if len(ids) < 1:
-            raise CustomException(msg='删除失败，删除对象不能为空')
+            raise CustomException(msg="删除失败，删除对象不能为空")
 
         # 获取所有菜单列表，用于构建树形关系
         all_menus = await MenuCRUD(auth).get_list_crud()

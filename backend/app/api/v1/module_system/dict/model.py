@@ -8,40 +8,59 @@ class DictTypeModel(ModelMixin):
     """
     字典类型表
     """
+
     __tablename__: str = "sys_dict_type"
-    __table_args__: dict[str, str] = ({'comment': '字典类型表'})
+    __table_args__: dict[str, str] = {"comment": "字典类型表"}
     __loader_options__: list[str] = []
 
-    dict_name: Mapped[str] = mapped_column(String(64), nullable=False, comment='字典名称')
-    dict_type: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, comment='字典类型')
+    dict_name: Mapped[str] = mapped_column(String(64), nullable=False, comment="字典名称")
+    dict_type: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True, comment="字典类型"
+    )
 
     # 关系定义
-    dict_data_list: Mapped[list["DictDataModel"]] = relationship("DictDataModel", back_populates="dict_type_obj", cascade="all, delete-orphan")
+    dict_data_list: Mapped[list["DictDataModel"]] = relationship(
+        "DictDataModel",
+        back_populates="dict_type_obj",
+        cascade="all, delete-orphan",
+    )
 
 
 class DictDataModel(ModelMixin):
     """
     字典数据表
     """
+
     __tablename__: str = "sys_dict_data"
-    __table_args__: dict[str, str] = ({'comment': '字典数据表'})
+    __table_args__: dict[str, str] = {"comment": "字典数据表"}
     __loader_options__: list[str] = []
 
-    dict_sort: Mapped[int] = mapped_column(Integer, nullable=False, default=0, comment='字典排序')
-    dict_label: Mapped[str] = mapped_column(String(255), nullable=False, comment='字典标签')
-    dict_value: Mapped[str] = mapped_column(String(255), nullable=False, comment='字典键值')
-    css_class: Mapped[str | None] = mapped_column(String(255), nullable=True, comment='样式属性（其他样式扩展）')
-    list_class: Mapped[str | None] = mapped_column(String(255), nullable=True, comment='表格回显样式')
-    is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, comment='是否默认（True是 False否）')
-    dict_type: Mapped[str] = mapped_column(String(255), nullable=False, comment='字典类型')
+    dict_sort: Mapped[int] = mapped_column(Integer, nullable=False, default=0, comment="字典排序")
+    dict_label: Mapped[str] = mapped_column(String(255), nullable=False, comment="字典标签")
+    dict_value: Mapped[str] = mapped_column(String(255), nullable=False, comment="字典键值")
+    css_class: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, comment="样式属性（其他样式扩展）"
+    )
+    list_class: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, comment="表格回显样式"
+    )
+    is_default: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="是否默认（True是 False否）",
+    )
+    dict_type: Mapped[str] = mapped_column(String(255), nullable=False, comment="字典类型")
 
     # 添加外键关系，同时保留dict_type字段用于业务查询
     dict_type_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey('sys_dict_type.id', ondelete='CASCADE'),
+        ForeignKey("sys_dict_type.id", ondelete="CASCADE"),
         nullable=False,
-        comment='字典类型ID'
+        comment="字典类型ID",
     )
 
     # 关系定义
-    dict_type_obj: Mapped[DictTypeModel] = relationship("DictTypeModel", back_populates="dict_data_list")
+    dict_type_obj: Mapped[DictTypeModel] = relationship(
+        "DictTypeModel", back_populates="dict_data_list"
+    )

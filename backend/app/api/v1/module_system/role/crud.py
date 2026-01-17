@@ -35,7 +35,12 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list | None = None, preload: list | None = None) -> Sequence[RoleModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list | None = None,
+        preload: list | None = None,
+    ) -> Sequence[RoleModel]:
         """
         获取角色列表
 

@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -70,7 +71,9 @@ class InitializeData:
             count_result = await db.execute(select(func.count()).select_from(model))
             existing_count = count_result.scalar()
             if existing_count and existing_count > 0:
-                log.warning(f"⚠️  跳过 {table_name} 表数据初始化（表已存在 {existing_count} 条记录）")
+                log.warning(
+                    f"⚠️  跳过 {table_name} 表数据初始化（表已存在 {existing_count} 条记录）"
+                )
                 continue
 
             data = await self.__get_data(table_name)
@@ -90,15 +93,15 @@ class InitializeData:
                     for item in data:
                         obj = model(**item)
                         objs.append(obj)
-                        dict_type_mapping[item['dict_type']] = obj
+                        dict_type_mapping[item["dict_type"]] = obj
                 # 处理字典数据表，添加dict_type_id关联
                 elif table_name == "sys_dict_data":
                     objs = []
                     for item in data:
-                        dict_type = item.get('dict_type')
+                        dict_type = item.get("dict_type")
                         if dict_type in dict_type_mapping:
                             # 添加dict_type_id关联
-                            item['dict_type_id'] = dict_type_mapping[dict_type].id
+                            item["dict_type_id"] = dict_type_mapping[dict_type].id
                         else:
                             log.warning(f"⚠️  未找到字典类型 {dict_type}，跳过该字典数据")
                             continue
@@ -115,7 +118,7 @@ class InitializeData:
                 log.error(f"❌️ 初始化 {table_name} 表数据失败: {e!s}")
                 raise
 
-    def __create_objects_with_children(self, data: list[dict], model_class) -> list:
+    def __create_objects_with_children(self, data: list[dict], model_class: type) -> list:
         """
         通用递归创建对象函数，处理嵌套的 children 数据
 
@@ -127,9 +130,9 @@ class InitializeData:
         - list: 包含创建的对象的列表。
         """
 
-        def create_object(obj_data: dict):
+        def create_object(obj_data: dict) -> Any:
             # 分离 children 数据
-            children_data = obj_data.pop('children', [])
+            children_data = obj_data.pop("children", [])
 
             # 创建当前对象
             obj = model_class(**obj_data)
@@ -154,12 +157,12 @@ class InitializeData:
         返回:
         - list[dict]: 解析后的 JSON 数据列表。
         """
-        json_path = SCRIPT_DIR / f'{filename}.json'
+        json_path = SCRIPT_DIR / f"{filename}.json"
         if not json_path.exists():
             return []
 
         try:
-            with open(json_path, encoding='utf-8') as f:
+            with open(json_path, encoding="utf-8") as f:
                 return json.loads(f.read())
         except json.JSONDecodeError as e:
             log.error(f"❌️ 解析 {json_path} 失败: {e!s}")

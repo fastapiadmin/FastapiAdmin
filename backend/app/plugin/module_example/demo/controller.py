@@ -1,5 +1,4 @@
 import urllib.parse
-
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, UploadFile
@@ -23,7 +22,7 @@ DemoRouter = APIRouter(route_class=OperationLogRoute, prefix="/demo", tags=["示
 @DemoRouter.get("/detail/{id}", summary="获取示例详情", description="获取示例详情")
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="示例ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:detail"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:detail"]))],
 ) -> JSONResponse:
     """
     获取示例详情
@@ -44,7 +43,7 @@ async def get_obj_detail_controller(
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[DemoQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:query"]))],
 ) -> JSONResponse:
     """
     查询示例列表
@@ -63,7 +62,7 @@ async def get_obj_list_controller(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
-        order_by=page.order_by
+        order_by=page.order_by,
     )
     log.info("查询示例列表成功")
     return SuccessResponse(data=result_dict, msg="查询示例列表成功")
@@ -72,7 +71,7 @@ async def get_obj_list_controller(
 @DemoRouter.post("/create", summary="创建示例", description="创建示例")
 async def create_obj_controller(
     data: DemoCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:create"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:create"]))],
 ) -> JSONResponse:
     """
     创建示例
@@ -93,7 +92,7 @@ async def create_obj_controller(
 async def update_obj_controller(
     data: DemoUpdateSchema,
     id: Annotated[int, Path(description="示例ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:update"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:update"]))],
 ) -> JSONResponse:
     """
     修改示例
@@ -114,7 +113,7 @@ async def update_obj_controller(
 @DemoRouter.delete("/delete", summary="删除示例", description="删除示例")
 async def delete_obj_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:delete"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:delete"]))],
 ) -> JSONResponse:
     """
     删除示例
@@ -131,10 +130,14 @@ async def delete_obj_controller(
     return SuccessResponse(msg="删除示例成功")
 
 
-@DemoRouter.patch("/available/setting", summary="批量修改示例状态", description="批量修改示例状态")
+@DemoRouter.patch(
+    "/available/setting",
+    summary="批量修改示例状态",
+    description="批量修改示例状态",
+)
 async def batch_set_available_obj_controller(
     data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:patch"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:patch"]))],
 ) -> JSONResponse:
     """
     批量修改示例状态
@@ -151,10 +154,10 @@ async def batch_set_available_obj_controller(
     return SuccessResponse(msg="批量修改示例状态成功")
 
 
-@DemoRouter.post('/export', summary="导出示例", description="导出示例")
+@DemoRouter.post("/export", summary="导出示例", description="导出示例")
 async def export_obj_list_controller(
     search: Annotated[DemoQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:export"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:export"]))],
 ) -> StreamingResponse:
     """
     导出示例
@@ -168,21 +171,19 @@ async def export_obj_list_controller(
     """
     result_dict_list = await DemoService.list_service(search=search, auth=auth)
     export_result = await DemoService.batch_export_service(obj_list=result_dict_list)
-    log.info('导出示例成功')
+    log.info("导出示例成功")
 
     return StreamResponse(
         data=bytes2file_response(export_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            'Content-Disposition': 'attachment; filename=demo.xlsx'
-        }
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=demo.xlsx"},
     )
 
 
-@DemoRouter.post('/import', summary="导入示例", description="导入示例")
+@DemoRouter.post("/import", summary="导入示例", description="导入示例")
 async def import_obj_list_controller(
     file: UploadFile,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:import"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:import"]))],
 ) -> JSONResponse:
     """
     导入示例
@@ -194,12 +195,19 @@ async def import_obj_list_controller(
     返回:
     - JSONResponse: 包含导入示例详情的JSON响应
     """
-    batch_import_result = await DemoService.batch_import_service(file=file, auth=auth, update_support=True)
+    batch_import_result = await DemoService.batch_import_service(
+        file=file, auth=auth, update_support=True
+    )
     log.info(f"导入示例成功: {batch_import_result}")
     return SuccessResponse(data=batch_import_result, msg="导入示例成功")
 
 
-@DemoRouter.post('/download/template', summary="获取示例导入模板", description="获取示例导入模板", dependencies=[Depends(AuthPermission(["module_example:demo:download"]))])
+@DemoRouter.post(
+    "/download/template",
+    summary="获取示例导入模板",
+    description="获取示例导入模板",
+    dependencies=[Depends(AuthPermission(["module_example:demo:download"]))],
+)
 async def export_obj_template_controller() -> StreamingResponse:
     """
     获取示例导入模板
@@ -208,13 +216,13 @@ async def export_obj_template_controller() -> StreamingResponse:
     - StreamingResponse: 包含示例导入模板的Excel文件流响应
     """
     import_template_result = await DemoService.import_template_download_service()
-    log.info('获取示例导入模板成功')
+    log.info("获取示例导入模板成功")
 
     return StreamResponse(
         data=bytes2file_response(import_template_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            'Content-Disposition': f'attachment; filename={urllib.parse.quote("示例导入模板.xlsx")}',
-            'Access-Control-Expose-Headers': 'Content-Disposition'
-        }
+            "Content-Disposition": f"attachment; filename={urllib.parse.quote('示例导入模板.xlsx')}",
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
     )

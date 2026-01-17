@@ -14,13 +14,19 @@ from app.utils.excel_util import ExcelUtil
 from app.utils.upload_util import UploadUtil
 
 from .crud import ParamsCRUD
-from .schema import ParamsCreateSchema, ParamsOutSchema, ParamsQueryParam, ParamsUpdateSchema
+from .schema import (
+    ParamsCreateSchema,
+    ParamsOutSchema,
+    ParamsQueryParam,
+    ParamsUpdateSchema,
+)
 
 
 class ParamsService:
     """
     配置管理模块服务层
     """
+
     @classmethod
     async def get_obj_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
@@ -50,7 +56,7 @@ class ParamsService:
         """
         obj = await ParamsCRUD(auth).get_obj_by_key_crud(key=config_key)
         if not obj:
-            raise CustomException(msg=f'配置键 {config_key} 不存在')
+            raise CustomException(msg=f"配置键 {config_key} 不存在")
         return ParamsOutSchema.model_validate(obj).model_dump()
 
     @classmethod
@@ -67,11 +73,16 @@ class ParamsService:
         """
         obj = await ParamsCRUD(auth).get_obj_by_key_crud(key=config_key)
         if not obj:
-            raise CustomException(msg=f'配置键 {config_key} 不存在')
+            raise CustomException(msg=f"配置键 {config_key} 不存在")
         return obj.config_value
 
     @classmethod
-    async def get_obj_list_service(cls, auth: AuthSchema, search: ParamsQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
+    async def get_obj_list_service(
+        cls,
+        auth: AuthSchema,
+        search: ParamsQueryParam | None = None,
+        order_by: list[dict] | None = None,
+    ) -> list[dict]:
         """
         获取配置管理型列表
 
@@ -85,13 +96,17 @@ class ParamsService:
         """
         obj_list = None
         if search:
-            obj_list = await ParamsCRUD(auth).get_obj_list_crud(search=search.__dict__, order_by=order_by)
+            obj_list = await ParamsCRUD(auth).get_obj_list_crud(
+                search=search.__dict__, order_by=order_by
+            )
         else:
             obj_list = await ParamsCRUD(auth).get_obj_list_crud()
         return [ParamsOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
-    async def create_obj_service(cls, auth: AuthSchema, redis: Redis, data: ParamsCreateSchema) -> dict:
+    async def create_obj_service(
+        cls, auth: AuthSchema, redis: Redis, data: ParamsCreateSchema
+    ) -> dict:
         """
         创建配置管理型
 
@@ -105,7 +120,7 @@ class ParamsService:
         """
         exist_obj = await ParamsCRUD(auth).get(config_key=data.config_key)
         if exist_obj:
-            raise CustomException(msg='创建失败，该配置key已存在')
+            raise CustomException(msg="创建失败，该配置key已存在")
         obj = await ParamsCRUD(auth).create_obj_crud(data=data)
 
         new_obj_dict = ParamsOutSchema.model_validate(obj).model_dump()
@@ -127,7 +142,9 @@ class ParamsService:
         return new_obj_dict
 
     @classmethod
-    async def update_obj_service(cls, auth: AuthSchema, redis: Redis, id: int, data: ParamsUpdateSchema) -> dict:
+    async def update_obj_service(
+        cls, auth: AuthSchema, redis: Redis, id: int, data: ParamsUpdateSchema
+    ) -> dict:
         """
         更新配置管理型
 
@@ -142,13 +159,13 @@ class ParamsService:
         """
         exist_obj = await ParamsCRUD(auth).get_obj_by_id_crud(id=id)
         if not exist_obj:
-            raise CustomException(msg='更新失败，该数系统配置不存在')
+            raise CustomException(msg="更新失败，该数系统配置不存在")
         if exist_obj.config_key != data.config_key:
-            raise CustomException(msg='更新失败，系统配置key不允许修改')
+            raise CustomException(msg="更新失败，系统配置key不允许修改")
 
         new_obj = await ParamsCRUD(auth).update_obj_crud(id=id, data=data)
         if not new_obj:
-            raise CustomException(msg='更新失败，系统配置不存在')
+            raise CustomException(msg="更新失败，系统配置不存在")
         new_obj_dict = ParamsOutSchema.model_validate(new_obj).model_dump()
 
         # 同步redis
@@ -182,15 +199,17 @@ class ParamsService:
         - None
         """
         if len(ids) < 1:
-            raise CustomException(msg='删除失败，删除对象不能为空')
+            raise CustomException(msg="删除失败，删除对象不能为空")
         for id in ids:
             exist_obj = await ParamsCRUD(auth).get_obj_by_id_crud(id=id)
             if not exist_obj:
-                raise CustomException(msg='删除失败，该数据字典类型不存在')
+                raise CustomException(msg="删除失败，该数据字典类型不存在")
             # 检查是否是否初始化类型
             if exist_obj.config_type:
                 # 如果有字典数据，不能删除
-                raise CustomException(msg=f'{exist_obj.config_name} 删除失败，系统初始化配置不可以删除')
+                raise CustomException(
+                    msg=f"{exist_obj.config_name} 删除失败，系统初始化配置不可以删除"
+                )
 
         await ParamsCRUD(auth).delete_obj_crud(ids=ids)
 
@@ -219,24 +238,28 @@ class ParamsService:
         - bytes: Excel文件二进制数据
         """
         mapping_dict = {
-            'id': '编号',
-            'config_name': '参数名称',
-            'config_key': '参数键名',
-            'config_value': '参数键值',
-            'config_type': '系统内置((True:是 False:否))',
-            'description': '备注',
-            'created_time': '创建时间',
-            'updated_time': '更新时间',
-            'created_id': '创建者ID',
-            'updated_id': '更新者ID',
+            "id": "编号",
+            "config_name": "参数名称",
+            "config_key": "参数键名",
+            "config_value": "参数键值",
+            "config_type": "系统内置((True:是 False:否))",
+            "description": "备注",
+            "created_time": "创建时间",
+            "updated_time": "更新时间",
+            "created_id": "创建者ID",
+            "updated_id": "更新者ID",
         }
 
         # 复制数据并转换状态
         data = data_list.copy()
         for item in data:
             # 处理状态
-            item['config_type'] = '是' if item.get('config_type') else '否'
-            item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'
+            item["config_type"] = "是" if item.get("config_type") else "否"
+            item["creator"] = (
+                item.get("creator", {}).get("name", "未知")
+                if isinstance(item.get("creator"), dict)
+                else "未知"
+            )
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
 
@@ -255,10 +278,10 @@ class ParamsService:
         filename, filepath, file_url = await UploadUtil.upload_file(file=file, base_url=base_url)
 
         return UploadResponseSchema(
-            file_path=f'{filepath}',
+            file_path=f"{filepath}",
             file_name=filename,
             origin_name=file.filename,
-            file_url=f'{file_url}',
+            file_url=f"{file_url}",
         ).model_dump()
 
     @classmethod
@@ -282,7 +305,7 @@ class ParamsService:
                 try:
                     # 保存到Redis并设置过期时间
                     for config in config_obj:
-                        redis_key = (f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{config.config_key}")
+                        redis_key = f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{config.config_key}"
                         config_obj_dict = ParamsOutSchema.model_validate(config).model_dump()
                         value = json.dumps(config_obj_dict, ensure_ascii=False)
                         result = await RedisCURD(redis).set(
@@ -338,7 +361,7 @@ class ParamsService:
             f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:demo_enable",
             f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:ip_white_list",
             f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:white_api_list_path",
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:ip_black_list"
+            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:ip_black_list",
         ]
 
         # 批量获取配置
@@ -349,20 +372,23 @@ class ParamsService:
             "demo_enable": False,
             "ip_white_list": [],
             "white_api_list_path": [],
-            "ip_black_list": []
+            "ip_black_list": [],
         }
 
         # 解析演示模式配置
         if config_values[0]:
             try:
                 demo_config = json.loads(config_values[0])
-                config_result["demo_enable"] = demo_config.get("config_value", False) if isinstance(demo_config, dict) else False
+                config_result["demo_enable"] = (
+                    demo_config.get("config_value", False)
+                    if isinstance(demo_config, dict)
+                    else False
+                )
             except json.JSONDecodeError:
                 log.error("解析演示模式配置失败")
 
         # 解析IP白名单配置
         if config_values[1]:
-
             try:
                 ip_white_config = json.loads(config_values[1])
                 # 确保是列表类型
@@ -375,7 +401,9 @@ class ParamsService:
             try:
                 white_api_config = json.loads(config_values[2])
                 # 确保是列表类型
-                config_result["white_api_list_path"] = json.loads(white_api_config.get("config_value", []))
+                config_result["white_api_list_path"] = json.loads(
+                    white_api_config.get("config_value", [])
+                )
             except json.JSONDecodeError:
                 log.error("解析API白名单配置失败")
 

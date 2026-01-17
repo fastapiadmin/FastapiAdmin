@@ -1,7 +1,14 @@
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, Request, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Body,
+    Depends,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.common.response import SuccessResponse, UploadFileResponse
@@ -15,7 +22,12 @@ from .service import FileService
 FileRouter = APIRouter(route_class=OperationLogRoute, prefix="/file", tags=["文件管理"])
 
 
-@FileRouter.post("/upload", summary="上传文件", description="上传文件", dependencies=[Depends(AuthPermission(["module_common:file:upload"]))])
+@FileRouter.post(
+    "/upload",
+    summary="上传文件",
+    description="上传文件",
+    dependencies=[Depends(AuthPermission(["module_common:file:upload"]))],
+)
 async def upload_controller(
     file: UploadFile,
     request: Request,
@@ -35,7 +47,12 @@ async def upload_controller(
     return SuccessResponse(data=result_dict, msg="上传文件成功")
 
 
-@FileRouter.post("/download", summary="下载文件", description="下载文件", dependencies=[Depends(AuthPermission(["module_common:file:download"]))])
+@FileRouter.post(
+    "/download",
+    summary="下载文件",
+    description="下载文件",
+    dependencies=[Depends(AuthPermission(["module_common:file:download"]))],
+)
 async def download_controller(
     background_tasks: BackgroundTasks,
     file_path: Annotated[str, Body(description="文件路径")],

@@ -1,7 +1,6 @@
 import importlib
 import inspect
 import os
-
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -9,6 +8,7 @@ from typing import Any
 from sqlalchemy import inspect as sa_inspect
 
 from app.config.path_conf import BASE_DIR
+from app.core.exceptions import CustomException
 
 
 class ImportUtil:
@@ -35,7 +35,7 @@ class ImportUtil:
             return False
 
         # 必须有表名定义（排除抽象基类）
-        if not hasattr(obj, '__tablename__') or obj.__tablename__ is None:
+        if not hasattr(obj, "__tablename__") or obj.__tablename__ is None:
             return False
 
         # 必须有至少一个列定义
@@ -62,34 +62,29 @@ class ImportUtil:
         processed_model_files = set()
 
         project_root = cls.find_project_root()
-        print(f"⏰️ 开始在项目根目录 {project_root} 中查找模型...")
 
         # 排除目录扩展
         exclude_dirs = {
-            'venv',
-            '.env',
-            '.git',
-            '__pycache__',
-            'migrations',
-            'alembic',
-            'tests',
-            'test',
-            'docs',
-            'examples',
-            'scripts',
-            '.venv',
-            '__pycache__',
-            'static',
-            'templates',
-            'sql',
-            'env'
+            "venv",
+            ".env",
+            ".git",
+            "__pycache__",
+            "migrations",
+            "alembic",
+            "tests",
+            "test",
+            "docs",
+            "examples",
+            "scripts",
+            ".venv",
+            "static",
+            "templates",
+            "sql",
+            "env",
         }
 
         # 定义要搜索的模型目录模式
-        model_dir_patterns = [
-            'model.py',
-            'models.py'
-        ]
+        model_dir_patterns = ["model.py", "models.py"]
 
         # 使用一个更高效的方法来查找所有model.py文件
         model_files = []
@@ -104,8 +99,6 @@ class ImportUtil:
                     relative_path = file_path.relative_to(project_root)
                     model_files.append((file_path, relative_path))
 
-        print(f"🔍 找到 {len(model_files)} 个模型文件")
-
         # 按模块路径排序，确保先导入基础模块
         model_files.sort(key=lambda x: str(x[1]))
 
@@ -118,7 +111,7 @@ class ImportUtil:
 
             # 构建模块名（将路径分隔符转换为点）
             module_parts = (*relative_path.parts[:-1], relative_path.stem)
-            module_name = '.'.join(module_parts)
+            module_name = ".".join(module_parts)
 
             try:
                 # 导入模块
@@ -143,13 +136,11 @@ class ImportUtil:
                     seen_models.add(obj)
                     seen_tables.add(table_name)
                     models.append(obj)
-                    print(f'✅️ 找到有效模型: {obj.__module__}.{obj.__name__} (表: {table_name})')
-
             except ImportError as e:
-                if 'cannot import name' not in str(e):
-                    print(f'❗️ 警告: 无法导入模块 {module_name}: {e}')
+                if "cannot import name" not in str(e):
+                    raise ImportError(f"❗️ 警告: 无法导入模块 {module_name}: {e}")
             except Exception as e:
-                print(f'❌️ 处理模块 {module_name} 时出错: {e}')
+                raise CustomException(f"❌️ 处理模块 {module_name} 时出错: {e}")
 
         # 查找apscheduler_jobs表的模型（如果存在）
         cls._find_apscheduler_model(base_class, models, seen_models, seen_tables)
@@ -157,7 +148,13 @@ class ImportUtil:
         return models
 
     @classmethod
-    def _find_apscheduler_model(cls, base_class: type, models: list[Any], seen_models: set[Any], seen_tables: set[str]) -> None:
+    def _find_apscheduler_model(
+        cls,
+        base_class: type,
+        models: list[Any],
+        seen_models: set[Any],
+        seen_tables: set[str],
+    ) -> None:
         """
         专门查找APScheduler相关的模型
 
@@ -169,17 +166,25 @@ class ImportUtil:
         # 尝试从apscheduler相关模块导入
         try:
             # 检查是否有自定义的apscheduler模型
-            for module_name in ['app.core.ap_scheduler', 'app.module_task.scheduler_test']:
+            for module_name in [
+                "app.core.ap_scheduler",
+                "app.module_task.scheduler_test",
+            ]:
                 try:
                     module = importlib.import_module(module_name)
                     for _name, obj in inspect.getmembers(module, inspect.isclass):
-                        if cls.is_valid_model(obj, base_class) and hasattr(obj, '__tablename__') and obj.__tablename__ == 'apscheduler_jobs':
-                            if obj not in seen_models and 'apscheduler_jobs' not in seen_tables:
-                                seen_models.add(obj)
-                                seen_tables.add('apscheduler_jobs')
-                                models.append(obj)
-                                print(f'✅️ 找到有效模型: {obj.__module__}.{obj.__name__} (表: apscheduler_jobs)')
+                        if (
+                            cls.is_valid_model(obj, base_class)
+                            and hasattr(obj, "__tablename__")
+                            and obj.__tablename__ == "apscheduler_jobs"
+                        ) and (obj not in seen_models and "apscheduler_jobs" not in seen_tables):
+                            seen_models.add(obj)
+                            seen_tables.add("apscheduler_jobs")
+                            models.append(obj)
+                            print(
+                                f"✅️ 找到有效模型: {obj.__module__}.{obj.__name__} (表: apscheduler_jobs)"
+                            )
                 except ImportError:
                     pass
         except Exception as e:
-            print(f'❗️ 查找APScheduler模型时出错: {e}')
+            raise CustomException(f"❗️ 查找APScheduler模型时出错: {e}")

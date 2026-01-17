@@ -11,8 +11,9 @@ class OperationLogModel(ModelMixin, UserMixin):
     - 1: 登录日志
     - 2: 操作日志
     """
+
     __tablename__: str = "sys_log"
-    __table_args__: dict[str, str] = ({'comment': '系统日志表'})
+    __table_args__: dict[str, str] = {"comment": "系统日志表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
 
     type: Mapped[int] = mapped_column(Integer, comment="日志类型(1登录日志 2操作日志)")

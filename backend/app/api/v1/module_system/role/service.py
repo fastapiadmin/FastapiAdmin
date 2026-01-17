@@ -6,7 +6,13 @@ from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 
 from .crud import RoleCRUD
-from .schema import RoleCreateSchema, RoleOutSchema, RolePermissionSettingSchema, RoleQueryParam, RoleUpdateSchema
+from .schema import (
+    RoleCreateSchema,
+    RoleOutSchema,
+    RolePermissionSettingSchema,
+    RoleQueryParam,
+    RoleUpdateSchema,
+)
 
 
 class RoleService:
@@ -28,7 +34,12 @@ class RoleService:
         return RoleOutSchema.model_validate(role).model_dump()
 
     @classmethod
-    async def get_role_list_service(cls, auth: AuthSchema, search: RoleQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> list[dict]:
+    async def get_role_list_service(
+        cls,
+        auth: AuthSchema,
+        search: RoleQueryParam | None = None,
+        order_by: list[dict[str, str]] | None = None,
+    ) -> list[dict]:
         """
         获取角色列表
 
@@ -57,10 +68,10 @@ class RoleService:
         """
         role = await RoleCRUD(auth).get(name=data.name)
         if role:
-            raise CustomException(msg='创建失败，该角色已存在')
+            raise CustomException(msg="创建失败，该角色已存在")
         obj = await RoleCRUD(auth).get(code=data.code)
         if obj:
-            raise CustomException(msg='创建失败，编码已存在')
+            raise CustomException(msg="创建失败，编码已存在")
         new_role = await RoleCRUD(auth).create(data=data)
         return RoleOutSchema.model_validate(new_role).model_dump()
 
@@ -79,10 +90,10 @@ class RoleService:
         """
         role = await RoleCRUD(auth).get_by_id_crud(id=id)
         if not role:
-            raise CustomException(msg='更新失败，该角色不存在')
+            raise CustomException(msg="更新失败，该角色不存在")
         exist_role = await RoleCRUD(auth).get(name=data.name)
         if exist_role and exist_role.id != id:
-            raise CustomException(msg='更新失败，角色名称重复')
+            raise CustomException(msg="更新失败，角色名称重复")
         updated_role = await RoleCRUD(auth).update(id=id, data=data)
         return RoleOutSchema.model_validate(updated_role).model_dump()
 
@@ -99,15 +110,17 @@ class RoleService:
         - None
         """
         if len(ids) < 1:
-            raise CustomException(msg='删除失败，删除对象不能为空')
+            raise CustomException(msg="删除失败，删除对象不能为空")
         for id in ids:
             role = await RoleCRUD(auth).get_by_id_crud(id=id)
             if not role:
-                raise CustomException(msg='删除失败，该角色不存在')
+                raise CustomException(msg="删除失败，该角色不存在")
         await RoleCRUD(auth).delete(ids=ids)
 
     @classmethod
-    async def set_role_permission_service(cls, auth: AuthSchema, data: RolePermissionSettingSchema) -> None:
+    async def set_role_permission_service(
+        cls, auth: AuthSchema, data: RolePermissionSettingSchema
+    ) -> None:
         """
         设置角色权限
 
@@ -122,7 +135,9 @@ class RoleService:
         await RoleCRUD(auth).set_role_menus_crud(role_ids=data.role_ids, menu_ids=data.menu_ids)
 
         # 设置数据权限范围
-        await RoleCRUD(auth).set_role_data_scope_crud(role_ids=data.role_ids, data_scope=data.data_scope)
+        await RoleCRUD(auth).set_role_data_scope_crud(
+            role_ids=data.role_ids, data_scope=data.data_scope
+        )
 
         # 设置自定义数据权限部门
         if data.data_scope == 5 and data.dept_ids:
@@ -157,32 +172,36 @@ class RoleService:
         """
         # 字段映射配置
         mapping_dict = {
-            'id': '角色编号',
-            'name': '角色名称',
-            'order': '显示顺序',
-            'data_scope': '数据权限',
-            'status': '状态',
-            'description': '备注',
-            'created_time': '创建时间',
-            'updated_time': '更新时间',
-            'created_id': '创建者ID',
-            'updated_id': '更新者ID',
+            "id": "角色编号",
+            "name": "角色名称",
+            "order": "显示顺序",
+            "data_scope": "数据权限",
+            "status": "状态",
+            "description": "备注",
+            "created_time": "创建时间",
+            "updated_time": "更新时间",
+            "created_id": "创建者ID",
+            "updated_id": "更新者ID",
         }
 
         # 数据权限映射
         data_scope_map = {
-            1: '仅本人数据权限',
-            2: '本部门数据权限',
-            3: '本部门及以下数据权限',
-            4: '全部数据权限',
-            5: '自定义数据权限'
+            1: "仅本人数据权限",
+            2: "本部门数据权限",
+            3: "本部门及以下数据权限",
+            4: "全部数据权限",
+            5: "自定义数据权限",
         }
 
         # 处理数据
         data = role_list.copy()
         for item in data:
-            item['status'] = '启用' if item.get('status') == '0' else '停用'
-            item['data_scope'] = data_scope_map.get(item.get('data_scope', 1), '')
-            item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'
+            item["status"] = "启用" if item.get("status") == "0" else "停用"
+            item["data_scope"] = data_scope_map.get(item.get("data_scope", 1), "")
+            item["creator"] = (
+                item.get("creator", {}).get("name", "未知")
+                if isinstance(item.get("creator"), dict)
+                else "未知"
+            )
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)

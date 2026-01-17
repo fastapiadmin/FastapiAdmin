@@ -1,11 +1,8 @@
-
 import os
-
 from typing import Annotated
 
 import typer
 import uvicorn
-
 from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
@@ -27,10 +24,12 @@ def create_app() -> FastAPI:
         register_routers,
         reset_api_docs,
     )
+
     # 创建FastAPI应用
     app = FastAPI(**settings.FASTAPI_CONFIG, lifespan=lifespan)
 
     from app.core.logger import setup_logging
+
     # 初始化日志
     setup_logging()
     # 注册各种组件
@@ -48,8 +47,15 @@ def create_app() -> FastAPI:
 
 
 # typer.Option是非必填；typer.Argument是必填
-@fastapiadmin_cli.command(name="run", help="启动 FastapiAdmin 服务, 运行 python main.py run --env=dev 不加参数默认 dev 环境")
-def run(env: Annotated[EnvironmentEnum, typer.Option("--env", help="运行环境 (dev, prod)")] = EnvironmentEnum.DEV) -> None:
+@fastapiadmin_cli.command(
+    name="run",
+    help="启动 FastapiAdmin 服务, 运行 python main.py run --env=dev 不加参数默认 dev 环境",
+)
+def run(
+    env: Annotated[
+        EnvironmentEnum, typer.Option("--env", help="运行环境 (dev, prod)")
+    ] = EnvironmentEnum.DEV,
+) -> None:
     """启动FastAPI服务"""
 
     try:
@@ -59,48 +65,65 @@ def run(env: Annotated[EnvironmentEnum, typer.Option("--env", help="运行环境
 
         # 清除配置缓存，确保重新加载配置
         from app.config.setting import get_settings
+
         get_settings.cache_clear()
         settings = get_settings()
 
         from app.core.logger import setup_logging
+
         setup_logging()
 
         # 显示启动横幅
         from app.utils.banner import worship
+
         worship(env.value)
 
         # 启动uvicorn服务
         uvicorn.run(
-            app='main:create_app',
+            app="main:create_app",
             host=settings.SERVER_HOST,
             port=settings.SERVER_PORT,
             reload=env.value == EnvironmentEnum.DEV.value,
             factory=True,
-            log_config=None
+            log_config=None,
         )
     except Exception:
         raise
     finally:
         from app.core.logger import cleanup_logging
+
         cleanup_logging()
 
 
-@fastapiadmin_cli.command(name="revision", help="生成新的 Alembic 迁移脚本, 运行 python main.py revision --env=dev")
-def revision(env: Annotated[EnvironmentEnum, typer.Option("--env", help="运行环境 (dev, prod)")] = EnvironmentEnum.DEV) -> None:
+@fastapiadmin_cli.command(
+    name="revision",
+    help="生成新的 Alembic 迁移脚本, 运行 python main.py revision --env=dev",
+)
+def revision(
+    env: Annotated[
+        EnvironmentEnum, typer.Option("--env", help="运行环境 (dev, prod)")
+    ] = EnvironmentEnum.DEV,
+) -> None:
     """生成新的 Alembic 迁移脚本"""
     os.environ["ENVIRONMENT"] = env.value
     command.revision(alembic_cfg, autogenerate=True, message="迁移脚本")
     typer.echo("迁移脚本已生成")
 
 
-@fastapiadmin_cli.command(name="upgrade", help="应用最新的 Alembic 迁移, 运行 python main.py upgrade --env=dev")
-def upgrade(env: Annotated[EnvironmentEnum, typer.Option("--env", help="运行环境 (dev, prod)")] = EnvironmentEnum.DEV) -> None:
+@fastapiadmin_cli.command(
+    name="upgrade",
+    help="应用最新的 Alembic 迁移, 运行 python main.py upgrade --env=dev",
+)
+def upgrade(
+    env: Annotated[
+        EnvironmentEnum, typer.Option("--env", help="运行环境 (dev, prod)")
+    ] = EnvironmentEnum.DEV,
+) -> None:
     """应用最新的 Alembic 迁移"""
     os.environ["ENVIRONMENT"] = env.value
     command.upgrade(alembic_cfg, "head")
     typer.echo("所有迁移已应用。")
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     fastapiadmin_cli()

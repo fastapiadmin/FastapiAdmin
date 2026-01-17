@@ -1,7 +1,6 @@
 import re
-
 from datetime import date, datetime, time
-from typing import Annotated
+from typing import Annotated, Any
 
 from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
 
@@ -12,22 +11,31 @@ from app.core.exceptions import CustomException
 DateTimeStr = Annotated[
     datetime,
     AfterValidator(lambda x: datetime_validator(x)),
-    PlainSerializer(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if isinstance(x, datetime) else str(x), return_type=str),
-    WithJsonSchema({'type': 'string'}, mode='serialization')
+    PlainSerializer(
+        lambda x: x.strftime("%Y-%m-%d %H:%M:%S") if isinstance(x, datetime) else str(x),
+        return_type=str,
+    ),
+    WithJsonSchema({"type": "string"}, mode="serialization"),
 ]
 
 # 自定义日期字符串类型
 DateStr = Annotated[
     date,
-    PlainSerializer(lambda x: x.strftime('%Y-%m-%d') if isinstance(x, date) else str(x), return_type=str),
-    WithJsonSchema({'type': 'string'}, mode='serialization')
+    PlainSerializer(
+        lambda x: x.strftime("%Y-%m-%d") if isinstance(x, date) else str(x),
+        return_type=str,
+    ),
+    WithJsonSchema({"type": "string"}, mode="serialization"),
 ]
 
 # 自定义时间字符串类型
 TimeStr = Annotated[
     time,
-    PlainSerializer(lambda x: x.strftime('%H:%M:%S') if isinstance(x, time) else str(x), return_type=str),
-    WithJsonSchema({'type': 'string'}, mode='serialization')
+    PlainSerializer(
+        lambda x: x.strftime("%H:%M:%S") if isinstance(x, time) else str(x),
+        return_type=str,
+    ),
+    WithJsonSchema({"type": "string"}, mode="serialization"),
 ]
 
 # 自定义手机号类型
@@ -35,7 +43,7 @@ Telephone = Annotated[
     str,
     AfterValidator(lambda x: mobile_validator(x)),
     PlainSerializer(lambda x: x, return_type=str),
-    WithJsonSchema({'type': 'string'}, mode='serialization')
+    WithJsonSchema({"type": "string"}, mode="serialization"),
 ]
 
 # 自定义邮箱类型
@@ -43,7 +51,7 @@ Email = Annotated[
     str,
     AfterValidator(lambda x: email_validator(x)),
     PlainSerializer(lambda x: x, return_type=str),
-    WithJsonSchema({'type': 'string'}, mode='serialization')
+    WithJsonSchema({"type": "string"}, mode="serialization"),
 ]
 
 
@@ -86,7 +94,7 @@ def email_validator(value: str) -> str:
     if not value:
         raise CustomException(code=RET.ERROR.code, msg="邮箱地址不能为空")
 
-    regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
     if not re.match(regex, value):
         raise CustomException(code=RET.ERROR.code, msg="邮箱地址格式不正确")
@@ -113,7 +121,7 @@ def mobile_validator(value: str | None) -> str | None:
     if len(value) != 11 or not value.isdigit():
         raise CustomException(code=RET.ERROR.code, msg="手机号格式不正确")
 
-    regex = r'^1(3\d|4[4-9]|5[0-35-9]|6[67]|7[013-8]|8[0-9]|9[0-9])\d{8}$'
+    regex = r"^1(3\d|4[4-9]|5[0-35-9]|6[67]|7[013-8]|8[0-9]|9[0-9])\d{8}$"
 
     if not re.match(regex, value):
         raise CustomException(code=RET.ERROR.code, msg="手机号格式不正确")
@@ -138,11 +146,14 @@ def code_validator(value: str | None) -> str | None:
         return value
     v = value.strip()
     if not re.match(r"^[A-Za-z][A-Za-z0-9_]{1,15}$", v):
-        raise CustomException(code=RET.ERROR.code, msg="编码需字母开头，允许字母/数字/下划线，长度2-16")
+        raise CustomException(
+            code=RET.ERROR.code,
+            msg="编码需字母开头，允许字母/数字/下划线，长度2-16",
+        )
     return v
 
 
-def menu_request_validator(data):
+def menu_request_validator(data: Any) -> Any:
     """
     菜单请求数据验证器。
 
@@ -158,7 +169,10 @@ def menu_request_validator(data):
     menu_types = {1: "目录", 2: "功能", 3: "权限", 4: "外链"}
 
     if data.type not in menu_types:
-        raise CustomException(code=RET.ERROR.code, msg=f"菜单类型必须为: {','.join(map(str, menu_types.keys()))}")
+        raise CustomException(
+            code=RET.ERROR.code,
+            msg=f"菜单类型必须为: {','.join(map(str, menu_types.keys()))}",
+        )
 
     if data.type in [1, 2]:
         if not data.route_name:
@@ -172,7 +186,7 @@ def menu_request_validator(data):
     return data
 
 
-def role_permission_request_validator(data):
+def role_permission_request_validator(data: Any) -> Any:
     """
     角色权限设置数据验证器。
 
@@ -190,11 +204,14 @@ def role_permission_request_validator(data):
         2: "本部门数据权限",
         3: "本部门及以下数据权限",
         4: "全部数据权限",
-        5: "自定义数据权限"
+        5: "自定义数据权限",
     }
 
     if data.data_scope not in data_scopes:
-        raise CustomException(code=RET.ERROR.code, msg=f"数据权限范围必须为: {','.join(map(str, data_scopes.keys()))}")
+        raise CustomException(
+            code=RET.ERROR.code,
+            msg=f"数据权限范围必须为: {','.join(map(str, data_scopes.keys()))}",
+        )
 
     if not data.role_ids:
         raise CustomException(code=RET.ERROR.code, msg="角色不能为空")

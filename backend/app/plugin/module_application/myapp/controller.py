@@ -12,7 +12,11 @@ from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
-from .schema import ApplicationCreateSchema, ApplicationQueryParam, ApplicationUpdateSchema
+from .schema import (
+    ApplicationCreateSchema,
+    ApplicationQueryParam,
+    ApplicationUpdateSchema,
+)
 from .service import ApplicationService
 
 MyAppRouter = APIRouter(route_class=OperationLogRoute, prefix="/myapp", tags=["应用管理"])
@@ -21,7 +25,10 @@ MyAppRouter = APIRouter(route_class=OperationLogRoute, prefix="/myapp", tags=["�
 @MyAppRouter.get("/detail/{id}", summary="获取应用详情", description="获取应用详情")
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="应用ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:detail"]))]
+    auth: Annotated[
+        AuthSchema,
+        Depends(AuthPermission(["module_application:myapp:detail"])),
+    ],
 ) -> JSONResponse:
     """
     获取应用详情
@@ -42,7 +49,7 @@ async def get_obj_detail_controller(
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[ApplicationQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:query"]))],
 ) -> JSONResponse:
     """
     查询应用列表
@@ -55,8 +62,14 @@ async def get_obj_list_controller(
     返回:
     - JSONResponse: 包含应用列表的JSON响应
     """
-    result_dict_list = await ApplicationService.list_service(auth=auth, search=search, order_by=page.order_by)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict_list = await ApplicationService.list_service(
+        auth=auth, search=search, order_by=page.order_by
+    )
+    result_dict = await PaginationService.paginate(
+        data_list=result_dict_list,
+        page_no=page.page_no,
+        page_size=page.page_size,
+    )
     log.info("查询应用列表成功")
     return SuccessResponse(data=result_dict, msg="查询应用列表成功")
 
@@ -64,7 +77,10 @@ async def get_obj_list_controller(
 @MyAppRouter.post("/create", summary="创建应用", description="创建应用")
 async def create_obj_controller(
     data: ApplicationCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:create"]))]
+    auth: Annotated[
+        AuthSchema,
+        Depends(AuthPermission(["module_application:myapp:create"])),
+    ],
 ) -> JSONResponse:
     """
     创建应用
@@ -85,7 +101,10 @@ async def create_obj_controller(
 async def update_obj_controller(
     data: ApplicationUpdateSchema,
     id: Annotated[int, Path(description="应用ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:update"]))]
+    auth: Annotated[
+        AuthSchema,
+        Depends(AuthPermission(["module_application:myapp:update"])),
+    ],
 ) -> JSONResponse:
     """
     修改应用
@@ -106,7 +125,10 @@ async def update_obj_controller(
 @MyAppRouter.delete("/delete", summary="删除应用", description="删除应用")
 async def delete_obj_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:delete"]))]
+    auth: Annotated[
+        AuthSchema,
+        Depends(AuthPermission(["module_application:myapp:delete"])),
+    ],
 ) -> JSONResponse:
     """
     删除应用
@@ -123,10 +145,14 @@ async def delete_obj_controller(
     return SuccessResponse(msg="删除应用成功")
 
 
-@MyAppRouter.patch("/available/setting", summary="批量修改应用状态", description="批量修改应用状态")
+@MyAppRouter.patch(
+    "/available/setting",
+    summary="批量修改应用状态",
+    description="批量修改应用状态",
+)
 async def batch_set_available_obj_controller(
     data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:patch"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:patch"]))],
 ) -> JSONResponse:
     """
     批量修改应用状态

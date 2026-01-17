@@ -1,5 +1,4 @@
-import pickle
-
+import json
 from collections.abc import Awaitable
 from typing import Any
 
@@ -82,19 +81,15 @@ class RedisCURD:
         try:
             # 根据数据类型选择序列化方式
             if isinstance(value, (int, float, str)):
-                data = str(value).encode('utf-8')
+                data = str(value).encode("utf-8")
             else:
                 try:
-                    data = pickle.dumps(value)
+                    data = json.dumps(value).encode("utf-8")
                 except Exception as e:
                     log.error(f"序列化数据失败: {e!s}")
                     return False
 
-            await self.redis.set(
-                name=key,
-                value=data,
-                ex=expire
-            )
+            await self.redis.set(name=key, value=data, ex=expire)
             return True
 
         except Exception as e:
@@ -114,6 +109,7 @@ class RedisCURD:
         """
         try:
             import uuid
+
             # 如果没有提供value，生成唯一的UUID
             lock_value = value or str(uuid.uuid4())
             # 使用setnx命令实现原子性锁获取
@@ -121,7 +117,7 @@ class RedisCURD:
                 name=key,
                 value=lock_value,
                 ex=expire,
-                nx=True  # 只有当键不存在时才设置
+                nx=True,  # 只有当键不存在时才设置
             )
             return (result is not None, lock_value)
         except Exception as e:

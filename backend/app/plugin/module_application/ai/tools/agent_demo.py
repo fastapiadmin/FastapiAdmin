@@ -17,7 +17,12 @@ from langchain.agents.structured_output import (
     ToolStrategy,
 )
 from langchain.chat_models import init_chat_model
-from langchain.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage
+from langchain.messages import (
+    AIMessage,
+    HumanMessage,
+    RemoveMessage,
+    SystemMessage,
+)
 from langchain.tools import ToolRuntime, tool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
@@ -46,6 +51,7 @@ def get_weather_for_location(city: str) -> str:
 @dataclass
 class Context:
     """Custom runtime context schema."""
+
     user_id: str
 
 
@@ -57,17 +63,13 @@ def get_user_location(runtime: ToolRuntime[Context]) -> str:
 
 
 # =================定义模型=================
-model = init_chat_model(
-    "claude-sonnet-4-5-20250929",
-    temperature=0.5,
-    timeout=10,
-    max_tokens=1000
-)
+model = init_chat_model("claude-sonnet-4-5-20250929", temperature=0.5, timeout=10, max_tokens=1000)
 
 
 # =================定义响应模型=================
 class ResponseFormat(BaseModel):
     """Response schema for the agent."""
+
     rating: int | None = Field(description="Rating from 1-5", ge=1, le=5)
     comment: str = Field(description="Review comment")
     punny_response: str
@@ -98,28 +100,21 @@ def trim_messages(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
     recent_messages = messages[-3:] if len(messages) % 2 == 0 else messages[-4:]
     new_messages = [first_msg, *recent_messages]
 
-    return {
-        "messages": [
-            RemoveMessage(id=REMOVE_ALL_MESSAGES),
-            *new_messages
-        ]
-    }
+    return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES), *new_messages]}
 
 
 @after_model
 def validate_response(state: AgentState, runtime: Runtime) -> dict | None:
     """Remove messages containing sensitive words."""
-    STOP_WORDS = ["password", "secret"]
     last_message = state["messages"][-1]
-    if any(word in last_message.content for word in STOP_WORDS):
+    if any(word in last_message.content for word in ["password", "secret"]):
         return {"messages": [RemoveMessage(id=last_message.id or "")]}
     return None
 
 
 @wrap_model_call
 def inject_file_context(
-    request: ModelRequest,
-    handler: Callable[[ModelRequest], ModelResponse]
+    request: ModelRequest, handler: Callable[[ModelRequest], ModelResponse]
 ) -> ModelResponse:
     """Inject context about files user has uploaded this session."""
     # Read from State: get uploaded files metadata
@@ -127,7 +122,9 @@ def inject_file_context(
 
     if uploaded_files:
         # Build context about available files
-        file_descriptions = [f"- {file['name']} ({file['type']}): {file['summary']}" for file in uploaded_files]
+        file_descriptions = [
+            f"- {file['name']} ({file['type']}): {file['summary']}" for file in uploaded_files
+        ]
 
         file_context = f"""Files you have access to in this conversation:
 {chr(10).join(file_descriptions)}
@@ -155,10 +152,18 @@ agent = create_agent(
     model=model,
     system_prompt=SYSTEM_PROMPT,
     tools=[get_user_location, get_weather_for_location],
-    middleware=[dynamic_system_prompt, trim_messages, validate_response, inject_file_context],
+    middleware=[
+        dynamic_system_prompt,
+        trim_messages,
+        validate_response,
+        inject_file_context,
+    ],
     context_schema=Context,
-    response_format=ToolStrategy(schema=ResponseFormat, handle_errors=(ValueError, TypeError, custom_error_handler)),
-    checkpointer=checkpointer
+    response_format=ToolStrategy(
+        schema=ResponseFormat,
+        handle_errors=(ValueError, TypeError, custom_error_handler),
+    ),
+    checkpointer=checkpointer,
 )
 
 # =================定义线程=================
@@ -167,18 +172,14 @@ config = {"configurable": {"thread_id": "1"}}
 messages = [
     SystemMessage("You are a poetry expert"),
     HumanMessage("Write a haiku about spring"),
-    AIMessage("Cherry blossoms bloom...")
+    AIMessage("Cherry blossoms bloom..."),
 ]
 
 # =================运行智能体=================
-response = agent.invoke(
-    input=messages,
-    config=config,
-    context=Context(user_id="1")
-)
+response = agent.invoke(input=messages, config=config, context=Context(user_id="1"))
 
 # =================解析响应=================
-print(response['structured_response'])
+print(response["structured_response"])
 # ResponseFormat(
 #     punny_response="Florida is still having a 'sun-derful' day! The sunshine is playing 'ray-dio' hits all day long! I'd say it's the perfect weather for some 'solar-bration'! If you were hoping for rain, I'm afraid that idea is all 'washed up' - the forecast remains 'clear-ly' brilliant!",
 #     weather_conditions="It's always sunny in Florida!"

@@ -45,7 +45,12 @@ class DictTypeService:
         return DictTypeOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def get_obj_list_service(cls, auth: AuthSchema, search: DictTypeQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
+    async def get_obj_list_service(
+        cls,
+        auth: AuthSchema,
+        search: DictTypeQueryParam | None = None,
+        order_by: list[dict] | None = None,
+    ) -> list[dict]:
         """
         获取数据字典类型列表
 
@@ -57,11 +62,15 @@ class DictTypeService:
         返回:
         - list[dict]: 数据字典类型详情字典列表
         """
-        obj_list = await DictTypeCRUD(auth).get_obj_list_crud(search=search.__dict__, order_by=order_by)
+        obj_list = await DictTypeCRUD(auth).get_obj_list_crud(
+            search=search.__dict__, order_by=order_by
+        )
         return [DictTypeOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
-    async def create_obj_service(cls, auth: AuthSchema, redis: Redis, data: DictTypeCreateSchema) -> dict:
+    async def create_obj_service(
+        cls, auth: AuthSchema, redis: Redis, data: DictTypeCreateSchema
+    ) -> dict:
         """
         创建数据字典类型
 
@@ -75,7 +84,7 @@ class DictTypeService:
         """
         exist_obj = await DictTypeCRUD(auth).get(dict_name=data.dict_name)
         if exist_obj:
-            raise CustomException(msg='创建失败，该数据字典类型已存在')
+            raise CustomException(msg="创建失败，该数据字典类型已存在")
         obj = await DictTypeCRUD(auth).create_obj_crud(data=data)
 
         new_obj_dict = DictTypeOutSchema.model_validate(obj).model_dump()
@@ -84,9 +93,9 @@ class DictTypeService:
 
         try:
             await RedisCURD(redis).set(
-                    key=redis_key,
-                    value="",
-                )
+                key=redis_key,
+                value="",
+            )
             log.info(f"创建字典类型成功: {new_obj_dict}")
         except Exception as e:
             log.error(f"创建字典类型失败: {e}")
@@ -95,7 +104,13 @@ class DictTypeService:
         return new_obj_dict
 
     @classmethod
-    async def update_obj_service(cls, auth: AuthSchema, redis: Redis, id: int, data: DictTypeUpdateSchema) -> dict:
+    async def update_obj_service(
+        cls,
+        auth: AuthSchema,
+        redis: Redis,
+        id: int,
+        data: DictTypeUpdateSchema,
+    ) -> dict:
         """
         更新数据字典类型
 
@@ -110,15 +125,17 @@ class DictTypeService:
         """
         exist_obj = await DictTypeCRUD(auth).get_obj_by_id_crud(id=id)
         if not exist_obj:
-            raise CustomException(msg='更新失败，该数据字典类型不存在')
+            raise CustomException(msg="更新失败，该数据字典类型不存在")
         if exist_obj.dict_name != data.dict_name:
-            raise CustomException(msg='更新失败，数据字典类型名称不可以修改')
+            raise CustomException(msg="更新失败，数据字典类型名称不可以修改")
 
         dict_data_list = []
         # 如果字典类型修改或状态变更，则修改对应字典数据的类型和状态，并更新Redis缓存
         if exist_obj.dict_type != data.dict_type or exist_obj.status != data.status:
             # 检查字典数据类型是否被修改
-            exist_obj_type_list = await DictDataCRUD(auth).list(search={'dict_type': exist_obj.dict_type})
+            exist_obj_type_list = await DictDataCRUD(auth).list(
+                search={"dict_type": exist_obj.dict_type}
+            )
             if exist_obj_type_list:
                 for item in exist_obj_type_list:
                     item.dict_type = data.dict_type
@@ -132,7 +149,7 @@ class DictTypeService:
                         list_class=item.list_class,
                         is_default=item.is_default,
                         status=data.status,
-                        description=item.description
+                        description=item.description,
                     )
                     obj = await DictDataCRUD(auth).update_obj_crud(id=item.id, data=dict_data)
                     dict_data_list.append(DictDataOutSchema.model_validate(obj).model_dump())
@@ -144,14 +161,18 @@ class DictTypeService:
         redis_key = f"{RedisInitKeyConfig.SYSTEM_DICT.key}:{data.dict_type}"
         try:
             # 获取当前字典类型的所有字典数据，确保包含最新状态
-            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(search={'dict_type': data.dict_type})
-            dict_data = [DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row]
+            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(
+                search={"dict_type": data.dict_type}
+            )
+            dict_data = [
+                DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row
+            ]
 
             value = json.dumps(dict_data, ensure_ascii=False)
             await RedisCURD(redis).set(
-                    key=redis_key,
-                    value=value,
-                )
+                key=redis_key,
+                value=value,
+            )
             log.info(f"更新字典类型成功并刷新缓存: {new_obj_dict}")
         except Exception as e:
             log.error(f"更新字典类型缓存失败: {e}")
@@ -173,16 +194,16 @@ class DictTypeService:
         - None
         """
         if len(ids) < 1:
-            raise CustomException(msg='删除失败，删除对象不能为空')
+            raise CustomException(msg="删除失败，删除对象不能为空")
         for id in ids:
             exist_obj = await DictTypeCRUD(auth).get_obj_by_id_crud(id=id)
             if not exist_obj:
-                raise CustomException(msg='删除失败，该数据字典类型不存在')
+                raise CustomException(msg="删除失败，该数据字典类型不存在")
             # 检查是否有字典数据
-            exist_obj_type_list = await DictDataCRUD(auth).list(search={'dict_type': id})
+            exist_obj_type_list = await DictDataCRUD(auth).list(search={"dict_type": id})
             if len(exist_obj_type_list) > 0:
                 # 如果有字典数据，不能删除
-                raise CustomException(msg='删除失败，该数据字典类型下存在字典数据')
+                raise CustomException(msg="删除失败，该数据字典类型下存在字典数据")
             # 删除Redis缓存
             redis_key = f"{RedisInitKeyConfig.SYSTEM_DICT.key}:{exist_obj.dict_type}"
             try:
@@ -219,23 +240,27 @@ class DictTypeService:
         - bytes: Excel文件字节流
         """
         mapping_dict = {
-            'id': '编号',
-            'dict_name': '字典名称',
-            'dict_type': '字典类型',
-            'status': '状态',
-            'description': '备注',
-            'created_time': '创建时间',
-            'updated_time': '更新时间',
-            'created_id': '创建者ID',
-            'updated_id': '更新者ID',
+            "id": "编号",
+            "dict_name": "字典名称",
+            "dict_type": "字典类型",
+            "status": "状态",
+            "description": "备注",
+            "created_time": "创建时间",
+            "updated_time": "更新时间",
+            "created_id": "创建者ID",
+            "updated_id": "更新者ID",
         }
 
         # 复制数据并转换状态
         data = data_list.copy()
         for item in data:
             # 处理状态
-            item['status'] = '启用' if item.get('status') == '0' else '停用'
-            item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'
+            item["status"] = "启用" if item.get("status") == "0" else "停用"
+            item["creator"] = (
+                item.get("creator", {}).get("name", "未知")
+                if isinstance(item.get("creator"), dict)
+                else "未知"
+            )
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
 
@@ -261,7 +286,12 @@ class DictDataService:
         return DictDataOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def get_obj_list_service(cls, auth: AuthSchema, search: DictDataQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
+    async def get_obj_list_service(
+        cls,
+        auth: AuthSchema,
+        search: DictDataQueryParam | None = None,
+        order_by: list[dict] | None = None,
+    ) -> list[dict]:
         """
         获取数据字典数据列表
 
@@ -273,7 +303,9 @@ class DictDataService:
         返回:
         - list[dict]: 数据字典数据详情字典列表
         """
-        obj_list = await DictDataCRUD(auth).get_obj_list_crud(search=search.__dict__, order_by=order_by)
+        obj_list = await DictDataCRUD(auth).get_obj_list_crud(
+            search=search.__dict__, order_by=order_by
+        )
         return [DictDataOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
@@ -300,14 +332,20 @@ class DictDataService:
                     for obj in obj_list:
                         dict_type = obj.dict_type
                         try:
-                            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(search={'dict_type': dict_type})
-                            dict_data = [DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row]
+                            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(
+                                search={"dict_type": dict_type}
+                            )
+                            dict_data = [
+                                DictDataOutSchema.model_validate(row).model_dump()
+                                for row in dict_data_list
+                                if row
+                            ]
                             # 保存到Redis并设置过期时间
                             redis_key = f"{RedisInitKeyConfig.SYSTEM_DICT.key}:{dict_type}"
                             value = json.dumps(dict_data, ensure_ascii=False)
                             await RedisCURD(redis).set(
-                                    key=redis_key,
-                                    value=value,
+                                key=redis_key,
+                                value=value,
                             )
                         except Exception as e:
                             log.error(f"❌ 初始化字典数据失败 [{dict_type}]: {e}")
@@ -363,7 +401,9 @@ class DictDataService:
             raise CustomException(msg=f"获取字典数据失败: {e!s}")
 
     @classmethod
-    async def create_obj_service(cls, auth: AuthSchema, redis: Redis, data: DictDataCreateSchema) -> dict:
+    async def create_obj_service(
+        cls, auth: AuthSchema, redis: Redis, data: DictDataCreateSchema
+    ) -> dict:
         """
         创建数据字典数据
 
@@ -376,12 +416,16 @@ class DictDataService:
         - dict: 数据字典数据详情字典
         """
         # 检查相同字典类型下dict_label是否已存在
-        exist_label_obj = await DictDataCRUD(auth).get(dict_type=data.dict_type, dict_label=data.dict_label)
+        exist_label_obj = await DictDataCRUD(auth).get(
+            dict_type=data.dict_type, dict_label=data.dict_label
+        )
         if exist_label_obj:
             raise CustomException(msg=f'创建失败，该字典类型下的字典标签"{data.dict_label}"已存在')
 
         # 检查相同字典类型下dict_value是否已存在
-        exist_value_obj = await DictDataCRUD(auth).get(dict_type=data.dict_type, dict_value=data.dict_value)
+        exist_value_obj = await DictDataCRUD(auth).get(
+            dict_type=data.dict_type, dict_value=data.dict_value
+        )
         if exist_value_obj:
             raise CustomException(msg=f'创建失败，该字典类型下的字典键值"{data.dict_value}"已存在')
 
@@ -390,14 +434,18 @@ class DictDataService:
         redis_key = f"{RedisInitKeyConfig.SYSTEM_DICT.key}:{data.dict_type}"
         try:
             # 获取当前字典类型的所有字典数据
-            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(search={'dict_type': data.dict_type})
-            dict_data = [DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row]
+            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(
+                search={"dict_type": data.dict_type}
+            )
+            dict_data = [
+                DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row
+            ]
 
             value = json.dumps(dict_data, ensure_ascii=False)
             await RedisCURD(redis).set(
-                    key=redis_key,
-                    value=value,
-                )
+                key=redis_key,
+                value=value,
+            )
             log.info(f"创建字典数据写入缓存成功: {obj}")
         except Exception as e:
             log.error(f"创建字典数据写入缓存失败: {e}")
@@ -406,7 +454,13 @@ class DictDataService:
         return DictDataOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def update_obj_service(cls, auth: AuthSchema, redis: Redis, id: int, data: DictDataUpdateSchema) -> dict:
+    async def update_obj_service(
+        cls,
+        auth: AuthSchema,
+        redis: Redis,
+        id: int,
+        data: DictDataUpdateSchema,
+    ) -> dict:
         """
         更新数据字典数据
 
@@ -421,19 +475,27 @@ class DictDataService:
         """
         exist_obj = await DictDataCRUD(auth).get_obj_by_id_crud(id=id)
         if not exist_obj:
-            raise CustomException(msg='更新失败，该字典数据不存在')
+            raise CustomException(msg="更新失败，该字典数据不存在")
 
         # 检查相同字典类型下dict_label是否已存在（排除当前记录）
         if exist_obj.dict_label != data.dict_label:
-            exist_label_obj = await DictDataCRUD(auth).get(dict_type=data.dict_type, dict_label=data.dict_label)
+            exist_label_obj = await DictDataCRUD(auth).get(
+                dict_type=data.dict_type, dict_label=data.dict_label
+            )
             if exist_label_obj:
-                raise CustomException(msg=f'更新失败，该字典类型下的字典标签"{data.dict_label}"已存在')
+                raise CustomException(
+                    msg=f'更新失败，该字典类型下的字典标签"{data.dict_label}"已存在'
+                )
 
         # 检查相同字典类型下dict_value是否已存在（排除当前记录）
         if exist_obj.dict_value != data.dict_value:
-            exist_value_obj = await DictDataCRUD(auth).get(dict_type=data.dict_type, dict_value=data.dict_value)
+            exist_value_obj = await DictDataCRUD(auth).get(
+                dict_type=data.dict_type, dict_value=data.dict_value
+            )
             if exist_value_obj:
-                raise CustomException(msg=f'更新失败，该字典类型下的字典键值"{data.dict_value}"已存在')
+                raise CustomException(
+                    msg=f'更新失败，该字典类型下的字典键值"{data.dict_value}"已存在'
+                )
 
         # 如果字典类型变更，仅刷新旧类型缓存，不联动字典类型状态
         if exist_obj.dict_type != data.dict_type:
@@ -441,13 +503,19 @@ class DictDataService:
             if dict_type:
                 redis_key = f"{RedisInitKeyConfig.SYSTEM_DICT.key}:{dict_type.dict_type}"
                 try:
-                    dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(search={'dict_type': dict_type.dict_type})
-                    dict_data = [DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row]
+                    dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(
+                        search={"dict_type": dict_type.dict_type}
+                    )
+                    dict_data = [
+                        DictDataOutSchema.model_validate(row).model_dump()
+                        for row in dict_data_list
+                        if row
+                    ]
                     value = json.dumps(dict_data, ensure_ascii=False)
                     await RedisCURD(redis).set(
-                            key=redis_key,
-                            value=value,
-                        )
+                        key=redis_key,
+                        value=value,
+                    )
                 except Exception as e:
                     log.error(f"更新字典数据类型变更时刷新旧缓存失败: {e}")
 
@@ -455,14 +523,18 @@ class DictDataService:
         redis_key = f"{RedisInitKeyConfig.SYSTEM_DICT.key}:{data.dict_type}"
         try:
             # 获取当前字典类型的所有字典数据
-            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(search={'dict_type': data.dict_type})
-            dict_data = [DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row]
+            dict_data_list = await DictDataCRUD(auth).get_obj_list_crud(
+                search={"dict_type": data.dict_type}
+            )
+            dict_data = [
+                DictDataOutSchema.model_validate(row).model_dump() for row in dict_data_list if row
+            ]
 
             value = json.dumps(dict_data, ensure_ascii=False)
             await RedisCURD(redis).set(
-                    key=redis_key,
-                    value=value,
-                )
+                key=redis_key,
+                value=value,
+            )
             log.info(f"更新字典数据写入缓存成功: {obj}")
         except Exception as e:
             log.error(f"更新字典数据写入缓存失败: {e}")
@@ -485,16 +557,16 @@ class DictDataService:
         """
         try:
             if len(ids) < 1:
-                raise CustomException(msg='删除失败，删除对象不能为空')
+                raise CustomException(msg="删除失败，删除对象不能为空")
 
             # 首先检查是否包含系统默认数据
             for id in ids:
                 exist_obj = await DictDataCRUD(auth).get_obj_by_id_crud(id=id)
                 if not exist_obj:
-                    raise CustomException(msg=f'{id} 删除失败，该字典数据不存在')
+                    raise CustomException(msg=f"{id} 删除失败，该字典数据不存在")
                 # 系统默认字典数据不允许删除
                 if exist_obj.is_default:
-                    raise CustomException(msg=f'删除失败，ID为{id}的系统默认字典数据不允许删除')
+                    raise CustomException(msg=f"删除失败，ID为{id}的系统默认字典数据不允许删除")
 
             # 获取所有需要清除的缓存键
             dict_types_to_clear = set()
@@ -550,29 +622,33 @@ class DictDataService:
         - bytes: Excel文件字节流
         """
         mapping_dict = {
-            'id': '编号',
-            'dict_sort': '字典排序',
-            'dict_label': '字典标签',
-            'dict_value': '字典键值',
-            'dict_type': '字典类型',
-            'css_class': '样式属性',
-            'list_class': '表格回显样式',
-            'is_default': '是否默认',
-            'status': '状态',
-            'description': '备注',
-            'created_time': '创建时间',
-            'updated_time': '更新时间',
-            'created_id': '创建者ID',
-            'updated_id': '更新者ID',
+            "id": "编号",
+            "dict_sort": "字典排序",
+            "dict_label": "字典标签",
+            "dict_value": "字典键值",
+            "dict_type": "字典类型",
+            "css_class": "样式属性",
+            "list_class": "表格回显样式",
+            "is_default": "是否默认",
+            "status": "状态",
+            "description": "备注",
+            "created_time": "创建时间",
+            "updated_time": "更新时间",
+            "created_id": "创建者ID",
+            "updated_id": "更新者ID",
         }
 
         # 复制数据并转换状态
         data = data_list.copy()
         for item in data:
             # 处理状态
-            item['status'] = '启用' if item.get('status') == '0' else '停用'
+            item["status"] = "启用" if item.get("status") == "0" else "停用"
             # 处理是否默认
-            item['is_default'] = '是' if item.get('is_default') else '否'
-            item['creator'] = item.get('creator', {}).get('name', '未知') if isinstance(item.get('creator'), dict) else '未知'
+            item["is_default"] = "是" if item.get("is_default") else "否"
+            item["creator"] = (
+                item.get("creator", {}).get("name", "未知")
+                if isinstance(item.get("creator"), dict)
+                else "未知"
+            )
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)

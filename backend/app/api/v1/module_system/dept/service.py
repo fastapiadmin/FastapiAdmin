@@ -10,7 +10,12 @@ from app.utils.common_util import (
 )
 
 from .crud import DeptCRUD
-from .schema import DeptCreateSchema, DeptOutSchema, DeptQueryParam, DeptUpdateSchema
+from .schema import (
+    DeptCreateSchema,
+    DeptOutSchema,
+    DeptQueryParam,
+    DeptUpdateSchema,
+)
 
 
 class DeptService:
@@ -35,11 +40,16 @@ class DeptService:
         if dept and dept.parent_id:
             parent = await DeptCRUD(auth).get(id=dept.parent_id)
             if parent:
-                result['parent_name'] = parent.name
+                result["parent_name"] = parent.name
         return result
 
     @classmethod
-    async def get_dept_tree_service(cls, auth: AuthSchema, search: DeptQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
+    async def get_dept_tree_service(
+        cls,
+        auth: AuthSchema,
+        search: DeptQueryParam | None = None,
+        order_by: list[dict] | None = None,
+    ) -> list[dict]:
         """
         获取部门树形列表。
 
@@ -52,7 +62,9 @@ class DeptService:
         - list[dict]: 部门树形列表对象。
         """
         # 使用树形结构查询，预加载children关系
-        dept_list = await DeptCRUD(auth).get_tree_list_crud(search=search.__dict__, order_by=order_by)
+        dept_list = await DeptCRUD(auth).get_tree_list_crud(
+            search=search.__dict__, order_by=order_by
+        )
         # 转换为字典列表
         dept_dict_list = [DeptOutSchema.model_validate(dept).model_dump() for dept in dept_list]
         # 使用traversal_to_tree构建树形结构
@@ -75,10 +87,10 @@ class DeptService:
         """
         dept = await DeptCRUD(auth).get(name=data.name)
         if dept:
-            raise CustomException(msg='创建失败，该部门已存在')
+            raise CustomException(msg="创建失败，该部门已存在")
         obj = await DeptCRUD(auth).get(code=data.code)
         if obj:
-            raise CustomException(msg='创建失败，编码已存在')
+            raise CustomException(msg="创建失败，编码已存在")
         dept = await DeptCRUD(auth).create(data=data)
         return DeptOutSchema.model_validate(dept).model_dump()
 
@@ -100,10 +112,10 @@ class DeptService:
         """
         dept = await DeptCRUD(auth).get_by_id_crud(id=id)
         if not dept:
-            raise CustomException(msg='更新失败，该部门不存在')
+            raise CustomException(msg="更新失败，该部门不存在")
         exist_dept = await DeptCRUD(auth).get(name=data.name)
         if exist_dept and exist_dept.id != id:
-            raise CustomException(msg='更新失败，部门名称重复')
+            raise CustomException(msg="更新失败，部门名称重复")
         dept = await DeptCRUD(auth).update(id=id, data=data)
         return DeptOutSchema.model_validate(dept).model_dump()
 
@@ -123,7 +135,7 @@ class DeptService:
         - CustomException: 当删除对象为空时抛出。
         """
         if len(ids) < 1:
-            raise CustomException(msg='删除失败，删除对象不能为空')
+            raise CustomException(msg="删除失败，删除对象不能为空")
 
         # 获取所有部门列表，用于构建树形关系
         all_depts = await DeptCRUD(auth).get_list_crud()

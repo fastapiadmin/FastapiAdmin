@@ -14,7 +14,9 @@ class OnlineService:
     """在线用户管理模块服务层"""
 
     @classmethod
-    async def get_online_list_service(cls, redis: Redis, search: OnlineQueryParam | None = None) ->  list[dict]:
+    async def get_online_list_service(
+        cls, redis: Redis, search: OnlineQueryParam | None = None
+    ) -> list[dict]:
         """
         获取在线用户列表信息（支持分页和搜索）
 
@@ -42,7 +44,7 @@ class OnlineService:
                 log.error(f"解析在线用户数据失败: {e}")
                 continue
         # 按照 login_time 倒序排序
-        online_users.sort(key=lambda x: x.get('login_time', ''), reverse=True)
+        online_users.sort(key=lambda x: x.get("login_time", ""), reverse=True)
 
         return online_users
 
@@ -99,17 +101,17 @@ class OnlineService:
             return True
 
         if search.name and search.name[1]:
-            keyword = search.name[1].strip('%')
+            keyword = search.name[1].strip("%")
             if keyword.lower() not in online_info.get("name", "").lower():
                 return False
 
         if search.ipaddr and search.ipaddr[1]:
-            keyword = search.ipaddr[1].strip('%')
+            keyword = search.ipaddr[1].strip("%")
             if keyword not in online_info.get("ipaddr", ""):
                 return False
 
         if search.login_location and search.login_location[1]:
-            keyword = search.login_location[1].strip('%')
+            keyword = search.login_location[1].strip("%")
             if keyword.lower() not in online_info.get("login_location", "").lower():
                 return False
 

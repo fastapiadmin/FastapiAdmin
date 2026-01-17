@@ -27,7 +27,8 @@ class CacheService:
         command_stats_dict = await RedisCURD(redis).commandstats()
 
         command_stats = [
-            {'name': key.split('_')[1], 'value': str(value.get('calls'))} for key, value in command_stats_dict.items()
+            {"name": key.split("_")[1], "value": str(value.get("calls"))}
+            for key, value in command_stats_dict.items()
         ]
         result = CacheMonitorSchema(command_stats=command_stats, db_size=db_size, info=info)
 
@@ -41,12 +42,15 @@ class CacheService:
         返回:
         - list: 缓存名称列表信息。
         """
-        name_list = [CacheInfoSchema(
-                    cache_key='',
-                    cache_name=key_config.key,
-                    cache_value='',
-                    remark=key_config.remark,
-                ).model_dump() for key_config in RedisInitKeyConfig]
+        name_list = [
+            CacheInfoSchema(
+                cache_key="",
+                cache_name=key_config.key,
+                cache_value="",
+                remark=key_config.remark,
+            ).model_dump()
+            for key_config in RedisInitKeyConfig
+        ]
 
         return name_list
 
@@ -62,13 +66,17 @@ class CacheService:
         返回:
         - list: 缓存键名列表信息。
         """
-        cache_keys = await RedisCURD(redis).get_keys(f'{cache_name}*')
-        cache_key_list = [key.split(':', 1)[1] for key in cache_keys if key.startswith(f'{cache_name}:')]
+        cache_keys = await RedisCURD(redis).get_keys(f"{cache_name}*")
+        cache_key_list = [
+            key.split(":", 1)[1] for key in cache_keys if key.startswith(f"{cache_name}:")
+        ]
 
         return cache_key_list
 
     @classmethod
-    async def get_cache_monitor_cache_value_service(cls, redis: Redis, cache_name: str, cache_key: str) -> dict:
+    async def get_cache_monitor_cache_value_service(
+        cls, redis: Redis, cache_name: str, cache_key: str
+    ) -> dict:
         """
         获取缓存内容信息。
 
@@ -80,9 +88,14 @@ class CacheService:
         返回:
         - dict: 缓存内容信息字典。
         """
-        cache_value = await RedisCURD(redis).get(f'{cache_name}:{cache_key}')
+        cache_value = await RedisCURD(redis).get(f"{cache_name}:{cache_key}")
 
-        return CacheInfoSchema(cache_key=cache_key, cache_name=cache_name, cache_value=cache_value, remark='').model_dump()
+        return CacheInfoSchema(
+            cache_key=cache_key,
+            cache_name=cache_name,
+            cache_value=cache_value,
+            remark="",
+        ).model_dump()
 
     @classmethod
     async def clear_cache_monitor_cache_name_service(cls, redis: Redis, cache_name: str) -> bool:
@@ -96,7 +109,7 @@ class CacheService:
         返回:
         - bool: 是否清理成功。
         """
-        cache_keys = await RedisCURD(redis).get_keys(f'{cache_name}*')
+        cache_keys = await RedisCURD(redis).get_keys(f"{cache_name}*")
         if cache_keys:
             await RedisCURD(redis).delete(*cache_keys)
 
@@ -114,7 +127,7 @@ class CacheService:
         返回:
         - bool: 是否清理成功。
         """
-        cache_keys = await RedisCURD(redis).get_keys(f'*{cache_key}')
+        cache_keys = await RedisCURD(redis).get_keys(f"*{cache_key}")
         if cache_keys:
             await RedisCURD(redis).delete(*cache_keys)
 

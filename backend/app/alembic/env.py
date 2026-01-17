@@ -1,5 +1,4 @@
 import asyncio
-
 from logging.config import fileConfig
 
 from alembic import context
@@ -16,10 +15,11 @@ from app.utils.import_util import ImportUtil
 ALEMBIC_VERSION_DIR.mkdir(parents=True, exist_ok=True)
 
 # 清除MappedBase.metadata中的表定义，避免重复注册
-if hasattr(MappedBase, 'metadata') and MappedBase.metadata.tables:
+if hasattr(MappedBase, "metadata") and MappedBase.metadata.tables:
     print(f"🧹 清除已存在的表定义，当前有 {len(MappedBase.metadata.tables)} 个表")
     # 创建一个新的空metadata对象
     from sqlalchemy import MetaData
+
     MappedBase.metadata = MetaData()
     print("✅️ 已重置metadata")
 
@@ -107,9 +107,9 @@ def run_migrations_online() -> None:
             if all_empty:
                 # 如果没有实际变更，不生成迁移文件
                 directives[:] = []
-                print('❎️ 未检测到模型变更，不生成迁移文件')
+                print("❎️ 未检测到模型变更，不生成迁移文件")
             else:
-                print('✅️ 检测到模型变更，生成迁移文件')
+                print("✅️ 检测到模型变更，生成迁移文件")
 
         context.configure(
             connection=connection,

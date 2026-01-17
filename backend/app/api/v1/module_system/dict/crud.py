@@ -24,7 +24,9 @@ class DictTypeCRUD(CRUDBase[DictTypeModel, DictTypeCreateSchema, DictTypeUpdateS
         self.auth = auth
         super().__init__(model=DictTypeModel, auth=auth)
 
-    async def get_obj_by_id_crud(self, id: int, preload: list | None = None) -> DictTypeModel | None:
+    async def get_obj_by_id_crud(
+        self, id: int, preload: list | None = None
+    ) -> DictTypeModel | None:
         """
         获取数据字典类型详情
 
@@ -40,7 +42,12 @@ class DictTypeCRUD(CRUDBase[DictTypeModel, DictTypeCreateSchema, DictTypeUpdateS
             preload = []
         return await self.get(id=id, preload=preload)
 
-    async def get_obj_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[DictTypeModel]:
+    async def get_obj_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict] | None = None,
+        preload: list | None = None,
+    ) -> Sequence[DictTypeModel]:
         """
         获取数据字典类型列表
 
@@ -134,7 +141,9 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         self.auth = auth
         super().__init__(model=DictDataModel, auth=auth)
 
-    async def get_obj_by_id_crud(self, id: int, preload: list | None = None) -> DictDataModel | None:
+    async def get_obj_by_id_crud(
+        self, id: int, preload: list | None = None
+    ) -> DictDataModel | None:
         """
         获取数据字典数据详情
 
@@ -150,7 +159,12 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
             preload = []
         return await self.get(id=id, preload=preload)
 
-    async def get_obj_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[DictDataModel]:
+    async def get_obj_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict] | None = None,
+        preload: list | None = None,
+    ) -> Sequence[DictDataModel]:
         """
         获取数据字典数据列表
 
@@ -232,7 +246,10 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         # 假设系统默认数据在remark字段中包含"系统默认"字符串
         if exclude_system:
             # 获取非系统默认数据的ID
-            system_data_filter = {"id__in": ids, "remark__contains": "系统默认"}
+            system_data_filter = {
+                "id__in": ids,
+                "remark__contains": "系统默认",
+            }
             system_data = await self.list(search=system_data_filter)
             system_ids = [item.id for item in system_data]
             # 从待删除ID列表中排除系统默认数据
@@ -242,7 +259,9 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
             await self.delete(ids=ids)
         return len(ids)
 
-    async def get_obj_list_by_dict_type_crud(self, dict_type: str, status: str | None = "0") -> Sequence[DictDataModel]:
+    async def get_obj_list_by_dict_type_crud(
+        self, dict_type: str, status: str | None = "0"
+    ) -> Sequence[DictDataModel]:
         """
         根据字典类型获取字典数据列表
 

@@ -34,13 +34,6 @@ English | [简体中文](./README.md)
 
 > **Design Philosophy**: With modularity and loose coupling at its core, it pursues rich functional modules, simple and easy-to-use interfaces, detailed development documentation, and convenient maintenance methods. By unifying frameworks and components, it reduces the cost of technology selection, follows development specifications and design patterns, builds a powerful code hierarchical model, and comes with comprehensive local language support. It is specifically tailored for team and enterprise development scenarios.
 
-## 🔗 Source Repositories
-
-| Platform | Repository |
-|----------|------------|
-| GitHub | [FastapiAdmin Main](https://github.com/1014TaoTao/FastapiAdmin.git) \| [FastDocs Website](https://github.com/1014TaoTao/FastDocs.git) \| [FastApp Mobile](https://github.com/1014TaoTao/FastApp.git) |
-| Gitee  | [FastapiAdmin Main](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs Website](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp Mobile](https://gitee.com/tao__tao/FastApp.git) |
-
 ## 🎯 Core Advantages
 
 | Advantage | Description |
@@ -52,6 +45,20 @@ English | [简体中文](./README.md)
 | 🌐 **Full-Stack Support** | Integrated solution for Web + Mobile(H5) + Backend |
 | 🚀 **Rapid Deployment** | One-click Docker deployment for quick production rollout |
 | 📖 **Comprehensive Docs** | Detailed documentation and tutorials to reduce learning curve |
+| 🤖 **Intelligent Agent Framework** | Based on Langchain and Langgraph, develop intelligent agents |
+
+## 🍪 Demo Environment
+
+- 💻 Web: [https://service.fastapiadmin.com/web](https://service.fastapiadmin.com/web)
+- 📱 Mobile: [https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app)
+- 👤 Login Account: `admin` Password: `123456`
+
+## 🔗 Source Repositories
+
+| Platform | Repository |
+|----------|------------|
+| GitHub | [FastapiAdmin Main](https://github.com/1014TaoTao/FastapiAdmin.git) \| [FastDocs Website](https://github.com/1014TaoTao/FastDocs.git) \| [FastApp Mobile](https://github.com/1014TaoTao/FastApp.git) |
+| Gitee  | [FastapiAdmin Main](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs Website](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp Mobile](https://gitee.com/tao__tao/FastApp.git) |
 
 ## 📦 Engineering Structure Overview
 
@@ -59,8 +66,6 @@ English | [简体中文](./README.md)
 FastapiAdmin
 ├─ backend               # Backend project (FastAPI + Python)
 ├─ frontend              # Web frontend project (Vue3 + Element Plus)
-├─ fastapp               # Mobile project (UniApp + Wot Design Uni)
-├─ fastdocs              # Documentation project (VitePress)
 ├─ devops                # Deployment configurations
 ├─ docker-compose.yaml   # Docker orchestration file
 ├─ deploy.sh             # One-click deployment script
@@ -80,10 +85,11 @@ FastapiAdmin
 | **Frontend Framework** | Vue3 / Vite5 / Pinia / TypeScript | Rapidly develop Vue3 applications |
 | **Web UI** | ElementPlus | Enterprise-level UI component library |
 | **Mobile** | UniApp / Wot Design Uni | Cross-platform mobile application framework |
-| **Database** | MySQL / MongoDB | Support for relational and document databases |
+| **Database** | MySQL / PostgreSQL / Sqlite | Support for relational and document databases |
 | **Cache** | Redis | High-performance cache database |
 | **Documentation** | Swagger / Redoc | Automatically generate API documentation |
 | **Deployment** | Docker / Nginx / Docker Compose | Containerized deployment solution |
+| **Intelligent Agent Framework** | Langchain / Langgraph | Intelligent agent framework based on Langchain and Langgraph |
 
 ## 📌 Built-in Functional Modules
 
@@ -96,135 +102,6 @@ FastapiAdmin
 | 📝 **Log Management** | Operation Logs | User behavior auditing |
 | 🧰 **Development Tools** | Code Generation, Form Builder, API Documentation | Tools to enhance development efficiency |
 | 📁 **File Management** | File Storage | Unified file management |
-
-## 🍪 Demo Environment
-
-- 🌐 Official Website: [https://service.fastapiadmin.com](https://service.fastapiadmin.com)
-- 💻 Web Demo: [https://service.fastapiadmin.com/web](https://service.fastapiadmin.com/web)
-- 📱 Mobile: [https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app)
-- 👤 Login Account: `admin` Password: `123456`
-
-## 🚀 Quick Start
-
-### Environment Requirements
-
-| Type | Technology Stack | Version |
-|------|------------------|---------|
-| Backend | Python | 3.12 ≥ 3.10 |
-| Backend | FastAPI | 0.109+ |
-| Frontend | Node.js | ≥ 20.0 |
-| Frontend | Vue3 | 3.3+ |
-| Database | MySQL | 8.0+ |
-| Cache | Redis | 7.0+ |
-
-### Get the Code
-
-```bash
-# Clone the repository to your local machine
-git clone https://gitee.com/tao__tao/FastapiAdmin.git
-# Or
-git clone https://github.com/1014TaoTao/FastapiAdmin.git
-```
-
-> **Backend Note**: After cloning the code, you need to rename the `.env.dev.example` file in the `backend/env` directory to `.env.dev`, and rename the `.env.prod.example` file in the `backend/env` directory to `.env.prod`. Then modify the database connection information, Redis connection information, etc., according to the actual situation.
-> **Frontend Note**: After cloning the code, you need to rename the `.env.development.example` file in the `frontend` directory to `.env.development`, and rename the `.env.production.example` file in the `frontend` directory to `.env.production`. Then modify the interface address, etc., according to the actual situation.
-
-### Backend Setup
-
-```bash
-# Navigate to the backend directory
-cd backend
-
-# Install dependencies
-pip3 install -r requirements.txt
-
-# Start the backend service: ensure that MySQL and Redis are running
-python main.py run
-# Or specify environment
-python main.py run --env=dev
-
-# Generate migration files
-python main.py revision --env=dev
-# Apply migrations
-python main.py upgrade --env=dev
-```
-
-### Frontend Setup
-
-```bash
-# Navigate to the frontend directory
-cd frontend
-
-# Install dependencies
-pnpm install
-
-# Start the development server
-pnpm run dev
-
-# Build for production
-pnpm run build
-```
-
-### Mobile Setup
-
-```bash
-# Navigate to the mobile directory
-cd fastapp
-
-# Install dependencies
-pnpm install
-
-# Start the H5 development server
-pnpm run dev:h5
-
-# Build for H5 production
-pnpm run build:h5
-```
-
-### Documentation Setup
-
-```bash
-# Navigate to the documentation directory
-cd fastdocs
-
-# Install dependencies
-pnpm install
-
-# Start the documentation development server
-pnpm run docs:dev
-
-# Build documentation for production
-pnpm run docs:build
-```
-
-### Access URLs
-
-- 🏠 Official Website: [http://localhost:5180](http://localhost:5180)
-- 🖥️ Web Interface: [http://localhost:5180/web](http://localhost:5180/web)
-- 📱 Mobile Interface: [http://localhost:5180/app](http://localhost:5180/app)
-
-Default accounts:
-- Admin: `admin` / `123456`
-
-## 🐳 Docker Deployment
-
-```bash
-# Copy the deployment script to the server and grant execution permissions
-chmod +x deploy.sh
-
-# Execute one-click deployment
-./deploy.sh
-
-# Common Docker commands
-# View running containers
-docker compose ps
-
-# View container logs
-docker logs -f <container_name>
-
-# Stop services
-docker compose down
-```
 
 ## 🔧 Models
 
@@ -239,6 +116,86 @@ docker compose down
 | Login <div style="width:60px"/> | Home <div style="width:60px"/> | Profile <div style="width:60px"/> |
 |----------|----------|----------|
 | ![Mobile Login](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_login.png) | ![Mobile Home](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_home.png) | ![Mobile Personal Info](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_mine.png) |
+
+## 🚀 Quick Start
+
+### Environment Requirements
+
+| Type | Technology Stack | Version |
+|------|------------------|---------|
+| Backend | Python | 3.12 ≥ 3.10 |
+| Backend | FastAPI | 0.109+ |
+| Frontend | Node.js | ≥ 20.0 |
+| Frontend | Vue3 | 3.3+ |
+| Database | MySQL/PostgreSQL | 8.0+/17+ |
+| Cache | Redis | 7.0+ |
+
+### Get the Code
+
+```bash
+# Clone the repository to your local machine
+git clone https://gitee.com/tao__tao/FastapiAdmin.git
+# Or
+git clone https://github.com/1014TaoTao/FastapiAdmin.git
+```
+
+> **Backend Note**: After cloning the code, you need to rename the `.env.dev.example` file in the `backend/env` directory to `.env.dev`, and rename the `.env.prod.example` file in the `backend/env` directory to `.env.prod`. Then modify the database connection information, Redis connection information, etc., according to the actual situation.
+
+> **Frontend Note**: After cloning the code, you need to rename the `.env.development.example` file in the `frontend` directory to `.env.development`, and rename the `.env.production.example` file in the `frontend` directory to `.env.production`. Then modify the interface address, etc., according to the actual situation.
+
+### Backend Setup
+
+#### Using uv to manage the project (Recommended)
+
+```bash
+# Navigate to the backend directory
+cd backend
+# Install dependencies using uv
+uv add -r requirements.txt
+# Start the backend service: ensure that MySQL and Redis are running
+uv run main.py run
+# Or specify environment
+uv run main.py run --env=dev or --env=prod
+```
+
+#### Using traditional pip method
+
+```bash
+# Navigate to the backend directory
+cd backend
+# Install dependencies
+pip3 install -r requirements.txt
+# Start the backend service: ensure that MySQL and Redis are running
+python main.py run
+# Or specify environment
+python main.py run --env=dev or --env=prod
+```
+
+### Frontend Setup
+
+```bash
+# Navigate to the frontend directory
+cd frontend
+# Install dependencies
+pnpm install
+# Start the development server
+pnpm run dev
+# Build for production
+pnpm run build
+```
+
+### 🐳 Docker Deployment
+
+```bash
+# Copy the deployment script to the server and grant execution permissions
+chmod +x deploy.sh
+# Execute one-click deployment
+./deploy.sh or ./deploy.sh --start
+# View container logs
+./deploy.sh --logs
+# Stop services
+./deploy.sh --stop
+```
 
 ## 🛠️ Secondary Development Tutorial
 
@@ -468,43 +425,6 @@ async def get_detail(
 4. **Log Recording**: Key operations must be logged
 5. **Performance Optimization**: Pay attention to API performance optimization, avoid slow queries
 6. **Code Specification**: Follow PEP8 and project code specifications
-
-### Deployment Instructions
-
-#### Local Development
-
-```bash
-# Start backend service
-cd backend
-python main.py run --env=dev
-
-# Start frontend service
-cd frontend
-pnpm run dev
-
-# Start mobile service
-cd fastapp
-pnpm run dev:h5
-```
-
-#### Docker Deployment
-
-```bash
-# Execute one-click deployment script
-./deploy.sh
-
-# View running status
-docker compose ps
-
-# View logs
-docker logs -f <container_name>
-```
-
-### Technical Support
-
-- **Official Documentation**: https://service.fastapiadmin.com
-- **GitHub**: https://github.com/1014TaoTao/FastapiAdmin
-- **Gitee**: https://gitee.com/tao__tao/FastapiAdmin
 
 ### Common Questions
 

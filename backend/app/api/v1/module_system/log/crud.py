@@ -7,7 +7,9 @@ from .model import OperationLogModel
 from .schema import OperationLogCreateSchema
 
 
-class OperationLogCRUD(CRUDBase[OperationLogModel, OperationLogCreateSchema, OperationLogCreateSchema]):
+class OperationLogCRUD(
+    CRUDBase[OperationLogModel, OperationLogCreateSchema, OperationLogCreateSchema]
+):
     """
     操作日志数据层。
     """
@@ -31,7 +33,9 @@ class OperationLogCRUD(CRUDBase[OperationLogModel, OperationLogCreateSchema, Ope
         """
         return await self.create(data=data)
 
-    async def get_by_id_crud(self, id: int, preload: list | None = None) -> OperationLogModel | None:
+    async def get_by_id_crud(
+        self, id: int, preload: list | None = None
+    ) -> OperationLogModel | None:
         """
         根据ID获取操作日志详情。
 
@@ -44,7 +48,12 @@ class OperationLogCRUD(CRUDBase[OperationLogModel, OperationLogCreateSchema, Ope
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list | None = None, preload: list | None = None) -> Sequence[OperationLogModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list | None = None,
+        preload: list | None = None,
+    ) -> Sequence[OperationLogModel]:
         """
         获取操作日志列表。
 

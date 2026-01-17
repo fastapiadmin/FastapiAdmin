@@ -13,16 +13,21 @@ from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
-from .schema import NoticeCreateSchema, NoticeQueryParam, NoticeUpdateSchema
+from .schema import NoticeCreateSchema, NoticeOutSchema, NoticeQueryParam, NoticeUpdateSchema
 from .service import NoticeService
 
 NoticeRouter = APIRouter(route_class=OperationLogRoute, prefix="/notice", tags=["公告通知"])
 
 
-@NoticeRouter.get("/detail/{id}", summary="获取公告详情", description="获取公告详情")
+@NoticeRouter.get(
+    "/detail/{id}",
+    summary="获取公告详情",
+    description="获取公告详情",
+    response_model=NoticeOutSchema,
+)
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="公告ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:detail"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:detail"]))],
 ) -> JSONResponse:
     """
     获取公告详情。
@@ -39,11 +44,16 @@ async def get_obj_detail_controller(
     return SuccessResponse(data=result_dict, msg="获取公告详情成功")
 
 
-@NoticeRouter.get("/list", summary="查询公告", description="查询公告")
+@NoticeRouter.get(
+    "/list",
+    summary="查询公告",
+    description="查询公告",
+    response_model=list[NoticeOutSchema],
+)
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[NoticeQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:query"]))],
 ) -> JSONResponse:
     """
     查询公告。
@@ -56,16 +66,27 @@ async def get_obj_list_controller(
     返回:
     - JSONResponse: 包含分页公告详情的响应模型。
     """
-    result_dict_list = await NoticeService.get_notice_list_service(auth=auth, search=search, order_by=page.order_by)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict_list = await NoticeService.get_notice_list_service(
+        auth=auth, search=search, order_by=page.order_by
+    )
+    result_dict = await PaginationService.paginate(
+        data_list=result_dict_list,
+        page_no=page.page_no,
+        page_size=page.page_size,
+    )
     log.info("查询公告列表成功")
     return SuccessResponse(data=result_dict, msg="查询公告列表成功")
 
 
-@NoticeRouter.post("/create", summary="创建公告", description="创建公告")
+@NoticeRouter.post(
+    "/create",
+    summary="创建公告",
+    description="创建公告",
+    response_model=NoticeOutSchema,
+)
 async def create_obj_controller(
     data: NoticeCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:create"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:create"]))],
 ) -> JSONResponse:
     """
     创建公告。
@@ -82,11 +103,16 @@ async def create_obj_controller(
     return SuccessResponse(data=result_dict, msg="创建公告成功")
 
 
-@NoticeRouter.put("/update/{id}", summary="修改公告", description="修改公告")
+@NoticeRouter.put(
+    "/update/{id}",
+    summary="修改公告",
+    description="修改公告",
+    response_model=NoticeOutSchema,
+)
 async def update_obj_controller(
     data: NoticeUpdateSchema,
     id: Annotated[int, Path(description="公告ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:update"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:update"]))],
 ) -> JSONResponse:
     """
     修改公告。
@@ -104,10 +130,14 @@ async def update_obj_controller(
     return SuccessResponse(data=result_dict, msg="修改公告成功")
 
 
-@NoticeRouter.delete("/delete", summary="删除公告", description="删除公告")
+@NoticeRouter.delete(
+    "/delete",
+    summary="删除公告",
+    description="删除公告",
+)
 async def delete_obj_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:delete"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:delete"]))],
 ) -> JSONResponse:
     """
     删除公告。
@@ -124,10 +154,14 @@ async def delete_obj_controller(
     return SuccessResponse(msg="删除公告成功")
 
 
-@NoticeRouter.patch("/available/setting", summary="批量修改公告状态", description="批量修改公告状态")
+@NoticeRouter.patch(
+    "/available/setting",
+    summary="批量修改公告状态",
+    description="批量修改公告状态",
+)
 async def batch_set_available_obj_controller(
     data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:patch"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:patch"]))],
 ) -> JSONResponse:
     """
     批量修改公告状态。
@@ -144,10 +178,14 @@ async def batch_set_available_obj_controller(
     return SuccessResponse(msg="批量修改公告状态成功")
 
 
-@NoticeRouter.post('/export', summary="导出公告", description="导出公告")
+@NoticeRouter.post(
+    "/export",
+    summary="导出公告",
+    description="导出公告",
+)
 async def export_obj_list_controller(
     search: Annotated[NoticeQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:export"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:export"]))],
 ) -> StreamingResponse:
     """
     导出公告。
@@ -161,18 +199,23 @@ async def export_obj_list_controller(
     """
     result_dict_list = await NoticeService.get_notice_list_service(search=search, auth=auth)
     export_result = await NoticeService.export_notice_service(notice_list=result_dict_list)
-    log.info('导出公告成功')
+    log.info("导出公告成功")
 
     return StreamResponse(
         data=bytes2file_response(export_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={'Content-Disposition': 'attachment; filename=notice.xlsx'}
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=notice.xlsx"},
     )
 
 
-@NoticeRouter.get("/available", summary="获取全局启用公告", description="获取全局启用公告")
+@NoticeRouter.get(
+    "/available",
+    summary="获取全局启用公告",
+    description="获取全局启用公告",
+    response_model=list[NoticeOutSchema],
+)
 async def get_obj_list_available_controller(
-    auth: Annotated[AuthSchema, Depends(get_current_user)]
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     获取全局启用公告。

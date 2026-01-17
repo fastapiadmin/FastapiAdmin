@@ -31,7 +31,12 @@ class DeptCRUD(CRUDBase[DeptModel, DeptCreateSchema, DeptUpdateSchema]):
             return None
         return obj
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[DeptModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict] | None = None,
+        preload: list | None = None,
+    ) -> Sequence[DeptModel]:
         """
         获取部门列表。
 
@@ -45,7 +50,12 @@ class DeptCRUD(CRUDBase[DeptModel, DeptCreateSchema, DeptUpdateSchema]):
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def get_tree_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[DeptModel]:
+    async def get_tree_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict] | None = None,
+        preload: list | None = None,
+    ) -> Sequence[DeptModel]:
         """
         获取部门树形列表。
 
@@ -57,7 +67,12 @@ class DeptCRUD(CRUDBase[DeptModel, DeptCreateSchema, DeptUpdateSchema]):
         返回:
         - Sequence[DeptModel]: 部门树形列表。
         """
-        return await self.tree_list(search=search, order_by=order_by, children_attr='children', preload=preload)
+        return await self.tree_list(
+            search=search,
+            order_by=order_by,
+            children_attr="children",
+            preload=preload,
+        )
 
     async def set_available_crud(self, ids: list[int], status: str) -> None:
         """

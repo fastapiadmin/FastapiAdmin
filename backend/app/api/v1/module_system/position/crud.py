@@ -21,7 +21,9 @@ class PositionCRUD(CRUDBase[PositionModel, PositionCreateSchema, PositionUpdateS
         self.auth = auth
         super().__init__(model=PositionModel, auth=auth)
 
-    async def get_by_id_crud(self, id: int, preload: list[str] | None = None) -> PositionModel | None:
+    async def get_by_id_crud(
+        self, id: int, preload: list[str] | None = None
+    ) -> PositionModel | None:
         """
         根据 id 获取岗位信息。
 
@@ -34,7 +36,12 @@ class PositionCRUD(CRUDBase[PositionModel, PositionCreateSchema, PositionUpdateS
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list[dict[str, Any]] | None = None, preload: list[str] | None = None) -> Sequence[PositionModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict[str, Any]] | None = None,
+        preload: list[str] | None = None,
+    ) -> Sequence[PositionModel]:
         """
         获取岗位列表。
 

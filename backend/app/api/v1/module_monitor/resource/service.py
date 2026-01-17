@@ -1,8 +1,8 @@
 import os
 import shutil
-
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 
 from fastapi import UploadFile
@@ -43,7 +43,7 @@ class ResourceService:
         - str: 资源管理根目录路径。
         """
         if not settings.STATIC_ENABLE:
-            raise CustomException(msg='静态文件服务未启用')
+            raise CustomException(msg="静态文件服务未启用")
         return str(settings.STATIC_ROOT)
 
     @classmethod
@@ -64,40 +64,46 @@ class ResourceService:
 
         # 支持前端传递的完整URL或以STATIC_URL/ROOT_PATH+STATIC_URL开头的URL路径，转换为相对资源路径
         if isinstance(path, str):
-            static_prefix = settings.STATIC_URL.rstrip('/')
-            root_prefix = settings.ROOT_PATH.rstrip('/') if getattr(settings, 'ROOT_PATH', '') else ''
+            static_prefix = settings.STATIC_URL.rstrip("/")
+            root_prefix = (
+                settings.ROOT_PATH.rstrip("/") if getattr(settings, "ROOT_PATH", "") else ""
+            )
             root_static_prefix = f"{root_prefix}{static_prefix}" if root_prefix else static_prefix
 
             def strip_prefix(p: str) -> str:
                 if p.startswith(root_static_prefix):
-                    return p[len(root_static_prefix):].lstrip('/')
+                    return p[len(root_static_prefix) :].lstrip("/")
                 if p.startswith(static_prefix):
-                    return p[len(static_prefix):].lstrip('/')
+                    return p[len(static_prefix) :].lstrip("/")
                 return p
 
-            if path.startswith(('http://', 'https://')):
+            if path.startswith(("http://", "https://")):
                 parsed = urlparse(path)
-                url_path = parsed.path or ''
+                url_path = parsed.path or ""
                 path = strip_prefix(url_path)
             else:
                 path = strip_prefix(path)
 
         # 清理路径，移除危险字符
-        path = path.strip().replace('..', '').replace('//', '/')
+        path = path.strip().replace("..", "").replace("//", "/")
 
         # 规范化路径
-        safe_path = os.path.normpath(path) if os.path.isabs(path) else os.path.normpath(os.path.join(resource_root, path))
+        safe_path = (
+            os.path.normpath(path)
+            if os.path.isabs(path)
+            else os.path.normpath(os.path.join(resource_root, path))
+        )
 
         # 检查路径是否在允许的范围内
         resource_root_abs = os.path.normpath(os.path.abspath(resource_root))
         safe_path_abs = os.path.normpath(os.path.abspath(safe_path))
 
         if not safe_path_abs.startswith(resource_root_abs):
-            raise CustomException(msg=f'访问路径不在允许范围内: {path}')
+            raise CustomException(msg=f"访问路径不在允许范围内: {path}")
 
         # 防止路径遍历攻击
-        if '..' in safe_path or safe_path.count('/') > cls.MAX_PATH_DEPTH:
-            raise CustomException(msg=f'不安全的路径格式: {path}')
+        if ".." in safe_path or safe_path.count("/") > cls.MAX_PATH_DEPTH:
+            raise CustomException(msg=f"不安全的路径格式: {path}")
 
         return safe_path
 
@@ -115,8 +121,8 @@ class ResourceService:
         try:
             safe_path = cls._get_safe_path(path)
             return os.path.exists(safe_path)
-        except:
-            return False
+        except Exception as e:
+            raise CustomException(msg=f"检查路径是否存在失败: {e!s}")
 
     @classmethod
     def _generate_http_url(cls, file_path: str, base_url: str | None = None) -> str:
@@ -134,7 +140,7 @@ class ResourceService:
         try:
             relative_path = os.path.relpath(file_path, resource_root)
             # 确保路径使用正斜杠（URL格式）
-            url_path = relative_path.replace(os.sep, '/')
+            url_path = relative_path.replace(os.sep, "/")
         except ValueError:
             # 如果无法计算相对路径，使用文件名
             url_path = os.path.basename(file_path)
@@ -142,14 +148,16 @@ class ResourceService:
         # 如果提供了base_url，使用它生成完整URL，否则使用settings.STATIC_URL
         if base_url:
             # 修复URL生成逻辑
-            base_part = base_url.rstrip('/')
-            static_part = settings.STATIC_URL.lstrip('/')
-            file_part = url_path.lstrip('/')
-            if base_part.endswith(':') or (len(base_part) > 0 and base_part[-1] not in ['/', ':']):
-                base_part += '/'
-            http_url = f"{base_part}{static_part}/{file_part}".replace('//', '/').replace(':/', '://')
+            base_part = base_url.rstrip("/")
+            static_part = settings.STATIC_URL.lstrip("/")
+            file_part = url_path.lstrip("/")
+            if base_part.endswith(":") or (len(base_part) > 0 and base_part[-1] not in ["/", ":"]):
+                base_part += "/"
+            http_url = f"{base_part}{static_part}/{file_part}".replace("//", "/").replace(
+                ":/", "://"
+            )
         else:
-            http_url = f"{settings.STATIC_URL}/{url_path}".replace('//', '/')
+            http_url = f"{settings.STATIC_URL}/{url_path}".replace("//", "/")
 
         return http_url
 
@@ -190,7 +198,7 @@ class ResourceService:
             http_url = cls._generate_http_url(safe_path, base_url)
 
             # 检查是否为隐藏文件（文件名以点开头）
-            is_hidden = path_obj.name.startswith('.')
+            is_hidden = path_obj.name.startswith(".")
 
             # 对于目录，设置is_directory字段（兼容前端）
             is_directory = os.path.isdir(safe_path)
@@ -200,22 +208,27 @@ class ResourceService:
             modified_time = datetime.fromtimestamp(stat.st_mtime).isoformat()
 
             return {
-                'name': path_obj.name,
-                'file_url': http_url,  # 统一使用file_url字段
-                'relative_path': relative_path,
-                'is_file': os.path.isfile(safe_path),
-                'is_dir': is_directory,
-                'size': stat.st_size if os.path.isfile(safe_path) else None,
-                'created_time': created_time,
-                'modified_time': modified_time,
-                'is_hidden': is_hidden
+                "name": path_obj.name,
+                "file_url": http_url,  # 统一使用file_url字段
+                "relative_path": relative_path,
+                "is_file": os.path.isfile(safe_path),
+                "is_dir": is_directory,
+                "size": stat.st_size if os.path.isfile(safe_path) else None,
+                "created_time": created_time,
+                "modified_time": modified_time,
+                "is_hidden": is_hidden,
             }
         except Exception as e:
-            log.error(f'获取文件信息失败: {e!s}')
+            log.error(f"获取文件信息失败: {e!s}")
             return {}
 
     @classmethod
-    async def get_directory_list_service(cls, path: str | None = None, include_hidden: bool = False, base_url: str | None = None) -> dict:
+    async def get_directory_list_service(
+        cls,
+        path: str | None = None,
+        include_hidden: bool = False,
+        base_url: str | None = None,
+    ) -> dict:
         """
         获取目录列表
 
@@ -237,10 +250,10 @@ class ResourceService:
                 display_path = cls._generate_http_url(safe_path, base_url)
 
             if not os.path.exists(safe_path):
-                raise CustomException(msg='目录不存在')
+                raise CustomException(msg="目录不存在")
 
             if not os.path.isdir(safe_path):
-                raise CustomException(msg='路径不是目录')
+                raise CustomException(msg="路径不是目录")
 
             items = []
             total_files = 0
@@ -250,7 +263,7 @@ class ResourceService:
             try:
                 for item_name in os.listdir(safe_path):
                     # 跳过隐藏文件
-                    if not include_hidden and item_name.startswith('.'):
+                    if not include_hidden and item_name.startswith("."):
                         continue
 
                     item_path = os.path.join(safe_path, item_name)
@@ -259,14 +272,14 @@ class ResourceService:
                     if file_info:
                         items.append(ResourceItemSchema(**file_info))
 
-                        if file_info['is_file']:
+                        if file_info["is_file"]:
                             total_files += 1
-                            total_size += file_info.get('size', 0) or 0
-                        elif file_info['is_dir']:
+                            total_size += file_info.get("size", 0) or 0
+                        elif file_info["is_dir"]:
                             total_dirs += 1
 
             except PermissionError:
-                raise CustomException(msg='没有权限访问此目录')
+                raise CustomException(msg="没有权限访问此目录")
 
             return ResourceDirectorySchema(
                 path=display_path,  # 返回HTTP URL路径而不是文件系统路径
@@ -274,17 +287,22 @@ class ResourceService:
                 items=items,
                 total_files=total_files,
                 total_dirs=total_dirs,
-                total_size=total_size
+                total_size=total_size,
             ).model_dump()
 
         except CustomException:
             raise
         except Exception as e:
-            log.error(f'获取目录列表失败: {e!s}')
-            raise CustomException(msg=f'获取目录列表失败: {e!s}')
+            log.error(f"获取目录列表失败: {e!s}")
+            raise CustomException(msg=f"获取目录列表失败: {e!s}")
 
     @classmethod
-    async def get_resources_list_service(cls, search: ResourceSearchQueryParam | None = None, order_by: str | None = None, base_url: str | None = None) -> list[dict]:
+    async def get_resources_list_service(
+        cls,
+        search: ResourceSearchQueryParam | None = None,
+        order_by: str | None = None,
+        base_url: str | None = None,
+    ) -> list[dict]:
         """
         搜索资源列表（用于分页和导出）
 
@@ -298,14 +316,18 @@ class ResourceService:
         """
         try:
             # 确定搜索路径
-            resource_root = cls._get_safe_path(search.path) if search and hasattr(search, 'path') and search.path else cls._get_resource_root()
+            resource_root = (
+                cls._get_safe_path(search.path)
+                if search and hasattr(search, "path") and search.path
+                else cls._get_resource_root()
+            )
 
             # 检查路径是否存在
             if not os.path.exists(resource_root):
-                raise CustomException(msg='目录不存在')
+                raise CustomException(msg="目录不存在")
 
             if not os.path.isdir(resource_root):
-                raise CustomException(msg='路径不是目录')
+                raise CustomException(msg="路径不是目录")
 
             # 收集资源
             all_resources = []
@@ -313,7 +335,7 @@ class ResourceService:
             try:
                 for item_name in os.listdir(resource_root):
                     # 跳过隐藏文件
-                    if item_name.startswith('.'):
+                    if item_name.startswith("."):
                         continue
 
                     item_path = os.path.join(resource_root, item_name)
@@ -321,28 +343,31 @@ class ResourceService:
 
                     if file_info:
                         # 应用名称过滤
-                        if search and hasattr(search, 'name') and search.name and search.name[1]:
+                        if search and hasattr(search, "name") and search.name and search.name[1]:
                             search_keyword = search.name[1].lower()
-                            if search_keyword not in file_info.get('name', '').lower():
+                            if search_keyword not in file_info.get("name", "").lower():
                                 continue
 
                         all_resources.append(file_info)
 
             except PermissionError:
-                raise CustomException(msg='没有权限访问此目录')
+                raise CustomException(msg="没有权限访问此目录")
 
             # 应用排序
             sorted_resources = cls._sort_results(all_resources, order_by)
 
+            if not sorted_resources:
+                raise CustomException(msg="没有符合条件的资源")
+
             # 限制最大结果数
             if len(sorted_resources) > cls.MAX_SEARCH_RESULTS:
-                sorted_resources = sorted_resources[:cls.MAX_SEARCH_RESULTS]
+                sorted_resources = sorted_resources[: cls.MAX_SEARCH_RESULTS]
 
             return sorted_resources
 
         except Exception as e:
-            log.error(f'搜索资源失败: {e!s}')
-            raise CustomException(msg=f'搜索资源失败: {e!s}')
+            log.error(f"搜索资源失败: {e!s}")
+            raise CustomException(msg=f"搜索资源失败: {e!s}")
 
     @classmethod
     async def export_resource_service(cls, data_list: list[dict]) -> bytes:
@@ -356,12 +381,12 @@ class ResourceService:
         - bytes: Excel文件的二进制数据。
         """
         mapping_dict = {
-            'name': '文件名',
-            'path': '文件路径',
-            'size': '文件大小',
-            'created_time': '创建时间',
-            'modified_time': '修改时间',
-            'parent_path': '父目录'
+            "name": "文件名",
+            "path": "文件路径",
+            "size": "文件大小",
+            "created_time": "创建时间",
+            "modified_time": "修改时间",
+            "parent_path": "父目录",
         }
 
         # 复制数据并转换状态
@@ -369,8 +394,8 @@ class ResourceService:
 
         # 格式化文件大小
         for item in export_data:
-            if item.get('size'):
-                item['size'] = cls._format_file_size(item['size'])
+            if item.get("size"):
+                item["size"] = cls._format_file_size(item["size"])
 
         return ExcelUtil.export_list2excel(list_data=export_data, mapping_dict=mapping_dict)
 
@@ -386,22 +411,22 @@ class ResourceService:
         返回:
         - dict[str, int]: 包含文件数、目录数和总大小的字典。
         """
-        stats = {'files': 0, 'dirs': 0, 'size': 0}
+        stats = {"files": 0, "dirs": 0, "size": 0}
 
         try:
             for root, dirs, files in os.walk(path):
                 # 过滤隐藏目录
                 if not include_hidden:
-                    dirs[:] = [d for d in dirs if not d.startswith('.')]
-                    files = [f for f in files if not f.startswith('.')]
+                    dirs[:] = [d for d in dirs if not d.startswith(".")]
+                    files = [f for f in files if not f.startswith(".")]
 
-                stats['dirs'] += len(dirs)
-                stats['files'] += len(files)
+                stats["dirs"] += len(dirs)
+                stats["files"] += len(files)
 
                 for file in files:
                     file_path = os.path.join(root, file)
                     try:
-                        stats['size'] += os.path.getsize(file_path)
+                        stats["size"] += os.path.getsize(file_path)
                     except OSError:
                         continue
 
@@ -411,7 +436,9 @@ class ResourceService:
         return stats
 
     @classmethod
-    def _sort_results(cls, results: list[dict], order_by: str | None = None) -> list[dict]:
+    def _sort_results(
+        cls, results: list[dict], order_by: str | None = None
+    ) -> list[dict[Any, Any]] | None:
         """
         排序搜索结果
 
@@ -425,43 +452,52 @@ class ResourceService:
         try:
             # 默认按名称升序排序
             if not order_by:
-                return sorted(results, key=lambda x: x.get('name', ''), reverse=False)
+                return sorted(results, key=lambda x: x.get("name", ""), reverse=False)
 
             # 解析order_by参数，格式: [{'field':'asc/desc'}]
-            try:
-                sort_conditions = eval(order_by)
-                if isinstance(sort_conditions, list):
-                    # 构建排序键函数
-                    def sort_key(item):
-                        keys = []
-                        for cond in sort_conditions:
-                            field = cond.get('field', 'name')
-                            cond.get('direction', 'asc')
-                            # 获取字段值，默认为空字符串
-                            value = item.get(field, '')
-                            # 如果是日期字段，转换为可比较的格式
-                            if field in ['created_time', 'modified_time', 'accessed_time'] and value:
-                                value = datetime.fromisoformat(value)
-                            keys.append(value)
-                        return keys
 
-                    # 确定排序方向（这里只支持单一方向，多个条件时使用第一个条件的方向）
-                    reverse = False
-                    if sort_conditions and isinstance(sort_conditions[0], dict):
-                        direction = sort_conditions[0].get('direction', '').lower()
-                        reverse = direction == 'desc'
+            sort_conditions = eval(order_by)
+            if isinstance(sort_conditions, list):
+                # 构建排序键函数
+                def sort_key(item):
+                    keys = []
+                    for cond in sort_conditions:
+                        field = cond.get("field", "name")
+                        cond.get("direction", "asc")
+                        # 获取字段值，默认为空字符串
+                        value = item.get(field, "")
+                        # 如果是日期字段，转换为可比较的格式
+                        if (
+                            field
+                            in [
+                                "created_time",
+                                "modified_time",
+                                "accessed_time",
+                            ]
+                            and value
+                        ):
+                            value = datetime.fromisoformat(value)
+                        keys.append(value)
+                    return keys
 
-                    return sorted(results, key=sort_key, reverse=reverse)
-            except:
-                # 如果解析失败，使用默认排序
-                pass
+                # 确定排序方向（这里只支持单一方向，多个条件时使用第一个条件的方向）
+                reverse = False
+                if sort_conditions and isinstance(sort_conditions[0], dict):
+                    direction = sort_conditions[0].get("direction", "").lower()
+                    reverse = direction == "desc"
 
-            return sorted(results, key=lambda x: x.get('name', ''), reverse=False)
-        except:
-            return results
+                return sorted(results, key=sort_key, reverse=reverse)
+
+        except Exception as e:
+            raise CustomException(msg=f"排序参数格式错误: {e!s}")
 
     @classmethod
-    async def upload_file_service(cls, file: UploadFile, target_path: str | None = None, base_url: str | None = None) -> dict:
+    async def upload_file_service(
+        cls,
+        file: UploadFile,
+        target_path: str | None = None,
+        base_url: str | None = None,
+    ) -> dict:
         """
         上传文件到指定目录
 
@@ -477,17 +513,21 @@ class ResourceService:
             raise CustomException(msg="请选择要上传的文件")
 
         # 文件名安全检查
-        if '..' in file.filename or '/' in file.filename or '\\' in file.filename:
+        if ".." in file.filename or "/" in file.filename or "\\" in file.filename:
             raise CustomException(msg="文件名包含不安全字符")
 
         try:
             # 检查文件大小
             content = await file.read()
             if len(content) > cls.MAX_UPLOAD_SIZE:
-                raise CustomException(msg=f"文件太大，最大支持{cls.MAX_UPLOAD_SIZE // (1024 * 1024)}MB")
+                raise CustomException(
+                    msg=f"文件太大，最大支持{cls.MAX_UPLOAD_SIZE // (1024 * 1024)}MB"
+                )
 
             # 确定上传目录，如果没有指定目标路径，使用静态文件根目录
-            safe_dir = cls._get_resource_root() if target_path is None else cls._get_safe_path(target_path)
+            safe_dir = (
+                cls._get_resource_root() if target_path is None else cls._get_safe_path(target_path)
+            )
 
             # 创建目录（如果不存在）
             os.makedirs(safe_dir, exist_ok=True)
@@ -521,9 +561,9 @@ class ResourceService:
             return ResourceUploadSchema(
                 filename=filename,
                 file_url=file_url,
-                file_size=file_info.get('size', 0),
-                upload_time=datetime.now()
-            ).model_dump(mode='json')
+                file_size=file_info.get("size", 0),
+                upload_time=datetime.now(),
+            ).model_dump(mode="json")
 
         except Exception as e:
             log.error(f"文件上传失败: {e!s}")
@@ -545,10 +585,10 @@ class ResourceService:
             safe_path = cls._get_safe_path(file_path)
 
             if not os.path.exists(safe_path):
-                raise CustomException(msg='文件不存在')
+                raise CustomException(msg="文件不存在")
 
             if not os.path.isfile(safe_path):
-                raise CustomException(msg='路径不是文件')
+                raise CustomException(msg="路径不是文件")
 
             # 返回本地文件路径给 FileResponse 使用
             log.info(f"定位文件路径: {safe_path}")
@@ -572,7 +612,7 @@ class ResourceService:
         - None
         """
         if not paths:
-            raise CustomException(msg='删除失败，删除路径不能为空')
+            raise CustomException(msg="删除失败，删除路径不能为空")
 
         for path in paths:
             try:
@@ -605,7 +645,7 @@ class ResourceService:
         - Dict[str, List[str]]: 包含成功删除路径和失败删除路径的字典。
         """
         if not paths:
-            raise CustomException(msg='删除失败，删除路径不能为空')
+            raise CustomException(msg="删除失败，删除路径不能为空")
 
         success_paths = []
         failed_paths = []
@@ -631,10 +671,7 @@ class ResourceService:
                 log.error(f"删除失败 {path}: {e!s}")
                 failed_paths.append(path)
 
-        return {
-            "success": success_paths,
-            "failed": failed_paths
-        }
+        return {"success": success_paths, "failed": failed_paths}
 
     @classmethod
     async def move_file_service(cls, data: ResourceMoveSchema) -> None:
@@ -652,12 +689,12 @@ class ResourceService:
             target_path = cls._get_safe_path(data.target_path)
 
             if not os.path.exists(source_path):
-                raise CustomException(msg='源路径不存在')
+                raise CustomException(msg="源路径不存在")
 
             # 检查目标路径是否已存在
             if os.path.exists(target_path):
                 if not data.overwrite:
-                    raise CustomException(msg='目标路径已存在')
+                    raise CustomException(msg="目标路径已存在")
                 # 删除目标路径
                 if os.path.isfile(target_path):
                     os.remove(target_path)
@@ -694,11 +731,11 @@ class ResourceService:
             target_path = cls._get_safe_path(data.target_path)
 
             if not os.path.exists(source_path):
-                raise CustomException(msg='源路径不存在')
+                raise CustomException(msg="源路径不存在")
 
             # 检查目标路径是否已存在
             if os.path.exists(target_path) and not data.overwrite:
-                raise CustomException(msg='目标路径已存在')
+                raise CustomException(msg="目标路径已存在")
 
             # 确保目标目录存在
             target_dir = os.path.dirname(target_path)
@@ -733,14 +770,14 @@ class ResourceService:
             old_path = cls._get_safe_path(data.old_path)
 
             if not os.path.exists(old_path):
-                raise CustomException(msg='文件或目录不存在')
+                raise CustomException(msg="文件或目录不存在")
 
             # 生成新路径
             parent_dir = os.path.dirname(old_path)
             new_path = os.path.join(parent_dir, data.new_name)
 
             if os.path.exists(new_path):
-                raise CustomException(msg='目标名称已存在')
+                raise CustomException(msg="目标名称已存在")
 
             # 重命名
             os.rename(old_path, new_path)
@@ -767,20 +804,20 @@ class ResourceService:
             parent_path = cls._get_safe_path(data.parent_path)
 
             if not os.path.exists(parent_path):
-                raise CustomException(msg='父目录不存在')
+                raise CustomException(msg="父目录不存在")
 
             if not os.path.isdir(parent_path):
-                raise CustomException(msg='父路径不是目录')
+                raise CustomException(msg="父路径不是目录")
 
             # 生成新目录路径
             new_dir_path = os.path.join(parent_path, data.dir_name)
 
             # 安全检查：确保新目录名称不包含路径遍历字符
-            if '..' in data.dir_name or '/' in data.dir_name or '\\' in data.dir_name:
-                raise CustomException(msg='目录名称包含不安全字符')
+            if ".." in data.dir_name or "/" in data.dir_name or "\\" in data.dir_name:
+                raise CustomException(msg="目录名称包含不安全字符")
 
             if os.path.exists(new_dir_path):
-                raise CustomException(msg='目录已存在')
+                raise CustomException(msg="目录已存在")
 
             # 创建目录
             os.makedirs(new_dir_path)

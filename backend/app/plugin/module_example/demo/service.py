@@ -1,9 +1,7 @@
 import io
-
 from typing import Any
 
 import pandas as pd
-
 from fastapi import UploadFile
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -13,7 +11,12 @@ from app.core.logger import log
 from app.utils.excel_util import ExcelUtil
 
 from .crud import DemoCRUD
-from .schema import DemoCreateSchema, DemoOutSchema, DemoQueryParam, DemoUpdateSchema
+from .schema import (
+    DemoCreateSchema,
+    DemoOutSchema,
+    DemoQueryParam,
+    DemoUpdateSchema,
+)
 
 
 class DemoService:
@@ -39,7 +42,12 @@ class DemoService:
         return DemoOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def list_service(cls, auth: AuthSchema, search: DemoQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> list[dict]:
+    async def list_service(
+        cls,
+        auth: AuthSchema,
+        search: DemoQueryParam | None = None,
+        order_by: list[dict[str, str]] | None = None,
+    ) -> list[dict]:
         """
         列表查询
 
@@ -56,7 +64,14 @@ class DemoService:
         return [DemoOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
-    async def page_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: DemoQueryParam | None = None, order_by: list[dict[str, str]] | None = None) -> dict:
+    async def page_service(
+        cls,
+        auth: AuthSchema,
+        page_no: int,
+        page_size: int,
+        search: DemoQueryParam | None = None,
+        order_by: list[dict[str, str]] | None = None,
+    ) -> dict:
         """
         分页查询
 
@@ -71,14 +86,14 @@ class DemoService:
         - dict: 分页数据
         """
         search_dict = search.__dict__ if search else {}
-        order_by_list = order_by or [{'id': 'asc'}]
+        order_by_list = order_by or [{"id": "asc"}]
         offset = (page_no - 1) * page_size
 
         result = await DemoCRUD(auth).page_crud(
             offset=offset,
             limit=page_size,
             order_by=order_by_list,
-            search=search_dict
+            search=search_dict,
         )
         return result
 
@@ -96,7 +111,7 @@ class DemoService:
         """
         obj = await DemoCRUD(auth).get(name=data.name)
         if obj:
-            raise CustomException(msg='创建失败，名称已存在')
+            raise CustomException(msg="创建失败，名称已存在")
         obj = await DemoCRUD(auth).create_crud(data=data)
         return DemoOutSchema.model_validate(obj).model_dump()
 
@@ -116,12 +131,12 @@ class DemoService:
         # 检查数据是否存在
         obj = await DemoCRUD(auth).get_by_id_crud(id=id)
         if not obj:
-            raise CustomException(msg='更新失败，该数据不存在')
+            raise CustomException(msg="更新失败，该数据不存在")
 
         # 检查名称是否重复
         exist_obj = await DemoCRUD(auth).get(name=data.name)
         if exist_obj and exist_obj.id != id:
-            raise CustomException(msg='更新失败，名称重复')
+            raise CustomException(msg="更新失败，名称重复")
 
         obj = await DemoCRUD(auth).update_crud(id=id, data=data)
         return DemoOutSchema.model_validate(obj).model_dump()
@@ -139,13 +154,13 @@ class DemoService:
         - None
         """
         if len(ids) < 1:
-            raise CustomException(msg='删除失败，删除对象不能为空')
+            raise CustomException(msg="删除失败，删除对象不能为空")
 
         # 检查所有要删除的数据是否存在
         for id in ids:
             obj = await DemoCRUD(auth).get_by_id_crud(id=id)
             if not obj:
-                raise CustomException(msg=f'删除失败，ID为{id}的数据不存在')
+                raise CustomException(msg=f"删除失败，ID为{id}的数据不存在")
 
         await DemoCRUD(auth).delete_crud(ids=ids)
 
@@ -175,31 +190,33 @@ class DemoService:
         - bytes: Excel文件字节流
         """
         mapping_dict = {
-            'id': '编号',
-            'name': '名称',
-            'status': '状态',
-            'description': '备注',
-            'created_time': '创建时间',
-            'updated_time': '更新时间',
-            'created_id': '创建者',
+            "id": "编号",
+            "name": "名称",
+            "status": "状态",
+            "description": "备注",
+            "created_time": "创建时间",
+            "updated_time": "更新时间",
+            "created_id": "创建者",
         }
 
         # 复制数据并转换状态
         data = obj_list.copy()
         for item in data:
             # 处理状态
-            item['status'] = '启用' if item.get('status') == '0' else '停用'
+            item["status"] = "启用" if item.get("status") == "0" else "停用"
             # 处理创建者
-            creator_info = item.get('created_id')
+            creator_info = item.get("created_id")
             if isinstance(creator_info, dict):
-                item['created_id'] = creator_info.get('name', '未知')
+                item["created_id"] = creator_info.get("name", "未知")
             else:
-                item['created_id'] = '未知'
+                item["created_id"] = "未知"
 
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
 
     @classmethod
-    async def batch_import_service(cls, auth: AuthSchema, file: UploadFile, update_support: bool = False) -> str:
+    async def batch_import_service(
+        cls, auth: AuthSchema, file: UploadFile, update_support: bool = False
+    ) -> str:
         """
         批量导入
 
@@ -212,11 +229,7 @@ class DemoService:
         - str: 导入结果信息
         """
 
-        header_dict = {
-            '名称': 'name',
-            '状态': 'status',
-            '描述': 'description'
-        }
+        header_dict = {"名称": "name", "状态": "status", "描述": "description"}
 
         try:
             # 读取Excel文件
@@ -236,7 +249,7 @@ class DemoService:
             df.rename(columns=header_dict, inplace=True)
 
             # 验证必填字段
-            required_fields = ['name', 'status']
+            required_fields = ["name", "status"]
             errors = []
             for field in required_fields:
                 missing_rows = df[df[field].isnull()].index.tolist()
@@ -257,16 +270,16 @@ class DemoService:
                 try:
                     # 数据转换前的类型检查
                     try:
-                        status = "0" if row['status'] == '正常' else "1"
+                        status = "0" if row["status"] == "正常" else "1"
                     except ValueError:
                         error_msgs.append(f"第{count}行: 状态必须是'正常'或'停用'")
                         continue
 
                     # 构建用户数据
                     data = {
-                        "name": str(row['name']),
+                        "name": str(row["name"]),
                         "status": status,
-                        "description": str(row['description']),
+                        "description": str(row["description"]),
                     }
 
                     # 处理用户导入
@@ -303,11 +316,11 @@ class DemoService:
         返回:
         - bytes: Excel文件字节流
         """
-        header_list = ['名称', '状态', '描述']
-        selector_header_list = ['状态']
-        option_list = [{'状态': ['正常', '停用']}]
+        header_list = ["名称", "状态", "描述"]
+        selector_header_list = ["状态"]
+        option_list = [{"状态": ["正常", "停用"]}]
         return ExcelUtil.get_excel_template(
             header_list=header_list,
             selector_header_list=selector_header_list,
-            option_list=option_list
+            option_list=option_list,
         )

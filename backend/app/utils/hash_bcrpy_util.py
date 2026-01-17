@@ -1,6 +1,5 @@
 import hashlib
 import os
-
 from typing import Any
 
 from cryptography.hazmat.backends.openssl import backend
@@ -15,7 +14,7 @@ from app.core.logger import log
 PwdContext = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
-    bcrypt__rounds=12  # 设置加密轮数,增加安全性
+    bcrypt__rounds=12,  # 设置加密轮数,增加安全性
 )
 
 
@@ -99,7 +98,7 @@ class AESCipher:
         - bytes: 加密后的密文（前16字节为随机IV）。
         """
         if not isinstance(plaintext, bytes):
-            plaintext = str(plaintext).encode('utf-8')
+            plaintext = str(plaintext).encode("utf-8")
         iv = os.urandom(16)
         cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=backend)
         encryptor = cipher.encryptor()
@@ -126,7 +125,7 @@ class AESCipher:
         unpadder = padding.PKCS7(cipher.algorithm.block_size).unpadder()  # type: ignore
         padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
         plaintext = unpadder.update(padded_plaintext) + unpadder.finalize()
-        return plaintext.decode('utf-8')
+        return plaintext.decode("utf-8")
 
 
 class Md5Cipher:
@@ -145,7 +144,7 @@ class Md5Cipher:
         """
         md5 = hashlib.md5()
         if not isinstance(plaintext, bytes):
-            plaintext = str(plaintext).encode('utf-8')
+            plaintext = str(plaintext).encode("utf-8")
         md5.update(plaintext)
         return md5.hexdigest()
 
@@ -182,7 +181,7 @@ class ItsDCipher:
         try:
             ciphertext = serializer.dumps(plaintext)
         except Exception as e:
-            log.error(f'ItsDangerous encrypt failed: {e}')
+            log.error(f"ItsDangerous encrypt failed: {e}")
             ciphertext = Md5Cipher.encrypt(plaintext)
         return ciphertext
 
@@ -203,6 +202,6 @@ class ItsDCipher:
         try:
             plaintext = serializer.loads(ciphertext)
         except Exception as e:
-            log.error(f'ItsDangerous decrypt failed: {e}')
+            log.error(f"ItsDangerous decrypt failed: {e}")
             plaintext = ciphertext
         return plaintext

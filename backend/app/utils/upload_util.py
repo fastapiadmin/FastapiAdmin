@@ -1,12 +1,10 @@
 import mimetypes
 import random
-
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin
 
 import aiofiles
-
 from fastapi import UploadFile
 
 from app.config.setting import settings
@@ -27,7 +25,7 @@ class UploadUtil:
         返回:
         - str: 三位随机数字字符串。
         """
-        return f'{random.randint(1, 999):03}'
+        return f"{random.randint(1, 999):03}"
 
     @staticmethod
     def check_file_exists(filepath: str) -> bool:
@@ -75,9 +73,9 @@ class UploadUtil:
         - bool: 时间戳是否合法。
         """
         try:
-            name_parts = filename.rsplit('.', 1)[0].split('_')
+            name_parts = filename.rsplit(".", 1)[0].split("_")
             timestamp = name_parts[-1].split(settings.UPLOAD_MACHINE)[0]
-            datetime.strptime(timestamp, '%Y%m%d%H%M%S')
+            datetime.strptime(timestamp, "%Y%m%d%H%M%S")
             return True
         except (ValueError, IndexError):
             return False
@@ -94,7 +92,7 @@ class UploadUtil:
         - bool: 机器码是否合法。
         """
         try:
-            name_without_ext = filename.rsplit('.', 1)[0]
+            name_without_ext = filename.rsplit(".", 1)[0]
             return len(name_without_ext) >= 4 and name_without_ext[-4] == settings.UPLOAD_MACHINE
         except IndexError:
             return False
@@ -111,7 +109,7 @@ class UploadUtil:
         - bool: 随机码是否合法（000–999）。
         """
         try:
-            code = filename.rsplit('.', 1)[0][-3:]
+            code = filename.rsplit(".", 1)[0][-3:]
             return code.isdigit() and 1 <= int(code) <= 999
         except IndexError:
             return False
@@ -144,7 +142,7 @@ class UploadUtil:
         """
         name, ext = filename.rsplit(".", 1)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        return f'{name}_{timestamp}{settings.UPLOAD_MACHINE}{cls.generate_random_number()}.{ext}'
+        return f"{name}_{timestamp}{settings.UPLOAD_MACHINE}{cls.generate_random_number()}.{ext}"
 
     @staticmethod
     def generate_file(filepath: Path, chunk_size: int = 8192):
@@ -158,7 +156,7 @@ class UploadUtil:
         返回:
         - Iterator[bytes]: 文件二进制数据分块迭代器。
         """
-        with filepath.open('rb') as f:
+        with filepath.open("rb") as f:
             while chunk := f.read(chunk_size):
                 yield chunk
 
@@ -195,8 +193,11 @@ class UploadUtil:
         - CustomException: 当文件类型不支持或大小超限时抛出。
         """
         # 文件校验
-        if not all([cls.check_file_extension(file), cls.check_file_size(file)]):
-            raise CustomException(msg='文件类型或大小不合法')
+        if not all([
+            cls.check_file_extension(file),
+            cls.check_file_size(file),
+        ]):
+            raise CustomException(msg="文件类型或大小不合法")
 
         try:
             # 构建完整的目录路径
@@ -213,7 +214,7 @@ class UploadUtil:
 
             # 分块写入文件
             chunk_size = 8 * 1024 * 1024  # 8MB chunks
-            async with aiofiles.open(filepath, 'wb') as f:
+            async with aiofiles.open(filepath, "wb") as f:
                 while chunk := await file.read(chunk_size):
                     await f.write(chunk)
 
@@ -222,7 +223,7 @@ class UploadUtil:
 
         except Exception as e:
             log.error(f"文件上传失败: {e}")
-            raise CustomException(msg='文件上传失败')
+            raise CustomException(msg=f"文件上传失败: {e}")
 
     @staticmethod
     def get_file_tree(file_path: str) -> list[dict]:

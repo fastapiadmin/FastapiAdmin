@@ -13,8 +13,9 @@ class PositionModel(ModelMixin, UserMixin):
     """
     岗位模型
     """
+
     __tablename__: str = "sys_position"
-    __table_args__: dict[str, str] = ({'comment': '岗位表'})
+    __table_args__: dict[str, str] = {"comment": "岗位表"}
     __loader_options__: list[str] = ["users", "created_by", "updated_by"]
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="岗位名称")
@@ -24,5 +25,5 @@ class PositionModel(ModelMixin, UserMixin):
     users: Mapped[list["UserModel"]] = relationship(
         secondary="sys_user_positions",
         back_populates="positions",
-        lazy="selectin"
+        lazy="selectin",
     )

@@ -2,11 +2,18 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class ResourceItemSchema(BaseModel):
     """资源项目模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     name: str = Field(..., description="文件名")
@@ -19,36 +26,37 @@ class ResourceItemSchema(BaseModel):
     modified_time: datetime | None = Field(None, description="修改时间")
     is_hidden: bool = Field(False, description="是否为隐藏文件")
 
-    @field_validator('file_url')
+    @field_validator("file_url")
     @classmethod
     def _validate_file_url(cls, v: str) -> str:
         v = v.strip()
         parsed = urlparse(v)
-        if parsed.scheme not in ('http', 'https'):
-            raise ValueError('文件URL必须为 http/https')
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("文件URL必须为 http/https")
         return v
 
-    @field_validator('relative_path')
+    @field_validator("relative_path")
     @classmethod
     def _validate_relative_path(cls, v: str) -> str:
         v = v.strip()
-        if '..' in v or v.startswith('\\'):
-            raise ValueError('相对路径包含不安全字符')
+        if ".." in v or v.startswith("\\"):
+            raise ValueError("相对路径包含不安全字符")
         return v
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def _validate_flags(self):
         if self.is_file and self.is_dir:
-            raise ValueError('不能同时为文件和目录')
+            raise ValueError("不能同时为文件和目录")
         if not self.is_file and not self.is_dir:
-            raise ValueError('必须是文件或目录之一')
+            raise ValueError("必须是文件或目录之一")
         # 根据名称自动修正隐藏标记
-        self.is_hidden = self.name.startswith('.')
+        self.is_hidden = self.name.startswith(".")
         return self
 
 
 class ResourceDirectorySchema(BaseModel):
     """资源目录模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     path: str = Field(..., description="目录路径")
@@ -61,6 +69,7 @@ class ResourceDirectorySchema(BaseModel):
 
 class ResourceUploadSchema(BaseModel):
     """资源上传响应模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     filename: str = Field(..., description="文件名")
@@ -71,13 +80,14 @@ class ResourceUploadSchema(BaseModel):
 
 class ResourceMoveSchema(BaseModel):
     """资源移动模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     source_path: str = Field(..., description="源路径")
     target_path: str = Field(..., description="目标路径")
     overwrite: bool = Field(False, description="是否覆盖")
 
-    @field_validator('source_path', 'target_path')
+    @field_validator("source_path", "target_path")
     @classmethod
     def validate_paths(cls, value: str):
         if not value or len(value.strip()) == 0:
@@ -91,49 +101,48 @@ class ResourceCopySchema(ResourceMoveSchema):
 
 class ResourceRenameSchema(BaseModel):
     """资源重命名模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     old_path: str = Field(..., description="原路径")
     new_name: str = Field(..., description="新名称")
 
-    @field_validator('old_path', 'new_name')
+    @field_validator("old_path", "new_name")
     @classmethod
     def validate_inputs(cls, value: str):
         if not value or len(value.strip()) == 0:
             raise ValueError("参数不能为空")
         return value.strip()
 
-    @field_validator('new_name')
+    @field_validator("new_name")
     @classmethod
     def _validate_new_name(cls, v: str) -> str:
         v = v.strip()
-        if '..' in v or '/' in v or '\\' in v:
-            raise ValueError('新名称包含不安全字符')
+        if ".." in v or "/" in v or "\\" in v:
+            raise ValueError("新名称包含不安全字符")
         return v
 
 
 class ResourceCreateDirSchema(BaseModel):
     """创建目录模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     parent_path: str = Field(..., description="父目录路径")
     dir_name: str = Field(..., description="目录名称", max_length=255)
 
-    @field_validator('parent_path', 'dir_name')
+    @field_validator("parent_path", "dir_name")
     @classmethod
     def validate_inputs(cls, value: str, info):
         # 对于parent_path允许为空字符串（表示根目录）或 '/'，其他情况必须非空
-        if info.field_name == 'parent_path':
-            # 允许空字符串或 '/' 表示根目录
-            if value is None:
-                raise ValueError("参数不能为空")
+        if info.field_name == "parent_path":
             # 对于parent_path仍然严格检查路径遍历
-            if '..' in value or value.startswith('\\'):
+            if ".." in value or value.startswith("\\"):
                 raise ValueError("参数包含不安全字符")
         else:  # 对于dir_name仍然严格检查
             if not value or len(value.strip()) == 0:
                 raise ValueError("参数不能为空")
-            if '..' in value or value.startswith(('/', '\\')):
+            if ".." in value or value.startswith(("/", "\\")):
                 raise ValueError("参数包含不安全字符")
         return value.strip()
 

@@ -9,6 +9,7 @@ from app.core.exceptions import CustomException
 
 class PageResultSchema(BaseModel):
     """分页查询结果模型"""
+
     model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
 
     page_no: int | None = Field(default=None, ge=1, description="页码，默认为1")
@@ -22,7 +23,11 @@ class PaginationService:
     """分页服务类"""
 
     @staticmethod
-    async def paginate(data_list: list[Any], page_no: int | None = None, page_size: int | None = None) -> dict[str, Any]:
+    async def paginate(
+        data_list: list[Any],
+        page_no: int | None = None,
+        page_size: int | None = None,
+    ) -> dict[str, Any]:
         """
         分页数据处理。
         输入数据列表和分页信息，返回分页数据列表结果。
@@ -66,5 +71,5 @@ class PaginationService:
             "total": total,
             "page_no": page_no,
             "page_size": page_size,
-            "has_next": has_next
+            "has_next": has_next,
         }

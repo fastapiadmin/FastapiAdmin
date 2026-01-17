@@ -5,6 +5,7 @@ from app.core.validator import DateTimeStr
 
 class CommonSchema(BaseModel):
     """通用信息模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(description="编号ID")
@@ -13,6 +14,7 @@ class CommonSchema(BaseModel):
 
 class BaseSchema(BaseModel):
     """通用输出模型，包含基础字段和审计字段"""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int | None = Field(default=None, description="主键ID")
@@ -25,6 +27,7 @@ class BaseSchema(BaseModel):
 
 class UserBySchema(BaseModel):
     """通用创建模型，包含基础字段和审计字段"""
+
     model_config = ConfigDict(from_attributes=True)
 
     created_id: int | None = Field(default=None, description="创建人ID")
@@ -35,21 +38,24 @@ class UserBySchema(BaseModel):
 
 class BatchSetAvailable(BaseModel):
     """批量设置可用状态的请求模型"""
+
     ids: list[int] = Field(default_factory=list, description="ID列表")
     status: str = Field(default="0", description="是否可用")
 
 
 class UploadResponseSchema(BaseModel):
     """上传响应模型"""
+
     model_config = ConfigDict(from_attributes=True)
 
-    file_path: str | None = Field(default=None, description='新文件映射路径')
-    file_name: str | None = Field(default=None, description='新文件名称')
-    origin_name: str | None = Field(default=None, description='原文件名称')
-    file_url: str | None = Field(default=None, description='新文件访问地址')
+    file_path: str | None = Field(default=None, description="新文件映射路径")
+    file_name: str | None = Field(default=None, description="新文件名称")
+    origin_name: str | None = Field(default=None, description="原文件名称")
+    file_url: str | None = Field(default=None, description="新文件访问地址")
 
 
 class DownloadFileSchema(BaseModel):
     """下载文件模型"""
-    file_path: str = Field(..., description='新文件映射路径')
-    file_name: str = Field(..., description='新文件名称')
+
+    file_path: str = Field(..., description="新文件映射路径")
+    file_name: str = Field(..., description="新文件名称")

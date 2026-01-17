@@ -8,7 +8,11 @@ from app.api.v1.module_system.role.crud import RoleCRUD
 from app.core.base_crud import CRUDBase
 
 from .model import UserModel
-from .schema import UserCreateSchema, UserForgetPasswordSchema, UserUpdateSchema
+from .schema import (
+    UserCreateSchema,
+    UserForgetPasswordSchema,
+    UserUpdateSchema,
+)
 
 
 class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
@@ -24,7 +28,9 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         self.auth = auth
         super().__init__(model=UserModel, auth=auth)
 
-    async def get_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> UserModel | None:
+    async def get_by_id_crud(
+        self, id: int, preload: list[str | Any] | None = None
+    ) -> UserModel | None:
         """
         根据id获取用户信息
 
@@ -40,7 +46,9 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             id=id,
         )
 
-    async def get_by_username_crud(self, username: str, preload: list[str | Any] | None = None) -> UserModel | None:
+    async def get_by_username_crud(
+        self, username: str, preload: list[str | Any] | None = None
+    ) -> UserModel | None:
         """
         根据用户名获取用户信息
 
@@ -56,7 +64,9 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             username=username,
         )
 
-    async def get_by_mobile_crud(self, mobile: str, preload: list[str | Any] | None = None) -> UserModel | None:
+    async def get_by_mobile_crud(
+        self, mobile: str, preload: list[str | Any] | None = None
+    ) -> UserModel | None:
         """
         根据手机号获取用户信息
 
@@ -72,7 +82,12 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             mobile=mobile,
         )
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[UserModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict[str, str]] | None = None,
+        preload: list[str | Any] | None = None,
+    ) -> Sequence[UserModel]:
         """
         获取用户列表
 
@@ -151,7 +166,9 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         """
         user_objs = await self.list(search={"id": ("in", user_ids)})
         if position_ids:
-            position_objs = await PositionCRUD(self.auth).get_list_crud(search={"id": ("in", position_ids)})
+            position_objs = await PositionCRUD(self.auth).get_list_crud(
+                search={"id": ("in", position_ids)}
+            )
         else:
             position_objs = []
 

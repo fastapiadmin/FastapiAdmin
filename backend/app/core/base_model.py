@@ -3,7 +3,13 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    declared_attr,
+    mapped_column,
+    relationship,
+)
 
 if TYPE_CHECKING:
     from app.api.v1.module_system.user.model import UserModel
@@ -54,15 +60,50 @@ class ModelMixin(MappedBase):
     - write_only: 只写不读
     - dynamic: 返回查询对象,支持进一步过滤
     """
+
     __abstract__: bool = True
 
     # 基础字段
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment='主键ID', index=True)
-    uuid: Mapped[str] = mapped_column(String(64), default=uuid4_str, nullable=False, unique=True, comment='UUID全局唯一标识', index=True)
-    status: Mapped[str] = mapped_column(String(10), default='0', nullable=False, comment="是否启用(0:启用 1:禁用)", index=True)
-    description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注/描述")
-    created_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False, comment='创建时间', index=True)
-    updated_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False, comment='更新时间', index=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+        comment="主键ID",
+        index=True,
+    )
+    uuid: Mapped[str] = mapped_column(
+        String(64),
+        default=uuid4_str,
+        nullable=False,
+        unique=True,
+        comment="UUID全局唯一标识",
+        index=True,
+    )
+    status: Mapped[str] = mapped_column(
+        String(10),
+        default="0",
+        nullable=False,
+        comment="是否启用(0:启用 1:禁用)",
+        index=True,
+    )
+    description: Mapped[str | None] = mapped_column(
+        Text, default=None, nullable=True, comment="备注/描述"
+    )
+    created_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.now,
+        nullable=False,
+        comment="创建时间",
+        index=True,
+    )
+    updated_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.now,
+        onupdate=datetime.now,
+        nullable=False,
+        comment="更新时间",
+        index=True,
+    )
 
 
 class UserMixin(MappedBase):
@@ -72,45 +113,46 @@ class UserMixin(MappedBase):
     用于记录数据的创建者和更新者
     用于实现数据权限中的"仅本人数据权限"
     """
+
     __abstract__: bool = True
 
     created_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey('sys_user.id', ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKey("sys_user.id", ondelete="SET NULL", onupdate="CASCADE"),
         default=None,
         nullable=True,
         index=True,
-        comment="创建人ID"
+        comment="创建人ID",
     )
     updated_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey('sys_user.id', ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKey("sys_user.id", ondelete="SET NULL", onupdate="CASCADE"),
         default=None,
         nullable=True,
         index=True,
-        comment="更新人ID"
+        comment="更新人ID",
     )
 
     @declared_attr
-    def created_by(cls) -> Mapped[Optional["UserModel"]]:
+    def created_by(self) -> Mapped[Optional["UserModel"]]:
         """
         创建人关联关系（延迟加载，避免循环依赖）
         """
         return relationship(
             "UserModel",
             lazy="selectin",
-            foreign_keys=lambda: cls.created_id,
-            uselist=False
+            foreign_keys=lambda: self.created_id,  # pyright: ignore[reportArgumentType]
+            uselist=False,
         )
 
     @declared_attr
-    def updated_by(cls) -> Mapped[Optional["UserModel"]]:
+    def updated_by(self) -> Mapped[Optional["UserModel"]]:
         """
         更新人关联关系（延迟加载，避免循环依赖）
         """
         return relationship(
             "UserModel",
             lazy="selectin",
-            foreign_keys=lambda: cls.updated_id,
-            uselist=False
+            foreign_keys=lambda: self.updated_id,  # pyright: ignore[reportArgumentType]
+            uselist=False,
         )

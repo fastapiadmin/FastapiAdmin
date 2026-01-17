@@ -21,7 +21,9 @@ class McpCRUD(CRUDBase[McpModel, McpCreateSchema, McpUpdateSchema]):
         self.auth = auth
         super().__init__(model=McpModel, auth=auth)
 
-    async def get_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> McpModel | None:
+    async def get_by_id_crud(
+        self, id: int, preload: list[str | Any] | None = None
+    ) -> McpModel | None:
         """
         获取MCP服务器详情
 
@@ -34,7 +36,9 @@ class McpCRUD(CRUDBase[McpModel, McpCreateSchema, McpUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_by_name_crud(self, name: str, preload: list[str | Any] | None = None) -> McpModel | None:
+    async def get_by_name_crud(
+        self, name: str, preload: list[str | Any] | None = None
+    ) -> McpModel | None:
         """
         通过名称获取MCP服务器
 
@@ -47,7 +51,12 @@ class McpCRUD(CRUDBase[McpModel, McpCreateSchema, McpUpdateSchema]):
         """
         return await self.get(name=name, preload=preload)
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list[dict[str, str]] | None = None, preload: list[str | Any] | None = None) -> Sequence[McpModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict[str, str]] | None = None,
+        preload: list[str | Any] | None = None,
+    ) -> Sequence[McpModel]:
         """
         列表查询MCP服务器
 
@@ -59,7 +68,11 @@ class McpCRUD(CRUDBase[McpModel, McpCreateSchema, McpUpdateSchema]):
         返回:
         - Sequence[McpModel]: MCP服务器模型实例序列
         """
-        return await self.list(search=search or {}, order_by=order_by or [{'id': 'asc'}], preload=preload)
+        return await self.list(
+            search=search or {},
+            order_by=order_by or [{"id": "asc"}],
+            preload=preload,
+        )
 
     async def create_crud(self, data: McpCreateSchema) -> McpModel | None:
         """

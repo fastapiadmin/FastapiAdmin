@@ -32,7 +32,12 @@ class DemoCRUD(CRUDBase[DemoModel, DemoCreateSchema, DemoUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list[str] | None = None) -> Sequence[DemoModel]:
+    async def list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict] | None = None,
+        preload: list[str] | None = None,
+    ) -> Sequence[DemoModel]:
         """
         列表查询
 
@@ -96,7 +101,14 @@ class DemoCRUD(CRUDBase[DemoModel, DemoCreateSchema, DemoUpdateSchema]):
         """
         return await self.set(ids=ids, status=status)
 
-    async def page_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
+    async def page_crud(
+        self,
+        offset: int,
+        limit: int,
+        order_by: list[dict] | None = None,
+        search: dict | None = None,
+        preload: list | None = None,
+    ) -> dict:
         """
         分页查询
 
@@ -110,7 +122,7 @@ class DemoCRUD(CRUDBase[DemoModel, DemoCreateSchema, DemoUpdateSchema]):
         返回:
         - dict: 分页数据
         """
-        order_by_list = order_by or [{'id': 'asc'}]
+        order_by_list = order_by or [{"id": "asc"}]
         search_dict = search or {}
 
         return await self.page(
@@ -119,5 +131,5 @@ class DemoCRUD(CRUDBase[DemoModel, DemoCreateSchema, DemoUpdateSchema]):
             order_by=order_by_list,
             search=search_dict,
             out_schema=DemoOutSchema,
-            preload=preload
+            preload=preload,
         )

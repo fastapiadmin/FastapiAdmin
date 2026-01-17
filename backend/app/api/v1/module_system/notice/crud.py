@@ -33,7 +33,12 @@ class NoticeCRUD(CRUDBase[NoticeModel, NoticeCreateSchema, NoticeUpdateSchema]):
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_list_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[NoticeModel]:
+    async def get_list_crud(
+        self,
+        search: dict | None = None,
+        order_by: list[dict] | None = None,
+        preload: list | None = None,
+    ) -> Sequence[NoticeModel]:
         """
         获取公告列表。
 

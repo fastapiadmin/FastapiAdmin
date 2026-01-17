@@ -13,16 +13,21 @@ from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
-from .schema import ParamsCreateSchema, ParamsQueryParam, ParamsUpdateSchema
+from .schema import ParamsCreateSchema, ParamsOutSchema, ParamsQueryParam, ParamsUpdateSchema
 from .service import ParamsService
 
 ParamsRouter = APIRouter(route_class=OperationLogRoute, prefix="/param", tags=["参数管理"])
 
 
-@ParamsRouter.get("/detail/{id}", summary="获取参数详情", description="获取参数详情")
+@ParamsRouter.get(
+    "/detail/{id}",
+    summary="获取参数详情",
+    description="获取参数详情",
+    response_model=ParamsOutSchema,
+)
 async def get_type_detail_controller(
     id: Annotated[int, Path(description="参数ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:detail"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:detail"]))],
 ) -> JSONResponse:
     """
     获取参数详情
@@ -39,10 +44,15 @@ async def get_type_detail_controller(
     return SuccessResponse(data=result_dict, msg="获取参数详情成功")
 
 
-@ParamsRouter.get("/key/{config_key}", summary="根据配置键获取参数详情", description="根据配置键获取参数详情")
+@ParamsRouter.get(
+    "/key/{config_key}",
+    summary="根据配置键获取参数详情",
+    description="根据配置键获取参数详情",
+    response_model=ParamsOutSchema,
+)
 async def get_obj_by_key_controller(
     config_key: Annotated[str, Path(description="配置键")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:query"]))],
 ) -> JSONResponse:
     """
     根据配置键获取参数详情
@@ -59,10 +69,15 @@ async def get_obj_by_key_controller(
     return SuccessResponse(data=result_dict, msg="根据配置键获取参数详情成功")
 
 
-@ParamsRouter.get("/value/{config_key}", summary="根据配置键获取参数值", description="根据配置键获取参数值")
+@ParamsRouter.get(
+    "/value/{config_key}",
+    summary="根据配置键获取参数值",
+    description="根据配置键获取参数值",
+    response_model=ParamsOutSchema,
+)
 async def get_config_value_by_key_controller(
     config_key: Annotated[str, Path(description="配置键")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:query"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:query"]))],
 ) -> JSONResponse:
     """
     根据配置键获取参数值
@@ -74,12 +89,19 @@ async def get_config_value_by_key_controller(
     返回:
     - JSONResponse: 包含参数值的 JSON 响应
     """
-    result_value = await ParamsService.get_config_value_by_key_service(config_key=config_key, auth=auth)
+    result_value = await ParamsService.get_config_value_by_key_service(
+        config_key=config_key, auth=auth
+    )
     log.info(f"根据配置键获取参数值成功 {config_key}")
     return SuccessResponse(data=result_value, msg="根据配置键获取参数值成功")
 
 
-@ParamsRouter.get("/list", summary="获取参数列表", description="获取参数列表")
+@ParamsRouter.get(
+    "/list",
+    summary="获取参数列表",
+    description="获取参数列表",
+    response_model=list[ParamsOutSchema],
+)
 async def get_obj_list_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:query"]))],
     page: Annotated[PaginationQueryParam, Depends()],
@@ -96,17 +118,28 @@ async def get_obj_list_controller(
     返回:
     - JSONResponse: 包含参数列表的 JSON 响应
     """
-    result_dict_list = await ParamsService.get_obj_list_service(auth=auth, search=search, order_by=page.order_by)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict_list = await ParamsService.get_obj_list_service(
+        auth=auth, search=search, order_by=page.order_by
+    )
+    result_dict = await PaginationService.paginate(
+        data_list=result_dict_list,
+        page_no=page.page_no,
+        page_size=page.page_size,
+    )
     log.info("获取参数列表成功")
     return SuccessResponse(data=result_dict, msg="查询参数列表成功")
 
 
-@ParamsRouter.post("/create", summary="创建参数", description="创建参数")
+@ParamsRouter.post(
+    "/create",
+    summary="创建参数",
+    description="创建参数",
+    response_model=ParamsOutSchema,
+)
 async def create_obj_controller(
     data: ParamsCreateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:create"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:create"]))],
 ) -> JSONResponse:
     """
     创建参数
@@ -124,12 +157,17 @@ async def create_obj_controller(
     return SuccessResponse(data=result_dict, msg="创建参数成功")
 
 
-@ParamsRouter.put("/update/{id}", summary="修改参数", description="修改参数")
+@ParamsRouter.put(
+    "/update/{id}",
+    summary="修改参数",
+    description="修改参数",
+    response_model=ParamsOutSchema,
+)
 async def update_objs_controller(
     data: ParamsUpdateSchema,
     id: Annotated[int, Path(description="参数ID")],
     redis: Annotated[Redis, Depends(redis_getter)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:update"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:update"]))],
 ) -> JSONResponse:
     """
     修改参数
@@ -148,11 +186,16 @@ async def update_objs_controller(
     return SuccessResponse(data=result_dict, msg="更新参数成功")
 
 
-@ParamsRouter.delete("/delete", summary="删除参数", description="删除参数")
+@ParamsRouter.delete(
+    "/delete",
+    summary="删除参数",
+    description="删除参数",
+    response_model=ParamsOutSchema,
+)
 async def delete_obj_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:delete"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:delete"]))],
 ) -> JSONResponse:
     """
     删除参数
@@ -170,10 +213,14 @@ async def delete_obj_controller(
     return SuccessResponse(msg="删除参数成功")
 
 
-@ParamsRouter.post('/export', summary="导出参数", description="导出参数")
+@ParamsRouter.post(
+    "/export",
+    summary="导出参数",
+    description="导出参数",
+)
 async def export_obj_list_controller(
     search: Annotated[ParamsQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:export"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:export"]))],
 ) -> StreamingResponse:
     """
     导出参数
@@ -187,22 +234,21 @@ async def export_obj_list_controller(
     """
     result_dict_list = await ParamsService.get_obj_list_service(search=search, auth=auth)
     export_result = await ParamsService.export_obj_service(data_list=result_dict_list)
-    log.info('导出参数成功')
+    log.info("导出参数成功")
 
     return StreamResponse(
         data=bytes2file_response(export_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            'Content-Disposition': 'attachment; filename=params.xlsx'
-        }
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=params.xlsx"},
     )
 
 
-@ParamsRouter.post("/upload", summary="上传文件", dependencies=[Depends(AuthPermission(["module_system:param:upload"]))])
-async def upload_file_controller(
-    file: UploadFile,
-    request: Request
-) -> JSONResponse:
+@ParamsRouter.post(
+    "/upload",
+    summary="上传文件",
+    dependencies=[Depends(AuthPermission(["module_system:param:upload"]))],
+)
+async def upload_file_controller(file: UploadFile, request: Request) -> JSONResponse:
     """
     上传文件
 
@@ -215,10 +261,15 @@ async def upload_file_controller(
     """
     result_str = await ParamsService.upload_service(base_url=str(request.base_url), file=file)
     log.info(f"上传文件: {result_str}")
-    return SuccessResponse(data=result_str, msg='上传文件成功')
+    return SuccessResponse(data=result_str, msg="上传文件成功")
 
 
-@ParamsRouter.get("/info", summary="获取初始化缓存参数", description="获取初始化缓存参数")
+@ParamsRouter.get(
+    "/info",
+    summary="获取初始化缓存参数",
+    description="获取初始化缓存参数",
+    response_model=list[ParamsOutSchema],
+)
 async def get_init_obj_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:

@@ -98,16 +98,43 @@ python main.py revision  --env=dev(不加默认为dev)
 
 # 应用数据库迁移
 python main.py upgrade --env=dev(不加默认为dev)
+
+# 如果是uv管理管理python则是
+uv run main.py revision  --env=dev(不加默认为dev)
+uv run main.py upgrade --env=dev(不加默认为dev)
 ```
 
 #### 2. 启动服务
 
 ```bash
+# 创建虚拟环境
+python -m venv .venv
+# 激活虚拟环境
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+
+# 如果是uv管理管理python则是
+uv venv (默认创建.venv)
+
+
+# 安装依赖
+pip install -r requirements.txt
+# 如果是uv管理管理python则是
+uv add -r requirements.txt
+或
+uv sync
+
 # 开发环境启动
 python main.py run --env=dev (不加默认为dev)
 
 # 生产环境启动
 python main.py run --env=prod (不加默认为dev)
+
+# 如果是uv管理管理python则是
+uv run main.py run --env=dev (不加默认为dev)
+uv run main.py run --env=prod (不加默认为dev)
 ```
 
 #### 3.代码格式化
@@ -115,12 +142,15 @@ python main.py run --env=prod (不加默认为dev)
 ```bash
 # 检查当前目录所有 Python 文件
 ruff check
-
 # 检查并自动修复问题
 ruff check --fix
-
 # 监听文件变化并重新检查
 ruff check --watch
+
+# 如果是uv管理管理python则是
+uv run ruff check
+uv run ruff check --fix
+uv run ruff check --watch
 ```
 
 ## 📜 相关链接

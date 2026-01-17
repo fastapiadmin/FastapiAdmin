@@ -1,5 +1,4 @@
 import jwt
-
 from fastapi import Form, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security.utils import get_authorization_scheme_param
@@ -13,19 +12,19 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
     """自定义OAuth2认证类,继承自OAuth2PasswordBearer"""
 
     def __init__(
-            self,
-            token_url: str,
-            scheme_name: str | None = None,
-            scopes: dict[str, str] | None = None,
-            description: str | None = None,
-            auto_error: bool = True
+        self,
+        token_url: str,
+        scheme_name: str | None = None,
+        scopes: dict[str, str] | None = None,
+        description: str | None = None,
+        auto_error: bool = True,
     ) -> None:
         super().__init__(
             tokenUrl=token_url,
             scheme_name=scheme_name,
             scopes=scopes,
             description=description,
-            auto_error=auto_error
+            auto_error=auto_error,
         )
 
     async def __call__(self, request: Request) -> str | None:
@@ -68,16 +67,16 @@ class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
     """
 
     def __init__(
-            self,
-            grant_type: str | None = Form(default=None, pattern='password'),
-            scope: str = Form(default=''),
-            client_id: str | None = Form(default=None),
-            client_secret: str | None = Form(default=None),
-            username: str = Form(),
-            password: str = Form(),
-            captcha_key: str | None = Form(default=""),
-            captcha: str | None = Form(default=""),
-            login_type: str | None = Form(default="PC端", description="PC端 | 移动端")
+        self,
+        grant_type: str | None = Form(default=None, pattern="password"),
+        scope: str = Form(default=""),
+        client_id: str | None = Form(default=None),
+        client_secret: str | None = Form(default=None),
+        username: str = Form(),
+        password: str = Form(),
+        captcha_key: str | None = Form(default=""),
+        captcha: str | None = Form(default=""),
+        login_type: str | None = Form(default="PC端", description="PC端 | 移动端"),
     ) -> None:
         super().__init__(
             grant_type=grant_type,
@@ -93,10 +92,7 @@ class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
 
 
 # OAuth2认证配置
-OAuth2Schema = CustomOAuth2PasswordBearer(
-    token_url="system/auth/login",
-    description="认证"
-)
+OAuth2Schema = CustomOAuth2PasswordBearer(token_url="system/auth/login", description="认证")
 
 
 def create_access_token(payload: JWTPayloadSchema) -> str:
@@ -113,7 +109,7 @@ def create_access_token(payload: JWTPayloadSchema) -> str:
     return jwt.encode(
         payload=payload_dict,
         key=settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM
+        algorithm=settings.ALGORITHM,
     )
 
 
@@ -134,11 +130,7 @@ def decode_access_token(token: str) -> JWTPayloadSchema:
         raise CustomException(msg="认证不存在,请重新登录", code=10401, status_code=401)
 
     try:
-        payload = jwt.decode(
-            jwt=token,
-            key=settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
 
         online_user_info = payload.get("sub")
         if not online_user_info:

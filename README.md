@@ -34,13 +34,6 @@
 
 > **设计初心**: 以模块化、松耦合为核心，追求丰富的功能模块、简洁易用的接口、详尽的开发文档和便捷的维护方式。通过统一框架和组件，降低技术选型成本，遵循开发规范和设计模式，构建强大的代码分层模型，搭配完善的本地中文化支持，专为团队和企业开发场景量身定制。
 
-## 🔗 源码仓库
-
-| 平台 | 仓库地址 |
-|------|----------|
-| GitHub | [FastapiAdmin主工程](https://github.com/1014TaoTao/FastapiAdmin.git) \| [FastDocs官网](https://github.com/1014TaoTao/FastDocs.git) \| [FastApp移动端](https://github.com/1014TaoTao/FastApp.git) |
-| Gitee  | [FastapiAdmin主工程](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs官网](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp移动端](https://gitee.com/tao__tao/FastApp.git) |
-
 ## 🎯 核心优势
 
 | 优势 | 描述 |
@@ -52,6 +45,20 @@
 | 🌐 **全栈支持** | Web端 + 移动端(H5) + 后端一体化解决方案 |
 | 🚀 **快速部署** | Docker 一键部署，支持生产环境快速上线 |
 | 📖 **完善文档** | 详细的开发文档和教程，降低学习成本 |
+| 🤖 **智能体框架** | 基于Langchain和Langgraph的开发智能体 |
+
+## 🍪 演示环境
+
+- 💻 网页端：[https://service.fastapiadmin.com/web](https://service.fastapiadmin.com/web)
+- 📱 移动端：[https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app)
+- 👤 登录账号：`admin` 密码：`123456`
+
+## 🔗 源码仓库
+
+| 平台 | 仓库地址 |
+|------|----------|
+| GitHub | [FastapiAdmin主工程](https://github.com/1014TaoTao/FastapiAdmin.git) \| [FastDocs官网](https://github.com/1014TaoTao/FastDocs.git) \| [FastApp移动端](https://github.com/1014TaoTao/FastApp.git) |
+| Gitee  | [FastapiAdmin主工程](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs官网](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp移动端](https://gitee.com/tao__tao/FastApp.git) |
 
 ## 📦 工程结构概览
 
@@ -59,8 +66,6 @@
 FastapiAdmin
 ├─ backend               # 后端工程 (FastAPI + Python)
 ├─ frontend              # Web前端工程 (Vue3 + Element Plus)
-├─ fastapp               # 移动端工程 (UniApp + Wot Design Uni)
-├─ fastdocs              # 官网文档工程 (VitePress)
 ├─ devops                # 部署配置
 ├─ docker-compose.yaml   # Docker编排文件
 ├─ deploy.sh             # 一键部署脚本
@@ -80,10 +85,11 @@ FastapiAdmin
 | **前端框架** | Vue3 / Vite5 / Pinia / TypeScript | 快速开发 Vue3 应用 |
 | **Web UI** | ElementPlus | 企业级 UI 组件库 |
 | **移动端** | UniApp / Wot Design Uni | 跨端移动应用框架 |
-| **数据库** | MySQL / MongoDB | 关系型和文档型数据库支持 |
+| **数据库** | MySQL / PostgreSQL / Sqlite | 关系型和文档型数据库支持 |
 | **缓存** | Redis | 高性能缓存数据库 |
 | **文档** | Swagger / Redoc | 自动生成 API 文档 |
 | **部署** | Docker / Nginx / Docker Compose | 容器化部署方案 |
+| **智能体框架** | Langchain / Langgraph | 基于Langchain和Langgraph的智能体框架 |
 
 ## 📌 内置功能模块
 
@@ -96,135 +102,6 @@ FastapiAdmin
 | 📝 **日志管理** | 操作日志 | 用户行为审计 |
 | 🧰 **开发工具** | 代码生成、表单构建、接口文档 | 提升开发效率的工具 |
 | 📁 **文件管理** | 文件存储 | 统一文件管理 |
-
-## 🍪 演示环境
-
-- 🌐 官网地址：[https://service.fastapiadmin.com](https://service.fastapiadmin.com)
-- 💻 Web演示：[https://service.fastapiadmin.com/web](https://service.fastapiadmin.com/web)
-- 📱 移动端：[https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app)
-- 👤 登录账号：`admin` 密码：`123456`
-
-## 🚀 快速开始
-
-### 环境要求
-
-| 类型 | 技术栈 | 版本 |
-|------|--------|------|
-| 后端 | Python | 3.12 ≥ 3.10 |
-| 后端 | FastAPI | 0.109+ |
-| 前端 | Node.js | ≥ 20.0 |
-| 前端 | Vue3 | 3.3+ |
-| 数据库 | MySQL | 8.0+ |
-| 缓存 | Redis | 7.0+ |
-
-### 获取代码
-
-```bash
-# 克隆代码到本地
-git clone https://gitee.com/tao__tao/FastapiAdmin.git
-# 或者
-git clone https://github.com/1014TaoTao/FastapiAdmin.git
-```
-
-> **后端注意**：克隆下的代码需要修改 `backend/env` 目录下的 `.env.dev.example` 文件为 `.env.dev`，修改 `backend/env` 目录下的 `.env.prod.example` 文件为 `.env.prod`，然后根据实际情况修改数据库连接信息、Redis连接信息等。
-> **前端注意**：克隆下的代码需要修改 `frontend` 目录下的 `.env.development.example` 文件为 `.env.development`，修改 `frontend` 目录下的 `.env.production.example` 文件为 `.env.production`，然后根据实际情况修改接口地址等。
-
-### 后端启动
-
-```bash
-# 进入后端工程目录
-cd backend
-
-# 安装依赖
-pip3 install -r requirements.txt
-
-# 启动后端服务：启动之前保证mysql中创建好了数据库、redis服务
-python main.py run
-# 或指定环境
-python main.py run --env=dev
-
-# 生成迁移文件
-python main.py revision --env=dev
-# 应用迁移
-python main.py upgrade --env=dev
-```
-
-### 前端启动
-
-```bash
-# 进入前端工程目录
-cd frontend
-
-# 安装依赖
-pnpm install
-
-# 启动开发服务器
-pnpm run dev
-
-# 构建生产版本
-pnpm run build
-```
-
-### 移动端启动
-
-```bash
-# 进入移动端工程目录
-cd fastapp
-
-# 安装依赖
-pnpm install
-
-# 启动H5开发服务器
-pnpm run dev:h5
-
-# 构建H5生产版本
-pnpm run build:h5
-```
-
-### 文档启动
-
-```bash
-# 进入文档工程目录
-cd fastdocs
-
-# 安装依赖
-pnpm install
-
-# 启动文档开发服务器
-pnpm run docs:dev
-
-# 构建文档生产版本
-pnpm run docs:build
-```
-
-### 访问地址
-
-- 🏠 项目官网：[http://localhost:5180](http://localhost:5180)
-- 🖥️ Web端：[http://localhost:5180/web](http://localhost:5180/web)
-- 📱 移动端：[http://localhost:5180/app](http://localhost:5180/app)
-
-默认账号：
-- 管理员：`admin` / `123456`
-
-## 🐳 Docker 部署
-
-```bash
-# 复制部署脚本到服务器并赋予执行权限
-chmod +x deploy.sh
-
-# 执行一键部署
-./deploy.sh
-
-# 常用 Docker 命令
-# 查看运行中的容器
-docker compose ps
-
-# 查看容器日志
-docker logs -f <容器名>
-
-# 停止服务
-docker compose down
-```
 
 ## 🔧 模块展示
 
@@ -242,6 +119,86 @@ docker compose down
 |----------|----------|----------|
 | ![移动端登录](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_login.png) | ![移动端首页](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_home.png) | ![移动端个人中心](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_mine.png) |
 | 个人  |
+
+## 🚀 快速开始
+
+### 环境要求
+
+| 类型 | 技术栈 | 版本 |
+|------|--------|------|
+| 后端 | Python | 3.12 ≥ 3.10 |
+| 后端 | FastAPI | 0.109+ |
+| 前端 | Node.js | ≥ 20.0 |
+| 前端 | Vue3 | 3.3+ |
+| 数据库 | MySQL/PostgreSQL | 8.0+/17+ |
+| 缓存 | Redis | 7.0+ |
+
+### 获取代码
+
+```bash
+# 克隆代码到本地
+git clone https://gitee.com/tao__tao/FastapiAdmin.git
+# 或者
+git clone https://github.com/1014TaoTao/FastapiAdmin.git
+```
+
+> **后端注意**：克隆下的代码需要修改 `backend/env` 目录下的 `.env.dev.example` 文件为 `.env.dev`，修改 `backend/env` 目录下的 `.env.prod.example` 文件为 `.env.prod`，然后根据实际情况修改数据库连接信息、Redis连接信息等。
+
+> **前端注意**：克隆下的代码需要修改 `frontend` 目录下的 `.env.development.example` 文件为 `.env.development`，修改 `frontend` 目录下的 `.env.production.example` 文件为 `.env.production`，然后根据实际情况修改接口地址等。
+
+### 后端启动
+
+#### 使用 uv 管理项目（推荐）
+
+```bash
+# 进入后端工程目录
+cd backend
+# 使用 uv 安装依赖
+uv add -r requirements.txt
+# 启动后端服务：启动之前保证mysql中创建好了数据库、redis服务
+uv run main.py run
+# 或指定环境
+uv run main.py run --env=dev or --env=prod
+```
+
+#### 使用传统 pip 方式
+
+```bash
+# 进入后端工程目录
+cd backend
+# 安装依赖
+pip3 install -r requirements.txt
+# 启动后端服务：启动之前保证mysql中创建好了数据库、redis服务
+python main.py run
+# 或指定环境
+python main.py run --env=dev or --env=prod
+```
+
+### 前端启动
+
+```bash
+# 进入前端工程目录
+cd frontend
+# 安装依赖
+pnpm install
+# 启动开发服务器
+pnpm run dev
+# 构建生产版本
+pnpm run build
+```
+
+### 🐳 Docker 部署
+
+```bash
+# 复制部署脚本到服务器并赋予执行权限
+chmod +x deploy.sh
+# 执行一键部署
+./deploy.sh or ./deploy.sh --start
+# 查看容器日志
+./deploy.sh --logs
+# 停止服务
+./deploy.sh --stop
+```
 
 ## 🛠️ 二开教程
 
@@ -452,43 +409,6 @@ async def get_detail(
 4. **日志记录**：关键操作必须记录日志
 5. **性能优化**：注意API性能优化，避免慢查询
 6. **代码规范**：遵循PEP8和项目代码规范
-
-### 部署说明
-
-#### 本地开发
-
-```bash
-# 启动后端服务
-cd backend
-python main.py run --env=dev
-
-# 启动前端服务
-cd frontend
-pnpm run dev
-
-# 启动移动端服务
-cd fastapp
-pnpm run dev:h5
-```
-
-#### Docker部署
-
-```bash
-# 执行一键部署脚本
-./deploy.sh
-
-# 查看运行状态
-docker compose ps
-
-# 查看日志
-docker logs -f <container_name>
-```
-
-### 技术支持
-
-- **官方文档**：https://service.fastapiadmin.com
-- **GitHub**：https://github.com/1014TaoTao/FastapiAdmin
-- **Gitee**：https://gitee.com/tao__tao/FastapiAdmin
 
 ### 常见问题
 

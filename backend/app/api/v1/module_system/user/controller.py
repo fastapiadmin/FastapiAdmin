@@ -1,5 +1,4 @@
 import urllib.parse
-
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Request, UploadFile
@@ -22,6 +21,7 @@ from .schema import (
     UserChangePasswordSchema,
     UserCreateSchema,
     UserForgetPasswordSchema,
+    UserOutSchema,
     UserQueryParam,
     UserRegisterSchema,
     UserUpdateSchema,
@@ -31,9 +31,14 @@ from .service import UserService
 UserRouter = APIRouter(route_class=OperationLogRoute, prefix="/user", tags=["用户管理"])
 
 
-@UserRouter.get("/current/info", summary="查询当前用户信息", description="查询当前用户信息")
+@UserRouter.get(
+    "/current/info",
+    summary="查询当前用户信息",
+    description="查询当前用户信息",
+    response_model=UserOutSchema,
+)
 async def get_current_user_info_controller(
-    auth: Annotated[AuthSchema, Depends(get_current_user)]
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     查询当前用户信息
@@ -46,14 +51,16 @@ async def get_current_user_info_controller(
     """
     result_dict = await UserService.get_current_user_info_service(auth=auth)
     log.info("获取当前用户信息成功")
-    return SuccessResponse(data=result_dict, msg='获取当前用户信息成功')
+    return SuccessResponse(data=result_dict, msg="获取当前用户信息成功")
 
 
-@UserRouter.post("/current/avatar/upload", summary="上传当前用户头像", dependencies=[Depends(get_current_user)])
-async def user_avatar_upload_controller(
-    file: UploadFile,
-    request: Request
-) -> JSONResponse:
+@UserRouter.post(
+    "/current/avatar/upload",
+    summary="上传当前用户头像",
+    dependencies=[Depends(get_current_user)],
+    response_model=UserOutSchema,
+)
+async def user_avatar_upload_controller(file: UploadFile, request: Request) -> JSONResponse:
     """
     上传当前用户头像
 
@@ -66,13 +73,18 @@ async def user_avatar_upload_controller(
     """
     result_str = await UserService.upload_avatar_service(base_url=str(request.base_url), file=file)
     log.info(f"上传头像成功: {result_str}")
-    return SuccessResponse(data=result_str, msg='上传头像成功')
+    return SuccessResponse(data=result_str, msg="上传头像成功")
 
 
-@UserRouter.put("/current/info/update", summary="更新当前用户基本信息", description="更新当前用户基本信息")
+@UserRouter.put(
+    "/current/info/update",
+    summary="更新当前用户基本信息",
+    description="更新当前用户基本信息",
+    response_model=UserOutSchema,
+)
 async def update_current_user_info_controller(
     data: CurrentUserUpdateSchema,
-    auth: Annotated[AuthSchema, Depends(get_current_user)]
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     更新当前用户基本信息
@@ -86,13 +98,18 @@ async def update_current_user_info_controller(
     """
     result_dict = await UserService.update_current_user_info_service(data=data, auth=auth)
     log.info(f"更新当前用户基本信息成功: {result_dict}")
-    return SuccessResponse(data=result_dict, msg='更新当前用户基本信息成功')
+    return SuccessResponse(data=result_dict, msg="更新当前用户基本信息成功")
 
 
-@UserRouter.put("/current/password/change", summary="修改当前用户密码", description="修改当前用户密码")
+@UserRouter.put(
+    "/current/password/change",
+    summary="修改当前用户密码",
+    description="修改当前用户密码",
+    response_model=UserOutSchema,
+)
 async def change_current_user_password_controller(
     data: UserChangePasswordSchema,
-    auth: Annotated[AuthSchema, Depends(get_current_user)]
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     修改当前用户密码
@@ -106,13 +123,18 @@ async def change_current_user_password_controller(
     """
     result_dict = await UserService.change_user_password_service(data=data, auth=auth)
     log.info(f"修改密码成功: {result_dict}")
-    return SuccessResponse(data=result_dict, msg='修改密码成功, 请重新登录')
+    return SuccessResponse(data=result_dict, msg="修改密码成功, 请重新登录")
 
 
-@UserRouter.put("/reset/password", summary="重置密码", description="重置密码")
+@UserRouter.put(
+    "/reset/password",
+    summary="重置密码",
+    description="重置密码",
+    response_model=UserOutSchema,
+)
 async def reset_password_controller(
     data: ResetPasswordSchema,
-    auth: Annotated[AuthSchema, Depends(get_current_user)]
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     重置密码
@@ -126,10 +148,15 @@ async def reset_password_controller(
     """
     result_dict = await UserService.reset_user_password_service(data=data, auth=auth)
     log.info(f"重置密码成功: {result_dict}")
-    return SuccessResponse(data=result_dict, msg='重置密码成功')
+    return SuccessResponse(data=result_dict, msg="重置密码成功")
 
 
-@UserRouter.post('/register', summary="注册用户", description="注册用户")
+@UserRouter.post(
+    "/register",
+    summary="注册用户",
+    description="注册用户",
+    response_model=UserOutSchema,
+)
 async def register_user_controller(
     data: UserRegisterSchema,
     db: Annotated[AsyncSession, Depends(db_getter)],
@@ -147,10 +174,15 @@ async def register_user_controller(
     auth = AuthSchema(db=db)
     user_register_result = await UserService.register_user_service(data=data, auth=auth)
     log.info(f"{data.username} 注册用户成功: {user_register_result}")
-    return SuccessResponse(data=user_register_result, msg='注册用户成功')
+    return SuccessResponse(data=user_register_result, msg="注册用户成功")
 
 
-@UserRouter.post('/forget/password', summary="忘记密码", description="忘记密码")
+@UserRouter.post(
+    "/forget/password",
+    summary="忘记密码",
+    description="忘记密码",
+    response_model=UserOutSchema,
+)
 async def forget_password_controller(
     data: UserForgetPasswordSchema,
     db: Annotated[AsyncSession, Depends(db_getter)],
@@ -168,10 +200,15 @@ async def forget_password_controller(
     auth = AuthSchema(db=db)
     user_forget_password_result = await UserService.forget_password_service(data=data, auth=auth)
     log.info(f"{data.username} 重置密码成功: {user_forget_password_result}")
-    return SuccessResponse(data=user_forget_password_result, msg='重置密码成功')
+    return SuccessResponse(data=user_forget_password_result, msg="重置密码成功")
 
 
-@UserRouter.get("/list", summary="查询用户", description="查询用户")
+@UserRouter.get(
+    "/list",
+    summary="查询用户",
+    description="查询用户",
+    response_model=list[UserOutSchema],
+)
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[UserQueryParam, Depends()],
@@ -188,13 +225,24 @@ async def get_obj_list_controller(
     返回:
     - JSONResponse: 分页查询结果JSON响应
     """
-    result_dict_list = await UserService.get_user_list_service(search=search, auth=auth, order_by=page.order_by)
-    result_dict = await PaginationService.paginate(data_list=result_dict_list, page_no=page.page_no, page_size=page.page_size)
+    result_dict_list = await UserService.get_user_list_service(
+        search=search, auth=auth, order_by=page.order_by
+    )
+    result_dict = await PaginationService.paginate(
+        data_list=result_dict_list,
+        page_no=page.page_no,
+        page_size=page.page_size,
+    )
     log.info("查询用户成功")
     return SuccessResponse(data=result_dict, msg="查询用户成功")
 
 
-@UserRouter.get("/detail/{id}", summary="查询用户详情", description="查询用户详情")
+@UserRouter.get(
+    "/detail/{id}",
+    summary="查询用户详情",
+    description="查询用户详情",
+    response_model=UserOutSchema,
+)
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="用户ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:detail"]))],
@@ -211,10 +259,15 @@ async def get_obj_detail_controller(
     """
     result_dict = await UserService.get_detail_by_id_service(id=id, auth=auth)
     log.info(f"获取用户详情成功 {id}")
-    return SuccessResponse(data=result_dict, msg='获取用户详情成功')
+    return SuccessResponse(data=result_dict, msg="获取用户详情成功")
 
 
-@UserRouter.post("/create", summary="创建用户", description="创建用户")
+@UserRouter.post(
+    "/create",
+    summary="创建用户",
+    description="创建用户",
+    response_model=UserOutSchema,
+)
 async def create_obj_controller(
     data: UserCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:create"]))],
@@ -238,7 +291,12 @@ async def create_obj_controller(
     return SuccessResponse(data=result_dict, msg="创建用户成功")
 
 
-@UserRouter.put("/update/{id}", summary="修改用户", description="修改用户")
+@UserRouter.put(
+    "/update/{id}",
+    summary="修改用户",
+    description="修改用户",
+    response_model=UserOutSchema,
+)
 async def update_obj_controller(
     data: UserUpdateSchema,
     id: Annotated[int, Path(description="用户ID")],
@@ -260,7 +318,11 @@ async def update_obj_controller(
     return SuccessResponse(data=result_dict, msg="修改用户成功")
 
 
-@UserRouter.delete("/delete", summary="删除用户", description="删除用户")
+@UserRouter.delete(
+    "/delete",
+    summary="删除用户",
+    description="删除用户",
+)
 async def delete_obj_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:delete"]))],
@@ -280,7 +342,11 @@ async def delete_obj_controller(
     return SuccessResponse(msg="删除用户成功")
 
 
-@UserRouter.patch("/available/setting", summary="批量修改用户状态", description="批量修改用户状态")
+@UserRouter.patch(
+    "/available/setting",
+    summary="批量修改用户状态",
+    description="批量修改用户状态",
+)
 async def batch_set_available_obj_controller(
     data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:patch"]))],
@@ -300,7 +366,12 @@ async def batch_set_available_obj_controller(
     return SuccessResponse(msg="批量修改用户状态成功")
 
 
-@UserRouter.post('/import/template', summary="获取用户导入模板", description="获取用户导入模板", dependencies=[Depends(AuthPermission(["module_system:user:download"]))])
+@UserRouter.post(
+    "/import/template",
+    summary="获取用户导入模板",
+    description="获取用户导入模板",
+    dependencies=[Depends(AuthPermission(["module_system:user:download"]))],
+)
 async def export_obj_template_controller() -> StreamingResponse:
     """
     获取用户导入模板
@@ -309,19 +380,19 @@ async def export_obj_template_controller() -> StreamingResponse:
     - StreamingResponse: 用户导入模板流响应
     """
     user_import_template_result = await UserService.get_import_template_user_service()
-    log.info('获取用户导入模板成功')
+    log.info("获取用户导入模板成功")
 
     return StreamResponse(
         data=bytes2file_response(user_import_template_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            'Content-Disposition': f'attachment; filename={urllib.parse.quote("用户导入模板.xlsx")}',
-            'Access-Control-Expose-Headers': 'Content-Disposition'
-        }
+            "Content-Disposition": f"attachment; filename={urllib.parse.quote('用户导入模板.xlsx')}",
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
     )
 
 
-@UserRouter.post('/export', summary="导出用户", description="导出用户")
+@UserRouter.post("/export", summary="导出用户", description="导出用户")
 async def export_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[UserQueryParam, Depends()],
@@ -338,23 +409,23 @@ async def export_obj_list_controller(
     返回:
     - StreamingResponse: 用户导出模板流响应
     """
-    user_list = await UserService.get_user_list_service(auth=auth, search=search, order_by=page.order_by)
+    user_list = await UserService.get_user_list_service(
+        auth=auth, search=search, order_by=page.order_by
+    )
     user_export_result = await UserService.export_user_list_service(user_list)
-    log.info('导出用户成功')
+    log.info("导出用户成功")
 
     return StreamResponse(
         data=bytes2file_response(user_export_result),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            'Content-Disposition': 'attachment; filename=user.xlsx'
-        }
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=user.xlsx"},
     )
 
 
-@UserRouter.post('/import/data', summary="导入用户", description="导入用户")
+@UserRouter.post("/import/data", summary="导入用户", description="导入用户")
 async def import_obj_list_controller(
     file: UploadFile,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:import"]))]
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:import"]))],
 ) -> JSONResponse:
     """
     导入用户
@@ -366,6 +437,8 @@ async def import_obj_list_controller(
     返回:
     - JSONResponse: 导入用户JSON响应
     """
-    batch_import_result = await UserService.batch_import_user_service(file=file, auth=auth, update_support=True)
+    batch_import_result = await UserService.batch_import_user_service(
+        file=file, auth=auth, update_support=True
+    )
     log.info(f"导入用户成功: {batch_import_result}")
     return SuccessResponse(data=batch_import_result, msg="导入用户成功")
