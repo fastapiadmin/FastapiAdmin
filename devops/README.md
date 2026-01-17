@@ -63,7 +63,7 @@ pnpm --version
 如果尚未克隆项目代码，可以使用以下命令：
 
 ```bash
-git clone https://gitee.com/tao__tao/fastapiadmin.git
+git clone https://gitee.com/fastapiadmin/fastapiadmin.git
 cd fastapiadmin
 ```
 

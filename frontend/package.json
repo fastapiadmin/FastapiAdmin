@@ -152,12 +152,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/tao__tao/FastapiAdmin.git"
+    "url": "https://gitee.com/fastapiadmin/FastapiAdmin.git"
   },
   "bugs": {
-    "url": "https://gitee.com/tao__tao/FastapiAdmin/issues"
+    "url": "https://gitee.com/fastapiadmin/FastapiAdmin/issues"
   },
   "author": "fastapiadmin <948080782@qq.com>",
   "license": "MIT",
-  "homepage": "https://gitee.com/tao__tao/FastapiAdmin"
+  "homepage": "https://gitee.com/fastapiadmin/FastapiAdmin"
 }

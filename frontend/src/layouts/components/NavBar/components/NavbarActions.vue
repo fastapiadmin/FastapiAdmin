@@ -166,7 +166,7 @@ function handleSettingsClick() {
  * Gitee 项目地址
  */
 function handleGiteeClick() {
-  window.open("https://gitee.com/tao__tao/FastapiAdmin");
+  window.open("https://gitee.com/fastapiadmin/FastapiAdmin");
 }
 
 /**

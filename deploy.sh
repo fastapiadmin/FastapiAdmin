@@ -4,7 +4,7 @@
 PROJECT_NAME="FastapiAdmin"
 WORK_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_PATH="${WORK_DIR}/${PROJECT_NAME}"
-GIT_REPO="https://gitee.com/tao__tao/${PROJECT_NAME}.git"
+GIT_REPO="https://gitee.com/fastapiadmin/${PROJECT_NAME}.git"
 
 # 是否有更新前端
 UPDATE_FRONTEND=false

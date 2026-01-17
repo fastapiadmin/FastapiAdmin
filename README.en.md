@@ -1,18 +1,18 @@
 <div align="center">
      <p align="center">
-          <img src="https://gitee.com/tao__tao/FastDocs/raw/main/src/public/logo.png" width="150" height="150" alt="logo" /> 
+          <img src="https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/logo.png" width="150" height="150" alt="logo" /> 
      </p>
      <h1>FastApiAdmin <img src="https://img.shields.io/badge/Version-v2.0.0-blue" alt="Version"></h1>
      <h3>Modern Full-Stack Rapid Development Platform</h3>
      <p>If you like this project, please give it a ⭐️ to show your support!</p>
      <p align="center">
-          <a href="https://gitee.com/tao__tao/FastapiAdmin.git" target="_blank">
-               <img src="https://gitee.com/tao__tao/FastapiAdmin/badge/star.svg?theme=dark" alt="Gitee Stars">
+          <a href="https://gitee.com/fastapiadmin/FastapiAdmin.git" target="_blank">
+               <img src="https://gitee.com/fastapiadmin/FastapiAdmin/badge/star.svg?theme=dark" alt="Gitee Stars">
           </a>
           <a href="https://github.com/fastapiadmin/FastapiAdmin.git" target="_blank">
                <img src="https://img.shields.io/github/stars/fastapiadmin/FastapiAdmin?style=social" alt="GitHub Stars">
           </a>
-          <a href="https://gitee.com/tao__tao/FastapiAdmin/blob/master/LICENSE" target="_blank">
+          <a href="https://gitee.com/fastapiadmin/FastapiAdmin/blob/master/LICENSE" target="_blank">
                <img src="https://img.shields.io/badge/License-MIT-orange" alt="License">
           </a>
           <img src="https://img.shields.io/badge/Python-≥3.10-blue"> 
@@ -58,7 +58,7 @@ English | [简体中文](./README.md)
 | Platform | Repository |
 |----------|------------|
 | GitHub | [FastapiAdmin Main](https://github.com/fastapiadmin/FastapiAdmin.git) \| [FastDocs Website](https://github.com/fastapiadmin/FastDocs.git) \| [FastApp Mobile](https://github.com/fastapiadmin/FastApp.git) |
-| Gitee  | [FastapiAdmin Main](https://gitee.com/tao__tao/FastapiAdmin.git) \| [FastDocs Website](https://gitee.com/tao__tao/FastDocs.git) \| [FastApp Mobile](https://gitee.com/tao__tao/FastApp.git) |
+| Gitee  | [FastapiAdmin Main](https://gitee.com/fastapiadmin/FastapiAdmin.git) \| [FastDocs Website](https://gitee.com/fastapiadmin/FastDocs.git) \| [FastApp Mobile](https://gitee.com/fastapiadmin/FastApp.git) |
 
 ## 📦 Engineering Structure Overview
 
@@ -107,15 +107,15 @@ FastapiAdmin
 
 | Module | Screenshot |
 |------------|---------------------------------|
-| Dashboard  | ![Dashboard](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/dashboard.png) |
-| Generator  | ![Generator](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/gencode.png) |
-| AI       | ![AI](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/ai.png) |
+| Dashboard  | ![Dashboard](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/dashboard.png) |
+| Generator  | ![Generator](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/gencode.png) |
+| AI       | ![AI](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/ai.png) |
 
 ### Mobile
 
 | Login <div style="width:60px"/> | Home <div style="width:60px"/> | Profile <div style="width:60px"/> |
 |----------|----------|----------|
-| ![Mobile Login](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_login.png) | ![Mobile Home](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_home.png) | ![Mobile Personal Info](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/app_mine.png) |
+| ![Mobile Login](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/app_login.png) | ![Mobile Home](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/app_home.png) | ![Mobile Personal Info](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/app_mine.png) |
 
 ## 🚀 Quick Start
 
@@ -134,7 +134,7 @@ FastapiAdmin
 
 ```bash
 # Clone the repository to your local machine
-git clone https://gitee.com/tao__tao/FastapiAdmin.git
+git clone https://gitee.com/fastapiadmin/FastapiAdmin.git
 # Or
 git clone https://github.com/fastapiadmin/FastapiAdmin.git
 ```
@@ -481,7 +481,7 @@ Thanks to the contributions and support of the following open-source projects:
 
 | Group QR Code | WeChat Pay QR Code |
 | --- | --- |
-| ![Group QR Code](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/group.jpg) | ![WeChat Pay QR Code](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/wechatPay.jpg) |
+| ![Group QR Code](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/group.jpg) | ![WeChat Pay QR Code](https://gitee.com/fastapiadmin/FastDocs/raw/main/src/public/wechatPay.jpg) |
 
 ## ❤️ Support the Project
 
