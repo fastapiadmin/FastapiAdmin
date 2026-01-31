@@ -475,7 +475,7 @@ Thanks to the contributions and support of the following open-source projects:
 
 | Group QR Code | WeChat Pay QR Code |
 | --- | --- |
-| ![Group QR Code](https://gitee.com/fastapiadmin/FastDocs/raw/main/docs/public/group.jpg) | ![WeChat Pay QR Code](https://gitee.com/fastapiadmin/FastDocs/raw/main/docs/public/wechatPay.jpg) |
+| ![Group QR Code](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/group.jpg) | ![WeChat Pay QR Code](https://gitee.com/fastapiadmin/FastDocs/raw/main/docs/public/wechatPay.jpg) |
 
 ## ❤️ Support the Project
 
