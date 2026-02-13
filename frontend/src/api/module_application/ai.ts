@@ -3,125 +3,87 @@ import request from "@/utils/request";
 const API_PATH = "/application/ai";
 
 const AiAPI = {
-  listAgentConfig(query?: AgentConfigPageQuery) {
-    return request<ApiResponse<PageResult<AgentConfigTable[]>>>({
-      url: `${API_PATH}/agent-config/list`,
+  listSession(query?: SessionPageQuery) {
+    return request<ApiResponse<PageResult<SessionTable[]>>>({
+      url: `${API_PATH}/session/list`,
       method: "get",
       params: query,
     });
   },
 
-  detailAgentConfig(id: number) {
-    return request<ApiResponse<AgentConfigTable>>({
-      url: `${API_PATH}/agent-config/detail/${id}`,
+  detailSession(id: number) {
+    return request<ApiResponse<SessionTable>>({
+      url: `${API_PATH}/session/detail/${id}`,
       method: "get",
     });
   },
 
-  defaultAgentConfig() {
-    return request<ApiResponse<AgentConfigTable>>({
-      url: `${API_PATH}/agent-config/default`,
-      method: "get",
-    });
-  },
-
-  createAgentConfig(body: AgentConfigForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/agent-config/create`,
+  createSession(body: SessionForm) {
+    return request<ApiResponse<SessionTable>>({
+      url: `${API_PATH}/session/create`,
       method: "post",
       data: body,
     });
   },
 
-  updateAgentConfig(id: number, body: AgentConfigForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/agent-config/update/${id}`,
+  updateSession(id: number, body: SessionForm) {
+    return request<ApiResponse<SessionTable>>({
+      url: `${API_PATH}/session/update/${id}`,
       method: "put",
       data: body,
     });
   },
 
-  deleteAgentConfig(body: number[]) {
+  deleteSession(body: number[]) {
     return request<ApiResponse>({
-      url: `${API_PATH}/agent-config/delete`,
+      url: `${API_PATH}/session/delete`,
       method: "delete",
       data: body,
     });
   },
 
-  listKnowledge(query?: KnowledgePageQuery) {
-    return request<ApiResponse<PageResult<KnowledgeTable[]>>>({
-      url: `${API_PATH}/knowledge/list`,
+  listMessage(query?: MessagePageQuery) {
+    return request<ApiResponse<PageResult<MessageTable[]>>>({
+      url: `${API_PATH}/message/list`,
       method: "get",
       params: query,
     });
   },
 
-  detailKnowledge(id: number) {
-    return request<ApiResponse<KnowledgeTable>>({
-      url: `${API_PATH}/knowledge/detail/${id}`,
+  detailMessage(id: number) {
+    return request<ApiResponse<MessageTable>>({
+      url: `${API_PATH}/message/detail/${id}`,
       method: "get",
     });
   },
 
-  createKnowledge(body: KnowledgeForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/knowledge/create`,
-      method: "post",
-      data: body,
-    });
-  },
-
-  updateKnowledge(id: number, body: KnowledgeForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/knowledge/update/${id}`,
-      method: "put",
-      data: body,
-    });
-  },
-
-  deleteKnowledge(body: number[]) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/knowledge/delete`,
-      method: "delete",
-      data: body,
-    });
-  },
-
-  listDocument(query?: DocumentPageQuery) {
-    return request<ApiResponse<PageResult<DocumentTable[]>>>({
-      url: `${API_PATH}/document/list`,
+  getMessagesBySession(sessionId: number, query?: PageQuery) {
+    return request<ApiResponse<PageResult<MessageTable[]>>>({
+      url: `${API_PATH}/message/session/${sessionId}`,
       method: "get",
       params: query,
     });
   },
 
-  detailDocument(id: number) {
-    return request<ApiResponse<DocumentTable>>({
-      url: `${API_PATH}/document/detail/${id}`,
-      method: "get",
-    });
-  },
-
-  createDocument(body: DocumentForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/document/create`,
+  createMessage(body: MessageForm) {
+    return request<ApiResponse<MessageTable>>({
+      url: `${API_PATH}/message/create`,
       method: "post",
       data: body,
     });
   },
 
-  updateDocument(id: number, body: DocumentForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/document/update/${id}`,
+  updateMessage(id: number, body: MessageForm) {
+    return request<ApiResponse<MessageTable>>({
+      url: `${API_PATH}/message/update/${id}`,
       method: "put",
       data: body,
     });
   },
 
-  deleteDocument(body: number[]) {
+  deleteMessage(body: number[]) {
     return request<ApiResponse>({
-      url: `${API_PATH}/document/delete`,
+      url: `${API_PATH}/message/delete`,
       method: "delete",
       data: body,
     });
@@ -130,101 +92,90 @@ const AiAPI = {
 
 export default AiAPI;
 
-export interface AgentConfigPageQuery extends PageQuery {
-  name?: string;
-  provider?: string;
-  is_default?: boolean;
-  is_active?: boolean;
-  created_time?: string[];
-  updated_time?: string[];
-  created_id?: number;
-  updated_id?: number;
-}
-
-export interface AgentConfigTable extends BaseType {
-  name: string;
-  provider: string;
-  model: string;
-  api_key: string;
-  base_url?: string;
-  temperature: number;
-  system_prompt: string;
-  is_default?: boolean;
-  is_active?: boolean;
-  created_by?: CommonType;
-  updated_by?: CommonType;
-}
-
-export interface AgentConfigForm extends BaseFormType {
-  name?: string;
-  provider?: string;
-  model?: string;
-  api_key?: string;
-  base_url?: string;
-  temperature?: number;
-  system_prompt?: string;
-  is_default?: boolean;
-  is_active?: boolean;
-}
-
-export interface KnowledgePageQuery extends PageQuery {
-  name?: string;
-  is_active?: boolean;
-  created_time?: string[];
-  updated_time?: string[];
-  created_id?: number;
-  updated_id?: number;
-}
-
-export interface KnowledgeTable extends BaseType {
-  name: string;
-  description?: string;
-  embedding_model: string;
-  chunk_size: number;
-  chunk_overlap: number;
-  is_active?: boolean;
-  created_by?: CommonType;
-  updated_by?: CommonType;
-}
-
-export interface KnowledgeForm extends BaseFormType {
-  name?: string;
-  description?: string;
-  embedding_model?: string;
-  chunk_size?: number;
-  chunk_overlap?: number;
-  is_active?: boolean;
-}
-
-export interface DocumentPageQuery extends PageQuery {
-  knowledge_id?: number;
+export interface SessionPageQuery extends PageQuery {
   title?: string;
-  file_type?: string;
-  is_indexed?: boolean;
+  status?: string;
   created_time?: string[];
-  created_id?: number;
+  updated_time?: string[];
 }
 
-export interface DocumentTable extends BaseType {
-  knowledge_id: number;
+export interface SessionTable extends BaseType {
   title: string;
-  content: string;
-  file_type: string;
-  file_path?: string;
-  metadata?: Record<string, string>;
-  chunk_count: number;
-  is_indexed: boolean;
   created_by?: CommonType;
   updated_by?: CommonType;
 }
 
-export interface DocumentForm extends BaseFormType {
-  knowledge_id?: number;
+export interface SessionForm extends BaseFormType {
   title?: string;
+}
+
+export interface MessagePageQuery extends PageQuery {
+  session_id?: number;
+  type?: string;
   content?: string;
-  file_type?: string;
-  file_path?: string;
-  metadata?: Record<string, string>;
-  chunk_count?: number;
-  is_indexed?: boolean;
+  created_time?: string[];
+}
+
+export interface MessageTable extends BaseType {
+  session_id: number;
+  type: "user" | "assistant";
+  content: string;
+  timestamp: number;
+  files?: Record<string, any>[];
+}
+
+export interface MessageForm extends BaseFormType {
+  session_id?: number;
+  type?: "user" | "assistant";
+  content?: string;
+  timestamp?: number;
+  files?: Record<string, any>[];
+}
+
+export interface CommonType {
+  id: number;
+  name?: string;
+  username?: string;
+}
+
+export interface ChatSession {
+  id: number;
+  title: string;
+  created_time: string;
+  updated_time: string;
+  message_count?: number;
+  created_by?: CommonType;
+  updated_by?: CommonType;
+}
+
+export interface ChatMessage {
+  id: string;
+  type: "user" | "assistant";
+  content: string;
+  timestamp: number;
+  loading?: boolean;
+  collapsed?: boolean;
+  files?: UploadedFile[];
+}
+
+export interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+  file?: File;
+}
+
+export interface SessionGroup {
+  title: string;
+  sessions: ChatSession[];
+}
+
+export interface UserInfo {
+  id: number;
+  name: string;
+  username: string;
+  avatar?: string;
+  email?: string;
 }

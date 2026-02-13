@@ -1,23 +1,30 @@
 <template>
   <div class="chat-navbar">
     <div class="navbar-left">
-      <h2>FA智能助手</h2>
+      <button class="collapse-btn" @click="toggleSidebar">
+        <div v-if="!props.isSidebarCollapsed" class="i-svg:layout_leftbar_close_line w-6 h-6" />
+        <div v-else class="i-svg:layout_leftbar_open_line w-6 h-6" />
+      </button>
     </div>
     <div class="navbar-right">
-      <div class="connection-status">
-        <el-icon :class="['status-icon', connectionStatus]">
-          <Connection v-if="connectionStatus === 'connected'" />
-          <Loading v-else-if="connectionStatus === 'connecting'" />
-          <Warning v-else />
-        </el-icon>
-        <span class="status-text">{{ connectionStatusText }}</span>
-      </div>
       <el-button v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
         清空对话
       </el-button>
       <el-button text :icon="Setting" @click="handleToggleConnection">
         {{ isConnected ? "断开连接" : "重新连接" }}
       </el-button>
+      <el-tag
+        class="connection-status"
+        effect="plain"
+        :type="connectionStatus === 'connected' ? 'success' : 'danger'"
+      >
+        <el-icon :class="['status-icon', connectionStatus]">
+          <Connection v-if="connectionStatus === 'connected'" />
+          <Loading v-else-if="connectionStatus === 'connecting'" />
+          <Warning v-else />
+        </el-icon>
+        <span class="status-text">{{ connectionStatusText }}</span>
+      </el-tag>
     </div>
   </div>
 </template>
@@ -30,14 +37,18 @@ interface Props {
   connectionStatus: "connected" | "connecting" | "disconnected";
   isConnected: boolean;
   messageCount: number;
+  isSidebarCollapsed?: boolean;
 }
 
 interface Emits {
   (e: "clear-chat"): void;
   (e: "toggle-connection"): void;
+  (e: "toggle-sidebar"): void;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isSidebarCollapsed: false,
+});
 const emit = defineEmits<Emits>();
 
 const connectionStatusText = computed(() => {
@@ -62,6 +73,10 @@ const handleClearChat = () => {
 const handleToggleConnection = () => {
   emit("toggle-connection");
 };
+
+const toggleSidebar = () => {
+  emit("toggle-sidebar");
+};
 </script>
 
 <style lang="scss" scoped>
@@ -69,29 +84,48 @@ const handleToggleConnection = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  background: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color-light);
+  padding: 10px;
 
   .navbar-left {
-    h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: var(--el-fill-color-light);
+      }
+
+      .collapse-icon {
+        width: 20px;
+        height: 20px;
+        color: var(--el-text-color-regular);
+      }
     }
   }
 
   .navbar-right {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
 
     .connection-status {
       display: flex;
       gap: 8px;
       align-items: center;
-      font-size: 12px;
+      font-size: 14px;
 
       .status-icon {
         &.connected {
