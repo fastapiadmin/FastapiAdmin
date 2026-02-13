@@ -14,6 +14,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
 
 from app.config.setting import settings
+from app.core.docs import get_custom_ui_html
 from app.core.exceptions import handle_exception
 from app.core.http_limit import http_limit_callback, ws_limit_callback
 from app.core.logger import log
@@ -211,4 +212,14 @@ def reset_api_docs(app: FastAPI) -> None:
             title=app.title + " - ReDoc",
             redoc_js_url=settings.REDOC_JS_URL,
             redoc_favicon_url=settings.FAVICON_URL,
+        )
+
+    @app.get(settings.LJDOC_URL, include_in_schema=False)
+    async def custom_ui_html():
+        return get_custom_ui_html(
+            openapi_url=str(app.root_path) + str(app.openapi_url),
+            title=app.title + " - LangJin UI",
+            swagger_js_url=settings.CUSTOM_JS_URL,
+            swagger_css_url=settings.CUSTOM_CSS_URL,
+            swagger_favicon_url=settings.FAVICON_URL
         )

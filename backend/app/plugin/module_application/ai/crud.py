@@ -1,336 +1,319 @@
 from collections.abc import Sequence
-from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_crud import CRUDBase
+from app.core.exceptions import CustomException
 
-from .model import AgentConfigModel, KnowledgeDocumentModel, KnowledgeModel
+from .model import ChatMessageModel, ChatSessionModel
 from .schema import (
-    AgentConfigCreateSchema,
-    AgentConfigUpdateSchema,
-    KnowledgeCreateSchema,
-    KnowledgeDocumentCreateSchema,
-    KnowledgeDocumentUpdateSchema,
-    KnowledgeUpdateSchema,
+    ChatMessageCreateSchema,
+    ChatMessageOutSchema,
+    ChatMessageUpdateSchema,
+    ChatSessionCreateSchema,
+    ChatSessionOutSchema,
+    ChatSessionUpdateSchema,
 )
 
 
-class AgentConfigCRUD(CRUDBase[AgentConfigModel, AgentConfigCreateSchema, AgentConfigUpdateSchema]):
-    """智能体配置数据层"""
+class ChatSessionCRUD(CRUDBase[ChatSessionModel, ChatSessionCreateSchema, ChatSessionUpdateSchema]):
+    """聊天会话数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
         """
-        初始化CRUD
+        初始化CRUD数据层
 
         参数:
         - auth (AuthSchema): 认证信息模型
         """
-        self.auth = auth
-        super().__init__(model=AgentConfigModel, auth=auth)
+        super().__init__(model=ChatSessionModel, auth=auth)
 
-    async def get_by_id_crud(
-        self, id: int, preload: list[str | Any] | None = None
-    ) -> AgentConfigModel | None:
+    async def get_by_id_crud(self, id: int, preload: list[str] | None = None) -> ChatSessionModel | None:
         """
-        获取智能体配置详情
+        详情
 
         参数:
-        - id (int): 智能体配置ID
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
+        - id (int): 会话ID
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - AgentConfigModel | None: 智能体配置模型实例（如果存在）
+        - ChatSessionModel | None: 会话模型实例或None
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_default_crud(
-        self, preload: list[str | Any] | None = None
-    ) -> AgentConfigModel | None:
-        """
-        获取默认智能体配置
-
-        参数:
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
-
-        返回:
-        - AgentConfigModel | None: 智能体配置模型实例（如果存在）
-        """
-        return await self.get(is_default=1, preload=preload)
-
-    async def get_list_crud(
+    async def list_crud(
         self,
         search: dict | None = None,
-        order_by: list[dict[str, str]] | None = None,
-        preload: list[str | Any] | None = None,
-    ) -> Sequence[AgentConfigModel]:
+        order_by: list[dict] | None = None,
+        preload: list[str] | None = None,
+    ) -> Sequence[ChatSessionModel]:
         """
-        列表查询智能体配置
+        列表查询
 
         参数:
-        - search (dict | None): 查询参数字典
-        - order_by (list[dict[str, str]] | None): 排序参数列表
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 查询参数
+        - order_by (list[dict] | None): 排序参数
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - Sequence[AgentConfigModel]: 智能体配置模型实例序列
+        - Sequence[ChatSessionModel]: 会话模型实例序列
         """
-        return await self.list(
-            search=search or {},
-            order_by=order_by or [{"id": "asc"}],
-            preload=preload,
-        )
+        return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def create_crud(
-        self, data: AgentConfigCreateSchema
-    ) -> AgentConfigModel | None:
+    async def create_crud(self, data: ChatSessionCreateSchema) -> ChatSessionModel:
         """
-        创建智能体配置
+        创建
 
         参数:
-        - data (AgentConfigCreateSchema): 创建智能体配置模型
+        - data (ChatSessionCreateSchema): 会话创建模型
 
         返回:
-        - Optional[AgentConfigModel]: 创建的智能体配置模型实例（如果成功）
+        - ChatSessionModel: 会话模型实例
         """
         return await self.create(data=data)
 
-    async def update_crud(
-        self, id: int, data: AgentConfigUpdateSchema
-    ) -> AgentConfigModel | None:
+    async def update_crud(self, id: int, data: ChatSessionUpdateSchema) -> ChatSessionModel:
         """
-        更新智能体配置
+        更新
 
         参数:
-        - id (int): 智能体配置ID
-        - data (AgentConfigUpdateSchema): 更新智能体配置模型
+        - id (int): 会话ID
+        - data (ChatSessionUpdateSchema): 会话更新模型
 
         返回:
-        - AgentConfigModel | None: 更新的智能体配置模型实例（如果成功）
+        - ChatSessionModel: 会话模型实例
         """
-        return await self.update(id=id, data=data)
+        obj = await self.get(id=id, preload=[])
+        if not obj:
+            raise CustomException(msg="更新对象不存在")
+
+        obj_dict = data.model_dump(exclude_unset=True) if not isinstance(data, dict) else data
+
+        if self.auth.user and hasattr(obj, "updated_id"):
+            setattr(obj, "updated_id", self.auth.user.id)
+
+        for key, value in obj_dict.items():
+            if hasattr(obj, key):
+                setattr(obj, key, value)
+
+        await self.auth.db.flush()
+        await self.auth.db.refresh(obj)
+        return obj
 
     async def delete_crud(self, ids: list[int]) -> None:
         """
-        批量删除智能体配置
+        批量删除
 
         参数:
-        - ids (list[int]): 智能体配置ID列表
+        - ids (list[int]): 会话ID列表
 
         返回:
         - None
         """
-        return await self.delete(ids=ids)
+        from sqlalchemy import delete
+
+        if not ids:
+            raise CustomException(msg="删除失败，删除对象不能为空")
+
+        sql = delete(self.model).where(self.model.id.in_(ids))
+        await self.auth.db.execute(sql)
+        await self.auth.db.flush()
+
+    async def page_crud(
+        self,
+        offset: int,
+        limit: int,
+        order_by: list[dict] | None = None,
+        search: dict | None = None,
+        preload: list | None = None,
+    ) -> dict:
+        """
+        分页查询
+
+        参数:
+        - offset (int): 偏移量
+        - limit (int): 每页数量
+        - order_by (list[dict] | None): 排序参数
+        - search (dict | None): 查询参数
+        - preload (list | None): 预加载关系，未提供时使用模型默认项
+
+        返回:
+        - dict: 分页数据
+        """
+        order_by_list = order_by or [{"id": "desc"}]
+        search_dict = search or {}
+
+        return await self.page(
+            offset=offset,
+            limit=limit,
+            order_by=order_by_list,
+            search=search_dict,
+            out_schema=ChatSessionOutSchema,
+            preload=preload,
+        )
 
 
-class KnowledgeCRUD(CRUDBase[KnowledgeModel, KnowledgeCreateSchema, KnowledgeUpdateSchema]):
-    """知识库数据层"""
+class ChatMessageCRUD(CRUDBase[ChatMessageModel, ChatMessageCreateSchema, ChatMessageUpdateSchema]):
+    """聊天消息数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
         """
-        初始化CRUD
+        初始化CRUD数据层
 
         参数:
         - auth (AuthSchema): 认证信息模型
         """
-        self.auth = auth
-        super().__init__(model=KnowledgeModel, auth=auth)
+        super().__init__(model=ChatMessageModel, auth=auth)
 
-    async def get_by_id_crud(
-        self, id: int, preload: list[str | Any] | None = None
-    ) -> KnowledgeModel | None:
+    async def get_by_id_crud(self, id: int, preload: list[str] | None = None) -> ChatMessageModel | None:
         """
-        获取知识库详情
+        详情
 
         参数:
-        - id (int): 知识库ID
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
+        - id (int): 消息ID
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - KnowledgeModel | None: 知识库模型实例（如果存在）
+        - ChatMessageModel | None: 消息模型实例或None
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_by_name_crud(
-        self, name: str, preload: list[str | Any] | None = None
-    ) -> KnowledgeModel | None:
-        """
-        通过名称获取知识库
-
-        参数:
-        - name (str): 知识库名称
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
-
-        返回:
-        - Optional[KnowledgeModel]: 知识库模型实例（如果存在）
-        """
-        return await self.get(name=name, preload=preload)
-
-    async def get_list_crud(
+    async def list_crud(
         self,
         search: dict | None = None,
-        order_by: list[dict[str, str]] | None = None,
-        preload: list[str | Any] | None = None,
-    ) -> Sequence[KnowledgeModel]:
+        order_by: list[dict] | None = None,
+        preload: list[str] | None = None,
+    ) -> Sequence[ChatMessageModel]:
         """
-        列表查询知识库
+        列表查询
 
         参数:
-        - search (dict | None): 查询参数字典
-        - order_by (list[dict[str, str]] | None): 排序参数列表
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
+        - search (dict | None): 查询参数
+        - order_by (list[dict] | None): 排序参数
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - Sequence[KnowledgeModel]: 知识库模型实例序列
+        - Sequence[ChatMessageModel]: 消息模型实例序列
         """
-        return await self.list(
-            search=search or {},
-            order_by=order_by or [{"id": "asc"}],
-            preload=preload,
-        )
+        return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def create_crud(self, data: KnowledgeCreateSchema) -> KnowledgeModel | None:
+    async def create_crud(self, data: ChatMessageCreateSchema) -> ChatMessageModel:
         """
-        创建知识库
+        创建
 
         参数:
-        - data (KnowledgeCreateSchema): 创建知识库模型
+        - data (ChatMessageCreateSchema): 消息创建模型
 
         返回:
-        - Optional[KnowledgeModel]: 创建的知识库模型实例（如果成功）
+        - ChatMessageModel: 消息模型实例
         """
         return await self.create(data=data)
 
-    async def update_crud(
-        self, id: int, data: KnowledgeUpdateSchema
-    ) -> KnowledgeModel | None:
+    async def update_crud(self, id: int, data: ChatMessageUpdateSchema) -> ChatMessageModel:
         """
-        更新知识库
+        更新
 
         参数:
-        - id (int): 知识库ID
-        - data (KnowledgeUpdateSchema): 更新知识库模型
+        - id (int): 消息ID
+        - data (ChatMessageUpdateSchema): 消息更新模型
 
         返回:
-        - KnowledgeModel | None: 更新的知识库模型实例（如果成功）
+        - ChatMessageModel: 消息模型实例
         """
-        return await self.update(id=id, data=data)
+        obj = await self.get(id=id, preload=[])
+        if not obj:
+            raise CustomException(msg="更新对象不存在")
+
+        obj_dict = data.model_dump(exclude_unset=True) if not isinstance(data, dict) else data
+
+        for key, value in obj_dict.items():
+            if hasattr(obj, key):
+                setattr(obj, key, value)
+
+        await self.auth.db.flush()
+        await self.auth.db.refresh(obj)
+        return obj
 
     async def delete_crud(self, ids: list[int]) -> None:
         """
-        批量删除知识库
+        批量删除
 
         参数:
-        - ids (list[int]): 知识库ID列表
+        - ids (list[int]): 消息ID列表
 
         返回:
         - None
         """
-        return await self.delete(ids=ids)
+        from sqlalchemy import delete
 
+        if not ids:
+            raise CustomException(msg="删除失败，删除对象不能为空")
 
-class KnowledgeDocumentCRUD(CRUDBase[KnowledgeDocumentModel, KnowledgeDocumentCreateSchema, KnowledgeDocumentUpdateSchema]):
-    """知识库文档数据层"""
+        sql = delete(self.model).where(self.model.id.in_(ids))
+        await self.auth.db.execute(sql)
+        await self.auth.db.flush()
 
-    def __init__(self, auth: AuthSchema) -> None:
-        """
-        初始化CRUD
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        """
-        self.auth = auth
-        super().__init__(model=KnowledgeDocumentModel, auth=auth)
-
-    async def get_by_id_crud(
-        self, id: int, preload: list[str | Any] | None = None
-    ) -> KnowledgeDocumentModel | None:
-        """
-        获取知识库文档详情
-
-        参数:
-        - id (int): 文档ID
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
-
-        返回:
-        - KnowledgeDocumentModel | None: 知识库文档模型实例（如果存在）
-        """
-        return await self.get(id=id, preload=preload)
-
-    async def get_by_knowledge_id_crud(
-        self, knowledge_id: int, preload: list[str | Any] | None = None
-    ) -> Sequence[KnowledgeDocumentModel]:
-        """
-        通过知识库ID获取文档列表
-
-        参数:
-        - knowledge_id (int): 知识库ID
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
-
-        返回:
-        - Sequence[KnowledgeDocumentModel]: 知识库文档模型实例序列
-        """
-        return await self.list(search={"knowledge_id": (0, knowledge_id)}, preload=preload)
-
-    async def get_list_crud(
+    async def get_by_session_id_crud(
         self,
-        search: dict | None = None,
-        order_by: list[dict[str, str]] | None = None,
-        preload: list[str | Any] | None = None,
-    ) -> Sequence[KnowledgeDocumentModel]:
+        session_id: int,
+        offset: int = 0,
+        limit: int = 50,
+        order_by: list[dict] | None = None,
+        preload: list[str] | None = None,
+    ) -> dict:
         """
-        列表查询知识库文档
+        按会话ID获取消息列表
 
         参数:
-        - search (dict | None): 查询参数字典
-        - order_by (list[dict[str, str]] | None): 排序参数列表
-        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
+        - session_id (int): 会话ID
+        - offset (int): 偏移量
+        - limit (int): 每页数量
+        - order_by (list[dict] | None): 排序参数
+        - preload (list[str] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - Sequence[KnowledgeDocumentModel]: 知识库文档模型实例序列
+        - dict: 分页数据
         """
-        return await self.list(
-            search=search or {},
-            order_by=order_by or [{"id": "asc"}],
+        search = {"session_id": session_id}
+        order_by_list = order_by or [{"timestamp": "asc"}]
+
+        return await self.page(
+            offset=offset,
+            limit=limit,
+            order_by=order_by_list,
+            search=search,
+            out_schema=ChatMessageOutSchema,
             preload=preload,
         )
 
-    async def create_crud(
-        self, data: KnowledgeDocumentCreateSchema
-    ) -> KnowledgeDocumentModel | None:
+    async def page_crud(
+        self,
+        offset: int,
+        limit: int,
+        order_by: list[dict] | None = None,
+        search: dict | None = None,
+        preload: list | None = None,
+    ) -> dict:
         """
-        创建知识库文档
+        分页查询
 
         参数:
-        - data (KnowledgeDocumentCreateSchema): 创建知识库文档模型
+        - offset (int): 偏移量
+        - limit (int): 每页数量
+        - order_by (list[dict] | None): 排序参数
+        - search (dict | None): 查询参数
+        - preload (list | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - Optional[KnowledgeDocumentModel]: 创建的知识库文档模型实例（如果成功）
+        - dict: 分页数据
         """
-        return await self.create(data=data)
+        order_by_list = order_by or [{"id": "asc"}]
+        search_dict = search or {}
 
-    async def update_crud(
-        self, id: int, data: KnowledgeDocumentUpdateSchema
-    ) -> KnowledgeDocumentModel | None:
-        """
-        更新知识库文档
-
-        参数:
-        - id (int): 文档ID
-        - data (KnowledgeDocumentUpdateSchema): 更新知识库文档模型
-
-        返回:
-        - KnowledgeDocumentModel | None: 更新的知识库文档模型实例（如果成功）
-        """
-        return await self.update(id=id, data=data)
-
-    async def delete_crud(self, ids: list[int]) -> None:
-        """
-        批量删除知识库文档
-
-        参数:
-        - ids (list[int]): 文档ID列表
-
-        返回:
-        - None
-        """
-        return await self.delete(ids=ids)
+        return await self.page(
+            offset=offset,
+            limit=limit,
+            order_by=order_by_list,
+            search=search_dict,
+            out_schema=ChatMessageOutSchema,
+            preload=preload,
+        )

@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     SUMMARY: str = "接口汇总"  # 文档概述
     DOCS_URL: str = "/docs"  # Swagger UI路径
     REDOC_URL: str = "/redoc"  # ReDoc路径
+    LJDOC_URL: str = "/ljdoc"   # LangJin UI路径
     ROOT_PATH: str = "/api/v1"  # API路由前缀
 
     # ================================================= #
@@ -166,6 +167,8 @@ class Settings(BaseSettings):
     SWAGGER_CSS_URL: str = "static/swagger/swagger-ui/swagger-ui.css"
     SWAGGER_JS_URL: str = "static/swagger/swagger-ui/swagger-ui-bundle.js"
     REDOC_JS_URL: str = "static/swagger/redoc/bundles/redoc.standalone.js"
+    CUSTOM_CSS_URL: str = "static/swagger/custom-ui/styles.css"
+    CUSTOM_JS_URL: str = "static/swagger/custom-ui/scripts.js"
     FAVICON_URL: str = "static/swagger/favicon.png"
 
     # ================================================= #

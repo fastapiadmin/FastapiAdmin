@@ -169,10 +169,10 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
             # 统一处理 search 为 None 的情况，避免重复判断
             if search:
                 # 表名过滤：忽略大小写，支持模糊匹配
-                if search.table_name and search.table_name.lower() not in table_name.lower():
+                if search.table_name and search.table_name[1] and search.table_name[1].lower() not in table_name.lower():
                     continue
                 # 表注释过滤：忽略大小写，支持模糊匹配；table_comment 为 None 时视为空字符串
-                if search.table_comment and search.table_comment not in table_comment:
+                if search.table_comment and search.table_comment[1] and search.table_comment[1] not in table_comment:
                     continue
 
             table_info = {

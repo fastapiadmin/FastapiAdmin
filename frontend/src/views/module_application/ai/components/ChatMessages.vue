@@ -19,7 +19,7 @@
 import { ref, nextTick, watch } from "vue";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import MessageItem from "./MessageItem.vue";
-import type { ChatMessage } from "../types";
+import type { ChatMessage } from "@/api/module_application/ai";
 
 interface Props {
   messages: ChatMessage[];
@@ -71,8 +71,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .chat-messages {
-  flex: 1;
-  padding-bottom: 120px;
+  height: 100%;
   overflow-y: auto;
   background: var(--el-bg-color);
 
