@@ -25,7 +25,6 @@ from .service import ChatMessageService, ChatSessionService
 AIRouter = APIRouter(route_class=OperationLogRoute, prefix="/ai", tags=["AI模块"])
 
 
-
 @AIRouter.get(
     "/session/detail/{id}",
     summary="获取聊天会话详情",

@@ -2605,6 +2605,25 @@
         "affix": false,
         "redirect": null,
         "description": "初始化数据"
+      },
+      {
+        "name": "LangJin文档",
+        "type": 4,
+        "icon": "el-icon-Document",
+        "order": 3,
+        "permission": "module_common:ljdoc:query",
+        "route_name": "Ljdoc",
+        "route_path": "/common/ljdoc",
+        "component_path": "module_common/ljdoc/index",
+        "status": "0",
+        "keep_alive": true,
+        "hidden": false,
+        "always_show": false,
+        "title": "LangJin文档",
+        "params": null,
+        "affix": false,
+        "redirect": null,
+        "description": "初始化数据"
       }
     ]
   },

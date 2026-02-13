@@ -25,6 +25,7 @@ def console_run(
     base_url = f"{url}{settings.ROOT_PATH}"
     docs_url = base_url + settings.DOCS_URL
     redoc_url = base_url + settings.REDOC_URL
+    ljdoc_url = base_url + settings.LJDOC_URL
 
     # 核心服务信息
     service_info = Text()
@@ -57,6 +58,7 @@ def console_run(
     docs_info.append("📖 文档", style="bold magenta")
     docs_info.append(f"\n🔗 Swagger: {docs_url}", style="blue link")
     docs_info.append(f"\n🔗 ReDoc: {redoc_url}", style="blue link")
+    docs_info.append(f"\n🔗 LangJin: {ljdoc_url}", style="blue link")
 
     final_content = Group(
         service_info,

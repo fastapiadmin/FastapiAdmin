@@ -15,7 +15,7 @@ from app.core.database import async_db_session
 from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.core.redis_crud import RedisCURD
-from app.core.security import OAuth2Schema, decode_access_token, get_authorization_scheme_param
+from app.core.security import OAuth2Schema, decode_access_token
 
 
 async def db_getter() -> AsyncGenerator[AsyncSession, None]:
@@ -231,7 +231,6 @@ async def _verify_token(
 
     auth.user = user
     return auth
-
 
 
 class AuthPermission:

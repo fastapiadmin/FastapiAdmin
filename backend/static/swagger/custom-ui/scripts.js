@@ -77,8 +77,21 @@ class LangJinDocsUI {
             return {};
         }
         const contentType = contentTypes[0];
-        const schemaRef = content[contentType].schema['$ref'];
+        const schema = content[contentType].schema;
+        
+        // 检查是否有 $ref 引用
+        if (!schema || !schema['$ref']) {
+            return {};
+        }
+        
+        const schemaRef = schema['$ref'];
         const key = schemaRef.replace("#/components/schemas/", "");
+        
+        // 检查 schemas 中是否存在该 key
+        if (!schemas[key]) {
+            return {};
+        }
+        
         const properties = schemas[key].properties || {};
         const required = schemas[key].required || [];
         let body = {};
@@ -89,7 +102,7 @@ class LangJinDocsUI {
                 "type": properties[key].type || 'string',
                 "description": properties[key].description || '',
                 "required": required.includes(key),
-                "value": "" // 添加默认空值
+                "value": ""
             });
         }
         return body;

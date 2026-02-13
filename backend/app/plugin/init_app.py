@@ -14,10 +14,10 @@ from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
 
 from app.config.setting import settings
+from app.core.docs import get_custom_ui_html
 from app.core.exceptions import handle_exception
 from app.core.http_limit import http_limit_callback, ws_limit_callback
 from app.core.logger import log
-from app.core.docs import get_custom_ui_html
 from app.scripts.initialize import InitializeData
 from app.utils.common_util import import_module, import_modules_async
 from app.utils.console import console_close, console_run

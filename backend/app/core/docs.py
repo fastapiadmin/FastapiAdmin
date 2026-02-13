@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from starlette.responses import HTMLResponse
-from typing_extensions import Annotated, Doc
+from typing_extensions import Doc
 
 
 def get_custom_ui_html(
@@ -75,7 +77,7 @@ def get_custom_ui_html(
     <div id="swagger-ui"></div>
     <script src="{swagger_js_url}"></script>
     <script>
-        ui.configure({{url: '{openapi_url}'}})
+        ui.configure({{url: '{openapi_url}'}});
         ui.initialize();
     </script>
     </body>
