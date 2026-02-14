@@ -122,7 +122,7 @@ import {
   ArrowDown,
 } from "@element-plus/icons-vue";
 import { useUserStoreHook } from "@/store";
-import AiAPI, { ChatSession, SessionGroup, UserInfo } from "@/api/module_application/ai";
+import AiAPI, { ChatSession, SessionGroup, UserInfo } from "@/api/module_ai/chat_session";
 
 interface Props {
   currentSessionId?: number | null;

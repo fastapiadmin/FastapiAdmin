@@ -45,13 +45,18 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: "Chat",
+  inheritAttrs: false,
+});
 import { ref, onMounted, onUnmounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import ChatNavbar from "./components/ChatNavbar.vue";
 import ChatMessages from "./components/ChatMessages.vue";
 import ChatInput from "./components/ChatInput.vue";
 import Sidebar from "./components/Sidebar.vue";
-import AiAPI, { ChatMessage, ChatSession, UploadedFile } from "@/api/module_application/ai";
+import AiChatSessionAPI, { ChatSession } from "@/api/module_ai/chat_session";
+import AiChatMessageAPI, { ChatMessage, UploadedFile } from "@/api/module_ai/chat_message";
 import { Auth } from "@/utils/auth";
 
 const messages = ref<ChatMessage[]>([]);
@@ -78,7 +83,7 @@ const connectWebSocket = () => {
   try {
     // WebSocket连接不支持直接设置请求头
     // 这里使用URL参数传递token，后端需要相应处理
-    const url = new URL("/api/v1/application/ai/ws", WS_URL);
+    const url = new URL("/api/v1/ai/chat/ws", WS_URL);
     const token = Auth.getAccessToken();
     if (token) {
       url.searchParams.append("token", token);
@@ -164,7 +169,7 @@ const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
     try {
       // 使用第一条消息的前20个字符作为会话标题
       const title = message.substring(0, 20) + (message.length > 20 ? "..." : "");
-      const res = await AiAPI.createSession({ title });
+      const res = await AiChatSessionAPI.createSession({ title });
       if (res.data?.code === 0 || res.data?.success === true) {
         currentSessionId.value = res.data.data.id ?? null;
         sidebarRef.value?.loadSessions();
@@ -275,7 +280,10 @@ const handleNewSession = async () => {
 
 const loadMessages = async (sessionId: number) => {
   try {
-    const res = await AiAPI.getMessagesBySession(sessionId, { page_no: 1, page_size: 100 });
+    const res = await AiChatMessageAPI.getMessagesBySession(sessionId, {
+      page_no: 1,
+      page_size: 100,
+    });
     if (res.data?.code === 0 || res.data?.success === true) {
       const apiMessages = res.data.data?.items || [];
       messages.value = apiMessages.map((msg: any) => ({

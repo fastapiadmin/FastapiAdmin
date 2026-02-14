@@ -1,19 +1,7 @@
 from sqlalchemy import JSON, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import ModelMixin, UserMixin
-
-
-class ChatSessionModel(ModelMixin, UserMixin):
-    """
-    聊天会话表
-    """
-
-    __tablename__: str = "app_ai_chat_session"
-    __table_args__: dict[str, str] = {"comment": "聊天会话表"}
-    __loader_options__: list[str] = ["created_by", "updated_by"]
-
-    title: Mapped[str] = mapped_column(String(200), nullable=False, comment="会话标题")
+from app.core.base_model import ModelMixin
 
 
 class ChatMessageModel(ModelMixin):
@@ -21,12 +9,12 @@ class ChatMessageModel(ModelMixin):
     聊天消息表
     """
 
-    __tablename__: str = "app_ai_chat_message"
+    __tablename__: str = "ai_chat_message"
     __table_args__: dict[str, str] = {"comment": "聊天消息表"}
 
     session_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("app_ai_chat_session.id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("ai_chat_session.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         index=True,
         comment="会话ID"

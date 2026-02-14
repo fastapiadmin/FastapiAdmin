@@ -142,7 +142,7 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(system_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
     app.include_router(monitor_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
 
-    from app.plugin.module_application.ai.ws import WS_AI
+    from app.plugin.module_ai.chat.ws import WS_AI
 
     # 手动注册WebSocket路由，不使用速率限制器
     app.include_router(

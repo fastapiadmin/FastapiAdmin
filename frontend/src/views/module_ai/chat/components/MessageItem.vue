@@ -76,7 +76,7 @@ import markdownItHighlightjs from "markdown-it-highlightjs";
 import hljs from "highlight.js";
 import "highlight.js/styles/atom-one-light.css";
 import { useUserStoreHook } from "@/store";
-import type { ChatMessage } from "@/api/module_application/ai";
+import type { ChatMessage } from "@/api/module_ai/chat_message";
 
 interface Props {
   message: ChatMessage;
