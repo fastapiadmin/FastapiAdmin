@@ -384,7 +384,7 @@ class SchedulerUtil:
         # 动态导入模块
         # 1. 解析调用目标
         module_path, func_name = str(job_info.func).rsplit(".", 1)
-        module_path = "app.plugin.module_application.job.function_task." + module_path
+        module_path = "app.plugin.module_task.job.function_task." + module_path
         try:
             module = importlib.import_module(module_path)
             job_func = getattr(module, func_name)
