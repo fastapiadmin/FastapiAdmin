@@ -77,7 +77,7 @@
     "codemirror-editor-vue3": "^2.8.0",
     "dayjs": "^1.11.13",
     "echarts": "^5.6.0",
-    "element-plus": "^2.10.4",
+    "element-plus": "^2.11.0",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "highlight.js": "^11.11.1",
