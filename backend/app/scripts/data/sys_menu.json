@@ -2829,7 +2829,7 @@
         "name": "流程编排",
         "type": 2,
         "icon": "el-icon-Share",
-        "order": 2,
+        "order": 3,
         "permission": "module_task:workflow:query",
         "route_name": "Workflow",
         "route_path": "/task/workflow",
