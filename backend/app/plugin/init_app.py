@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     """
     from app.api.v1.module_system.dict.service import DictDataService
     from app.api.v1.module_system.params.service import ParamsService
-    from app.plugin.module_application.job.tools.ap_scheduler import SchedulerUtil
+    from app.plugin.module_task.job.tools.ap_scheduler import SchedulerUtil
 
     try:
         await InitializeData().init_db()
