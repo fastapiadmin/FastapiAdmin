@@ -870,8 +870,14 @@ onMounted(() => {
   }
 }
 
+.error-message {
+  color: #f56c6c;
+  .retry-info {
+    margin: 8px 0;
+  }
+}
+
 .error-content {
-  .error-message,
   .retry-info {
     margin: 8px 0;
   }
@@ -889,10 +895,6 @@ onMounted(() => {
       margin-bottom: 16px;
     }
   }
-}
-
-.error-message {
-  color: #f56c6c;
 }
 
 .ml-3 {
