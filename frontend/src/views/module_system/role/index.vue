@@ -224,6 +224,30 @@
           </template>
         </el-table-column>
         <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'depts')?.show"
+          key="depts"
+          label="所属部门"
+          prop="depts"
+          min-width="200"
+        >
+          <template #default="scope">
+            <template v-if="scope.row.depts && scope.row.depts.length > 0">
+              <el-tag
+                v-for="dept in scope.row.depts.slice(0, 3)"
+                :key="dept.id"
+                type="info"
+                style="margin-right: 4px; margin-bottom: 4px"
+              >
+                {{ dept.name }}
+              </el-tag>
+              <el-tag v-if="scope.row.depts.length > 3" type="info" style="margin-bottom: 4px">
+                +{{ scope.row.depts.length - 3 }}
+              </el-tag>
+            </template>
+            <span v-else style="color: #909399">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'order')?.show"
           key="order"
           label="排序"
@@ -372,6 +396,19 @@
             <el-tag v-else-if="detailFormData.data_scope === 4" type="success">全部数据权限</el-tag>
             <el-tag v-else type="danger">自定义数据权限</el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="所属部门" :span="2">
+            <template v-if="detailFormData.depts && detailFormData.depts.length > 0">
+              <el-tag
+                v-for="dept in detailFormData.depts"
+                :key="dept.id"
+                type="info"
+                style="margin-right: 4px; margin-bottom: 4px"
+              >
+                {{ dept.name }}
+              </el-tag>
+            </template>
+            <span v-else style="color: #909399">-</span>
+          </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
             <el-tag :type="detailFormData.status ? 'success' : 'danger'">
               {{ detailFormData.status ? "启用" : "停用" }}
@@ -496,6 +533,7 @@ const tableColumns = ref([
   { prop: "index", label: "序号", show: true },
   { prop: "name", label: "角色名称", show: true },
   { prop: "data_scope", label: "数据权限", show: true },
+  { prop: "depts", label: "所属部门", show: true },
   { prop: "order", label: "排序", show: true },
   { prop: "code", label: "角色编码", show: true },
   { prop: "status", label: "状态", show: true },
@@ -742,6 +780,7 @@ const exportColumns = [
   { prop: "name", label: "角色名称" },
   { prop: "code", label: "角色编码" },
   { prop: "data_scope", label: "数据权限" },
+  { prop: "depts", label: "所属部门" },
   { prop: "order", label: "排序" },
   { prop: "status", label: "状态" },
   { prop: "description", label: "描述" },

@@ -633,6 +633,25 @@
             "affix": false,
             "redirect": null,
             "description": "初始化数据"
+          },
+          {
+            "name": "分配权限",
+            "type": 3,
+            "icon": null,
+            "order": 8,
+            "permission": "module_system:role:permission",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "分配权限",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据"
           }
         ]
       },

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.common.enums import PermissionFilterStrategy
 from app.core.base_model import MappedBase, ModelMixin
 
 if TYPE_CHECKING:
@@ -63,11 +64,14 @@ class RoleDeptsModel(MappedBase):
 class RoleModel(ModelMixin):
     """
     角色模型
+
+    角色列表只显示当前用户绑定的角色
     """
 
     __tablename__: str = "sys_role"
     __table_args__: dict[str, str] = {"comment": "角色表"}
     __loader_options__: list[str] = ["menus", "depts"]
+    __permission_strategy__: PermissionFilterStrategy = PermissionFilterStrategy.USER_ROLE
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="角色名称")
     code: Mapped[str | None] = mapped_column(
@@ -81,7 +85,6 @@ class RoleModel(ModelMixin):
         comment="数据权限范围(1:仅本人 2:本部门 3:本部门及以下 4:全部 5:自定义)",
     )
 
-    # 关联关系 (继承自UserMixin)
     menus: Mapped[list["MenuModel"]] = relationship(
         secondary="sys_role_menus",
         back_populates="roles",

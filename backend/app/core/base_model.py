@@ -14,6 +14,7 @@ from sqlalchemy.orm import (
 if TYPE_CHECKING:
     from app.api.v1.module_system.user.model import UserModel
 
+from app.common.enums import PermissionFilterStrategy
 from app.utils.common_util import uuid4_str
 
 
@@ -31,6 +32,9 @@ class MappedBase(AsyncAttrs, DeclarativeBase):
     """
 
     __abstract__: bool = True
+
+    # 权限过滤策略，子类可以覆盖
+    __permission_strategy__: PermissionFilterStrategy = PermissionFilterStrategy.DATA_SCOPE
 
 
 class ModelMixin(MappedBase):

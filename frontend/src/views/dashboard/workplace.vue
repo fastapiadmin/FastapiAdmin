@@ -4,7 +4,15 @@
       <ElCard shadow="hover">
         <div class="flex flex-wrap justify-between items-center">
           <div class="flex items-center md:mb-0">
-            <ElAvatar size="large" :src="currentUser.avatar" class="mr-20px" />
+            <ElAvatar
+              v-if="currentUser.avatar"
+              size="large"
+              :src="currentUser.avatar"
+              class="mr-20px"
+            />
+            <el-icon v-else :size="40" color="#909399" class="mr-20px">
+              <UserFilled />
+            </el-icon>
             <div>
               <div class="text-20px font-bold">
                 {{ timefix }}{{ currentUser.name }}，{{ welcome }}
@@ -245,7 +253,7 @@ import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
 import { ref, onMounted, reactive } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import { QuestionFilled, Delete, StarFilled } from "@element-plus/icons-vue";
+import { QuestionFilled, Delete, StarFilled, UserFilled } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { quickStartManager, type QuickLink } from "@/utils/quickStartManager";
 

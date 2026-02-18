@@ -94,3 +94,16 @@ class QueueEnum(str, Enum):
     ge = ">=" or "ge"
     lt = "<" or "lt"
     le = "<=" or "le"
+
+
+class PermissionFilterStrategy(str, Enum):
+    """
+    权限过滤策略枚举
+
+    定义不同的权限过滤策略，让模型选择合适的过滤方式
+    """
+    DATA_SCOPE = "data_scope"  # 基于数据范围权限（默认）
+    ROLE_BASED = "role_based"  # 基于角色授权（菜单）
+    DEPT_BASED = "dept_based"  # 基于部门关联（部门、角色）
+    SELF_ONLY = "self_only"    # 仅本人数据
+    USER_ROLE = "user_role"    # 当前用户绑定的角色
