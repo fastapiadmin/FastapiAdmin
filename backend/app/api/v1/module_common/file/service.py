@@ -1,7 +1,11 @@
+import os
+
 from fastapi import UploadFile
 
+from app.config.setting import settings
 from app.core.base_schema import DownloadFileSchema, UploadResponseSchema
 from app.core.exceptions import CustomException
+from app.core.logger import log
 from app.utils.upload_util import UploadUtil
 
 
@@ -42,6 +46,38 @@ class FileService:
             file_url=f"{file_url}",
         ).model_dump()
 
+    @staticmethod
+    def _validate_download_path(file_path: str) -> str:
+        """
+        验证下载路径是否安全。
+
+        参数:
+        - file_path (str): 文件路径。
+
+        返回:
+        - str: 安全的绝对路径。
+
+        异常:
+        - CustomException: 当路径不安全时抛出。
+        """
+        if not file_path:
+            raise CustomException(msg="请选择要下载的文件")
+
+        dangerous_patterns = ["../", "..\\", "\0"]
+        for pattern in dangerous_patterns:
+            if pattern in file_path:
+                log.error(f"检测到路径穿越攻击: {file_path}")
+                raise CustomException(msg="非法的文件路径")
+
+        upload_root = settings.UPLOAD_FILE_PATH.resolve()
+        abs_path = os.path.normpath(os.path.abspath(file_path))
+
+        if not abs_path.startswith(str(upload_root)):
+            log.error(f"路径不在上传目录内: {file_path}")
+            raise CustomException(msg="非法的文件路径")
+
+        return abs_path
+
     @classmethod
     async def download_service(cls, file_path: str) -> DownloadFileSchema:
         """
@@ -56,13 +92,14 @@ class FileService:
         异常:
         - CustomException: 当未选择文件或文件不存在时抛出。
         """
-        if not file_path:
-            raise CustomException(msg="请选择要下载的文件")
-        if not UploadUtil.check_file_exists(file_path):
+        safe_path = cls._validate_download_path(file_path)
+
+        if not UploadUtil.check_file_exists(safe_path):
             raise CustomException(msg="文件不存在")
-        file_name = UploadUtil.download_file(file_path)
+
+        file_name = UploadUtil.download_file(safe_path)
 
         return DownloadFileSchema(
-            file_path=file_path,
+            file_path=safe_path,
             file_name=str(file_name),
         )

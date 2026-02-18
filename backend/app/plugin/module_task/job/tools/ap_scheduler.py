@@ -383,7 +383,17 @@ class SchedulerUtil:
         """
         # 动态导入模块
         # 1. 解析调用目标
-        module_path, func_name = str(job_info.func).rsplit(".", 1)
+        func_str = str(job_info.func)
+        if "." not in func_str:
+            log.error(f"任务 {job_info.id} 的 func 格式无效: {func_str}，必须包含模块名和函数名（如: module.function）")
+            raise CustomException(msg=f"任务函数格式无效: {func_str}，必须包含模块名和函数名（如: module.function）")
+
+        try:
+            module_path, func_name = func_str.rsplit(".", 1)
+        except ValueError as e:
+            log.error(f"任务 {job_info.id} 的 func 解析失败: {func_str}, 错误: {e}")
+            raise CustomException(msg=f"任务函数格式无效: {func_str}") from e
+
         module_path = "app.plugin.module_task.job.function_task." + module_path
         try:
             module = importlib.import_module(module_path)

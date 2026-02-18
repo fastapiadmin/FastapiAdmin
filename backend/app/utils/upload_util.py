@@ -1,5 +1,9 @@
+import hashlib
+import imghdr
 import mimetypes
+import os
 import random
+import re
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin
@@ -10,6 +14,72 @@ from fastapi import UploadFile
 from app.config.setting import settings
 from app.core.exceptions import CustomException
 from app.core.logger import log
+
+
+DANGEROUS_EXTENSIONS = {
+    ".py",
+    ".pyc",
+    ".pyo",
+    ".php",
+    ".php3",
+    ".php4",
+    ".php5",
+    ".phtml",
+    ".exe",
+    ".bat",
+    ".cmd",
+    ".sh",
+    ".bash",
+    ".zsh",
+    ".ps1",
+    ".ps2",
+    ".psm1",
+    ".psd1",
+    ".vbs",
+    ".vbe",
+    ".js",
+    ".jse",
+    ".wsf",
+    ".wsh",
+    ".msi",
+    ".dll",
+    ".so",
+    ".dylib",
+    ".jar",
+    ".class",
+    ".jsp",
+    ".jspx",
+    ".asp",
+    ".aspx",
+    ".asa",
+    ".asax",
+    ".cer",
+    ".cdx",
+    ".config",
+    ".htaccess",
+    ".htpasswd",
+    ".sql",
+    ".db",
+    ".sqlite",
+    ".sqlite3",
+}
+
+MIME_TYPE_MAPPING = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+    "image/webp": ".webp",
+    "image/svg+xml": ".svg",
+    "image/x-icon": ".ico",
+    "image/bmp": ".bmp",
+    "application/vnd.ms-excel": ".xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+    "application/msword": ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/pdf": ".pdf",
+    "text/plain": ".txt",
+    "text/csv": ".csv",
+}
 
 
 class UploadUtil:
@@ -41,25 +111,189 @@ class UploadUtil:
         return Path(filepath).exists()
 
     @staticmethod
-    def check_file_extension(file: UploadFile) -> bool:
+    def sanitize_filename(filename: str) -> str:
         """
-        检查文件后缀是否合法。
+        清理文件名，移除危险字符和路径穿越。
+
+        参数:
+        - filename (str): 原始文件名。
+
+        返回:
+        - str: 安全的文件名。
+        """
+        if not filename:
+            return ""
+        filename = os.path.basename(filename)
+        filename = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", filename)
+        filename = re.sub(r"\.{2,}", ".", filename)
+        filename = filename.strip(". ")
+        if not filename:
+            filename = f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        return filename
+
+    @staticmethod
+    def check_path_traversal(filename: str) -> bool:
+        """
+        检查文件名是否包含路径穿越。
+
+        参数:
+        - filename (str): 文件名。
+
+        返回:
+        - bool: 是否安全（True 表示安全，False 表示存在路径穿越）。
+        """
+        dangerous_patterns = ["../", "..\\", "/", "\\", "\0"]
+        for pattern in dangerous_patterns:
+            if pattern in filename:
+                return False
+        return True
+
+    @staticmethod
+    def get_extension_from_filename(filename: str) -> str:
+        """
+        从文件名获取扩展名。
+
+        参数:
+        - filename (str): 文件名。
+
+        返回:
+        - str: 扩展名（小写，包含点），如 ".jpg"。
+        """
+        if not filename or "." not in filename:
+            return ""
+        ext = filename.rsplit(".", 1)[-1].lower()
+        return f".{ext}" if ext else ""
+
+    @staticmethod
+    def is_dangerous_extension(extension: str) -> bool:
+        """
+        检查扩展名是否为危险类型。
+
+        参数:
+        - extension (str): 文件扩展名。
+
+        返回:
+        - bool: 是否为危险扩展名。
+        """
+        return extension.lower() in DANGEROUS_EXTENSIONS
+
+    @staticmethod
+    def detect_file_type(content: bytes) -> str | None:
+        """
+        通过文件内容检测真实文件类型。
+
+        参数:
+        - content (bytes): 文件内容（前几字节即可）。
+
+        返回:
+        - str | None: 检测到的 MIME 类型，无法识别返回 None。
+        """
+        if content.startswith(b"\xff\xd8\xff"):
+            return "image/jpeg"
+        if content.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if content.startswith(b"GIF87a") or content.startswith(b"GIF89a"):
+            return "image/gif"
+        if content.startswith(b"PK\x03\x04"):
+            if b"[Content_Types].xml" in content[:1000]:
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            return "application/zip"
+        if content.startswith(b"%PDF"):
+            return "application/pdf"
+        if content.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):
+            return "application/msword"
+        return None
+
+    @classmethod
+    def validate_file_extension(cls, extension: str) -> bool:
+        """
+        验证文件扩展名是否在允许列表中。
+
+        参数:
+        - extension (str): 文件扩展名。
+
+        返回:
+        - bool: 是否允许。
+
+        异常:
+        - CustomException: 扩展名不允许时抛出。
+        """
+        ext_lower = extension.lower()
+        if cls.is_dangerous_extension(ext_lower):
+            raise CustomException(msg=f"不允许上传此类型的文件: {extension}")
+        if ext_lower not in settings.ALLOWED_EXTENSIONS:
+            raise CustomException(
+                msg=f"文件类型不支持，允许的类型: {', '.join(settings.ALLOWED_EXTENSIONS)}"
+            )
+        return True
+
+    @classmethod
+    def validate_file_content_type(cls, content: bytes, claimed_extension: str) -> bool:
+        """
+        验证文件内容类型与声明的扩展名是否匹配。
+
+        参数:
+        - content (bytes): 文件内容。
+        - claimed_extension (str): 声明的文件扩展名。
+
+        返回:
+        - bool: 是否匹配。
+
+        异常:
+        - CustomException: 类型不匹配时抛出。
+        """
+        detected_type = cls.detect_file_type(content)
+        if detected_type:
+            expected_ext = MIME_TYPE_MAPPING.get(detected_type, "")
+            if expected_ext and expected_ext != claimed_extension.lower():
+                log.warning(
+                    f"文件类型不匹配: 声明扩展名={claimed_extension}, 检测类型={detected_type}"
+                )
+        return True
+
+    @staticmethod
+    def check_file_size(file: UploadFile) -> bool:
+        """
+        校验文件大小是否合法。
 
         参数:
         - file (UploadFile): 上传的文件对象。
 
         返回:
-        - bool: 文件后缀是否合法。
+        - bool: 文件大小是否合法。
 
         异常:
-        - CustomException: 文件类型不支持时抛出。
+        - CustomException: 文件过大时抛出。
         """
-        if file.content_type:
-            file_extension = mimetypes.guess_extension(file.content_type)
-            if file_extension and file_extension in settings.ALLOWED_EXTENSIONS:
-                return True
-            raise CustomException(msg="文件类型不支持")
-        raise CustomException(msg="文件类型不支持")
+        if file.size and file.size > settings.MAX_FILE_SIZE:
+            raise CustomException(
+                msg=f"文件大小超过限制，最大允许 {settings.MAX_FILE_SIZE // (1024 * 1024)}MB"
+            )
+        return True
+
+    @classmethod
+    def generate_safe_filename(cls, original_filename: str, extension: str) -> str:
+        """
+        生成安全的文件名。
+
+        参数:
+        - original_filename (str): 原始文件名。
+        - extension (str): 文件扩展名。
+
+        返回:
+        - str: 安全的文件名。
+        """
+        safe_name = cls.sanitize_filename(original_filename)
+        if safe_name and "." in safe_name:
+            name_part = safe_name.rsplit(".", 1)[0]
+        else:
+            name_part = safe_name or "file"
+        name_part = re.sub(r"[^a-zA-Z0-9_\-\u4e00-\u9fa5]", "", name_part)
+        if len(name_part) > 50:
+            name_part = name_part[:50]
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        random_suffix = cls.generate_random_number()
+        return f"{name_part}_{timestamp}{settings.UPLOAD_MACHINE}{random_suffix}{extension}"
 
     @staticmethod
     def check_file_timestamp(filename: str) -> bool:
@@ -115,36 +349,6 @@ class UploadUtil:
             return False
 
     @staticmethod
-    def check_file_size(file: UploadFile) -> bool:
-        """
-        校验文件大小是否合法。
-
-        参数:
-        - file (UploadFile): 上传的文件对象。
-
-        返回:
-        - bool: 文件大小是否合法（未提供 size 返回 False）。
-        """
-        if file.size:
-            return file.size <= settings.MAX_FILE_SIZE
-        return False
-
-    @classmethod
-    def generate_file_name(cls, filename: str) -> str:
-        """
-        生成文件名称。
-
-        参数:
-        - filename (str): 原始文件名（包含拓展名）。
-
-        返回:
-        - str: 生成的文件名（包含时间戳、机器码、随机码）。
-        """
-        name, ext = filename.rsplit(".", 1)
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        return f"{name}_{timestamp}{settings.UPLOAD_MACHINE}{cls.generate_random_number()}.{ext}"
-
-    @staticmethod
     def generate_file(filepath: Path, chunk_size: int = 8192):
         """
         根据文件生成二进制数据迭代器。
@@ -180,7 +384,7 @@ class UploadUtil:
     @classmethod
     async def upload_file(cls, file: UploadFile, base_url: str) -> tuple[str, Path, str]:
         """
-        文件上传。
+        安全文件上传。
 
         参数:
         - file (UploadFile): 上传的文件对象。
@@ -190,37 +394,54 @@ class UploadUtil:
         - tuple[str, Path, str]: (文件名, 文件路径, 文件 URL)。
 
         异常:
-        - CustomException: 当文件类型不支持或大小超限时抛出。
+        - CustomException: 当文件校验失败时抛出。
         """
-        # 文件校验
-        if not all([
-            cls.check_file_extension(file),
-            cls.check_file_size(file),
-        ]):
-            raise CustomException(msg="文件类型或大小不合法")
+        if not file or not file.filename:
+            raise CustomException(msg="请选择要上传的文件")
+
+        original_filename = file.filename
+
+        if not cls.check_path_traversal(original_filename):
+            log.error(f"检测到路径穿越攻击: {original_filename}")
+            raise CustomException(msg="文件名包含非法字符")
+
+        extension = cls.get_extension_from_filename(original_filename)
+        if not extension:
+            raise CustomException(msg="无法识别文件类型")
+
+        cls.validate_file_extension(extension)
+
+        cls.check_file_size(file)
+
+        content = await file.read()
+        await file.seek(0)
+
+        cls.validate_file_content_type(content, extension)
+
+        safe_filename = cls.generate_safe_filename(original_filename, extension)
 
         try:
-            # 构建完整的目录路径
             dir_path = settings.UPLOAD_FILE_PATH.joinpath(datetime.now().strftime("%Y/%m/%d"))
             dir_path.mkdir(parents=True, exist_ok=True)
 
-            filename = ""
-            # 生成文件名并保存
-            if file.filename:
-                filename = cls.generate_file_name(file.filename)
-            filepath = dir_path.joinpath(filename)
-            file_url = urljoin(base_url, str(filepath))
-            # filepath.mkdir(parents=True, exist_ok=True)
+            filepath = dir_path.joinpath(safe_filename)
 
-            # 分块写入文件
-            chunk_size = 8 * 1024 * 1024  # 8MB chunks
+            if not filepath.resolve().is_relative_to(settings.UPLOAD_FILE_PATH.resolve()):
+                log.error(f"检测到路径穿越攻击，目标路径: {filepath}")
+                raise CustomException(msg="非法的文件路径")
+
+            file_url = urljoin(base_url, str(filepath))
+
+            chunk_size = 8 * 1024 * 1024
             async with aiofiles.open(filepath, "wb") as f:
                 while chunk := await file.read(chunk_size):
                     await f.write(chunk)
 
-            # 返回相对路径
-            return filename, filepath, file_url
+            log.info(f"文件上传成功: {safe_filename}")
+            return safe_filename, filepath, file_url
 
+        except CustomException:
+            raise
         except Exception as e:
             log.error(f"文件上传失败: {e}")
             raise CustomException(msg=f"文件上传失败: {e}")

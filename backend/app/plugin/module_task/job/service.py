@@ -15,6 +15,23 @@ from .schema import (
 from .tools.ap_scheduler import SchedulerUtil
 
 
+def validate_job_func(func: str) -> None:
+    """
+    校验任务函数格式是否有效。
+
+    参数:
+    - func (str): 任务函数字符串，格式应为 "module.function"
+
+    异常:
+    - CustomException: 当 func 格式无效时抛出
+    """
+    if not func or "." not in func:
+        raise CustomException(msg=f"任务函数格式无效: {func}，必须包含模块名和函数名（如: module.function）")
+    parts = func.rsplit(".", 1)
+    if len(parts) != 2 or not parts[0] or not parts[1]:
+        raise CustomException(msg=f"任务函数格式无效: {func}，模块名和函数名不能为空")
+
+
 class JobService:
     """
     定时任务管理模块服务层
@@ -72,6 +89,8 @@ class JobService:
         if exist_obj:
             raise CustomException(msg="创建失败，该定时任务已存在")
 
+        validate_job_func(data.func)
+
         obj = await JobCRUD(auth).create_obj_crud(data=data)
         if not obj:
             raise CustomException(msg="创建失败，该数据定时任务不存在")
@@ -100,6 +119,9 @@ class JobService:
             and not CronUtil.validate_cron_expression(data.trigger_args)
         ):
             raise CustomException(msg=f"新增定时任务{data.name}失败, Cron表达式不正确")
+
+        validate_job_func(data.func)
+
         obj = await JobCRUD(auth).update_obj_crud(id=id, data=data)
         if not obj:
             raise CustomException(msg="更新失败，该数据定时任务不存在")

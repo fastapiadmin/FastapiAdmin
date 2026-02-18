@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -11,6 +12,7 @@ from app.config.setting import settings
 from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.utils.excel_util import ExcelUtil
+from app.utils.upload_util import DANGEROUS_EXTENSIONS, MIME_TYPE_MAPPING
 
 from .schema import (
     ResourceCopySchema,
@@ -123,6 +125,54 @@ class ResourceService:
             return os.path.exists(safe_path)
         except Exception as e:
             raise CustomException(msg=f"检查路径是否存在失败: {e!s}")
+
+    @staticmethod
+    def _sanitize_filename(filename: str) -> str:
+        """
+        清理文件名，移除危险字符和路径穿越。
+
+        参数:
+        - filename (str): 原始文件名。
+
+        返回:
+        - str: 安全的文件名。
+        """
+        if not filename:
+            return f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        filename = os.path.basename(filename)
+        filename = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", filename)
+        filename = re.sub(r"\.{2,}", ".", filename)
+        filename = filename.strip(". ")
+        if not filename:
+            filename = f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        return filename
+
+    @staticmethod
+    def _detect_file_type(content: bytes) -> str | None:
+        """
+        通过文件内容检测真实文件类型。
+
+        参数:
+        - content (bytes): 文件内容（前几字节即可）。
+
+        返回:
+        - str | None: 检测到的 MIME 类型，无法识别返回 None。
+        """
+        if content.startswith(b"\xff\xd8\xff"):
+            return "image/jpeg"
+        if content.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if content.startswith(b"GIF87a") or content.startswith(b"GIF89a"):
+            return "image/gif"
+        if content.startswith(b"PK\x03\x04"):
+            if b"[Content_Types].xml" in content[:1000]:
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            return "application/zip"
+        if content.startswith(b"%PDF"):
+            return "application/pdf"
+        if content.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):
+            return "application/msword"
+        return None
 
     @classmethod
     def _generate_http_url(cls, file_path: str, base_url: str | None = None) -> str:
@@ -512,59 +562,81 @@ class ResourceService:
         if not file or not file.filename:
             raise CustomException(msg="请选择要上传的文件")
 
-        # 文件名安全检查
-        if ".." in file.filename or "/" in file.filename or "\\" in file.filename:
-            raise CustomException(msg="文件名包含不安全字符")
+        original_filename = file.filename
+
+        dangerous_patterns = ["../", "..\\", "/", "\\", "\0"]
+        for pattern in dangerous_patterns:
+            if pattern in original_filename:
+                log.error(f"检测到路径穿越攻击: {original_filename}")
+                raise CustomException(msg="文件名包含非法字符")
+
+        if "." not in original_filename:
+            raise CustomException(msg="无法识别文件类型")
+
+        ext = os.path.splitext(original_filename)[1].lower()
+        if not ext:
+            raise CustomException(msg="无法识别文件类型")
+
+        if ext in DANGEROUS_EXTENSIONS:
+            log.error(f"尝试上传危险文件类型: {ext}")
+            raise CustomException(msg=f"不允许上传此类型的文件: {ext}")
 
         try:
-            # 检查文件大小
             content = await file.read()
             if len(content) > cls.MAX_UPLOAD_SIZE:
                 raise CustomException(
                     msg=f"文件太大，最大支持{cls.MAX_UPLOAD_SIZE // (1024 * 1024)}MB"
                 )
 
-            # 确定上传目录，如果没有指定目标路径，使用静态文件根目录
+            detected_type = cls._detect_file_type(content)
+            if detected_type:
+                expected_ext = MIME_TYPE_MAPPING.get(detected_type, "")
+                if expected_ext and expected_ext != ext:
+                    log.warning(
+                        f"文件类型不匹配: 声明扩展名={ext}, 检测类型={detected_type}"
+                    )
+
             safe_dir = (
                 cls._get_resource_root() if target_path is None else cls._get_safe_path(target_path)
             )
 
-            # 创建目录（如果不存在）
             os.makedirs(safe_dir, exist_ok=True)
 
-            # 生成文件路径
-            filename = file.filename
-            file_path = os.path.join(safe_dir, filename)
+            safe_filename = cls._sanitize_filename(original_filename)
+            file_path = os.path.join(safe_dir, safe_filename)
 
-            # 检查文件是否已存在
+            file_path_abs = os.path.normpath(os.path.abspath(file_path))
+            safe_dir_abs = os.path.normpath(os.path.abspath(safe_dir))
+            if not file_path_abs.startswith(safe_dir_abs):
+                log.error(f"检测到路径穿越攻击，目标路径: {file_path}")
+                raise CustomException(msg="非法的文件路径")
+
             if os.path.exists(file_path):
-                # 生成唯一文件名
-                base_name, ext = os.path.splitext(filename)
+                base_name, extension = os.path.splitext(safe_filename)
                 counter = 1
                 while os.path.exists(file_path):
-                    new_filename = f"{base_name}_{counter}{ext}"
+                    new_filename = f"{base_name}_{counter}{extension}"
                     file_path = os.path.join(safe_dir, new_filename)
                     counter += 1
-                filename = os.path.basename(file_path)
+                safe_filename = os.path.basename(file_path)
 
-            # 保存文件（使用已读取的内容）
             Path(file_path).write_bytes(content)
 
-            # 获取文件信息
             file_info = cls._get_file_info(file_path, base_url)
 
-            # 生成文件URL
             file_url = cls._generate_http_url(file_path, base_url)
 
-            log.info(f"文件上传成功: {filename}")
+            log.info(f"文件上传成功: {safe_filename}")
 
             return ResourceUploadSchema(
-                filename=filename,
+                filename=safe_filename,
                 file_url=file_url,
                 file_size=file_info.get("size", 0),
                 upload_time=datetime.now(),
             ).model_dump(mode="json")
 
+        except CustomException:
+            raise
         except Exception as e:
             log.error(f"文件上传失败: {e!s}")
             raise CustomException(msg=f"文件上传失败: {e!s}")

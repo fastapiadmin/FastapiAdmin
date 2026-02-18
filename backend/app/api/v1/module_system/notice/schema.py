@@ -10,6 +10,7 @@ from pydantic import (
 from app.common.enums import QueueEnum
 from app.core.base_schema import BaseSchema, UserBySchema
 from app.core.validator import DateTimeStr
+from app.utils.xss_util import sanitize_html
 
 
 class NoticeCreateSchema(BaseModel):
@@ -27,6 +28,11 @@ class NoticeCreateSchema(BaseModel):
         if value not in {"1", "2"}:
             raise ValueError("公告类型仅支持 '1'(通知) 或 '2'(公告)")
         return value
+
+    @field_validator("notice_content")
+    @classmethod
+    def _sanitize_notice_content(cls, value: str) -> str:
+        return sanitize_html(value)
 
     @model_validator(mode="after")
     def _validate_after(self):

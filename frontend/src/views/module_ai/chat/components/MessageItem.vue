@@ -74,6 +74,7 @@ import {
 import MarkdownIt from "markdown-it";
 import markdownItHighlightjs from "markdown-it-highlightjs";
 import hljs from "highlight.js";
+import DOMPurify from "dompurify";
 import "highlight.js/styles/atom-one-light.css";
 import { useUserStoreHook } from "@/store";
 import type { ChatMessage } from "@/api/module_ai/chat_message";
@@ -130,7 +131,75 @@ md.renderer.rules.link_open = function (
 
 const formattedContent = computed(() => {
   if (!props.message.content) return "";
-  return md.render(props.message.content);
+  const rawHtml = md.render(props.message.content);
+  return DOMPurify.sanitize(rawHtml, {
+    ALLOWED_TAGS: [
+      "a",
+      "abbr",
+      "acronym",
+      "b",
+      "blockquote",
+      "br",
+      "code",
+      "col",
+      "colgroup",
+      "dd",
+      "del",
+      "dl",
+      "dt",
+      "em",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "hr",
+      "i",
+      "img",
+      "li",
+      "ol",
+      "p",
+      "pre",
+      "s",
+      "span",
+      "strike",
+      "strong",
+      "sub",
+      "sup",
+      "table",
+      "tbody",
+      "td",
+      "tfoot",
+      "th",
+      "thead",
+      "tr",
+      "tt",
+      "u",
+      "ul",
+      "video",
+      "source",
+      "div",
+    ],
+    ALLOWED_ATTR: [
+      "href",
+      "title",
+      "target",
+      "rel",
+      "src",
+      "alt",
+      "width",
+      "height",
+      "class",
+      "id",
+      "controls",
+      "poster",
+      "type",
+      "colspan",
+      "rowspan",
+      "span",
+    ],
+  });
 });
 
 const handleToggleFold = () => {
