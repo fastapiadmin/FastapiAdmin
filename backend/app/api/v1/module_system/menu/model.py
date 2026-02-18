@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.common.enums import PermissionFilterStrategy
 from app.core.base_model import ModelMixin
 
 if TYPE_CHECKING:
@@ -23,6 +24,7 @@ class MenuModel(ModelMixin):
     __tablename__: str = "sys_menu"
     __table_args__: dict[str, str] = {"comment": "菜单表"}
     __loader_options__: list[str] = ["roles"]
+    __permission_strategy__: PermissionFilterStrategy = PermissionFilterStrategy.ROLE_BASED
 
     name: Mapped[str] = mapped_column(String(50), nullable=False, comment="菜单名称")
     type: Mapped[int] = mapped_column(

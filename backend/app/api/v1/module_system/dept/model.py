@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.common.enums import PermissionFilterStrategy
 from app.core.base_model import ModelMixin
 
 if TYPE_CHECKING:
@@ -18,6 +19,7 @@ class DeptModel(ModelMixin):
     __tablename__: str = "sys_dept"
     __table_args__: dict[str, str] = {"comment": "部门表"}
     __loader_options__: list[str] = []
+    __permission_strategy__: PermissionFilterStrategy = PermissionFilterStrategy.DEPT_BASED
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="部门名称")
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=999, comment="显示排序")

@@ -7,10 +7,18 @@
       <div class="flex flex-wrap">
         <!-- 左侧问候语区域 -->
         <div class="flex-1 flex items-start">
-          <img
-            class="w80px h80px rounded-full"
-            :src="userStore.basicInfo.avatar + '?imageView2/1/w/80/h/80'"
-          />
+          <div
+            class="w80px h80px rounded-full flex items-center justify-center bg-gray-100 overflow-hidden"
+          >
+            <img
+              v-if="userStore.basicInfo.avatar"
+              class="w-full h-full object-cover"
+              :src="userStore.basicInfo.avatar + '?imageView2/1/w/80/h/80'"
+            />
+            <el-icon v-else :size="40" color="#909399">
+              <UserFilled />
+            </el-icon>
+          </div>
           <div class="ml-5">
             <div class="text-20px font-bold mb-5px">
               {{ timefix }}{{ userStore.basicInfo.name }}，{{ welcome }}
@@ -331,7 +339,7 @@ import { dayjs } from "element-plus";
 import { useUserStore } from "@/store/modules/user.store";
 import { formatGrowthRate } from "@/utils";
 import { useTransition } from "@vueuse/core";
-import { Connection, Failed } from "@element-plus/icons-vue";
+import { Connection, Failed, UserFilled } from "@element-plus/icons-vue";
 import { greetings } from "@/utils/common";
 
 const timefix = greetings();
