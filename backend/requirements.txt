@@ -1,5 +1,6 @@
 alembic==1.15.1                         # 数据库迁移
 APScheduler==3.11.0                     # 定时任务
+bleach==6.3.0                           # XSS 过滤
 fastapi==0.115.2                        # fastapi 框架
 Jinja2==3.1.6                           # 模板引擎
 typer==0.9.0                            # 命令行工具

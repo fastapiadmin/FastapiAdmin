@@ -72,6 +72,6 @@ async def download_controller(
     """
     result = await FileService.download_service(file_path=file_path)
     if delete:
-        background_tasks.add_task(UploadUtil.delete_file, Path(file_path))
+        background_tasks.add_task(UploadUtil.delete_file, Path(result.file_path))
     log.info("下载文件成功")
     return UploadFileResponse(file_path=result.file_path, filename=result.file_name)

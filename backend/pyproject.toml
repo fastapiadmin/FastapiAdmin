@@ -12,6 +12,7 @@ dependencies = [
     "asyncmy==0.2.9",                           # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
     "asyncpg==0.30.0",                          # postgresql 异步操作数据库基于 psycopg2：asyncpg 是 psycopg2 的异步版本，psycopg2 是一个 pure-Python PostgreSQL 数据库适配器。性能：asyncpg 通常在性能上优于 psycopg2，特别是在高并发和大数据量的场景下。
     "bcrypt==4.0.1",                            # 密码加密解析,切勿升级，如果升级，请同时升级python版本
+    "bleach==6.3.0",                            # 过滤 HTML 标签
     "click==8.1.7",                             # 命令行参数解析
     "croniter==6.0.0",                          # 实现cron表达式验证和解析执行计划
     "cryptography==45.0.2",                     # mysql8 密码加密
