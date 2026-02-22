@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     """
     from app.api.v1.module_system.dict.service import DictDataService
     from app.api.v1.module_system.params.service import ParamsService
-    from app.plugin.module_task.job.tools.ap_scheduler import SchedulerUtil
+    from app.core.ap_scheduler import SchedulerUtil
 
     try:
         await InitializeData().init_db()
@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         log.info("✅ Redis系统配置初始化完成")
         await DictDataService().init_dict_service(redis=app.state.redis)
         log.info("✅ Redis数据字典初始化完成")
-        await SchedulerUtil.init_system_scheduler(redis=app.state.redis)
+        await SchedulerUtil.init_scheduler(redis=app.state.redis)
         log.info("✅ 定时任务调度器初始化完成")
         await FastAPILimiter.init(
             redis=app.state.redis,
@@ -62,15 +62,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         # 导入并显示最终的启动信息面板
         from app.common.enums import EnvironmentEnum
 
-        scheduler_jobs_count = len(SchedulerUtil.get_all_jobs())
-        scheduler_status = SchedulerUtil.get_job_status()
         console_run(
             host=settings.SERVER_HOST,
             port=settings.SERVER_PORT,
             reload=settings.ENVIRONMENT == EnvironmentEnum.DEV,
+            database_ready=True,
             redis_ready=True,
-            scheduler_jobs=scheduler_jobs_count,
-            scheduler_status=scheduler_status,
+            scheduler_ready=SchedulerUtil.is_running(),
+            limiter_ready=True,
         )
 
     except Exception as e:
@@ -80,11 +79,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     yield
 
     try:
-        await import_modules_async(
-            modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False
-        )
+        await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
         log.info("✅ 全局事件模块卸载完成")
-        await SchedulerUtil.close_system_scheduler()
+        await SchedulerUtil.shutdown(wait=False)
         log.info("✅ 定时任务调度器已关闭")
         await FastAPILimiter.close()
         log.info("✅ 请求限制器已关闭")

@@ -443,7 +443,6 @@ const handleCloseDrawer = () => {
 /* 设置抽屉样式 */
 .settings-drawer {
   :deep(.el-drawer__body) {
-    position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -461,11 +460,7 @@ const handleCloseDrawer = () => {
 
 /* 底部操作区域样式 */
 .action-footer {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 10;
+  flex-shrink: 0;
   padding: 0;
   background: var(--el-bg-color);
   border-top: 1px solid var(--el-border-color-light);

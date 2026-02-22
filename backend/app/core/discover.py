@@ -81,7 +81,6 @@ def get_dynamic_router() -> APIRouter:
                         if router_id not in seen_router_ids:
                             seen_router_ids.add(router_id)
                             container_router.include_router(attr_value)
-                            log.debug(f"📌 注册路由 {attr_name} 到容器 {prefix}")
 
             except Exception as e:
                 log.error(f"❌️ 处理模块 {module_path} 失败: {e!s}")

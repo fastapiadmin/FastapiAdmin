@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -6,7 +7,6 @@ from app.core.base_crud import CRUDBase
 from .model import NodeModel
 from .schema import (
     NodeCreateSchema,
-    NodeOutSchema,
     NodeUpdateSchema,
 )
 
@@ -15,102 +15,98 @@ class NodeCRUD(CRUDBase[NodeModel, NodeCreateSchema, NodeUpdateSchema]):
     """节点数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
+        """
+        初始化节点CRUD
+
+        参数:
+        - auth (AuthSchema): 认证信息模型
+        """
         self.auth = auth
         super().__init__(model=NodeModel, auth=auth)
 
-    async def get_by_id_crud(
+    async def get_obj_by_id_crud(
         self, id: int, preload: list[str | Any] | None = None
     ) -> NodeModel | None:
         """
-        获取节点类型详情
+        获取节点详情
 
         参数:
-        - id (int): 节点类型ID
-        - preload (list[str | Any] | None): 预加载关联数据
+        - id (int): 节点ID
+        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - NodeTypeModel | None: 节点类型模型实例
+        - NodeModel | None: 节点模型,如果不存在则为None
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_by_code_crud(self, code: str) -> NodeModel | None:
-        """
-        根据编码获取节点类型
-
-        参数:
-        - code (str): 节点类型编码
-
-        返回:
-        - NodeModel | None: 节点模型实例
-        """
-        return await self.get(code=code)
-
-    async def page_crud(
+    async def get_obj_list_crud(
         self,
-        offset: int,
-        limit: int,
-        order_by: list[dict] | None = None,
         search: dict | None = None,
-        preload: list | None = None,
-    ) -> dict:
+        order_by: list[dict[str, str]] | None = None,
+        preload: list[str | Any] | None = None,
+    ) -> Sequence[NodeModel]:
         """
-        分页查询节点类型
+        获取节点列表
 
         参数:
-        - offset (int): 偏移量
-        - limit (int): 限制数量
-        - order_by (list[dict] | None): 排序条件
-        - search (dict | None): 查询条件
-        - preload (list | None): 预加载关联数据
+        - search (dict | None): 查询参数字典
+        - order_by (list[dict[str, str]] | None): 排序参数列表
+        - preload (list[str | Any] | None): 预加载关系，未提供时使用模型默认项
 
         返回:
-        - dict: 分页查询结果
+        - Sequence[NodeModel]: 节点模型序列
         """
-        order_by_list = order_by or [{"sort_order": "asc"}, {"id": "desc"}]
-        search_dict = search or {}
+        return await self.list(search=search, order_by=order_by, preload=preload)
 
-        return await self.page(
-            offset=offset,
-            limit=limit,
-            order_by=order_by_list,
-            search=search_dict,
-            out_schema=NodeOutSchema,
-            preload=preload,
-        )
-
-    async def create_crud(self, data: NodeCreateSchema) -> NodeModel | None:
+    async def create_obj_crud(self, data: NodeCreateSchema) -> NodeModel | None:
         """
-        创建节点类型
+        创建节点
 
         参数:
-        - data (NodeCreateSchema): 节点类型创建模型
+        - data (NodeCreateSchema): 创建节点模型
 
         返回:
-        - NodeModel | None: 节点类型模型实例
+        - NodeModel | None: 创建的节点模型,如果创建失败则为None
         """
         return await self.create(data=data)
 
-    async def update_crud(self, id: int, data: NodeUpdateSchema) -> NodeModel | None:
+    async def update_obj_crud(self, id: int, data: NodeUpdateSchema) -> NodeModel | None:
         """
-        更新节点类型
+        更新节点
 
         参数:
-        - id (int): 节点类型ID
-        - data (NodeUpdateSchema): 节点类型更新模型
+        - id (int): 节点ID
+        - data (NodeUpdateSchema): 更新节点模型
 
         返回:
-        - NodeModel | None: 节点类型模型实例
+        - NodeModel | None: 更新后的节点模型,如果更新失败则为None
         """
         return await self.update(id=id, data=data)
 
-    async def delete_crud(self, ids: list[int]) -> None:
+    async def delete_obj_crud(self, ids: list[int]) -> None:
         """
-        删除节点类型
+        删除节点
 
         参数:
-        - ids (list[int]): 节点类型ID列表
-
-        返回:
-        - None
+        - ids (list[int]): 节点ID列表
         """
-        await self.delete(ids=ids)
+        return await self.delete(ids=ids)
+
+    async def set_obj_field_crud(self, ids: list[int], **kwargs) -> None:
+        """
+        设置节点的可用状态
+
+        参数:
+        - ids (list[int]): 节点ID列表
+        - kwargs: 其他要设置的字段,例如 available=True 或 available=False
+        """
+        return await self.set(ids=ids, **kwargs)
+
+    async def clear_obj_crud(self) -> None:
+        """
+        清除节点日志
+
+        注意:
+        - 此操作会删除所有节点日志,请谨慎操作
+        """
+        return await self.clear()

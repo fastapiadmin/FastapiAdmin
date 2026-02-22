@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import setupPlugins from "@/plugins";
+import { createTerminal } from "vue-web-terminal";
 
 // 暗黑主题样式
 import "element-plus/theme-chalk/dark/css-vars.css";
@@ -19,6 +20,8 @@ import { useConfigStore } from "@/store";
 const app = createApp(App);
 // 注册插件
 app.use(setupPlugins);
+// 注册终端组件
+app.use(createTerminal());
 // 封装设置 title 和 favicon 的函数
 const setTitleAndFavicon = async () => {
   try {
