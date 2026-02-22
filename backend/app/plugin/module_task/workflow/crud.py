@@ -1,18 +1,12 @@
 from collections.abc import Sequence
-from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_crud import CRUDBase
 
-from .model import WorkflowModel, WorkflowRunLogModel, WorkflowRunModel
+from .model import WorkflowModel
 from .schema import (
     WorkflowCreateSchema,
     WorkflowOutSchema,
-    WorkflowRunCreateSchema,
-    WorkflowRunLogCreateSchema,
-    WorkflowRunLogOutSchema,
-    WorkflowRunOutSchema,
-    WorkflowRunUpdateSchema,
     WorkflowUpdateSchema,
 )
 
@@ -154,126 +148,5 @@ class WorkflowCRUD(CRUDBase[WorkflowModel, WorkflowCreateSchema, WorkflowUpdateS
             order_by=order_by_list,
             search=search_dict,
             out_schema=WorkflowOutSchema,
-            preload=preload,
-        )
-
-    async def list_templates_crud(
-        self,
-        search: dict | None = None,
-        order_by: list[dict] | None = None,
-        preload: list[str] | None = None,
-    ) -> Sequence[WorkflowModel]:
-        """
-        获取模板列表
-
-        参数:
-        - search (dict | None): 查询参数
-        - order_by (list[dict] | None): 排序参数
-        - preload (list[str] | None): 预加载关系
-
-        返回:
-        - Sequence[WorkflowModel]: 工作流模型实例序列
-        """
-        search_dict = search or {}
-        search_dict["is_template"] = (None, True)
-        return await self.list(search=search_dict, order_by=order_by, preload=preload)
-
-
-class WorkflowRunCRUD(CRUDBase[WorkflowRunModel, WorkflowRunCreateSchema, WorkflowRunUpdateSchema]):
-    """工作流运行记录CRUD"""
-
-    def __init__(self, auth: AuthSchema) -> None:
-        """初始化CRUD数据层"""
-        super().__init__(model=WorkflowRunModel, auth=auth)
-
-    async def list_crud(
-        self,
-        search: dict | None = None,
-        order_by: list[dict] | None = None,
-        preload: list[str | Any] | None = None,
-    ) -> Sequence[WorkflowRunModel]:
-        """获取工作流运行记录列表"""
-        return await self.list(search=search, order_by=order_by, preload=preload)
-
-    async def create_crud(self, data: WorkflowRunCreateSchema) -> WorkflowRunModel | None:
-        """创建工作流运行记录"""
-        return await self.create(data=data)
-
-    async def get_by_id_crud(self, id: int) -> WorkflowRunModel | None:
-        """根据ID获取工作流运行记录"""
-        return await self.get(id=id)
-
-    async def update_crud(self, id: int, data: WorkflowRunUpdateSchema) -> WorkflowRunModel | None:
-        """更新工作流运行记录"""
-        return await self.update(id=id, data=data)
-
-    async def delete_crud(self, ids: list[int]) -> None:
-        """删除工作流运行记录"""
-        return await self.delete(ids=ids)
-
-    async def clear_crud(self) -> None:
-        """清除所有工作流运行记录"""
-        return await self.clear()
-
-    async def page_crud(
-        self,
-        offset: int,
-        limit: int,
-        order_by: list[dict] | None = None,
-        search: dict | None = None,
-        preload: list | None = None,
-    ) -> dict:
-        """分页查询工作流运行记录"""
-        order_by_list = order_by or [{"id": "desc"}]
-        search_dict = search or {}
-
-        return await self.page(
-            offset=offset,
-            limit=limit,
-            order_by=order_by_list,
-            search=search_dict,
-            out_schema=WorkflowRunOutSchema,
-            preload=preload,
-        )
-
-
-class WorkflowRunLogCRUD(CRUDBase[WorkflowRunLogModel, WorkflowRunLogCreateSchema, WorkflowRunLogCreateSchema]):
-    """工作流运行日志CRUD"""
-
-    def __init__(self, auth: AuthSchema) -> None:
-        """初始化CRUD数据层"""
-        super().__init__(model=WorkflowRunLogModel, auth=auth)
-
-    async def list_crud(
-        self,
-        search: dict | None = None,
-        order_by: list[dict] | None = None,
-        preload: list[str | Any] | None = None,
-    ) -> Sequence[WorkflowRunLogModel]:
-        """获取工作流运行日志列表"""
-        return await self.list(search=search, order_by=order_by, preload=preload)
-
-    async def create_crud(self, data: WorkflowRunLogCreateSchema) -> WorkflowRunLogModel | None:
-        """创建工作流运行日志"""
-        return await self.create(data=data)
-
-    async def page_crud(
-        self,
-        offset: int,
-        limit: int,
-        order_by: list[dict] | None = None,
-        search: dict | None = None,
-        preload: list | None = None,
-    ) -> dict:
-        """分页查询工作流运行日志"""
-        order_by_list = order_by or [{"id": "desc"}]
-        search_dict = search or {}
-
-        return await self.page(
-            offset=offset,
-            limit=limit,
-            order_by=order_by_list,
-            search=search_dict,
-            out_schema=WorkflowRunLogOutSchema,
             preload=preload,
         )

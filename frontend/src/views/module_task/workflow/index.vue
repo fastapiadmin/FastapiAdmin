@@ -15,19 +15,6 @@
         <el-form-item prop="code" label="流程编码">
           <el-input v-model="searchForm.code" placeholder="请输入流程编码" clearable />
         </el-form-item>
-        <el-form-item prop="category" label="流程分类">
-          <el-select
-            v-model="searchForm.category"
-            placeholder="请选择流程分类"
-            clearable
-            style="width: 150px"
-          >
-            <el-option label="数据处理" value="data" />
-            <el-option label="业务流程" value="business" />
-            <el-option label="通知流程" value="notification" />
-            <el-option label="审批流程" value="approval" />
-          </el-select>
-        </el-form-item>
         <el-form-item>
           <el-button
             v-hasPerm="['module_task:workflow:query']"
@@ -132,16 +119,8 @@
           <el-empty :image-size="80" description="暂无数据" />
         </template>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="流程名称" width="200" />
-        <el-table-column prop="code" label="流程编码" width="150" />
-        <el-table-column prop="category" label="流程分类" width="120">
-          <template #default="{ row }">
-            <el-tag :type="getCategoryType(row.category) as any">
-              {{ getCategoryText(row.category) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
+        <el-table-column prop="name" label="名称" width="200" />
+        <el-table-column prop="code" label="编码" width="150" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status) as any">
@@ -149,11 +128,25 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="description" label="描述" show-overflow-tooltip />
         <el-table-column prop="created_time" label="创建时间" width="180" />
         <el-table-column label="操作" width="300" fixed="right" align="center">
           <template #default="{ row }">
             <el-space class="flex">
-              <el-dropdown @command="(e) => handleExecute(e, row)">
+              <el-button
+                v-if="row.status === 'draft'"
+                type="success"
+                size="small"
+                link
+                icon="upload"
+                @click="handlePublish(row)"
+              >
+                发布
+              </el-button>
+              <el-dropdown
+                v-if="row.status === 'published'"
+                @command="(e) => handleExecute(e, row)"
+              >
                 <el-button type="warning" size="small" link icon="video-play">
                   执行
                   <el-icon><ArrowDown /></el-icon>
@@ -161,15 +154,9 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item command="execute">立即执行</el-dropdown-item>
-                    <el-dropdown-item command="pause">暂停</el-dropdown-item>
-                    <el-dropdown-item command="resume">恢复</el-dropdown-item>
-                    <el-dropdown-item command="terminate">终止</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-button type="info" size="small" link icon="document" @click="handleViewRuns(row)">
-                执行记录
-              </el-button>
               <el-button type="primary" size="small" link icon="edit" @click="handleEdit(row)">
                 编辑
               </el-button>
@@ -197,8 +184,6 @@
       :workflow="selectedWorkflow"
       @refresh="handleRefresh"
     />
-
-    <WorkflowRunDrawer v-model:visible="runListVisible" :workflow-name="selectedWorkflowName" />
   </div>
 </template>
 
@@ -211,20 +196,16 @@ import WorkflowAPI, {
   type WorkflowPageQuery,
 } from "@/api/module_task/workflow";
 import WorkflowDesignDrawer from "./components/WorkflowDesignDrawer.vue";
-import WorkflowRunDrawer from "./components/WorkflowRunDrawer.vue";
 
 const visible = ref(true);
 const loading = ref(false);
 const dataSource = ref<WorkflowTable[]>([]);
 const selectedWorkflow = ref<WorkflowTable>();
-const selectedWorkflowName = ref<string>();
 const createVisible = ref(false);
-const runListVisible = ref(false);
 
 const searchForm = reactive<Partial<WorkflowPageQuery>>({
   name: undefined,
   code: undefined,
-  category: undefined,
 });
 
 const workflowPagination = reactive({
@@ -238,10 +219,9 @@ const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
   { prop: "name", label: "名称", show: true },
-  { prop: "code", label: "代码", show: true },
-  { prop: "category", label: "分类", show: true },
-  { prop: "description", label: "描述", show: true },
+  { prop: "code", label: "编码", show: true },
   { prop: "status", label: "状态", show: true },
+  { prop: "description", label: "描述", show: true },
   { prop: "created_time", label: "创建时间", show: true },
 ]);
 
@@ -274,7 +254,6 @@ const handleResetQuery = () => {
   Object.assign(searchForm, {
     name: undefined,
     code: undefined,
-    category: undefined,
   });
   handleQuery();
 };
@@ -293,16 +272,8 @@ const handleEdit = (record: WorkflowTable) => {
   createVisible.value = true;
 };
 
-const handleExecute = async (action: string, record: WorkflowTable) => {
-  const actionTextMap: Record<string, string> = {
-    execute: "立即执行",
-    pause: "暂停",
-    resume: "恢复",
-    terminate: "终止",
-  };
-  const actionText = actionTextMap[action];
-
-  ElMessageBox.confirm(`确定要${actionText}此工作流吗？`, "确认操作", {
+const handlePublish = (record: WorkflowTable) => {
+  ElMessageBox.confirm("确定要发布此工作流吗？发布后可执行。", "确认发布", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
@@ -313,34 +284,44 @@ const handleExecute = async (action: string, record: WorkflowTable) => {
           ElMessage.error("工作流ID不存在");
           return;
         }
-
-        if (action === "execute") {
-          await WorkflowAPI.executeWorkflow({
-            workflow_id: record.id,
-            variables: {},
-          });
-          ElMessage.success("工作流执行成功");
-        } else if (action === "pause") {
-          await WorkflowAPI.pauseWorkflow(record.id);
-          ElMessage.success("工作流已暂停");
-        } else if (action === "resume") {
-          await WorkflowAPI.resumeWorkflow(record.id);
-          ElMessage.success("工作流已恢复");
-        } else if (action === "terminate") {
-          await WorkflowAPI.terminateWorkflow(record.id);
-          ElMessage.success("工作流已终止");
-        }
+        await WorkflowAPI.publishWorkflow(record.id, {});
+        ElMessage.success("发布成功");
         loadData();
       } catch {
-        ElMessage.error(`${actionText}失败`);
+        ElMessage.error("发布失败");
       }
     })
     .catch();
 };
 
-const handleViewRuns = (record: WorkflowTable) => {
-  selectedWorkflowName.value = record.name;
-  runListVisible.value = true;
+const handleExecute = async (action: string, record: WorkflowTable) => {
+  if (action === "execute") {
+    ElMessageBox.confirm("确定要立即执行此工作流吗？", "确认执行", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    })
+      .then(async () => {
+        try {
+          if (!record.id) {
+            ElMessage.error("工作流ID不存在");
+            return;
+          }
+          const res = await WorkflowAPI.executeWorkflow({
+            workflow_id: record.id,
+            variables: {},
+          });
+          if (res.data?.data) {
+            const result = res.data.data;
+            ElMessage.success(`工作流执行${result.status === "completed" ? "成功" : "失败"}`);
+          }
+          loadData();
+        } catch {
+          ElMessage.error("执行失败");
+        }
+      })
+      .catch();
+  }
 };
 
 const handleDelete = (record: WorkflowTable) => {
@@ -367,26 +348,6 @@ const handleDelete = (record: WorkflowTable) => {
 
 const handleRefresh = () => {
   loadData();
-};
-
-const getCategoryType = (category: string) => {
-  const typeMap: Record<string, string> = {
-    data: "",
-    business: "success",
-    notification: "warning",
-    approval: "danger",
-  };
-  return typeMap[category] || "";
-};
-
-const getCategoryText = (category: string) => {
-  const textMap: Record<string, string> = {
-    data: "数据处理",
-    business: "业务流程",
-    notification: "通知流程",
-    approval: "审批流程",
-  };
-  return textMap[category] || category;
 };
 
 const getStatusType = (status: string) => {

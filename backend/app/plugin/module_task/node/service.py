@@ -1,7 +1,7 @@
 from app.api.v1.module_system.auth.schema import AuthSchema
+from app.core.ap_scheduler import SchedulerUtil
 from app.core.exceptions import CustomException
 from app.utils.cron_util import CronUtil
-from app.core.ap_scheduler import SchedulerUtil
 
 from .crud import NodeCRUD
 from .schema import (
@@ -41,7 +41,6 @@ class NodeService:
                 "name": obj.name,
                 "code": obj.code,
                 "category": obj.category,
-                "config_schema": obj.config_schema if obj.config_schema else {"fields": []},
                 "func": obj.func,
                 "args": obj.args,
                 "kwargs": obj.kwargs,

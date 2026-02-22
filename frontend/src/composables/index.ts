@@ -2,3 +2,9 @@
 // AI 相关
 export { useAiAction } from "./ai/useAiAction";
 export type { UseAiActionOptions, AiActionHandler } from "./ai/useAiAction";
+
+// 任务相关
+export { useDebounce, useThrottle } from "./task/usePerformance";
+export { useNodeDrag } from "./task/useNodeDrag";
+export { useNodeOperations } from "./task/useNodeOperations";
+export { useWorkflowHistory } from "./task/useWorkflowHistory";

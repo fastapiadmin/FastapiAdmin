@@ -5,8 +5,10 @@ interface DragItem {
   data: {
     label: string;
     type: string;
-    config: any;
+    args?: string;
+    kwargs?: string;
     nodeId?: number;
+    category?: string;
   };
   type: string;
   position: { x: number; y: number };
@@ -20,6 +22,8 @@ interface NodeItem {
   icon?: string;
   color?: string;
   class?: string;
+  args?: string;
+  kwargs?: string;
 }
 
 interface Coordinate {
@@ -52,8 +56,10 @@ export function useNodeDrag() {
       data: {
         label: item.name,
         type: item.type,
-        config: {},
+        args: item.args || "",
+        kwargs: item.kwargs || "{}",
         nodeId: item.id,
+        category: (item as any).category,
       },
       type: item.type,
       position: { x: 0, y: 0 },

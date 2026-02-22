@@ -29,7 +29,6 @@ class NodeCreateSchema(BaseModel):
     end_date: str | None = Field(default=None, description="结束时间")
     code: str | None = Field(default=None, description="节点编码")
     category: str | None = Field(default=None, description="节点分类")
-    config_schema: dict | None = Field(default=None, description="节点配置")
 
     @model_validator(mode="after")
     def _validate_func(self):

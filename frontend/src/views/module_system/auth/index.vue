@@ -163,9 +163,6 @@ const showVoteNotification = () => {
   });
 };
 
-// 组件初始化时就加载配置，而不是在onMounted中
-configStore.getConfig();
-
 onMounted(() => {
   setTimeout(showVoteNotification, 500);
 });

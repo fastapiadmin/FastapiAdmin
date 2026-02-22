@@ -96,7 +96,6 @@ export interface NodeTable extends BaseType {
   name: string;
   code: string;
   category?: string;
-  config_schema?: Record<string, unknown>;
   jobstore?: string;
   executor?: string;
   trigger?: TriggerType;
@@ -117,7 +116,6 @@ export interface NodeForm {
   name: string;
   code?: string;
   category?: string;
-  config_schema?: Record<string, unknown>;
   jobstore?: string;
   executor?: string;
   func?: string;
@@ -134,5 +132,7 @@ export interface NodeType {
   name: string;
   code: string;
   category?: string;
-  config_schema?: Record<string, unknown>;
+  func?: string;
+  args?: string;
+  kwargs?: string;
 }

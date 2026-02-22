@@ -26,18 +26,6 @@
                 <el-form-item label="名称" prop="name">
                   <el-input v-model="formData.name" placeholder="请输入流程名称" />
                 </el-form-item>
-                <el-form-item label="分类" prop="category">
-                  <el-select
-                    v-model="formData.category"
-                    placeholder="请选择流程分类"
-                    style="width: 100%"
-                  >
-                    <el-option label="数据处理" value="data" />
-                    <el-option label="业务流程" value="business" />
-                    <el-option label="通知流程" value="notification" />
-                    <el-option label="审批流程" value="approval" />
-                  </el-select>
-                </el-form-item>
                 <el-form-item label="描述" prop="description">
                   <el-input
                     v-model="formData.description"
@@ -105,6 +93,12 @@
                 <Controls />
                 <Background pattern-color="#aaa" :gap="16" />
                 <Panel position="top-right" class="workflow-toolbar">
+                  <el-button
+                    class="vue-flow__controls-button"
+                    title="格式化画布"
+                    :icon="Grid"
+                    @click="handleFormatCanvas"
+                  />
                   <el-dropdown trigger="click" @command="handleEdgeStyleChange">
                     <el-button class="vue-flow__controls-button" title="连线样式" :icon="Share" />
                     <template #dropdown>
@@ -137,7 +131,7 @@
                     @click="handleEdgeAnimatedChange(!edgeAnimated)"
                   />
                   <el-dropdown trigger="click">
-                    <el-button class="vue-flow__controls-button" title="布局">
+                    <el-button class="vue-flow__controls-button" title="布局方向">
                       <el-icon><Rank /></el-icon>
                     </el-button>
                     <template #dropdown>
@@ -203,7 +197,7 @@ import { Panel, VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { MiniMap } from "@vue-flow/minimap";
 import { Controls } from "@vue-flow/controls";
-import { Search, Share, VideoPlay, Rank } from "@element-plus/icons-vue";
+import { Search, Share, VideoPlay, Rank, Grid } from "@element-plus/icons-vue";
 import type { Node, Edge, DefaultEdgeOptions, MarkerType } from "@vue-flow/core";
 import dagre from "dagre";
 import "@vue-flow/core/dist/style.css";
@@ -217,9 +211,9 @@ import NodeConfigPanel from "./NodeConfigPanel.vue";
 import EdgeConfigPanel from "./EdgeConfigPanel.vue";
 import NodeAPI from "@/api/module_task/node";
 import WorkflowAPI, { type WorkflowTable, type WorkflowForm } from "@/api/module_task/workflow";
-import { useWorkflowHistory } from "@/composables/useWorkflowHistory";
-import { useNodeDrag } from "@/composables/useNodeDrag";
-import { useNodeOperations } from "@/composables/useNodeOperations";
+import { useWorkflowHistory } from "@/composables/task/useWorkflowHistory";
+import { useNodeDrag } from "@/composables/task/useNodeDrag";
+import { useNodeOperations } from "@/composables/task/useNodeOperations";
 
 defineOptions({
   name: "WorkflowCreateDrawer",
@@ -245,14 +239,12 @@ const workflowId = ref<number>();
 const formData = reactive<Partial<WorkflowForm>>({
   code: "",
   name: "",
-  category: "business",
   description: "",
 });
 
 const formRules = {
   code: [{ required: true, message: "请输入流程编码", trigger: "blur" }],
   name: [{ required: true, message: "请输入流程名称", trigger: "blur" }],
-  category: [{ required: true, message: "请选择流程分类", trigger: "change" }],
 };
 
 const dialogVisible = computed({
@@ -366,6 +358,61 @@ const handleLayout = () => {
   ElMessage.success("画布布局完成");
 };
 
+const handleFormatCanvas = () => {
+  const currentNodes = getNodesRef.value;
+  const currentEdges = getEdgesRef.value;
+
+  if (currentNodes.length === 0) {
+    ElMessage.warning("画布中没有节点，无法格式化");
+    return;
+  }
+
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+  const nodeWidth = 180;
+  const nodeHeight = 60;
+
+  dagreGraph.setGraph({
+    rankdir: layoutDirection.value,
+    nodesep: 100,
+    ranksep: 150,
+    marginx: 80,
+    marginy: 80,
+  });
+
+  currentNodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  currentEdges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = currentNodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+
+  setNodes(layoutedNodes);
+  setEdges(
+    currentEdges.map((edge) => ({
+      ...edge,
+      type: edgeStyle.value,
+      animated: edgeAnimated.value,
+    }))
+  );
+  ElMessage.success("画布格式化完成");
+};
+
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
 
@@ -376,6 +423,8 @@ type LoadedNodeType = {
   type: string;
   name: string;
   category: string;
+  args?: string;
+  kwargs?: string;
 };
 
 const allNodes = ref<LoadedNodeType[]>([]);
@@ -391,11 +440,11 @@ const filteredNodes = computed(() => {
 const getCategoryType = (category: string) => {
   const typeMap: Record<string, string> = {
     trigger: "warning",
-    action: "",
+    action: "primary",
     condition: "success",
     control: "info",
   };
-  return typeMap[category] || "";
+  return typeMap[category] || "info";
 };
 
 const getCategoryText = (category: string) => {
@@ -442,6 +491,8 @@ const loadNodeTypes = async () => {
         type: nodeType.code,
         name: nodeType.name,
         category: nodeType.category || "action",
+        args: nodeType.args || "",
+        kwargs: nodeType.kwargs || "{}",
       }));
 
       const newTypes: Record<string, Component> = {};
@@ -669,7 +720,6 @@ watch(
       Object.assign(formData, {
         code: newWorkflow.code,
         name: newWorkflow.name,
-        category: newWorkflow.category,
         description: newWorkflow.description,
       });
       workflowId.value = newWorkflow.id;
@@ -679,7 +729,6 @@ watch(
       Object.assign(formData, {
         code: "",
         name: "",
-        category: "business",
         description: "",
       });
       workflowId.value = undefined;

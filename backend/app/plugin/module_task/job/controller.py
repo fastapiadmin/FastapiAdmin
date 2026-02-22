@@ -6,11 +6,11 @@ from fastapi.responses import JSONResponse
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.common.request import PaginationService
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core.ap_scheduler import SchedulerUtil
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
-from app.core.ap_scheduler import SchedulerUtil
 
 from .schema import JobOutSchema, JobQueryParam
 from .service import JobService

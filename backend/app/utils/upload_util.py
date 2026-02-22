@@ -1,6 +1,3 @@
-import hashlib
-import imghdr
-import mimetypes
 import os
 import random
 import re
@@ -14,7 +11,6 @@ from fastapi import UploadFile
 from app.config.setting import settings
 from app.core.exceptions import CustomException
 from app.core.logger import log
-
 
 DANGEROUS_EXTENSIONS = {
     ".py",

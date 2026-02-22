@@ -2,8 +2,6 @@ import json
 from datetime import datetime
 from typing import Any
 
-from redis.asyncio import Redis
-
 from apscheduler.events import (
     EVENT_ALL,
     EVENT_JOB_ERROR,
@@ -25,15 +23,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from redis.asyncio import Redis
 
-from app.common.enums import RedisInitKeyConfig
 from app.config.setting import settings
 from app.core.database import engine
 from app.core.logger import log
-from app.core.redis_crud import RedisCURD
-from app.utils.cron_util import CronUtil
 from app.plugin.module_task.node.model import NodeModel
-
+from app.utils.cron_util import CronUtil
 
 scheduler = AsyncIOScheduler()
 scheduler.configure(

@@ -24,37 +24,19 @@
           <ElInput v-model="formData.label" placeholder="请输入节点名称" />
         </ElFormItem>
 
-        <ElFormItem v-if="nodeConfigSchema && nodeConfigSchema.length > 0" label="节点配置">
-          <div v-for="(field, index) in nodeConfigSchema" :key="index" class="config-field">
-            <ElFormItem :label="field.label">
-              <ElInput
-                v-if="field.type === 'text' || field.type === 'textarea'"
-                v-model="formData.config[field.key]"
-                :type="field.type"
-                :rows="field.rows || 2"
-                :placeholder="field.placeholder || `请输入${field.label}`"
-              />
-              <ElSelect
-                v-else-if="field.type === 'select'"
-                v-model="formData.config[field.key]"
-                :placeholder="field.placeholder || `请选择${field.label}`"
-              >
-                <ElOption
-                  v-for="option in field.options"
-                  :key="option.value"
-                  :label="option.label"
-                  :value="option.value"
-                />
-              </ElSelect>
-              <ElInputNumber
-                v-else-if="field.type === 'number'"
-                v-model="formData.config[field.key]"
-                :min="field.min"
-                :max="field.max"
-              />
-              <ElSwitch v-else-if="field.type === 'boolean'" v-model="formData.config[field.key]" />
-            </ElFormItem>
-          </div>
+        <ElFormItem label="位置参数">
+          <ElInput v-model="formData.args" placeholder="多个参数用逗号分隔，如: arg1, arg2, arg3" />
+          <div class="field-hint">多个参数用逗号分隔</div>
+        </ElFormItem>
+
+        <ElFormItem label="关键字参数">
+          <ElInput
+            v-model="formData.kwargsStr"
+            type="textarea"
+            :rows="4"
+            placeholder='JSON格式，如: {"key": "value", "count": 10}'
+          />
+          <div class="field-hint">JSON 格式的关键字参数</div>
         </ElFormItem>
 
         <ElFormItem label="描述">
@@ -84,8 +66,6 @@ import {
   ElInput,
   ElSelect,
   ElOption,
-  ElInputNumber,
-  ElSwitch,
   ElMessage,
   ElIcon,
 } from "element-plus";
@@ -102,13 +82,12 @@ const props = defineProps({
 const emit = defineEmits(["close", "save", "delete"]);
 
 const nodeTypes = ref<NodeType[]>([]);
-const selectedTemplate = ref<number>();
-const nodeConfigSchema = ref<any[]>([]);
 
 const formData = ref({
   type: props.node?.type || "",
   label: props.node?.data?.label || "",
-  config: props.node?.data?.config || {},
+  args: props.node?.data?.args || "",
+  kwargsStr: props.node?.data?.kwargsStr || "{}",
   description: props.node?.data?.description || "",
 });
 
@@ -125,33 +104,36 @@ const loadNodeTypes = async () => {
 
 const handleTypeChange = async (typeCode: string) => {
   const nodeType = nodeTypes.value.find((t) => t.code === typeCode);
-  if (nodeType && nodeType.config_schema) {
-    nodeConfigSchema.value = nodeType.config_schema.fields || [];
-  } else {
-    nodeConfigSchema.value = [];
+  if (nodeType) {
+    formData.value.args = nodeType.args || "";
+    formData.value.kwargsStr = nodeType.kwargs || "{}";
   }
-
-  selectedTemplate.value = undefined;
-  formData.value.config = {};
 };
 
 watch(
   () => props.node,
   (newNode) => {
     if (newNode) {
+      const kwargsData = newNode.data?.kwargs;
+      let kwargsStr = "{}";
+      if (kwargsData) {
+        if (typeof kwargsData === "string") {
+          kwargsStr = kwargsData;
+        } else if (typeof kwargsData === "object") {
+          kwargsStr = JSON.stringify(kwargsData, null, 2);
+        }
+      }
+
       formData.value = {
         type: newNode.type || "",
         label: newNode.data?.label || "",
-        config: newNode.data?.config || {},
+        args: newNode.data?.args || "",
+        kwargsStr,
         description: newNode.data?.description || "",
       };
-
-      if (newNode.type) {
-        handleTypeChange(newNode.type);
-      }
     }
   },
-  { deep: true }
+  { deep: true, immediate: true }
 );
 
 function handleClose() {
@@ -159,7 +141,22 @@ function handleClose() {
 }
 
 function handleSave() {
-  emit("save", formData.value);
+  try {
+    if (formData.value.kwargsStr && formData.value.kwargsStr.trim()) {
+      JSON.parse(formData.value.kwargsStr);
+    }
+  } catch {
+    ElMessage.error("关键字参数 JSON 格式错误");
+    return;
+  }
+
+  emit("save", {
+    type: formData.value.type,
+    label: formData.value.label,
+    args: formData.value.args,
+    kwargs: formData.value.kwargsStr,
+    description: formData.value.description,
+  });
   ElMessage.success("保存成功");
 }
 
@@ -201,8 +198,10 @@ onMounted(() => {
   overflow-y: auto;
 }
 
-.config-field {
-  margin-bottom: 8px;
+.field-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #909399;
 }
 
 .panel-actions {

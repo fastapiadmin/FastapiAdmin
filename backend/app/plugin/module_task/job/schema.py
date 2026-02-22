@@ -34,10 +34,9 @@ class JobUpdateSchema(BaseModel):
 
 class JobOutSchema(JobCreateSchema, BaseSchema):
     """执行日志响应模型"""
-    
+
     model_config = ConfigDict(from_attributes=True)
     ...
-
 
 
 class JobQueryParam:
