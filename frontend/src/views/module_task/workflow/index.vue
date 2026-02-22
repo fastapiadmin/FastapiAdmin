@@ -153,23 +153,8 @@
         <el-table-column label="操作" width="300" fixed="right" align="center">
           <template #default="{ row }">
             <el-space class="flex">
-              <el-button type="primary" size="small" link icon="edit" @click="handleEdit(row)">
-                编辑
-              </el-button>
-              <el-button type="danger" size="small" link icon="delete" @click="handleDelete(row)">
-                删除
-              </el-button>
-              <el-button
-                type="primary"
-                size="small"
-                link
-                icon="document"
-                @click="handleViewRuns(row)"
-              >
-                执行记录
-              </el-button>
               <el-dropdown @command="(e) => handleExecute(e, row)">
-                <el-button type="primary" size="small" link icon="video-play">
+                <el-button type="warning" size="small" link icon="video-play">
                   执行
                   <el-icon><ArrowDown /></el-icon>
                 </el-button>
@@ -182,6 +167,15 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
+              <el-button type="info" size="small" link icon="document" @click="handleViewRuns(row)">
+                执行记录
+              </el-button>
+              <el-button type="primary" size="small" link icon="edit" @click="handleEdit(row)">
+                编辑
+              </el-button>
+              <el-button type="danger" size="small" link icon="delete" @click="handleDelete(row)">
+                删除
+              </el-button>
             </el-space>
           </template>
         </el-table-column>

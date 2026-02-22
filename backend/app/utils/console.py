@@ -15,9 +15,10 @@ def console_run(
     port: int,
     reload: bool,
     *,
+    database_ready: bool | None = None,
     redis_ready: bool | None = None,
-    scheduler_jobs: int | None = None,
-    scheduler_status: str | None = None,
+    scheduler_ready: bool | None = None,
+    limiter_ready: bool | None = None,
 ) -> None:
     """显示启动信息面板"""
 
@@ -37,20 +38,27 @@ def console_run(
         style="bold red",
     )
     service_info.append(
-        f"\n重载配置: {'✅ 开启' if reload else '❌ 关闭'}",
+        f"\n重载配置: {'✅ 启动' if reload else '❌ 关闭'}",
         style="bold italic",
     )
     service_info.append(
-        f"\n调试模式: {'✅ 开启' if settings.DEBUG else '❌ 关闭'}",
-        style="bold italic",
-    )
-    service_info.append(f"\n数据库类型: {settings.DATABASE_TYPE} 数据库", style="bold italic")
-    service_info.append(
-        f"\nRedis: {'✅ 已连接' if redis_ready else '❌ 未连接'}",
+        f"\n调试模式: {'✅ 启动' if settings.DEBUG else '❌ 关闭'}",
         style="bold italic",
     )
     service_info.append(
-        f"\n定时任务 {'✅ 运行中' if scheduler_status == 'running' else '⏸️ 暂停'} {scheduler_jobs}",
+        f"\n{settings.DATABASE_TYPE}: {'✅ 启动' if database_ready else '❌ 关闭'}",
+        style="bold italic",
+    )
+    service_info.append(
+        f"\nRedis: {'✅ 启动' if redis_ready else '❌ 关闭'}",
+        style="bold italic",
+    )
+    service_info.append(
+        f"\n调度器: {'✅ 启动' if scheduler_ready else '❌ 关闭'}",
+        style="bold italic",
+    )
+    service_info.append(
+        f"\n限流器: {'✅ 启动' if limiter_ready else '❌ 关闭'}",
         style="bold italic",
     )
 

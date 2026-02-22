@@ -3,87 +3,98 @@ import request from "@/utils/request";
 const API_PATH = "/task/job";
 
 const JobAPI = {
-  listJob(query: JobPageQuery) {
-    return request<ApiResponse<PageResult<JobTable[]>>>({
-      url: `${API_PATH}/list`,
-      method: "get",
-      params: query,
-    });
-  },
-
-  detailJob(query: number) {
-    return request<ApiResponse<JobTable>>({
-      url: `${API_PATH}/detail/${query}`,
+  getSchedulerStatus() {
+    return request<ApiResponse<SchedulerStatus>>({
+      url: `${API_PATH}/scheduler/status`,
       method: "get",
     });
   },
 
-  createJob(body: JobForm) {
+  getSchedulerJobs() {
+    return request<ApiResponse<SchedulerJob[]>>({
+      url: `${API_PATH}/scheduler/jobs`,
+      method: "get",
+    });
+  },
+
+  startScheduler() {
     return request<ApiResponse>({
-      url: `${API_PATH}/create`,
+      url: `${API_PATH}/scheduler/start`,
       method: "post",
-      data: body,
     });
   },
 
-  updateJob(id: number, body: JobForm) {
+  pauseScheduler() {
     return request<ApiResponse>({
-      url: `${API_PATH}/update/${id}`,
-      method: "put",
-      data: body,
-    });
-  },
-
-  deleteJob(body: number[]) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/delete`,
-      method: "delete",
-      data: body,
-    });
-  },
-
-  exportJob(body: JobPageQuery) {
-    return request<Blob>({
-      url: `${API_PATH}/export`,
+      url: `${API_PATH}/scheduler/pause`,
       method: "post",
-      data: body,
-      responseType: "blob",
     });
   },
 
-  clearJob() {
+  resumeScheduler() {
     return request<ApiResponse>({
-      url: `${API_PATH}/clear`,
+      url: `${API_PATH}/scheduler/resume`,
+      method: "post",
+    });
+  },
+
+  shutdownScheduler() {
+    return request<ApiResponse>({
+      url: `${API_PATH}/scheduler/shutdown`,
+      method: "post",
+    });
+  },
+
+  clearAllJobs() {
+    return request<ApiResponse>({
+      url: `${API_PATH}/scheduler/jobs/clear`,
       method: "delete",
     });
   },
 
-  OptionJob(params: JobOptionData) {
+  getSchedulerConsole() {
+    return request<ApiResponse<string>>({
+      url: `${API_PATH}/scheduler/console`,
+      method: "get",
+    });
+  },
+
+  syncJobsToDb() {
+    return request<ApiResponse<number>>({
+      url: `${API_PATH}/scheduler/sync`,
+      method: "post",
+    });
+  },
+
+  pauseJob(jobId: string) {
     return request<ApiResponse>({
-      url: `${API_PATH}/option`,
-      method: "put",
-      data: params,
+      url: `${API_PATH}/task/pause/${jobId}`,
+      method: "post",
     });
   },
 
-  // 获取定时任务运行日志（实时状态）
-  getJobRunLog() {
-    return request<ApiResponse<JobRunLog[]>>({
-      url: `${API_PATH}/log`,
-      method: "get",
+  resumeJob(jobId: string) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/task/resume/${jobId}`,
+      method: "post",
     });
   },
 
-  // 获取定时任务日志详情
-  detailJobLog(id: number) {
-    return request<ApiResponse<JobLogDetail>>({
-      url: `${API_PATH}/log/detail/${id}`,
-      method: "get",
+  runJobNow(jobId: string) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/task/run/${jobId}`,
+      method: "post",
     });
   },
 
-  // 查询定时任务日志列表
-  listJobLog(query: JobLogPageQuery) {
+  removeJob(jobId: string) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/task/remove/${jobId}`,
+      method: "delete",
+    });
+  },
+
+  getJobLogList(query: JobLogPageQuery) {
     return request<ApiResponse<PageResult<JobLogTable[]>>>({
       url: `${API_PATH}/log/list`,
       method: "get",
@@ -91,7 +102,13 @@ const JobAPI = {
     });
   },
 
-  // 删除定时任务日志
+  getJobLogDetail(id: number) {
+    return request<ApiResponse<JobLogTable>>({
+      url: `${API_PATH}/log/detail/${id}`,
+      method: "get",
+    });
+  },
+
   deleteJobLog(ids: number[]) {
     return request<ApiResponse>({
       url: `${API_PATH}/log/delete`,
@@ -100,126 +117,44 @@ const JobAPI = {
     });
   },
 
-  // 清空定时任务日志
   clearJobLog() {
     return request<ApiResponse>({
       url: `${API_PATH}/log/clear`,
       method: "delete",
     });
   },
-
-  // 导出定时任务日志
-  exportJobLog(query: JobLogPageQuery) {
-    return request<Blob>({
-      url: `${API_PATH}/log/export`,
-      method: "post",
-      data: query,
-      responseType: "blob",
-    });
-  },
-
-  //立即执行定时任务
-  runJob(id: number) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/run/${id}`,
-      method: "put",
-    });
-  },
 };
 
 export default JobAPI;
 
-export interface JobPageQuery extends PageQuery {
-  name?: string;
-  status?: string;
-  created_id?: number;
-  updated_id?: number;
-  created_time?: string[];
-  updated_time?: string[];
+export interface SchedulerStatus {
+  status: string;
+  is_running: boolean;
+  job_count: number;
+}
+
+export interface SchedulerJob {
+  id: string;
+  name: string;
+  trigger: string;
+  next_run_time?: string;
+  status: string;
 }
 
 export interface JobLogPageQuery extends PageQuery {
-  job_id?: number;
+  job_id?: string;
   job_name?: string;
   status?: string;
-  created_time?: string[];
-  updated_time?: string[];
+  trigger_type?: string;
 }
 
-export interface JobOptionData {
-  id?: number;
-  option?: number; //操作类型 1: 暂停 2: 恢复 3: 重启
-}
-
-export interface JobTable extends BaseType {
-  name: string;
-  func?: string;
-  trigger?: string;
-  args?: string;
-  kwargs?: string;
-  coalesce?: boolean;
-  max_instances?: number;
-  jobstore?: string;
-  executor?: string;
-  trigger_args?: string;
-  start_date?: string;
-  end_date?: string;
-  created_by?: CommonType;
-  updated_by?: CommonType;
-}
-
-export interface JobForm extends BaseFormType {
-  name?: string;
-  func?: string;
-  trigger?: string;
-  args?: string;
-  kwargs?: string;
-  coalesce?: boolean;
-  max_instances?: number;
-  jobstore?: string;
-  executor?: string;
-  trigger_args?: string;
-  start_date?: string;
-  end_date?: string;
-}
-
-// 定时任务运行日志接口（对应Scheduler实时状态）
-export interface JobRunLog extends BaseType {
-  name: string;
-  trigger: string;
-  executor: string;
-  func: string;
-  func_ref: string;
-  args: any[];
-  kwargs: any;
-  misfire_grace_time: number;
-  coalesce: boolean;
-  max_instances: number;
-  next_run_time: string;
-}
-
-// 定时任务日志详情接口（对应数据库日志表）
-export interface JobLogDetail extends BaseType {
-  job_name: string;
-  job_group: string;
-  job_executor: string;
-  invoke_target: string;
-  job_args?: string;
-  job_kwargs?: string;
-  job_trigger?: string;
-  job_message?: string;
-  exception_info?: string;
-}
-
-// 定时任务日志列表接口（对应数据库日志表）
 export interface JobLogTable extends BaseType {
-  job_name: string;
-  job_group: string;
-  job_executor: string;
-  invoke_target: string;
-  job_args?: string;
-  job_kwargs?: string;
-  job_trigger?: string;
-  job_message?: string;
-  exception_info?: string;
+  job_id: string;
+  job_name?: string;
+  trigger_type?: string;
+  status: string;
+  result?: string;
+  error?: string;
+  created_time?: string;
+  updated_time?: string;
 }

@@ -4,6 +4,7 @@
       v-if="isJson"
       :data="parsed"
       :show-line="true"
+      :show-icon="true"
       :show-double-quotes="false"
       :show-length="true"
       :deep="3"

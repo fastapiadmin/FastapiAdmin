@@ -11,7 +11,7 @@
       <el-splitter direction="horizontal" style="height: 100%">
         <el-splitter-panel size="250px" :min="200" :max="400">
           <el-scrollbar style="height: 100%">
-            <div class="basic-info-section">
+            <div class="panel-section">
               <div class="section-title">基础信息</div>
               <el-form
                 ref="formRef"
@@ -67,8 +67,8 @@
               <el-space direction="vertical" :size="8" fill style="width: 100%; margin-top: 8px">
                 <el-tag
                   v-for="item in filteredNodes"
-                  :key="'id' in item ? item.id : item.type"
-                  :type="getNodeType(item)"
+                  :key="item.id"
+                  :type="getCategoryType(item.category) as any"
                   effect="plain"
                   draggable="true"
                   style="justify-content: center; cursor: move; user-select: none"
@@ -76,6 +76,9 @@
                   @dragend="onDragEnd"
                 >
                   {{ item.name }}
+                  <span style="margin-left: 4px; font-size: 10px; opacity: 0.7">
+                    [{{ getCategoryText(item.category) }}]
+                  </span>
                 </el-tag>
               </el-space>
             </div>
@@ -101,6 +104,65 @@
               >
                 <Controls />
                 <Background pattern-color="#aaa" :gap="16" />
+                <Panel position="top-right" class="workflow-toolbar">
+                  <el-dropdown trigger="click" @command="handleEdgeStyleChange">
+                    <el-button class="vue-flow__controls-button" title="连线样式" :icon="Share" />
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item
+                          command="bezier"
+                          :class="{ active: edgeStyle === 'bezier' }"
+                        >
+                          平滑曲线
+                        </el-dropdown-item>
+                        <el-dropdown-item
+                          command="smoothstep"
+                          :class="{ active: edgeStyle === 'smoothstep' }"
+                        >
+                          阶梯折线
+                        </el-dropdown-item>
+                        <el-dropdown-item
+                          command="straight"
+                          :class="{ active: edgeStyle === 'straight' }"
+                        >
+                          直线
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                  <el-button
+                    class="vue-flow__controls-button"
+                    :title="edgeAnimated ? '关闭动画' : '开启动画'"
+                    :icon="VideoPlay"
+                    @click="handleEdgeAnimatedChange(!edgeAnimated)"
+                  />
+                  <el-dropdown trigger="click">
+                    <el-button class="vue-flow__controls-button" title="布局">
+                      <el-icon><Rank /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item
+                          @click="
+                            layoutDirection = 'LR';
+                            handleLayout();
+                          "
+                        >
+                          横向布局
+                        </el-dropdown-item>
+                        <el-dropdown-item
+                          @click="
+                            layoutDirection = 'TB';
+                            handleLayout();
+                          "
+                        >
+                          纵向布局
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </Panel>
+                <MiniMap pannable zoomable />
               </VueFlow>
             </div>
           </div>
@@ -137,14 +199,17 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onMounted, markRaw, type Component } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { VueFlow, useVueFlow } from "@vue-flow/core";
+import { Panel, VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
+import { MiniMap } from "@vue-flow/minimap";
 import { Controls } from "@vue-flow/controls";
-import { Search } from "@element-plus/icons-vue";
+import { Search, Share, VideoPlay, Rank } from "@element-plus/icons-vue";
 import type { Node, Edge, DefaultEdgeOptions, MarkerType } from "@vue-flow/core";
+import dagre from "dagre";
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
+import "@vue-flow/minimap/dist/style.css";
 import "element-plus/dist/index.css";
 
 import DynamicNode from "./DynamicNode.vue";
@@ -219,36 +284,101 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
   markerEnd: "arrowclosed" as MarkerType,
 };
 
+const edgeStyle = ref<string>("smoothstep");
+const edgeAnimated = ref<boolean>(true);
+
+const handleEdgeStyleChange = (value: string) => {
+  edgeStyle.value = value;
+  defaultEdgeOptions.type = value;
+  setEdges(
+    getEdgesRef.value.map((edge) => ({
+      ...edge,
+      type: value,
+    }))
+  );
+};
+
+const handleEdgeAnimatedChange = (value: boolean) => {
+  edgeAnimated.value = value;
+  defaultEdgeOptions.animated = value;
+  setEdges(
+    getEdgesRef.value.map((edge) => ({
+      ...edge,
+      animated: value,
+    }))
+  );
+};
+
+const layoutDirection = ref<"LR" | "TB">("LR");
+
+const handleLayout = () => {
+  const currentNodes = getNodesRef.value;
+  const currentEdges = getEdgesRef.value;
+
+  if (currentNodes.length === 0) {
+    ElMessage.warning("画布中没有节点，无法布局");
+    return;
+  }
+
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+  const nodeWidth = 180;
+  const nodeHeight = 60;
+
+  dagreGraph.setGraph({
+    rankdir: layoutDirection.value,
+    nodesep: 80,
+    ranksep: 120,
+    marginx: 50,
+    marginy: 50,
+  });
+
+  currentNodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  currentEdges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = currentNodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+
+  setNodes(layoutedNodes);
+  setEdges(
+    currentEdges.map((edge) => ({
+      ...edge,
+      type: edgeStyle.value,
+      animated: edgeAnimated.value,
+    }))
+  );
+  ElMessage.success("画布布局完成");
+};
+
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
 
 const searchKeyword = ref("");
 
-type BaseNodeType = {
-  type: string;
-  name: string;
-  color: string;
-};
-
 type LoadedNodeType = {
   id: number;
   type: string;
   name: string;
-  class: string;
+  category: string;
 };
 
-const allNodes = ref<(BaseNodeType | LoadedNodeType)[]>([
-  {
-    type: "input",
-    name: "开始",
-    color: "#67c23a",
-  },
-  {
-    type: "output",
-    name: "结束",
-    color: "#f56c6c",
-  },
-]);
+const allNodes = ref<LoadedNodeType[]>([]);
 
 const filteredNodes = computed(() => {
   if (!searchKeyword.value) {
@@ -258,16 +388,27 @@ const filteredNodes = computed(() => {
   return allNodes.value.filter((node) => node.name.toLowerCase().includes(keyword));
 });
 
-const getNodeType = (item: BaseNodeType | LoadedNodeType) => {
-  if (item.type === "input") return "success";
-  if (item.type === "output") return "danger";
-  return undefined;
+const getCategoryType = (category: string) => {
+  const typeMap: Record<string, string> = {
+    trigger: "warning",
+    action: "",
+    condition: "success",
+    control: "info",
+  };
+  return typeMap[category] || "";
 };
 
-const nodeTypesRegistry = ref<Record<string, Component>>({
-  input: markRaw(DynamicNode),
-  output: markRaw(DynamicNode),
-});
+const getCategoryText = (category: string) => {
+  const textMap: Record<string, string> = {
+    trigger: "触发器",
+    action: "动作",
+    condition: "条件",
+    control: "控制",
+  };
+  return textMap[category] || category;
+};
+
+const nodeTypesRegistry = ref<Record<string, Component>>({});
 
 const updateState = ref("");
 const selectedEdge = ref<Edge>();
@@ -296,27 +437,19 @@ const loadNodeTypes = async () => {
   try {
     const res = await NodeAPI.getNodeTypeOptions();
     if (res.data && res.data.data) {
-      const loadedNodesWithColor: (BaseNodeType | LoadedNodeType)[] = res.data.data.map(
-        (nodeType: any) => ({
-          id: nodeType.id,
-          type: nodeType.code,
-          name: nodeType.name,
-          class: "custom-drag-item",
-          color: "#409eff",
-        })
-      );
-
-      allNodes.value = [...allNodes.value, ...loadedNodesWithColor];
+      allNodes.value = res.data.data.map((nodeType: any) => ({
+        id: nodeType.id,
+        type: nodeType.code,
+        name: nodeType.name,
+        category: nodeType.category || "action",
+      }));
 
       const newTypes: Record<string, Component> = {};
       res.data.data.forEach((nodeType: any) => {
         newTypes[nodeType.code] = markRaw(DynamicNode);
       });
 
-      nodeTypesRegistry.value = {
-        ...nodeTypesRegistry.value,
-        ...newTypes,
-      };
+      nodeTypesRegistry.value = newTypes;
     }
   } catch {
     ElMessage.error("加载节点类型失败");
@@ -337,9 +470,6 @@ onInit((vueFlowInstance) => {
         if (res.data && res.data.data) {
           nodes.value = res.data.data.nodes || [];
           edges.value = res.data.data.edges || [];
-          if (nodes.value.length === 0) {
-            initializeDefaultNodes();
-          }
           saveToHistory(nodes.value as any, edges.value as any);
         }
       })
@@ -352,7 +482,11 @@ onInit((vueFlowInstance) => {
 });
 
 onConnect((connection) => {
-  addEdges(connection);
+  addEdges({
+    ...connection,
+    type: edgeStyle.value,
+    animated: edgeAnimated.value,
+  });
   saveToHistory(nodes.value as any, edges.value as any);
 });
 
@@ -365,21 +499,6 @@ function handleValidate() {
 
   if (allNodesList.length === 0) {
     errors.push("流程中没有节点");
-  }
-
-  const startNodes = allNodesList.filter((n: Node) => n.type === "input");
-  const endNodes = allNodesList.filter((n: Node) => n.type === "output");
-
-  if (startNodes.length === 0) {
-    errors.push("流程缺少开始节点");
-  } else if (startNodes.length > 1) {
-    warnings.push("流程有多个开始节点");
-  }
-
-  if (endNodes.length === 0) {
-    errors.push("流程缺少结束节点");
-  } else if (endNodes.length > 1) {
-    warnings.push("流程有多个结束节点");
   }
 
   const nodeIds = new Set(allNodesList.map((n: Node) => n.id));
@@ -543,23 +662,6 @@ function handleSave() {
   }
 }
 
-function initializeDefaultNodes() {
-  nodes.value = [
-    {
-      id: `node-${Date.now()}`,
-      type: "input",
-      position: { x: 100, y: 100 },
-      data: { label: "开始" },
-    },
-    {
-      id: `node-${Date.now() + 1}`,
-      type: "output",
-      position: { x: 400, y: 100 },
-      data: { label: "结束" },
-    },
-  ] as Node[];
-}
-
 watch(
   () => props.workflow,
   (newWorkflow) => {
@@ -595,7 +697,6 @@ const handleFinish = async () => {
     await formRef.value.validate();
     await handleValidate();
     await handleSave();
-    ElMessage.success("流程保存成功");
     emit("refresh");
     handleClose();
   } catch (error) {
@@ -665,6 +766,35 @@ const handleClose = () => {
 .canvas-container {
   flex: 1;
   overflow: hidden;
+}
+
+:deep(.vue-flow__controls) {
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.vue-flow__controls-button) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: #000;
+  cursor: pointer;
+  border: none;
+}
+
+:deep(.el-dropdown) {
+  display: flex;
+}
+
+.workflow-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .drawer-footer {

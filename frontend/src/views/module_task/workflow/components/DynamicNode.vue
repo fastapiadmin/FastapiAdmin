@@ -1,5 +1,10 @@
 <template>
-  <div class="dynamic-node" :class="nodeClass">
+  <div
+    class="dynamic-node"
+    :class="nodeClass"
+    @mouseenter="showHandles = true"
+    @mouseleave="showHandles = false"
+  >
     <div class="node-content">
       <span class="node-label">{{ data.label }}</span>
     </div>
@@ -8,6 +13,7 @@
       :id="'top-' + id"
       type="target"
       position="top"
+      :class="{ 'handle-visible': showHandles }"
       :style="{ background: nodeType.color || '#3b82f6' }"
     />
     <Handle
@@ -15,6 +21,7 @@
       :id="'left-' + id"
       type="target"
       position="left"
+      :class="{ 'handle-visible': showHandles }"
       :style="{ background: nodeType.color || '#3b82f6' }"
     />
     <Handle
@@ -22,6 +29,7 @@
       :id="'right-' + id"
       type="source"
       position="right"
+      :class="{ 'handle-visible': showHandles }"
       :style="{ background: nodeType.color || '#3b82f6' }"
     />
     <Handle
@@ -29,13 +37,14 @@
       :id="'bottom-' + id"
       type="source"
       position="bottom"
+      :class="{ 'handle-visible': showHandles }"
       :style="{ background: nodeType.color || '#3b82f6' }"
     />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { Handle } from "@vue-flow/core";
 
 const props = defineProps({
@@ -43,6 +52,8 @@ const props = defineProps({
   data: Object,
   nodeStatus: String,
 });
+
+const showHandles = ref(false);
 
 const nodeType = computed(() => {
   if (props.data?.type === "input") {
@@ -140,5 +151,16 @@ const nodeClass = computed(() => {
   font-weight: 600;
   text-align: center;
   letter-spacing: 0.5px;
+}
+
+.vue-flow__handle {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.vue-flow__handle.handle-visible,
+.vue-flow__handle.vue-flow__handle-connecting,
+.vue-flow__handle.vue-flow__handle-valid {
+  opacity: 1;
 }
 </style>

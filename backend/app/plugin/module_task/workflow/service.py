@@ -245,19 +245,6 @@ class WorkflowService:
         if len(nodes) == 0:
             errors.append("流程中没有节点")
 
-        start_nodes = [n for n in nodes if n.get("type") == "input"]
-        end_nodes = [n for n in nodes if n.get("type") == "output"]
-
-        if len(start_nodes) == 0:
-            errors.append("流程缺少开始节点")
-        elif len(start_nodes) > 1:
-            warnings.append("流程有多个开始节点")
-
-        if len(end_nodes) == 0:
-            errors.append("流程缺少结束节点")
-        elif len(end_nodes) > 1:
-            warnings.append("流程有多个结束节点")
-
         node_ids = {n.get("id") for n in nodes}
         for edge in edges:
             source = edge.get("source")
@@ -526,7 +513,7 @@ class WorkflowRunService:
 
         update_data = WorkflowRunUpdateSchema(
             status="cancelled",
-            end_time=datetime.now().isoformat(),
+            end_time=datetime.now(),
         )
         obj = await WorkflowRunCRUD(auth).update_crud(id=id, data=update_data)
         return WorkflowRunOutSchema.model_validate(obj).model_dump()
@@ -575,7 +562,7 @@ class WorkflowRunService:
 
         update_data = WorkflowRunUpdateSchema(
             status="terminated",
-            end_time=datetime.now().isoformat(),
+            end_time=datetime.now(),
         )
         obj = await WorkflowRunCRUD(auth).update_crud(id=id, data=update_data)
         return WorkflowRunOutSchema.model_validate(obj).model_dump()
@@ -672,7 +659,7 @@ class WorkflowRunService:
 
         update_data = WorkflowRunUpdateSchema(
             status="running",
-            start_time=start_time.isoformat(),
+            start_time=start_time,
         )
         await WorkflowRunCRUD(auth).update_crud(id=task_run_id, data=update_data)
 
@@ -690,7 +677,7 @@ class WorkflowRunService:
 
             update_data = WorkflowRunUpdateSchema(
                 status="completed",
-                end_time=end_time.isoformat(),
+                end_time=end_time,
                 duration=duration,
             )
             await WorkflowRunCRUD(auth).update_crud(id=task_run_id, data=update_data)
@@ -708,7 +695,7 @@ class WorkflowRunService:
 
             update_data = WorkflowRunUpdateSchema(
                 status="failed",
-                end_time=end_time.isoformat(),
+                end_time=end_time,
                 duration=duration,
                 error_message=str(e),
             )
@@ -737,15 +724,20 @@ class WorkflowRunService:
         """执行节点"""
         node_map = {node.get("id"): node for node in nodes}
         edge_map = {}
+        target_nodes = set()
         for edge in edges:
             source = edge.get("source")
+            target = edge.get("target")
             if source not in edge_map:
                 edge_map[source] = []
             edge_map[source].append(edge)
+            target_nodes.add(target)
 
-        start_nodes = [node for node in nodes if node.get("type") == "input"]
+        start_nodes = [node for node in nodes if node.get("id") not in target_nodes]
         if not start_nodes:
-            raise CustomException(msg="工作流缺少开始节点")
+            start_nodes = [node for node in nodes if node.get("type") == "trigger"]
+        if not start_nodes:
+            raise CustomException(msg="工作流缺少起始节点")
 
         executed_nodes = set()
         queue = start_nodes.copy()
@@ -829,8 +821,6 @@ class WorkflowRunService:
                 await cls._execute_timer_node(auth, task_run_id, node_id, node_name, node_config, variables)
             elif node_type == "parallel":
                 await cls._execute_parallel_node(auth, task_run_id, node_id, node_name, node_config, variables)
-            elif node_type in ["input", "output"]:
-                pass
             else:
                 await cls._add_log(
                     auth=auth,
