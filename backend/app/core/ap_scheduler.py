@@ -1,16 +1,32 @@
 import json
+from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
 from apscheduler.events import (
     EVENT_ALL,
+    EVENT_ALL_JOBS_REMOVED,
+    EVENT_EXECUTOR_ADDED,
+    EVENT_EXECUTOR_REMOVED,
+    EVENT_JOB_ADDED,
     EVENT_JOB_ERROR,
     EVENT_JOB_EXECUTED,
+    EVENT_JOB_MAX_INSTANCES,
     EVENT_JOB_MISSED,
+    EVENT_JOB_MODIFIED,
     EVENT_JOB_REMOVED,
     EVENT_JOB_SUBMITTED,
+    EVENT_JOBSTORE_ADDED,
+    EVENT_JOBSTORE_REMOVED,
+    EVENT_SCHEDULER_PAUSED,
+    EVENT_SCHEDULER_RESUMED,
+    EVENT_SCHEDULER_SHUTDOWN,
+    EVENT_SCHEDULER_START,
+    EVENT_SCHEDULER_STARTED,
     JobEvent,
     JobExecutionEvent,
+    JobSubmissionEvent,
+    SchedulerEvent,
 )
 from apscheduler.executors.asyncio import AsyncIOExecutor
 from apscheduler.executors.pool import ProcessPoolExecutor, ThreadPoolExecutor
@@ -51,7 +67,7 @@ scheduler.configure(
     },
     job_defaults={
         "coalesce": True,
-        "max_instances": 1,
+        "max_instances": 5,
     },
     timezone="Asia/Shanghai",
 )
@@ -71,43 +87,404 @@ class SchedulerUtil:
         每次执行都创建新记录，保留所有历史执行记录
         """
         try:
-            if not hasattr(event, "job_id"):
-                return
+            # 事件处理器映射
+            event_handlers: dict[int, Callable] = {
+                # 调度器事件
+                EVENT_SCHEDULER_STARTED: cls._handle_scheduler_started,
+                EVENT_SCHEDULER_START: cls._handle_scheduler_started,
+                EVENT_SCHEDULER_SHUTDOWN: cls._handle_scheduler_shutdown,
+                EVENT_SCHEDULER_PAUSED: cls._handle_scheduler_paused,
+                EVENT_SCHEDULER_RESUMED: cls._handle_scheduler_resumed,
+                # 执行器事件
+                EVENT_EXECUTOR_ADDED: cls._handle_executor_added,
+                EVENT_EXECUTOR_REMOVED: cls._handle_executor_removed,
+                # JobStore 事件
+                EVENT_JOBSTORE_ADDED: cls._handle_jobstore_added,
+                EVENT_JOBSTORE_REMOVED: cls._handle_jobstore_removed,
+                EVENT_ALL_JOBS_REMOVED: cls._handle_all_jobs_removed,
+                # 任务事件
+                EVENT_JOB_ADDED: cls._handle_job_added,
+                EVENT_JOB_REMOVED: cls._handle_job_removed,
+                EVENT_JOB_MODIFIED: cls._handle_job_modified,
+                EVENT_JOB_SUBMITTED: cls._handle_job_submitted,
+                EVENT_JOB_EXECUTED: cls._handle_job_executed,
+                EVENT_JOB_ERROR: cls._handle_job_error,
+                EVENT_JOB_MISSED: cls._handle_job_missed,
+                EVENT_JOB_MAX_INSTANCES: cls._handle_job_max_instances,
+            }
 
-            job_id = str(event.job_id)
+            # 处理事件
+            if event.code in event_handlers:
+                handler = event_handlers[event.code]
+                handler(event)
+            else:
+                # 处理其他事件
+                cls._handle_other_event(event)
 
-            if event.code == EVENT_JOB_SUBMITTED:
-                job = cls.get_job(job_id=job_id)
-                cls._create_job_log(
-                    job_id=job_id,
-                    job_name=job.name if job else None,
-                    trigger_type=cls._get_trigger_type(job_id),
-                    status="running",
-                )
-            elif event.code == EVENT_JOB_EXECUTED:
-                retval = getattr(event, "retval", None)
-                cls._update_latest_job_log(
-                    job_id=job_id,
-                    status="success",
-                    result=str(retval) if retval else None,
-                )
-            elif event.code == EVENT_JOB_ERROR:
-                exception = getattr(event, "exception", None)
-                cls._update_latest_job_log(
-                    job_id=job_id,
-                    status="failed",
-                    error=str(exception) if exception else "未知错误",
-                )
-            elif event.code == EVENT_JOB_MISSED:
-                cls._update_latest_job_log(
-                    job_id=job_id,
-                    status="timeout",
-                    error="任务错过执行时间",
-                )
-            elif event.code == EVENT_JOB_REMOVED:
-                cls._update_job_log_on_removed(job_id=job_id)
         except Exception as e:
-            log.error(f"处理任务执行事件失败: {e!s}")
+            log.error(f"处理任务执行事件失败: {e!s}", exc_info=True)
+
+    @classmethod
+    def _handle_job_submitted(cls, event: JobSubmissionEvent) -> None:
+        """
+        处理任务提交事件
+        """
+        job_id = str(event.job_id)
+        job = cls.get_job(job_id=job_id)
+
+        if job:
+            log.info(f"任务 {job_id} ({job.name}) 已提交执行")
+
+            # 创建执行日志
+            cls._create_job_log(
+                job_id=job_id,
+                job_name=job.name,
+                trigger_type=cls._get_trigger_type(job_id),
+                status="running",
+            )
+        else:
+            log.warning(f"任务 {job_id} 提交执行，但未找到任务信息")
+
+    @classmethod
+    def _handle_job_executed(cls, event: JobExecutionEvent) -> None:
+        """
+        处理任务执行成功事件
+        """
+        job_id = str(event.job_id)
+        retval = getattr(event, "retval", None)
+        scheduled_run_time = getattr(event, "scheduled_run_time", None)
+
+        log.info(f"任务 {job_id} 执行成功")
+        if retval:
+            log.debug(f"任务 {job_id} 返回值: {retval}")
+        if scheduled_run_time:
+            log.debug(f"任务 {job_id} 计划执行时间: {scheduled_run_time}")
+
+        # 更新执行日志
+        cls._update_latest_job_log(
+            job_id=job_id,
+            status="success",
+            result=str(retval) if retval else None,
+        )
+
+    @classmethod
+    def _handle_job_error(cls, event: JobExecutionEvent) -> None:
+        """
+        处理任务执行失败事件
+        """
+        job_id = str(event.job_id)
+        exception = getattr(event, "exception", None)
+        traceback = getattr(event, "traceback", None)
+        scheduled_run_time = getattr(event, "scheduled_run_time", None)
+
+        log.error(f"任务 {job_id} 执行失败: {exception!s}")
+        if traceback:
+            log.debug(f"任务 {job_id} 错误堆栈: {traceback}")
+        if scheduled_run_time:
+            log.debug(f"任务 {job_id} 计划执行时间: {scheduled_run_time}")
+
+        # 更新执行日志
+        cls._update_latest_job_log(
+            job_id=job_id,
+            status="failed",
+            result="failed",
+            error=str(exception) if exception else "未知错误",
+        )
+
+    @classmethod
+    def _handle_job_missed(cls, event: JobEvent) -> None:
+        """
+        处理任务错过执行时间事件
+        """
+        job_id = str(event.job_id)
+        job = cls.get_job(job_id=job_id)
+
+        log.warning(f"任务 {job_id} 错过执行时间")
+        if job:
+            log.debug(f"任务 {job_id} ({job.name}) 错过执行")
+
+        # 更新执行日志
+        cls._update_latest_job_log(
+            job_id=job_id,
+            status="timeout",
+            result="timeout",
+            error="任务错过执行时间",
+        )
+
+    @classmethod
+    def _handle_job_removed(cls, event: JobEvent) -> None:
+        """
+        处理任务被移除事件
+        """
+        job_id = str(event.job_id)
+        jobstore = getattr(event, "jobstore", "unknown")
+
+        log.info(f"任务 {job_id} 从 {jobstore} 存储器中移除")
+
+        # 更新执行日志
+        cls._update_job_log_on_removed(job_id=job_id)
+
+    @classmethod
+    def _handle_job_added(cls, event: JobEvent) -> None:
+        """
+        处理任务添加事件
+        """
+        job_id = str(event.job_id)
+        jobstore = event.jobstore
+        job = cls.get_job(job_id=job_id)
+
+        if job:
+            log.info(f"任务 {job_id} ({job.name}) 已添加到 {jobstore} 存储器")
+        else:
+            log.info(f"任务 {job_id} 已添加到 {jobstore} 存储器")
+
+    @classmethod
+    def _handle_job_modified(cls, event: JobEvent) -> None:
+        """
+        处理任务修改事件
+        """
+        job_id = str(event.job_id)
+        jobstore = event.jobstore
+        job = cls.get_job(job_id=job_id)
+
+        if job:
+            log.info(f"任务 {job_id} ({job.name}) 已在 {jobstore} 存储器中修改")
+        else:
+            log.info(f"任务 {job_id} 已在 {jobstore} 存储器中修改")
+
+    @classmethod
+    def _handle_scheduler_started(cls, event: SchedulerEvent) -> None:
+        """
+        处理调度器启动事件
+        """
+        log.info("调度器已启动")
+        cls._update_scheduler_status("running")
+
+    @classmethod
+    def _handle_scheduler_shutdown(cls, event: SchedulerEvent) -> None:
+        """
+        处理调度器关闭事件
+        """
+        log.info("调度器已关闭")
+        cls._update_scheduler_status("stopped")
+
+    @classmethod
+    def _handle_scheduler_paused(cls, event: SchedulerEvent) -> None:
+        """
+        处理调度器暂停事件
+        """
+        log.info("调度器已暂停")
+        cls._update_scheduler_status("paused")
+
+    @classmethod
+    def _handle_scheduler_resumed(cls, event: SchedulerEvent) -> None:
+        """
+        处理调度器恢复事件
+        """
+        log.info("调度器已恢复运行")
+        cls._update_scheduler_status("running")
+
+    @classmethod
+    def _handle_executor_added(cls, event: SchedulerEvent) -> None:
+        """
+        处理执行器添加事件
+        """
+        alias = event.alias
+        if alias:
+            log.info(f"执行器 {alias} 已添加到调度器")
+            cls._update_executor_info(alias, "added")
+        else:
+            log.warning("执行器添加事件，但别名为空")
+
+    @classmethod
+    def _handle_executor_removed(cls, event: SchedulerEvent) -> None:
+        """
+        处理执行器移除事件
+        """
+        alias = event.alias
+        if alias:
+            log.info(f"执行器 {alias} 已从调度器中移除")
+            cls._update_executor_info(alias, "removed")
+        else:
+            log.warning("执行器移除事件，但别名为空")
+
+    @classmethod
+    def _handle_jobstore_added(cls, event: SchedulerEvent) -> None:
+        """
+        处理 JobStore 添加事件
+        """
+        alias = event.alias
+        if alias:
+            log.info(f"JobStore {alias} 已添加到调度器")
+            cls._update_jobstore_info(alias, "added")
+        else:
+            log.warning("JobStore 添加事件，但别名为空")
+
+    @classmethod
+    def _handle_jobstore_removed(cls, event: SchedulerEvent) -> None:
+        """
+        处理 JobStore 移除事件
+        """
+        alias = event.alias
+        if alias:
+            log.info(f"JobStore {alias} 已从调度器中移除")
+            cls._update_jobstore_info(alias, "removed")
+        else:
+            log.warning("JobStore 移除事件，但别名为空")
+
+    @classmethod
+    def _handle_all_jobs_removed(cls, event: SchedulerEvent) -> None:
+        """
+        处理所有任务移除事件
+        """
+        log.info("所有任务已从调度器中移除")
+        cls._clear_all_job_logs()
+
+    @classmethod
+    def _handle_job_max_instances(cls, event: JobEvent) -> None:
+        """
+        处理任务达到最大实例数事件
+        """
+        job_id = str(event.job_id)
+        log.warning(f"任务 {job_id} 已达到最大实例数限制，无法启动新实例")
+
+    @classmethod
+    def _handle_other_event(cls, event: SchedulerEvent | JobEvent | JobExecutionEvent | JobSubmissionEvent) -> None:
+        """
+        处理其他事件
+        """
+        event_code = event.code
+        event_type = type(event).__name__
+        log.debug(f"收到未处理的事件: {event_type} (code: {event_code})")
+
+    @classmethod
+    def _update_scheduler_status(cls, status: str) -> None:
+        """
+        更新调度器状态到系统参数
+
+        参数:
+        - status (str): 调度器状态 (running/stopped/paused)
+        """
+        try:
+            from sqlalchemy.orm import Session
+
+            from app.api.v1.module_system.params.model import ParamsModel
+
+            with Session(engine) as session:
+                param = session.query(ParamsModel).filter(ParamsModel.config_key == "scheduler_status").first()
+                if param:
+                    param.config_value = status
+                else:
+                    param = ParamsModel(
+                        config_name="调度器状态",
+                        config_key="scheduler_status",
+                        config_value=status,
+                        config_type=True,
+                    )
+                    session.add(param)
+                session.commit()
+                log.debug(f"调度器状态已更新: {status}")
+        except Exception as e:
+            log.error(f"更新调度器状态失败: {e!s}", exc_info=True)
+
+    @classmethod
+    def _update_executor_info(cls, alias: str | None, action: str) -> None:
+        """
+        更新执行器信息到系统参数
+
+        参数:
+        - alias (str | None): 执行器别名
+        - action (str): 操作 (added/removed)
+        """
+        if not alias:
+            log.warning("执行器别名为空，跳过更新")
+            return
+
+        try:
+            from sqlalchemy.orm import Session
+
+            from app.api.v1.module_system.params.model import ParamsModel
+
+            key = f"executor_{alias}"
+            with Session(engine) as session:
+                param = session.query(ParamsModel).filter(ParamsModel.config_key == key).first()
+                if action == "added":
+                    if param:
+                        param.config_value = "active"
+                    else:
+                        param = ParamsModel(
+                            config_name=f"执行器 {alias}",
+                            config_key=key,
+                            config_value="active",
+                            config_type=True,
+                        )
+                        session.add(param)
+                    log.debug(f"执行器 {alias} 已标记为活跃")
+                elif action == "removed":
+                    if param:
+                        param.config_value = "inactive"
+                    log.debug(f"执行器 {alias} 已标记为非活跃")
+                session.commit()
+        except Exception as e:
+            log.error(f"更新执行器信息失败: {e!s}", exc_info=True)
+
+    @classmethod
+    def _update_jobstore_info(cls, alias: str | None, action: str) -> None:
+        """
+        更新 JobStore 信息到系统参数
+
+        参数:
+        - alias (str | None): JobStore 别名
+        - action (str): 操作 (added/removed)
+        """
+        if not alias:
+            log.warning("JobStore 别名为空，跳过更新")
+            return
+
+        try:
+            from sqlalchemy.orm import Session
+
+            from app.api.v1.module_system.params.model import ParamsModel
+
+            key = f"jobstore_{alias}"
+            with Session(engine) as session:
+                param = session.query(ParamsModel).filter(ParamsModel.config_key == key).first()
+                if action == "added":
+                    if param:
+                        param.config_value = "active"
+                    else:
+                        param = ParamsModel(
+                            config_name=f"JobStore {alias}",
+                            config_key=key,
+                            config_value="active",
+                            config_type=True,
+                        )
+                        session.add(param)
+                    log.debug(f"JobStore {alias} 已标记为活跃")
+                elif action == "removed":
+                    if param:
+                        param.config_value = "inactive"
+                    log.debug(f"JobStore {alias} 已标记为非活跃")
+                session.commit()
+        except Exception as e:
+            log.error(f"更新 JobStore 信息失败: {e!s}", exc_info=True)
+
+    @classmethod
+    def _clear_all_job_logs(cls) -> None:
+        """
+        清空所有任务日志
+        """
+        try:
+            from sqlalchemy.orm import Session
+
+            from app.plugin.module_task.job.model import JobModel
+
+            with Session(engine) as session:
+                session.query(JobModel).delete()
+                session.commit()
+                log.info("所有任务日志已清空")
+        except Exception as e:
+            log.error(f"清空任务日志失败: {e!s}", exc_info=True)
 
     @classmethod
     def _get_trigger_type(cls, job_id: str) -> str:
@@ -297,7 +674,7 @@ class SchedulerUtil:
         with Session(engine) as session:
             job_log = (
                 session.query(JobModel)
-                .filter(JobModel.job_id == job_id, JobModel.status.in_(["pending", "running"]))
+                .filter(JobModel.job_id == job_id, JobModel.status.in_(['pending', 'running']))
                 .order_by(JobModel.created_time.desc())
                 .first()
             )
@@ -367,7 +744,7 @@ class SchedulerUtil:
                 .first()
             )
             if job_log:
-                if job_log.trigger_type in ["date", "manual"]:
+                if job_log.trigger_type in ("date", "manual"):
                     return
                 job_log.status = "cancelled"
                 session.commit()

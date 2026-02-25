@@ -3,11 +3,11 @@ APScheduler==3.11.0                     # 定时任务
 bleach==6.3.0                           # XSS 过滤
 fastapi==0.115.2                        # fastapi 框架
 Jinja2==3.1.6                           # 模板引擎
-typer==0.9.0                            # 命令行工具
+typer==0.19.0                           # 命令行工具
 click==8.1.7                            # 命令行参数解析
 uvicorn==0.30.6                         # uvicorn web 框架
 gunicorn==23.0.0                        # 协程框架
-websockets==14.2                        # websocket 框架
+websockets==16.0                        # websocket 框架
 httpx==0.27.2                           # HTTP 客户端
 croniter==6.0.0                         # 实现cron表达式验证和解析执行计划
 pandas==2.2.2                           # 数据处理
