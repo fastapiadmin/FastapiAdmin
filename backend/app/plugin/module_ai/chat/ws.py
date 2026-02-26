@@ -83,8 +83,12 @@ async def websocket_chat_controller(
                         chat_result = ChatService.chat_query(query=query)
                         async for chunk in chat_result:
                             if chunk:
-                                await websocket.send_text(chunk)
-                                full_response += chunk
+                                try:
+                                    await websocket.send_text(chunk)
+                                    full_response += chunk
+                                except RuntimeError:
+                                    log.warning("WebSocket连接已关闭，停止发送消息")
+                                    break
 
                         # 保存AI回复到数据库（使用独立的事务）
                         if query.session_id and full_response:
@@ -106,17 +110,39 @@ async def websocket_chat_controller(
                             log.warning(f"未提供会话ID或AI回复为空，跳过保存AI回复: session_id={query.session_id}, full_response_length={len(full_response)}")
                     except json.JSONDecodeError:
                         log.warning(f"收到非JSON消息: {data}")
-                        await websocket.send_text("消息格式错误，请发送JSON格式的消息")
+                        try:
+                            await websocket.send_text("消息格式错误，请发送JSON格式的消息")
+                        except RuntimeError:
+                            log.warning("WebSocket连接已关闭，无法发送错误消息")
+                            break
                     except Exception as e:
                         log.error(f"处理消息时出错: {e}")
-                        await websocket.send_text(f"处理消息时出错: {str(e)}")
+                        try:
+                            await websocket.send_text(f"处理消息时出错: {str(e)}")
+                        except RuntimeError:
+                            log.warning("WebSocket连接已关闭，无法发送错误消息")
+                            break
         except Exception as e:
             log.warning(f"WebSocket认证失败或聊天出错: {e}")
-            await websocket.send_text(f"错误: {str(e)}")
-            await websocket.close()
+            try:
+                await websocket.send_text(f"错误: {str(e)}")
+            except RuntimeError:
+                log.warning("WebSocket连接已关闭，无法发送错误消息")
+            finally:
+                try:
+                    await websocket.close()
+                except RuntimeError:
+                    pass
             return
     else:
         log.warning(f"WebSocket连接未提供token: {websocket.client}")
-        await websocket.send_text("未提供认证token，请重新登录")
-        await websocket.close()
+        try:
+            await websocket.send_text("未提供认证token，请重新登录")
+        except RuntimeError:
+            log.warning("WebSocket连接已关闭，无法发送错误消息")
+        finally:
+            try:
+                await websocket.close()
+            except RuntimeError:
+                pass
         return
