@@ -70,7 +70,6 @@ export default NodeAPI;
 export interface NodePageQuery extends PageQuery {
   name?: string;
   code?: string;
-  category?: string;
   created_id?: number;
   updated_id?: number;
   created_time?: string[];
@@ -95,7 +94,6 @@ export interface ExecuteNodeResult {
 export interface NodeTable extends BaseType {
   name: string;
   code: string;
-  category?: string;
   jobstore?: string;
   executor?: string;
   trigger?: TriggerType;
@@ -115,7 +113,6 @@ export interface NodeForm {
   id?: number;
   name: string;
   code?: string;
-  category?: string;
   jobstore?: string;
   executor?: string;
   func?: string;
@@ -131,7 +128,6 @@ export interface NodeType {
   id: number;
   name: string;
   code: string;
-  category?: string;
   func?: string;
   args?: string;
   kwargs?: string;

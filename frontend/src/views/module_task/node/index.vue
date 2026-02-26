@@ -14,19 +14,6 @@
         <el-form-item prop="code" label="节点编码">
           <el-input v-model="queryFormData.code" placeholder="请输入节点编码" clearable />
         </el-form-item>
-        <el-form-item prop="category" label="节点分类">
-          <el-select
-            v-model="queryFormData.category"
-            placeholder="请选择节点分类"
-            clearable
-            style="width: 167.5px"
-          >
-            <el-option value="trigger" label="触发器节点" />
-            <el-option value="action" label="动作节点" />
-            <el-option value="condition" label="条件节点" />
-            <el-option value="control" label="控制节点" />
-          </el-select>
-        </el-form-item>
         <el-form-item class="search-buttons">
           <el-button
             v-hasPerm="['module_task:node:query']"
@@ -119,13 +106,6 @@
         </el-table-column>
         <el-table-column label="节点名称" prop="name" min-width="140" />
         <el-table-column label="节点编码" prop="code" min-width="120" />
-        <el-table-column label="节点分类" prop="category" min-width="100">
-          <template #default="scope">
-            <el-tag :type="getCategoryType(scope.row.category)">
-              {{ getCategoryLabel(scope.row.category) }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column label="存储器" prop="jobstore" min-width="80" />
         <el-table-column label="执行器" prop="executor" min-width="80" />
         <el-table-column label="创建时间" prop="created_time" min-width="180" sortable />
@@ -200,14 +180,6 @@
               </el-form-item>
               <el-form-item label="节点编码" prop="code">
                 <el-input v-model="formData.code" placeholder="请输入节点编码" :maxlength="32" />
-              </el-form-item>
-              <el-form-item label="节点分类" prop="category">
-                <el-select v-model="formData.category" placeholder="请选择节点分类">
-                  <el-option value="trigger" label="触发器节点" />
-                  <el-option value="action" label="动作节点" />
-                  <el-option value="condition" label="条件节点" />
-                  <el-option value="control" label="控制节点" />
-                </el-select>
               </el-form-item>
               <el-form-item label="存储器" prop="jobstore">
                 <el-select v-model="formData.jobstore" placeholder="请选择存储器">
@@ -446,7 +418,8 @@ defineOptions({
 
 import NodeAPI, { NodeTable, NodeForm, NodePageQuery, TriggerType } from "@/api/module_task/node";
 import { useDictStore } from "@/store/index";
-import { nextTick, onMounted } from "vue";
+import { nextTick, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { vue3CronPlus } from "vue3-cron-plus";
 import "vue3-cron-plus/dist/index.css";
 import OperationColumn from "@/components/OperationColumn/index.vue";
@@ -457,6 +430,7 @@ import "codemirror/mode/python/python.js";
 import "codemirror/theme/dracula.css";
 
 const dictStore = useDictStore();
+const router = useRouter();
 
 const codeEditorOptions: EditorConfiguration = {
   mode: "python",
@@ -486,7 +460,6 @@ const queryFormData = reactive<NodePageQuery>({
   page_size: 10,
   name: undefined,
   code: undefined,
-  category: undefined,
 });
 
 const defaultCodeBlock = `def handler(*args, **kwargs) -> None:
@@ -507,7 +480,6 @@ const formData = reactive<NodeForm>({
   id: undefined,
   name: "",
   code: undefined,
-  category: undefined,
   jobstore: "default",
   executor: "default",
   func: defaultCodeBlock,
@@ -552,36 +524,6 @@ const executeRules = reactive({
   trigger_args: [{ required: true, message: "请设置执行参数", trigger: "blur" }],
 });
 
-function getCategoryType(category: string | undefined) {
-  switch (category) {
-    case "trigger":
-      return "primary";
-    case "action":
-      return "success";
-    case "condition":
-      return "warning";
-    case "control":
-      return "danger";
-    default:
-      return "info";
-  }
-}
-
-function getCategoryLabel(category: string | undefined) {
-  switch (category) {
-    case "trigger":
-      return "触发器节点";
-    case "action":
-      return "动作节点";
-    case "condition":
-      return "条件节点";
-    case "control":
-      return "控制节点";
-    default:
-      return "未分类";
-  }
-}
-
 async function handleRefresh() {
   await loadingData();
 }
@@ -614,14 +556,13 @@ const initialFormData: Partial<NodeForm> = {
   id: undefined,
   name: "",
   code: undefined,
-  category: undefined,
   jobstore: "sqlalchemy",
   executor: "default",
   func: defaultCodeBlock,
   args: undefined,
   kwargs: undefined,
   coalesce: false,
-  max_instances: 1,
+  max_instances: 5,
   start_date: undefined,
   end_date: undefined,
 };
@@ -780,9 +721,40 @@ async function handleExecuteNode() {
     }
 
     await NodeAPI.executeNode(currentExecuteNode.value?.id as number, params);
+    ElMessage.success({
+      message: `节点调试${executeFormData.trigger === "now" ? "已启动" : "已创建"}`,
+      type: "success",
+      duration: 2000,
+    });
+
     handleCloseExecuteDialog();
-    loadingData();
+
+    // 重新加载数据
+    await loadingData();
+
+    // 如果是立即执行，提示用户查看执行记录
+    if (executeFormData.trigger === "now") {
+      ElMessageBox.confirm("调试任务已启动，是否跳转到执行记录页面查看执行结果？", "提示", {
+        confirmButtonText: "查看记录",
+        cancelButtonText: "稍后查看",
+        type: "info",
+      })
+        .then(() => {
+          // 跳转到执行记录页面
+          router.push({
+            path: "/task/job",
+          });
+        })
+        .catch(() => {
+          // 取消操作
+        });
+    }
   } catch (error: any) {
+    ElMessage.error({
+      message: error.response?.data?.msg || "调试失败",
+      type: "error",
+      duration: 3000,
+    });
     console.error(error);
   } finally {
     loading.value = false;

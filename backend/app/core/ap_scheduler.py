@@ -143,7 +143,8 @@ class SchedulerUtil:
                 status="running",
             )
         else:
-            log.warning(f"任务 {job_id} 提交执行，但未找到任务信息")
+            # 任务可能已经被移除（一次性任务），尝试从事件中获取信息
+            log.debug(f"任务 {job_id} 提交执行，但未找到任务信息（可能已被移除）")
 
     @classmethod
     def _handle_job_executed(cls, event: JobExecutionEvent) -> None:
@@ -643,7 +644,7 @@ class SchedulerUtil:
 
         job = cls.get_job(job_id=job_id)
         next_run_time = str(job.next_run_time) if job and job.next_run_time else None
-        job_state = cls._get_job_state(job)
+        job_state = cls._get_job_state(job) if job else None
 
         with Session(engine) as session:
             job_log = JobModel(
@@ -669,7 +670,7 @@ class SchedulerUtil:
 
         job = cls.get_job(job_id=job_id)
         next_run_time = str(job.next_run_time) if job and job.next_run_time else None
-        job_state = cls._get_job_state(job)
+        job_state = cls._get_job_state(job) if job else None
 
         with Session(engine) as session:
             job_log = (
@@ -689,6 +690,8 @@ class SchedulerUtil:
                 if error:
                     job_log.error = error
                 session.commit()
+            else:
+                log.warning(f"未找到任务 {job_id} 的待执行或运行中日志记录")
 
     @classmethod
     def _update_latest_job_log(cls, job_id: str, status: str, result: str | None = None, error: str | None = None) -> None:
@@ -702,7 +705,7 @@ class SchedulerUtil:
 
         job = cls.get_job(job_id=job_id)
         next_run_time = str(job.next_run_time) if job and job.next_run_time else None
-        job_state = cls._get_job_state(job)
+        job_state = cls._get_job_state(job) if job else None
 
         with Session(engine) as session:
             job_log = (
@@ -722,6 +725,8 @@ class SchedulerUtil:
                 if error:
                     job_log.error = error
                 session.commit()
+            else:
+                log.warning(f"未找到任务 {job_id} 的运行中日志记录")
 
     @classmethod
     def _update_job_log_on_removed(cls, job_id: str) -> None:
@@ -771,8 +776,18 @@ class SchedulerUtil:
         """
         立即执行任务（添加到调度器并立即运行）
         """
-        trigger = DateTrigger(run_date=datetime.now())
-        return cls._add_job_with_trigger(job_info, trigger)
+        # 使用稍微延迟的时间，确保事件监听器能够捕获事件
+        from datetime import timedelta
+        trigger = DateTrigger(run_date=datetime.now() + timedelta(seconds=0.1))
+        job = cls._add_job_with_trigger(job_info, trigger)
+        # 手动创建执行日志，确保调试时也能生成记录
+        cls._create_job_log(
+            job_id=str(job_info.id),
+            job_name=job_info.name,
+            trigger_type="manual",
+            status="running",
+        )
+        return job
 
     @classmethod
     def add_cron_job(
