@@ -142,7 +142,8 @@
                 :loading="loading"
                 :data="cacheNames"
                 row-key="cache_name"
-                height="600"
+                height="calc(100vh - 280px)"
+                max-height="calc(100vh - 280px)"
                 border
               >
                 <template #empty>
@@ -215,7 +216,8 @@
               <el-table
                 :loading="subLoading"
                 :data="cacheKeys.map((key) => ({ cacheKey: key }))"
-                height="600"
+                height="calc(100vh - 280px)"
+                max-height="calc(100vh - 280px)"
                 row-key="cacheKey"
                 border
               >
@@ -298,7 +300,7 @@
                   <el-input
                     v-model="cacheForm.cache_value"
                     type="textarea"
-                    :rows="18"
+                    :rows="20"
                     readonly
                     placeholder="缓存内容"
                   />
@@ -537,6 +539,6 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .chart-container {
-  height: 406px;
+  height: calc(100vh - 480px);
 }
 </style>

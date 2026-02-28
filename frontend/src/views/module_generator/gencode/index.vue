@@ -1,52 +1,5 @@
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
-    <div class="search-container">
-      <el-form
-        ref="queryRef"
-        :model="queryFormData"
-        :inline="true"
-        label-suffix=":"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item label="表名称" prop="table_name">
-          <el-input
-            v-model="queryFormData.table_name"
-            placeholder="请输入表名称"
-            clearable
-            style="width: 200px"
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item label="表描述" prop="table_comment">
-          <el-input
-            v-model="queryFormData.table_comment"
-            placeholder="请输入表描述"
-            clearable
-            style="width: 200px"
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item class="search-buttons">
-          <el-button
-            v-hasPerm="['module_generator:gencode:query']"
-            type="primary"
-            icon="search"
-            native-type="submit"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_generator:gencode:query']"
-            icon="refresh"
-            @click="handleRefresh"
-          >
-            重置
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 内容区域 -->
     <el-card class="data-table">
       <template #header>
@@ -57,6 +10,52 @@
             </el-tooltip>
             生成代码
           </span>
+        </div>
+        <!-- 搜索区域 -->
+        <div class="search-container">
+          <el-form
+            ref="queryRef"
+            :model="queryFormData"
+            :inline="true"
+            label-suffix=":"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item label="表名称" prop="table_name">
+              <el-input
+                v-model="queryFormData.table_name"
+                placeholder="请输入表名称"
+                clearable
+                style="width: 200px"
+                @keyup.enter="handleQuery"
+              />
+            </el-form-item>
+            <el-form-item label="表描述" prop="table_comment">
+              <el-input
+                v-model="queryFormData.table_comment"
+                placeholder="请输入表描述"
+                clearable
+                style="width: 200px"
+                @keyup.enter="handleQuery"
+              />
+            </el-form-item>
+            <el-form-item class="search-buttons">
+              <el-button
+                v-hasPerm="['module_generator:gencode:query']"
+                type="primary"
+                icon="search"
+                native-type="submit"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_generator:gencode:query']"
+                icon="refresh"
+                @click="handleRefresh"
+              >
+                重置
+              </el-button>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -147,8 +146,8 @@
         :data="tableList"
         highlight-current-row
         class="data-table__content"
-        height="450"
-        max-height="450"
+        height="calc(100vh - 440px)"
+        max-height="calc(100vh - 440px)"
         border
         stripe
         @selection-change="handleTableSelectionChange"
@@ -293,7 +292,7 @@
     </el-dialog>
 
     <!-- 导入表 -->
-    <el-dialog v-model="importVisible" title="导入表" width="800px" top="5vh" append-to-body>
+    <el-dialog v-model="importVisible" title="导入表" append-to-body>
       <el-form ref="queryRef" :model="importQueryFormData" :inline="true">
         <el-form-item label="表名称" prop="table_name">
           <el-input
@@ -802,16 +801,6 @@
         <el-button v-if="activeStep != 0" type="success" :icon="Back" @click="prevStep">
           上一步
         </el-button>
-        <el-button
-          v-if="activeStep != 2"
-          v-hasPerm="['module_generator:gencode:update']"
-          type="warning"
-          :icon="Edit"
-          :loading="loading"
-          @click="submitForm"
-        >
-          保存配置
-        </el-button>
         <el-button v-if="activeStep != 2" type="primary" @click="nextStep">
           下一步
           <el-icon class="el-icon--right"><Right /></el-icon>
@@ -864,7 +853,6 @@ import {
   FolderOpened,
   Back,
   Download,
-  Edit,
 } from "@element-plus/icons-vue";
 import GencodeAPI, {
   type GenTableSchema,
@@ -907,7 +895,6 @@ const table = ref<TableInstance>();
 const cmRef = ref<CmComponentRef>();
 const sqlRef = ref<CmComponentRef>();
 const basicInfo = ref<FormInstance>();
-const dragTable = ref<TableInstance>();
 
 // 状态管理
 const loading = ref(false);
@@ -1444,6 +1431,9 @@ async function handleCreateTable(sql: string): Promise<void> {
     createTableVisible.value = false;
     createContent.value = "";
     loadingData();
+    // 创建成功后自动打开导入弹窗
+    importVisible.value = true;
+    await getDbList();
   } catch (error) {
     console.error("创建表数据失败:", error);
   } finally {
@@ -1471,6 +1461,20 @@ async function handleImportTable(): Promise<void> {
     await GencodeAPI.importTable(tableNames);
     importVisible.value = false;
     loadingData(); // 导入成功后刷新已导入的表列表
+    // 导入成功后自动打开代码生成抽屉
+    if (tables.value.length === 1) {
+      // 只导入了一个表，刷新列表后自动打开该表的代码生成
+      await loadingData();
+      const importedTable = tableList.value.find(
+        (t) => t.table_name === tables.value[0].table_name
+      );
+      if (importedTable) {
+        await handlePreviewTable(importedTable);
+      }
+    } else {
+      // 导入了多个表，刷新列表
+      ElMessage.success(`成功导入 ${tables.value.length} 个表`);
+    }
   } catch (error) {
     console.error("导入表失败:", error);
   } finally {
@@ -1607,6 +1611,23 @@ async function submitForm() {
 // 下一步
 async function nextStep(): Promise<void> {
   if (activeStep.value < 3) {
+    // 在进入下一步前先保存当前配置
+    if (activeStep.value === 0) {
+      // 第一步：基础配置
+      const basicInfoValid = await basicInfo.value?.validate().catch(() => false);
+      if (!basicInfoValid) return;
+    } else if (activeStep.value === 1) {
+      // 第二步：字段配置
+      if (!info.columns || info.columns.length === 0) {
+        ElMessage.error("请配置字段信息");
+        return;
+      }
+    }
+
+    // 保存配置
+    const saved = await submitForm();
+    if (!saved) return;
+
     activeStep.value++;
 
     // 当从字段配置进入预览步骤时，自动加载预览数据

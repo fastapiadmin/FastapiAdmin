@@ -82,7 +82,7 @@ html.sidebar-color-blue .layout-mix .layout__sidebar--left .el-menu {
 // 全局搜索区域样式
 .search-container {
   padding: 18px 16px 0;
-  margin-bottom: 16px;
+  margin-top: 16px;
   background-color: var(--el-bg-color-overlay);
   border: 1px solid var(--el-border-color-light);
   border-radius: 4px;
@@ -115,7 +115,7 @@ html.sidebar-color-blue .layout-mix .layout__sidebar--left .el-menu {
 
   // 表格内容区域
   &__content {
-    // margin: 8px 0; // 表格内容区域添加内边距
+    margin: 0px 0; // 表格内容区域添加内边距
   }
 
   // 分页区域

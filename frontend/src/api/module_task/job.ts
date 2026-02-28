@@ -116,13 +116,6 @@ const JobAPI = {
       data: ids,
     });
   },
-
-  clearJobLog() {
-    return request<ApiResponse>({
-      url: `${API_PATH}/log/clear`,
-      method: "delete",
-    });
-  },
 };
 
 export default JobAPI;
@@ -153,6 +146,8 @@ export interface JobLogTable extends BaseType {
   job_name?: string;
   trigger_type?: string;
   status: string;
+  next_run_time?: string;
+  job_state?: string;
   result?: string;
   error?: string;
   created_time?: string;

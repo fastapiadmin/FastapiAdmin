@@ -1,65 +1,6 @@
 <!-- AI智能助手会话列表 -->
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
-    <div v-show="visible" class="search-container">
-      <el-form
-        ref="queryFormRef"
-        :model="queryFormData"
-        label-suffix=":"
-        :inline="true"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item prop="title" label="标题">
-          <el-input v-model="queryFormData.title" placeholder="请输入标题" clearable />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
-          <DatePicker
-            v-model="createdDateRange"
-            @update:model-value="handleCreatedDateRangeChange"
-          />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
-          <DatePicker
-            v-model="updatedDateRange"
-            @update:model-value="handleUpdatedDateRangeChange"
-          />
-        </el-form-item>
-        <!-- 查询、重置、展开/收起按钮 -->
-        <el-form-item>
-          <el-button
-            v-hasPerm="['module_example:demo:query']"
-            type="primary"
-            icon="search"
-            @click="handleQuery"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_example:demo:query']"
-            icon="refresh"
-            @click="handleResetQuery"
-          >
-            重置
-          </el-button>
-          <!-- 展开/收起 -->
-          <template v-if="isExpandable">
-            <el-link class="ml-3" type="primary" underline="never" @click="isExpand = !isExpand">
-              {{ isExpand ? "收起" : "展开" }}
-              <el-icon>
-                <template v-if="isExpand">
-                  <ArrowUp />
-                </template>
-                <template v-else>
-                  <ArrowDown />
-                </template>
-              </el-icon>
-            </el-link>
-          </template>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 内容区域 -->
     <el-card class="data-table">
       <template #header>
@@ -70,6 +11,69 @@
               <QuestionFilled class="w-4 h-4 mx-1" />
             </el-tooltip>
           </span>
+        </div>
+        <!-- 搜索区域 -->
+        <div v-show="visible" class="search-container">
+          <el-form
+            ref="queryFormRef"
+            :model="queryFormData"
+            label-suffix=":"
+            :inline="true"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item prop="title" label="标题">
+              <el-input v-model="queryFormData.title" placeholder="请输入标题" clearable />
+            </el-form-item>
+            <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
+              <DatePicker
+                v-model="createdDateRange"
+                @update:model-value="handleCreatedDateRangeChange"
+              />
+            </el-form-item>
+            <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
+              <DatePicker
+                v-model="updatedDateRange"
+                @update:model-value="handleUpdatedDateRangeChange"
+              />
+            </el-form-item>
+            <!-- 查询、重置、展开/收起按钮 -->
+            <el-form-item>
+              <el-button
+                v-hasPerm="['module_example:demo:query']"
+                type="primary"
+                icon="search"
+                @click="handleQuery"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_example:demo:query']"
+                icon="refresh"
+                @click="handleResetQuery"
+              >
+                重置
+              </el-button>
+              <!-- 展开/收起 -->
+              <template v-if="isExpandable">
+                <el-link
+                  class="ml-3"
+                  type="primary"
+                  underline="never"
+                  @click="isExpand = !isExpand"
+                >
+                  {{ isExpand ? "收起" : "展开" }}
+                  <el-icon>
+                    <template v-if="isExpand">
+                      <ArrowUp />
+                    </template>
+                    <template v-else>
+                      <ArrowDown />
+                    </template>
+                  </el-icon>
+                </el-link>
+              </template>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -135,8 +139,8 @@
         :data="pageTableData"
         highlight-current-row
         class="data-table__content"
-        height="450"
-        max-height="450"
+        height="calc(100vh - 440px)"
+        max-height="calc(100vh - 440px)"
         border
         stripe
         @selection-change="handleSelectionChange"

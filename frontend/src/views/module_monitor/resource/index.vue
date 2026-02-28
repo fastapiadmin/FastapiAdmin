@@ -1,43 +1,5 @@
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
-    <div class="search-container">
-      <el-form
-        ref="queryFormRef"
-        :model="queryFormData"
-        :inline="true"
-        label-suffix=":"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item prop="name" label="关键词">
-          <el-input
-            v-model="queryFormData.name"
-            placeholder="请输入文件名或目录名"
-            clearable
-            style="width: 200px"
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item class="search-buttons">
-          <el-button
-            v-hasPerm="['module_monitor:resource:query']"
-            type="primary"
-            icon="search"
-            native-type="submit"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_monitor:resource:query']"
-            icon="refresh"
-            @click="handleResetQuery"
-          >
-            重置
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 内容区域 -->
     <el-card class="data-table">
       <template #header>
@@ -62,6 +24,43 @@
               </el-breadcrumb-item>
             </el-breadcrumb>
           </div>
+        </div>
+        <!-- 搜索区域 -->
+        <div class="search-container">
+          <el-form
+            ref="queryFormRef"
+            :model="queryFormData"
+            :inline="true"
+            label-suffix=":"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item prop="name" label="关键词">
+              <el-input
+                v-model="queryFormData.name"
+                placeholder="请输入文件名或目录名"
+                clearable
+                style="width: 200px"
+                @keyup.enter="handleQuery"
+              />
+            </el-form-item>
+            <el-form-item class="search-buttons">
+              <el-button
+                v-hasPerm="['module_monitor:resource:query']"
+                type="primary"
+                icon="search"
+                native-type="submit"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_monitor:resource:query']"
+                icon="refresh"
+                @click="handleResetQuery"
+              >
+                重置
+              </el-button>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -154,8 +153,8 @@
         :data="fileList"
         row-key="file_url"
         class="data-table__content"
-        height="450"
-        max-height="450"
+        height="calc(100vh - 440px)"
+        max-height="calc(100vh - 440px)"
         border
         stripe
         @selection-change="handleSelectionChange"

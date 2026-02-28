@@ -1,70 +1,6 @@
 <!-- 系统配置 -->
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
-    <div class="search-container">
-      <el-form
-        ref="queryFormRef"
-        :model="queryFormData"
-        :inline="true"
-        label-suffix=":"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item prop="config_name" label="配置名称">
-          <el-input v-model="queryFormData.config_name" placeholder="请输入配置名称" clearable />
-        </el-form-item>
-        <el-form-item prop="config_key" label="配置键名">
-          <el-input v-model="queryFormData.config_key" placeholder="请输入配置键名" clearable />
-        </el-form-item>
-        <el-form-item prop="config_type" label="系统内置">
-          <el-select
-            v-model="queryFormData.config_type"
-            placeholder="请选择系统内置"
-            style="width: 167.5px"
-            clearable
-          >
-            <el-option value="true" label="是" />
-            <el-option value="false" label="否" />
-          </el-select>
-        </el-form-item>
-        <!-- 时间范围，收起状态下隐藏 -->
-        <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
-          <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
-        </el-form-item>
-        <el-form-item class="search-buttons">
-          <el-button
-            v-hasPerm="['module_system:param:query']"
-            type="primary"
-            icon="search"
-            native-type="submit"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_system:param:query']"
-            icon="refresh"
-            @click="handleResetQuery"
-          >
-            重置
-          </el-button>
-          <!-- 展开/收起 -->
-          <template v-if="isExpandable">
-            <el-link class="ml-3" type="primary" underline="never" @click="isExpand = !isExpand">
-              {{ isExpand ? "收起" : "展开" }}
-              <el-icon>
-                <template v-if="isExpand">
-                  <ArrowUp />
-                </template>
-                <template v-else>
-                  <ArrowDown />
-                </template>
-              </el-icon>
-            </el-link>
-          </template>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 内容区域 -->
     <el-card class="data-table">
       <template #header>
@@ -75,6 +11,78 @@
             </el-tooltip>
             系统配置列表
           </span>
+        </div>
+        <!-- 搜索区域 -->
+        <div class="search-container">
+          <el-form
+            ref="queryFormRef"
+            :model="queryFormData"
+            :inline="true"
+            label-suffix=":"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item prop="config_name" label="配置名称">
+              <el-input
+                v-model="queryFormData.config_name"
+                placeholder="请输入配置名称"
+                clearable
+              />
+            </el-form-item>
+            <el-form-item prop="config_key" label="配置键名">
+              <el-input v-model="queryFormData.config_key" placeholder="请输入配置键名" clearable />
+            </el-form-item>
+            <el-form-item prop="config_type" label="系统内置">
+              <el-select
+                v-model="queryFormData.config_type"
+                placeholder="请选择系统内置"
+                style="width: 167.5px"
+                clearable
+              >
+                <el-option value="true" label="是" />
+                <el-option value="false" label="否" />
+              </el-select>
+            </el-form-item>
+            <!-- 时间范围，收起状态下隐藏 -->
+            <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
+              <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
+            </el-form-item>
+            <el-form-item class="search-buttons">
+              <el-button
+                v-hasPerm="['module_system:param:query']"
+                type="primary"
+                icon="search"
+                native-type="submit"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_system:param:query']"
+                icon="refresh"
+                @click="handleResetQuery"
+              >
+                重置
+              </el-button>
+              <!-- 展开/收起 -->
+              <template v-if="isExpandable">
+                <el-link
+                  class="ml-3"
+                  type="primary"
+                  underline="never"
+                  @click="isExpand = !isExpand"
+                >
+                  {{ isExpand ? "收起" : "展开" }}
+                  <el-icon>
+                    <template v-if="isExpand">
+                      <ArrowUp />
+                    </template>
+                    <template v-else>
+                      <ArrowDown />
+                    </template>
+                  </el-icon>
+                </el-link>
+              </template>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -156,8 +164,8 @@
         :data="pageTableData"
         highlight-current-row
         class="data-table__content"
-        height="450"
-        max-height="450"
+        height="calc(100vh - 440px)"
+        max-height="calc(100vh - 440px)"
         border
         stripe
         @selection-change="handleSelectionChange"

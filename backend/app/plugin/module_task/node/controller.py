@@ -214,7 +214,7 @@ async def clear_obj_controller(
 async def execute_job_controller(
     id: Annotated[int, Path(description="节点ID")],
     data: NodeExecuteSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:node:update"]))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:node:execute"]))],
 ) -> JSONResponse:
     """
     调试节点

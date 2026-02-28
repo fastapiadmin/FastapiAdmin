@@ -9,83 +9,6 @@
 
       <!-- 用户列表 -->
       <el-col :span="20">
-        <!-- 搜索区域 -->
-        <div class="search-container">
-          <el-form
-            ref="queryFormRef"
-            :model="queryFormData"
-            :inline="true"
-            label-suffix=":"
-            @submit.prevent="handleQuery"
-          >
-            <el-form-item prop="username" label="账号">
-              <el-input v-model="queryFormData.username" placeholder="请输入账号" clearable />
-            </el-form-item>
-            <el-form-item prop="name" label="用户名">
-              <el-input v-model="queryFormData.name" placeholder="请输入用户名" clearable />
-            </el-form-item>
-            <el-form-item prop="status" label="状态">
-              <el-select
-                v-model="queryFormData.status"
-                placeholder="请选择状态"
-                style="width: 167.5px"
-                clearable
-              >
-                <el-option value="0" label="启用" />
-                <el-option value="1" label="停用" />
-              </el-select>
-            </el-form-item>
-            <!-- 时间范围，收起状态下隐藏 -->
-            <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
-              <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
-            </el-form-item>
-            <el-form-item v-if="isExpand" prop="created_id" label="创建人">
-              <UserTableSelect
-                v-model="queryFormData.created_id"
-                @confirm-click="handleConfirm"
-                @clear-click="handleQuery"
-              />
-            </el-form-item>
-            <!-- 查询、重置、展开/收起按钮 -->
-            <el-form-item class="search-buttons">
-              <el-button
-                v-hasPerm="['module_system:user:query']"
-                type="primary"
-                icon="search"
-                native-type="submit"
-              >
-                查询
-              </el-button>
-              <el-button
-                v-hasPerm="['module_system:user:query']"
-                icon="refresh"
-                @click="handleResetQuery"
-              >
-                重置
-              </el-button>
-              <!-- 展开/收起 -->
-              <template v-if="isExpandable">
-                <el-link
-                  class="ml-3"
-                  type="primary"
-                  underline="never"
-                  @click="isExpand = !isExpand"
-                >
-                  {{ isExpand ? "收起" : "展开" }}
-                  <el-icon>
-                    <template v-if="isExpand">
-                      <ArrowUp />
-                    </template>
-                    <template v-else>
-                      <ArrowDown />
-                    </template>
-                  </el-icon>
-                </el-link>
-              </template>
-            </el-form-item>
-          </el-form>
-        </div>
-
         <el-card class="data-table">
           <template #header>
             <div class="card-header">
@@ -95,6 +18,78 @@
                 </el-tooltip>
                 用户列表
               </span>
+            </div>
+            <!-- 搜索区域 -->
+            <div class="search-container">
+              <el-form
+                ref="queryFormRef"
+                :model="queryFormData"
+                :inline="true"
+                label-suffix=":"
+                @submit.prevent="handleQuery"
+              >
+                <el-form-item prop="username" label="账号">
+                  <el-input v-model="queryFormData.username" placeholder="请输入账号" clearable />
+                </el-form-item>
+                <el-form-item prop="name" label="用户名">
+                  <el-input v-model="queryFormData.name" placeholder="请输入用户名" clearable />
+                </el-form-item>
+                <el-form-item prop="status" label="状态">
+                  <el-select
+                    v-model="queryFormData.status"
+                    placeholder="请选择状态"
+                    style="width: 167.5px"
+                    clearable
+                  >
+                    <el-option value="0" label="启用" />
+                    <el-option value="1" label="停用" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item v-if="isExpand" prop="created_id" label="创建人">
+                  <UserTableSelect
+                    v-model="queryFormData.created_id"
+                    @confirm-click="handleConfirm"
+                    @clear-click="handleQuery"
+                  />
+                </el-form-item>
+                <!-- 查询、重置、展开/收起按钮 -->
+                <el-form-item class="search-buttons">
+                  <el-button
+                    v-hasPerm="['module_system:user:query']"
+                    type="primary"
+                    icon="search"
+                    native-type="submit"
+                  >
+                    查询
+                  </el-button>
+                  <el-button
+                    v-hasPerm="['module_system:user:query']"
+                    icon="refresh"
+                    @click="handleResetQuery"
+                  >
+                    重置
+                  </el-button>
+                  <!-- 展开/收起 -->
+                  <template v-if="isExpandable">
+                    <el-link
+                      class="ml-3"
+                      type="primary"
+                      underline="never"
+                      @click="isExpand = !isExpand"
+                    >
+                      {{ isExpand ? "收起" : "展开" }}
+                      <el-icon>
+                        <template v-if="isExpand">
+                          <ArrowUp />
+                        </template>
+                        <template v-else>
+                          <ArrowDown />
+                        </template>
+                      </el-icon>
+                    </el-link>
+                  </template>
+                </el-form-item>
+              </el-form>
             </div>
           </template>
 
@@ -194,8 +189,8 @@
             :data="pageTableData"
             highlight-current-row
             class="data-table__content"
-            height="488"
-            max-height="488"
+            height="calc(100vh - 445px)"
+            max-height="calc(100vh - 445px)"
             border
             stripe
             @selection-change="handleSelectionChange"
@@ -228,13 +223,6 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="是否超管" prop="is_superuser" min-width="100">
-              <template #default="scope">
-                <el-tag :type="scope.row.is_superuser ? 'success' : 'info'">
-                  {{ scope.row.is_superuser ? "是" : "否" }}
-                </el-tag>
-              </template>
-            </el-table-column>
             <el-table-column label="部门" prop="dept" min-width="100">
               <template #default="scope">
                 {{ scope.row.dept ? scope.row.dept.name : "" }}
@@ -247,21 +235,8 @@
                 <el-tag v-else type="info">未知</el-tag>
               </template>
             </el-table-column>
-
-            <el-table-column label="手机号" prop="mobile" min-width="160" />
-            <el-table-column label="邮箱" prop="email" min-width="160" />
-            <el-table-column label="创建时间" prop="created_time" min-width="200" />
-            <el-table-column label="更新时间" prop="updated_time" min-width="200" />
-            <el-table-column label="创建人" prop="created_id" min-width="120">
-              <template #default="scope">
-                {{ scope.row.created_by?.name }}
-              </template>
-            </el-table-column>
-            <el-table-column label="更新人" prop="updated_id" min-width="120">
-              <template #default="scope">
-                {{ scope.row.updated_by?.name }}
-              </template>
-            </el-table-column>
+            <el-table-column label="创建时间" prop="created_time" min-width="160" />
+            <el-table-column label="更新时间" prop="updated_time" min-width="160" />
             <el-table-column fixed="right" label="操作" align="center" min-width="280">
               <template #default="scope">
                 <el-button
@@ -571,7 +546,6 @@ import { formatTree } from "@/utils/common";
 import PositionAPI from "@/api/module_system/position";
 import DeptAPI from "@/api/module_system/dept";
 import RoleAPI from "@/api/module_system/role";
-import { formatToDateTime } from "@/utils/dateUtil";
 
 import DeptTree from "./components/DeptTree.vue";
 import UserTableSelect from "./components/UserTableSelect.vue";
@@ -719,16 +693,6 @@ const curdContentConfig = {
 // 选择创建人后触发查询
 function handleConfirm() {
   handleQuery();
-}
-
-// 处理日期范围变化
-function handleDateRangeChange(range: [Date, Date]) {
-  dateRange.value = range;
-  if (range && range.length === 2) {
-    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
-  } else {
-    queryFormData.created_time = undefined;
-  }
 }
 
 // 列表刷新

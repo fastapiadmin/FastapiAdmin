@@ -62,7 +62,7 @@ async def get_scheduler_jobs_controller() -> JSONResponse:
     summary="启动调度器",
     description="启动调度器",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:scheduler"]))],
 )
 async def start_scheduler_controller() -> JSONResponse:
     """
@@ -78,7 +78,7 @@ async def start_scheduler_controller() -> JSONResponse:
     summary="暂停调度器",
     description="暂停调度器",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:scheduler"]))],
 )
 async def pause_scheduler_controller() -> JSONResponse:
     """
@@ -94,7 +94,7 @@ async def pause_scheduler_controller() -> JSONResponse:
     summary="恢复调度器",
     description="恢复调度器",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:scheduler"]))],
 )
 async def resume_scheduler_controller() -> JSONResponse:
     """
@@ -110,7 +110,7 @@ async def resume_scheduler_controller() -> JSONResponse:
     summary="关闭调度器",
     description="关闭调度器",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:scheduler"]))],
 )
 async def shutdown_scheduler_controller() -> JSONResponse:
     """
@@ -126,7 +126,7 @@ async def shutdown_scheduler_controller() -> JSONResponse:
     summary="清空所有任务",
     description="清空调度器中的所有任务",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:delete"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:task"]))],
 )
 async def clear_jobs_controller() -> JSONResponse:
     """
@@ -182,7 +182,7 @@ async def sync_jobs_controller() -> JSONResponse:
     summary="暂停任务",
     description="暂停调度器中的任务",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:task"]))],
 )
 async def pause_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
@@ -203,7 +203,7 @@ async def pause_job_controller(
     summary="恢复任务",
     description="恢复调度器中的任务",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:task"]))],
 )
 async def resume_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
@@ -224,7 +224,7 @@ async def resume_job_controller(
     summary="立即执行任务",
     description="立即执行调度器中的任务",
     response_model=ResponseSchema[None],
-    dependencies=[Depends(AuthPermission(["module_task:job:update"]))],
+    dependencies=[Depends(AuthPermission(["module_task:job:task"]))],
 )
 async def run_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
@@ -343,20 +343,3 @@ async def delete_job_log_controller(
     await JobService.delete_job_log_service(auth=auth, ids=ids)
     log.info(f"删除执行日志成功: {ids}")
     return SuccessResponse(msg="删除执行日志成功")
-
-
-@JobRouter.delete(
-    "/log/clear",
-    summary="清空执行日志",
-    description="清空所有执行日志",
-    response_model=ResponseSchema[None],
-)
-async def clear_job_log_controller(
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:job:delete"]))],
-) -> JSONResponse:
-    """
-    清空所有执行日志
-    """
-    await JobService.clear_job_log_service(auth=auth)
-    log.info("清空执行日志成功")
-    return SuccessResponse(msg="清空执行日志成功")

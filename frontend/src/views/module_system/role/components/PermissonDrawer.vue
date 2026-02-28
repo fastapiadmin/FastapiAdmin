@@ -109,7 +109,7 @@
           </div>
         </div>
 
-        <div class="mt-5 max-h-[65vh] b-1 b-solid b-[#e5e7eb] p-10px overflow-auto box-border">
+        <div class="mt-5 max-h-[70vh] b-1 b-solid b-[#e5e7eb] p-10px overflow-auto box-border">
           <el-tree
             ref="permTreeRef"
             node-key="value"

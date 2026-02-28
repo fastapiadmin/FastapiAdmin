@@ -1,79 +1,8 @@
 <!-- 我的应用管理 -->
 <template>
   <div class="app-container">
-    <!-- 顶部搜索和操作区域 -->
-    <div class="search-container">
-      <el-form
-        ref="queryFormRef"
-        :model="queryFormData"
-        :inline="true"
-        label-suffix=":"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item prop="name" label="应用名称">
-          <el-input v-model="queryFormData.name" placeholder="请输入应用名称" clearable />
-        </el-form-item>
-        <el-form-item prop="status" label="状态">
-          <el-select
-            v-model="queryFormData.status"
-            placeholder="请选择状态"
-            clearable
-            style="width: 170px"
-          >
-            <el-option label="启用" :value="true" />
-            <el-option label="停用" :value="false" />
-          </el-select>
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
-          <UserTableSelect
-            v-model="queryFormData.created_id"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="updated_id" label="更新人">
-          <UserTableSelect
-            v-model="queryFormData.updated_id"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item class="search-buttons">
-          <el-button
-            v-hasPerm="['module_module_application:myapp:query']"
-            type="primary"
-            icon="search"
-            native-type="submit"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_application:myapp:query']"
-            icon="refresh"
-            @click="handleResetQuery"
-          >
-            重置
-          </el-button>
-          <!-- 展开/收起 -->
-          <template v-if="isExpandable">
-            <el-link class="ml-3" type="primary" underline="never" @click="isExpand = !isExpand">
-              {{ isExpand ? "收起" : "展开" }}
-              <el-icon>
-                <template v-if="isExpand">
-                  <ArrowUp />
-                </template>
-                <template v-else>
-                  <ArrowDown />
-                </template>
-              </el-icon>
-            </el-link>
-          </template>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 应用卡片展示区域 -->
-    <el-card shadow="hover" class="app-grid-card">
+    <el-card shadow="hover" class="data-table">
       <template #header>
         <div class="card-header">
           <span>
@@ -90,6 +19,81 @@
           >
             创建应用
           </el-button>
+        </div>
+        <!-- 顶部搜索和操作区域 -->
+        <div class="search-container">
+          <el-form
+            ref="queryFormRef"
+            :model="queryFormData"
+            :inline="true"
+            label-suffix=":"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item prop="name" label="应用名称">
+              <el-input v-model="queryFormData.name" placeholder="请输入应用名称" clearable />
+            </el-form-item>
+            <el-form-item prop="status" label="状态">
+              <el-select
+                v-model="queryFormData.status"
+                placeholder="请选择状态"
+                clearable
+                style="width: 170px"
+              >
+                <el-option label="启用" :value="true" />
+                <el-option label="停用" :value="false" />
+              </el-select>
+            </el-form-item>
+            <el-form-item v-if="isExpand" prop="created_id" label="创建人">
+              <UserTableSelect
+                v-model="queryFormData.created_id"
+                @confirm-click="handleConfirm"
+                @clear-click="handleQuery"
+              />
+            </el-form-item>
+            <el-form-item v-if="isExpand" prop="updated_id" label="更新人">
+              <UserTableSelect
+                v-model="queryFormData.updated_id"
+                @confirm-click="handleConfirm"
+                @clear-click="handleQuery"
+              />
+            </el-form-item>
+            <el-form-item class="search-buttons">
+              <el-button
+                v-hasPerm="['module_module_application:myapp:query']"
+                type="primary"
+                icon="search"
+                native-type="submit"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_application:myapp:query']"
+                icon="refresh"
+                @click="handleResetQuery"
+              >
+                重置
+              </el-button>
+              <!-- 展开/收起 -->
+              <template v-if="isExpandable">
+                <el-link
+                  class="ml-3"
+                  type="primary"
+                  underline="never"
+                  @click="isExpand = !isExpand"
+                >
+                  {{ isExpand ? "收起" : "展开" }}
+                  <el-icon>
+                    <template v-if="isExpand">
+                      <ArrowUp />
+                    </template>
+                    <template v-else>
+                      <ArrowDown />
+                    </template>
+                  </el-icon>
+                </el-link>
+              </template>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -504,11 +508,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.app-grid-card {
+.data-table {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 100px);
 
   :deep(.el-card__footer) {
     display: flex;

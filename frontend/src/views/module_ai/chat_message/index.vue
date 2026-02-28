@@ -1,79 +1,6 @@
 <!-- AI智能助手消息列表 -->
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
-    <div v-show="visible" class="search-container">
-      <el-form
-        ref="queryFormRef"
-        :model="queryFormData"
-        label-suffix=":"
-        :inline="true"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item prop="session_id" label="会话ID">
-          <el-input v-model="queryFormData.session_id" placeholder="请输入会话ID" clearable />
-        </el-form-item>
-        <el-form-item prop="type" label="类型">
-          <el-select
-            v-model="queryFormData.type"
-            placeholder="请选择类型"
-            style="width: 170px"
-            clearable
-          >
-            <el-option value="user" label="用户" />
-            <el-option value="assistant" label="助手" />
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="content" label="内容">
-          <el-input v-model="queryFormData.content" placeholder="请输入内容" clearable />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
-          <DatePicker
-            v-model="createdDateRange"
-            @update:model-value="handleCreatedDateRangeChange"
-          />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
-          <DatePicker
-            v-model="updatedDateRange"
-            @update:model-value="handleUpdatedDateRangeChange"
-          />
-        </el-form-item>
-        <!-- 查询、重置、展开/收起按钮 -->
-        <el-form-item>
-          <el-button
-            v-hasPerm="['module_example:demo:query']"
-            type="primary"
-            icon="search"
-            @click="handleQuery"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_example:demo:query']"
-            icon="refresh"
-            @click="handleResetQuery"
-          >
-            重置
-          </el-button>
-          <!-- 展开/收起 -->
-          <template v-if="isExpandable">
-            <el-link class="ml-3" type="primary" underline="never" @click="isExpand = !isExpand">
-              {{ isExpand ? "收起" : "展开" }}
-              <el-icon>
-                <template v-if="isExpand">
-                  <ArrowUp />
-                </template>
-                <template v-else>
-                  <ArrowDown />
-                </template>
-              </el-icon>
-            </el-link>
-          </template>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 内容区域 -->
     <el-card class="data-table">
       <template #header>
@@ -84,6 +11,77 @@
               <QuestionFilled class="w-4 h-4 mx-1" />
             </el-tooltip>
           </span>
+        </div>
+        <!-- 搜索区域 -->
+        <div v-show="visible" class="search-container">
+          <el-form
+            ref="queryFormRef"
+            :model="queryFormData"
+            label-suffix=":"
+            :inline="true"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item prop="session_id" label="会话ID">
+              <el-input v-model="queryFormData.session_id" placeholder="请输入会话ID" clearable />
+            </el-form-item>
+            <el-form-item prop="type" label="类型">
+              <el-select
+                v-model="queryFormData.type"
+                placeholder="请选择类型"
+                style="width: 170px"
+                clearable
+              >
+                <el-option value="user" label="用户" />
+                <el-option value="assistant" label="助手" />
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="content" label="内容">
+              <el-input v-model="queryFormData.content" placeholder="请输入内容" clearable />
+            </el-form-item>
+            <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
+              <DatePicker
+                v-model="createdDateRange"
+                @update:model-value="handleCreatedDateRangeChange"
+              />
+            </el-form-item>
+            <!-- 查询、重置、展开/收起按钮 -->
+            <el-form-item>
+              <el-button
+                v-hasPerm="['module_example:demo:query']"
+                type="primary"
+                icon="search"
+                @click="handleQuery"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_example:demo:query']"
+                icon="refresh"
+                @click="handleResetQuery"
+              >
+                重置
+              </el-button>
+              <!-- 展开/收起 -->
+              <template v-if="isExpandable">
+                <el-link
+                  class="ml-3"
+                  type="primary"
+                  underline="never"
+                  @click="isExpand = !isExpand"
+                >
+                  {{ isExpand ? "收起" : "展开" }}
+                  <el-icon>
+                    <template v-if="isExpand">
+                      <ArrowUp />
+                    </template>
+                    <template v-else>
+                      <ArrowDown />
+                    </template>
+                  </el-icon>
+                </el-link>
+              </template>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -149,8 +147,8 @@
         :data="pageTableData"
         highlight-current-row
         class="data-table__content"
-        height="450"
-        max-height="450"
+        height="calc(100vh - 440px)"
+        max-height="calc(100vh - 440px)"
         border
         stripe
         @selection-change="handleSelectionChange"
@@ -196,7 +194,7 @@
           v-if="tableColumns.find((col) => col.prop === 'content')?.show"
           label="内容"
           prop="content"
-          min-width="300"
+          min-width="200"
           show-overflow-tooltip
         >
           <template #default="scope">
@@ -381,8 +379,6 @@ const isExpandable = ref(true);
 
 // 日期范围临时变量
 const createdDateRange = ref<[Date, Date] | []>([]);
-// 更新时间范围临时变量
-const updatedDateRange = ref<[Date, Date] | []>([]);
 
 // 处理创建时间范围变化
 function handleCreatedDateRangeChange(range: [Date, Date]) {
@@ -391,16 +387,6 @@ function handleCreatedDateRangeChange(range: [Date, Date]) {
     queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
   } else {
     queryFormData.created_time = undefined;
-  }
-}
-
-// 处理更新时间范围变化
-function handleUpdatedDateRangeChange(range: [Date, Date]) {
-  updatedDateRange.value = range;
-  if (range && range.length === 2) {
-    queryFormData.updated_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
-  } else {
-    queryFormData.updated_time = undefined;
   }
 }
 

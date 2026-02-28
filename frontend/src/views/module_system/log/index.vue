@@ -1,75 +1,6 @@
 <!-- 日志管理 -->
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
-    <div class="search-container">
-      <el-form
-        ref="queryFormRef"
-        :model="queryFormData"
-        :inline="true"
-        label-suffix=":"
-        @submit.prevent="handleQuery"
-      >
-        <el-form-item prop="request_path" label="请求路径">
-          <el-input v-model="queryFormData.request_path" placeholder="请输入请求路径" clearable />
-        </el-form-item>
-        <el-form-item prop="type" label="日志类型">
-          <el-select
-            v-model="queryFormData.type"
-            placeholder="请选择日志类型"
-            style="width: 167.5px"
-            clearable
-          >
-            <el-option label="登录日志" value="1" />
-            <el-option label="操作日志" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
-          <UserTableSelect
-            v-model="queryFormData.created_id"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
-        </el-form-item>
-        <!-- 时间范围，收起状态下隐藏 -->
-        <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
-          <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
-        </el-form-item>
-        <!-- 查询、重置、展开/收起按钮 -->
-        <el-form-item class="search-buttons">
-          <el-button
-            v-hasPerm="['module_system:log:query']"
-            type="primary"
-            icon="search"
-            native-type="submit"
-          >
-            查询
-          </el-button>
-          <el-button
-            v-hasPerm="['module_system:log:query']"
-            icon="refresh"
-            @click="handleResetQuery"
-          >
-            重置
-          </el-button>
-          <!-- 展开/收起 -->
-          <template v-if="isExpandable">
-            <el-link class="ml-3" type="primary" underline="never" @click="isExpand = !isExpand">
-              {{ isExpand ? "收起" : "展开" }}
-              <el-icon>
-                <template v-if="isExpand">
-                  <ArrowUp />
-                </template>
-                <template v-else>
-                  <ArrowDown />
-                </template>
-              </el-icon>
-            </el-link>
-          </template>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <!-- 内容区域 -->
     <el-card class="data-table">
       <template #header>
@@ -80,6 +11,83 @@
             </el-tooltip>
             日志列表
           </span>
+        </div>
+        <!-- 搜索区域 -->
+        <div class="search-container">
+          <el-form
+            ref="queryFormRef"
+            :model="queryFormData"
+            :inline="true"
+            label-suffix=":"
+            @submit.prevent="handleQuery"
+          >
+            <el-form-item prop="request_path" label="请求路径">
+              <el-input
+                v-model="queryFormData.request_path"
+                placeholder="请输入请求路径"
+                clearable
+              />
+            </el-form-item>
+            <el-form-item prop="type" label="日志类型">
+              <el-select
+                v-model="queryFormData.type"
+                placeholder="请选择日志类型"
+                style="width: 167.5px"
+                clearable
+              >
+                <el-option label="登录日志" value="1" />
+                <el-option label="操作日志" value="2" />
+              </el-select>
+            </el-form-item>
+            <el-form-item v-if="isExpand" prop="created_id" label="创建人">
+              <UserTableSelect
+                v-model="queryFormData.created_id"
+                @confirm-click="handleConfirm"
+                @clear-click="handleQuery"
+              />
+            </el-form-item>
+            <!-- 时间范围，收起状态下隐藏 -->
+            <el-form-item v-if="isExpand" prop="start_time" label="创建时间">
+              <DatePicker v-model="dateRange" @update:model-value="handleDateRangeChange" />
+            </el-form-item>
+            <!-- 查询、重置、展开/收起按钮 -->
+            <el-form-item class="search-buttons">
+              <el-button
+                v-hasPerm="['module_system:log:query']"
+                type="primary"
+                icon="search"
+                native-type="submit"
+              >
+                查询
+              </el-button>
+              <el-button
+                v-hasPerm="['module_system:log:query']"
+                icon="refresh"
+                @click="handleResetQuery"
+              >
+                重置
+              </el-button>
+              <!-- 展开/收起 -->
+              <template v-if="isExpandable">
+                <el-link
+                  class="ml-3"
+                  type="primary"
+                  underline="never"
+                  @click="isExpand = !isExpand"
+                >
+                  {{ isExpand ? "收起" : "展开" }}
+                  <el-icon>
+                    <template v-if="isExpand">
+                      <ArrowUp />
+                    </template>
+                    <template v-else>
+                      <ArrowDown />
+                    </template>
+                  </el-icon>
+                </el-link>
+              </template>
+            </el-form-item>
+          </el-form>
         </div>
       </template>
 
@@ -135,8 +143,8 @@
         :data="pageTableData"
         highlight-current-row
         class="data-table__content"
-        height="450"
-        max-height="450"
+        height="calc(100vh - 440px)"
+        max-height="calc(100vh - 440px)"
         border
         stripe
         @selection-change="handleSelectionChange"
