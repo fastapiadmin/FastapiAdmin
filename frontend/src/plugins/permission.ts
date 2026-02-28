@@ -24,6 +24,30 @@ export function setupPermission() {
         // 处理已登录用户的路由访问
         await handleAuthenticatedUser(to, from, next);
       } else {
+        // 检查是否开启了自动登录
+        const autoLoginEnabled = import.meta.env.VITE_AUTO_LOGIN_ENABLED === 'true';
+        const autoLoginUsername = import.meta.env.VITE_AUTO_LOGIN_USERNAME;
+        const autoLoginPassword = import.meta.env.VITE_AUTO_LOGIN_PASSWORD;
+        const autoLoginRemember = import.meta.env.VITE_AUTO_LOGIN_REMEMBER === 'true';
+        
+
+        if (autoLoginEnabled && autoLoginUsername && autoLoginPassword) {
+          try {
+            const userStore = useUserStore();
+            await userStore.login({
+              username: autoLoginUsername,
+              password: autoLoginPassword,
+              remember: autoLoginRemember,
+              captcha_key: "",
+              captcha: "",
+              login_type: "password"
+            });
+            next({ ...to, replace: true });
+            return;
+          } catch (error) {
+            console.error("Auto login failed！auto login need close captcha!:", error);
+          }
+        }
         // 未登录用户的处理
         if (whiteList.includes(to.path)) {
           next();

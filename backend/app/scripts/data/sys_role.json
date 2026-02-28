@@ -6,5 +6,13 @@
     "order": 1,
     "data_scope": 4,
     "description": "初始化角色"
+  },
+  {
+    "name": "访客角色",
+    "code": "GUEST",
+    "status": "0",
+    "order": 2,
+    "data_scope": 4,
+    "description": "免登录访客角色"
   }
 ]
