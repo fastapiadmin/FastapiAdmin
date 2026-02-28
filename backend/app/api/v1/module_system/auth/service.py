@@ -69,7 +69,7 @@ class LoginService:
         request_from_docs = referer.endswith(("docs", "redoc"))
 
         # 验证码校验
-        if settings.CAPTCHA_ENABLE and not request_from_docs:
+        if not settings.AUTO_LOGIN_ENABLE and settings.CAPTCHA_ENABLE and not request_from_docs:
             if not login_form.captcha_key or not login_form.captcha:
                 raise CustomException(msg="验证码不能为空")
             await CaptchaService.check_captcha_service(
@@ -341,7 +341,7 @@ class CaptchaService:
         异常:
         - CustomException: 验证码服务未启用时抛出异常
         """
-        if not settings.CAPTCHA_ENABLE:
+        if settings.AUTO_LOGIN_ENABLE or not settings.CAPTCHA_ENABLE:
             raise CustomException(msg="未开启验证码服务")
 
         # 生成验证码图片和值

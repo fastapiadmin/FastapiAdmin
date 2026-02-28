@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     # ================================================= #
     # ******************* 登录认证配置 ****************** #
     # ================================================= #
+    AUTO_LOGIN_ENABLE: bool = False  # 是否启用自动登录功能（用于关闭验证码控制）
     SECRET_KEY: str = "vgb0tnl9d58+6n-6h-ea&u^1#s0ccp!794=krylxcjq75vzps$"  # JWT密钥
     ALGORITHM: str = "HS256"  # JWT算法
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 30  # access_token过期时间(秒)30 分钟

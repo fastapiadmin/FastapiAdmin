@@ -18,5 +18,25 @@
     "description": "超级管理员",
     "created_id": null,
     "updated_id": null
+  },
+  {
+    "username": "guest",
+    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "name": "访客",
+    "mobile": null,
+    "email": null,
+    "gender": "0",
+    "avatar": "https://service.fastapiadmin.com/api/v1/static/image/avatar.png",
+    "is_superuser": false,
+    "last_login": null,
+    "gitee_login": null,
+    "github_login": null,
+    "wx_login": null,
+    "qq_login": null,
+    "dept_id": 1,
+    "status": "0",
+    "description": "免登录访客",
+    "created_id": null,
+    "updated_id": null
   }
 ]
