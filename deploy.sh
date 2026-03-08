@@ -3,7 +3,17 @@
 # 设置全局变量
 PROJECT_NAME="FastapiAdmin"
 WORK_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_PATH="${WORK_DIR}/${PROJECT_NAME}"
+
+# 检测脚本执行位置
+# 如果当前目录包含 docker-compose.yaml，说明脚本在项目内执行
+if [ -f "${WORK_DIR}/docker-compose.yaml" ] || [ -f "${WORK_DIR}/docker-compose.yml" ]; then
+    # 脚本在项目内执行，项目路径就是当前目录
+    PROJECT_PATH="${WORK_DIR}"
+else
+    # 脚本在项目外执行，项目路径是子目录
+    PROJECT_PATH="${WORK_DIR}/${PROJECT_NAME}"
+fi
+
 GIT_REPO="https://gitee.com/fastapiadmin/${PROJECT_NAME}.git"
 
 # 是否有更新前端
@@ -276,6 +286,25 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
+# 重启容器函数
+restart_containers() {
+    log "==========🔄 重启容器...==========" "INFO"
+    cd "${PROJECT_PATH}" || { log "❌ 无法进入项目目录：${PROJECT_PATH}" "ERROR"; exit 1; }
+    docker compose restart || { log "❌ 容器重启失败" "ERROR"; exit 1; }
+    log "✅ 容器重启成功" "INFO"
+    docker compose ps
+}
+
+# 更新代码并重启函数
+update_and_restart() {
+    log "==========🔄 更新代码并重启...==========" "INFO"
+    update_code
+    cd "${PROJECT_PATH}" || { log "❌ 无法进入项目目录：${PROJECT_PATH}" "ERROR"; exit 1; }
+    docker compose restart || { log "❌ 容器重启失败" "ERROR"; exit 1; }
+    log "✅ 代码更新并重启成功" "INFO"
+    docker compose ps
+}
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         start)
@@ -284,6 +313,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         stop)
             stop_project
+            exit 0
+            ;;
+        restart)
+            restart_containers
+            exit 0
+            ;;
+        update)
+            update_and_restart
             exit 0
             ;;
         logs)
@@ -296,7 +333,9 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "选项："
             echo "  stop       停止所有容器"
-            echo "  start      启动所有容器"
+            echo "  start      启动所有容器（完整部署流程）"
+            echo "  restart    重启所有容器"
+            echo "  update     更新代码并重启容器（不重新构建镜像）"
             echo "  logs       查看所有容器日志"
             echo "  help|-h    显示此帮助信息"
             echo ""

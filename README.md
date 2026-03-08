@@ -188,16 +188,58 @@ pnpm run build
 
 ### 🐳 Docker 部署
 
+#### 方式一：脚本放在项目内执行（推荐）
+
 ```bash
-# 复制部署脚本到服务器并赋予执行权限
+# 1. 克隆代码到服务器
+git clone https://gitee.com/fastapiadmin/FastapiAdmin.git
+cd FastapiAdmin
+
+# 2. 赋予执行权限并部署
 chmod +x deploy.sh
-# 执行一键部署
-./deploy.sh or ./deploy.sh --start
+./deploy.sh
+
 # 查看容器日志
-./deploy.sh --logs
+./deploy.sh logs
+
 # 停止服务
-./deploy.sh --stop
+./deploy.sh stop
+
+# 重启服务
+./deploy.sh restart
+
+# 更新代码并重启（不重新构建镜像，适合后端代码热更新）
+./deploy.sh update
 ```
+
+#### 方式二：脚本放在项目外执行
+
+```bash
+# 1. 将部署脚本复制到服务器
+cp deploy.sh /home/
+cd /home
+chmod +x deploy.sh
+
+# 2. 执行一键部署（会自动克隆项目）
+./deploy.sh
+
+# 查看容器日志
+./deploy.sh logs
+
+# 停止服务
+./deploy.sh stop
+
+# 重启服务
+./deploy.sh restart
+
+# 更新代码并重启（不重新构建镜像，适合后端代码热更新）
+./deploy.sh update
+```
+
+> **注意**：
+> - 首次部署时会自动拉取代码并构建镜像
+> - 前端使用本地构建的 dist 目录，如需更新前端请先本地构建并提交到仓库
+> - 确保 `devops/nginx/ssl/` 目录包含 SSL 证书文件（如使用 HTTPS）
 
 ## 🛠️ 二开教程
 

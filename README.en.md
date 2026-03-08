@@ -186,16 +186,52 @@ pnpm run build
 
 ### 🐳 Docker Deployment
 
+#### Method 1: Execute script inside project (Recommended)
+
 ```bash
-# Copy the deployment script to the server and grant execution permissions
+# 1. Clone the repository to server
+git clone https://gitee.com/fastapiadmin/FastapiAdmin.git
+cd FastapiAdmin
+
+# 2. Grant execution permissions and deploy
 chmod +x deploy.sh
-# Execute one-click deployment
-./deploy.sh or ./deploy.sh --start
+./deploy.sh
+
 # View container logs
-./deploy.sh --logs
+./deploy.sh logs
+
 # Stop services
-./deploy.sh --stop
+./deploy.sh stop
 ```
+
+#### Method 2: Execute script outside project
+
+```bash
+# 1. Copy the deployment script to server
+cp deploy.sh /home/
+cd /home
+chmod +x deploy.sh
+
+# 2. Execute one-click deployment (will auto clone project)
+./deploy.sh
+
+# View container logs
+./deploy.sh logs
+
+# Stop services
+./deploy.sh stop
+
+# Restart services
+./deploy.sh restart
+
+# Update code and restart (without rebuilding images, suitable for backend hot update)
+./deploy.sh update
+```
+
+> **Note**:
+> - First deployment will automatically pull code and build images
+> - Frontend uses locally built dist directory, please build locally and commit to repository if you need to update frontend
+> - Ensure `devops/nginx/ssl/` directory contains SSL certificate files (if using HTTPS)
 
 ## 🛠️ Secondary Development Tutorial
 
