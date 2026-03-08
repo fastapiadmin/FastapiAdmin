@@ -33,8 +33,9 @@ class ResourceItemSchema(BaseModel):
     def _validate_file_url(cls, v: str) -> str:
         v = v.strip()
         parsed = urlparse(v)
-        if parsed.scheme not in ("http", "https"):
-            raise ValueError("文件URL必须为 http/https")
+        # 允许相对路径（以 / 开头）和完整的 http/https URL
+        if parsed.scheme and parsed.scheme not in ("http", "https"):
+            raise ValueError("文件URL必须为 http/https 或相对路径")
         return v
 
     @field_validator("relative_path")

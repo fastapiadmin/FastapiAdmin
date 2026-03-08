@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import urllib.parse
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -28,7 +29,7 @@ from .schema import (
 
 class ResourceService:
     """
-    资源管理模块服务层 - 管理系统静态文件目录
+    资源管理模块服务层 - 管理系统静态文件目录（仅管理 upload 目录）
     """
 
     # 配置常量
@@ -39,19 +40,23 @@ class ResourceService:
     @classmethod
     def _get_resource_root(cls) -> str:
         """
-        获取资源管理根目录
+        获取资源管理根目录（仅允许访问 upload 目录）
 
         返回:
-        - str: 资源管理根目录路径。
+        - str: 资源管理根目录路径（upload 目录）。
         """
         if not settings.STATIC_ENABLE:
             raise CustomException(msg="静态文件服务未启用")
-        return str(settings.STATIC_ROOT)
+        # 限制只能管理 upload 目录
+        upload_root = os.path.join(str(settings.STATIC_ROOT), "upload")
+        # 确保 upload 目录存在
+        os.makedirs(upload_root, exist_ok=True)
+        return upload_root
 
     @classmethod
     def _get_safe_path(cls, path: str | None = None) -> str:
         """
-        获取安全的文件路径
+        获取安全的文件路径（加强版路径遍历防护）
 
         参数:
         - path (str | None): 原始文件路径。
@@ -61,53 +66,74 @@ class ResourceService:
         """
         resource_root = cls._get_resource_root()
 
-        if not path:
+        if not path or not isinstance(path, str):
             return resource_root
 
         # 支持前端传递的完整URL或以STATIC_URL/ROOT_PATH+STATIC_URL开头的URL路径，转换为相对资源路径
-        if isinstance(path, str):
-            static_prefix = settings.STATIC_URL.rstrip("/")
-            root_prefix = (
-                settings.ROOT_PATH.rstrip("/") if getattr(settings, "ROOT_PATH", "") else ""
-            )
-            root_static_prefix = f"{root_prefix}{static_prefix}" if root_prefix else static_prefix
-
-            def strip_prefix(p: str) -> str:
-                if p.startswith(root_static_prefix):
-                    return p[len(root_static_prefix) :].lstrip("/")
-                if p.startswith(static_prefix):
-                    return p[len(static_prefix) :].lstrip("/")
-                return p
-
-            if path.startswith(("http://", "https://")):
-                parsed = urlparse(path)
-                url_path = parsed.path or ""
-                path = strip_prefix(url_path)
-            else:
-                path = strip_prefix(path)
-
-        # 清理路径，移除危险字符
-        path = path.strip().replace("..", "").replace("//", "/")
-
-        # 规范化路径
-        safe_path = (
-            os.path.normpath(path)
-            if os.path.isabs(path)
-            else os.path.normpath(os.path.join(resource_root, path))
+        static_prefix = settings.STATIC_URL.rstrip("/")
+        root_prefix = (
+            settings.ROOT_PATH.rstrip("/") if getattr(settings, "ROOT_PATH", "") else ""
         )
+        root_static_prefix = f"{root_prefix}{static_prefix}" if root_prefix else static_prefix
 
-        # 检查路径是否在允许的范围内
+        def strip_prefix(p: str) -> str:
+            if p.startswith(root_static_prefix):
+                return p[len(root_static_prefix) :].lstrip("/")
+            if p.startswith(static_prefix):
+                return p[len(static_prefix) :].lstrip("/")
+            return p
+
+        if path.startswith(("http://", "https://")):
+            parsed = urlparse(path)
+            url_path = parsed.path or ""
+            path = strip_prefix(url_path)
+        else:
+            path = strip_prefix(path)
+
+        # 清理路径，规范化斜杠
+        path = path.strip().replace("//", "/").replace("\\\\\\\\", "/").replace("\\\\", "/")
+
+        # 移除开头的 /，将路径视为相对于 resource_root
+        if path.startswith("/"):
+            path = path[1:]
+
+        # 如果路径以 upload/ 开头，去掉 upload/ 前缀
+        # 因为 _get_resource_root() 已经指向了 upload 目录
+        if path.startswith("upload/"):
+            path = path[7:]  # len("upload/") = 7
+
+        # 检查路径遍历攻击
+        if ".." in path or "\x00" in path:
+            log.error(f"检测到路径遍历攻击尝试: {path}")
+            raise CustomException(msg="非法的路径格式")
+
+        # URL 解码检查
+        decoded_path = urllib.parse.unquote(path)
+        if ".." in decoded_path:
+            log.error(f"检测到编码后的路径遍历攻击: {path}")
+            raise CustomException(msg="非法的路径格式")
+
+        # 构建完整路径
+        safe_path = os.path.normpath(os.path.join(resource_root, path))
+
+        # 获取绝对路径并规范化
         resource_root_abs = os.path.normpath(os.path.abspath(resource_root))
         safe_path_abs = os.path.normpath(os.path.abspath(safe_path))
 
-        if not safe_path_abs.startswith(resource_root_abs):
-            raise CustomException(msg=f"访问路径不在允许范围内: {path}")
+        # 核心安全检查：确保最终路径在允许的根目录下
+        if not safe_path_abs.startswith(resource_root_abs + os.sep) and safe_path_abs != resource_root_abs:
+            log.error(f"路径遍历攻击被阻止: 尝试访问 {safe_path_abs}, 但根目录是 {resource_root_abs}")
+            raise CustomException(msg="访问路径不在允许范围内")
 
-        # 防止路径遍历攻击
-        if ".." in safe_path or safe_path.count("/") > cls.MAX_PATH_DEPTH:
-            raise CustomException(msg=f"不安全的路径格式: {path}")
+        # 检查路径深度
+        try:
+            relative_path = os.path.relpath(safe_path_abs, resource_root_abs)
+            if relative_path.count(os.sep) > cls.MAX_PATH_DEPTH:
+                raise CustomException(msg="路径深度超过限制")
+        except ValueError:
+            raise CustomException(msg="无效的路径")
 
-        return safe_path
+        return safe_path_abs
 
     @classmethod
     def _path_exists(cls, path: str) -> bool:
@@ -129,7 +155,7 @@ class ResourceService:
     @staticmethod
     def _sanitize_filename(filename: str) -> str:
         """
-        清理文件名，移除危险字符和路径穿越。
+        清理文件名，移除危险字符和路径穿越（加强版）。
 
         参数:
         - filename (str): 原始文件名。
@@ -139,12 +165,46 @@ class ResourceService:
         """
         if not filename:
             return f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        # 首先检查原始文件名是否包含路径遍历特征
+        # 攻击者可能使用 ..\..\etc\passwd 或 ../../etc/passwd
+        dangerous_patterns = [
+            r"\.\.",           # .. 路径遍历
+            r"[\/]",            # 任何斜杠（目录分隔符）
+            r"\x00",            # 空字节
+            r"%2e%2e",          # URL 编码的 ..
+            r"%252e%252e",      # 双重 URL 编码的 ..
+        ]
+        for pattern in dangerous_patterns:
+            if re.search(pattern, filename, re.IGNORECASE):
+                log.error(f"检测到文件名路径遍历攻击: {filename}")
+                # 返回安全文件名，不包含原始文件名
+                return f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        # URL 解码检查
+        decoded = urllib.parse.unquote(filename)
+        decoded_twice = urllib.parse.unquote(decoded)
+        for check in [decoded, decoded_twice]:
+            if ".." in check or "/" in check or "\\" in check:
+                log.error(f"检测到编码后的文件名攻击: {filename}")
+                return f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        # 使用 os.path.basename 提取纯文件名（移除路径）
         filename = os.path.basename(filename)
-        filename = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", filename)
+
+        # 移除危险字符
+        filename = re.sub(r'[<>:"|?*\x00-\x1f]', "", filename)
+
+        # 防止多个连续点号（可能被用于绕过扩展名检查）
         filename = re.sub(r"\.{2,}", ".", filename)
+
+        # 移除首尾的空格和点号
         filename = filename.strip(". ")
+
+        # 如果文件名为空，生成默认文件名
         if not filename:
             filename = f"file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
         return filename
 
     @staticmethod
@@ -186,9 +246,11 @@ class ResourceService:
         返回:
         - str: 文件的HTTP URL。
         """
-        resource_root = cls._get_resource_root()
+        # 使用 STATIC_ROOT 作为基准，而不是 _get_resource_root()
+        # 这样可以保留 upload 目录在 URL 中
+        static_root = str(settings.STATIC_ROOT)
         try:
-            relative_path = os.path.relpath(file_path, resource_root)
+            relative_path = os.path.relpath(file_path, static_root)
             # 确保路径使用正斜杠（URL格式）
             url_path = relative_path.replace(os.sep, "/")
         except ValueError:
@@ -197,15 +259,12 @@ class ResourceService:
 
         # 如果提供了base_url，使用它生成完整URL，否则使用settings.STATIC_URL
         if base_url:
-            # 修复URL生成逻辑
+            # 使用完整的 base_url（包含 API 路径前缀）
             base_part = base_url.rstrip("/")
             static_part = settings.STATIC_URL.lstrip("/")
             file_part = url_path.lstrip("/")
-            if base_part.endswith(":") or (len(base_part) > 0 and base_part[-1] not in ["/", ":"]):
-                base_part += "/"
-            http_url = f"{base_part}{static_part}/{file_part}".replace("//", "/").replace(
-                ":/", "://"
-            )
+
+            http_url = f"{base_part}/{static_part}/{file_part}".replace("//", "/").replace(":/", "://")
         else:
             http_url = f"{settings.STATIC_URL}/{url_path}".replace("//", "/")
 
@@ -217,14 +276,15 @@ class ResourceService:
         获取文件或目录的详细信息，如名称、大小、创建时间、修改时间、路径、深度、HTTP URL、是否隐藏、是否为目录等。
 
         参数:
-        - file_path (str): 文件或目录的路径。
+        - file_path (str): 文件或目录的路径（必须是绝对路径）。
         - base_url (str | None): 基础URL，用于生成完整URL。
 
         返回:
         - dict: 文件或目录的详细信息字典。
         """
         try:
-            safe_path = cls._get_safe_path(file_path)
+            # 直接使用传入的路径（已经是绝对路径）
+            safe_path = file_path
             if not os.path.exists(safe_path):
                 return {}
 
@@ -232,19 +292,13 @@ class ResourceService:
             path_obj = Path(safe_path)
             resource_root = cls._get_resource_root()
 
-            # 计算相对路径
+            # 计算相对路径（相对于资源根目录）
             try:
                 relative_path = os.path.relpath(safe_path, resource_root)
             except ValueError:
                 relative_path = os.path.basename(safe_path)
 
-            # 计算深度
-            try:
-                len(Path(safe_path).relative_to(resource_root).parts)
-            except ValueError:
-                pass
-
-            # 生成HTTP URL路径而不是文件系统路径
+            # 生成HTTP URL路径
             http_url = cls._generate_http_url(safe_path, base_url)
 
             # 检查是否为隐藏文件（文件名以点开头）
@@ -366,11 +420,10 @@ class ResourceService:
         """
         try:
             # 确定搜索路径
-            resource_root = (
-                cls._get_safe_path(search.path)
-                if search and hasattr(search, "path") and search.path
-                else cls._get_resource_root()
-            )
+            if search and hasattr(search, "path") and search.path and isinstance(search.path, str):
+                resource_root = cls._get_safe_path(search.path)
+            else:
+                resource_root = cls._get_resource_root()
 
             # 检查路径是否存在
             if not os.path.exists(resource_root):
@@ -405,9 +458,6 @@ class ResourceService:
 
             # 应用排序
             sorted_resources = cls._sort_results(all_resources, order_by)
-
-            if not sorted_resources:
-                raise CustomException(msg="没有符合条件的资源")
 
             # 限制最大结果数
             if len(sorted_resources) > cls.MAX_SEARCH_RESULTS:
@@ -488,7 +538,7 @@ class ResourceService:
     @classmethod
     def _sort_results(
         cls, results: list[dict], order_by: str | None = None
-    ) -> list[dict[Any, Any]] | None:
+    ) -> list[dict[Any, Any]]:
         """
         排序搜索结果
 
@@ -538,6 +588,9 @@ class ResourceService:
 
                 return sorted(results, key=sort_key, reverse=reverse)
 
+            # 如果排序条件不是列表，返回默认排序
+            return sorted(results, key=lambda x: x.get("name", ""), reverse=False)
+
         except Exception as e:
             raise CustomException(msg=f"排序参数格式错误: {e!s}")
 
@@ -564,16 +617,19 @@ class ResourceService:
 
         original_filename = file.filename
 
-        dangerous_patterns = ["../", "..\\", "/", "\\", "\0"]
-        for pattern in dangerous_patterns:
-            if pattern in original_filename:
-                log.error(f"检测到路径穿越攻击: {original_filename}")
-                raise CustomException(msg="文件名包含非法字符")
+        # 使用加强版的 _sanitize_filename 来清理文件名
+        # 该方法已经包含了路径遍历检测
+        safe_filename = cls._sanitize_filename(original_filename)
 
-        if "." not in original_filename:
+        # 如果文件名被重置为默认名称，说明检测到攻击
+        if safe_filename.startswith("file_") and safe_filename != original_filename:
+            log.error(f"文件名因安全问题被重置，原始文件名: {original_filename}")
+
+        # 检查文件扩展名（使用清理后的文件名）
+        if "." not in safe_filename:
             raise CustomException(msg="无法识别文件类型")
 
-        ext = os.path.splitext(original_filename)[1].lower()
+        ext = os.path.splitext(safe_filename)[1].lower()
         if not ext:
             raise CustomException(msg="无法识别文件类型")
 
@@ -596,20 +652,31 @@ class ResourceService:
                         f"文件类型不匹配: 声明扩展名={ext}, 检测类型={detected_type}"
                     )
 
+            # 获取安全的目录路径（_get_safe_path 已经包含路径遍历防护）
             safe_dir = (
                 cls._get_resource_root() if target_path is None else cls._get_safe_path(target_path)
             )
 
+            # 确保目录存在
             os.makedirs(safe_dir, exist_ok=True)
 
-            safe_filename = cls._sanitize_filename(original_filename)
+            # 构建完整的文件路径
             file_path = os.path.join(safe_dir, safe_filename)
 
+            # 最终安全检查：确保文件路径在允许的目录下
             file_path_abs = os.path.normpath(os.path.abspath(file_path))
             safe_dir_abs = os.path.normpath(os.path.abspath(safe_dir))
-            if not file_path_abs.startswith(safe_dir_abs):
+            resource_root_abs = os.path.normpath(os.path.abspath(cls._get_resource_root()))
+
+            # 检查文件路径是否在目标目录下
+            if not file_path_abs.startswith(safe_dir_abs + os.sep) and file_path_abs != safe_dir_abs:
                 log.error(f"检测到路径穿越攻击，目标路径: {file_path}")
                 raise CustomException(msg="非法的文件路径")
+
+            # 再次确保文件路径在资源根目录下（防止通过 target_path 绕过）
+            if not file_path_abs.startswith(resource_root_abs + os.sep) and file_path_abs != resource_root_abs:
+                log.error(f"检测到越权访问尝试，目标路径: {file_path_abs}, 根目录: {resource_root_abs}")
+                raise CustomException(msg="访问路径不在允许范围内")
 
             if os.path.exists(file_path):
                 base_name, extension = os.path.splitext(safe_filename)
@@ -673,34 +740,53 @@ class ResourceService:
             raise CustomException(msg=f"下载文件失败: {e!s}")
 
     @classmethod
+    def _delete_single_path(cls, path: str) -> None:
+        """
+        删除单个文件或目录（内部辅助方法）
+
+        参数:
+        - path (str): 文件或目录路径。
+
+        返回:
+        - None
+
+        异常:
+        - CustomException: 删除失败时抛出
+        """
+        safe_path = cls._get_safe_path(path)
+
+        if not os.path.exists(safe_path):
+            log.error(f"路径不存在，跳过: {path}")
+            raise CustomException(msg=f"路径不存在: {path}")
+
+        if os.path.isfile(safe_path):
+            os.remove(safe_path)
+            log.info(f"删除文件成功: {safe_path}")
+        elif os.path.isdir(safe_path):
+            shutil.rmtree(safe_path)
+            log.info(f"删除目录成功: {safe_path}")
+
+    @classmethod
     async def delete_file_service(cls, paths: list[str]) -> None:
         """
-        删除文件或目录
+        删除文件或目录（内部使用，遇到错误会抛出异常）
 
         参数:
         - paths (list[str]): 文件或目录路径列表。
 
         返回:
         - None
+
+        注意:
+        - 此方法遇到第一个错误就会抛出异常并停止
+        - 如需批量删除并收集结果，请使用 batch_delete_service
         """
         if not paths:
             raise CustomException(msg="删除失败，删除路径不能为空")
 
         for path in paths:
             try:
-                safe_path = cls._get_safe_path(path)
-
-                if not os.path.exists(safe_path):
-                    log.error(f"路径不存在，跳过: {path}")
-                    continue
-
-                if os.path.isfile(safe_path):
-                    os.remove(safe_path)
-                    log.info(f"删除文件成功: {safe_path}")
-                elif os.path.isdir(safe_path):
-                    shutil.rmtree(safe_path)
-                    log.info(f"删除目录成功: {safe_path}")
-
+                cls._delete_single_path(path)
             except Exception as e:
                 log.error(f"删除失败 {path}: {e!s}")
                 raise CustomException(msg=f"删除失败 {path}: {e!s}")
@@ -724,23 +810,9 @@ class ResourceService:
 
         for path in paths:
             try:
-                safe_path = cls._get_safe_path(path)
-
-                if not os.path.exists(safe_path):
-                    failed_paths.append(path)
-                    continue
-
-                if os.path.isfile(safe_path):
-                    os.remove(safe_path)
-                    success_paths.append(path)
-                    log.info(f"删除文件成功: {safe_path}")
-                elif os.path.isdir(safe_path):
-                    shutil.rmtree(safe_path)
-                    success_paths.append(path)
-                    log.info(f"删除目录成功: {safe_path}")
-
-            except Exception as e:
-                log.error(f"删除失败 {path}: {e!s}")
+                cls._delete_single_path(path)
+                success_paths.append(path)
+            except Exception:
                 failed_paths.append(path)
 
         return {"success": success_paths, "failed": failed_paths}
@@ -844,9 +916,26 @@ class ResourceService:
             if not os.path.exists(old_path):
                 raise CustomException(msg="文件或目录不存在")
 
+            # 清理新名称，防止路径遍历
+            # 使用 _sanitize_filename 来清理，确保不包含路径分隔符
+            safe_new_name = cls._sanitize_filename(data.new_name)
+
+            # 如果新名称被重置，说明检测到攻击
+            if safe_new_name.startswith("file_") and safe_new_name != data.new_name:
+                log.error(f"重命名时检测到路径遍历攻击，原始名称: {data.new_name}")
+                raise CustomException(msg="新名称包含非法字符")
+
             # 生成新路径
             parent_dir = os.path.dirname(old_path)
-            new_path = os.path.join(parent_dir, data.new_name)
+            new_path = os.path.join(parent_dir, safe_new_name)
+
+            # 最终安全检查：确保新路径在允许的目录下
+            new_path_abs = os.path.normpath(os.path.abspath(new_path))
+            resource_root_abs = os.path.normpath(os.path.abspath(cls._get_resource_root()))
+
+            if not new_path_abs.startswith(resource_root_abs + os.sep) and new_path_abs != resource_root_abs:
+                log.error(f"重命名时检测到越权访问: {new_path_abs}")
+                raise CustomException(msg="目标路径不在允许范围内")
 
             if os.path.exists(new_path):
                 raise CustomException(msg="目标名称已存在")
@@ -881,12 +970,24 @@ class ResourceService:
             if not os.path.isdir(parent_path):
                 raise CustomException(msg="父路径不是目录")
 
-            # 生成新目录路径
-            new_dir_path = os.path.join(parent_path, data.dir_name)
+            # 清理目录名称，防止路径遍历（使用与文件名相同的清理逻辑）
+            safe_dir_name = cls._sanitize_filename(data.dir_name)
 
-            # 安全检查：确保新目录名称不包含路径遍历字符
-            if ".." in data.dir_name or "/" in data.dir_name or "\\" in data.dir_name:
-                raise CustomException(msg="目录名称包含不安全字符")
+            # 如果目录名被重置，说明检测到攻击
+            if safe_dir_name.startswith("file_") and safe_dir_name != data.dir_name:
+                log.error(f"创建目录时检测到路径遍历攻击，原始名称: {data.dir_name}")
+                raise CustomException(msg="目录名称包含非法字符")
+
+            # 生成新目录路径
+            new_dir_path = os.path.join(parent_path, safe_dir_name)
+
+            # 最终安全检查：确保新目录路径在允许的目录下
+            new_dir_path_abs = os.path.normpath(os.path.abspath(new_dir_path))
+            resource_root_abs = os.path.normpath(os.path.abspath(cls._get_resource_root()))
+
+            if not new_dir_path_abs.startswith(resource_root_abs + os.sep) and new_dir_path_abs != resource_root_abs:
+                log.error(f"创建目录时检测到越权访问: {new_dir_path_abs}")
+                raise CustomException(msg="目标路径不在允许范围内")
 
             if os.path.exists(new_dir_path):
                 raise CustomException(msg="目录已存在")

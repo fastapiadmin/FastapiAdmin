@@ -460,18 +460,54 @@ const queryFormData = reactive<NodePageQuery>({
   code: undefined,
 });
 
-const defaultCodeBlock = `def handler(*args, **kwargs) -> None:
+const defaultCodeBlock = `def handler(*args, **kwargs):
     """
-    节点执行函数示例
+    Demo: 调用工程中的方法处理数据
     
-    参数:
-    - args: 位置参数
-    - kwargs: 关键字参数
+    演示如何:
+    1. 从工程中导入方法
+    2. 调用处理器处理数据
+    3. 返回处理结果
     """
-    from datetime import datetime
     
-    print(f"开始执行任务: {args}-{kwargs}")
-    print(f"{datetime.now()} 执行完成")
+    # 从工程中导入方法
+    from app.plugin.module_task.node.handlers.demo_handler import (
+        demo_handler,
+        process_data
+    )
+    
+    print("=" * 50)
+    print("Demo 任务开始执行")
+    print("=" * 50)
+    
+    # 1. 调用 demo_handler
+    print("1. 调用 demo_handler:")
+    result1 = demo_handler("参数1", "参数2", key="value")
+    print(f"   返回: {result1}")
+    
+    # 2. 调用 process_data 计算平均值
+    print("2. 数据处理 - 计算平均值:")
+    numbers = [10, 20, 30, 40, 50]
+    result2 = process_data(numbers, operation="avg")
+    print(f"   输入: {numbers}")
+    print(f"   结果: {result2}")
+    
+    # 3. 调用 process_data 计算总和
+    print("3. 数据处理 - 计算总和:")
+    result3 = process_data(numbers, operation="sum")
+    print(f"   输入: {numbers}")
+    print(f"   结果: {result3}")
+    
+    print("=" * 50)
+    print("Demo 任务执行完成")
+    print("=" * 50)
+    
+    return {
+        "status": "success",
+        "demo_result": result1,
+        "avg_result": result2,
+        "sum_result": result3
+    }
 `;
 
 const formData = reactive<NodeForm>({

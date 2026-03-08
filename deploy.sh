@@ -111,7 +111,7 @@ update_code() {
         log "📥 初始化Git仓库..." "INFO"
         git init
         git remote add origin "${GIT_REPO}"
-        git pull origin main || git pull origin master
+        git pull origin master
     else
         # 保存当前分支
         local current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -262,7 +262,6 @@ main() {
     📌 官网: https://service.fastapiadmin.com
     📌 前端: https://service.fastapiadmin.com/web
     📌 小程序: https://service.fastapiadmin.com/app
-    📌 后端接口: https://service.fastapiadmin.com/api/v1/docs
     📌 登录信息: 账号 admin，密码 123456" "SUCCESS"
 }
 
