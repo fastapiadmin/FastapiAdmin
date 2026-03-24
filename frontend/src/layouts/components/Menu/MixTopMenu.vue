@@ -3,9 +3,8 @@
   <el-menu
     mode="horizontal"
     :default-active="activeTopMenuPath"
-    :background-color="theme === 'dark' ? variables['menu-background'] : undefined"
-    :text-color="theme === 'dark' ? variables['menu-text'] : undefined"
-    :active-text-color="theme === 'dark' ? variables['menu-active-text'] : undefined"
+    text-color="var(--layout-menu-text)"
+    active-text-color="var(--layout-menu-active-text)"
     @select="handleTopMenuSelect"
   >
     <el-menu-item v-for="item in topMenuItems" :key="item.path" :index="item.path">
@@ -22,16 +21,12 @@ defineOptions({
 });
 
 import { LocationQueryRaw, RouteRecordRaw } from "vue-router";
-import { usePermissionStore, useAppStore, useSettingsStore } from "@/store";
-import variables from "@/styles/variables.module.scss";
+import { usePermissionStore, useAppStore } from "@/store";
 
 const router = useRouter();
+const route = useRoute();
 const appStore = useAppStore();
 const permissionStore = usePermissionStore();
-const settingsStore = useSettingsStore();
-
-// 获取主题
-const theme = computed(() => settingsStore.theme);
 
 // 顶部菜单列表
 const topMenus = ref<RouteRecordRaw[]>([]);
@@ -120,10 +115,7 @@ const activeTopMenuPath = computed(() => appStore.activeTopMenuPath);
 onMounted(() => {
   topMenus.value = permissionStore.routes.filter((item) => !item.meta || !item.meta.hidden);
   // 初始化顶部菜单
-  const currentTopMenuPath =
-    useRoute().path.split("/").filter(Boolean).length > 1
-      ? useRoute().path.match(/^\/[^/]+/)?.[0] || "/"
-      : "/";
+  const currentTopMenuPath = getTopMenuPath(route.path);
   appStore.activeTopMenu(currentTopMenuPath); // 设置激活的顶部菜单
   permissionStore.setMixLayoutSideMenus(currentTopMenuPath); // 设置混合布局左侧菜单
 });
@@ -133,15 +125,17 @@ watch(
   () => router.currentRoute.value.path,
   (newPath) => {
     if (newPath) {
-      // 提取顶级路径
-      const topMenuPath =
-        newPath.split("/").filter(Boolean).length > 1 ? newPath.match(/^\/[^/]+/)?.[0] || "/" : "/";
+      const topMenuPath = getTopMenuPath(newPath);
 
       // 使用公共方法更新菜单状态，但跳过导航（因为路由已经变化）
       updateMenuState(topMenuPath, true);
     }
   }
 );
+
+function getTopMenuPath(path: string): string {
+  return path.split("/").filter(Boolean).length > 1 ? path.match(/^\/[^/]+/)?.[0] || "/" : "/";
+}
 </script>
 
 <style lang="scss" scoped>

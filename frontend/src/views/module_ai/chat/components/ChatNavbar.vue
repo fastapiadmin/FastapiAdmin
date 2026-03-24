@@ -7,9 +7,6 @@
       </button>
     </div>
     <div class="navbar-right">
-      <el-button v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
-        清空对话
-      </el-button>
       <el-button text :icon="Setting" @click="handleToggleConnection">
         {{ isConnected ? "断开连接" : "重新连接" }}
       </el-button>
@@ -25,6 +22,9 @@
         </el-icon>
         <span class="status-text">{{ connectionStatusText }}</span>
       </el-tag>
+      <el-button v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
+        清空对话
+      </el-button>
     </div>
   </div>
 </template>
@@ -108,6 +108,11 @@ const toggleSidebar = () => {
         background: var(--el-fill-color-light);
       }
 
+      &:focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--el-color-primary) 45%, transparent);
+        outline-offset: 2px;
+      }
+
       .collapse-icon {
         width: 20px;
         height: 20px;
@@ -118,14 +123,30 @@ const toggleSidebar = () => {
 
   .navbar-right {
     display: flex;
+    flex-wrap: nowrap;
     gap: 12px;
     align-items: center;
 
+    /* EP 相邻按钮自带 margin-left，叠在 flex gap 上会导致间距忽大忽小 */
+    :deep(.el-button) {
+      margin: 0;
+    }
+
     .connection-status {
-      display: flex;
-      gap: 8px;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 0 12px;
+      margin: 0;
       font-size: 14px;
+      line-height: 1;
+
+      :deep(.el-tag__content) {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
 
       .status-icon {
         &.connected {

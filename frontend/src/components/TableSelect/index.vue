@@ -103,7 +103,6 @@
           :border="true"
           :max-height="250"
           :row-key="pk"
-          :highlight-current-row="true"
           :class="{ radio: !isMultiple }"
           @select="handleSelect"
           @select-all="handleSelectAll"

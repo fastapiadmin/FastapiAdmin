@@ -785,10 +785,11 @@ onUnmounted(() => {
   align-items: center;
   width: 100%;
   height: $tags-view-height;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--el-border-color-light);
-  border-bottom: 1px solid var(--el-border-color-light);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  /* 与 theme.ts layoutTagsBg 一致；介于顶栏与主内容之间的桥接层 */
+  background-color: var(--layout-tags-bg, var(--el-bg-color-overlay));
+  border-top: 1px solid var(--layout-tags-border);
+  border-bottom: 1px solid var(--layout-tags-border);
+  box-shadow: var(--el-box-shadow-light);
 
   .btn {
     display: flex;
@@ -797,11 +798,11 @@ onUnmounted(() => {
     width: $tags-view-height;
     height: $tags-view-height;
     cursor: pointer;
-    border: 1px solid var(--el-border-color-light);
+    border: 1px solid var(--layout-tags-border);
 
     &:hover {
       color: var(--el-color-primary);
-      background-color: var(--el-fill-color-light);
+      background-color: var(--layout-tags-item-hover-bg, var(--layout-tags-item-bg));
 
       .el-icon {
         transform: scale(1.1);
@@ -826,11 +827,23 @@ onUnmounted(() => {
     padding: 0 8px;
     margin-left: 5px;
     font-size: 12px;
-    line-height: 26px;
-    color: var(--el-text-color-primary);
-    background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color);
+    line-height: 1;
+    vertical-align: middle;
+    color: var(--layout-tags-item-text);
+    background: var(--layout-tags-item-bg);
+    border: 1px solid var(--layout-tags-border);
     transition: all 0.2s ease;
+
+    /* 与激活态同宽占位，避免仅 active 有圆点导致整条标签行垂直错位 */
+    &::before {
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      margin-right: 6px;
+      content: "";
+      background: transparent;
+      border-radius: 50%;
+    }
 
     &:first-of-type {
       margin-left: 5px;
@@ -839,13 +852,19 @@ onUnmounted(() => {
       margin-right: 5px;
     }
 
-    &:hover {
-      background-color: var(--el-fill-color);
+    &:hover:not(.active) {
+      background-color: var(--layout-tags-item-hover-bg, var(--layout-tags-item-bg));
+      border-color: var(--layout-tags-item-hover-border, var(--layout-tags-border));
+    }
+
+    :deep(.el-dropdown) {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
     }
 
     .tag-text {
-      display: inline-block;
-      vertical-align: middle;
+      line-height: 1.25;
     }
 
     .tag-close-btn {
@@ -869,21 +888,16 @@ onUnmounted(() => {
     }
 
     &.active {
+      background: var(--layout-tags-item-active-bg);
       border-color: var(--el-color-primary);
 
       &::before {
-        position: relative;
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        margin-right: 2px;
-        content: "";
         background: var(--el-color-primary);
-        border-radius: 50%;
       }
 
       .tag-text {
-        color: var(--el-color-primary);
+        font-weight: 500;
+        color: var(--layout-tags-item-active-text);
       }
 
       .tag-close-btn {

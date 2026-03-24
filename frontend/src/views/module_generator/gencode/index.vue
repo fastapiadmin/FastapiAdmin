@@ -67,7 +67,6 @@
               <el-button
                 v-hasPerm="['module_generator:gencode:create']"
                 type="primary"
-                plain
                 icon="Plus"
                 @click="createTableVisible = true"
               >
@@ -78,7 +77,6 @@
               <el-button
                 v-hasPerm="['module_generator:gencode:import']"
                 type="success"
-                plain
                 icon="Upload"
                 @click="handleImportClick"
               >
@@ -89,7 +87,6 @@
               <el-button
                 v-hasPerm="['module_generator:gencode:delete']"
                 type="danger"
-                plain
                 icon="Delete"
                 :disabled="ids.length === 0"
                 @click="handleDelete()"
@@ -101,7 +98,6 @@
               <el-button
                 v-hasPerm="['module_generator:gencode:code']"
                 type="warning"
-                plain
                 icon="Download"
                 :disabled="!canGenerate"
                 @click="handleGenTable('0')"
@@ -145,7 +141,6 @@
           ref="dataTableRef"
           v-loading="loading"
           :data="tableList"
-          highlight-current-row
           class="data-table__content"
           height="calc(100vh - 440px)"
           max-height="calc(100vh - 440px)"

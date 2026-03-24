@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     # ================================================= #
     CAPTCHA_ENABLE: bool = True  # 是否启用验证码
     CAPTCHA_EXPIRE_SECONDS: int = 60 * 1  # 验证码过期时间(秒) 1分钟
-    CAPTCHA_FONT_SIZE: int = 40  # 字体大小
+    CAPTCHA_FONT_SIZE: int = 35  # 字体大小
     CAPTCHA_FONT_PATH: str = "static/assets/font/Arial.ttf"  # 字体路径
 
     # ================================================= #

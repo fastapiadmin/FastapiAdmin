@@ -33,7 +33,6 @@ import type { RouteRecordRaw } from "vue-router";
 import { useSettingsStore, useAppStore } from "@/store";
 import { isExternal } from "@/utils/index";
 import MenuItem from "./components/MenuItem.vue";
-import variables from "@/styles/variables.module.scss";
 
 const props = defineProps({
   data: {
@@ -64,13 +63,13 @@ const expandedMenuIndexes = ref<string[]>([]);
 const theme = computed(() => settingsStore.theme);
 
 // 菜单主题属性
+// 顶栏横向菜单背景由布局 CSS 设为 transparent；若此处传 CSS 变量，EP 内部 TinyColor 无法解析会退成 #000，hover 背景发黑
 const menuThemeProps = computed(() => {
-  const isDark = theme.value === "dark";
-
+  const isHorizontal = props.menuMode === "horizontal";
   return {
-    backgroundColor: isDark ? variables["menu-background"] : undefined,
-    textColor: isDark ? variables["menu-text"] : undefined,
-    activeTextColor: isDark ? variables["menu-active-text"] : undefined,
+    backgroundColor: isHorizontal ? "" : "var(--layout-sidebar-bg)",
+    textColor: "var(--layout-sidebar-text)",
+    activeTextColor: "var(--layout-sidebar-active-text)",
   };
 });
 

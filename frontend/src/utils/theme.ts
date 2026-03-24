@@ -1,8 +1,13 @@
 import { ThemeMode } from "@/enums";
 
+const COLOR_VARIANT_LEVELS = [0.08, 0.16, 0.24, 0.32, 0.4, 0.52, 0.64, 0.76, 0.88];
+
+function normalizeHexColor(hex: string): string {
+  return hex.length === 9 ? hex.slice(0, 7) : hex;
+}
+
 function hexToRgb(hex: string): [number, number, number] {
-  // 处理带alpha通道的颜色值，去除alpha部分
-  const cleanHex = hex.length === 9 ? hex.slice(0, 7) : hex;
+  const cleanHex = normalizeHexColor(hex);
   const bigint = parseInt(cleanHex.slice(1), 16);
   return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
 }
@@ -18,10 +23,6 @@ function getLuminance(hex: string): number {
     return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-function isLightColor(hex: string): boolean {
-  return getLuminance(hex) > 0.5;
 }
 
 function getDarkColor(color: string, level: number): string {
@@ -54,15 +55,13 @@ interface ColorVariants {
 }
 
 function generateColorVariants(baseColor: string): ColorVariants {
-  const lightLevels = [0.08, 0.16, 0.24, 0.32, 0.4, 0.52, 0.64, 0.76, 0.88];
-  const light = lightLevels.map((level) => getLightColor(baseColor, level));
+  const light = COLOR_VARIANT_LEVELS.map((level) => getLightColor(baseColor, level));
   const dark = getDarkColor(baseColor, 0.15);
   return { light, dark };
 }
 
 function generateDarkModeVariants(baseColor: string): ColorVariants {
-  const darkLevels = [0.08, 0.16, 0.24, 0.32, 0.4, 0.52, 0.64, 0.76, 0.88];
-  const light = darkLevels.map((level) => getDarkColor(baseColor, level));
+  const light = COLOR_VARIANT_LEVELS.map((level) => getDarkColor(baseColor, level));
   const dark = getLightColor(baseColor, 0.15);
   return { light, dark };
 }
@@ -96,13 +95,6 @@ interface ColorScheme {
     dark: string;
     darker: string;
   };
-  table: {
-    bg: string;
-    trBg: string;
-    headerBg: string;
-    hoverBg: string;
-    border: string;
-  };
   sidebar: {
     background: string;
     text: string;
@@ -118,221 +110,225 @@ interface ColorScheme {
     activeBg: string;
     hover: string;
   };
-}
-
-function generateLightThemeScheme(primary: string, isLightPrimary: boolean): ColorScheme {
-  if (isLightPrimary) {
-    return {
-      bg: {
-        primary: getLightColor(primary, 0.92),
-        secondary: "#ffffff",
-        tertiary: "#ffffff",
-      },
-      fill: {
-        base: getLightColor(primary, 0.88),
-        light: getLightColor(primary, 0.92),
-        lighter: getLightColor(primary, 0.96),
-        extraLight: "#ffffff",
-        dark: getLightColor(primary, 0.8),
-        darker: getLightColor(primary, 0.7),
-      },
-      shadow: {
-        base: `0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)`,
-        light: `0 1px 2px 0 rgba(0, 0, 0, 0.05)`,
-        lighter: `0 1px 1px 0 rgba(0, 0, 0, 0.03)`,
-        dark: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
-      },
-      border: {
-        base: getLightColor(primary, 0.85),
-        light: getLightColor(primary, 0.9),
-        lighter: getLightColor(primary, 0.94),
-        extraLight: "#ffffff",
-        dark: getLightColor(primary, 0.75),
-        darker: getLightColor(primary, 0.65),
-      },
-      table: {
-        bg: "#ffffff",
-        trBg: "#ffffff",
-        headerBg: getLightColor(primary, 0.92),
-        hoverBg: getLightColor(primary, 0.88),
-        border: getLightColor(primary, 0.85),
-      },
-      sidebar: {
-        background: getLightColor(primary, 0.92),
-        text: "#1e293b",
-        activeText: getDarkColor(primary, 0.15),
-        activeBg: getLightColor(primary, 0.88),
-        activeHoverBg: getLightColor(primary, 0.65),
-        hover: "#fafafa",
-      },
-      menu: {
-        background: getLightColor(primary, 0.92),
-        text: "#1e293b",
-        activeText: getDarkColor(primary, 0.15),
-        activeBg: getLightColor(primary, 0.88),
-        hover: "#fafafa",
-      },
-    };
-  }
-  return {
-    bg: {
-      primary: getLightColor(primary, 0.75),
-      secondary: "#ffffff",
-      tertiary: "#ffffff",
-    },
-    fill: {
-      base: "#f1f5f9",
-      light: "#f8fafc",
-      lighter: "#ffffff",
-      extraLight: "#ffffff",
-      dark: "#e2e8f0",
-      darker: "#cbd5e1",
-    },
-    shadow: {
-      base: `0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)`,
-      light: `0 1px 2px 0 rgba(0, 0, 0, 0.05)`,
-      lighter: `0 1px 1px 0 rgba(0, 0, 0, 0.03)`,
-      dark: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
-    },
-    border: {
-      base: blendTwoColors("#cbd5e1", primary, 0.2),
-      light: blendTwoColors("#e2e8f0", primary, 0.15),
-      lighter: blendTwoColors("#f1f5f9", primary, 0.1),
-      extraLight: "#ffffff",
-      dark: blendTwoColors("#94a3b8", primary, 0.25),
-      darker: blendTwoColors("#64748b", primary, 0.3),
-    },
-    table: {
-      bg: blendTwoColors("#ffffff", primary, 0.02),
-      trBg: blendTwoColors("#ffffff", primary, 0.02),
-      headerBg: blendTwoColors("#f8fafc", primary, 0.15),
-      hoverBg: blendTwoColors("#f1f5f9", primary, 0.1),
-      border: blendTwoColors("#cbd5e1", primary, 0.2),
-    },
-    sidebar: {
-      background: blendTwoColors("#ffffff", primary, 0.05),
-      text: "#1e293b",
-      activeText: getDarkColor(primary, 0.1),
-      activeBg: getLightColor(primary, 0.88),
-      activeHoverBg: getLightColor(primary, 0.65),
-      hover: blendTwoColors("#fafafa", primary, 0.1),
-    },
-    menu: {
-      background: blendTwoColors("#ffffff", primary, 0.05),
-      text: "#1e293b",
-      activeText: getDarkColor(primary, 0.1),
-      activeBg: getLightColor(primary, 0.88),
-      hover: blendTwoColors("#fafafa", primary, 0.1),
-    },
+  text: {
+    primary: string;
+    secondary: string;
+    tertiary: string;
+    disabled: string;
   };
 }
 
-function generateDarkThemeScheme(primary: string, isLightPrimary: boolean): ColorScheme {
-  if (isLightPrimary) {
-    return {
-      bg: {
-        primary: getLightColor(primary, 0.85),
-        secondary: getLightColor(primary, 0.95),
-        tertiary: getLightColor(primary, 0.97),
-        overlay: getLightColor(primary, 0.95),
-      },
-      fill: {
-        base: blendTwoColors("#0f172a", primary, 0.1),
-        light: blendTwoColors("#1e293b", primary, 0.15),
-        lighter: blendTwoColors("#0f172a", primary, 0.05),
-        extraLight: blendTwoColors("#020617", primary, 0.02),
-        dark: blendTwoColors("#334155", primary, 0.2),
-        darker: blendTwoColors("#475569", primary, 0.25),
-      },
-      shadow: {
-        base: `0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.24)`,
-        light: `0 1px 2px 0 rgba(0, 0, 0, 0.2)`,
-        lighter: `0 1px 1px 0 rgba(0, 0, 0, 0.12)`,
-        dark: `0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24)`,
-      },
-      border: {
-        base: getLightColor(primary, 0.85),
-        light: getLightColor(primary, 0.9),
-        lighter: getLightColor(primary, 0.94),
-        extraLight: getLightColor(primary, 0.97),
-        dark: getLightColor(primary, 0.78),
-        darker: getLightColor(primary, 0.68),
-      },
-      table: {
-        bg: blendTwoColors("#020617", primary, 0.02),
-        trBg: blendTwoColors("#020617", primary, 0.02),
-        headerBg: blendTwoColors("#1e293b", primary, 0.15),
-        hoverBg: blendTwoColors("#0f172a", primary, 0.1),
-        border: blendTwoColors("#1e293b", primary, 0.12),
-      },
-      sidebar: {
-        background: getLightColor(primary, 0.92),
-        text: "#e2e8f0",
-        activeText: primary,
-        activeBg: getLightColor(primary, 0.9),
-        activeHoverBg: getLightColor(primary, 0.65),
-        hover: getLightColor(primary, 0.88),
-      },
-      menu: {
-        background: getLightColor(primary, 0.92),
-        text: "#e2e8f0",
-        activeText: primary,
-        activeBg: getLightColor(primary, 0.9),
-        hover: getLightColor(primary, 0.88),
-      },
-    };
-  }
+interface CoreThemeTokens {
+  brandPrimary: string;
+  layoutBgPrimary: string;
+  layoutBgSecondary: string;
+  layoutBgTertiary: string;
+  layoutSidebarBg: string;
+  layoutSidebarText: string;
+  layoutSidebarActiveText: string;
+  layoutSidebarActiveBg: string;
+  layoutSidebarActiveHoverBg: string;
+  layoutSidebarHover: string;
+  layoutMenuActiveBg: string;
+  layoutHeaderBg: string;
+  layoutHeaderText: string;
+  layoutHeaderBorder: string;
+  layoutTagsBg: string;
+  layoutTagsBorder: string;
+  layoutTagsItemBg: string;
+  layoutTagsItemText: string;
+  layoutTagsItemActiveBg: string;
+  layoutTagsItemActiveText: string;
+  layoutContentBg: string;
+  layoutContentSurfaceBg: string;
+}
+
+const LIGHT_TEXT_SCHEME: ColorScheme["text"] = {
+  primary: "#0f172a",
+  secondary: "#475569",
+  tertiary: "#64748b",
+  disabled: "#94a3b8",
+};
+
+const DARK_TEXT_SCHEME: ColorScheme["text"] = {
+  primary: "#f8fafc",
+  secondary: "#cbd5e1",
+  tertiary: "#94a3b8",
+  disabled: "#64748b",
+};
+
+const LIGHT_SHADOW_SCHEME: ColorScheme["shadow"] = {
+  base: `0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)`,
+  light: `0 1px 2px 0 rgba(0, 0, 0, 0.05)`,
+  lighter: `0 1px 1px 0 rgba(0, 0, 0, 0.03)`,
+  dark: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
+};
+
+const DARK_SHADOW_SCHEME: ColorScheme["shadow"] = {
+  base: `0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.24)`,
+  light: `0 1px 2px 0 rgba(0, 0, 0, 0.2)`,
+  lighter: `0 1px 1px 0 rgba(0, 0, 0, 0.12)`,
+  dark: `0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24)`,
+};
+
+const ENTERPRISE_LIGHT_NEUTRAL = {
+  bgPrimary: "#f5f7fb",
+  bgSecondary: "#ffffff",
+  bgTertiary: "#f8fafc",
+  fillBase: "#eef3fb",
+  fillLight: "#f7f9fd",
+  fillLighter: "#ffffff",
+  borderBase: "#d8e2f0",
+  borderLight: "#e7edf5",
+  borderLighter: "#f0f4fa",
+};
+
+const ENTERPRISE_DARK_NEUTRAL = {
+  bgPrimary: "#0b1220",
+  bgSecondary: "#111a2c",
+  bgTertiary: "#17233a",
+  fillBase: "#141f33",
+  fillLight: "#1b2a45",
+  fillLighter: "#111a2c",
+  borderBase: "#253858",
+  borderLight: "#31486b",
+  borderLighter: "#3f5c86",
+};
+
+function createCoreThemeTokens(scheme: ColorScheme, primary: string): CoreThemeTokens {
+  const isDarkScheme = scheme.text.primary === DARK_TEXT_SCHEME.primary;
+  const headerBg = blendTwoColors(scheme.menu.background, scheme.bg.secondary, 0.18);
+  const tagsBg = blendTwoColors(scheme.bg.secondary, scheme.fill.light, 0.28);
+  const tagsItemBg = blendTwoColors(scheme.bg.secondary, scheme.fill.light, 0.18);
+  const tagsItemActiveBg = isDarkScheme
+    ? blendTwoColors(scheme.fill.light, primary, 0.28)
+    : blendTwoColors(scheme.fill.light, primary, 0.2);
+  const tagsItemActiveText = isDarkScheme
+    ? getLightColor(primary, 0.1)
+    : getDarkColor(primary, 0.08);
+  // 内容区分为两层：页面底色 + 容器(padding空白区)底色，提升层次感
+  const contentBg = blendTwoColors(scheme.bg.primary, scheme.fill.light, 0.08);
+  const contentSurfaceBg = blendTwoColors(scheme.bg.secondary, scheme.fill.base, 0.22);
+
+  return {
+    brandPrimary: primary,
+    layoutBgPrimary: scheme.bg.primary,
+    layoutBgSecondary: scheme.bg.overlay ?? scheme.bg.secondary,
+    layoutBgTertiary: scheme.bg.tertiary,
+    layoutSidebarBg: scheme.sidebar.background,
+    layoutSidebarText: scheme.sidebar.text,
+    layoutSidebarActiveText: scheme.sidebar.activeText,
+    layoutSidebarActiveBg: scheme.sidebar.activeBg,
+    layoutSidebarActiveHoverBg: scheme.sidebar.activeHoverBg,
+    layoutSidebarHover: scheme.sidebar.hover,
+    layoutMenuActiveBg: scheme.menu.activeBg,
+    layoutHeaderBg: headerBg,
+    layoutHeaderText: scheme.text.primary,
+    layoutHeaderBorder: scheme.border.light,
+    layoutTagsBg: tagsBg,
+    layoutTagsBorder: scheme.border.light,
+    layoutTagsItemBg: tagsItemBg,
+    layoutTagsItemText: scheme.text.primary,
+    layoutTagsItemActiveBg: tagsItemActiveBg,
+    layoutTagsItemActiveText: tagsItemActiveText,
+    layoutContentBg: contentBg,
+    layoutContentSurfaceBg: contentSurfaceBg,
+  };
+}
+
+function generateLightThemeScheme(primary: string): ColorScheme {
+  const activeBg = blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.fillLight, primary, 0.18);
+  const activeHoverBg = blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.fillBase, primary, 0.24);
+
   return {
     bg: {
-      primary: blendTwoColors("#020617", primary, 0.05),
-      secondary: blendTwoColors("#0f172a", primary, 0.08),
-      tertiary: blendTwoColors("#1e293b", primary, 0.1),
-      overlay: blendTwoColors("#0f172a", primary, 0.08),
+      primary: ENTERPRISE_LIGHT_NEUTRAL.bgPrimary,
+      secondary: ENTERPRISE_LIGHT_NEUTRAL.bgSecondary,
+      tertiary: ENTERPRISE_LIGHT_NEUTRAL.bgTertiary,
     },
     fill: {
-      base: blendTwoColors("#0f172a", primary, 0.1),
-      light: blendTwoColors("#1e293b", primary, 0.15),
-      lighter: blendTwoColors("#0f172a", primary, 0.05),
-      extraLight: blendTwoColors("#020617", primary, 0.02),
-      dark: blendTwoColors("#334155", primary, 0.2),
-      darker: blendTwoColors("#475569", primary, 0.25),
+      base: ENTERPRISE_LIGHT_NEUTRAL.fillBase,
+      light: ENTERPRISE_LIGHT_NEUTRAL.fillLight,
+      lighter: ENTERPRISE_LIGHT_NEUTRAL.fillLighter,
+      extraLight: "#ffffff",
+      dark: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.fillBase, primary, 0.12),
+      darker: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.borderBase, primary, 0.16),
     },
-    shadow: {
-      base: `0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.24)`,
-      light: `0 1px 2px 0 rgba(0, 0, 0, 0.2)`,
-      lighter: `0 1px 1px 0 rgba(0, 0, 0, 0.12)`,
-      dark: `0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24)`,
-    },
+    shadow: LIGHT_SHADOW_SCHEME,
     border: {
-      base: blendTwoColors("#1e293b", primary, 0.12),
-      light: blendTwoColors("#334155", primary, 0.15),
-      lighter: blendTwoColors("#475569", primary, 0.2),
-      extraLight: blendTwoColors("#64748b", primary, 0.25),
-      dark: blendTwoColors("#0f172a", primary, 0.08),
-      darker: blendTwoColors("#020617", primary, 0.05),
-    },
-    table: {
-      bg: blendTwoColors("#020617", primary, 0.02),
-      trBg: blendTwoColors("#020617", primary, 0.02),
-      headerBg: blendTwoColors("#1e293b", primary, 0.15),
-      hoverBg: blendTwoColors("#0f172a", primary, 0.1),
-      border: blendTwoColors("#1e293b", primary, 0.12),
+      base: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.borderBase, primary, 0.1),
+      light: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.borderLight, primary, 0.08),
+      lighter: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.borderLighter, primary, 0.05),
+      extraLight: "#ffffff",
+      dark: blendTwoColors("#94a3b8", primary, 0.15),
+      darker: blendTwoColors("#64748b", primary, 0.2),
     },
     sidebar: {
-      background: blendTwoColors("#0f172a", primary, 0.08),
-      text: "#e2e8f0",
-      activeText: getLightColor(primary, 0.15),
-      activeBg: getLightColor(primary, 0.9),
-      activeHoverBg: getLightColor(primary, 0.65),
-      hover: blendTwoColors("#1e293b", primary, 0.15),
+      background: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.bgSecondary, primary, 0.06),
+      text: "#1e293b",
+      activeText: getDarkColor(primary, 0.1),
+      activeBg,
+      activeHoverBg,
+      hover: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.fillLight, primary, 0.15),
     },
     menu: {
-      background: blendTwoColors("#0f172a", primary, 0.08),
+      background: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.bgSecondary, primary, 0.04),
+      text: "#1e293b",
+      activeText: getDarkColor(primary, 0.1),
+      activeBg,
+      hover: blendTwoColors(ENTERPRISE_LIGHT_NEUTRAL.fillLight, primary, 0.08),
+    },
+    text: LIGHT_TEXT_SCHEME,
+  };
+}
+
+function generateDarkThemeScheme(primary: string): ColorScheme {
+  const baseDarkBg = blendTwoColors(ENTERPRISE_DARK_NEUTRAL.bgPrimary, primary, 0.04);
+  const secondaryDarkBg = blendTwoColors(ENTERPRISE_DARK_NEUTRAL.bgSecondary, primary, 0.06);
+  const tertiaryDarkBg = blendTwoColors(ENTERPRISE_DARK_NEUTRAL.bgTertiary, primary, 0.08);
+  const activeBg = blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillLight, primary, 0.22);
+  const activeHoverBg = blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillLight, primary, 0.28);
+
+  return {
+    bg: {
+      primary: baseDarkBg,
+      secondary: secondaryDarkBg,
+      tertiary: tertiaryDarkBg,
+      overlay: secondaryDarkBg,
+    },
+    fill: {
+      base: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillBase, primary, 0.08),
+      light: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillLight, primary, 0.12),
+      lighter: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillLighter, primary, 0.06),
+      extraLight: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.bgPrimary, primary, 0.04),
+      dark: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.borderLight, primary, 0.16),
+      darker: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.borderLighter, primary, 0.18),
+    },
+    shadow: DARK_SHADOW_SCHEME,
+    border: {
+      base: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.borderBase, primary, 0.1),
+      light: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.borderLight, primary, 0.14),
+      lighter: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.borderLighter, primary, 0.16),
+      extraLight: blendTwoColors("#64748b", primary, 0.2),
+      dark: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.bgSecondary, primary, 0.08),
+      darker: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.bgPrimary, primary, 0.06),
+    },
+    sidebar: {
+      background: secondaryDarkBg,
       text: "#e2e8f0",
       activeText: getLightColor(primary, 0.15),
-      activeBg: getLightColor(primary, 0.9),
-      hover: blendTwoColors("#1e293b", primary, 0.15),
+      activeBg,
+      activeHoverBg,
+      hover: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillLight, primary, 0.14),
     },
+    menu: {
+      background: secondaryDarkBg,
+      text: "#e2e8f0",
+      activeText: getLightColor(primary, 0.15),
+      activeBg,
+      hover: blendTwoColors(ENTERPRISE_DARK_NEUTRAL.fillLight, primary, 0.14),
+    },
+    text: DARK_TEXT_SCHEME,
   };
 }
 
@@ -340,18 +336,85 @@ const SEMANTIC_COLORS = {
   success: "#10b981",
   warning: "#f59e0b",
   danger: "#ef4444",
-  info: "#64748b",
+  info: "#2f86ff",
 } as const;
 
+function assignThemeRoleColors(colors: Record<string, string>, scheme: ColorScheme): void {
+  // Element Plus 核心变量
+  colors["el-bg-color"] = scheme.bg.primary;
+  colors["el-bg-color-page"] = scheme.bg.primary;
+  colors["el-bg-color-overlay"] = scheme.bg.overlay ?? scheme.bg.secondary;
+
+  // 边框颜色
+  colors["el-border-color"] = scheme.border.base;
+  colors["el-border-color-light"] = scheme.border.light;
+  colors["el-border-color-lighter"] = scheme.border.lighter;
+  colors["el-border-color-extra-light"] = scheme.border.extraLight;
+  colors["el-border-color-dark"] = scheme.border.dark;
+  colors["el-border-color-darker"] = scheme.border.darker;
+
+  // 填充颜色
+  colors["el-fill-color"] = scheme.fill.base;
+  colors["el-fill-color-light"] = scheme.fill.light;
+  colors["el-fill-color-lighter"] = scheme.fill.lighter;
+  colors["el-fill-color-extra-light"] = scheme.fill.extraLight;
+  colors["el-fill-color-dark"] = scheme.fill.dark;
+  colors["el-fill-color-darker"] = scheme.fill.darker;
+
+  // 阴影效果
+  colors["el-box-shadow"] = scheme.shadow.base;
+  colors["el-box-shadow-light"] = scheme.shadow.light;
+  colors["el-box-shadow-lighter"] = scheme.shadow.lighter;
+  colors["el-box-shadow-dark"] = scheme.shadow.dark;
+
+  // 抽屉背景色
+  colors["el-drawer-bg-color"] = scheme.fill.base;
+
+  // 菜单 / 侧边栏由 layout-* 语义变量统一驱动（见 assignCoreLayoutTokens）
+}
+
+function assignCoreLayoutTokens(colors: Record<string, string>, coreTokens: CoreThemeTokens): void {
+  colors["el-color-primary"] = coreTokens.brandPrimary;
+  colors["layout-bg-primary"] = coreTokens.layoutBgPrimary;
+  colors["layout-bg-secondary"] = coreTokens.layoutBgSecondary;
+  colors["layout-bg-tertiary"] = coreTokens.layoutBgTertiary;
+  colors["layout-sidebar-bg"] = coreTokens.layoutSidebarBg;
+  colors["layout-sidebar-text"] = coreTokens.layoutSidebarText;
+  colors["layout-sidebar-active-text"] = coreTokens.layoutSidebarActiveText;
+  colors["layout-sidebar-active-bg"] = coreTokens.layoutSidebarActiveBg;
+  colors["layout-sidebar-active-hover-bg"] = coreTokens.layoutSidebarActiveHoverBg;
+  colors["layout-sidebar-hover"] = coreTokens.layoutSidebarHover;
+  colors["layout-header-bg"] = coreTokens.layoutHeaderBg;
+  colors["layout-header-text"] = coreTokens.layoutHeaderText;
+  colors["layout-header-border"] = coreTokens.layoutHeaderBorder;
+  colors["layout-tags-bg"] = coreTokens.layoutTagsBg;
+  colors["layout-tags-border"] = coreTokens.layoutTagsBorder;
+  colors["layout-tags-item-bg"] = coreTokens.layoutTagsItemBg;
+  colors["layout-tags-item-text"] = coreTokens.layoutTagsItemText;
+  colors["layout-tags-item-active-bg"] = coreTokens.layoutTagsItemActiveBg;
+  colors["layout-tags-item-active-text"] = coreTokens.layoutTagsItemActiveText;
+  colors["layout-content-bg"] = coreTokens.layoutContentBg;
+  colors["layout-content-surface-bg"] = coreTokens.layoutContentSurfaceBg;
+  colors["layout-menu-bg"] = coreTokens.layoutSidebarBg;
+  colors["layout-menu-text"] = coreTokens.layoutSidebarText;
+  colors["layout-menu-active-text"] = coreTokens.layoutSidebarActiveText;
+  colors["layout-menu-active-bg"] = coreTokens.layoutMenuActiveBg;
+  colors["layout-menu-hover"] = coreTokens.layoutSidebarHover;
+  colors["layout-logo-bg"] = coreTokens.layoutSidebarBg;
+  colors["layout-logo-text"] = coreTokens.layoutSidebarActiveText;
+  colors["layout-text-primary"] = colors["layout-text-primary"] ?? "#0f172a";
+  colors["layout-text-secondary"] = colors["layout-text-secondary"] ?? "#475569";
+  colors["layout-text-tertiary"] = colors["layout-text-tertiary"] ?? "#64748b";
+  colors["layout-text-disabled"] = colors["layout-text-disabled"] ?? "#94a3b8";
+}
+
 export function generateThemeColors(primary: string, theme: ThemeMode) {
-  // 处理带alpha通道的颜色值，去除alpha部分
-  const cleanPrimary = primary.length === 9 ? primary.slice(0, 7) : primary;
+  const cleanPrimary = normalizeHexColor(primary);
   const colors: Record<string, string> = {
     primary: cleanPrimary,
     ...SEMANTIC_COLORS,
   };
 
-  const isLight = isLightColor(cleanPrimary);
   const rgb = hexToRgb(cleanPrimary);
 
   const isDarkMode = theme === ThemeMode.DARK;
@@ -359,6 +422,7 @@ export function generateThemeColors(primary: string, theme: ThemeMode) {
     ? generateDarkModeVariants(cleanPrimary)
     : generateColorVariants(cleanPrimary);
 
+  // 生成颜色变体，使用 Element Plus 标准命名
   primaryVariants.light.forEach((color, i) => {
     colors[`primary-light-${i + 1}`] = color;
   });
@@ -372,100 +436,29 @@ export function generateThemeColors(primary: string, theme: ThemeMode) {
     colors[`${name}-dark-2`] = variants.dark;
   });
 
+  // 品牌颜色 RGB 值，用于科技感效果
   colors["brand-primary-rgb"] = `${rgb[0]}, ${rgb[1]}, ${rgb[2]}`;
   Object.entries(SEMANTIC_COLORS).forEach(([name, color]) => {
     const c = hexToRgb(color);
     colors[`brand-${name}-rgb`] = `${c[0]}, ${c[1]}, ${c[2]}`;
   });
 
+  // 生成主题方案
   const scheme = isDarkMode
-    ? generateDarkThemeScheme(cleanPrimary, isLight)
-    : generateLightThemeScheme(cleanPrimary, isLight);
+    ? generateDarkThemeScheme(cleanPrimary)
+    : generateLightThemeScheme(cleanPrimary);
 
-  colors["custom-bg-primary"] = scheme.bg.primary;
-  colors["custom-bg-secondary"] = scheme.bg.secondary;
-  colors["custom-bg-tertiary"] = scheme.bg.tertiary;
+  // 文本语义变量
+  colors["layout-text-primary"] = scheme.text.primary;
+  colors["layout-text-secondary"] = scheme.text.secondary;
+  colors["layout-text-tertiary"] = scheme.text.tertiary;
+  colors["layout-text-disabled"] = scheme.text.disabled;
 
-  colors["el-bg-color"] = scheme.bg.primary;
-  colors["el-bg-color-page"] = scheme.bg.primary;
-  colors["el-bg-color-overlay"] = scheme.bg.overlay ?? scheme.bg.secondary;
+  // 角色色和核心 token（主题控制主入口）
+  assignThemeRoleColors(colors, scheme);
+  const coreTokens = createCoreThemeTokens(scheme, cleanPrimary);
 
-  if (isDarkMode) {
-    colors["el-text-color-primary"] = "#f8fafc";
-    colors["el-text-color-regular"] = "#e2e8f0";
-    colors["el-text-color-secondary"] = "#94a3b8";
-    colors["el-text-color-placeholder"] = "#64748b";
-    colors["el-disabled-bg-color"] = "#0f172a";
-    colors["el-disabled-text-color"] = "#475569";
-    colors["el-disabled-border-color"] = "#1e293b";
-    colors["el-overlay-color"] = "rgba(0, 0, 0, 0.7)";
-    colors["el-overlay-color-light"] = "rgba(0, 0, 0, 0.5)";
-    colors["el-overlay-color-lighter"] = "rgba(0, 0, 0, 0.3)";
-    colors["el-scrollbar-bg-color"] = "#0f172a";
-    colors["el-scrollbar-thumb-color"] = "#334155";
-    colors["el-scrollbar-thumb-hover-color"] = "#475569";
-  } else {
-    colors["el-text-color-primary"] = "#0f172a";
-    colors["el-text-color-regular"] = "#334155";
-    colors["el-text-color-secondary"] = "#64748b";
-    colors["el-text-color-placeholder"] = "#94a3b8";
-    colors["el-disabled-bg-color"] = "#f1f5f9";
-    colors["el-disabled-text-color"] = "#94a3b8";
-    colors["el-disabled-border-color"] = "#e2e8f0";
-    colors["el-overlay-color"] = "rgba(15, 23, 42, 0.5)";
-    colors["el-overlay-color-light"] = "rgba(15, 23, 42, 0.3)";
-    colors["el-overlay-color-lighter"] = "rgba(15, 23, 42, 0.15)";
-    colors["el-scrollbar-bg-color"] = "#f1f5f9";
-    colors["el-scrollbar-thumb-color"] = "#cbd5e1";
-    colors["el-scrollbar-thumb-hover-color"] = "#94a3b8";
-  }
-
-  colors["el-border-color"] = scheme.border.base;
-  colors["el-border-color-light"] = scheme.border.light;
-  colors["el-border-color-lighter"] = scheme.border.lighter;
-  colors["el-border-color-extra-light"] = scheme.border.extraLight;
-  colors["el-border-color-dark"] = scheme.border.dark;
-  colors["el-border-color-darker"] = scheme.border.darker;
-
-  colors["el-fill-color"] = scheme.fill.base;
-  colors["el-fill-color-light"] = scheme.fill.light;
-  colors["el-fill-color-lighter"] = scheme.fill.lighter;
-  colors["el-fill-color-extra-light"] = scheme.fill.extraLight;
-  colors["el-fill-color-dark"] = scheme.fill.dark;
-  colors["el-fill-color-darker"] = scheme.fill.darker;
-
-  colors["el-box-shadow"] = scheme.shadow.base;
-  colors["el-box-shadow-light"] = scheme.shadow.light;
-  colors["el-box-shadow-lighter"] = scheme.shadow.lighter;
-  colors["el-box-shadow-dark"] = scheme.shadow.dark;
-
-  colors["el-table-bg-color"] = scheme.table.bg;
-  colors["el-table-tr-bg-color"] = scheme.table.trBg;
-  colors["el-table-header-bg-color"] = scheme.table.headerBg;
-  colors["el-table-row-hover-bg-color"] = scheme.table.hoverBg;
-  colors["el-table-border-color"] = scheme.table.border;
-
-  // 抽屉背景色 - 使用主题填充色
-  colors["el-drawer-bg-color"] = scheme.fill.base;
-
-  // 侧边栏和菜单相关变量
-  colors["sidebar-background"] = scheme.sidebar.background;
-  colors["sidebar-text-color"] = scheme.sidebar.text;
-  colors["sidebar-active-text-color"] = scheme.sidebar.activeText;
-  colors["sidebar-active-bg"] = scheme.sidebar.activeBg;
-  colors["sidebar-active-hover-bg"] = scheme.sidebar.activeHoverBg;
-  colors["sidebar-hover"] = scheme.sidebar.hover;
-
-  // Logo 相关变量
-  colors["sidebar-logo-background"] = scheme.sidebar.background;
-  colors["sidebar-logo-text-color"] = scheme.sidebar.activeText;
-
-  // 布局菜单变量 - 确保与布局文件兼容
-  colors["menu-background"] = scheme.menu.background;
-  colors["menu-text"] = scheme.menu.text;
-  colors["menu-active-text"] = scheme.menu.activeText;
-  colors["menu-active-bg"] = scheme.menu.activeBg;
-  colors["menu-hover"] = scheme.menu.hover;
+  assignCoreLayoutTokens(colors, coreTokens);
 
   return colors;
 }
@@ -473,16 +466,37 @@ export function generateThemeColors(primary: string, theme: ThemeMode) {
 export function applyTheme(colors: Record<string, string>) {
   const el = document.documentElement;
 
+  const setVar = (key: string, value: string) => {
+    el.style.setProperty(`--${key}`, value);
+  };
+
+  const pickColor = (keys: string[]) => keys.map((k) => colors[k]).find(Boolean);
+  const isDirectCssVar = (key: string) =>
+    key.startsWith("el-") || key.startsWith("brand-") || key.startsWith("layout-");
+
+  // 仅允许核心调色板变量走 --el-color-*，避免无关变量污染 :root
+  const isAllowedElColorToken = (key: string) =>
+    /^(primary|success|warning|danger|info)$/.test(key) ||
+    /^(primary|success|warning|danger|info)-light-[1-9]$/.test(key) ||
+    /^(primary|success|warning|danger|info)-dark-2$/.test(key);
+
   Object.entries(colors).forEach(([key, value]) => {
-    if (key.startsWith("el-")) {
-      el.style.setProperty(`--${key}`, value);
-    } else if (key.startsWith("sidebar-") || key.startsWith("menu-")) {
-      el.style.setProperty(`--${key}`, value);
-    } else {
-      el.style.setProperty(`--el-color-${key}`, value);
+    if (isDirectCssVar(key)) {
+      setVar(key, value);
+      return;
+    }
+    if (isAllowedElColorToken(key)) {
+      // Element Plus 色板变量（--el-color-primary-light-1 等）
+      setVar(`el-color-${key}`, value);
     }
   });
 
+  // 确保布局相关的背景变量也被设置
+  setVar("bg-primary", pickColor(["layout-bg-primary", "el-bg-color"]) ?? "");
+  setVar("bg-secondary", pickColor(["layout-bg-secondary", "el-bg-color-overlay"]) ?? "");
+  setVar("bg-tertiary", pickColor(["layout-bg-tertiary", "el-bg-color-overlay"]) ?? "");
+
+  // 触发主题更新动画
   requestAnimationFrame(() => {
     el.style.setProperty("--theme-update-trigger", Date.now().toString());
   });

@@ -230,7 +230,7 @@
               </el-tooltip>
             </div>
           </template>
-          <el-table :data="server.disks" border>
+          <el-table :data="server.disks" border stripe>
             <template #empty>
               <el-empty :image-size="80" description="暂无数据" />
             </template>

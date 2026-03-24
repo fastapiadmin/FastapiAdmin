@@ -8,21 +8,18 @@
       <p class="welcome-subtitle">我是您的专属AI助手，可以帮您回答问题、处理任务和进行智能对话</p>
 
       <div class="example-prompts">
-        <div class="prompt-card" @click="handlePromptClick('请介绍一下FastApiAdmin系统')">
-          <h4>系统介绍</h4>
-          <p>请介绍一下FastApiAdmin系统</p>
-        </div>
-        <div class="prompt-card" @click="handlePromptClick('如何在系统中创建新的模块？')">
-          <h4>开发指导</h4>
-          <p>如何在系统中创建新的模块？</p>
-        </div>
-        <div class="prompt-card" @click="handlePromptClick('系统的权限管理是如何工作的？')">
-          <h4>权限管理</h4>
-          <p>FA系统的权限管理是如何工作的？</p>
-        </div>
-        <div class="prompt-card" @click="handlePromptClick('如何优化FA系统的性能？')">
-          <h4>性能优化</h4>
-          <p>如何优化系统的性能？</p>
+        <div
+          v-for="card in promptCards"
+          :key="card.prompt"
+          class="prompt-card"
+          role="button"
+          tabindex="0"
+          @click="handlePromptClick(card.prompt)"
+          @keydown.enter.prevent="handlePromptClick(card.prompt)"
+          @keydown.space.prevent="handlePromptClick(card.prompt)"
+        >
+          <h4>{{ card.title }}</h4>
+          <p>{{ card.body }}</p>
         </div>
       </div>
     </div>
@@ -37,6 +34,17 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
+
+const promptCards = [
+  { title: "系统介绍", body: "请介绍一下FastApiAdmin系统", prompt: "请介绍一下FastApiAdmin系统" },
+  { title: "开发指导", body: "如何在系统中创建新的模块？", prompt: "如何在系统中创建新的模块？" },
+  {
+    title: "权限管理",
+    body: "FA系统的权限管理是如何工作的？",
+    prompt: "系统的权限管理是如何工作的？",
+  },
+  { title: "性能优化", body: "如何优化系统的性能？", prompt: "如何优化FA系统的性能？" },
+];
 
 const handlePromptClick = (prompt: string) => {
   emit("prompt-click", prompt);
@@ -85,15 +93,24 @@ const handlePromptClick = (prompt: string) => {
         padding: 20px;
         text-align: left;
         cursor: pointer;
-        background: var(--el-bg-color-page);
+        background: var(--el-bg-color-overlay);
         border: 1px solid var(--el-border-color-light);
         border-radius: 12px;
-        transition: all 0.2s ease;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease,
+          transform 0.2s ease;
 
         &:hover {
           border-color: var(--el-color-primary);
           box-shadow: var(--el-box-shadow-light);
           transform: translateY(-2px);
+        }
+
+        &:focus-visible {
+          outline: 2px solid color-mix(in srgb, var(--el-color-primary) 40%, transparent);
+          outline-offset: 2px;
+          border-color: var(--el-color-primary);
         }
 
         h4 {

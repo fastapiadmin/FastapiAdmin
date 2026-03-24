@@ -145,6 +145,7 @@
                 height="calc(100vh - 290px)"
                 max-height="calc(100vh - 290px)"
                 border
+                stripe
               >
                 <template #empty>
                   <el-empty :image-size="80" description="暂无数据" />

@@ -388,7 +388,7 @@ defineExpose({
         }
 
         &:hover {
-          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+          box-shadow: 0 4px 12px color-mix(in srgb, var(--el-color-primary) 30%, transparent);
           transform: translateY(-1px);
         }
 
@@ -486,9 +486,17 @@ defineExpose({
 
               &.active {
                 color: var(--el-color-primary);
-                background: var(--el-color-primary-light-9);
-                border-color: var(--el-color-primary-light-7);
-                box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+                background: color-mix(
+                  in srgb,
+                  var(--el-color-primary) 9%,
+                  var(--chat-area-bg, var(--el-bg-color-overlay))
+                );
+                border-color: color-mix(
+                  in srgb,
+                  var(--el-color-primary) 18%,
+                  var(--el-border-color-light)
+                );
+                box-shadow: none;
               }
 
               .session-icon {

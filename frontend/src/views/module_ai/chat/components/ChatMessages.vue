@@ -73,7 +73,8 @@ defineExpose({
 .chat-messages {
   height: 100%;
   overflow-y: auto;
-  background: var(--el-bg-color);
+  /* 与 index chat-main 同底，避免 disabled 灰 + page 色打架 */
+  background: transparent;
 
   .messages-list {
     max-width: 800px;

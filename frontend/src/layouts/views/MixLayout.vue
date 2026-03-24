@@ -30,9 +30,9 @@
             :collapse="!isSidebarOpen"
             :collapse-transition="false"
             :unique-opened="false"
-            :background-color="variables['menu-background']"
-            :text-color="variables['menu-text']"
-            :active-text-color="variables['menu-active-text']"
+            background-color="var(--layout-menu-bg)"
+            text-color="var(--layout-menu-text)"
+            active-text-color="var(--layout-menu-active-text)"
           >
             <MenuItem
               v-for="item in sideMenuRoutes"
@@ -70,7 +70,6 @@ import TagsView from "../components/TagsView/index.vue";
 import AppMain from "../components/AppMain/index.vue";
 import MenuItem from "../components/Menu/components/MenuItem.vue";
 import Hamburger from "@/components/Hamburger/index.vue";
-import variables from "@/styles/variables.module.scss";
 import { isExternal } from "@/utils/index";
 import { computed, watch } from "vue";
 import { useAppStore, usePermissionStore } from "@/store";
@@ -148,7 +147,9 @@ watch(
     z-index: 999;
     width: 100%;
     height: $navbar-height;
-    background-color: var(--menu-background);
+    color: var(--layout-header-text);
+    background-color: var(--layout-header-bg);
+    border-bottom: 1px solid var(--layout-header-border);
 
     &-content {
       display: flex;
@@ -190,8 +191,9 @@ watch(
           border-bottom: none;
 
           &.is-active {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-bottom: 2px solid var(--el-color-primary);
+            color: var(--layout-menu-active-text);
+            background-color: var(--layout-menu-active-bg);
+            border-bottom: 2px solid var(--layout-menu-active-text);
           }
         }
       }
@@ -214,7 +216,7 @@ watch(
       position: relative;
       width: $sidebar-width;
       height: 100%;
-      background-color: var(--menu-background);
+      background-color: var(--layout-menu-bg);
       transition: width 0.28s;
 
       &.layout__sidebar--collapsed {
@@ -239,7 +241,7 @@ watch(
         width: 100%;
         height: 50px;
         line-height: 50px;
-        background-color: var(--menu-background);
+        background-color: var(--layout-menu-bg);
         box-shadow: 0 0 6px -2px var(--el-color-primary);
       }
     }
@@ -250,6 +252,7 @@ watch(
       height: 100%;
       margin-left: 0;
       overflow-y: auto;
+      background-color: var(--layout-content-canvas, var(--layout-content-bg));
     }
   }
 }

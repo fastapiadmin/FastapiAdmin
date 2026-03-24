@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-input">
+  <div class="chat-input" :class="{ 'chat-input--disabled': disabled }">
     <div class="input-wrapper">
       <div v-if="uploadedFiles.length > 0" class="uploaded-files">
         <div v-for="file in uploadedFiles" :key="file.id" class="file-item">
@@ -201,17 +201,24 @@ defineExpose({
       flex-direction: column;
       gap: 12px;
       padding: 20px;
-      background: var(--el-bg-color-page);
+      background: var(--el-bg-color-overlay);
       border: 1px solid var(--el-border-color-light);
       border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      transition: all 0.2s ease;
+      box-shadow: var(--el-box-shadow-light);
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
 
       &:hover {
         border-color: var(--el-color-primary);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        box-shadow: var(--el-box-shadow-light);
+        box-shadow: var(--el-box-shadow);
         transform: translateY(-2px);
+      }
+
+      &:focus-within {
+        border-color: var(--el-color-primary);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--el-color-primary) 35%, transparent);
       }
 
       .message-input {
@@ -258,11 +265,11 @@ defineExpose({
           .send-button {
             flex-shrink: 0;
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+            box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 35%, transparent);
             transition: all 0.2s ease;
 
             &:hover {
-              box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+              box-shadow: 0 4px 14px color-mix(in srgb, var(--el-color-primary) 45%, transparent);
               transform: translateY(-1px);
             }
 
@@ -278,9 +285,25 @@ defineExpose({
       margin-top: 12px;
       font-size: 12px;
       font-weight: 400;
-      color: var(--el-text-color-tertiary);
+      color: var(--el-text-color-secondary);
       text-align: center;
       letter-spacing: 0.5px;
+    }
+  }
+
+  &.chat-input--disabled .input-wrapper .input-container {
+    opacity: 0.72;
+    filter: grayscale(0.06);
+
+    &:hover {
+      border-color: var(--el-border-color-light);
+      box-shadow: var(--el-box-shadow-light);
+      transform: none;
+    }
+
+    &:focus-within {
+      border-color: var(--el-border-color-light);
+      box-shadow: var(--el-box-shadow-light);
     }
   }
 }

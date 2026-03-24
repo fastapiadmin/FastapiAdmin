@@ -7,7 +7,7 @@ import { createTerminal } from "vue-web-terminal";
 import "element-plus/theme-chalk/dark/css-vars.css";
 import "element-plus/dist/index.css";
 // 主题变量（包含亮色和暗黑模式）
-import "@/styles/index.scss";
+import "./styles/index.scss";
 
 import "uno.css";
 

@@ -143,7 +143,6 @@
           ref="dataTableRef"
           v-loading="loading"
           :data="pageTableData"
-          highlight-current-row
           height="calc(100vh - 430px)"
           max-height="calc(100vh - 430px)"
           border

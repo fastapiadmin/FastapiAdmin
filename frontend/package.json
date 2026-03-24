@@ -7,6 +7,7 @@
   "scripts": {
     "i": "pnpm install",
     "dev": "vite",
+    "dev:force": "vite --force",
     "prod": "vite --mode prod",
     "build": "vue-tsc --noEmit & vite build",
     "build:pro": "pnpm vite build --mode pro",
@@ -19,7 +20,7 @@
     "clean": "pnpx rimraf node_modules",
     "ts:check": "pnpm vue-tsc --noEmit --skipLibCheck",
     "npm:check": "pnpx npm-check-updates -u",
-    "clean:cache": "pnpx rimraf node_modules/.cache",
+    "clean:cache": "pnpx rimraf node_modules/.cache node_modules/.vite",
     "prepare": "husky install",
     "p": "plop",
     "icon": "esno ./scripts/icon.ts",

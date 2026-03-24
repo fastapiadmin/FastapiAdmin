@@ -1,32 +1,3 @@
-// 主题颜色 - 跟随主题模式自动变化
-// 注意：SCSS 配置需要使用固定颜色值，动态主题色由 theme.ts 在运行时设置
-@forward "element-plus/theme-chalk/src/common/var.scss" with (
-  $colors: (
-    "primary": (
-      "base": #3b82f6,
-    ),
-    "success": (
-      "base": #10b981,
-    ),
-    "warning": (
-      "base": #f59e0b,
-    ),
-    "danger": (
-      "base": #ef4444,
-    ),
-    "info": (
-      "base": #64748b,
-    ),
-    "default": (
-      "base": #f8fafc,
-    ),
-  ),
-
-  $bg-color: (
-    "page": #f8fafc,
-  )
-);
-
 /**
  * 简化颜色系统设计原则
  * 
@@ -39,33 +10,51 @@
 :root {
   // ==================== 品牌主题色 ====================
   // 由 theme.ts 动态设置，这里提供默认值
-  --brand-primary: var(--el-color-primary, #3b82f6);
+  --brand-primary: var(--el-color-primary, #1677ff);
   --brand-success: #10b981;
   --brand-warning: #f59e0b;
   --brand-danger: #ef4444;
-  --brand-info: #64748b;
-
-  // ==================== 固定的自定义颜色 ====================
-  --custom-bg-light: #ffffff;
-  --custom-bg-dark: #0f172a;
-  --custom-text-light: #334155;
-  --custom-text-dark: #f1f5f9;
-
-  // ==================== 亮色模式背景层次 ====================
-  --custom-bg-primary: #f8fafc;
-  --custom-bg-secondary: #ffffff;
-  --custom-bg-tertiary: #ffffff;
-
-  // ==================== 暗黑模式背景层次 ====================
-  --custom-bg-primary-dark: var(--el-bg-color, #020617);
-  --custom-bg-secondary-dark: var(--el-bg-color-overlay, #0f172a);
-  --custom-bg-tertiary-dark: #1e293b;
+  --brand-info: #2f86ff;
 
   // ==================== 亮色模式（默认）====================
+  // 语义化布局变量（推荐优先使用）
+  --layout-bg-primary: var(--el-bg-color, #f8fafc);
+  --layout-bg-secondary: var(--el-bg-color-overlay, #ffffff);
+  --layout-bg-tertiary: #ffffff;
+  --layout-text-primary: #0f172a;
+  --layout-text-secondary: #475569;
+  --layout-text-tertiary: #64748b;
+  --layout-text-disabled: #94a3b8;
+  --layout-sidebar-bg: #ffffff;
+  --layout-sidebar-text: #334155;
+  --layout-sidebar-active-text: var(--brand-primary);
+  --layout-sidebar-active-bg: #f8fafc;
+  --layout-sidebar-active-hover-bg: #f1f5f9;
+  --layout-sidebar-hover: #f1f5f9;
+  --layout-menu-bg: var(--layout-sidebar-bg);
+  --layout-menu-text: var(--layout-sidebar-text);
+  --layout-menu-active-text: var(--layout-sidebar-active-text);
+  --layout-menu-active-bg: var(--layout-sidebar-active-bg);
+  --layout-menu-hover: var(--layout-sidebar-hover);
+  --layout-logo-bg: var(--layout-sidebar-bg);
+  --layout-logo-text: var(--layout-sidebar-active-text);
+  --layout-header-bg: var(--layout-menu-bg);
+  --layout-header-text: var(--layout-text-primary);
+  --layout-header-border: var(--el-border-color-light, #e2e8f0);
+  --layout-tags-bg: var(--layout-bg-primary);
+  --layout-tags-border: var(--el-border-color-light, #e2e8f0);
+  --layout-tags-item-bg: var(--el-bg-color, #ffffff);
+  --layout-tags-item-text: var(--layout-text-primary);
+  --layout-tags-item-active-bg: var(--el-color-primary-light-9, #dbeafe);
+  --layout-tags-item-active-text: var(--el-color-primary, #1677ff);
+  --layout-content-bg: var(--layout-bg-primary);
+  // 列表页 gutter/留白透出：--layout-content-canvas（dark/css-vars.css，主色轻混 --el-bg-color-page）
+  --layout-content-surface-bg: var(--el-bg-color-overlay, #ffffff);
+
   // 背景色系
-  --bg-primary: var(--custom-bg-primary);
-  --bg-secondary: var(--custom-bg-secondary);
-  --bg-tertiary: var(--custom-bg-tertiary);
+  --bg-primary: var(--layout-bg-primary, #f8fafc);
+  --bg-secondary: var(--layout-bg-secondary, #ffffff);
+  --bg-tertiary: var(--layout-bg-tertiary, #ffffff);
 
   // 文字色系
   --text-primary: #0f172a;
@@ -78,35 +67,57 @@
   --border-secondary: #cbd5e1;
   --border-tertiary: #f1f5f9;
 
-  // 菜单色系
-  --menu-background: var(--sidebar-background, var(--custom-bg-light));
-  --menu-text: var(--sidebar-text-color, var(--custom-text-light));
-  --menu-active-text: var(--sidebar-active-text-color, var(--brand-primary));
-  --menu-hover: var(--sidebar-hover, #f1f5f9);
-  --sidebar-logo-background: var(--sidebar-background, var(--custom-bg-light));
-  --sidebar-logo-text-color: var(--brand-primary);
-
-  // 状态色系
-  --status-success: var(--brand-success);
-  --status-warning: var(--brand-warning);
-  --status-danger: var(--brand-danger);
-  --status-info: var(--brand-info);
+  // 菜单兼容（仅保留 Element Plus 所需 hover 变量）
+  --el-menu-hover-bg-color: var(--layout-menu-hover, #f3f6fb);
 
   // 科技感增强
-  --tech-glow: rgba(var(--brand-primary-rgb, 59, 130, 246), 0.12);
+  --tech-glow: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.12);
   --tech-gradient: linear-gradient(
     135deg,
-    rgba(var(--brand-primary-rgb, 59, 130, 246), 0.02) 0%,
+    rgba(var(--brand-primary-rgb, 22, 119, 255), 0.02) 0%,
     rgba(0, 0, 0, 0) 100%
   );
 }
 
 /** 暗黑主题 */
 html.dark {
+  // 语义化布局变量（暗色）
+  --layout-bg-primary: var(--el-bg-color, #020617);
+  --layout-bg-secondary: var(--el-bg-color-overlay, #0f172a);
+  --layout-bg-tertiary: #1e293b;
+  --layout-text-primary: #f8fafc;
+  --layout-text-secondary: #cbd5e1;
+  --layout-text-tertiary: #94a3b8;
+  --layout-text-disabled: #64748b;
+  --layout-sidebar-bg: #0f172a;
+  --layout-sidebar-text: #f1f5f9;
+  --layout-sidebar-active-text: var(--brand-primary);
+  --layout-sidebar-active-bg: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.2);
+  --layout-sidebar-active-hover-bg: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.26);
+  --layout-sidebar-hover: #1e293b;
+  --layout-menu-bg: var(--layout-sidebar-bg);
+  --layout-menu-text: var(--layout-sidebar-text);
+  --layout-menu-active-text: var(--layout-sidebar-active-text);
+  --layout-menu-active-bg: var(--layout-sidebar-active-bg);
+  --layout-menu-hover: var(--layout-sidebar-hover);
+  --layout-logo-bg: var(--layout-sidebar-bg);
+  --layout-logo-text: var(--layout-sidebar-active-text);
+  --layout-header-bg: var(--layout-menu-bg);
+  --layout-header-text: var(--layout-text-primary);
+  --layout-header-border: var(--el-border-color, #334155);
+  --layout-tags-bg: var(--layout-bg-primary);
+  --layout-tags-border: var(--el-border-color, #334155);
+  --layout-tags-item-bg: var(--el-fill-color, #0f172a);
+  --layout-tags-item-text: var(--layout-text-primary);
+  --layout-tags-item-active-bg: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.2);
+  --layout-tags-item-active-text: var(--el-color-primary, #1677ff);
+  --layout-content-bg: var(--layout-bg-primary);
+  --layout-content-surface-bg: var(--el-fill-color, #0f172a);
+
   // 背景色系
-  --bg-primary: var(--custom-bg-primary-dark);
-  --bg-secondary: var(--custom-bg-secondary-dark);
-  --bg-tertiary: var(--custom-bg-tertiary-dark);
+  --bg-primary: var(--layout-bg-primary, #020617);
+  --bg-secondary: var(--layout-bg-secondary, #0f172a);
+  --bg-tertiary: var(--layout-bg-tertiary, #1e293b);
 
   // 文字色系
   --text-primary: #f8fafc;
@@ -119,25 +130,14 @@ html.dark {
   --border-secondary: var(--el-border-color-light, #334155);
   --border-tertiary: var(--el-border-color-lighter, #475569);
 
-  // 菜单色系
-  --menu-background: var(--sidebar-background, var(--custom-bg-dark));
-  --menu-text: var(--sidebar-text-color, var(--custom-text-dark));
-  --menu-active-text: var(--sidebar-active-text-color, var(--brand-primary));
-  --menu-hover: var(--sidebar-hover, #1e293b);
-  --sidebar-logo-background: var(--sidebar-background, var(--custom-bg-dark));
-  --sidebar-logo-text-color: var(--brand-primary);
-
-  // 状态色系
-  --status-success: var(--brand-success);
-  --status-warning: var(--brand-warning);
-  --status-danger: var(--brand-danger);
-  --status-info: var(--brand-info);
+  // 菜单兼容（仅保留 Element Plus 所需 hover 变量）
+  --el-menu-hover-bg-color: var(--layout-menu-hover, #1b2a45);
 
   // 科技感增强
-  --tech-glow: rgba(var(--brand-primary-rgb, 59, 130, 246), 0.25);
+  --tech-glow: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.25);
   --tech-gradient: linear-gradient(
     135deg,
-    rgba(var(--brand-primary-rgb, 59, 130, 246), 0.08) 0%,
+    rgba(var(--brand-primary-rgb, 22, 119, 255), 0.08) 0%,
     rgba(0, 0, 0, 0) 100%
   );
 
@@ -148,13 +148,13 @@ html.dark {
   --w-e-textarea-slight-border-color: var(--border-secondary);
   --w-e-textarea-slight-color: var(--text-tertiary);
   --w-e-textarea-slight-bg-color: var(--bg-tertiary);
-  --w-e-textarea-selected-border-color: rgba(var(--brand-primary-rgb, 59, 130, 246), 0.4);
+  --w-e-textarea-selected-border-color: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.4);
   --w-e-textarea-handler-bg-color: var(--brand-primary);
 
   --w-e-toolbar-color: var(--text-primary);
   --w-e-toolbar-bg-color: var(--bg-secondary);
   --w-e-toolbar-active-color: var(--brand-primary);
-  --w-e-toolbar-active-bg-color: rgba(var(--brand-primary-rgb, 59, 130, 246), 0.08);
+  --w-e-toolbar-active-bg-color: rgba(var(--brand-primary-rgb, 22, 119, 255), 0.08);
   --w-e-toolbar-disabled-color: var(--text-disabled);
   --w-e-toolbar-border-color: var(--border-primary);
 
@@ -162,12 +162,10 @@ html.dark {
   --w-e-modal-button-border-color: var(--border-secondary);
 }
 
-$menu-background: var(--menu-background);
-$menu-text: var(--menu-text);
-$menu-active-text: var(--menu-active-text);
-$menu-hover: var(--menu-hover);
-$sidebar-logo-background: var(--sidebar-logo-background);
-$sidebar-logo-text-color: var(--sidebar-logo-text-color);
+$menu-background: var(--layout-menu-bg);
+$menu-text: var(--layout-menu-text);
+$menu-active-text: var(--layout-menu-active-text);
+$menu-hover: var(--layout-menu-hover);
 
 $sidebar-width: 210px;
 $sidebar-width-collapsed: 54px;

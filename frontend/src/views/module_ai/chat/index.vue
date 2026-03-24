@@ -301,12 +301,20 @@ onUnmounted(disconnectWebSocket);
 
 <style lang="scss" scoped>
 .main-chat {
+  /* L2 内容面：与 AppMain 的 L0 画布（留白/间隙）区分开，避免与 gap 同色 */
+  --chat-area-bg: var(--layout-content-surface-bg, var(--el-bg-color-overlay));
+
   height: 100%;
   overflow: hidden;
+  background: var(--chat-area-bg);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 8px;
+  box-shadow: var(--el-box-shadow-light);
 
+  /* 与右侧同一表面色；与内容区的分界交给 Sidebar 的竖线即可 */
   .sidebar-container {
     width: 200px;
-    background: var(--el-bg-color);
+    background: transparent;
     transition: width 0.3s ease;
 
     &.collapsed {
@@ -319,26 +327,28 @@ onUnmounted(disconnectWebSocket);
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    background: var(--chat-area-bg);
   }
 
   .chat-header {
     height: auto;
     padding: 0;
-    background: var(--el-bg-color);
+    background: var(--chat-area-bg);
+    border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
   .chat-main {
     flex: 1;
-    padding: 0;
     overflow: hidden;
+    background: var(--chat-area-bg);
   }
 
   .chat-footer {
     height: auto;
     min-height: 80px;
     padding: 0;
-    background: var(--el-bg-color);
-    border-top: 1px solid var(--el-border-color-light);
+    background: var(--chat-area-bg);
+    border-top: 1px solid var(--el-border-color-lighter);
   }
 }
 </style>

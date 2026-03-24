@@ -257,7 +257,7 @@ const layoutOptions: LayoutOption[] = [
 const settingsStore = useSettingsStore();
 
 // 主题颜色选择器相关
-const displayColorPresets = computed(() => themeColorPresets.slice(0, 7)); // 只显示前9个预设颜色
+const displayColorPresets = computed(() => themeColorPresets.slice(0, 9)); // 只显示前9个预设颜色
 const allColorPresets = themeColorPresets; // 所有颜色预设，用于自定义颜色选择器
 
 const isDark = ref<boolean>(settingsStore.theme === ThemeMode.DARK);
@@ -651,11 +651,11 @@ const handleCloseDrawer = () => {
 /* 主题颜色选择器样式 */
 .theme-color-selector {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: center;
+  align-items: stretch;
 
   .color-label {
-    flex-shrink: 0;
     min-width: 60px;
   }
 

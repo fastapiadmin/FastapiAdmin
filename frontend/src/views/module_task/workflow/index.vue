@@ -107,7 +107,6 @@
         ref="tableRef"
         v-loading="loading"
         :data="dataSource"
-        highlight-current-row
         class="data-table__content"
         height="450"
         max-height="450"

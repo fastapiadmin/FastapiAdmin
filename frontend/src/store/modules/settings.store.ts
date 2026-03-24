@@ -98,7 +98,6 @@ export const useSettingsStore = defineStore("setting", () => {
   const themeColor = useStorage<string>(SETTINGS_KEYS.THEME_COLOR, defaultSettings.themeColor);
   // 主题模式
   const theme = useStorage<ThemeMode>(SETTINGS_KEYS.THEME, defaultSettings.theme);
-
   // 是否开启灰色模式
   const grayMode = useStorage<boolean>(SETTINGS_KEYS.GRAY_MODE, defaultSettings.grayMode);
   // 是否开启AI助手

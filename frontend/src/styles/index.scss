@@ -2,11 +2,8 @@
 // 1. 项目自定义变量（侧边栏、布局等）
 @use "./variables";
 
-// 2. Element Plus 亮色模式变量
-@use "./theme/element-light";
-
-// 3. Element Plus 暗黑模式变量
-@use "./theme/element-dark";
+// 2. 暗黑模式变量（合并）
+@use "./dark/css-vars";
 
 // ==================== 基础样式 ====================
 @use "./reset";
@@ -22,25 +19,85 @@
   border-radius: 4px;
 }
 
+// 主滚动区域滚动条与主题弱对齐（Firefox scrollbar-color + WebKit）
+html,
+.app-main,
+.layout__main,
+.chat-messages {
+  scrollbar-color: color-mix(in srgb, var(--el-color-primary) 32%, var(--el-border-color))
+    var(--el-fill-color-light);
+  scrollbar-width: thin;
+}
+
+html.dark,
+html.dark .app-main,
+html.dark .layout__main,
+html.dark .chat-messages {
+  scrollbar-color: color-mix(in srgb, var(--el-color-primary) 26%, var(--el-border-color-light))
+    var(--el-bg-color);
+}
+
+.app-main,
+.layout__main,
+.chat-messages {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--el-fill-color-light);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--el-color-primary) 30%, var(--el-border-color));
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--el-color-primary) 42%, var(--el-border-color));
+  }
+}
+
+html.dark .app-main,
+html.dark .layout__main,
+html.dark .chat-messages {
+  &::-webkit-scrollbar-track {
+    background: var(--el-bg-color);
+  }
+}
+
 // 进度条颜色
 #nprogress .bar {
   background-color: var(--el-color-primary);
 }
 
 // ==================== 混合布局左侧菜单的hover样式 ====================
+.layout__sidebar .el-menu {
+  .el-menu-item:hover,
+  .el-sub-menu__title:hover {
+    background-color: var(--layout-sidebar-hover, #f3f6fb) !important;
+  }
+}
+
 .layout-mix .layout__sidebar--left .el-menu {
   .el-menu-item {
     &:hover {
-      // 极简白主题：使用浅灰色背景
-      background-color: var(--el-fill-color-light) !important;
+      background-color: var(--layout-menu-hover, var(--el-fill-color-light)) !important;
     }
   }
 
   .el-sub-menu__title {
     &:hover {
-      // 极简白主题：使用浅灰色背景
-      background-color: var(--el-fill-color-light) !important;
+      background-color: var(--layout-menu-hover, var(--el-fill-color-light)) !important;
     }
+  }
+}
+
+html.dark .layout__sidebar .el-menu {
+  .el-menu-item:hover,
+  .el-sub-menu__title:hover {
+    background-color: var(--layout-sidebar-hover, #1b2a45) !important;
   }
 }
 
@@ -48,15 +105,13 @@
 html.dark .layout-mix .layout__sidebar--left .el-menu {
   .el-menu-item {
     &:hover {
-      // 深色背景：使用CSS变量
-      background-color: var(--menu-hover) !important;
+      background-color: var(--layout-sidebar-hover, #1b2a45) !important;
     }
   }
 
   .el-sub-menu__title {
     &:hover {
-      // 深色背景：使用CSS变量
-      background-color: var(--menu-hover) !important;
+      background-color: var(--layout-sidebar-hover, #1b2a45) !important;
     }
   }
 }
@@ -91,7 +146,7 @@ html.dark .layout-mix .layout__sidebar--left .el-menu {
 .search-container {
   padding: 18px 16px 0;
   margin-top: 16px;
-  border: 1px solid var(--el-border-color-light);
+  border: 1px solid var(--layout-block-border-themed, var(--el-border-color-light));
 
   .search-buttons {
     margin-right: 0;

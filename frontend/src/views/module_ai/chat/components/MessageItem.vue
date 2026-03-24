@@ -75,6 +75,7 @@ import MarkdownIt from "markdown-it";
 import markdownItHighlightjs from "markdown-it-highlightjs";
 import hljs from "highlight.js";
 import DOMPurify from "dompurify";
+/* 亮色用 atom-one；暗色由文末全局块覆盖 .hljs 底与字色，避免整段代码发亮底 */
 import "highlight.js/styles/atom-one-light.css";
 import { useUserStoreHook } from "@/store";
 import type { ChatMessage } from "@/views/module_ai/chat/types";
@@ -347,7 +348,9 @@ const formatFileSize = (bytes: number): string => {
         line-height: 1.6;
         color: var(--el-text-color-primary);
         word-wrap: break-word;
-        transition: all 0.3s ease;
+        transition:
+          max-height 0.25s ease,
+          opacity 0.2s ease;
 
         &.collapsed {
           position: relative;
@@ -361,7 +364,10 @@ const formatFileSize = (bytes: number): string => {
             left: 0;
             height: 60px;
             content: "";
-            background: linear-gradient(transparent, var(--el-bg-color));
+            background: linear-gradient(
+              transparent,
+              var(--chat-area-bg, var(--layout-content-canvas, var(--el-bg-color-page)))
+            );
           }
         }
 
@@ -484,6 +490,29 @@ const formatFileSize = (bytes: number): string => {
       .message-actions {
         justify-content: flex-end;
       }
+
+      .message-body .message-text {
+        padding: 10px 14px;
+        background: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color-overlay));
+        border: 1px solid
+          color-mix(in srgb, var(--el-color-primary) 18%, var(--el-border-color-light));
+        border-radius: 12px;
+
+        &.collapsed::after {
+          background: linear-gradient(
+            transparent,
+            color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color-overlay))
+          );
+        }
+
+        :deep(pre) {
+          border: 1px solid var(--el-border-color-lighter);
+        }
+
+        :deep(code:not(pre code)) {
+          border: 1px solid var(--el-border-color-lighter);
+        }
+      }
     }
   }
 
@@ -504,6 +533,39 @@ const formatFileSize = (bytes: number): string => {
   }
   30% {
     transform: translateY(-4px);
+  }
+}
+</style>
+
+<!-- 暗色下覆盖 highlight.js 亮色主题，避免代码块发白底 -->
+<style lang="scss">
+html.dark .chat-messages .message-text {
+  pre.hljs,
+  code.hljs {
+    color: var(--el-text-color-regular) !important;
+    background: var(--el-fill-color) !important;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    color: var(--el-text-color-secondary) !important;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-built_in {
+    color: var(--el-color-primary) !important;
+  }
+
+  .hljs-string,
+  .hljs-title,
+  .hljs-attr {
+    color: var(--el-color-success) !important;
+  }
+
+  .hljs-number,
+  .hljs-literal {
+    color: var(--el-color-warning) !important;
   }
 }
 </style>

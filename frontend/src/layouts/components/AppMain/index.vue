@@ -41,7 +41,7 @@ const appMainHeight = computed(() => {
 .app-main {
   position: relative;
   overflow-y: auto;
-  background-color: var(--el-bg-color);
+  background-color: var(--layout-content-canvas, var(--el-bg-color-page));
 
   /* 布局切换动画优化 */
   /* fade */

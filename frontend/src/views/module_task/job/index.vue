@@ -327,7 +327,6 @@
           v-loading="logLoading"
           :data="executionLogData"
           class="data-table__content"
-          highlight-current-row
           border
           stripe
           height="calc(100vh - 240px)"
