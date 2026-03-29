@@ -1,6 +1,7 @@
 <!-- 菜单组件 -->
 <template>
   <el-menu
+    ref="menuRef"
     :default-active="activeMenuPath"
     :collapse="!appStore.sidebar.opened"
     :background-color="menuThemeProps.backgroundColor"
@@ -16,18 +17,18 @@
       v-for="route in data"
       :key="route.path"
       :item="route"
-      :base-path="resolveFullPath(route.path)"
+      :base-path="menuParentBasePath"
     />
   </el-menu>
 </template>
 
 <script lang="ts" setup>
+import { nextTick } from "vue";
+import type { MenuInstance } from "element-plus";
 import { useRoute } from "vue-router";
-import path from "path-browserify";
 import type { RouteRecordRaw } from "vue-router";
 import { SidebarColor } from "@/enums/settings/theme.enum";
 import { useSettingsStore, useAppStore } from "@/store";
-import { isExternal } from "@/utils/index";
 import MenuItem from "./components/MenuItem.vue";
 import variables from "@/styles/variables.module.scss";
 
@@ -51,6 +52,7 @@ const props = defineProps({
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
 const currentRoute = useRoute();
+const menuRef = ref<MenuInstance | null>(null);
 
 // 获取主题
 const theme = computed(() => settingsStore.theme);
@@ -70,42 +72,55 @@ const menuThemeProps = computed(() => {
   };
 });
 
-// 计算当前激活的菜单项
+function normalizeMenuPath(p: string): string {
+  if (!p) return "";
+  if (/^https?:\/\//i.test(p) || p.startsWith("//")) return p;
+  const s = p.trim();
+  if (s === "/") return "/";
+  return s.replace(/\/+$/, "") || "/";
+}
+
+/**
+ * 与 MenuItem 叶子项 index 一致：叶子用 router.resolve 得到 path，与 route.path 相同；
+ * default-active 用当前 route.path（及 meta.activeMenu）即可对齐。
+ */
 const activeMenuPath = computed((): string => {
-  const { meta, path } = currentRoute;
-
-  // 如果路由meta中设置了activeMenu，则使用它（用于处理一些特殊情况，如详情页）
-  if (meta?.activeMenu && typeof meta.activeMenu === "string") {
-    return meta.activeMenu;
+  const r = currentRoute;
+  if (r.meta?.activeMenu && typeof r.meta.activeMenu === "string") {
+    return normalizeMenuPath(r.meta.activeMenu);
   }
-
-  // 否则使用当前路由路径
-  return path;
+  return normalizeMenuPath(r.path);
 });
 
 /**
- * 获取完整路径
- *
- * @param routePath 当前路由的相对路径  /user
- * @returns 完整的绝对路径 D://vue3-element-admin/system/user
+ * 侧栏树根前缀：左侧布局 base-path 为空时规范为 "/"，再与每项 path 拼接。
+ * 勿用 resolveFullPath(route.path) 作为根 MenuItem 的 base-path，否则会与 item.path 再拼一次导致错位。
  */
-function resolveFullPath(routePath: string) {
-  if (isExternal(routePath)) {
-    return routePath;
-  }
-  if (isExternal(props.basePath)) {
-    return props.basePath;
-  }
+const menuParentBasePath = computed(() => {
+  const b = props.basePath;
+  if (b === undefined || b === null || b === "") return "/";
+  const t = b.replace(/\/+$/, "");
+  return t || "/";
+});
 
-  // 如果 basePath 为空（顶部布局），直接返回 routePath
-  if (!props.basePath || props.basePath === "") {
-    return routePath;
-  }
-
-  // 解析路径，生成完整的绝对路径
-  return path.resolve(props.basePath, routePath);
+function syncMenuActive(val: string) {
+  menuRef.value?.updateActiveIndex(val);
 }
 
-// 父级高亮（has-active-child）已改为由 MenuItem 依据路由状态计算并绑定 class，
-// 不再依赖 DOM 查询，避免折叠/teleported 场景丢失。
+watch(
+  activeMenuPath,
+  (val) => {
+    nextTick(() => {
+      syncMenuActive(val);
+      requestAnimationFrame(() => {
+        syncMenuActive(val);
+        setTimeout(() => syncMenuActive(val), 0);
+        setTimeout(() => syncMenuActive(val), 50);
+      });
+    });
+  },
+  { immediate: true, flush: "post" }
+);
+
+// 父级激活样式由 Element Plus 在子项激活时为 el-sub-menu 添加 .is-active，MenuItem 内样式已覆盖标题颜色
 </script>

@@ -128,7 +128,7 @@
                   size="small"
                   link
                   icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
+                  @click="handleOpenDialog('detail', scope.row['{{ pk_column_name }}'])"
                 >
                   详情
                 </el-button>
@@ -138,7 +138,7 @@
                   size="small"
                   link
                   icon="Edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
+                  @click="handleOpenDialog('update', scope.row['{{ pk_column_name }}'])"
                 >
                   编辑
                 </el-button>
@@ -148,7 +148,7 @@
                   size="small"
                   link
                   icon="Delete"
-                  @click="handleRowDelete(scope.row.id)"
+                  @click="handleRowDelete(scope.row['{{ pk_column_name }}'])"
                 >
                   删除
                 </el-button>
@@ -210,7 +210,7 @@
           {% set parentheseIndex = column_comment.find("（") %}
           {% set comment = column_comment[:parentheseIndex] if parentheseIndex != -1 else column_comment %}
           {% set required = 'true' if not column.is_nullable else 'false' %}
-          {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+          {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
           {% if column.column_name == "status" %}
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
@@ -320,6 +320,9 @@ import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
 {% endif %}
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+
+/** 数据表主键字段名（与导入表结构一致，避免非 id 主键时操作错行） */
+const PK = "{{ pk_column_name }}" as const;
 
 function triggerUserSearch() {
   nextTick(() => refreshList());
@@ -523,7 +526,7 @@ const detailFormData = ref<{{ class_name }}Table>({});
 const formData = reactive<{{ class_name }}Form>({
   {% for column in columns %}
   {% if column.is_insert or column.is_edit %}
-  {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
   {{ column.column_name }}: undefined,
   {% endif %}
   {% endif %}
@@ -539,7 +542,7 @@ const dialogVisible = reactive({
 const rules = reactive({
   {% for column in columns %}
   {% if column.is_insert or column.is_edit %}
-  {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
   {{ column.column_name }}: [{ required: {% if not column.is_nullable %}true{% else %}false{% endif %}, message: "请填写{{ column.column_comment or column.column_name }}", trigger: "blur" }],
   {% endif %}
   {% endif %}
@@ -568,7 +571,7 @@ function handleRowDelete(id: number) {
 const initialFormData: {{ class_name }}Form = {
   {% for column in columns %}
   {% if column.is_insert or column.is_edit %}
-  {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
   {{ column.column_name }}: undefined,
   {% endif %}
   {% endif %}
@@ -603,7 +606,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     dialogVisible.title = "新增{{ function_name }}";
     {% for column in columns %}
     {% if column.is_insert or column.is_edit %}
-    {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+    {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
     formData.{{ column.column_name }} = undefined;
     {% endif %}
     {% endif %}
@@ -616,10 +619,10 @@ async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       const submitData = { ...formData };
-      const id = formData.id;
+      const id = formData[PK] as number | undefined;
       try {
         if (id) {
-          await {{ class_name }}API.update{{ class_name }}(id, { id, ...submitData });
+          await {{ class_name }}API.update{{ class_name }}(id, { ...submitData, [PK]: id });
         } else {
           await {{ class_name }}API.create{{ class_name }}(submitData);
         }
@@ -635,7 +638,7 @@ async function handleSubmit() {
 
 async function handleMoreClick(status: string) {
   const rows = contentRef.value?.getSelectionData() ?? [];
-  const ids = rows.map((r: { id?: number }) => r.id).filter(Boolean) as number[];
+  const ids = rows.map((r: Record<string, number | undefined>) => r[PK]).filter(Boolean) as number[];
   if (!ids.length) return;
   ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
     confirmButtonText: "确定",

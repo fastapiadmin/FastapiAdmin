@@ -10,7 +10,7 @@ gunicorn==23.0.0                        # 协程框架
 websockets==16.0                        # websocket 框架
 httpx==0.27.2                           # HTTP 客户端
 croniter==6.0.0                         # 实现cron表达式验证和解析执行计划
-pandas==2.2.2                           # 数据处理
+pandas==2.2.3                           # 数据处理
 openpyxl==3.1.5                         # Excel
 SQLAlchemy==2.0.45                      # 数据库ORM
 pillow==11.0.0                          # 图片处理
@@ -31,7 +31,7 @@ pydantic_validation_decorator==0.1.4    # 模型验证
 loguru==0.7.3                           # 日志
 fastapi-limiter==0.1.6                  # 接口限流
 sqlglot[rs]==27.8.0                     # sql 解析
-asyncmy==0.2.9                          # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
+asyncmy==0.2.11                          # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
 PyMySQL==1.1.2                          # mysql 同步步操作数据库基于 pymysql：aiomysql 是 pymysql 的异步版本，pymysql 是一个纯 Python 实现的 MySQL 客户端。成熟度：aiomysql 相对较为成熟，社区支持较好，文档也比较完善。
 asyncpg==0.30.0                         # postgresql 异步操作数据库基于 psycopg2：asyncpg 是 psycopg2 的异步版本，psycopg2 是一个 pure-Python PostgreSQL 数据库适配器。性能：asyncpg 通常在性能上优于 psycopg2，特别是在高并发和大数据量的场景下。
 psycopg-binary==3.3.2                   # postgresql 异步操作数据库基于 psycopg2：asyncpg 是 psycopg2 的异步版本，psycopg2 是一个 pure-Python PostgreSQL 数据库适配器。

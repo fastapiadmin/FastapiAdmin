@@ -165,6 +165,9 @@ import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { useUserStore } from "@/store";
 
+/** formatTree 后的菜单节点带 value（同原 id），与接口里的 id 二选一存在 */
+type MenuTreeNode = permissionMenuType & { value?: number };
+
 const props = defineProps<{
   roleName: string;
   roleId: number;
@@ -197,7 +200,7 @@ const isExpanded = ref(true);
 const parentChildLinked = ref(false);
 const loading = ref(false);
 const deptTreeData = ref<permissionDeptType[]>([]);
-const menuTreeData = ref<permissionMenuType[]>([]);
+const menuTreeData = ref<MenuTreeNode[]>([]);
 const permissionState = ref<permissionDataType>({
   role_ids: [],
   menu_ids: [],
@@ -256,9 +259,12 @@ async function handleDrawerSave() {
     }
     loading.value = true;
 
+    const rawChecked = (permTreeRef.value?.getCheckedKeys() || []).map((key) => Number(key));
+    const menu_ids = expandMenuIdsWithAncestors(rawChecked, menuTreeData.value);
+
     const submitData: permissionDataType = {
       role_ids: [props.roleId],
-      menu_ids: (permTreeRef.value?.getCheckedKeys() || []).map((key) => Number(key)),
+      menu_ids,
       data_scope: permissionState.value.data_scope,
       dept_ids: (deptTreeRef.value?.getCheckedKeys() || []).map((key) => Number(key)),
     };
@@ -311,15 +317,20 @@ function handleFilter(value: string, data: { [key: string]: any }) {
   return data.label.includes(value);
 }
 
-function checkParentChildLinked(menuIds: number[], menuTreeData: permissionMenuType[]): boolean {
+function menuTreeNodeId(node: MenuTreeNode): number {
+  const v = node.value ?? node.id;
+  return Number(v);
+}
+
+function checkParentChildLinked(menuIds: number[], menuTreeData: MenuTreeNode[]): boolean {
   if (!menuIds.length || !menuTreeData.length) return false;
 
-  const menuMap = new Map<number, permissionMenuType>();
-  const buildMenuMap = (menus: permissionMenuType[]) => {
+  const menuMap = new Map<number, MenuTreeNode>();
+  const buildMenuMap = (menus: MenuTreeNode[]) => {
     menus.forEach((menu) => {
-      menuMap.set(menu.id, menu);
+      menuMap.set(menuTreeNodeId(menu), menu);
       if (menu.children) {
-        buildMenuMap(menu.children);
+        buildMenuMap(menu.children as MenuTreeNode[]);
       }
     });
   };
@@ -332,7 +343,9 @@ function checkParentChildLinked(menuIds: number[], menuTreeData: permissionMenuT
     if (!menu) continue;
 
     if (menu.children && menu.children.length > 0) {
-      const hasUnselectedChildren = menu.children.some((child) => !menuIds.includes(child.id));
+      const hasUnselectedChildren = menu.children.some(
+        (child) => !menuIds.includes(menuTreeNodeId(child as MenuTreeNode))
+      );
       if (hasUnselectedChildren) {
         hasParentChildConflict = true;
         break;
@@ -340,7 +353,7 @@ function checkParentChildLinked(menuIds: number[], menuTreeData: permissionMenuT
     }
 
     const parentMenu = findParentMenu(menuId, menuTreeData);
-    if (parentMenu && !menuIds.includes(parentMenu.id)) {
+    if (parentMenu && !menuIds.includes(menuTreeNodeId(parentMenu))) {
       hasParentChildConflict = true;
       break;
     }
@@ -349,22 +362,41 @@ function checkParentChildLinked(menuIds: number[], menuTreeData: permissionMenuT
   return !hasParentChildConflict;
 }
 
-function findParentMenu(
-  menuId: number,
-  menuTreeData: permissionMenuType[]
-): permissionMenuType | null {
+function findParentMenu(menuId: number, menuTreeData: MenuTreeNode[]): MenuTreeNode | null {
   for (const menu of menuTreeData) {
     if (menu.children) {
       for (const child of menu.children) {
-        if (child.id === menuId) {
+        if (menuTreeNodeId(child as MenuTreeNode) === menuId) {
           return menu;
         }
-        const found = findParentMenu(menuId, [child]);
+        const found = findParentMenu(menuId, [child as MenuTreeNode]);
         if (found) return found;
       }
     }
   }
   return null;
+}
+
+/** 为已选菜单补齐所有祖先 id，避免仅选子节点时父级未入库导致侧栏/路由缺入口（BUG #1/#14） */
+function expandMenuIdsWithAncestors(checkedIds: number[], roots: MenuTreeNode[]): number[] {
+  const parentById = new Map<number, number | undefined>();
+  const walk = (nodes: MenuTreeNode[], parent: number | undefined) => {
+    for (const n of nodes) {
+      const id = menuTreeNodeId(n);
+      parentById.set(id, parent);
+      if (n.children?.length) walk(n.children as MenuTreeNode[], id);
+    }
+  };
+  walk(roots, undefined);
+  const out = new Set<number>();
+  for (const id of checkedIds) {
+    let cur: number | undefined = id;
+    while (cur !== undefined) {
+      out.add(cur);
+      cur = parentById.get(cur);
+    }
+  }
+  return [...out];
 }
 
 function handleParentChildLinkedChange(val: any) {

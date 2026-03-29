@@ -74,7 +74,7 @@ class {{ class_name }}Service:
         - dict - 分页查询结果
         """
         search_dict = search.__dict__ if search else {}
-        order_by_list = order_by or [{'id': 'asc'}]
+        order_by_list = order_by or [{'{{ pk_column_name }}': 'asc'}]
         offset = (page_no - 1) * page_size
         result = await {{ class_name }}CRUD(auth).page_{{ business_name }}_crud(
             offset=offset,
@@ -128,7 +128,7 @@ class {{ class_name }}Service:
         {% for column in columns %}
         {% if column.is_unique == '1' %}
         exist_obj = await {{ class_name }}CRUD(auth).get({{ column.column_name }}=data.{{ column.column_name }})
-        if exist_obj and exist_obj.id != id:
+        if exist_obj and getattr(exist_obj, '{{ pk_column_name }}') != id:
             raise CustomException(msg='更新失败，{{ column.column_comment }}重复')
         {% endif %}
         {% endfor %}
@@ -271,7 +271,7 @@ class {{ class_name }}Service:
                     exists_obj = await {{ class_name }}CRUD(auth).get({{ column.column_name }}=create_schema.{{ column.column_name }})
                     if exists_obj:
                         if update_support:
-                            await {{ class_name }}CRUD(auth).update(id=exists_obj.id, data=create_schema)
+                            await {{ class_name }}CRUD(auth).update(id=getattr(exists_obj, '{{ pk_column_name }}'), data=create_schema)
                             success_count += 1
                         else:
                             error_msgs.append(f"第{count}行: {{ column.column_comment }} {create_schema.{{ column.column_name }}} 已存在")

@@ -145,7 +145,14 @@ class LoginService:
             # 若没有 X-Forwarded-For 头，则使用 request.client.host
             request_ip = request.client.host if request.client else "127.0.0.1"
 
-        login_location = await IpLocalUtil.get_ip_location(request_ip)
+        if settings.LOGIN_RESOLVE_IP_LOCATION:
+            login_location = await IpLocalUtil.get_ip_location(request_ip)
+        else:
+            login_location = (
+                "内网IP"
+                if IpLocalUtil.is_private_ip(request_ip)
+                else "未解析(已关闭归属地查询)"
+            )
         request.scope["login_location"] = login_location
 
         # 确保在请求上下文中设置用户名和会话ID

@@ -71,7 +71,7 @@
               </template>
             </el-table-column>
             <el-table-column label="排序" prop="order" min-width="80" />
-            <el-table-column label="重定向" prop="redirect" min-width="200" />
+            <el-table-column label="重定向" prop="redirect" min-width="120" show-overflow-tooltip />
             <el-table-column label="是否缓存" prop="keep_alive" min-width="100">
               <template #default="scope">
                 <el-tag :type="scope.row.keep_alive ? 'success' : 'danger'">
@@ -100,7 +100,7 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="菜单标题" prop="title" min-width="200" />
+            <el-table-column label="菜单标题" prop="title" min-width="100" show-overflow-tooltip />
             <el-table-column
               label="权限标识"
               prop="permission"
@@ -111,7 +111,7 @@
               label="路由名称"
               prop="route_name"
               show-overflow-toolti
-              min-width="200"
+              min-width="100"
             />
             <el-table-column
               label="路由路径"
@@ -132,8 +132,20 @@
               show-overflow-tooltip
               min-width="200"
             />
-            <el-table-column label="创建时间" prop="created_time" min-width="200" sortable />
-            <el-table-column label="更新时间" prop="updated_time" min-width="200" sortable />
+            <el-table-column
+              label="创建时间"
+              prop="created_time"
+              min-width="200"
+              sortable
+              show-overflow-tooltip
+            />
+            <el-table-column
+              label="更新时间"
+              prop="updated_time"
+              min-width="200"
+              sortable
+              show-overflow-tooltip
+            />
             <el-table-column fixed="right" label="操作" align="center" min-width="260">
               <template #default="scope">
                 <el-button
@@ -145,7 +157,7 @@
                   link
                   size="small"
                   icon="plus"
-                  @click.stop="handleOpenDialog('create', undefined, scope.row.id)"
+                  @click.stop="handleOpenDialog('create', undefined, scope.row)"
                 >
                   新增
                 </el-button>
@@ -311,7 +323,11 @@
               filterable
               check-strictly
               :render-after-expand="false"
+              :disabled="createParentLocked"
             />
+            <el-text v-if="createParentLocked" type="info" size="small" class="block mt-1">
+              在菜单下仅可新增按钮，父级已固定
+            </el-text>
           </el-form-item>
 
           <el-form-item label="菜单名称" prop="name">
@@ -324,10 +340,30 @@
 
           <el-form-item label="菜单类型" prop="type">
             <el-radio-group v-model="formData.type" @change="handleMenuTypeChange">
-              <el-radio :value="MenuTypeEnum.CATALOG">目录</el-radio>
-              <el-radio :value="MenuTypeEnum.MENU">菜单</el-radio>
-              <el-radio :value="MenuTypeEnum.BUTTON">按钮</el-radio>
-              <el-radio :value="MenuTypeEnum.EXTLINK">外链</el-radio>
+              <el-radio
+                v-if="allowedMenuTypeValues.includes(MenuTypeEnum.CATALOG)"
+                :value="MenuTypeEnum.CATALOG"
+              >
+                目录
+              </el-radio>
+              <el-radio
+                v-if="allowedMenuTypeValues.includes(MenuTypeEnum.MENU)"
+                :value="MenuTypeEnum.MENU"
+              >
+                菜单
+              </el-radio>
+              <el-radio
+                v-if="allowedMenuTypeValues.includes(MenuTypeEnum.BUTTON)"
+                :value="MenuTypeEnum.BUTTON"
+              >
+                按钮
+              </el-radio>
+              <el-radio
+                v-if="allowedMenuTypeValues.includes(MenuTypeEnum.EXTLINK)"
+                :value="MenuTypeEnum.EXTLINK"
+              >
+                外链
+              </el-radio>
             </el-radio-group>
           </el-form-item>
 
@@ -530,8 +566,16 @@
             v-if="formData.type == MenuTypeEnum.CATALOG || formData.type === MenuTypeEnum.MENU"
             label="重定向"
             prop="redirect"
+            :required="formData.type === MenuTypeEnum.CATALOG"
           >
-            <el-input v-model="formData.redirect" placeholder="请输入重定向路由" />
+            <el-input
+              v-model="formData.redirect"
+              :placeholder="
+                formData.type === MenuTypeEnum.CATALOG
+                  ? '目录必填，一般为默认子路由 path，如 /system/user'
+                  : '可选，请输入重定向路由'
+              "
+            />
           </el-form-item>
 
           <el-form-item v-if="formData.type != MenuTypeEnum.BUTTON" label="常驻标签栏" prop="affix">
@@ -581,7 +625,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, watch, nextTick } from "vue";
 import { useAppStore } from "@/store/modules/app.store";
 import { useUserStore } from "@/store/modules/user.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
@@ -681,8 +725,71 @@ const dialogVisible = reactive({
 
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
 
-// 顶级菜单下拉选项
+// 顶级菜单下拉选项（仅目录、菜单可作为父级）
 const menuOptions = ref<OptionType[]>([]);
+/** 完整树，用于根据 parent_id 解析父级类型 */
+const fullMenuTree = ref<MenuTable[]>([]);
+/** 从表格「在菜单下新增」进入时锁定父级（仅允许按钮） */
+const createParentLocked = ref(false);
+
+function typesAllowedUnderParent(parentType: MenuTypeEnum): MenuTypeEnum[] {
+  switch (parentType) {
+    case MenuTypeEnum.CATALOG:
+      return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
+    case MenuTypeEnum.MENU:
+      return [MenuTypeEnum.BUTTON];
+    case MenuTypeEnum.BUTTON:
+    case MenuTypeEnum.EXTLINK:
+      return [];
+    default:
+      return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
+  }
+}
+
+function findMenuNodeById(
+  id: number | undefined,
+  nodes: MenuTable[] = fullMenuTree.value
+): MenuTable | null {
+  if (id == null) return null;
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    if (n.children?.length) {
+      const f = findMenuNodeById(id, n.children);
+      if (f) return f;
+    }
+  }
+  return null;
+}
+
+/** 新增/编辑表单项：当前父级下允许的菜单类型 */
+const allowedMenuTypeValues = computed((): MenuTypeEnum[] => {
+  if (dialogVisible.type === "detail") {
+    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
+  }
+  const pid = formData.parent_id;
+  if (pid == null || pid === undefined) {
+    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
+  }
+  const parentNode = findMenuNodeById(pid);
+  if (!parentNode?.type) {
+    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
+  }
+  return typesAllowedUnderParent(parentNode.type as MenuTypeEnum);
+});
+
+watch(
+  () => [formData.parent_id, dialogVisible.visible, dialogVisible.type],
+  () => {
+    if (!dialogVisible.visible || dialogVisible.type === "detail") return;
+    const allowed = allowedMenuTypeValues.value;
+    if (!allowed.length) return;
+    const t = formData.type as MenuTypeEnum;
+    if (!allowed.includes(t)) {
+      formData.type = allowed[0] as MenuForm["type"];
+    }
+  },
+  { flush: "post" }
+);
 
 function filterMenuTypes(nodes: MenuTable[]) {
   return nodes
@@ -704,6 +811,7 @@ const contentConfig = reactive<IContentConfig<MenuPageQuery>>({
   indexAction: async (params) => {
     const res = await MenuAPI.listMenu(params as MenuPageQuery);
     const tree = res.data.data || [];
+    fullMenuTree.value = tree;
     menuOptions.value = formatTree(filterMenuTypes(tree));
     return tree;
   },
@@ -760,6 +868,20 @@ const rules = reactive({
   hidden: [{ required: true, message: "请选择是否隐藏", trigger: "change" }],
   always_show: [{ required: true, message: "请选择始终显示", trigger: "change" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
+  redirect: [
+    {
+      validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
+        if (formData.type === MenuTypeEnum.CATALOG) {
+          if (value === undefined || value === null || String(value).trim() === "") {
+            callback(new Error("目录类型必须填写重定向地址"));
+            return;
+          }
+        }
+        callback();
+      },
+      trigger: "blur",
+    },
+  ],
 });
 
 // 选择表格的行菜单ID
@@ -806,6 +928,7 @@ async function handleRowClick(row: MenuTable) {
 // 关闭弹窗
 async function handleCloseDialog() {
   dialogVisible.visible = false;
+  createParentLocked.value = false;
   resetForm();
 }
 
@@ -813,9 +936,10 @@ async function handleCloseDialog() {
 async function handleOpenDialog(
   type: "create" | "update" | "detail",
   id?: number,
-  parentId?: number
+  parentRow?: MenuTable
 ) {
   dialogVisible.type = type;
+  createParentLocked.value = false;
   if (id) {
     const response = await MenuAPI.detailMenu(id);
     if (type === "detail") {
@@ -827,11 +951,15 @@ async function handleOpenDialog(
     }
   } else {
     dialogVisible.title = "新增菜单";
-    // 重置表单为初始状态
     Object.assign(formData, initialFormData);
-    // 设置父级部门
-    if (parentId) {
-      formData.parent_id = parentId;
+    if (parentRow?.id != null) {
+      formData.parent_id = parentRow.id;
+      if (parentRow.type === MenuTypeEnum.MENU) {
+        createParentLocked.value = true;
+        formData.type = MenuTypeEnum.BUTTON;
+      } else if (parentRow.type === MenuTypeEnum.CATALOG) {
+        formData.type = MenuTypeEnum.MENU;
+      }
     }
   }
   dialogVisible.visible = true;
@@ -839,17 +967,24 @@ async function handleOpenDialog(
 
 // 菜单类型切换
 function handleMenuTypeChange() {
-  // 如果菜单类型改变
-  if (formData.type !== formData.type) {
-    if (formData.type === MenuTypeEnum.MENU) {
-      // 目录切换到菜单时，清空组件路径
-      formData.component_path = "";
-    }
+  if (formData.type === MenuTypeEnum.MENU) {
+    formData.component_path = "";
   }
+  nextTick(() => {
+    dataFormRef.value?.clearValidate("redirect");
+    if (formData.type === MenuTypeEnum.CATALOG) {
+      dataFormRef.value?.validateField("redirect").catch(() => {});
+    }
+  });
 }
 
 // 提交表单
 async function handleSubmit() {
+  const allowed = allowedMenuTypeValues.value;
+  if (!allowed.includes(formData.type as MenuTypeEnum)) {
+    ElMessage.warning("当前父级下不允许该菜单类型");
+    return;
+  }
   dataFormRef.value.validate(async (valid: any) => {
     if (valid) {
       submitLoading.value = true;

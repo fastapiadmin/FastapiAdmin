@@ -161,7 +161,11 @@ class Jinja2TemplateUtil:
             "parent_list_rel_name": "",
             "parent_table_name": "",
             "parent_model_class_name": "",
-            "parent_pk_column_name": "id",
+            # 数据表实际主键列名（用于生成前端行键等；ModelMixin 仍默认带 id 字段）
+            "pk_column_name": (gen_table.pk_column.column_name if gen_table.pk_column else None)
+            or "id",
+            "parent_pk_column_name": (gen_table.pk_column.column_name if gen_table.pk_column else None)
+            or "id",
             "sub_table_fk_name": "",
         }
 

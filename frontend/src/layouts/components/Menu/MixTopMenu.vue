@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts" setup>
+import { nextTick } from "vue";
 import MenuItemContent from "./components/MenuItemContent.vue";
 
 defineOptions({
@@ -42,6 +43,37 @@ const router = useRouter();
 const appStore = useAppStore();
 const permissionStore = usePermissionStore();
 const settingsStore = useSettingsStore();
+
+/**
+ * 根据当前完整路径解析混合布局的「顶级」菜单 path。
+ * 不能仅用第一段路径（如 /app 会误匹配 /application），应按最长前缀匹配顶级路由（BUG #7）。
+ */
+function resolveMixTopMenuPath(fullPath: string): string {
+  const path = (fullPath.split("?")[0] || "").replace(/\/$/, "") || "/";
+  const tops = permissionStore.routes.filter(
+    (r) => r.path && r.path !== "/" && !(r.meta as { hidden?: boolean } | undefined)?.hidden
+  );
+  const sorted = [...tops].sort((a, b) => (b.path?.length || 0) - (a.path?.length || 0));
+  for (const r of sorted) {
+    const p = r.path || "";
+    if (!p) continue;
+    if (path === p || path.startsWith(`${p}/`)) return p;
+  }
+  const first = path.match(/^\/[^/]+/)?.[0];
+  return first || "/";
+}
+
+/** 水平菜单点击后焦点留在 el-menu-item 上，:focus 样式像「悬浮背景」；仅在 @select 后 blur 一次即可 */
+function blurTopMenuFocus() {
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      const ae = document.activeElement;
+      if (ae instanceof HTMLElement && ae.closest?.(".layout__header-menu .el-menu")) {
+        ae.blur();
+      }
+    });
+  });
+}
 
 // 获取主题
 const theme = computed(() => settingsStore.theme);
@@ -85,6 +117,7 @@ const topMenuItems = computed(() => {
  */
 const handleTopMenuSelect = (routePath: string) => {
   updateMenuState(routePath);
+  blurTopMenuFocus();
 };
 
 /**
@@ -144,12 +177,7 @@ watch(
   () => router.currentRoute.value.path,
   (newPath) => {
     if (newPath) {
-      // 提取顶级路径
-      const topMenuPath =
-        newPath.split("/").filter(Boolean).length > 1 ? newPath.match(/^\/[^/]+/)?.[0] || "/" : "/";
-
-      // 使用公共方法更新菜单状态，但跳过导航（因为路由已经变化）
-      updateMenuState(topMenuPath, true);
+      updateMenuState(resolveMixTopMenuPath(newPath), true);
     }
   },
   { immediate: true }

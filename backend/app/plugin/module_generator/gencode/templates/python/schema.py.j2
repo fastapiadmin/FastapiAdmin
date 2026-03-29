@@ -17,7 +17,7 @@ class {{ class_name }}CreateSchema(BaseModel):
     {{ function_name }}新增模型
     """
     {% for column in columns %}
-    {% if column.column_name not in ['id', 'uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] %}
+    {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
     {% if column.column_name == 'status' %}
     {{ column.column_name }}: {{ column.python_type }} = Field(default="0", description='{{ column.column_comment }}')
     {% elif column.column_name == 'description' %}

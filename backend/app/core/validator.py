@@ -229,6 +229,9 @@ def menu_request_validator(data: Any) -> Any:
         if not data.route_path:
             raise CustomException(code=RET.ERROR.code, msg="路由路径不能为空")
 
+    if data.type == 1 and not (data.redirect and str(data.redirect).strip()):
+        raise CustomException(code=RET.ERROR.code, msg="目录类型必须填写重定向地址")
+
     if data.type == 2 and not data.component_path:
         raise CustomException(code=RET.ERROR.code, msg="组件路径不能为空")
 

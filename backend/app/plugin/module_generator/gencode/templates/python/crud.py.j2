@@ -111,7 +111,7 @@ class {{ class_name }}CRUD(CRUDBase[{{ class_name }}Model, {{ class_name }}Creat
         返回:
         - Dict: 分页数据
         """
-        order_by_list = order_by or [{'id': 'asc'}]
+        order_by_list = order_by or [{'{{ pk_column_name }}': 'asc'}]
         search_dict = search or {}
         return await self.page(
             offset=offset,

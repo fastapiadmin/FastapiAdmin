@@ -25,7 +25,8 @@
       <!-- 左侧菜单栏 -->
       <div class="layout__sidebar--left" :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }">
         <el-scrollbar>
-          <BasicMenu :data="sideMenuRoutes" :base-path="leftMenuBasePath" />
+          <!-- 仅切换顶级模块时重建侧栏，避免 :key=route.path 导致每次路由变化整表重建、展开态丢失 -->
+          <BasicMenu :key="mixSideMenuKey" :data="sideMenuRoutes" :base-path="leftMenuBasePath" />
         </el-scrollbar>
         <!-- 侧边栏切换按钮 -->
         <div class="layout__sidebar-toggle">
@@ -76,6 +77,9 @@ const leftMenuBasePath = computed(() => {
   if (activeTopMenuPath.value) return activeTopMenuPath.value;
   return route.path.match(/^\/[^/]+/)?.[0] || "/";
 });
+
+/** 与顶部一级模块一致，同模块内路由切换不重建侧栏（保留展开）；切换模块时重建 */
+const mixSideMenuKey = computed(() => activeTopMenuPath.value || leftMenuBasePath.value);
 </script>
 
 <style lang="scss" scoped>
