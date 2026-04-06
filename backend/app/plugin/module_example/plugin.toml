@@ -1,0 +1,9 @@
+# 插件元数据（可选）：供文档、运维与 module_application.portal 展示使用。
+# 不用于运行时 pip 安装依赖；依赖见仓库根目录 pyproject.toml / uv.lock。
+
+name = "example"
+title = "示例插件"
+version = "1.0.0"
+description = "演示 module_* 目录约定与动态路由注册（demo / demo01）。"
+optional = true
+tags = ["demo", "sample"]

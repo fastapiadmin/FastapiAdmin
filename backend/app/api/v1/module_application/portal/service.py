@@ -3,11 +3,13 @@ from app.core.base_schema import BatchSetAvailable
 from app.core.exceptions import CustomException
 
 from .crud import ApplicationCRUD
+from .plugin_manifest import list_plugin_infos
 from .schema import (
     ApplicationCreateSchema,
     ApplicationOutSchema,
     ApplicationQueryParam,
     ApplicationUpdateSchema,
+    PluginInfoOut,
 )
 
 
@@ -15,6 +17,17 @@ class ApplicationService:
     """
     应用系统管理服务层
     """
+
+    @classmethod
+    async def list_plugins_service(cls) -> list[dict]:
+        """
+        列出 ``app/plugin/module_*`` 插件元数据（含可选 ``plugin.toml``）。
+
+        返回:
+        - list[dict]: ``PluginInfoOut`` 字典列表。
+        """
+        rows = list_plugin_infos()
+        return [PluginInfoOut.model_validate(row).model_dump() for row in rows]
 
     @classmethod
     async def detail_service(cls, auth: AuthSchema, id: int) -> dict:
@@ -51,9 +64,10 @@ class ApplicationService:
         返回:
         - list[dict]: 应用详情字典列表
         """
-        # 过滤空值
         search_dict = search.__dict__ if search else None
-        obj_list = await ApplicationCRUD(auth).list_crud(search=search_dict, order_by=order_by)
+        obj_list = await ApplicationCRUD(auth).list_crud(
+            search=search_dict, order_by=order_by
+        )
         return [ApplicationOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
@@ -78,13 +92,11 @@ class ApplicationService:
         返回:
         - dict: 分页结果。
         """
-        offset = (page_no - 1) * page_size
-        search_dict = search.__dict__ if search else {}
         return await ApplicationCRUD(auth).page(
-            offset=offset,
+            offset=(page_no - 1) * page_size,
             limit=page_size,
             order_by=order_by or [{"id": "asc"}],
-            search=search_dict,
+            search=search.__dict__ if search else {},
             out_schema=ApplicationOutSchema,
         )
 
@@ -106,6 +118,11 @@ class ApplicationService:
             raise CustomException(msg="创建失败，应用名称已存在")
 
         obj = await ApplicationCRUD(auth).create_crud(data=data)
+        if not obj:
+            raise CustomException(msg="创建应用失败")
+        obj = await ApplicationCRUD(auth).get_by_id_crud(id=obj.id)
+        if not obj:
+            raise CustomException(msg="创建应用失败")
         return ApplicationOutSchema.model_validate(obj).model_dump()
 
     @classmethod
@@ -131,6 +148,11 @@ class ApplicationService:
             raise CustomException(msg="更新失败，应用名称重复")
 
         obj = await ApplicationCRUD(auth).update_crud(id=id, data=data)
+        if not obj:
+            raise CustomException(msg="更新失败，该应用不存在")
+        obj = await ApplicationCRUD(auth).get_by_id_crud(id=obj.id)
+        if not obj:
+            raise CustomException(msg="更新应用失败")
         return ApplicationOutSchema.model_validate(obj).model_dump()
 
     @classmethod

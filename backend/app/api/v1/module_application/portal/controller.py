@@ -16,13 +16,14 @@ from .schema import (
     ApplicationOutSchema,
     ApplicationQueryParam,
     ApplicationUpdateSchema,
+    PluginInfoOut,
 )
 from .service import ApplicationService
 
-MyAppRouter = APIRouter(route_class=OperationLogRoute, prefix="/myapp", tags=["应用管理"])
+PortalRouter = APIRouter(route_class=OperationLogRoute, prefix="/portal", tags=["应用管理"])
 
 
-@MyAppRouter.get(
+@PortalRouter.get(
     "/detail/{id}",
     summary="获取应用详情",
     description="获取应用详情",
@@ -32,7 +33,7 @@ async def get_obj_detail_controller(
     id: Annotated[int, Path(description="应用ID")],
     auth: Annotated[
         AuthSchema,
-        Depends(AuthPermission(["module_application:myapp:detail"])),
+        Depends(AuthPermission(["module_application:portal:detail"])),
     ],
 ) -> JSONResponse:
     """
@@ -50,7 +51,7 @@ async def get_obj_detail_controller(
     return SuccessResponse(data=result_dict, msg="获取应用详情成功")
 
 
-@MyAppRouter.get(
+@PortalRouter.get(
     "/list",
     summary="查询应用列表",
     description="查询应用列表",
@@ -59,7 +60,7 @@ async def get_obj_detail_controller(
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[ApplicationQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:query"]))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:portal:query"]))],
 ) -> JSONResponse:
     """
     查询应用列表
@@ -83,7 +84,33 @@ async def get_obj_list_controller(
     return SuccessResponse(data=result_dict, msg="查询应用列表成功")
 
 
-@MyAppRouter.post(
+@PortalRouter.get(
+    "/plugins",
+    summary="列出插件元数据",
+    description="扫描 app/plugin 下 module_* 目录及可选 plugin.toml，供管理端展示。",
+    response_model=ResponseSchema[list[PluginInfoOut]],
+)
+async def list_plugins_controller(
+    auth: Annotated[
+        AuthSchema,
+        Depends(AuthPermission(["module_application:portal:query"])),
+    ],
+) -> JSONResponse:
+    """
+    列出插件与子系统元数据（不涉及动态安装依赖）。
+
+    参数:
+    - auth (AuthSchema): 认证信息模型
+
+    返回:
+    - JSONResponse: 插件信息列表
+    """
+    data = await ApplicationService.list_plugins_service()
+    log.info("查询插件元数据列表成功")
+    return SuccessResponse(data=data, msg="查询插件元数据成功")
+
+
+@PortalRouter.post(
     "/create",
     summary="创建应用",
     description="创建应用",
@@ -93,7 +120,7 @@ async def create_obj_controller(
     data: ApplicationCreateSchema,
     auth: Annotated[
         AuthSchema,
-        Depends(AuthPermission(["module_application:myapp:create"])),
+        Depends(AuthPermission(["module_application:portal:create"])),
     ],
 ) -> JSONResponse:
     """
@@ -111,7 +138,7 @@ async def create_obj_controller(
     return SuccessResponse(data=result_dict, msg="创建应用成功")
 
 
-@MyAppRouter.put(
+@PortalRouter.put(
     "/update/{id}",
     summary="修改应用",
     description="修改应用",
@@ -122,7 +149,7 @@ async def update_obj_controller(
     id: Annotated[int, Path(description="应用ID")],
     auth: Annotated[
         AuthSchema,
-        Depends(AuthPermission(["module_application:myapp:update"])),
+        Depends(AuthPermission(["module_application:portal:update"])),
     ],
 ) -> JSONResponse:
     """
@@ -141,7 +168,7 @@ async def update_obj_controller(
     return SuccessResponse(data=result_dict, msg="修改应用成功")
 
 
-@MyAppRouter.delete(
+@PortalRouter.delete(
     "/delete",
     summary="删除应用",
     description="删除应用",
@@ -151,7 +178,7 @@ async def delete_obj_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[
         AuthSchema,
-        Depends(AuthPermission(["module_application:myapp:delete"])),
+        Depends(AuthPermission(["module_application:portal:delete"])),
     ],
 ) -> JSONResponse:
     """
@@ -169,7 +196,7 @@ async def delete_obj_controller(
     return SuccessResponse(msg="删除应用成功")
 
 
-@MyAppRouter.patch(
+@PortalRouter.patch(
     "/available/setting",
     summary="批量修改应用状态",
     description="批量修改应用状态",
@@ -177,7 +204,7 @@ async def delete_obj_controller(
 )
 async def batch_set_available_obj_controller(
     data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:myapp:patch"]))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_application:portal:patch"]))],
 ) -> JSONResponse:
     """
     批量修改应用状态

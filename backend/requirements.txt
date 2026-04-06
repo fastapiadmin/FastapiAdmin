@@ -1,44 +1,44 @@
-alembic==1.15.1                         # 数据库迁移
-APScheduler==3.11.0                     # 定时任务
-bleach==6.3.0                           # XSS 过滤
-fastapi==0.115.2                        # fastapi 框架
-Jinja2==3.1.6                           # 模板引擎
-typer==0.19.0                           # 命令行工具
-click==8.1.7                            # 命令行参数解析
-uvicorn==0.30.6                         # uvicorn web 框架
-gunicorn==23.0.0                        # 协程框架
-websockets>=15.0.1,<16.0              # websocket（prefect>=3.5 需 >=15.0.1；旧 3.1.x 需 <14，已升级 prefect）
-httpx==0.27.2                           # HTTP 客户端
-croniter>=1.0.12,<5.0.0                # 实现cron表达式验证和解析执行计划（prefect==3.1.0 约束 croniter<5）
-pandas==2.2.3                           # 数据处理
-openpyxl==3.1.5                         # Excel
-SQLAlchemy==2.0.45                      # 数据库ORM
-pillow==11.0.0                          # 图片处理
-passlib==1.7.4                          # 密码加密
-user-agents==2.2.0                      # 获取用户UA
-PyJWT==2.9.0                            # OAuth2
-pydantic-settings==2.5.2                # 配置设置
-psutil==6.1.0                           # 系统信息
-python-multipart==0.0.9                 # request.form() 对表单进行「解析」时安装
-greenlet==3.1.1                         # 协程框架
-bcrypt==4.0.1                           # 密码加密解析,切勿升级，如果升级，请同时升级python版本
-itsdangerous==2.2.0                     # 用于安全处理各种数据，如密码、密钥等
-aiofiles==24.1.0                        # 文件操作
-redis==7.1.0                            # redis 同/异步操作数据库(用户celery配套使用)redis 异步操作数据库 redis已经完全具备了aioredis的功能，无需重复安全,且aioredis已经不再维护也不兼容3.10+的版本
-cryptography==45.0.2                    # mysql8 密码加密
-rich==13.9.4                            # 终端打印美化
-pydantic_validation_decorator==0.1.4    # 模型验证
-loguru==0.7.3                           # 日志
-fastapi-limiter==0.1.6                  # 接口限流
-sqlglot[rs]==27.8.0                     # sql 解析
-asyncmy==0.2.11                          # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
-PyMySQL==1.1.2                          # mysql 同步步操作数据库基于 pymysql：aiomysql 是 pymysql 的异步版本，pymysql 是一个纯 Python 实现的 MySQL 客户端。成熟度：aiomysql 相对较为成熟，社区支持较好，文档也比较完善。
-asyncpg==0.30.0                         # postgresql 异步操作数据库基于 psycopg2：asyncpg 是 psycopg2 的异步版本，psycopg2 是一个 pure-Python PostgreSQL 数据库适配器。性能：asyncpg 通常在性能上优于 psycopg2，特别是在高并发和大数据量的场景下。
-psycopg-binary==3.3.2                   # postgresql 异步操作数据库基于 psycopg2：asyncpg 是 psycopg2 的异步版本，psycopg2 是一个 pure-Python PostgreSQL 数据库适配器。
-psycopg==3.3.2                          # postgresql 同步操作数据库基于 psycopg是psycopg2升级版：psycopg2 是一个 pure-Python PostgreSQL 适配器。
-aiosqlite==0.17.0                       # sqlite 异步操作数据库,同步是python自带sqlite无需额外库
-agno==2.5.8                             # 大模型开发框架
-openai==2.28.0                          # openai 接口
-ruff==0.14.13                           # 代码格式化
-pytest==9.0.2                           # 测试框架
-prefect>=3.5.0,<4                       # 工作流编排（3.1.x 与 typer>=0.19 不兼容，需 >=3.5）
+# 与 pyproject.toml [project] dependencies 一致（生产 pip；不含 dev 组：pytest / ruff / fakeredis）
+agno==2.5.8
+aiofiles==24.1.0                         # 文件操作
+aiosqlite==0.17.0                      # sqlite 异步操作数据库
+alembic==1.15.1                        # 数据库迁移
+apscheduler==3.11.0                  # 定时任务
+asyncmy==0.2.11
+asyncpg==0.30.0
+bcrypt==4.0.1                          # 密码加密解析,切勿升级，如果升级，请同时升级python版本
+bleach==6.3.0                          # 过滤 HTML 标签
+click==8.1.7                           # 命令行参数解析
+croniter>=1.0.12,<5.0.0               # cron（与 prefect 约束一致；部署 requirements.txt 同源）
+cryptography==45.0.2                   # mysql8 密码加密
+fastapi==0.115.2                       # fastapi 框架
+fastapi-limiter==0.1.6                 # 接口限流
+greenlet==3.1.1                        # 协程框架
+gunicorn==23.0.0                       # 协程框架
+httpx==0.27.2                          # HTTP 客户端
+itsdangerous==2.2.0                    # 用于安全处理各种数据，如密码、密钥等
+jinja2==3.1.6                          # 模板引擎
+loguru==0.7.3                          # 日志
+openai==2.28.0
+openpyxl==3.1.5                        # Excel
+pandas==2.2.3                          # 数据处理
+passlib==1.7.4                         # 密码加密
+prefect>=3.5.0,<4                     # 工作流编排（与 typer>=0.19 兼容；部署与 requirements.txt 一致）
+pillow==11.0.0                         # 图片处理
+psutil==6.1.0                          # 系统信息
+psycopg==3.3.2
+psycopg-binary==3.3.2
+pydantic-settings==2.5.2              # 配置设置
+pydantic-validation-decorator==0.1.4  # 模型验证
+pyjwt==2.9.0                           # OAuth2
+pymysql==1.1.2
+python-multipart==0.0.9                # request.form() 对表单进行「解析」时安装
+redis==7.1.0
+rich==13.9.4                           # 终端打印美化
+tomli>=2.0.1; python_version < "3.11"  # 解析 plugin.toml（3.11+ 用标准库 tomllib）
+sqlalchemy==2.0.45                     # 数据库ORM
+sqlglot[rs]==27.8.0                   # sql 解析
+typer==0.19.0                          # 命令行工具
+user-agents==2.2.0                     # 获取用户UA
+uvicorn==0.30.6                        # uvicorn web 框架
+websockets>=15.0.1,<16.0              # websocket（prefect>=3.5 需 >=15.0.1；与部署 requirements.txt 一致）

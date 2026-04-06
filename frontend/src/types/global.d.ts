@@ -144,6 +144,14 @@ declare global {
   }
 
   /**
+   * 租户嵌套（与后端 TenantRefSchema / 列表出参 ``tenant`` 一致）
+   */
+  interface TenantType {
+    id?: number;
+    name?: string;
+  }
+
+  /**
    * 基础类型
    */
   interface BaseType {

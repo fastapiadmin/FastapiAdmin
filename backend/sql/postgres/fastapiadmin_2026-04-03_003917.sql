@@ -72,10 +72,10 @@ CREATE TABLE ai.agno_sessions (
 ALTER TABLE ai.agno_sessions OWNER TO root;
 
 --
--- Name: app_myapp; Type: TABLE; Schema: public; Owner: root
+-- Name: app_portal; Type: TABLE; Schema: public; Owner: root
 --
 
-CREATE TABLE public.app_myapp (
+CREATE TABLE public.app_portal (
     name character varying(64) NOT NULL,
     access_url character varying(500) NOT NULL,
     icon_url character varying(300),
@@ -90,97 +90,97 @@ CREATE TABLE public.app_myapp (
 );
 
 
-ALTER TABLE public.app_myapp OWNER TO root;
+ALTER TABLE public.app_portal OWNER TO root;
 
 --
--- Name: TABLE app_myapp; Type: COMMENT; Schema: public; Owner: root
+-- Name: TABLE app_portal; Type: COMMENT; Schema: public; Owner: root
 --
 
-COMMENT ON TABLE public.app_myapp IS '应用系统表';
-
-
---
--- Name: COLUMN app_myapp.name; Type: COMMENT; Schema: public; Owner: root
---
-
-COMMENT ON COLUMN public.app_myapp.name IS '应用名称';
+COMMENT ON TABLE public.app_portal IS '门户应用登记';
 
 
 --
--- Name: COLUMN app_myapp.access_url; Type: COMMENT; Schema: public; Owner: root
+-- Name: COLUMN app_portal.name; Type: COMMENT; Schema: public; Owner: root
 --
 
-COMMENT ON COLUMN public.app_myapp.access_url IS '访问地址';
-
-
---
--- Name: COLUMN app_myapp.icon_url; Type: COMMENT; Schema: public; Owner: root
---
-
-COMMENT ON COLUMN public.app_myapp.icon_url IS '应用图标URL';
+COMMENT ON COLUMN public.app_portal.name IS '应用名称';
 
 
 --
--- Name: COLUMN app_myapp.id; Type: COMMENT; Schema: public; Owner: root
+-- Name: COLUMN app_portal.access_url; Type: COMMENT; Schema: public; Owner: root
 --
 
-COMMENT ON COLUMN public.app_myapp.id IS '主键ID';
-
-
---
--- Name: COLUMN app_myapp.uuid; Type: COMMENT; Schema: public; Owner: root
---
-
-COMMENT ON COLUMN public.app_myapp.uuid IS 'UUID全局唯一标识';
+COMMENT ON COLUMN public.app_portal.access_url IS '访问地址';
 
 
 --
--- Name: COLUMN app_myapp.status; Type: COMMENT; Schema: public; Owner: root
+-- Name: COLUMN app_portal.icon_url; Type: COMMENT; Schema: public; Owner: root
 --
 
-COMMENT ON COLUMN public.app_myapp.status IS '状态(0:正常 1:禁用)';
-
-
---
--- Name: COLUMN app_myapp.description; Type: COMMENT; Schema: public; Owner: root
---
-
-COMMENT ON COLUMN public.app_myapp.description IS '备注/描述';
+COMMENT ON COLUMN public.app_portal.icon_url IS '应用图标URL';
 
 
 --
--- Name: COLUMN app_myapp.created_time; Type: COMMENT; Schema: public; Owner: root
+-- Name: COLUMN app_portal.id; Type: COMMENT; Schema: public; Owner: root
 --
 
-COMMENT ON COLUMN public.app_myapp.created_time IS '创建时间';
-
-
---
--- Name: COLUMN app_myapp.updated_time; Type: COMMENT; Schema: public; Owner: root
---
-
-COMMENT ON COLUMN public.app_myapp.updated_time IS '更新时间';
+COMMENT ON COLUMN public.app_portal.id IS '主键ID';
 
 
 --
--- Name: COLUMN app_myapp.created_id; Type: COMMENT; Schema: public; Owner: root
+-- Name: COLUMN app_portal.uuid; Type: COMMENT; Schema: public; Owner: root
 --
 
-COMMENT ON COLUMN public.app_myapp.created_id IS '创建人ID';
-
-
---
--- Name: COLUMN app_myapp.updated_id; Type: COMMENT; Schema: public; Owner: root
---
-
-COMMENT ON COLUMN public.app_myapp.updated_id IS '更新人ID';
+COMMENT ON COLUMN public.app_portal.uuid IS 'UUID全局唯一标识';
 
 
 --
--- Name: app_myapp_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+-- Name: COLUMN app_portal.status; Type: COMMENT; Schema: public; Owner: root
 --
 
-CREATE SEQUENCE public.app_myapp_id_seq
+COMMENT ON COLUMN public.app_portal.status IS '状态(0:正常 1:禁用)';
+
+
+--
+-- Name: COLUMN app_portal.description; Type: COMMENT; Schema: public; Owner: root
+--
+
+COMMENT ON COLUMN public.app_portal.description IS '备注/描述';
+
+
+--
+-- Name: COLUMN app_portal.created_time; Type: COMMENT; Schema: public; Owner: root
+--
+
+COMMENT ON COLUMN public.app_portal.created_time IS '创建时间';
+
+
+--
+-- Name: COLUMN app_portal.updated_time; Type: COMMENT; Schema: public; Owner: root
+--
+
+COMMENT ON COLUMN public.app_portal.updated_time IS '更新时间';
+
+
+--
+-- Name: COLUMN app_portal.created_id; Type: COMMENT; Schema: public; Owner: root
+--
+
+COMMENT ON COLUMN public.app_portal.created_id IS '创建人ID';
+
+
+--
+-- Name: COLUMN app_portal.updated_id; Type: COMMENT; Schema: public; Owner: root
+--
+
+COMMENT ON COLUMN public.app_portal.updated_id IS '更新人ID';
+
+
+--
+-- Name: app_portal_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.app_portal_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -189,13 +189,13 @@ CREATE SEQUENCE public.app_myapp_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.app_myapp_id_seq OWNER TO root;
+ALTER SEQUENCE public.app_portal_id_seq OWNER TO root;
 
 --
--- Name: app_myapp_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+-- Name: app_portal_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
 --
 
-ALTER SEQUENCE public.app_myapp_id_seq OWNED BY public.app_myapp.id;
+ALTER SEQUENCE public.app_portal_id_seq OWNED BY public.app_portal.id;
 
 
 --
@@ -3246,10 +3246,10 @@ ALTER SEQUENCE public.task_workflow_node_type_id_seq OWNED BY public.task_workfl
 
 
 --
--- Name: app_myapp id; Type: DEFAULT; Schema: public; Owner: root
+-- Name: app_portal id; Type: DEFAULT; Schema: public; Owner: root
 --
 
-ALTER TABLE ONLY public.app_myapp ALTER COLUMN id SET DEFAULT nextval('public.app_myapp_id_seq'::regclass);
+ALTER TABLE ONLY public.app_portal ALTER COLUMN id SET DEFAULT nextval('public.app_portal_id_seq'::regclass);
 
 
 --
@@ -3401,10 +3401,10 @@ d0375348-cc9c-4103-a7ce-18d14560a785	team	\N	1	\N	admin	{"session_name": "新对
 
 
 --
--- Data for Name: app_myapp; Type: TABLE DATA; Schema: public; Owner: root
+-- Data for Name: app_portal; Type: TABLE DATA; Schema: public; Owner: root
 --
 
-COPY public.app_myapp (name, access_url, icon_url, id, uuid, status, description, created_time, updated_time, created_id, updated_id) FROM stdin;
+COPY public.app_portal (name, access_url, icon_url, id, uuid, status, description, created_time, updated_time, created_id, updated_id) FROM stdin;
 \.
 
 
@@ -3535,7 +3535,7 @@ COPY public.sys_menu (name, type, "order", permission, icon, route_name, route_p
 监控管理	1	3	\N	monitor	Monitor	/monitor	\N	/monitor/online	f	t	f	监控管理	null	f	\N	3	4816879f-27cb-4c96-9ba9-881a15122d9e	0	初始化数据	2026-04-03 00:38:22.817318	2026-04-03 00:38:22.817319
 接口管理	1	4	\N	document	Common	/common	\N	/common/docs	f	t	f	接口管理	null	f	\N	4	b37e67a0-8a3a-4a4e-a403-e4badbfd5eb9	0	初始化数据	2026-04-03 00:38:22.817322	2026-04-03 00:38:22.817322
 代码管理	1	5	\N	code	Generator	/generator	\N	/generator/gencode	f	t	f	代码管理	null	f	\N	5	b36e0598-bd9c-463c-85e7-6247fa3e341a	0	代码管理	2026-04-03 00:38:22.817325	2026-04-03 00:38:22.817325
-应用管理	1	6	\N	el-icon-ShoppingBag	Application	/application	\N	/application/myapp	f	t	f	应用管理	null	f	\N	6	2b2a350b-0077-4a45-ab9f-c50c8bb61db0	0	初始化数据	2026-04-03 00:38:22.817328	2026-04-03 00:38:22.817329
+应用管理	1	6	\N	el-icon-ShoppingBag	Application	/application	\N	/application/portal	f	t	f	应用管理	null	f	\N	6	2b2a350b-0077-4a45-ab9f-c50c8bb61db0	0	初始化数据	2026-04-03 00:38:22.817328	2026-04-03 00:38:22.817329
 AI管理	1	7	\N	el-icon-ChatLineSquare	AI	/ai	\N	/ai/chat	f	t	f	AI管理	null	f	\N	7	bcab7edb-1443-4aa9-82ba-f0f7d4525f02	0	AI管理	2026-04-03 00:38:22.817331	2026-04-03 00:38:22.817332
 任务管理	1	8	\N	el-icon-SetUp	Task	/task	\N	/task/cronjob/job	f	t	f	任务管理	null	f	\N	8	a1d7a7de-17a6-4cf6-afaf-5e5b560d16a7	0	任务管理	2026-04-03 00:38:22.817335	2026-04-03 00:38:22.817335
 案例管理	1	9	\N	menu	Example	/example	\N	/example/demo	f	t	f	案例管理	null	f	\N	9	125fc329-5fbf-4a27-91c6-388678f810af	0	案例管理	2026-04-03 00:38:22.817338	2026-04-03 00:38:22.817338
@@ -3557,7 +3557,7 @@ Swagger文档	4	1	module_common:docs:query	api	Docs	/common/docs	module_common/d
 Redoc文档	4	2	module_common:redoc:query	el-icon-Document	Redoc	/common/redoc	module_common/redoc/index	\N	f	t	f	Redoc文档	null	f	4	25	f718f039-ec0a-4ea8-9cec-d2e1baba56d5	0	初始化数据	2026-04-03 00:38:22.822517	2026-04-03 00:38:22.822517
 LangJin文档	4	3	module_common:ljdoc:query	el-icon-Document	Ljdoc	/common/ljdoc	module_common/ljdoc/index	\N	f	t	f	LangJin文档	null	f	4	26	dcc3452a-19f4-44aa-8c58-d4cd70a0cfc4	0	初始化数据	2026-04-03 00:38:22.822519	2026-04-03 00:38:22.82252
 代码生成	2	1	module_generator:gencode:query	code	GenCode	/generator/gencode	module_generator/gencode/index	\N	f	t	f	代码生成	null	f	5	27	90c87bea-d474-40a2-93d1-0ea8dfcb9bd1	0	代码生成	2026-04-03 00:38:22.822522	2026-04-03 00:38:22.822523
-我的应用	2	1	module_application:myapp:query	el-icon-ShoppingCartFull	MYAPP	/application/myapp	module_application/myapp/index	\N	f	t	f	我的应用	null	f	6	28	78abae79-58d1-4cb6-ae57-9cb573e1e83f	0	初始化数据	2026-04-03 00:38:22.822526	2026-04-03 00:38:22.822526
+门户应用	2	1	module_application:portal:query	el-icon-ShoppingCartFull	PortalApp	/application/portal	module_application/portal/index	\N	f	t	f	门户应用	null	f	6	28	78abae79-58d1-4cb6-ae57-9cb573e1e83f	0	初始化数据	2026-04-03 00:38:22.822526	2026-04-03 00:38:22.822526
 AI智能助手	2	1	module_ai:chat:query	el-icon-ChatDotRound	Chat	/ai/chat	module_ai/chat/index	\N	f	t	f	AI智能助手	null	f	7	29	4e871c29-3555-4567-b6d5-074a8131fba8	0	AI智能助手	2026-04-03 00:38:22.82253	2026-04-03 00:38:22.822531
 会话记忆	2	2	module_ai:chat:query	el-icon-ChatLineSquare	Memory	/ai/memory	module_ai/memory/index	\N	f	t	f	会话记忆	null	f	7	30	d149bad8-ff41-422a-a2d6-98ca63e2d5db	0	会话记忆管理	2026-04-03 00:38:22.822534	2026-04-03 00:38:22.822535
 定时任务	1	1	\N	el-icon-Timer	Cronjob	/task/cronjob	\N	/task/cronjob/job	f	t	t	定时任务	null	f	8	31	f250cbe9-d735-4b82-adff-df24fd28a363	0	APScheduler 调度器与任务节点	2026-04-03 00:38:22.822538	2026-04-03 00:38:22.822538
@@ -3651,12 +3651,12 @@ AI智能助手	2	1	module_ai:chat:query	el-icon-ChatDotRound	Chat	/ai/chat	modul
 生成代码到指定路径	3	7	module_generator:gencode:code	\N	\N	\N	\N	\N	f	t	f	生成代码到指定路径	null	f	27	119	66c46949-9393-4f60-97fb-1a317c9bf8ed	0	生成代码到指定路径	2026-04-03 00:38:22.828413	2026-04-03 00:38:22.828413
 查询数据库表列表	3	8	module_generator:dblist:query	\N	\N	\N	\N	\N	f	t	f	查询数据库表列表	null	f	27	120	8d933a04-ab62-4a88-9205-ba37dbbe0d3b	0	查询数据库表列表	2026-04-03 00:38:22.828416	2026-04-03 00:38:22.828416
 同步数据库	3	9	module_generator:db:sync	\N	\N	\N	\N	\N	f	t	f	同步数据库	null	f	27	121	338ad22e-76e5-403a-a959-bf068d17ffb0	0	同步数据库	2026-04-03 00:38:22.828419	2026-04-03 00:38:22.828419
-创建应用	3	1	module_application:myapp:create	\N	\N	\N	\N	\N	f	t	f	创建应用	null	f	28	122	a426206a-f6a5-43c9-8c81-b12d7a42c459	0	初始化数据	2026-04-03 00:38:22.828422	2026-04-03 00:38:22.828422
-修改应用	3	2	module_application:myapp:update	\N	\N	\N	\N	\N	f	t	f	修改应用	null	f	28	123	3d1ef840-c0c3-4b3d-95fd-d40d7b4282f4	0	初始化数据	2026-04-03 00:38:22.828425	2026-04-03 00:38:22.828425
-删除应用	3	3	module_application:myapp:delete	\N	\N	\N	\N	\N	f	t	f	删除应用	null	f	28	124	1cb3fbb9-7de9-40f8-bf74-a56511e18e16	0	初始化数据	2026-04-03 00:38:22.828428	2026-04-03 00:38:22.828428
-批量修改应用状态	3	4	module_application:myapp:patch	\N	\N	\N	\N	\N	f	t	f	批量修改应用状态	null	f	28	125	a37f8f69-0f90-4a36-85e3-78cfefd4e9e1	0	初始化数据	2026-04-03 00:38:22.828431	2026-04-03 00:38:22.828431
-详情应用	3	5	module_application:myapp:detail	\N	\N	\N	\N	\N	f	t	f	详情应用	null	f	28	126	52085867-73b2-4ef8-b2b2-839a0a6c4697	0	初始化数据	2026-04-03 00:38:22.828434	2026-04-03 00:38:22.828434
-查询应用	3	6	module_application:myapp:query	\N	\N	\N	\N	\N	f	t	f	查询应用	null	f	28	127	df8b6a73-5041-402d-ac34-0774c229beb1	0	初始化数据	2026-04-03 00:38:22.828437	2026-04-03 00:38:22.828437
+创建应用	3	1	module_application:portal:create	\N	\N	\N	\N	\N	f	t	f	创建应用	null	f	28	122	a426206a-f6a5-43c9-8c81-b12d7a42c459	0	初始化数据	2026-04-03 00:38:22.828422	2026-04-03 00:38:22.828422
+修改应用	3	2	module_application:portal:update	\N	\N	\N	\N	\N	f	t	f	修改应用	null	f	28	123	3d1ef840-c0c3-4b3d-95fd-d40d7b4282f4	0	初始化数据	2026-04-03 00:38:22.828425	2026-04-03 00:38:22.828425
+删除应用	3	3	module_application:portal:delete	\N	\N	\N	\N	\N	f	t	f	删除应用	null	f	28	124	1cb3fbb9-7de9-40f8-bf74-a56511e18e16	0	初始化数据	2026-04-03 00:38:22.828428	2026-04-03 00:38:22.828428
+批量修改应用状态	3	4	module_application:portal:patch	\N	\N	\N	\N	\N	f	t	f	批量修改应用状态	null	f	28	125	a37f8f69-0f90-4a36-85e3-78cfefd4e9e1	0	初始化数据	2026-04-03 00:38:22.828431	2026-04-03 00:38:22.828431
+详情应用	3	5	module_application:portal:detail	\N	\N	\N	\N	\N	f	t	f	详情应用	null	f	28	126	52085867-73b2-4ef8-b2b2-839a0a6c4697	0	初始化数据	2026-04-03 00:38:22.828434	2026-04-03 00:38:22.828434
+查询应用	3	6	module_application:portal:query	\N	\N	\N	\N	\N	f	t	f	查询应用	null	f	28	127	df8b6a73-5041-402d-ac34-0774c229beb1	0	初始化数据	2026-04-03 00:38:22.828437	2026-04-03 00:38:22.828437
 AI对话	3	1	module_ai:chat:ws	\N	\N	\N	\N	\N	f	t	f	AI对话	null	f	29	128	fd9fb4a7-2cd8-4bfd-8a99-781abf4fafed	0	AI对话	2026-04-03 00:38:22.828439	2026-04-03 00:38:22.82844
 查询会话	3	2	module_ai:chat:query	\N	\N	\N	\N	\N	f	t	f	查询会话	null	f	29	129	dd4bc016-4b0c-4fc5-9561-9af61e4120ee	0	查询会话	2026-04-03 00:38:22.828443	2026-04-03 00:38:22.828443
 会话详情	3	3	module_ai:chat:detail	\N	\N	\N	\N	\N	f	t	f	会话详情	null	f	29	130	a82e0084-8fce-4910-8096-fb28fa5bc7ce	0	会话详情	2026-04-03 00:38:22.828446	2026-04-03 00:38:22.828446
@@ -3839,10 +3839,10 @@ COPY public.task_workflow_node_type (name, code, category, func, args, kwargs, s
 
 
 --
--- Name: app_myapp_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+-- Name: app_portal_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.app_myapp_id_seq', 1, false);
+SELECT pg_catalog.setval('public.app_portal_id_seq', 1, false);
 
 
 --
@@ -3988,11 +3988,11 @@ ALTER TABLE ONLY ai.agno_sessions
 
 
 --
--- Name: app_myapp app_myapp_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+-- Name: app_portal app_portal_pkey; Type: CONSTRAINT; Schema: public; Owner: root
 --
 
-ALTER TABLE ONLY public.app_myapp
-    ADD CONSTRAINT app_myapp_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.app_portal
+    ADD CONSTRAINT app_portal_pkey PRIMARY KEY (id);
 
 
 --
@@ -4257,52 +4257,52 @@ CREATE INDEX idx_agno_sessions_session_type ON ai.agno_sessions USING btree (ses
 
 
 --
--- Name: ix_app_myapp_created_id; Type: INDEX; Schema: public; Owner: root
+-- Name: ix_app_portal_created_id; Type: INDEX; Schema: public; Owner: root
 --
 
-CREATE INDEX ix_app_myapp_created_id ON public.app_myapp USING btree (created_id);
-
-
---
--- Name: ix_app_myapp_created_time; Type: INDEX; Schema: public; Owner: root
---
-
-CREATE INDEX ix_app_myapp_created_time ON public.app_myapp USING btree (created_time);
+CREATE INDEX ix_app_portal_created_id ON public.app_portal USING btree (created_id);
 
 
 --
--- Name: ix_app_myapp_id; Type: INDEX; Schema: public; Owner: root
+-- Name: ix_app_portal_created_time; Type: INDEX; Schema: public; Owner: root
 --
 
-CREATE INDEX ix_app_myapp_id ON public.app_myapp USING btree (id);
-
-
---
--- Name: ix_app_myapp_status; Type: INDEX; Schema: public; Owner: root
---
-
-CREATE INDEX ix_app_myapp_status ON public.app_myapp USING btree (status);
+CREATE INDEX ix_app_portal_created_time ON public.app_portal USING btree (created_time);
 
 
 --
--- Name: ix_app_myapp_updated_id; Type: INDEX; Schema: public; Owner: root
+-- Name: ix_app_portal_id; Type: INDEX; Schema: public; Owner: root
 --
 
-CREATE INDEX ix_app_myapp_updated_id ON public.app_myapp USING btree (updated_id);
-
-
---
--- Name: ix_app_myapp_updated_time; Type: INDEX; Schema: public; Owner: root
---
-
-CREATE INDEX ix_app_myapp_updated_time ON public.app_myapp USING btree (updated_time);
+CREATE INDEX ix_app_portal_id ON public.app_portal USING btree (id);
 
 
 --
--- Name: ix_app_myapp_uuid; Type: INDEX; Schema: public; Owner: root
+-- Name: ix_app_portal_status; Type: INDEX; Schema: public; Owner: root
 --
 
-CREATE UNIQUE INDEX ix_app_myapp_uuid ON public.app_myapp USING btree (uuid);
+CREATE INDEX ix_app_portal_status ON public.app_portal USING btree (status);
+
+
+--
+-- Name: ix_app_portal_updated_id; Type: INDEX; Schema: public; Owner: root
+--
+
+CREATE INDEX ix_app_portal_updated_id ON public.app_portal USING btree (updated_id);
+
+
+--
+-- Name: ix_app_portal_updated_time; Type: INDEX; Schema: public; Owner: root
+--
+
+CREATE INDEX ix_app_portal_updated_time ON public.app_portal USING btree (updated_time);
+
+
+--
+-- Name: ix_app_portal_uuid; Type: INDEX; Schema: public; Owner: root
+--
+
+CREATE UNIQUE INDEX ix_app_portal_uuid ON public.app_portal USING btree (uuid);
 
 
 --
@@ -5139,19 +5139,19 @@ CREATE UNIQUE INDEX ix_task_workflow_uuid ON public.task_workflow USING btree (u
 
 
 --
--- Name: app_myapp app_myapp_created_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: root
+-- Name: app_portal app_portal_created_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
-ALTER TABLE ONLY public.app_myapp
-    ADD CONSTRAINT app_myapp_created_id_fkey FOREIGN KEY (created_id) REFERENCES public.sys_user(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public.app_portal
+    ADD CONSTRAINT app_portal_created_id_fkey FOREIGN KEY (created_id) REFERENCES public.sys_user(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
--- Name: app_myapp app_myapp_updated_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: root
+-- Name: app_portal app_portal_updated_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: root
 --
 
-ALTER TABLE ONLY public.app_myapp
-    ADD CONSTRAINT app_myapp_updated_id_fkey FOREIGN KEY (updated_id) REFERENCES public.sys_user(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public.app_portal
+    ADD CONSTRAINT app_portal_updated_id_fkey FOREIGN KEY (updated_id) REFERENCES public.sys_user(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --

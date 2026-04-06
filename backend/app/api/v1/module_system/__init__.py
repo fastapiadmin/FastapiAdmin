@@ -11,6 +11,7 @@ from .notice.controller import NoticeRouter
 from .params.controller import ParamsRouter
 from .position.controller import PositionRouter
 from .role.controller import RoleRouter
+from .tenant.controller import TenantRouter
 from .user.controller import UserRouter
 
 system_router = APIRouter(prefix="/system")
@@ -24,4 +25,5 @@ system_router.include_router(NoticeRouter)
 system_router.include_router(ParamsRouter)
 system_router.include_router(PositionRouter)
 system_router.include_router(RoleRouter)
+system_router.include_router(TenantRouter)
 system_router.include_router(UserRouter)

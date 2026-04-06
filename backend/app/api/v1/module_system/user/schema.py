@@ -13,7 +13,7 @@ from pydantic import (
 from app.api.v1.module_system.menu.schema import MenuOutSchema
 from app.api.v1.module_system.role.schema import RoleOutSchema
 from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema, CommonSchema, UserBySchema
+from app.core.base_schema import BaseSchema, CommonSchema, TenantBySchema, UserBySchema
 from app.core.validator import DateTimeStr, email_validator, mobile_validator
 
 
@@ -225,6 +225,7 @@ class UserCreateSchema(CurrentUserUpdateSchema):
     description: str | None = Field(default=None, max_length=255, description="备注")
     is_superuser: bool | None = Field(default=False, description="是否超管")
     dept_id: int | None = Field(default=None, description="部门ID")
+    tenant_id: int | None = Field(default=None, description="租户ID，仅平台管理员创建时可指定")
     role_ids: list[int] | None = Field(default=[], description="角色ID")
     position_ids: list[int] | None = Field(default=[], description="岗位ID")
 
@@ -237,10 +238,16 @@ class UserUpdateSchema(UserCreateSchema):
     last_login: DateTimeStr | None = Field(default=None, description="最后登录时间")
 
 
-class UserOutSchema(UserUpdateSchema, BaseSchema, UserBySchema):
+class UserOutSchema(UserUpdateSchema, BaseSchema, UserBySchema, TenantBySchema):
     """响应"""
 
     model_config = ConfigDict(arbitrary_types_allowed=True, from_attributes=True)
+
+    tenant_id: int | None = Field(
+        default=None,
+        exclude=True,
+        description="创建入参使用；列表/详情出参见 tenant",
+    )
     gitee_login: str | None = Field(default=None, max_length=32, description="Gitee登录")
     github_login: str | None = Field(default=None, max_length=32, description="Github登录")
     wx_login: str | None = Field(default=None, max_length=32, description="微信登录")
@@ -266,6 +273,7 @@ class UserQueryParam:
             pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
         ),
         dept_id: int | None = Query(None, description="部门ID"),
+        tenant_id: int | None = Query(None, description="租户ID（仅平台管理员可筛选）"),
         status: str | None = Query(None, description="是否可用"),
         created_time: list[DateTimeStr] | None = Query(
             None,
@@ -289,6 +297,7 @@ class UserQueryParam:
 
         # 精确查询字段
         self.dept_id = (QueueEnum.eq.value, dept_id)
+        self.tenant_id = (QueueEnum.eq.value, tenant_id)
         self.created_id = (QueueEnum.eq.value, created_id)
         self.updated_id = (QueueEnum.eq.value, updated_id)
         self.status = (QueueEnum.eq.value, status)

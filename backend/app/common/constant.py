@@ -795,5 +795,10 @@ class TypedContextProtocol(Protocol):
     permission: str | None
 
 
+# API 日期 / 时间 / 日期时间统一展示（validator、jsonable_response_content、文档约定一致）
+DATE_DISPLAY_FMT = "%Y-%m-%d"
+TIME_DISPLAY_FMT = "%H:%M:%S"
+DATETIME_DISPLAY_FMT = "%Y-%m-%d %H:%M:%S"
+
 # if __name__ == "__main__":
 #     print(RET.OK.msg)  # 输出: 成功

@@ -24,11 +24,6 @@ dependencies = [
     "httpx==0.27.2",                            # HTTP 客户端
     "itsdangerous==2.2.0",                      # 用于安全处理各种数据，如密码、密钥等
     "jinja2==3.1.6",                            # 模板引擎
-    "langchain==1.2.0",                         # 大模型
-    "langchain-anthropic==1.3.0",               # 大模型 anthropic 适配器
-    "langchain-chroma==1.1.0",
-    "langchain-mcp-adapters==0.2.1",            # 大模型 mcp 适配器
-    "langchain-openai==1.1.6",                  # 大模型 openai 适配器
     "loguru==0.7.3",                            # 日志
     "openai==2.28.0",
     "openpyxl==3.1.5",                          # Excel
@@ -43,11 +38,10 @@ dependencies = [
     "pydantic-validation-decorator==0.1.4",     # 模型验证
     "pyjwt==2.9.0",                             # OAuth2
     "pymysql==1.1.2",                           # mysql 同步步操作数据库基于 pymysql：aiomysql 是 pymysql 的异步版本，pymysql 是一个纯 Python 实现的 MySQL 客户端。成熟度：aiomysql 相对较为成熟，社区支持较好，文档也比较完善。
-    "pytest==9.0.2",
     "python-multipart==0.0.9",                  # request.form() 对表单进行「解析」时安装
     "redis==7.1.0",                             # redis 同/异步操作数据库(用户celery配套使用)redis 异步操作数据库 redis已经完全具备了aioredis的功能，无需重复安全,且aioredis已经不再维护也不兼容3.10+的版本
     "rich==13.9.4",                             # 终端打印美化
-    "ruff==0.14.13",
+    "tomli>=2.0.1; python_version < '3.11'",    # 解析 plugin.toml（3.11+ 用标准库 tomllib）
     "sqlalchemy==2.0.45",                       # 数据库ORM
     "sqlglot[rs]==27.8.0",                      # sql 解析
     "typer==0.19.0",                             # 命令行工具
@@ -58,8 +52,13 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff>=0.14.13",    # 代码格式化
+    "fakeredis>=2.21.0,<3",   # 测试：内存 Redis，配合 TESTING
+    "pytest==9.0.2",
+    "ruff==0.14.13",          # 代码检查/格式化
 ]
+
+[tool.uv]
+default-groups = ["dev"]     # 本地 uv sync 含 dev；生产 pip -r requirements.txt 不含 pytest/ruff/fakeredis
 
 [[tool.uv.index]]
 name = "tuna"
@@ -121,6 +120,9 @@ ignore = [
     "B904",  # Within an `except` clause
     "B010",  # Do not call with a constant attribute value.
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/conftest.py" = ["E402"]  # 先设置 TESTING/SQLite 环境再 import 应用
 
 [tool.ruff.format]
 docstring-code-format = true

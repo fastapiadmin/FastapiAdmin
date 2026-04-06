@@ -1,5 +1,6 @@
 [
   {
+    "tenant_id": 1,
     "username": "admin",
     "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
     "name": "超级管理员",

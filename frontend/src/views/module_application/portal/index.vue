@@ -13,7 +13,7 @@
         <div class="card-header">
           <span class="market-title">应用市场</span>
           <el-button
-            v-hasPerm="['module_application:myapp:create']"
+            v-hasPerm="['module_application:portal:create']"
             type="primary"
             icon="plus"
             @click="handleCreateApp"
@@ -33,7 +33,7 @@
               v-for="app in data"
               :key="app.id"
               class="app-grid-item"
-              @click="app.status && app.id && openAppInternal(app)"
+              @click="app.status && app.id && openAppInternal()"
             >
               <el-card shadow="never" class="app-card" :class="{ 'card-disabled': !app.status }">
                 <template #header>
@@ -64,14 +64,14 @@
                     </div>
                     <div class="card-actions" @click.stop>
                       <el-button
-                        v-hasPerm="['module_application:myapp:update']"
+                        v-hasPerm="['module_application:portal:update']"
                         type="primary"
                         link
                         icon="Edit"
                         @click="handleAppAction('edit', app)"
                       />
                       <el-button
-                        v-hasPerm="['module_application:myapp:delete']"
+                        v-hasPerm="['module_application:portal:delete']"
                         type="danger"
                         link
                         icon="Delete"
@@ -145,20 +145,18 @@
 
 <script setup lang="ts">
 defineOptions({
-  name: "MyApplication",
+  name: "PortalApplication",
   inheritAttrs: false,
 });
 
 import { useAppStore } from "@/store/modules/app.store";
-import { useTagsViewStore } from "@/store";
-import { useRouter } from "vue-router";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { Monitor } from "@element-plus/icons-vue";
 import ApplicationAPI, {
   type ApplicationForm,
   type ApplicationInfo,
   type ApplicationPageQuery,
-} from "@/api/module_application/myapp";
+} from "@/api/module_application/portal";
 import { formatToDateTime } from "@/utils/dateUtil";
 import PageSearch from "@/components/CURD/PageSearch.vue";
 import PageContent from "@/components/CURD/PageContent.vue";
@@ -169,8 +167,6 @@ import { useCrudList } from "@/components/CURD/useCrudList";
 import { computed, markRaw, nextTick, reactive, ref } from "vue";
 
 const appStore = useAppStore();
-const tagsViewStore = useTagsViewStore();
-const router = useRouter();
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
 const formRef = ref();
@@ -183,7 +179,7 @@ function triggerUserSearch() {
 }
 
 const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_application:myapp",
+  permPrefix: "module_application:portal",
   colon: true,
   isExpandable: true,
   showNumber: 2,
@@ -233,7 +229,7 @@ const searchConfig = reactive<ISearchConfig>({
 });
 
 const contentConfig = reactive<IContentConfig<ApplicationPageQuery>>({
-  permPrefix: "module_application:myapp",
+  permPrefix: "module_application:portal",
   cols: [],
   hideColumnFilter: true,
   showToolbar: false,
@@ -336,61 +332,9 @@ async function handleAppAction(command: string, app: ApplicationInfo) {
 }
 
 // 内部打开应用
-function openAppInternal(app: ApplicationInfo) {
-  if (!app.status || !app.id) {
-    if (!app.status) {
-      ElMessage.warning("应用已停用，无法打开");
-    } else {
-      ElMessage.warning("应用ID不存在，无法打开");
-    }
-    return;
-  }
-
-  if (!app.access_url) {
-    ElMessage.warning("应用访问地址不存在");
-    return;
-  }
-
-  // 创建一个动态路由路径
-  const appPath = `/internal-app/${app.id}`;
-  const appName = `InternalApp${app.id}`;
-  const appTitle = app.name || "未命名应用";
-
-  // 先导航到路由，这样可以动态设置路由的meta信息
-  router
-    .push({
-      path: appPath,
-      query: { url: app.access_url, appId: app.id.toString(), appName: appTitle },
-    })
-    .then(() => {
-      // 导航完成后，手动添加或更新标签视图
-      nextTick(() => {
-        // 查找是否已存在该标签
-        const existingTag = tagsViewStore.visitedViews.find((tag) => tag.path === appPath);
-
-        if (existingTag) {
-          // 如果存在，更新标题
-          tagsViewStore.updateVisitedView({
-            ...existingTag,
-            title: appTitle,
-          });
-        } else {
-          // 如果不存在，添加新标签
-          tagsViewStore.addView({
-            name: appName,
-            title: appTitle,
-            path: appPath,
-            fullPath:
-              appPath +
-              `?url=${encodeURIComponent(app.access_url || "")}&appId=${app.id}&appName=${encodeURIComponent(appTitle)}`,
-            icon: "Monitor",
-            affix: false,
-            keepAlive: false,
-            query: { url: app.access_url, appId: app?.id?.toString(), appName: appTitle },
-          });
-        }
-      });
-    });
+function openAppInternal() {
+  ElMessage.warning("插件应用点击，业务场景暂时开放中。。。");
+  return;
 }
 
 // 重置表单

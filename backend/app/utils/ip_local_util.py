@@ -87,7 +87,7 @@ class IpLocalUtil:
 
         try:
             # 使用ip-api.com API获取IP归属地信息
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=settings.HTTPX_DEFAULT_TIMEOUT) as client:
                 # 尝试使用 ip9.com.cn API
                 url = f"https://ip9.com.cn/get?ip={ip}"
                 response = await cls._make_api_request(client, url)
@@ -122,7 +122,7 @@ class IpLocalUtil:
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                response = await client.get(url, timeout=10)
+                response = await client.get(url, timeout=settings.HTTPX_DEFAULT_TIMEOUT)
                 if response.status_code == 200:
                     return response
             except Exception as e:

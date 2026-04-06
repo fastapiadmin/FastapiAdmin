@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const API_PATH = "/application/myapp";
+const API_PATH = "/application/portal";
 
 export const ApplicationAPI = {
   /**
@@ -83,6 +83,7 @@ export default ApplicationAPI;
  */
 export interface ApplicationPageQuery extends PageQuery {
   name?: string;
+  tenant_id?: number;
   status?: string;
   created_id?: number;
   created_time?: string[];
@@ -97,6 +98,7 @@ export interface ApplicationInfo extends BaseType {
   name?: string;
   access_url?: string;
   icon_url?: string;
+  tenant?: TenantType;
   created_by?: CommonType;
   updated_by?: CommonType;
 }

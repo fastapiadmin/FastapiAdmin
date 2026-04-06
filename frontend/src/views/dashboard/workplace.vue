@@ -471,7 +471,7 @@ import OnlineAPI from "@/api/module_monitor/online";
 import { UserAPI } from "@/api/module_system/user";
 import JobAPI from "@/api/module_task/cronjob/job";
 import { AiChatAPI } from "@/api/module_ai/chat";
-import { ApplicationAPI } from "@/api/module_application/myapp";
+import { ApplicationAPI } from "@/api/module_application/portal";
 import {
   WORKPLACE_MODULE_GROUPS,
   flattenLeafMenusFromTree,

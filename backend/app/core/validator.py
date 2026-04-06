@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
 
-from app.common.constant import RET
+from app.common.constant import DATE_DISPLAY_FMT, DATETIME_DISPLAY_FMT, RET, TIME_DISPLAY_FMT
 from app.core.exceptions import CustomException
 
 # 自定义日期时间字符串类型
@@ -12,7 +12,7 @@ DateTimeStr = Annotated[
     datetime,
     AfterValidator(lambda x: datetime_validator(x)),
     PlainSerializer(
-        lambda x: x.strftime("%Y-%m-%d %H:%M:%S") if isinstance(x, datetime) else str(x),
+        lambda x: x.strftime(DATETIME_DISPLAY_FMT) if isinstance(x, datetime) else str(x),
         return_type=str,
         when_used="json",
     ),
@@ -24,7 +24,7 @@ DateStr = Annotated[
     date,
     AfterValidator(lambda x: date_validator(x)),
     PlainSerializer(
-        lambda x: x.strftime("%Y-%m-%d") if isinstance(x, date) else str(x),
+        lambda x: x.strftime(DATE_DISPLAY_FMT) if isinstance(x, date) else str(x),
         return_type=str,
         when_used="json",
     ),
@@ -36,7 +36,7 @@ TimeStr = Annotated[
     time,
     AfterValidator(lambda x: time_validator(x)),
     PlainSerializer(
-        lambda x: x.strftime("%H:%M:%S") if isinstance(x, time) else str(x),
+        lambda x: x.strftime(TIME_DISPLAY_FMT) if isinstance(x, time) else str(x),
         return_type=str,
         when_used="json",
     ),
@@ -73,10 +73,9 @@ def datetime_validator(value: str | datetime) -> datetime:
     异常:
     - CustomException: 日期格式无效时抛出。
     """
-    pattern = "%Y-%m-%d %H:%M:%S"
     try:
         if isinstance(value, str):
-            return datetime.strptime(value, pattern)
+            return datetime.strptime(value, DATETIME_DISPLAY_FMT)
         if isinstance(value, datetime):
             return value
     except Exception:
@@ -98,7 +97,7 @@ def date_validator(value: str | date) -> date:
     """
     try:
         if isinstance(value, str):
-            return datetime.strptime(value, "%Y-%m-%d").date()
+            return datetime.strptime(value, DATE_DISPLAY_FMT).date()
         if isinstance(value, date):
             return value
     except Exception:
@@ -120,7 +119,7 @@ def time_validator(value: str | time) -> time:
     """
     try:
         if isinstance(value, str):
-            return datetime.strptime(value, "%H:%M:%S").time()
+            return datetime.strptime(value, TIME_DISPLAY_FMT).time()
         if isinstance(value, time):
             return value
     except Exception:

@@ -11,6 +11,7 @@ from app.api.v1.module_system.menu.model import MenuModel
 from app.api.v1.module_system.params.model import ParamsModel
 from app.api.v1.module_system.position.model import PositionModel
 from app.api.v1.module_system.role.model import RoleModel
+from app.api.v1.module_system.tenant.model import TenantModel
 from app.api.v1.module_system.user.model import UserModel, UserRolesModel
 from app.config.path_conf import SCRIPT_DIR
 from app.core.database import async_db_session, create_tables
@@ -28,6 +29,7 @@ class InitializeData:
         """
         # 按照依赖关系排序：先创建基础表，再创建关联表
         self.prepare_init_models = [
+            TenantModel,
             MenuModel,
             ParamsModel,
             DeptModel,
@@ -194,6 +196,3 @@ class InitializeData:
         async with async_db_session() as session:
             async with session.begin():
                 await self.__init_data(session)
-                # session.add_all(objs)
-                # 确保提交事务
-                await session.commit()

@@ -21,7 +21,7 @@ def create_app() -> FastAPI:
     - FastAPI: 已配置生命周期的应用对象。
     """
     from app.config.setting import settings
-    from app.plugin.init_app import (
+    from app.scripts.init_app import (
         lifespan,
         register_exceptions,
         register_files,
@@ -100,8 +100,6 @@ def run(
             factory=True,
             log_config=None,
         )
-    except Exception:
-        raise
     finally:
         from app.core.logger import cleanup_logging
 
@@ -127,6 +125,9 @@ def revision(
     - None
     """
     os.environ["ENVIRONMENT"] = env.value
+    from app.config.setting import get_settings
+
+    get_settings.cache_clear()
     command.revision(alembic_cfg, autogenerate=True, message="迁移脚本")
     typer.echo("迁移脚本已生成")
 
@@ -150,6 +151,9 @@ def upgrade(
     - None
     """
     os.environ["ENVIRONMENT"] = env.value
+    from app.config.setting import get_settings
+
+    get_settings.cache_clear()
     command.upgrade(alembic_cfg, "head")
     typer.echo("所有迁移已应用。")
 

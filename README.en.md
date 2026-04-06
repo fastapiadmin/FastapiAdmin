@@ -78,7 +78,7 @@ This is about **how source directories are split** (package by feature vs by lay
 | 🌐 **Full-Stack Support** | Integrated solution for Web + Mobile(H5) + Backend |
 | 🚀 **Rapid Deployment** | One-click Docker deployment for quick production rollout |
 | 📖 **Comprehensive Docs** | Detailed documentation and tutorials to reduce learning curve |
-| 🤖 **Intelligent Agent Framework** | Based on Langchain and Langgraph, develop intelligent agents |
+| 🤖 **Intelligent Agent Framework** | Based on Agno, develop intelligent agents |
 
 ## 🍪 Demo Environment
 
@@ -158,7 +158,7 @@ flowchart LR
 | **Cache** | Redis | High-performance cache database |
 | **Documentation** | Swagger / Redoc | Automatically generate API documentation |
 | **Deployment** | Docker / Nginx / Docker Compose | Containerized deployment solution |
-| **Intelligent Agent Framework** | Langchain / Langgraph | Intelligent agent framework based on Langchain and Langgraph |
+| **Intelligent Agent Framework** | Agno | Intelligent agent framework based on Agno |
 
 ## 📐 Backend Conventions (Dates & Serialization)
 

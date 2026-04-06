@@ -18,9 +18,10 @@ from app.core.docs import get_custom_ui_html
 from app.core.exceptions import handle_exception
 from app.core.http_limit import http_limit_callback, ws_limit_callback
 from app.core.logger import log
-from app.scripts.initialize import InitializeData
 from app.utils.common_util import import_module, import_modules_async
 from app.utils.console import console_close, console_run
+
+from .initialize import InitializeData
 
 
 @asynccontextmanager
@@ -79,12 +80,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     yield
 
     try:
-        await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
-        log.info("✅ 全局事件模块卸载完成")
         await SchedulerUtil.shutdown(wait=False)
         log.info("✅ 定时任务调度器已关闭")
         await FastAPILimiter.close()
         log.info("✅ 请求限制器已关闭")
+        await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
+        log.info("✅ 全局事件模块卸载完成")
         console_close()
 
     except Exception as e:
@@ -131,11 +132,13 @@ def register_routers(app: FastAPI) -> None:
     返回:
     - None
     """
+    from app.api.v1.module_application import application_router
     from app.api.v1.module_common import common_router
     from app.api.v1.module_monitor import monitor_router
     from app.api.v1.module_system import system_router
 
     app.include_router(common_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
+    app.include_router(application_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
     app.include_router(system_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
     app.include_router(monitor_router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
 
@@ -167,7 +170,7 @@ def register_files(app: FastAPI) -> None:
     """
     # 挂载静态文件目录
     if settings.STATIC_ENABLE:
-        # 确保日志目录存在
+        # 确保静态资源根目录存在
         settings.STATIC_ROOT.mkdir(parents=True, exist_ok=True)
         app.mount(
             path=settings.STATIC_URL,
@@ -187,6 +190,10 @@ def reset_api_docs(app: FastAPI) -> None:
     - None
     """
 
+    @app.get(str(app.swagger_ui_oauth2_redirect_url), include_in_schema=False)
+    async def swagger_ui_redirect():
+        return get_swagger_ui_oauth2_redirect_html()
+
     @app.get(settings.DOCS_URL, include_in_schema=False)
     async def custom_swagger_ui_html() -> HTMLResponse:
         return get_swagger_ui_html(
@@ -197,10 +204,6 @@ def reset_api_docs(app: FastAPI) -> None:
             swagger_css_url=settings.SWAGGER_CSS_URL,
             swagger_favicon_url=settings.FAVICON_URL,
         )
-
-    @app.get(str(app.swagger_ui_oauth2_redirect_url), include_in_schema=False)
-    async def swagger_ui_redirect():
-        return get_swagger_ui_oauth2_redirect_html()
 
     @app.get(settings.REDOC_URL, include_in_schema=False)
     async def custom_redoc_html():

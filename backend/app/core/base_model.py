@@ -110,6 +110,26 @@ class ModelMixin(MappedBase):
     )
 
 
+class TenantMixin(MappedBase):
+    """
+    租户隔离字段 Mixin
+
+    业务表通过 tenant_id 关联 sys_tenant，实现行级数据隔离。
+    平台超级管理员（is_superuser 且 tenant_id=1）在数据层不按租户过滤。
+    """
+
+    __abstract__ = True
+
+    tenant_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("sys_tenant.id", ondelete="RESTRICT", onupdate="CASCADE"),
+        nullable=False,
+        default=1,
+        index=True,
+        comment="租户ID",
+    )
+
+
 class UserMixin(MappedBase):
     """
     用户审计字段 Mixin

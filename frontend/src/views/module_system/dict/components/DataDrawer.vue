@@ -288,21 +288,63 @@
                 allow-create
                 default-first-option
               >
-                <el-option value="primary" label="主要(primary)" />
-                <el-option value="success" label="成功(success)" />
-                <el-option value="warning" label="警告(warning)" />
-                <el-option value="danger" label="危险(danger)" />
-                <el-option value="info" label="信息(info)" />
+                <el-option value="primary" label="主要(primary)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('primary')">
+                    主要(primary)
+                  </span>
+                </el-option>
+                <el-option value="success" label="成功(success)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('success')">
+                    成功(success)
+                  </span>
+                </el-option>
+                <el-option value="warning" label="警告(warning)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('warning')">
+                    警告(warning)
+                  </span>
+                </el-option>
+                <el-option value="danger" label="危险(danger)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('danger')">
+                    危险(danger)
+                  </span>
+                </el-option>
+                <el-option value="info" label="信息(info)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('info')">
+                    信息(info)
+                  </span>
+                </el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="列表类样式" prop="list_class">
               <el-select v-model="formData.list_class" placeholder="请选择列表类样式" clearable>
-                <el-option value="default" label="默认(default)" />
-                <el-option value="primary" label="主要(primary)" />
-                <el-option value="success" label="成功(success)" />
-                <el-option value="warning" label="警告(warning)" />
-                <el-option value="danger" label="危险(danger)" />
-                <el-option value="info" label="信息(info)" />
+                <el-option value="default" label="默认(default)">
+                  <span class="tag-option-preview tag-option-preview--default">默认(default)</span>
+                </el-option>
+                <el-option value="primary" label="主要(primary)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('primary')">
+                    主要(primary)
+                  </span>
+                </el-option>
+                <el-option value="success" label="成功(success)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('success')">
+                    成功(success)
+                  </span>
+                </el-option>
+                <el-option value="warning" label="警告(warning)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('warning')">
+                    警告(warning)
+                  </span>
+                </el-option>
+                <el-option value="danger" label="危险(danger)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('danger')">
+                    危险(danger)
+                  </span>
+                </el-option>
+                <el-option value="info" label="信息(info)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('info')">
+                    信息(info)
+                  </span>
+                </el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="是否默认" prop="is_default">
@@ -390,9 +432,38 @@ const props = defineProps({
   },
 });
 
+const TAG_TYPE_STYLE_MAP: Record<string, { background: string; color: string; border: string }> = {
+  primary: {
+    background: "var(--el-color-primary-light-9)",
+    color: "var(--el-color-primary)",
+    border: "var(--el-color-primary-light-7)",
+  },
+  success: {
+    background: "var(--el-color-success-light-9)",
+    color: "var(--el-color-success)",
+    border: "var(--el-color-success-light-7)",
+  },
+  warning: {
+    background: "var(--el-color-warning-light-9)",
+    color: "var(--el-color-warning)",
+    border: "var(--el-color-warning-light-7)",
+  },
+  danger: {
+    background: "var(--el-color-danger-light-9)",
+    color: "var(--el-color-danger)",
+    border: "var(--el-color-danger-light-7)",
+  },
+  info: {
+    background: "var(--el-color-info-light-9)",
+    color: "var(--el-color-info)",
+    border: "var(--el-color-info-light-7)",
+  },
+};
+
 const drawerVisible = defineModel<boolean>({ required: true });
 
 const appStore = useAppStore();
+const dictStore = useDictStore();
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "80%" : "60%"));
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
@@ -461,7 +532,22 @@ const contentCols = reactive<
   { prop: "operation", label: "操作", show: true },
 ]);
 
-const dictStore = useDictStore();
+function getTagPreviewStyle(value?: string) {
+  const preset = value ? TAG_TYPE_STYLE_MAP[value] : undefined;
+  if (preset) {
+    return {
+      backgroundColor: preset.background,
+      color: preset.color,
+      borderColor: preset.border,
+    };
+  }
+  if (!value) return {};
+  return {
+    backgroundColor: value,
+    color: "#fff",
+    borderColor: value,
+  };
+}
 
 function mergeDictQuery(params: IObject): DictDataPageQuery {
   return {
@@ -708,5 +794,24 @@ async function handleMoreClick(status: string) {
   flex: 1;
   min-height: 0;
   margin-top: 16px;
+}
+
+.tag-option-preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.tag-option-preview--default {
+  color: var(--el-text-color-regular);
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color-lighter);
 }
 </style>

@@ -175,18 +175,10 @@ html.sidebar-color-blue {
 // 统一交给 Element Plus 的 --el-menu-hover-bg-color 与 MenuItem.vue 的通用规则，
 // 确保 Mix-left 与 Left 侧边布局保持一致。
 
-// 暗色：菜单悬浮背景使用主题浅色，避免黑色悬浮
-html.dark .el-menu {
-  .el-menu-item:hover,
-  .el-sub-menu__title:hover {
-    background-color: var(--el-color-primary-light-9) !important;
-  }
-}
-
-html.dark .el-menu--popup {
-  .el-menu-item:hover {
-    background-color: var(--el-color-primary-light-9) !important;
-  }
+// 暗色：hover 由 EP + css-vars 中 html.dark .el-menu 覆写 --el-menu-hover-bg-color 生效；仅激活项需压过 primary-light-9
+html.dark .el-menu--vertical .el-menu-item.is-active,
+html.dark .el-menu--popup .el-menu-item.is-active {
+  background-color: var(--el-menu-active-bg-color) !important;
 }
 
 // 亮色 + 经典蓝：悬浮背景使用经典蓝体系（比底色略深），避免发白

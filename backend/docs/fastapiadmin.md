@@ -15,7 +15,7 @@
 | 🌐 **全栈支持** | Web端 + 移动端(H5) + 后端一体化解决方案 |
 | 🚀 **快速部署** | Docker 一键部署，支持生产环境快速上线 |
 | 📖 **完善文档** | 详细的开发文档和教程，降低学习成本 |
-| 🤖 **智能体框架** | 基于Langchain和Langgraph的开发智能体 |
+| 🤖 **智能体框架** | 基于Agno的开发智能体 |
 
 ## 🍪 演示环境
 
@@ -59,7 +59,7 @@ FastapiAdmin
 | **缓存** | Redis | 高性能缓存数据库 |
 | **文档** | Swagger / Redoc | 自动生成 API 文档 |
 | **部署** | Docker / Nginx / Docker Compose | 容器化部署方案 |
-| **智能体框架** | Langchain / Langgraph | 基于Langchain和Langgraph的智能体框架 |
+| **智能体框架** | Agno | 基于Agno的智能体框架 |
 
 ## 📌 内置功能模块
 

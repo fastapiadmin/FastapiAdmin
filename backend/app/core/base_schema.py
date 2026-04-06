@@ -36,6 +36,15 @@ class UserBySchema(BaseModel):
     updated_by: CommonSchema | None = Field(default=None, description="更新人信息")
 
 
+class TenantBySchema(BaseModel):
+    """租户嵌套出参（不再使用扁平 tenant_id / tenant_name / tenant_code）"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    tenant_id: int | None = Field(default=None, description="租户ID")
+    tenant: CommonSchema | None = Field(default=None, description="租户信息")
+
+
 class BatchSetAvailable(BaseModel):
     """批量设置可用状态的请求模型"""
 

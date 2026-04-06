@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from datetime import date, datetime, time
 from typing import Any, Generic
 
 from fastapi import status
@@ -8,7 +9,18 @@ from pydantic import BaseModel, Field
 from pydantic.types import T
 from starlette.background import BackgroundTask
 
-from app.common.constant import RET
+from app.common.constant import DATE_DISPLAY_FMT, DATETIME_DISPLAY_FMT, RET, TIME_DISPLAY_FMT
+
+# 裸 datetime/date/time（未走 Pydantic 的 dict 等）JSON 输出与 constant 中展示格式一致
+_JSON_DATETIME_CUSTOM_ENCODER: dict[type[Any], Any] = {
+    datetime: lambda d: d.strftime(DATETIME_DISPLAY_FMT),
+    date: lambda d: d.strftime(DATE_DISPLAY_FMT),
+    time: lambda t: t.strftime(TIME_DISPLAY_FMT),
+}
+
+
+def jsonable_response_content(content: Any) -> Any:
+    return jsonable_encoder(content, custom_encoder=_JSON_DATETIME_CUSTOM_ENCODER)
 
 
 class ResponseSchema(BaseModel, Generic[T]):
@@ -52,7 +64,7 @@ class SuccessResponse(JSONResponse):
             status_code=status_code,
             success=success,
         ).model_dump()
-        super().__init__(content=jsonable_encoder(content), status_code=status_code)
+        super().__init__(content=jsonable_response_content(content), status_code=status_code)
 
 
 class ErrorResponse(JSONResponse):
@@ -86,7 +98,7 @@ class ErrorResponse(JSONResponse):
             status_code=status_code,
             success=success,
         ).model_dump()
-        super().__init__(content=jsonable_encoder(content), status_code=status_code)
+        super().__init__(content=jsonable_response_content(content), status_code=status_code)
 
 
 class StreamResponse(StreamingResponse):

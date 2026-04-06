@@ -9,6 +9,19 @@ import pytest
 from fastapi.testclient import TestClient
 
 
+def test_check_readiness(test_client: TestClient) -> None:
+    """
+    校验 ``/common/health/ready/``：数据库与 Redis（若启用）均可达时返回 200 与 checks 结构。
+    """
+    response = test_client.get("/common/health/ready/")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    assert body["data"] is not None
+    assert "checks" in body["data"]
+    assert body["data"]["checks"].get("database") is True
+
+
 def test_check_health(test_client: TestClient) -> None:
     """
     校验 `/common/health/` 返回统一成功响应结构。

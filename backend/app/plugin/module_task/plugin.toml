@@ -1,0 +1,8 @@
+# 见 docs/PLUGIN_ARCHITECTURE.md
+
+name = "task"
+title = "任务与工作流"
+version = "1.0.0"
+description = "定时任务、Prefect 工作流等子模块。"
+optional = true
+tags = ["task", "cron", "workflow"]

@@ -168,15 +168,19 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 
             if should_block:
                 # 增强安全审计：记录详细的拦截日志
-                log.warning([
-                    f"会话ID: {session_id or '未认证'}",
-                    f"请求被拦截: {block_reason}",
-                    f"请求来源: {request_ip}",
-                    f"请求方法: {request.method}",
-                    f"请求路径: {path}",
-                    f"用户代理: {request.headers.get('user-agent', '未知')}",
-                    f"演示模式: {demo_enable}",
-                ])
+                log.warning(
+                    " | ".join(
+                        [
+                            f"会话ID: {session_id or '未认证'}",
+                            f"请求被拦截: {block_reason}",
+                            f"请求来源: {request_ip}",
+                            f"请求方法: {request.method}",
+                            f"请求路径: {path}",
+                            f"用户代理: {request.headers.get('user-agent', '未知')}",
+                            f"演示模式: {demo_enable}",
+                        ]
+                    )
+                )
                 # 拦截请求
                 return ErrorResponse(msg="演示环境，禁止操作")
             # 正常处理请求
@@ -195,7 +199,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             return response
 
         except CustomException as e:
-            log.error(f"中间件处理异常: {e!s}")
+            log.exception(f"中间件处理异常: {e!s}")
             return ErrorResponse(msg="系统异常，请联系管理员", data=str(e))
 
 

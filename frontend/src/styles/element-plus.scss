@@ -53,3 +53,16 @@ $border: 1px solid var(--el-border-color-light);
     overflow: hidden;
   }
 }
+
+// 表格内操作列：单元格 .cell 默认 overflow:hidden，会裁切 el-button 的 :focus-visible outline（常见为底边缺失）。
+// 仅对「含 el-button」的单元格放开裁剪，避免整表 .cell 全改为 visible 破坏省略号与长文本布局。
+.el-table .el-table__cell .cell:has(.el-button) {
+  overflow: visible;
+}
+
+// 不支持 :has() 的环境：将 outline 略向内收，减轻裁切（效果弱于上一段）。
+@supports not selector(:has(*)) {
+  .el-table .el-button:focus-visible {
+    outline-offset: -1px;
+  }
+}

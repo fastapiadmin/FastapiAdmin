@@ -65,13 +65,6 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: { title: "个人中心", icon: "user", hidden: true },
         component: () => import("@/views/current/profile.vue"),
       },
-      // 应用内部打开页面
-      {
-        path: "internal-app/:appId",
-        name: "InternalApp",
-        meta: { title: "内部应用", icon: "Monitor", hidden: true, keepAlive: false },
-        component: () => import("@/views/module_application/myapp/components/InternalApp.vue"),
-      },
     ],
   },
   // 通配 404 必须置于静态路由最后，否则会抢先匹配 /、/home 等

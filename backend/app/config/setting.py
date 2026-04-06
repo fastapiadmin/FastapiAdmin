@@ -72,6 +72,11 @@ class Settings(BaseSettings):
     TOKEN_REQUEST_PATH_EXCLUDE: list[str] = ["api/v1/auth/login"]  # JWT / RBAC 路由白名单
     TOKEN_SLIDING_EXPIRE: bool = True  # 是否启用滑动过期(用户操作时自动续期)
 
+    # 多租户：通配子域与登录租户一致（默认关闭；生产按 base 解析 {code}.base）
+    TENANT_HOST_ENFORCE: bool = False
+    TENANT_HOST_BASE_DOMAIN: str = ""
+    TENANT_HOST_IGNORE_PREFIXES: list[str] = ["www", "api", "admin"]
+
     # ================================================= #
     # ******************** 数据库配置 ******************* #
     # ================================================= #
@@ -112,15 +117,25 @@ class Settings(BaseSettings):
     # ================================================= #
     CAPTCHA_ENABLE: bool = True  # 是否启用验证码
     CAPTCHA_EXPIRE_SECONDS: int = 60 * 1  # 验证码过期时间(秒) 1分钟
-    CAPTCHA_FONT_SIZE: int = 35  # 字体大小
+    CAPTCHA_FONT_SIZE: int = 32  # 字体大小
     CAPTCHA_FONT_PATH: str = "static/assets/font/Arial.ttf"  # 字体路径
 
     # 是否请求外网解析 IP 归属地（登录发 token、操作日志写 login_location 共用；关闭可明显加快登录）
     LOGIN_RESOLVE_IP_LOCATION: bool = False
 
     # ================================================= #
+    # ******************* 外部 HTTP（httpx）******************* #
+    # ================================================= #
+    HTTPX_DEFAULT_TIMEOUT: float = 10.0  # 对外请求默认超时（秒），见 app/common/httpx_defaults.py
+
+    # ================================================= #
     # ********************* 日志配置 ******************* #
     # ================================================= #
+    # 是否额外写入 JSON Lines（loguru ``serialize=True``，与控制台/info.log 同源，便于日志平台采集）
+    LOG_JSON_FILE_ENABLE: bool = False
+    LOG_JSON_FILE_NAME: str = "app.jsonl"  # 相对 LOG_DIR
+    LOG_JSON_RETENTION_DAYS: int = 7  # JSON 文件保留天数（通常比文本日志短）
+
     OPERATION_LOG_RECORD: bool = True  # 是否记录操作日志
     IGNORE_OPERATION_FUNCTION: list[str] = ["get_captcha_for_login"]  # 忽略记录的函数
     OPERATION_RECORD_METHOD: list[str] = [
@@ -203,7 +218,7 @@ class Settings(BaseSettings):
         返回:
         - list[str | None]: 中间件 import 路径或 None。
         """
-        # 中间件列表
+        # 中间件列表（注册时逆序叠加：下列第一项在列表中最前，最终位于最外层，优先生效）
         MIDDLEWARES: list[str | None] = [
             "app.core.middlewares.CustomCORSMiddleware" if self.CORS_ORIGIN_ENABLE else None,
             "app.core.middlewares.RequestLogMiddleware" if self.OPERATION_LOG_RECORD else None,

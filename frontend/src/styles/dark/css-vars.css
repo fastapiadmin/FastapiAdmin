@@ -29,7 +29,7 @@ html :root {
   /* 亮色：分割线偏淡（主色比例略降、灰底偏浅） */
   --el-border-color: color-mix(in srgb, var(--el-color-primary, #4080ff) 6%, #e2e8f0 94%);
   --el-border-color-light: color-mix(in srgb, var(--el-color-primary, #4080ff) 7.5%, #eef2f7 92.5%);
-  --el-border-color-lighter: color-mix(in srgb, var(--el-color-primary, #4080ff) 8%, #f1f5f9 92%);
+  --el-border-color-lighter: color-mix(in srgb, var(--el-color-primary, #4080ff) 30%, #f1f5f9 92%);
   --el-border-color-extra-light: color-mix(
     in srgb,
     var(--el-color-primary, #4080ff) 5.5%,
@@ -79,7 +79,7 @@ html :root {
    */
   --el-table-theme-border-color: color-mix(
     in srgb,
-    var(--el-color-primary, #4080ff) 4.5%,
+    var(--el-color-primary, #4080ff) 20.5%,
     #eef2f7 95.5%
   );
 
@@ -143,12 +143,23 @@ html.dark {
   --el-overlay-color-light: rgba(0, 0, 0, 0.5);
   --el-overlay-color-lighter: rgba(0, 0, 0, 0.3);
 
-  /* 菜单 hover 兼容 */
-  --el-menu-hover-bg-color: color-mix(
+  /*
+   * 菜单 hover / 激活：真正颜色在 --_menu-*，再赋给 --el-menu-hover-bg-color。
+   * EP 在 el-menu 根上内联 --el-menu-hover-bg-color = TinyColor(bg).shade(20)，会盖掉仅在 html 上的定义；
+   * 用下面 html.dark .el-menu { ... !important } 把同一套色压回组件根，子项即可用 EP 默认 hover。
+   */
+  --_menu-hover-bg: color-mix(
     in srgb,
-    var(--el-color-primary, #4080ff) 9.5%,
-    #1b2a45 90.5%
+    var(--el-color-primary, #4080ff) 14%,
+    var(--layout-nav-bg) 86%
   );
+  --_menu-active-bg: color-mix(
+    in srgb,
+    var(--el-color-primary, #4080ff) 21%,
+    var(--layout-nav-bg) 79%
+  );
+  --el-menu-hover-bg-color: var(--_menu-hover-bg);
+  --el-menu-active-bg-color: var(--_menu-active-bg);
 
   /* 暗色全局滚动条：与主内容区协调，滑块略柔 */
   --app-scrollbar-track: color-mix(in srgb, var(--el-color-primary, #4080ff) 7.5%, #0f172a 92.5%);
@@ -192,6 +203,11 @@ html.dark {
   --el-popover-bg-color: var(--el-dialog-bg-color);
   --el-popup-modal-bg-color: var(--el-overlay-color);
   --el-popup-modal-opacity: 1;
+}
+
+/* 压过 EP 内联的 shade(20)，使子项 hover 读到与 html 一致的主题混色 */
+html.dark .el-menu {
+  --el-menu-hover-bg-color: var(--_menu-hover-bg) !important;
 }
 
 /* Dialog：EP 在 .el-dialog 上写死 --el-dialog-bg-color: var(--el-bg-color)，改为抬升中性底 */

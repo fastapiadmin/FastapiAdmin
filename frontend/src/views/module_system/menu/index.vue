@@ -71,6 +71,30 @@
               </template>
             </el-table-column>
             <el-table-column label="排序" prop="order" min-width="80" />
+            <el-table-column
+              label="路由名称"
+              prop="route_name"
+              show-overflow-toolti
+              min-width="100"
+            />
+            <el-table-column
+              label="路由路径"
+              prop="route_path"
+              show-overflow-tooltip
+              min-width="200"
+            />
+            <el-table-column
+              label="权限标识"
+              prop="permission"
+              show-overflow-tooltip
+              min-width="220"
+            />
+            <el-table-column
+              label="组件路径"
+              prop="component_path"
+              show-overflow-tooltip
+              min-width="200"
+            />
             <el-table-column label="重定向" prop="redirect" min-width="120" show-overflow-tooltip />
             <el-table-column label="是否缓存" prop="keep_alive" min-width="100">
               <template #default="scope">
@@ -101,30 +125,6 @@
               </template>
             </el-table-column>
             <el-table-column label="菜单标题" prop="title" min-width="100" show-overflow-tooltip />
-            <el-table-column
-              label="权限标识"
-              prop="permission"
-              show-overflow-tooltip
-              min-width="220"
-            />
-            <el-table-column
-              label="路由名称"
-              prop="route_name"
-              show-overflow-toolti
-              min-width="100"
-            />
-            <el-table-column
-              label="路由路径"
-              prop="route_path"
-              show-overflow-tooltip
-              min-width="200"
-            />
-            <el-table-column
-              label="组件路径"
-              prop="component_path"
-              show-overflow-tooltip
-              min-width="200"
-            />
             <el-table-column label="路由参数" prop="params" min-width="100" />
             <el-table-column
               label="描述"

@@ -4,7 +4,7 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema, UserBySchema
+from app.core.base_schema import BaseSchema, TenantBySchema, UserBySchema
 from app.core.validator import DateTimeStr
 
 
@@ -46,10 +46,27 @@ class ApplicationUpdateSchema(ApplicationCreateSchema):
     """应用更新模型"""
 
 
-class ApplicationOutSchema(ApplicationCreateSchema, BaseSchema, UserBySchema):
+class ApplicationOutSchema(ApplicationCreateSchema, BaseSchema, UserBySchema, TenantBySchema):
     """应用响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PluginInfoOut(BaseModel):
+    """``app/plugin/module_*`` 插件目录与可选 ``plugin.toml`` 的汇总信息。"""
+
+    module_dir: str = Field(..., description="目录名，如 module_example")
+    route_prefix: str = Field(..., description="动态路由容器前缀，如 /example")
+    has_manifest: bool = Field(..., description="是否存在 plugin.toml")
+    name: str | None = Field(None, description="manifest 中的 name，应与目录段一致")
+    title: str | None = None
+    version: str | None = None
+    description: str | None = None
+    optional: bool | None = Field(None, description="语义：是否可关闭该子系统")
+    tags: list[str] | None = None
+    manifest_name_mismatch: bool | None = Field(
+        None, description="manifest 的 name 与目录 module_<name> 不一致时为 True"
+    )
 
 
 class ApplicationQueryParam:

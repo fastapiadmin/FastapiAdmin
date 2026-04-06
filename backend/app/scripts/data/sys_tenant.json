@@ -1,0 +1,10 @@
+[
+  {
+    "name": "系统租户",
+    "code": "system",
+    "status": "0",
+    "description": "平台默认租户，id 固定为 1",
+    "start_time": null,
+    "end_time": null
+  }
+]
