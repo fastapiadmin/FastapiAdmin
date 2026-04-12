@@ -511,7 +511,7 @@ const contentConfig = reactive<IContentConfig<UserPageQuery>>({
   hideColumnFilter: true,
   initialFetch: false,
   toolbar: [],
-  defaultToolbar: [{ name: "refresh", perm: "query" }],
+  defaultToolbar: ["import", "export", "search", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

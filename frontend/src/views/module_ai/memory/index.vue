@@ -381,8 +381,8 @@ const contentConfig = reactive<IContentConfig>({
   permPrefix: "module_ai:chat",
   cols: [],
   hideColumnFilter: true,
-  toolbar: ["add", "delete"],
-  defaultToolbar: ["search", "refresh"],
+  toolbar: ["add", "delete", "patch"],
+  defaultToolbar: ["import", "export", "search", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

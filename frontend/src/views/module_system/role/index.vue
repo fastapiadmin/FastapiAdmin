@@ -467,7 +467,7 @@ const contentConfig = reactive<IContentConfig<TablePageQuery>>({
   cols: contentCols as IContentConfig["cols"],
   hideColumnFilter: false,
   toolbar: [],
-  defaultToolbar: [{ name: "refresh", perm: "query" }, "filter"],
+  defaultToolbar: ["search", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

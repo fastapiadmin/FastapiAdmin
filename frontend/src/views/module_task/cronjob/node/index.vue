@@ -414,7 +414,7 @@ const contentConfig = reactive<IContentConfig<NodePageQuery>>({
   cols: [],
   hideColumnFilter: true,
   toolbar: ["add", "delete"],
-  defaultToolbar: ["refresh"],
+  defaultToolbar: ["search", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

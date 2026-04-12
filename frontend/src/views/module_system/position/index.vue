@@ -388,7 +388,7 @@ const contentConfig = reactive<IContentConfig<PositionPageQuery>>({
   cols: contentCols as IContentConfig["cols"],
   hideColumnFilter: false,
   toolbar: [],
-  defaultToolbar: [{ name: "refresh", perm: "refresh" }, "filter"],
+  defaultToolbar: ["search", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

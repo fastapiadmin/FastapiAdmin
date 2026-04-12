@@ -402,7 +402,7 @@ const contentConfig = reactive<IContentConfig<Demo01PageQuery>>({
   initialFetch: false,
   cols: contentCols as IContentConfig["cols"],
   toolbar: [],
-  defaultToolbar: ["import", "exports", "search", "refresh", "filter"],
+  defaultToolbar: ["import", "export", "search", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

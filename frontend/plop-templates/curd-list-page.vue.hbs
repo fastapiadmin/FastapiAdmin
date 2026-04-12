@@ -69,7 +69,7 @@ const searchConfig = reactive<ISearchConfig>({
 const contentConfig = reactive<IContentConfig>({
   permPrefix: "{{permPrefix}}",
   toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
+  defaultToolbar: ["import", "export", "patch", "search", "refresh", "filter"],
   cols: [],
   /** TODO: 接入列表 API，返回 { total, list } 供 PageContent 解析 */
   indexAction: async () => ({ total: 0, list: [] }),

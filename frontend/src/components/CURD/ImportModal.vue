@@ -41,6 +41,7 @@
                   </el-text>
                   <el-link
                     v-if="props.showTemplateDownload"
+                    v-hasPerm="[`${props.contentConfig.permPrefix}:download`]"
                     class="mx-1"
                     type="primary"
                     icon="download"

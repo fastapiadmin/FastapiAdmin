@@ -377,18 +377,16 @@ const emit = defineEmits<{
 // 表格工具栏按钮配置
 const config = computed(() => props.contentConfig);
 const buttonConfig = reactive<Record<string, IObject>>({
-  add: { text: "新增", attrs: { icon: "plus", type: "success" }, perm: "add" },
+  add: { text: "新增", attrs: { icon: "plus", type: "success" }, perm: "create" },
   delete: { text: "删除", attrs: { icon: "delete", type: "danger" }, perm: "delete" },
-  /** 右侧圆形工具条：与业务页手写工具栏（如 user、demo）语义色一致 */
+  patch: { text: "批量修改", attrs: { icon: "edit", type: "warning" }, perm: "patch" },
   import: { text: "导入", attrs: { icon: "upload", type: "info" }, perm: "import" },
   export: { text: "导出", attrs: { icon: "download", type: "warning" }, perm: "export" },
   refresh: { text: "刷新", attrs: { icon: "refresh", type: "success" }, perm: "*:*:*" },
   filter: { text: "筛选列", attrs: { icon: "operation", type: "danger" }, perm: "*:*:*" },
-  search: { text: "搜索", attrs: { icon: "search", type: "info" }, perm: "search" },
-  imports: { text: "批量导入", attrs: { icon: "upload", type: "success" }, perm: "imports" },
-  exports: { text: "批量导出", attrs: { icon: "download", type: "warning" }, perm: "exports" },
-  view: { text: "查看", attrs: { icon: "view", type: "primary" }, perm: "view" },
-  edit: { text: "编辑", attrs: { icon: "edit", type: "primary" }, perm: "edit" },
+  search: { text: "搜索", attrs: { icon: "search", type: "info" }, perm: "query" },
+  view: { text: "详情", attrs: { icon: "view", type: "primary" }, perm: "detail" },
+  edit: { text: "编辑", attrs: { icon: "edit", type: "primary" }, perm: "update" },
 });
 
 // 主键
@@ -807,7 +805,7 @@ function handleToolbar(name: string) {
     case "refresh":
       handleRefresh();
       break;
-    case "exports":
+    case "export":
       handleOpenExportsModal();
       break;
     case "imports":
@@ -822,11 +820,11 @@ function handleToolbar(name: string) {
     case "delete":
       handleDelete();
       break;
+    case "patch":
+      emit("toolbarClick", name);
+      break;
     case "import":
       handleOpenImportModal(true);
-      break;
-    case "export":
-      emit("exportClick");
       break;
     default:
       emit("toolbarClick", name);

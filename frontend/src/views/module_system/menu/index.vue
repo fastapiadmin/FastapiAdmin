@@ -807,7 +807,7 @@ const contentConfig = reactive<IContentConfig<MenuPageQuery>>({
   cols: contentCols as IContentConfig["cols"],
   hideColumnFilter: true,
   toolbar: [],
-  defaultToolbar: ["refresh"],
+  defaultToolbar: ["refresh", "filter"],
   pagination: false,
   indexAction: async (params) => {
     const res = await MenuAPI.listMenu(params as MenuPageQuery);
