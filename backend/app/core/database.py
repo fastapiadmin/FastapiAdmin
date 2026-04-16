@@ -132,7 +132,7 @@ async def drop_tables() -> None:
         await conn.run_sync(MappedBase.metadata.drop_all)
 
 
-async def redis_connect(app: FastAPI, status: str) -> Redis | None:
+async def redis_connect(app: FastAPI, status: bool) -> Redis | None:
     """
     创建或关闭Redis连接。
 
