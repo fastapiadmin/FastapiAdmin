@@ -46,19 +46,30 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
             modules=settings.EVENT_LIST, desc="全局事件", app=app, status=True
         )
         log.info("✅ 全局事件模块加载完成")
-        await ParamsService().init_config_service(redis=app.state.redis)
-        log.info("✅ Redis系统配置初始化完成")
-        await DictDataService().init_dict_service(redis=app.state.redis)
-        log.info("✅ Redis数据字典初始化完成")
-        await SchedulerUtil.init_scheduler(redis=app.state.redis)
-        log.info("✅ 定时任务调度器初始化完成")
-        await FastAPILimiter.init(
-            redis=app.state.redis,
-            prefix=settings.REQUEST_LIMITER_REDIS_PREFIX,
-            http_callback=http_limit_callback,
-            ws_callback=ws_limit_callback,
-        )
-        log.info("✅ 请求限流器初始化完成")
+        
+        redis_ready = False
+        scheduler_ready = False
+        limiter_ready = False
+        
+        if settings.REDIS_ENABLE:
+            await ParamsService().init_config_service(redis=app.state.redis)
+            log.info("✅ Redis系统配置初始化完成")
+            await DictDataService().init_dict_service(redis=app.state.redis)
+            log.info("✅ Redis数据字典初始化完成")
+            await SchedulerUtil.init_scheduler(redis=app.state.redis)
+            log.info("✅ 定时任务调度器初始化完成")
+            await FastAPILimiter.init(
+                redis=app.state.redis,
+                prefix=settings.REQUEST_LIMITER_REDIS_PREFIX,
+                http_callback=http_limit_callback,
+                ws_callback=ws_limit_callback,
+            )
+            log.info("✅ 请求限流器初始化完成")
+            redis_ready = True
+            scheduler_ready = SchedulerUtil.is_running()
+            limiter_ready = True
+        else:
+            log.info("ℹ️ Redis已禁用，跳过Redis相关初始化")
 
         # 导入并显示最终的启动信息面板
         from app.common.enums import EnvironmentEnum
@@ -68,9 +79,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
             port=settings.SERVER_PORT,
             reload=settings.ENVIRONMENT == EnvironmentEnum.DEV,
             database_ready=True,
-            redis_ready=True,
-            scheduler_ready=SchedulerUtil.is_running(),
-            limiter_ready=True,
+            redis_ready=redis_ready,
+            scheduler_ready=scheduler_ready,
+            limiter_ready=limiter_ready,
         )
 
     except Exception as e:
@@ -80,10 +91,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     yield
 
     try:
-        await SchedulerUtil.shutdown(wait=False)
-        log.info("✅ 定时任务调度器已关闭")
-        await FastAPILimiter.close()
-        log.info("✅ 请求限制器已关闭")
+        if settings.REDIS_ENABLE:
+            await SchedulerUtil.shutdown(wait=False)
+            log.info("✅ 定时任务调度器已关闭")
+            await FastAPILimiter.close()
+            log.info("✅ 请求限制器已关闭")
+        else:
+            log.info("ℹ️ Redis已禁用，跳过Redis相关关闭")
         await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
         log.info("✅ 全局事件模块卸载完成")
         console_close()

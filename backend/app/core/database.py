@@ -144,10 +144,8 @@ async def redis_connect(app: FastAPI, status: str) -> Redis | None:
     - Redis | None: Redis连接实例,如果连接失败则返回None。
     """
     if not settings.REDIS_ENABLE:
-        raise CustomException(
-            msg="请先开启Redis连接",
-            data="请启用 app/core/config.py: REDIS_ENABLE",
-        )
+        log.info("ℹ️ Redis已禁用，跳过Redis连接")
+        return None
 
     if status:
         try:
@@ -172,5 +170,6 @@ async def redis_connect(app: FastAPI, status: str) -> Redis | None:
             log.error(f"❌ 数据库 Redis 连接错误: {e}")
             raise
     else:
-        await app.state.redis.close()
-        log.info("✅️ Redis连接已关闭")
+        if hasattr(app.state, 'redis') and app.state.redis:
+            await app.state.redis.close()
+            log.info("✅️ Redis连接已关闭")

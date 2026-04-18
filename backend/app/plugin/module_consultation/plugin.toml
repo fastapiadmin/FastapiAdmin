@@ -1,0 +1,10 @@
+[plugin]
+name = "module_consultation"
+description = "招生咨询会管理模块"
+version = "1.0.0"
+author = "System"
+enabled = true
+
+[plugin.dependencies]
+required = []
+optional = []

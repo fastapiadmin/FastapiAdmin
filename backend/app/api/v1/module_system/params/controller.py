@@ -271,17 +271,26 @@ async def upload_file_controller(file: UploadFile, request: Request) -> JSONResp
     response_model=ResponseSchema[list[ParamsOutSchema]],
 )
 async def get_init_obj_controller(
-    redis: Annotated[Redis, Depends(redis_getter)],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:query"]))],
 ) -> JSONResponse:
     """
     获取初始化缓存参数
 
     参数:
-    - redis (Redis): Redis 客户端实例
+    - auth (AuthSchema): 认证信息
 
     返回:
     - JSONResponse: 获取初始化缓存参数的 JSON 响应
     """
-    result_dict = await ParamsService.get_init_config_service(redis=redis)
-    log.info(f"获取初始化缓存参数成功 {result_dict}")
+    from app.config.setting import settings
+    from app.core.database import async_db_session
+    
+    async with async_db_session() as session:
+        async with session.begin():
+            auth_no_scope = AuthSchema(db=session, check_data_scope=False)
+            result_dict = await ParamsService.get_obj_list_service(
+                auth=auth_no_scope,
+                order_by=[{"id": "asc"}],
+            )
+    log.info(f"获取初始化缓存参数成功 {len(result_dict)}")
     return SuccessResponse(data=result_dict, msg="获取初始化缓存参数成功")
