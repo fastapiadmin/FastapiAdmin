@@ -79,15 +79,13 @@ class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, Reg
         data = {
             "registration_status": "approved",
             "approval_time": datetime.now(),
-            "approval_by": self.auth.id,
+            "approval_by": self.auth.user.id if self.auth.user else None,
             "approval_comment": comment,
         }
         if booth_number:
             data["booth_number"] = booth_number
         if booth_size:
             data["booth_size"] = booth_size
-        if booth_fee is not None:
-            data["booth_fee"] = booth_fee
         return await self.update(id=id, data=data)
 
     async def reject_crud(self, id: int, comment: str) -> RegistrationModel:
@@ -95,7 +93,7 @@ class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, Reg
         data = {
             "registration_status": "rejected",
             "approval_time": datetime.now(),
-            "approval_by": self.auth.id,
+            "approval_by": self.auth.user.id if self.auth.user else None,
             "approval_comment": comment,
         }
         return await self.update(id=id, data=data)

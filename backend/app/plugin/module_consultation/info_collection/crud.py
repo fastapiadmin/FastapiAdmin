@@ -69,7 +69,7 @@ class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSch
         data = {
             "status": InfoStatus.APPROVED.value,
             "review_comment": review_comment,
-            "reviewed_by": self.auth.id,
+            "reviewed_by": self.auth.user.id if self.auth.user else None,
             "reviewed_time": datetime.now(),
         }
         return await self.update(id=id, data=data)
@@ -79,7 +79,7 @@ class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSch
         data = {
             "status": InfoStatus.REJECTED.value,
             "review_comment": review_comment,
-            "reviewed_by": self.auth.id,
+            "reviewed_by": self.auth.user.id if self.auth.user else None,
             "reviewed_time": datetime.now(),
         }
         return await self.update(id=id, data=data)
@@ -88,7 +88,7 @@ class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSch
         """归档"""
         data = {
             "is_archived": True,
-            "archived_by": self.auth.id,
+            "archived_by": self.auth.user.id if self.auth.user else None,
             "archived_time": datetime.now(),
         }
         return await self.update(id=id, data=data)

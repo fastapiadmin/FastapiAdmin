@@ -48,85 +48,37 @@ const ItineraryAPI = {
       data: ids,
     });
   },
-
-  confirm(id: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/confirm/${id}`,
-      method: "post",
-    });
-  },
-
-  execute(id: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/execute/${id}`,
-      method: "post",
-    });
-  },
-
-  archive(id: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/archive/${id}`,
-      method: "post",
-    });
-  },
-
-  syncCalendar(id: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/sync-calendar/${id}`,
-      method: "post",
-    });
-  },
-
-  addConsultation(id: number, consultationId: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/add-consultation/${id}`,
-      method: "post",
-      params: { consultation_id: consultationId },
-    });
-  },
-
-  removeConsultation(id: number, consultationId: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/remove-consultation/${id}`,
-      method: "post",
-      params: { consultation_id: consultationId },
-    });
-  },
-
-  optimizeRoute(id: number) {
-    return request<ApiResponse<ItineraryItem>>({
-      url: `${API_PATH}/optimize-route/${id}`,
-      method: "post",
-    });
-  },
 };
 
 export default ItineraryAPI;
 
-export interface ItineraryQuery extends PageQuery {
-  name?: string;
-  university_id?: number;
+export interface ItineraryQuery {
+  consultation_id?: number;
   team_id?: number;
-  status?: string;
+  itinerary_name?: string;
+  itinerary_status?: string;
 }
 
 export interface ItineraryForm {
-  name: string;
-  description?: string;
-  university_id?: number;
+  consultation_id: number;
   team_id?: number;
+  itinerary_name?: string;
   start_date: string;
-  end_date: string;
-  consultation_ids?: number[];
-  transportation_plan?: any[];
-  accommodation_plan?: any[];
-  total_distance?: number;
-  estimated_duration?: number;
-  estimated_cost?: number;
+  end_date?: string;
+  departure_city?: string;
+  destination_city?: string;
+  transportation?: string;
+  departure_time?: string;
+  arrival_time?: string;
+  transportation_no?: string;
+  hotel_name?: string;
+  hotel_address?: string;
+  check_in_date?: string;
+  check_out_date?: string;
+  room_number?: string;
 }
 
 export interface ItineraryItem extends ItineraryForm, BaseType {
-  consultation_details?: any[];
-  status: string;
+  itinerary_status: string;
   is_synced: boolean;
 }

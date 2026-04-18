@@ -49,7 +49,7 @@ const RegistrationAPI = {
     });
   },
 
-  approve(id: number, data: { booth_number?: string; booth_size?: string; booth_fee?: number; comment?: string }) {
+  approve(id: number, data: { booth_number?: string; booth_size?: string; comment?: string }) {
     return request<ApiResponse<RegistrationItem>>({
       url: `${API_PATH}/approve/${id}`,
       method: "post",
@@ -57,48 +57,18 @@ const RegistrationAPI = {
     });
   },
 
-  reject(id: number, comment: string) {
+  reject(id: number, data: { comment: string }) {
     return request<ApiResponse<RegistrationItem>>({
       url: `${API_PATH}/reject/${id}`,
       method: "post",
-      data: { comment },
-    });
-  },
-
-  cancel(id: number, reason?: string) {
-    return request<ApiResponse<RegistrationItem>>({
-      url: `${API_PATH}/cancel/${id}`,
-      method: "post",
-      params: { reason },
-    });
-  },
-
-  confirmPayment(id: number, payment_time: string, comment?: string) {
-    return request<ApiResponse<RegistrationItem>>({
-      url: `${API_PATH}/confirm-payment/${id}`,
-      method: "post",
-      data: { payment_time, comment },
-    });
-  },
-
-  getStatisticsByStatus() {
-    return request<ApiResponse<Record<string, number>>>({
-      url: `${API_PATH}/statistics/status`,
-      method: "get",
-    });
-  },
-
-  getStatisticsByConsultation(consultationId: number) {
-    return request<ApiResponse<Record<string, number>>>({
-      url: `${API_PATH}/statistics/consultation/${consultationId}`,
-      method: "get",
+      data,
     });
   },
 };
 
 export default RegistrationAPI;
 
-export interface RegistrationQuery extends PageQuery {
+export interface RegistrationQuery {
   consultation_id?: number;
   university_id?: number;
   university_name?: string;
@@ -114,20 +84,14 @@ export interface RegistrationForm {
   contact_person?: string;
   contact_phone?: string;
   contact_email?: string;
+  booth_number?: string;
   booth_size?: string;
-  remarks?: string;
 }
 
 export interface RegistrationItem extends RegistrationForm, BaseType {
-  booth_number?: string;
-  booth_fee?: number;
-  is_paid: boolean;
-  payment_time?: string;
   registration_status: string;
   registration_time?: string;
   approval_time?: string;
   approval_by?: number;
   approval_comment?: string;
-  materials_submitted?: any[];
-  materials_required?: any[];
 }
