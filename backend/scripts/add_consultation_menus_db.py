@@ -4,15 +4,37 @@
 import pymysql
 import uuid
 from datetime import datetime
+from pathlib import Path
 
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "123456",
-    "database": "high_school_college",
-    "charset": "utf8mb4"
-}
+def load_db_config():
+    """从 .env.dev 加载数据库配置"""
+    env_path = Path(__file__).parent.parent / "env" / ".env.dev"
+    
+    if not env_path.exists():
+        raise FileNotFoundError(f"配置文件不存在: {env_path}")
+    
+    db_password = None
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith('DATABASE_PASSWORD'):
+                _, value = line.split('=', 1)
+                db_password = value.strip().strip('"').strip("'")
+                break
+    
+    if db_password is None:
+        raise ValueError("在 .env.dev 中找不到 DATABASE_PASSWORD")
+    
+    return {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": db_password,
+        "database": "high_school_college",
+        "charset": "utf8mb4"
+    }
+
+DB_CONFIG = load_db_config()
 
 def get_connection():
     """获取数据库连接"""

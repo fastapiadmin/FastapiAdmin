@@ -22,6 +22,7 @@ backend/.ruff.toml
 
 frontend/__pycache__
 frontend/.vscode
+frontend/logs
 frontend/.idea
 frontend/.DS_Store
 frontend/node_modules
