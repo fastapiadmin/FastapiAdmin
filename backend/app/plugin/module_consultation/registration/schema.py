@@ -19,8 +19,8 @@ class RegistrationCreateSchema(BaseSchema):
     contact_person: str | None = Field(default=None, description="联系人")
     contact_phone: str | None = Field(default=None, description="联系电话")
     contact_email: str | None = Field(default=None, description="联系邮箱")
+    booth_number: str | None = Field(default=None, description="展位号")
     booth_size: str | None = Field(default=None, description="展位大小")
-    remarks: str | None = Field(default=None, description="备注")
 
 
 class RegistrationUpdateSchema(RegistrationCreateSchema):
@@ -33,17 +33,11 @@ class RegistrationOutSchema(RegistrationCreateSchema, BaseSchema, UserBySchema):
 
     model_config = ConfigDict(from_attributes=True)
 
-    booth_number: Optional[str] = Field(default=None, description="展位号")
-    booth_fee: Optional[float] = Field(default=None, description="展位费用")
-    is_paid: bool = Field(default=False, description="是否已支付")
-    payment_time: Optional[datetime] = Field(default=None, description="支付时间")
     registration_status: str = Field(default="pending", description="报名状态")
     registration_time: Optional[datetime] = Field(default=None, description="报名时间")
     approval_time: Optional[datetime] = Field(default=None, description="审核时间")
     approval_by: Optional[int] = Field(default=None, description="审核人ID")
     approval_comment: Optional[str] = Field(default=None, description="审核意见")
-    materials_submitted: Optional[list] = Field(default=None, description="已提交材料")
-    materials_required: Optional[list] = Field(default=None, description="需要材料")
 
 
 class RegistrationQuerySchema(BaseSchema):
@@ -55,8 +49,6 @@ class RegistrationQuerySchema(BaseSchema):
     contact_person: str | None = Field(default=None, description="联系人")
     contact_phone: str | None = Field(default=None, description="联系电话")
     registration_status: str | None = Field(default=None, description="报名状态")
-    start_date: list[DateTimeStr] | None = Field(default=None, description="报名时间范围")
-    end_date: list[DateTimeStr] | None = Field(default=None, description="报名时间范围结束")
 
 
 class RegistrationApproveSchema(BaseSchema):
@@ -64,7 +56,6 @@ class RegistrationApproveSchema(BaseSchema):
 
     booth_number: str | None = Field(default=None, description="展位号")
     booth_size: str | None = Field(default=None, description="展位大小")
-    booth_fee: float | None = Field(default=None, description="展位费用")
     comment: str | None = Field(default=None, description="审核意见")
 
 
@@ -78,4 +69,3 @@ class RegistrationPaySchema(BaseSchema):
     """支付确认模型"""
 
     payment_time: DateTimeStr = Field(..., description="支付时间")
-    comment: str | None = Field(default=None, description="备注")

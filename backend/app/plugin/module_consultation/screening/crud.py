@@ -8,7 +8,7 @@ from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_crud import CRUDBase
 
 from .model import ScreeningFilterModel
-from .schema import ScreeningFilterCreateSchema, ScreeningFilterUpdateSchema
+from .schema import ScreeningFilterCreateSchema, ScreeningFilterOutSchema, ScreeningFilterUpdateSchema
 
 
 class ScreeningCRUD(CRUDBase[ScreeningFilterModel, ScreeningFilterCreateSchema, ScreeningFilterUpdateSchema]):
@@ -44,6 +44,7 @@ class ScreeningCRUD(CRUDBase[ScreeningFilterModel, ScreeningFilterCreateSchema, 
             limit=limit,
             order_by=order_by,
             search=search,
+            out_schema=ScreeningFilterOutSchema,
         )
 
     async def create_crud(self, data: dict) -> ScreeningFilterModel:

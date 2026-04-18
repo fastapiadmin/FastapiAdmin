@@ -11,7 +11,7 @@ from app.core.base_crud import CRUDBase
 from app.core.database import async_db_session
 
 from .model import ItineraryModel
-from .schema import ItineraryCreateSchema, ItineraryUpdateSchema
+from .schema import ItineraryCreateSchema, ItineraryOutSchema, ItineraryUpdateSchema
 
 
 class ItineraryCRUD(CRUDBase[ItineraryModel, ItineraryCreateSchema, ItineraryUpdateSchema]):
@@ -47,6 +47,7 @@ class ItineraryCRUD(CRUDBase[ItineraryModel, ItineraryCreateSchema, ItineraryUpd
             limit=limit,
             order_by=order_by,
             search=search,
+            out_schema=ItineraryOutSchema,
         )
 
     async def create_crud(self, data: dict) -> ItineraryModel:

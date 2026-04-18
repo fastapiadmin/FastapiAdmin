@@ -301,9 +301,9 @@ const fetchList = async () => {
     };
     
     const res = await ConsultationInfoAPI.getList(params);
-    if (res.data) {
-      tableData.value = res.data.list || [];
-      pagination.total = res.data.total || 0;
+    if (res.data?.data) {
+      tableData.value = res.data.data.items || [];
+      pagination.total = res.data.data.total || 0;
     }
   } finally {
     loading.value = false;

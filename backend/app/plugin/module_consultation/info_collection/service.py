@@ -156,7 +156,7 @@ class InfoCollectionService:
             update_data["search_keywords"] = search_keywords
         
         # 更新参与高校数量
-        if "participating_universities" in update_data:
+        if update_data.get("participating_universities") is not None:
             update_data["university_count"] = len(update_data["participating_universities"])
         
         updated_obj = await InfoCollectionCRUD(auth).update_crud(id, update_data)

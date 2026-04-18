@@ -9,7 +9,7 @@ from app.core.base_crud import CRUDBase
 from app.core.exceptions import CustomException
 
 from .model import ConsultationInfoModel, InfoStatus
-from .schema import InfoCollectionCreateSchema, InfoCollectionUpdateSchema
+from .schema import InfoCollectionCreateSchema, InfoCollectionOutSchema, InfoCollectionUpdateSchema
 
 
 class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSchema, InfoCollectionUpdateSchema]):
@@ -45,6 +45,7 @@ class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSch
             limit=limit,
             order_by=order_by,
             search=search,
+            out_schema=InfoCollectionOutSchema,
         )
 
     async def create_crud(self, data: dict) -> ConsultationInfoModel:

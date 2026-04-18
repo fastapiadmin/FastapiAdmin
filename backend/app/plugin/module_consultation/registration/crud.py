@@ -11,7 +11,7 @@ from app.core.base_crud import CRUDBase
 from app.core.database import async_db_session
 
 from .model import RegistrationModel
-from .schema import RegistrationCreateSchema, RegistrationUpdateSchema
+from .schema import RegistrationCreateSchema, RegistrationOutSchema, RegistrationUpdateSchema
 
 
 class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, RegistrationUpdateSchema]):
@@ -47,6 +47,7 @@ class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, Reg
             limit=limit,
             order_by=order_by,
             search=search,
+            out_schema=RegistrationOutSchema,
         )
 
     async def create_crud(self, data: dict) -> RegistrationModel:

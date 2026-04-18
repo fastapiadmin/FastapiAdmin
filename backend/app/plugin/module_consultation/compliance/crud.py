@@ -13,8 +13,10 @@ from app.core.database import async_db_session
 from .model import ComplianceDiagnosisModel, ComplianceRuleModel
 from .schema import (
     ComplianceDiagnosisCreateSchema,
+    ComplianceDiagnosisOutSchema,
     ComplianceDiagnosisUpdateSchema,
     ComplianceRuleCreateSchema,
+    ComplianceRuleOutSchema,
     ComplianceRuleUpdateSchema,
 )
 
@@ -52,6 +54,7 @@ class ComplianceDiagnosisCRUD(CRUDBase[ComplianceDiagnosisModel, ComplianceDiagn
             limit=limit,
             order_by=order_by,
             search=search,
+            out_schema=ComplianceDiagnosisOutSchema,
         )
 
     async def create_crud(self, data: dict) -> ComplianceDiagnosisModel:
@@ -133,6 +136,7 @@ class ComplianceRuleCRUD(CRUDBase[ComplianceRuleModel, ComplianceRuleCreateSchem
             limit=limit,
             order_by=order_by,
             search=search,
+            out_schema=ComplianceRuleOutSchema,
         )
 
     async def create_crud(self, data: dict) -> ComplianceRuleModel:

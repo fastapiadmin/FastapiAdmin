@@ -13,18 +13,22 @@ from app.core.validator import DateStr, DateTimeStr
 class ItineraryCreateSchema(BaseSchema):
     """新增行程方案模型"""
 
-    name: str = Field(..., description="行程方案名称", min_length=2, max_length=200)
-    description: Optional[str] = Field(default=None, description="行程方案描述")
-    university_id: Optional[int] = Field(default=None, description="高校ID")
+    consultation_id: int = Field(..., description="咨询会ID")
     team_id: Optional[int] = Field(default=None, description="招生组ID")
+    itinerary_name: Optional[str] = Field(default=None, description="行程方案名称", max_length=200)
     start_date: DateStr = Field(..., description="开始日期")
-    end_date: DateStr = Field(..., description="结束日期")
-    consultation_ids: Optional[list[int]] = Field(default=None, description="咨询会ID列表")
-    transportation_plan: Optional[list[dict]] = Field(default=None, description="交通方案")
-    accommodation_plan: Optional[list[dict]] = Field(default=None, description="住宿方案")
-    total_distance: Optional[float] = Field(default=None, description="总距离")
-    estimated_duration: Optional[int] = Field(default=None, description="预计时长")
-    estimated_cost: Optional[float] = Field(default=None, description="预计费用")
+    end_date: Optional[DateStr] = Field(default=None, description="结束日期")
+    departure_city: Optional[str] = Field(default=None, description="出发城市", max_length=50)
+    destination_city: Optional[str] = Field(default=None, description="目的城市", max_length=50)
+    transportation: Optional[str] = Field(default=None, description="交通方式", max_length=50)
+    departure_time: Optional[DateTimeStr] = Field(default=None, description="出发时间")
+    arrival_time: Optional[DateTimeStr] = Field(default=None, description="到达时间")
+    transportation_no: Optional[str] = Field(default=None, description="车次/航班号", max_length=100)
+    hotel_name: Optional[str] = Field(default=None, description="酒店名称", max_length=200)
+    hotel_address: Optional[str] = Field(default=None, description="酒店地址", max_length=500)
+    check_in_date: Optional[DateStr] = Field(default=None, description="入住日期")
+    check_out_date: Optional[DateStr] = Field(default=None, description="退房日期")
+    room_number: Optional[str] = Field(default=None, description="房间号", max_length=50)
 
 
 class ItineraryUpdateSchema(ItineraryCreateSchema):
@@ -37,22 +41,19 @@ class ItineraryOutSchema(ItineraryCreateSchema, BaseSchema, UserBySchema):
 
     model_config = ConfigDict(from_attributes=True)
 
-    consultation_details: Optional[list] = Field(default=None, description="咨询会详情")
-    status: str = Field(default="draft", description="状态")
+    itinerary_status: str = Field(default="draft", description="状态")
     is_synced: bool = Field(default=False, description="是否已同步")
 
 
 class ItineraryQuerySchema(BaseSchema):
     """行程方案查询参数"""
 
-    name: Optional[str] = Field(default=None, description="行程方案名称")
-    university_id: Optional[int] = Field(default=None, description="高校ID")
+    consultation_id: Optional[int] = Field(default=None, description="咨询会ID")
     team_id: Optional[int] = Field(default=None, description="招生组ID")
-    status: Optional[str] = Field(default=None, description="状态")
+    itinerary_name: Optional[str] = Field(default=None, description="行程方案名称")
+    itinerary_status: Optional[str] = Field(default=None, description="状态")
     start_date_begin: Optional[DateStr] = Field(default=None, description="开始日期-起")
     start_date_end: Optional[DateStr] = Field(default=None, description="开始日期-止")
-    end_date_begin: Optional[DateStr] = Field(default=None, description="结束日期-起")
-    end_date_end: Optional[DateStr] = Field(default=None, description="结束日期-止")
 
 
 class ItinerarySyncSchema(BaseSchema):
