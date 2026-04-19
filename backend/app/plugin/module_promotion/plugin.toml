@@ -1,0 +1,10 @@
+[plugin]
+name = "module_promotion"
+description = "招生宣传活动管理模块"
+version = "1.0.0"
+author = "System"
+enabled = true
+
+[plugin.dependencies]
+required = []
+optional = []
