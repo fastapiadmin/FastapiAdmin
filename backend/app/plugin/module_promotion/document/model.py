@@ -160,9 +160,3 @@ class PromotionDocumentModel(ModelMixin, UserMixin):
         nullable=True,
         comment="显示排序"
     )
-
-    description: Mapped[Optional[str]] = mapped_column(
-        Text,
-        nullable=True,
-        comment="备注/描述"
-    )

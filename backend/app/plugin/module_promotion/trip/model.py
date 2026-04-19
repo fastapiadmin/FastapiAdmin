@@ -78,7 +78,7 @@ class PromotionTripModel(ModelMixin, UserMixin):
         comment="行程状态"
     )
 
-    location_sharing: Mapped[Optional[int]] = mapped_column(
+    enable_location_sharing: Mapped[Optional[int]] = mapped_column(
         Integer,
         nullable=True,
         comment="启用位置共享"
@@ -106,10 +106,4 @@ class PromotionTripModel(ModelMixin, UserMixin):
         String(500),
         nullable=True,
         comment="最后位置地址"
-    )
-
-    description: Mapped[Optional[str]] = mapped_column(
-        Text,
-        nullable=True,
-        comment="备注/描述"
     )

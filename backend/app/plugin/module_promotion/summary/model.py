@@ -66,20 +66,8 @@ class PromotionSummaryModel(ModelMixin, UserMixin):
         comment="附件URLs"
     )
 
-    upload_by: Mapped[Optional[int]] = mapped_column(
-        BIGINT,
+    summary_status: Mapped[Optional[str]] = mapped_column(
+        String(20),
         nullable=True,
-        comment="上传人ID"
-    )
-
-    upload_time: Mapped[Optional[datetime]] = mapped_column(
-        DateTime,
-        nullable=True,
-        comment="上传时间"
-    )
-
-    is_archived: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        nullable=True,
-        comment="是否已归档"
+        comment="总结状态"
     )

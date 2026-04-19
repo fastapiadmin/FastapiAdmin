@@ -73,12 +73,6 @@ class PromotionMaterialModel(ModelMixin, UserMixin):
         comment="存放位置"
     )
 
-    description: Mapped[Optional[str]] = mapped_column(
-        Text,
-        nullable=True,
-        comment="备注/描述"
-    )
-
 
 class PromotionMaterialApplyModel(ModelMixin, UserMixin):
     """

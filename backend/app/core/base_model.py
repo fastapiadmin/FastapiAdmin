@@ -90,6 +90,9 @@ class ModelMixin(MappedBase):
         comment="状态(0:正常 1:禁用)",
         index=True,
     )
+    description: Mapped[str | None] = mapped_column(
+        Text, default=None, nullable=True, comment="备注/描述"
+    )
     created_time: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.now,

@@ -3,9 +3,14 @@
 > vite
 
 
-  VITE v6.4.2  ready in 741 ms
+  VITE v6.4.2  ready in 831 ms
 
   ➜  Local:   http://localhost:15180/web
   ➜  Network: http://192.168.0.238:15180/web
   ➜  UnoCSS Inspector: http://localhost:15180/__unocss/
-7:00:28 PM [vite] (client) hmr update /src/views/module_promotion/activity_apply/index.vue
+8:23:04 PM [vite] (client) hmr update /src/views/module_promotion/activity_apply/index.vue
+8:23:04 PM [vite] (client) hmr update /src/views/module_promotion/target_school/index.vue
+9:10:50 PM [vite] (client) ✨ new dependencies optimized: element-plus/es/components/splitter/style/index, element-plus/es/components/splitter-panel/style/index
+9:10:50 PM [vite] (client) ✨ optimized dependencies changed. reloading
+10:04:17 PM [vite] (client) hmr update /src/views/module_promotion/activity_apply/index.vue
+10:04:17 PM [vite] (client) hmr update /src/views/module_promotion/target_school/index.vue

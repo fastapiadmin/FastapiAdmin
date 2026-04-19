@@ -90,9 +90,3 @@ class PromotionEvaluationModel(ModelMixin, UserMixin):
         nullable=True,
         comment="评选时间"
     )
-
-    description: Mapped[Optional[str]] = mapped_column(
-        Text,
-        nullable=True,
-        comment="备注/描述"
-    )
