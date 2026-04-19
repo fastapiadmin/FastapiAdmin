@@ -229,16 +229,12 @@ class TeamService:
 
         return {
             "id": team.id,
-            "team_name": team.team_name,
-            "team_code": team.team_code,
-            "team_level": team.team_level,
+            "name": team.name,
             "parent_id": team.parent_id,
-            "level_depth": team.level_depth,
-            "region_name": team.region_name,
-            "province": team.province,
-            "city": team.city,
+            "level": team.level,
+            "leader_id": team.leader_id,
+            "responsible_area": team.responsible_area,
             "status": team.status,
-            "member_count": team.member_count,
             "children": children_list,
         }
 

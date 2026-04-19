@@ -5,40 +5,25 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.base_schema import BaseSchema, UserBySchema
-from app.core.validator import DateStr, DateTimeStr
+from app.core.validator import DateTimeStr
 
 
 class PersonnelCreateSchema(BaseModel):
     """新增招生人员模型"""
 
-    personnel_name: str = Field(..., description="人员姓名", min_length=2, max_length=100)
-    personnel_code: str | None = Field(default=None, description="人员编号", max_length=50)
-    personnel_type: str = Field(default="manual", description="人员类型")
-
+    name: str = Field(..., description="人员姓名", min_length=2, max_length=100)
     user_id: int | None = Field(default=None, description="关联用户ID")
     phone: str | None = Field(default=None, description="手机号", max_length=20)
     email: str | None = Field(default=None, description="邮箱", max_length=100)
-
     team_id: int | None = Field(default=None, description="招生组ID")
-    team_name: str | None = Field(default=None, description="招生组名称", max_length=200)
+    role: str | None = Field(default=None, description="角色", max_length=50)
+    invitation_status: str | None = Field(default=None, description="邀请状态")
+    join_time: DateTimeStr | None = Field(default=None, description="加入时间")
+    exit_time: DateTimeStr | None = Field(default=None, description="离开时间")
 
-    province: str | None = Field(default=None, description="负责省份", max_length=50)
-    city: str | None = Field(default=None, description="负责城市", max_length=50)
-
-    position: str | None = Field(default=None, description="职务", max_length=100)
-
-    join_date: DateStr | None = Field(default=None, description="加入日期")
-    leave_reason: str | None = Field(default=None, description="离开原因", max_length=500)
-
-    target_schools: int | None = Field(default=None, description="目标学校数量")
-    visited_schools: int | None = Field(default=None, description="已访问学校数量")
-
-    remark: str | None = Field(default=None, description="备注")
-    display_order: int = Field(default=0, description="显示排序")
-
-    @field_validator("personnel_name")
+    @field_validator("name")
     @classmethod
-    def validate_personnel_name(cls, v: str) -> str:
+    def validate_name(cls, v: str) -> str:
         """验证人员姓名"""
         v = v.strip()
         if not v:
@@ -57,10 +42,6 @@ class PersonnelOutSchema(PersonnelCreateSchema, BaseSchema, UserBySchema):
     model_config = ConfigDict(from_attributes=True)
 
     status: str | None = Field(default=None, description="状态")
-    leave_date: DateStr | None = Field(default=None, description="离开日期")
-    invite_code: str | None = Field(default=None, description="邀请码")
-    invite_time: DateTimeStr | None = Field(default=None, description="邀请时间")
-    invite_expire_time: DateTimeStr | None = Field(default=None, description="邀请过期时间")
     created_by_name: str | None = Field(default=None, description="创建人")
     updated_by_name: str | None = Field(default=None, description="更新人")
 
@@ -70,33 +51,24 @@ class PersonnelQuerySchema(BaseModel):
 
     def __init__(
         self,
-        personnel_name: str | None = Query(None, description="人员姓名"),
-        personnel_code: str | None = Query(None, description="人员编号"),
-        personnel_type: str | None = Query(None, description="人员类型"),
+        name: str | None = Query(None, description="人员姓名"),
+        user_id: int | None = Query(None, description="用户ID"),
         team_id: int | None = Query(None, description="招生组ID"),
-        team_name: str | None = Query(None, description="招生组名称"),
-        province: str | None = Query(None, description="省份"),
-        city: str | None = Query(None, description="城市"),
+        role: str | None = Query(None, description="角色"),
         status: str | None = Query(None, description="状态"),
-        position: str | None = Query(None, description="职务"),
+        invitation_status: str | None = Query(None, description="邀请状态"),
     ) -> None:
         from app.common.enums import QueueEnum
 
-        if personnel_name:
-            self.personnel_name = (QueueEnum.like.value, personnel_name)
-        if personnel_code:
-            self.personnel_code = (QueueEnum.eq.value, personnel_code)
-        if personnel_type:
-            self.personnel_type = (QueueEnum.eq.value, personnel_type)
+        if name:
+            self.name = (QueueEnum.like.value, name)
+        if user_id is not None:
+            self.user_id = (QueueEnum.eq.value, user_id)
         if team_id is not None:
             self.team_id = (QueueEnum.eq.value, team_id)
-        if team_name:
-            self.team_name = (QueueEnum.like.value, team_name)
-        if province:
-            self.province = (QueueEnum.eq.value, province)
-        if city:
-            self.city = (QueueEnum.eq.value, city)
+        if role:
+            self.role = (QueueEnum.eq.value, role)
         if status:
             self.status = (QueueEnum.eq.value, status)
-        if position:
-            self.position = (QueueEnum.eq.value, position)
+        if invitation_status:
+            self.invitation_status = (QueueEnum.eq.value, invitation_status)

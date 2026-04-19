@@ -1,8 +1,6 @@
 """
 活动打卡 - 服务层
 """
-import json
-import uuid
 from datetime import datetime
 from typing import Any
 
@@ -88,12 +86,6 @@ class CheckinService:
         返回:
         - dict: 创建的活动打卡模型实例字典
         """
-        checkin_no = f"CK{uuid.uuid4().hex[:12].upper()}"
-        data["checkin_no"] = checkin_no
-
-        if "checkin_images" in data and isinstance(data["checkin_images"], list):
-            data["checkin_images"] = json.dumps(data["checkin_images"])
-
         obj = await CheckinCRUD(auth).create_crud(data=data)
         log.info(f"创建活动打卡成功: {obj.id}")
         return cls._format_checkin_output(obj)
@@ -114,9 +106,6 @@ class CheckinService:
         existing = await CheckinCRUD(auth).get_by_id_crud(id=id)
         if not existing:
             raise CustomException(msg="该活动打卡不存在")
-
-        if "checkin_images" in data and isinstance(data["checkin_images"], list):
-            data["checkin_images"] = json.dumps(data["checkin_images"])
 
         obj = await CheckinCRUD(auth).update_crud(id=id, data=data)
         log.info(f"更新活动打卡成功: {id}")
@@ -166,17 +155,11 @@ class CheckinService:
         if not existing:
             raise CustomException(msg="该活动打卡不存在")
 
-        if existing.checkin_status == CheckinStatus.VALIDATED.value:
+        if existing.status == CheckinStatus.VALIDATED.value:
             raise CustomException(msg="该打卡已验证")
 
-        user_id = auth.user.id if auth.user else None
-        user_name = auth.user.name if auth.user else None
-
         update_data = {
-            "checkin_status": CheckinStatus.VALIDATED.value,
-            "validated_by": user_id,
-            "validated_by_name": user_name,
-            "validated_time": datetime.now(),
+            "status": CheckinStatus.VALIDATED.value,
         }
 
         obj = await CheckinCRUD(auth).update_crud(id=id, data=update_data)
@@ -200,18 +183,12 @@ class CheckinService:
         if not existing:
             raise CustomException(msg="该活动打卡不存在")
 
-        if existing.checkin_status == CheckinStatus.INVALID.value:
+        if existing.status == CheckinStatus.INVALID.value:
             raise CustomException(msg="该打卡已无效")
 
-        user_id = auth.user.id if auth.user else None
-        user_name = auth.user.name if auth.user else None
-
         update_data = {
-            "checkin_status": CheckinStatus.INVALID.value,
-            "validated_by": user_id,
-            "validated_by_name": user_name,
-            "validated_time": datetime.now(),
-            "remark": reason,
+            "status": CheckinStatus.INVALID.value,
+            "remarks": reason,
         }
 
         obj = await CheckinCRUD(auth).update_crud(id=id, data=update_data)
@@ -221,10 +198,4 @@ class CheckinService:
     @classmethod
     def _format_checkin_output(cls, obj: PromotionCheckinModel) -> dict:
         """格式化打卡输出"""
-        result = CheckinOutSchema.model_validate(obj).model_dump()
-        if result.get("checkin_images") and isinstance(result["checkin_images"], str):
-            try:
-                result["checkin_images"] = json.loads(result["checkin_images"])
-            except json.JSONDecodeError:
-                result["checkin_images"] = []
-        return result
+        return CheckinOutSchema.model_validate(obj).model_dump()
