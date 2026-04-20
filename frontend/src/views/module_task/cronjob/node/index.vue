@@ -10,7 +10,6 @@
     <PageContent
       ref="contentRef"
       :content-config="contentConfig"
-      @search-click="handleToggleSearch"
       @add-click="handleOpenDialog('create')"
     >
       <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
@@ -391,7 +390,6 @@ const searchConfig = reactive<ISearchConfig>({
   colon: true,
   isExpandable: false,
   showNumber: 2,
-  showToggle: false,
   form: { labelWidth: "auto" },
   formItems: [
     {
@@ -414,7 +412,7 @@ const contentConfig = reactive<IContentConfig<NodePageQuery>>({
   cols: [],
   hideColumnFilter: true,
   toolbar: ["add", "delete"],
-  defaultToolbar: ["search", "refresh", "filter"],
+  defaultToolbar: ["refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],
@@ -541,10 +539,6 @@ const executeRules = reactive({
   trigger: [{ required: true, message: "请选择执行方式", trigger: "change" }],
   trigger_args: [{ required: true, message: "请设置执行参数", trigger: "blur" }],
 });
-
-function handleToggleSearch() {
-  searchRef.value?.toggleVisible();
-}
 
 function handleRowDelete(id: number) {
   contentRef.value?.handleDelete(id);

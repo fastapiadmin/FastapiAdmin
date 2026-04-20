@@ -211,6 +211,7 @@
       @close="handleClose"
       @prev-step="prevStep"
       @next-step="nextStep"
+      @save="handleSave"
       @gen-download="handleGenTable('0', info)"
       @gen-write="handleGenTable('1', info)"
       @clear-master-sub="clearMasterSub"
@@ -1169,7 +1170,7 @@ async function nextStep(): Promise<void> {
   if (activeStep.value < 3) {
     nextStepLoading.value = true;
     try {
-      // 在进入下一步前先保存当前配置
+      // 验证当前步骤数据
       if (activeStep.value === 0) {
         // 第一步：基础配置
         const basicInfoValid = await basicInfo.value?.validate().catch(() => false);
@@ -1181,10 +1182,6 @@ async function nextStep(): Promise<void> {
           return;
         }
       }
-
-      // 保存配置：从第 1 步离开时要求已配置列；从第 0 步进入字段配置时允许仅保存基础信息
-      const saved = await submitForm({ requireColumns: activeStep.value !== 0 });
-      if (!saved) return;
 
       activeStep.value++;
 
@@ -1202,6 +1199,29 @@ async function nextStep(): Promise<void> {
 function prevStep(): void {
   if (activeStep.value > 0) {
     activeStep.value--;
+  }
+}
+
+// 保存配置
+async function handleSave(): Promise<void> {
+  try {
+    // 验证当前步骤数据
+    if (activeStep.value === 0) {
+      // 第一步：基础配置
+      const basicInfoValid = await basicInfo.value?.validate().catch(() => false);
+      if (!basicInfoValid) return;
+    } else if (activeStep.value === 1) {
+      // 第二步：字段配置
+      if (!info.columns || info.columns.length === 0) {
+        ElMessage.error("请配置字段信息");
+        return;
+      }
+    }
+
+    // 保存配置
+    await submitForm({ requireColumns: activeStep.value !== 0 });
+  } catch (error) {
+    console.error("保存失败:", error);
   }
 }
 

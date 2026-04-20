@@ -11,7 +11,6 @@
     <PageContent
       ref="contentRef"
       :content-config="contentConfig"
-      @search-click="handleToggleSearch"
       @add-click="handleOpenDialog('create')"
     >
       <!-- 与 PageContent 默认结构一致：不再套一层 data-table__toolbar（外层已由组件提供） -->
@@ -290,7 +289,6 @@ const searchConfig = reactive<ISearchConfig>({
   colon: true,
   isExpandable: true,
   showNumber: 2,
-  showToggle: false,
   form: { labelWidth: "auto" },
   formItems: [
     {
@@ -402,7 +400,7 @@ const contentConfig = reactive<IContentConfig<Demo01PageQuery>>({
   initialFetch: false,
   cols: contentCols as IContentConfig["cols"],
   toolbar: [],
-  defaultToolbar: ["import", "export", "search", "refresh", "filter"],
+  defaultToolbar: ["import", "export", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],
@@ -493,10 +491,6 @@ const rules = reactive({
 });
 
 const dataFormRef = ref();
-
-function handleToggleSearch() {
-  searchRef.value?.toggleVisible();
-}
 
 function handleRowDelete(id: number) {
   contentRef.value?.handleDelete(id);

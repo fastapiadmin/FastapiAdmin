@@ -11,7 +11,6 @@
     <PageContent
       ref="contentRef"
       :content-config="contentConfig"
-      @search-click="handleToggleSearch"
       @add-click="handleOpenDialog('create')"
     >
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
@@ -334,7 +333,6 @@ const searchConfig = reactive<ISearchConfig>({
   colon: true,
   isExpandable: true,
   showNumber: 2,
-  showToggle: false,
   form: { labelWidth: "auto" },
   formItems: [
     {% for column in columns %}
@@ -473,7 +471,7 @@ const contentConfig = reactive<IContentConfig<{{ class_name }}PageQuery>>({
   initialFetch: false,
   cols: contentCols as IContentConfig["cols"],
   toolbar: [],
-  defaultToolbar: ["import", "export", "patch", "search", "refresh", "filter"],
+  defaultToolbar: ["import", "export", "patch", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],
@@ -561,10 +559,6 @@ const dictTypes: string[] = [
   {% endif %}
   {% endfor %}
 ];
-
-function handleToggleSearch() {
-  searchRef.value?.toggleVisible();
-}
 
 function handleRowDelete(id: number) {
   contentRef.value?.handleDelete(id);

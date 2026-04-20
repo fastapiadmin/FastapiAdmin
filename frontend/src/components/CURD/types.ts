@@ -44,7 +44,7 @@ export type IComponentType = DateComponent | InputComponent | OtherComponent;
  * 工具按钮类型定义
  */
 type ToolbarLeft = "add" | "delete" | "patch";
-type ToolbarRight = "refresh" | "filter" | "import" | "export" | "search";
+type ToolbarRight = "refresh" | "filter" | "import" | "export";
 type ToolbarTable = "edit" | "view" | "delete";
 
 /**
@@ -114,10 +114,6 @@ export interface ISearchConfig {
   searchButtonPerm?: string | string[];
   /** 重置按钮权限 */
   resetButtonPerm?: string | string[];
-  /** 是否显示搜索区域切换按钮(默认：false) */
-  showToggle?: boolean;
-  /** 搜索区域切换按钮权限 */
-  togglePerm?: string | string[];
   /** 自定义按钮组 */
   customButtons?: Array<{
     /** 按钮唯一标识 */
@@ -204,7 +200,7 @@ export interface IContentConfig<T = any> {
   pk?: string;
   /** 表格工具栏(默认:add,delete,export,也可自定义) */
   toolbar?: Array<ToolbarLeft | IToolsButton>;
-  /** 表格工具栏右侧图标(默认:refresh,filter,import,export,patch,search) */
+  /** 表格工具栏右侧图标(默认:refresh,filter,import,export) */
   defaultToolbar?: Array<ToolbarRight | IToolsButton>;
   /** 使用 #table 插槽自定义表格/树表时，为 true 则隐藏「列筛选」按钮（避免与自定义列不同步） */
   hideColumnFilter?: boolean;

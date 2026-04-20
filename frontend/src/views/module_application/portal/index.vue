@@ -183,7 +183,6 @@ const searchConfig = reactive<ISearchConfig>({
   colon: true,
   isExpandable: true,
   showNumber: 2,
-  showToggle: false,
   form: { labelWidth: "auto" },
   formItems: [
     {

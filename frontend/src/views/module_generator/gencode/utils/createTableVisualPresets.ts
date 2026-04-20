@@ -34,7 +34,13 @@ function mixinMysql(): ColDef[] {
     },
     { name: "created_id", type: "int", nullable: true, isPk: false, comment: "创建人ID" },
     { name: "updated_id", type: "int", nullable: true, isPk: false, comment: "更新人ID" },
-    { name: "is_deleted", type: "tinyint(1)", nullable: false, isPk: false, comment: "是否已删除(0:未删除 1:已删除)" },
+    {
+      name: "is_deleted",
+      type: "tinyint(1)",
+      nullable: false,
+      isPk: false,
+      comment: "是否已删除(0:未删除 1:已删除)",
+    },
     { name: "deleted_time", type: "datetime", nullable: true, isPk: false, comment: "删除时间" },
     { name: "deleted_id", type: "int", nullable: true, isPk: false, comment: "删除人ID" },
   ];
@@ -66,8 +72,20 @@ function mixinPostgres(): ColDef[] {
     },
     { name: "created_id", type: "integer", nullable: true, isPk: false, comment: "创建人ID" },
     { name: "updated_id", type: "integer", nullable: true, isPk: false, comment: "更新人ID" },
-    { name: "is_deleted", type: "boolean", nullable: false, isPk: false, comment: "是否已删除(0:未删除 1:已删除)" },
-    { name: "deleted_time", type: "timestamp without time zone", nullable: true, isPk: false, comment: "删除时间" },
+    {
+      name: "is_deleted",
+      type: "boolean",
+      nullable: false,
+      isPk: false,
+      comment: "是否已删除(0:未删除 1:已删除)",
+    },
+    {
+      name: "deleted_time",
+      type: "timestamp without time zone",
+      nullable: true,
+      isPk: false,
+      comment: "删除时间",
+    },
     { name: "deleted_id", type: "integer", nullable: true, isPk: false, comment: "删除人ID" },
   ];
 }

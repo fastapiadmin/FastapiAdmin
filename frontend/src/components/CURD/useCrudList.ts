@@ -43,5 +43,11 @@ export function useCrudList() {
     }
   }
 
-  return { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList };
+  return {
+    searchRef,
+    contentRef,
+    handleQueryClick,
+    handleResetClick,
+    refreshList,
+  };
 }

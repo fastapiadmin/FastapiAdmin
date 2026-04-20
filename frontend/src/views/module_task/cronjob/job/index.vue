@@ -252,11 +252,7 @@
           @query-click="handleLogQueryClick"
           @reset-click="handleLogResetClick"
         />
-        <PageContent
-          ref="logContentRef"
-          class="execution-log-drawer__content"
-          :content-config="logContentConfig"
-        >
+        <PageContent ref="logContentRef" :content-config="logContentConfig">
           <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
             <div class="data-table__content">
               <el-table
@@ -945,12 +941,13 @@ function handleViewJobState(row: JobLogTable | IObject) {
 .execution-log-drawer {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  height: 100%;
   min-height: 0;
 }
 
-.execution-log-drawer :deep(.execution-log-drawer__content.data-table) {
+.execution-log-drawer :deep(.el-card.data-table) {
   flex: 1;
   min-height: 0;
+  margin-top: 16px;
 }
 </style>

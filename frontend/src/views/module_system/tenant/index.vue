@@ -375,7 +375,7 @@ const contentConfig = reactive<IContentConfig<TenantPageQuery>>({
   cols: contentCols as IContentConfig["cols"],
   hideColumnFilter: false,
   toolbar: [],
-  defaultToolbar: ["import", "export", "search", "refresh", "filter"],
+  defaultToolbar: ["import", "export", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],

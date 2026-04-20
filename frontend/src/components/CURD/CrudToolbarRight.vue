@@ -46,7 +46,6 @@ const TOOLTIPS: Record<string, string> = {
   import: "导入",
   export: "导出",
   filter: "筛选",
-  search: "搜索显示/隐藏",
   refresh: "刷新",
 };
 

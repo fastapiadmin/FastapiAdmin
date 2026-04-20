@@ -11,7 +11,6 @@
     <PageContent
       ref="contentRef"
       :content-config="contentConfig"
-      @search-click="handleToggleSearch"
       @add-click="handleOpenDialog('create')"
     >
       <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
@@ -337,7 +336,6 @@ const searchConfig = reactive<ISearchConfig>({
   colon: true,
   isExpandable: true,
   showNumber: 1,
-  showToggle: false,
   form: { labelWidth: "auto" },
   formItems: [
     {
@@ -382,7 +380,7 @@ const contentConfig = reactive<IContentConfig>({
   cols: [],
   hideColumnFilter: true,
   toolbar: ["add", "delete", "patch"],
-  defaultToolbar: ["import", "export", "search", "refresh", "filter"],
+  defaultToolbar: ["import", "export", "refresh", "filter"],
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],
@@ -439,10 +437,6 @@ const rules = reactive({
 function formatTime(timestamp: number | null): string {
   if (!timestamp) return "";
   return formatToDateTime(new Date(timestamp * 1000));
-}
-
-function handleToggleSearch() {
-  searchRef.value?.toggleVisible();
 }
 
 function handleRowDelete(id: string) {

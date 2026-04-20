@@ -11,7 +11,6 @@
     <PageContent
       ref="contentRef"
       :content-config="contentConfig"
-      @search-click="handleToggleSearch"
       @add-click="handleOpenDialog('create')"
     >
       <!-- 与 PageContent 默认结构一致：不再套一层 data-table__toolbar（外层已由组件提供） -->
@@ -481,10 +480,6 @@ function handleOpenExportsModal() {
 
 function handleRowDelete(id: number) {
   contentRef.value?.handleDelete(id);
-}
-
-function handleToggleSearch() {
-  searchRef.value?.toggleVisible();
 }
 
 async function resetForm() {

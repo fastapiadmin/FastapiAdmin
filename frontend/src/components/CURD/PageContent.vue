@@ -367,7 +367,6 @@ const props = defineProps<{ contentConfig: IContentConfig }>();
 const emit = defineEmits<{
   addClick: [];
   exportClick: [];
-  searchClick: [];
   toolbarClick: [name: string];
   editClick: [row: IObject];
   filterChange: [data: IObject];
@@ -384,7 +383,6 @@ const buttonConfig = reactive<Record<string, IObject>>({
   export: { text: "导出", attrs: { icon: "download", type: "warning" }, perm: "export" },
   refresh: { text: "刷新", attrs: { icon: "refresh", type: "success" }, perm: "*:*:*" },
   filter: { text: "筛选列", attrs: { icon: "operation", type: "danger" }, perm: "*:*:*" },
-  search: { text: "搜索", attrs: { icon: "search", type: "info" }, perm: "query" },
   view: { text: "详情", attrs: { icon: "view", type: "primary" }, perm: "detail" },
   edit: { text: "编辑", attrs: { icon: "edit", type: "primary" }, perm: "update" },
 });
@@ -809,9 +807,6 @@ function handleToolbar(name: string) {
       break;
     case "imports":
       handleOpenImportModal();
-      break;
-    case "search":
-      emit("searchClick");
       break;
     case "add":
       emit("addClick");

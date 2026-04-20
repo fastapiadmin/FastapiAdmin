@@ -124,20 +124,6 @@ function usePage() {
   }
 
   /**
-   * 处理搜索点击事件
-   */
-  function handleSearchClick() {
-    try {
-      searchRef.value?.toggleVisible();
-    } catch (error) {
-      console.error("切换搜索栏失败:", error);
-      ElMessage.error(
-        "切换搜索栏失败: " + (error instanceof Error ? error.message : String(error))
-      );
-    }
-  }
-
-  /**
    * 处理筛选改变事件
    * @param filterParams 筛选参数
    */
@@ -189,7 +175,6 @@ function usePage() {
     handleViewClick,
     handleSubmitClick,
     handleExportClick,
-    handleSearchClick,
     handleFilterChange,
     handleMoreOperation,
   };

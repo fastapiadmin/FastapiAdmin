@@ -1,5 +1,5 @@
 <template>
-  <div v-show="visible">
+  <div>
     <el-card v-bind="cardAttrs">
       <!-- 搜索表单区域 -->
       <el-form
@@ -103,17 +103,6 @@
               <component :is="isExpand ? ArrowUp : ArrowDown" class="w-4 h-4 ml-2" />
             </el-link>
           </template>
-          <!-- 显示/隐藏搜索区域 -->
-          <el-tooltip v-if="searchConfig?.showToggle" content="搜索显示/隐藏">
-            <el-button
-              v-if="!searchConfig?.togglePerm || hasPermission(searchConfig.togglePerm)"
-              class="ml-3"
-              type="info"
-              icon="search"
-              circle
-              @click="toggleVisible"
-            />
-          </el-tooltip>
         </el-form-item>
       </el-form>
     </el-card>
@@ -185,8 +174,6 @@ const getCustomComponent = (componentName: string) => {
 const queryFormRef = ref<FormInstance>();
 // 存储查询参数
 const queryParams = reactive<IObject>({});
-// 是否显示
-const visible = ref(true);
 // 响应式的formItems
 const formItems = reactive(props.searchConfig?.formItems ?? []);
 // 是否可展开/收缩
@@ -229,11 +216,6 @@ watch(isExpand, () => {
 // 获取tooltip提示框属性
 const getTooltipProps = (tips: string | IObject) => {
   return typeof tips === "string" ? { content: tips } : tips;
-};
-
-// 显示/隐藏搜索区域
-const toggleVisible = () => {
-  visible.value = !visible.value;
 };
 
 /** 查询前对 input 做 trim；去掉空条件，避免 GET 出现 name=&created_id= 等导致后端 Optional[int] 解析失败 */
@@ -322,8 +304,6 @@ onMounted(() => {
 defineExpose({
   // 获取分页数据（与「搜索」提交时一致，含 input trim）
   getQueryParams: () => buildQueryPayload(),
-  // 显示/隐藏 SearchForm
-  toggleVisible: () => (visible.value = !visible.value),
 });
 </script>
 

@@ -7,12 +7,7 @@
       @reset-click="handleResetClick"
     />
 
-    <PageContent
-      ref="contentRef"
-      :content-config="contentConfig"
-      @search-click="handleToggleSearch"
-      @add-click="handleCreate"
-    >
+    <PageContent ref="contentRef" :content-config="contentConfig" @add-click="handleCreate">
       <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
         <div class="data-table__content">
           <el-table
@@ -146,7 +141,6 @@ const searchConfig = reactive<ISearchConfig>({
   colon: true,
   isExpandable: true,
   showNumber: 2,
-  showToggle: false,
   form: { labelWidth: "auto" },
   formItems: [
     {
@@ -191,10 +185,7 @@ const contentConfig = reactive<IContentConfig<WorkflowPageQuery>>({
     { name: "add", text: "新增", attrs: { icon: "plus", type: "success" }, perm: "create" },
     "delete",
   ],
-  defaultToolbar: [
-    { name: "search", text: "搜索", attrs: { icon: "search", type: "info" }, perm: "*:*:*" },
-    "refresh",
-  ],
+  defaultToolbar: ["refresh"],
   initialFetch: false,
   pagination: {
     pageSize: 10,
@@ -223,10 +214,6 @@ const contentConfig = reactive<IContentConfig<WorkflowPageQuery>>({
     type: "warning",
   },
 });
-
-function handleToggleSearch() {
-  searchRef.value?.toggleVisible();
-}
 
 function handleRowDelete(id?: number) {
   if (id == null) return;
