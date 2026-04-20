@@ -1,5 +1,4 @@
 import json
-from collections.abc import Awaitable
 from typing import Any
 
 from redis.asyncio.client import Redis
@@ -319,13 +318,13 @@ class RedisCURD:
         - bool: 如果设置哈希缓存成功则返回True,否则返回False
         """
         try:
-            self.redis.hset(name=name, key=key, value=value)
+            await self.redis.hset(name=name, key=key, value=value)
             return True
         except Exception as e:
             log.error(f"设置哈希缓存失败: {e!s}")
             return False
 
-    async def hash_get(self, name: str, keys: list[str]) -> Awaitable[list[Any]] | list[Any]:
+    async def hash_get(self, name: str, keys: list[str]) -> list[Any]:
         """获取哈希缓存
 
         参数:
@@ -336,7 +335,7 @@ class RedisCURD:
         - Awaitable[list[Any]] | list[Any]: 返回哈希缓存值列表,如果获取失败则返回空列表
         """
         try:
-            data = self.redis.hmget(name=name, keys=keys)
+            data = await self.redis.hmget(name=name, keys=keys)
             return data
         except Exception as e:
             log.error(f"获取哈希缓存失败: {e!s}")
