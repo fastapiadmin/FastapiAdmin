@@ -7,7 +7,6 @@ from enum import Enum
 from sqlalchemy import (
     BIGINT,
     JSON,
-    Boolean,
     Date,
     DateTime,
     Float,
@@ -198,32 +197,4 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
         String(20),
         nullable=True,
         comment="合规等级(low/medium/high)"
-    )
-
-    # 抓取信息
-    crawler_task_id: Mapped[int | None] = mapped_column(
-        BIGINT,
-        nullable=True,
-        comment="抓取任务ID"
-    )
-
-    crawled_at: Mapped[datetime | None] = mapped_column(
-        DateTime,
-        nullable=True,
-        comment="抓取时间"
-    )
-
-    # 扩展信息
-    extra_info: Mapped[dict | None] = mapped_column(
-        JSON,
-        nullable=True,
-        comment="扩展信息"
-    )
-
-    # 是否删除（软删除）
-    is_deleted: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        nullable=False,
-        comment="是否删除"
     )
