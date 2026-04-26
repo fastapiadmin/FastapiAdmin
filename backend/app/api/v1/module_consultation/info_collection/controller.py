@@ -3,7 +3,7 @@
 """
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -13,11 +13,13 @@ from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
+from .crawler_service import run_crawler_task
 from .schema import (
     InfoCollectionCreateSchema,
     InfoCollectionOutSchema,
     InfoCollectionQueryParam,
     InfoCollectionUpdateSchema,
+    ThirdPartyUploadSchema,
 )
 from .service import InfoCollectionService
 
@@ -263,3 +265,83 @@ async def archive_controller(
     result_dict = await InfoCollectionService.archive_service(auth=auth, id=id)
     log.info(f"归档咨询会信息成功 {id}")
     return SuccessResponse(data=result_dict, msg="归档成功")
+
+
+@InfoCollectionRouter.post(
+    "/third-party-upload",
+    summary="第三方上传咨询会信息",
+    description="支持第三方机构、高校、高中自助上传咨询会信息",
+    response_model=ResponseSchema[InfoCollectionOutSchema],
+)
+async def third_party_upload_controller(
+    data: ThirdPartyUploadSchema,
+    source_type: Annotated[str, Query(description="上传来源(upload/high_school/university)")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:create"]))],
+) -> JSONResponse:
+    """
+    第三方上传咨询会信息
+
+    参数:
+    - data (ThirdPartyUploadSchema): 咨询会信息上传模型
+    - source_type (str): 上传来源(upload-第三方机构/high_school-高中/university-高校)
+    - auth (AuthSchema): 认证信息模型
+
+    返回:
+    - JSONResponse: 包含创建咨询会信息详情的JSON响应
+    """
+    from .model import InfoSource
+
+    # 转换source_type为InfoSource
+    source_mapping = {
+        "upload": InfoSource.UPLOAD.value,
+        "high_school": InfoSource.HIGH_SCHOOL.value,
+        "university": InfoSource.UNIVERSITY.value,
+    }
+
+    # 构建创建数据
+    create_data = InfoCollectionCreateSchema(
+        **data.model_dump(),
+        source_type=source_mapping.get(source_type, InfoSource.UPLOAD.value),
+    )
+
+    result_dict = await InfoCollectionService.create_service(auth=auth, data=create_data)
+    log.info(f"第三方上传咨询会信息成功，来源: {source_type}")
+    return SuccessResponse(data=result_dict, msg="上传成功，请等待审核")
+
+
+@InfoCollectionRouter.post(
+    "/trigger-crawler",
+    summary="触发爬虫抓取",
+    description="手动触发全网抓取咨询会信息",
+    response_model=ResponseSchema[dict],
+)
+async def trigger_crawler_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:admin"]))],
+    days_ahead: Annotated[int, Query(description="抓取未来多少天的信息")] = 30,
+) -> JSONResponse:
+    """
+    触发爬虫抓取咨询会信息
+
+    参数:
+    - days_ahead (int): 抓取未来多少天的咨询会信息
+    - auth (AuthSchema): 认证信息模型
+
+    返回:
+    - JSONResponse: 包含抓取结果的JSON响应
+    """
+    try:
+        # 异步执行爬虫任务
+        import asyncio
+        asyncio.create_task(run_crawler_task())
+
+        log.info(f"已触发爬虫任务，抓取未来{days_ahead}天的咨询会信息")
+        return SuccessResponse(
+            data={"task_started": True, "days_ahead": days_ahead},
+            msg="爬虫任务已启动，请稍后查看结果"
+        )
+    except Exception as e:
+        log.error(f"触发爬虫任务失败: {e}")
+        return SuccessResponse(
+            data={"task_started": False, "error": str(e)},
+            msg="爬虫任务启动失败"
+        )

@@ -24,6 +24,19 @@ class InfoSource(str, Enum):
     CRAWLER = "crawler"      # 全网抓取
     UPLOAD = "upload"        # 第三方上传
     MANUAL = "manual"        # 手动录入
+    HIGH_SCHOOL = "high_school"  # 高中录入
+    UNIVERSITY = "university"    # 高校录入
+
+
+class OrganizerNature(str, Enum):
+    """主办机构性质枚举"""
+    OFFICIAL_SINGLE = "official_single"           # 单一省、市、区级官方机构
+    HIGH_SCHOOL_SINGLE = "high_school_single"     # 单一高中
+    UNIVERSITY_SINGLE = "university_single"       # 单一高校
+    THIRD_PARTY_SINGLE = "third_party_single"     # 单一第三方机构
+    HIGH_SCHOOL_UNION = "high_school_union"       # 多所高中联合、无第三方机构
+    HIGH_SCHOOL_UNION_WITH_THIRD = "high_school_union_with_third"  # 多所高中联合、有第三方机构
+    THIRD_PARTY_MULTIPLE = "third_party_multiple"  # 多家第三方机构
 
 
 class InfoStatus(str, Enum):
@@ -69,6 +82,31 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
         String(50),
         nullable=True,
         comment="主办方类型(教育部门/高校/中学/机构)"
+    )
+
+    organizer_nature: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="主办机构性质(用于合规评分)"
+    )
+
+    # 主办方详细信息
+    organizer_detail: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="主办方详细信息(机构类型、级别等)"
+    )
+
+    has_third_party: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        comment="是否有第三方机构参与"
+    )
+
+    third_party_info: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="第三方机构信息"
     )
 
     # 时间和地点

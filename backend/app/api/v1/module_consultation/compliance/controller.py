@@ -171,6 +171,107 @@ async def check_compliance_controller(
     return SuccessResponse(data=result_dict, msg="检查成功")
 
 
+@ComplianceDiagnosisRouter.post(
+    "/score/{consultation_id}",
+    summary="执行合规评分(v1.0)",
+    description="根据主办机构性质对咨询会进行合规性评估和评分(1.0版评分规则)",
+    response_model=ResponseSchema[dict],
+)
+async def score_consultation_controller(
+    consultation_id: Annotated[int, Path(description="咨询会ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:compliance:create"]))],
+) -> JSONResponse:
+    """
+    执行合规评分(v1.0)
+
+    评分规则：
+    - 单一省、市、区级官方机构：8-10分
+    - 单一高中、高校：5-8分
+    - 单一第三方机构：0-3分
+    - 多所高中联合、无第三方机构：8-10分
+    - 多所高中联合、有第三方机构：6-9分
+    - 多家第三方机构：3-6分
+    """
+    from app.core.database import async_session
+
+    from ..info_collection.model import ConsultationInfoModel
+    from .scoring_service import ComplianceScoringServiceV1
+
+    async with async_session() as session:
+        # 获取咨询会信息
+        consultation = await session.get(ConsultationInfoModel, consultation_id)
+        if not consultation:
+            return SuccessResponse(data=None, msg="咨询会不存在")
+
+        # 执行评分
+        result = await ComplianceScoringServiceV1.diagnose_consultation(consultation)
+
+        # 保存诊断结果
+        await ComplianceScoringServiceV1.save_diagnosis_result(consultation_id, result)
+
+        log.info(f"咨询会 {consultation_id} 合规评分完成: {result.score}分, 等级: {result.level}")
+
+        return SuccessResponse(
+            data={
+                "consultation_id": consultation_id,
+                "score": result.score,
+                "level": result.level,
+                "is_high_risk": result.is_high_risk,
+                "risk_factors": result.risk_factors,
+                "improvement_suggestions": result.improvement_suggestions,
+                "diagnosis_details": result.diagnosis_details,
+            },
+            msg="合规评分完成"
+        )
+
+
+@ComplianceDiagnosisRouter.post(
+    "/batch-score",
+    summary="批量合规评分",
+    description="对多个咨询会进行批量合规评分",
+    response_model=ResponseSchema[dict],
+)
+async def batch_score_controller(
+    consultation_ids: list[int],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:compliance:create"]))],
+) -> JSONResponse:
+    """
+    批量合规评分
+
+    参数:
+    - consultation_ids (list[int]): 咨询会ID列表
+
+    返回:
+    - JSONResponse: 包含评分结果的JSON响应
+    """
+    from .scoring_service import ComplianceScoringServiceV1
+
+    results = await ComplianceScoringServiceV1.batch_diagnose_consultations(consultation_ids)
+
+    # 统计结果
+    high_risk_count = sum(1 for r in results.values() if r.is_high_risk)
+    avg_score = sum(r.score for r in results.values()) / len(results) if results else 0
+
+    log.info(f"批量合规评分完成，共{len(results)}条，高风险{high_risk_count}条，平均分{avg_score:.1f}")
+
+    return SuccessResponse(
+        data={
+            "total_count": len(results),
+            "high_risk_count": high_risk_count,
+            "average_score": round(avg_score, 1),
+            "results": {
+                consultation_id: {
+                    "score": r.score,
+                    "level": r.level,
+                    "is_high_risk": r.is_high_risk,
+                }
+                for consultation_id, r in results.items()
+            },
+        },
+        msg=f"批量评分完成，共{len(results)}条"
+    )
+
+
 ComplianceRuleRouter = APIRouter(
     route_class=OperationLogRoute,
     prefix="/rule",

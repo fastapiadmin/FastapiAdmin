@@ -4,16 +4,30 @@
 功能：全网聚合招生咨询会信息，智能筛选匹配，一键生成行程方案
 """
 
-from .compliance import controller as compliance_controller
-from .info_collection import controller as info_collection_controller
-from .itinerary import controller as itinerary_controller
-from .registration import controller as registration_controller
-from .screening import controller as screening_controller
+from fastapi import APIRouter
 
-__all__ = [
-    "info_collection_controller",
-    "screening_controller",
-    "itinerary_controller",
-    "registration_controller",
-    "compliance_controller",
-]
+from .compliance.controller import ComplianceDiagnosisRouter, ComplianceRuleRouter
+from .info_collection.controller import InfoCollectionRouter
+from .itinerary.controller import ItineraryRouter
+from .registration.controller import RegistrationRouter
+from .screening.controller import ScreeningRouter
+
+consultation_router = APIRouter()
+
+# 注册咨询会信息聚合路由
+consultation_router.include_router(InfoCollectionRouter)
+
+# 注册智能筛选路由
+consultation_router.include_router(ScreeningRouter)
+
+# 注册行程规划路由
+consultation_router.include_router(ItineraryRouter)
+
+# 注册报名管理路由
+consultation_router.include_router(RegistrationRouter)
+
+# 注册合规诊断路由
+consultation_router.include_router(ComplianceDiagnosisRouter)
+consultation_router.include_router(ComplianceRuleRouter)
+
+__all__ = ["consultation_router"]

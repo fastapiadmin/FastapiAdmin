@@ -10,6 +10,50 @@ from app.core.base_schema import BaseSchema, UserBySchema
 from app.core.validator import DateStr, DateTimeStr
 
 
+class ThirdPartyUploadSchema(BaseModel):
+    """第三方上传咨询会信息模型"""
+
+    # 基本信息
+    title: str = Field(..., description="咨询会标题", min_length=2, max_length=200)
+    description: str | None = Field(default=None, description="咨询会描述")
+
+    # 主办方信息
+    organizer: str = Field(..., description="主办方", min_length=2, max_length=200)
+    organizer_type: str | None = Field(default=None, description="主办方类型")
+    organizer_nature: str | None = Field(default=None, description="主办机构性质")
+
+    # 第三方机构信息
+    has_third_party: bool = Field(default=False, description="是否有第三方机构参与")
+    third_party_info: dict | None = Field(default=None, description="第三方机构信息")
+
+    # 时间和地点
+    start_date: DateStr = Field(..., description="开始日期")
+    end_date: DateStr | None = Field(default=None, description="结束日期")
+    start_time: str | None = Field(default=None, description="开始时间", max_length=10)
+    end_time: str | None = Field(default=None, description="结束时间", max_length=10)
+
+    # 地理位置
+    province: str | None = Field(default=None, description="省份", max_length=50)
+    city: str | None = Field(default=None, description="城市", max_length=50)
+    district: str | None = Field(default=None, description="区县", max_length=50)
+    address: str | None = Field(default=None, description="详细地址", max_length=500)
+
+    # 参与高校信息
+    participating_universities: list | None = Field(default=None, description="参与高校列表")
+    university_count: int = Field(default=0, description="参与高校数量")
+
+    # 规模和费用
+    estimated_visitors: int | None = Field(default=None, description="预计参观人数")
+    booth_fee: float | None = Field(default=None, description="展位费用")
+
+    # 联系人信息
+    contact_person: str | None = Field(default=None, description="联系人", max_length=100)
+    contact_phone: str | None = Field(default=None, description="联系电话", max_length=20)
+    contact_email: str | None = Field(default=None, description="联系邮箱", max_length=100)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class InfoCollectionCreateSchema(BaseModel):
     """新增咨询会信息模型"""
 
@@ -20,6 +64,11 @@ class InfoCollectionCreateSchema(BaseModel):
     # 主办方信息
     organizer: str = Field(..., description="主办方", min_length=2, max_length=200)
     organizer_type: str | None = Field(default=None, description="主办方类型")
+    organizer_nature: str | None = Field(default=None, description="主办机构性质")
+
+    # 第三方机构信息
+    has_third_party: bool = Field(default=False, description="是否有第三方机构参与")
+    third_party_info: dict | None = Field(default=None, description="第三方机构信息")
 
     # 时间和地点
     start_date: DateStr = Field(..., description="开始日期")
