@@ -27,6 +27,7 @@ class PromotionDocumentModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_document"
     __table_args__: dict[str, str] = {"comment": "活动撰写表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
 
     document_no: Mapped[str | None] = mapped_column(
         String(50),

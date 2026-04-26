@@ -25,6 +25,7 @@ class ScreeningFilterModel(ModelMixin, UserMixin):
     __tablename__: str = "consultation_screening_filter"
     __table_args__: dict[str, str] = {"comment": "咨询会筛选条件表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description", "sort_by", "sort_order", "page_size", "is_default"]}
 
     # 基本信息
     name: Mapped[str] = mapped_column(String(100), nullable=False, comment="筛选名称")

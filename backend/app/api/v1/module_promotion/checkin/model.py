@@ -27,6 +27,7 @@ class PromotionCheckinModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_checkin"
     __table_args__: dict[str, str] = {"comment": "活动打卡表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
 
     activity_id: Mapped[int | None] = mapped_column(
         BIGINT,

@@ -195,7 +195,7 @@ async def batch_delete_obj_controller(
 async def approve_controller(
     id: Annotated[int, Path(description="活动申请ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:approve"]))],
-    approval_comment: Annotated[str | None, Query(None, description="审批意见")] = None,
+    approval_comment: Annotated[str | None, Query(description="审批意见")] = None,
 ) -> JSONResponse:
     """
     审批通过

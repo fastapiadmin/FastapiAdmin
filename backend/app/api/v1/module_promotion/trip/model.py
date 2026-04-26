@@ -28,6 +28,7 @@ class PromotionTripModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_trip"
     __table_args__: dict[str, str] = {"comment": "行程报备表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description", "enable_location_sharing"]}
 
     personnel_id: Mapped[int | None] = mapped_column(
         BIGINT,

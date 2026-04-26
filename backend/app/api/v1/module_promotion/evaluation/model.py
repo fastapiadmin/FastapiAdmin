@@ -28,6 +28,7 @@ class PromotionEvaluationModel(ModelMixin, UserMixin):
 
     __tablename__: str = "promotion_evaluation"
     __table_args__: dict[str, str] = {"comment": "表彰评优表"}
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
     __loader_options__: list[str] = ["created_by", "updated_by"]
 
     evaluation_name: Mapped[str | None] = mapped_column(

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.base_schema import BaseSchema, UserBySchema
+from app.core.base_schema import CommonSchema
 from app.core.validator import DateStr, DateTimeStr
 
 
@@ -40,10 +40,41 @@ class ScreeningFilterUpdateSchema(ScreeningFilterCreateSchema):
     pass
 
 
-class ScreeningFilterOutSchema(ScreeningFilterCreateSchema, BaseSchema, UserBySchema):
+class ScreeningFilterOutSchema(BaseModel):
     """筛选条件响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
+
+    # 基础字段
+    id: int | None = Field(default=None, description="主键ID")
+    uuid: str | None = Field(default=None, description="UUID")
+    status: str | None = Field(default="0", description="状态")
+    created_time: DateTimeStr | None = Field(default=None, description="创建时间")
+    updated_time: DateTimeStr | None = Field(default=None, description="更新时间")
+
+    # 用户字段
+    created_id: int | None = Field(default=None, description="创建人ID")
+    created_by: CommonSchema | None = Field(default=None, description="创建人信息")
+    updated_id: int | None = Field(default=None, description="更新人ID")
+    updated_by: CommonSchema | None = Field(default=None, description="更新人信息")
+
+    # 业务字段
+    name: str = Field(..., description="筛选名称")
+    province: str | None = Field(default=None, description="省份筛选")
+    city: str | None = Field(default=None, description="城市筛选")
+    start_date_begin: DateStr | None = Field(default=None, description="开始日期范围-开始")
+    start_date_end: DateStr | None = Field(default=None, description="开始日期范围-结束")
+    organizer_type: str | None = Field(default=None, description="主办方类型")
+    university_count_min: int | None = Field(default=None, description="高校数量最小值")
+    university_count_max: int | None = Field(default=None, description="高校数量最大值")
+    booth_fee_min: float | None = Field(default=None, description="展位费最小值")
+    booth_fee_max: float | None = Field(default=None, description="展位费最大值")
+    estimated_visitors_min: int | None = Field(default=None, description="预计人数最小值")
+    estimated_visitors_max: int | None = Field(default=None, description="预计人数最大值")
+    compliance_score_min: int | None = Field(default=None, description="合规评分最小值")
+    compliance_score_max: int | None = Field(default=None, description="合规评分最大值")
+    compliance_level: str | None = Field(default=None, description="合规等级")
+    source_type: str | None = Field(default=None, description="信息来源")
 
 
 @dataclass

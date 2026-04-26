@@ -27,6 +27,7 @@ class PromotionSummaryModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_summary"
     __table_args__: dict[str, str] = {"comment": "总结上传表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description", "summary_status"]}
 
     activity_id: Mapped[int | None] = mapped_column(
         BIGINT,

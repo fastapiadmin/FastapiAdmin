@@ -36,6 +36,7 @@ class PromotionTargetSchoolModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_target_school"
     __table_args__: dict[str, str] = {"comment": "目标学校表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
 
     name: Mapped[str] = mapped_column(
         String(200),

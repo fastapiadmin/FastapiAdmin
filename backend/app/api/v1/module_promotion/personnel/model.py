@@ -33,6 +33,7 @@ class PromotionPersonnelModel(ModelMixin, UserMixin):
     """
 
     __tablename__: str = "promotion_personnel"
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
     __table_args__: dict[str, str] = {"comment": "招生人员表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
 

@@ -28,6 +28,7 @@ class PromotionExpenseModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_expense"
     __table_args__: dict[str, str] = {"comment": "费用报销表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
 
     expense_no: Mapped[str | None] = mapped_column(
         String(50),

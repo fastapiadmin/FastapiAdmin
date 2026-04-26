@@ -28,6 +28,7 @@ class ActivityApplyModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_activity_apply"
     __table_args__: dict[str, str] = {"comment": "活动申请表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
+    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
 
     activity_name: Mapped[str] = mapped_column(
         String(200),
