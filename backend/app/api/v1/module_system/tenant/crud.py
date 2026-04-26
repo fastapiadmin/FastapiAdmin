@@ -57,5 +57,3 @@ class TenantCRUD(CRUDBase[TenantModel, TenantCreateSchema, TenantUpdateSchema]):
 
     async def set_available_crud(self, ids: list[int], status: str) -> None:
         await self.set(ids=ids, status=status)
-
-    

@@ -46,11 +46,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
             modules=settings.EVENT_LIST, desc="全局事件", app=app, status=True
         )
         log.info("✅ 全局事件模块加载完成")
-        
+
         redis_ready = False
         scheduler_ready = False
         limiter_ready = False
-        
+
         if settings.REDIS_ENABLE:
             await ParamsService().init_config_service(redis=app.state.redis)
             log.info("✅ Redis系统配置初始化完成")

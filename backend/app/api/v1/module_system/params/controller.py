@@ -282,9 +282,8 @@ async def get_init_obj_controller(
     返回:
     - JSONResponse: 获取初始化缓存参数的 JSON 响应
     """
-    from app.config.setting import settings
     from app.core.database import async_db_session
-    
+
     async with async_db_session() as session:
         async with session.begin():
             auth_no_scope = AuthSchema(db=session, check_data_scope=False)

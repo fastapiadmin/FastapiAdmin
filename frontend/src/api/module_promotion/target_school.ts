@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const API_PATH = "/promotion/target_school";
+const API_PATH = "/promotion/target-school";
 
 const TargetSchoolAPI = {
   getDetail(id: number) {

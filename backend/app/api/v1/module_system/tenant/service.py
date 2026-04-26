@@ -52,7 +52,7 @@ class TenantService:
         tenant_obj = await TenantCRUD(auth).create_crud(data=data)
         if not tenant_obj:
             raise CustomException(msg="创建租户失败")
-        
+
         # 创建租户初始管理员
         # 1. 生成初始管理员用户名
         # 2. 检查用户名是否已存在

@@ -59,6 +59,93 @@ def _import_failure_hint(exc: BaseException) -> str:
     )
 
 
+def _scan_controllers(
+    base_package_name: str,
+    base_dir: Path,
+    glob_pattern: str,
+    module_prefix: str,
+    container_routers: dict[str, APIRouter],
+    seen_router_ids: set[int],
+    root_router: APIRouter,
+) -> None:
+    """
+    扫描指定目录下的 controller 文件并注册路由
+
+    参数:
+    - base_package_name: 基础包名 (如 "app.plugin")
+    - base_dir: 基础目录路径
+    - glob_pattern: glob 匹配模式 (如 "module_*/**/controller.py")
+    - module_prefix: 模块导入路径前缀 (如 "app.plugin")
+    - container_routers: 容器路由映射
+    - seen_router_ids: 已注册的路由ID集合
+    - root_router: 根路由实例
+    """
+    # 查找所有符合条件的controller.py文件
+    controller_files = list(base_dir.glob(glob_pattern))
+
+    # 按路径排序，确保注册顺序一致
+    controller_files.sort()
+
+    for file in controller_files:
+        # 解析文件路径
+        rel_path = file.relative_to(base_dir)
+        path_parts = rel_path.parts
+
+        # 获取顶级模块名
+        top_module = path_parts[0]
+
+        # 生成路由前缀 (module_xxx -> /xxx)
+        suffix = top_module[7:] if top_module.startswith("module_") else ""
+        if not suffix:
+            log.error(
+                f"❌ 跳过异常顶级目录名（须为 module_ 前缀且后面还有名称）: {top_module!r}，"
+                f"文件: {file}"
+            )
+            continue
+        prefix = f"/{suffix}"
+
+        # 获取或创建容器路由
+        if prefix not in container_routers:
+            container_routers[prefix] = APIRouter(prefix=prefix)
+        container_router = container_routers[prefix]
+
+        # 生成模块导入路径
+        module_path = f"{module_prefix}.{'.'.join(path_parts[:-1])}.controller"
+
+        try:
+            # 动态导入模块
+            module = importlib.import_module(module_path)
+
+            # 查找并注册所有APIRouter实例
+            registered_here = 0
+            for attr_name in dir(module):
+                attr_value = getattr(module, attr_name, None)
+
+                # 只注册APIRouter实例，且避免重复注册
+                if isinstance(attr_value, APIRouter):
+                    router_id = id(attr_value)
+                    if router_id not in seen_router_ids:
+                        seen_router_ids.add(router_id)
+                        container_router.include_router(attr_value)
+                        registered_here += 1
+                        log.debug(f"  ↳ 注册 APIRouter 变量 `{attr_name}` ← {module_path}")
+
+            if registered_here == 0:
+                log.warning(
+                    f"⚠️ 模块已加载但未注册任何路由: {module_path}\n"
+                    f"   原因：该文件中未找到**顶层** APIRouter 实例。\n"
+                    f"   规范：在 controller.py 模块顶层定义，例如 "
+                    f"`XxxRouter = APIRouter(route_class=..., prefix=..., tags=[...])`，"
+                    f"不要仅在函数内创建 APIRouter。"
+                )
+
+        except Exception as e:
+            hint = _import_failure_hint(e)
+            log.exception(
+                f"❌ 处理模块失败: {module_path}\n   {hint}\n   异常: {e!s}"
+            )
+
+
 def get_dynamic_router() -> APIRouter:
     """
     执行动态路由发现与注册，返回包含所有动态路由的根路由实例
@@ -74,79 +161,37 @@ def get_dynamic_router() -> APIRouter:
     # 已注册的路由ID集合，用于避免重复注册
     seen_router_ids: set[int] = set()
 
+    # 容器路由映射 {prefix: container_router}
+    container_routers: dict[str, APIRouter] = {}
+
     try:
-        # 获取app.plugin包的路径
+        # 1. 扫描 app.plugin 目录
+        log.info("📂 扫描 app.plugin 目录...")
         base_package = importlib.import_module("app.plugin")
         base_dir = Path(next(iter(base_package.__path__)))
+        _scan_controllers(
+            base_package_name="app.plugin",
+            base_dir=base_dir,
+            glob_pattern="module_*/**/controller.py",
+            module_prefix="app.plugin",
+            container_routers=container_routers,
+            seen_router_ids=seen_router_ids,
+            root_router=root_router,
+        )
 
-        # 查找所有符合条件的controller.py文件
-        # 只扫描module_*目录下的文件
-        controller_files = list(base_dir.glob("module_*/**/controller.py"))
-
-        # 按路径排序，确保注册顺序一致
-        controller_files.sort()
-
-        # 容器路由映射 {prefix: container_router}
-        container_routers: dict[str, APIRouter] = {}
-
-        for file in controller_files:
-            # 解析文件路径
-            rel_path = file.relative_to(base_dir)
-            path_parts = rel_path.parts
-
-            # 获取顶级模块名
-            top_module = path_parts[0]
-
-            # 生成路由前缀 (module_xxx -> /xxx)
-            suffix = top_module[7:] if top_module.startswith("module_") else ""
-            if not suffix:
-                log.error(
-                    f"❌ 跳过异常顶级目录名（须为 module_ 前缀且后面还有名称）: {top_module!r}，"
-                    f"文件: {file}"
-                )
-                continue
-            prefix = f"/{suffix}"
-
-            # 获取或创建容器路由
-            if prefix not in container_routers:
-                container_routers[prefix] = APIRouter(prefix=prefix)
-            container_router = container_routers[prefix]
-
-            # 生成模块导入路径
-            module_path = f"app.plugin.{'.'.join(path_parts[:-1])}.controller"
-
-            try:
-                # 动态导入模块
-                module = importlib.import_module(module_path)
-
-                # 查找并注册所有APIRouter实例
-                registered_here = 0
-                for attr_name in dir(module):
-                    attr_value = getattr(module, attr_name, None)
-
-                    # 只注册APIRouter实例，且避免重复注册
-                    if isinstance(attr_value, APIRouter):
-                        router_id = id(attr_value)
-                        if router_id not in seen_router_ids:
-                            seen_router_ids.add(router_id)
-                            container_router.include_router(attr_value)
-                            registered_here += 1
-                            log.debug(f"  ↳ 注册 APIRouter 变量 `{attr_name}` ← {module_path}")
-
-                if registered_here == 0:
-                    log.warning(
-                        f"⚠️ 模块已加载但未注册任何路由: {module_path}\n"
-                        f"   原因：该文件中未找到**顶层** APIRouter 实例。\n"
-                        f"   规范：在 controller.py 模块顶层定义，例如 "
-                        f"`XxxRouter = APIRouter(route_class=..., prefix=..., tags=[...])`，"
-                        f"不要仅在函数内创建 APIRouter。"
-                    )
-
-            except Exception as e:
-                hint = _import_failure_hint(e)
-                log.exception(
-                    f"❌ 处理模块失败: {module_path}\n   {hint}\n   异常: {e!s}"
-                )
+        # 2. 扫描 app.api.v1 目录
+        log.info("📂 扫描 app.api.v1 目录...")
+        api_package = importlib.import_module("app.api.v1")
+        api_dir = Path(next(iter(api_package.__path__)))
+        _scan_controllers(
+            base_package_name="app.api.v1",
+            base_dir=api_dir,
+            glob_pattern="module_*/**/controller.py",
+            module_prefix="app.api.v1",
+            container_routers=container_routers,
+            seen_router_ids=seen_router_ids,
+            root_router=root_router,
+        )
 
         # 将所有容器路由注册到根路由
         for prefix, container_router in sorted(container_routers.items()):

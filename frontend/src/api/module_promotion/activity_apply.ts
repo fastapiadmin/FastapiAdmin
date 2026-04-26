@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const API_PATH = "/promotion/activity_apply";
+const API_PATH = "/promotion/activity-apply";
 
 const ActivityApplyAPI = {
   getDetail(id: number) {
