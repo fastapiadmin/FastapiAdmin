@@ -295,22 +295,25 @@ class UserService:
             UserOutSchema.dept_name = user.dept.name
         user_dict = UserOutSchema.model_validate(user).model_dump()
 
-        # 获取菜单权限
+        # 获取菜单权限（PC 管理端侧栏：仅 client=pc）
+        _pc_only = {"client": "pc"}
         if auth.user and auth.user.is_superuser:
             # 使用树形结构查询，预加载children关系
             menu_all = await MenuCRUD(auth).get_tree_list_crud(
-                search={"type": ("in", [1, 2, 4]), "status": "0"},
+                search={"type": ("in", [1, 2, 4]), "status": "0", **_pc_only},
                 order_by=[{"order": "asc"}],
             )
             menus = [MenuOutSchema.model_validate(menu).model_dump() for menu in menu_all]
 
         else:
-            # 收集用户所有角色的菜单ID，使用列表推导式优化代码
+            # 收集用户所有角色的菜单 ID（仅 PC 端菜单参与动态路由）
             menu_ids = {
                 menu.id
                 for role in auth.user.roles or []
                 for menu in role.menus
-                if menu.status == "0" and menu.type in [1, 2, 4]
+                if menu.status == "0"
+                and menu.type in [1, 2, 4]
+                and getattr(menu, "client", "pc") == "pc"
             }
 
             # 使用树形结构查询，预加载children关系
@@ -318,7 +321,7 @@ class UserService:
                 [
                     MenuOutSchema.model_validate(menu).model_dump()
                     for menu in await MenuCRUD(auth).get_tree_list_crud(
-                        search={"id": ("in", list(menu_ids))},
+                        search={"id": ("in", list(menu_ids)), **_pc_only},
                         order_by=[{"order": "asc"}],
                     )
                 ]

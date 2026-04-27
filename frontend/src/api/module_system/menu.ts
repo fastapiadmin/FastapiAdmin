@@ -58,6 +58,8 @@ export interface MenuPageQuery {
   status?: string;
   created_time?: string[];
   updated_time?: string[];
+  /** 与后端 Query `menu_client` 一致：pc | app；菜单管理 Tab 切换时传入 */
+  menu_client?: "pc" | "app";
 }
 
 export interface MenuTable extends BaseType {
@@ -79,6 +81,7 @@ export interface MenuTable extends BaseType {
   params?: { key: string; value: string }[];
   affix?: boolean;
   children?: MenuTable[];
+  client?: "pc" | "app";
 }
 
 export interface MenuForm extends BaseFormType {
@@ -98,6 +101,7 @@ export interface MenuForm extends BaseFormType {
   title?: string;
   params?: KeyValue[];
   affix?: boolean;
+  client?: "pc" | "app";
 }
 
 export interface KeyValue {
