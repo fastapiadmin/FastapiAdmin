@@ -98,10 +98,17 @@ This is about **how source directories are split** (package by feature vs by lay
 ```sh
 FastapiAdmin
 ├─ backend               # Backend project (FastAPI + Python)
-├─ frontend              # Web frontend project (Vue3 + Element Plus)
-├─ devops                # Deployment configurations
-├─ docker-compose.yaml   # Docker orchestration file
-├─ deploy.sh             # One-click deployment script
+├─ frontend              # Frontend project directory
+│   ├── web              # Web frontend (Vue3 + Element Plus)
+│   ├── app              # Mobile (UniApp)
+│   └── docs             # Documentation site (VitePress)
+├─ docker                # Docker configuration
+│   ├── backend          # Backend Dockerfile
+│   ├── nginx            # Nginx configuration and static files
+│   ├── mysql            # MySQL data directory
+│   └── redis            # Redis data directory
+├─ deploy.sh             # One-click deployment script (Linux)
+├─ deploy.bat            # One-click startup script (Windows)
 ├─ LICENSE               # Open source license
 |─ README.en.md          # English documentation
 └─ README.md             # Chinese documentation
@@ -109,35 +116,39 @@ FastapiAdmin
 
 ## 🏗️ Local Architecture & Default Ports
 
-Aligned with **`backend/env/.env.dev.example`** and **`frontend/.env.development.example`**; if you changed `.env.dev` / `.env.development`, use your local values.
+Aligned with **`backend/env/.env.dev.example`** and **`frontend/web/.env.development`**; if you changed `.env.dev` / `.env.development`, use your local values.
 
 ```mermaid
 flowchart LR
   subgraph client[Browser]
     U[User]
   end
-  subgraph fe[frontend dev]
-    V[Vue3 + Vite]
+  subgraph fe[Frontend Development]
+    V[Vue3 Web] -->|5173| U
+    A[UniApp H5] -->|8080| U
+    D[VitePress Docs] -->|5174| U
   end
-  subgraph be[backend]
-    A[FastAPI / Uvicorn]
+  subgraph be[Backend]
+    F[FastAPI / Uvicorn] -->|8001| V
+    F -->|8001| A
+    F -->|8001| D
   end
-  subgraph data[Data]
+  subgraph data[Data Layer]
     DB[(Database)]
     R[(Redis)]
   end
-  U --> V
-  V -->|REST via VITE_API_BASE_URL| A
-  A --> DB
-  A --> R
+  F --> DB
+  F --> R
 ```
 
 | Component | Config key | Example default (dev template) |
 |-------------|------------|--------------------------------|
-| Web UI | `frontend/.env.development` → `VITE_APP_PORT` | **5180** → **`http://127.0.0.1:5180`** |
+| Web Frontend | `frontend/web/.env.development` → `VITE_PORT` | **5173** → **`http://127.0.0.1:5173`** |
+| Mobile H5 | `frontend/app` dev server | **8080** → **`http://127.0.0.1:8080`** |
+| Docs Site | `frontend/docs` dev server | **5174** → **`http://127.0.0.1:5174`** |
 | Backend HTTP | `backend/env/.env.dev` → `SERVER_HOST` / `SERVER_PORT` | **`0.0.0.0:8001`** → **`http://127.0.0.1:8001`** |
 | API base URL | `VITE_API_BASE_URL` | **`http://127.0.0.1:8001`** |
-| API prefix | `ROOT_PATH` + `VITE_APP_BASE_API` | **`/api/v1`** on both sides |
+| API prefix | `ROOT_PATH` (backend) | **`/api/v1`** |
 | Swagger / Redoc | — | **`http://127.0.0.1:8001/docs`**, `/redoc` |
 | WebSocket (optional) | `VITE_APP_WS_ENDPOINT` | e.g. **`ws://127.0.0.1:8001`** |
 | DB port | `DATABASE_PORT` | Template uses MySQL **`3306`**; PostgreSQL often **`5432`** |
@@ -255,27 +266,52 @@ python main.py run --env=dev
 
 ### Frontend Setup
 
+#### Web Frontend (Vue3)
+
 ```bash
-cd frontend
+cd frontend/web
 pnpm install
 pnpm run dev
+# Build production version
+pnpm run build
+```
+
+#### Mobile (UniApp)
+
+```bash
+cd frontend/app
+pnpm install
+pnpm run dev:h5  # Start H5 development server
+# Build production version
+pnpm run build:h5
+```
+
+#### Documentation Site (VitePress)
+
+```bash
+cd frontend/docs
+pnpm install
+pnpm run dev
+# Build production version
 pnpm run build
 ```
 
 ### After startup
 
-When using **`.env.dev.example` / `.env.development.example`** as-is:
+When using **`.env.dev.example` / `.env.development`** as-is:
 
 | Service | URL (example) |
 |---------|----------------|
-| Web UI (Vite) | `http://127.0.0.1:5180` |
+| Web Frontend (Vite) | `http://127.0.0.1:5173` |
+| Mobile H5 (UniApp) | `http://127.0.0.1:8080` |
+| Documentation Site (VitePress) | `http://127.0.0.1:5174` |
 | Backend base | `http://127.0.0.1:8001` |
 | Swagger | `http://127.0.0.1:8001/docs` |
 | API prefix | `http://127.0.0.1:8001/api/v1` (matches `ROOT_PATH`) |
 
 ### 🐳 Docker Deployment
 
-#### Method 1: Execute script inside project (Recommended)
+#### Method 1: Use deploy.sh script (Recommended)
 
 ```bash
 # 1. Clone the repository to server
@@ -291,6 +327,18 @@ chmod +x deploy.sh
 
 # Stop services
 ./deploy.sh stop
+
+# Restart services
+./deploy.sh restart
+
+# Only update code and restart (without rebuilding images)
+./deploy.sh update
+
+# Skip frontend build (use uploaded static files)
+./deploy.sh --skip-frontend
+
+# Enable frontend build (build on server)
+./deploy.sh --build-frontend
 ```
 
 #### Method 2: Execute script outside project

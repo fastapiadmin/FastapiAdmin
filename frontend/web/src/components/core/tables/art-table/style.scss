@@ -1,0 +1,99 @@
+.art-table {
+  position: relative;
+  height: 100%;
+
+  .el-table {
+    height: 100%;
+    margin-top: 10px;
+  }
+
+  :deep(.el-loading-mask) {
+    z-index: 100;
+    background-color: var(--default-box-color) !important;
+  }
+
+  // Loading 过渡动画 - 消失时淡出
+  .loading-fade-leave-active {
+    transition: opacity 0.3s ease-out;
+  }
+
+  .loading-fade-leave-to {
+    opacity: 0;
+  }
+
+  // 空状态垂直居中
+  &.is-empty {
+    :deep(.el-scrollbar__wrap) {
+      display: flex;
+    }
+  }
+
+  .pagination {
+    display: flex;
+    margin-top: 13px;
+
+    :deep(.el-select) {
+      width: 102px !important;
+    }
+
+    // 分页对齐方式
+    &.left {
+      justify-content: flex-start;
+    }
+
+    &.center {
+      justify-content: center;
+    }
+
+    &.right {
+      justify-content: flex-end;
+    }
+
+    // 自定义分页组件样式
+    &.custom-pagination {
+      :deep(.el-pagination) {
+        .btn-prev,
+        .btn-next {
+          background-color: transparent;
+          border: 1px solid var(--art-gray-300);
+          transition: border-color 0.15s;
+
+          &:hover:not(.is-disabled) {
+            color: var(--theme-color);
+            border-color: var(--theme-color);
+          }
+        }
+
+        li {
+          box-sizing: border-box;
+          font-weight: 400 !important;
+          background-color: transparent;
+          border: 1px solid var(--art-gray-300);
+          transition: border-color 0.15s;
+
+          &.is-active {
+            font-weight: 400;
+            color: #fff;
+            background-color: var(--theme-color);
+            border: 1px solid var(--theme-color);
+          }
+
+          &:hover:not(.is-disabled) {
+            border-color: var(--theme-color);
+          }
+        }
+      }
+    }
+  }
+}
+
+// 移动端分页
+@media (width <= 640px) {
+  :deep(.el-pagination) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px 0;
+    align-items: center;
+    justify-content: center;
+  }
+}

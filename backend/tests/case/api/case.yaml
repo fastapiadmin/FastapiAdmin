@@ -1,0 +1,142 @@
+Case:
+    - Test:
+        name: test_001_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_002_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_003_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_004_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_005_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_006_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_007_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_008_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_009_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+    - Test:
+        name: test_010_yaml
+        run: yes
+        type: json
+        request:
+            method: POST
+            url: $host/gateway/traceplan/trackPlan/getData
+            headers:
+                Content-Type: application/json;charset=UTF-8
+                token: $token
+            data: {"staSelect":"09100101","startTime":"2025-10-14 00:00:00","endTime":"2025-10-14 00:30:00","page":1,"limit":50,"showApplication":true,"trackStatus":"4"}
+        expected:
+            code: 200
+            isSuccess: true
+

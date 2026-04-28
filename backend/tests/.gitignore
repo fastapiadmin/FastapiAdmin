@@ -1,0 +1,11 @@
+/.idea/*
+/.pytest_cache/
+/venv/
+.venv
+.vscode/*
+
+reports/*
+logs/*
+case/api/.DS_Store
+case/.DS_Store
+.DS_Store

@@ -98,10 +98,17 @@
 ```sh
 FastapiAdmin
 ├─ backend               # 后端工程 (FastAPI + Python)
-├─ frontend              # Web前端工程 (Vue3 + Element Plus)
-├─ devops                # 部署配置
-├─ docker-compose.yaml   # Docker编排文件
-├─ deploy.sh             # 一键部署脚本
+├─ frontend              # 前端工程目录
+│   ├── web              # Web前端 (Vue3 + Element Plus)
+│   ├── app              # 移动端 (UniApp)
+│   └── docs             # 文档网站 (VitePress)
+├─ docker                # Docker 配置
+│   ├── backend          # 后端 Dockerfile
+│   ├── nginx            # Nginx 配置和静态文件
+│   ├── mysql            # MySQL 数据目录
+│   └── redis            # Redis 数据目录
+├─ deploy.sh             # 一键部署脚本 (Linux)
+├─ deploy.bat            # 一键启动脚本 (Windows)
 ├─ LICENSE               # 开源协议
 |─ README.en.md          # 英文文档
 └─ README.md             # 中文文档
@@ -109,35 +116,39 @@ FastapiAdmin
 
 ## 🏗️ 本地架构与默认端口
 
-与仓库内 **`backend/env/.env.dev.example`**、**`frontend/.env.development.example`** 保持一致；若你本地已改 `.env.dev` / `.env.development`，以实际文件为准。
+与仓库内 **`backend/env/.env.dev.example`**、**`frontend/web/.env.development`** 保持一致；若你本地已改 `.env.dev` / `.env.development`，以实际文件为准。
 
 ```mermaid
 flowchart LR
   subgraph client[浏览器]
     U[用户]
   end
-  subgraph fe[frontend 开发]
-    V[Vue3 + Vite]
+  subgraph fe[前端开发]
+    V[Vue3 Web] -->|5173| U
+    A[UniApp H5] -->|8080| U
+    D[VitePress 文档] -->|5174| U
   end
-  subgraph be[backend]
-    A[FastAPI / Uvicorn]
+  subgraph be[后端]
+    F[FastAPI / Uvicorn] -->|8001| V
+    F -->|8001| A
+    F -->|8001| D
   end
   subgraph data[数据层]
     DB[(数据库)]
     R[(Redis)]
   end
-  U --> V
-  V -->|REST 见 VITE_API_BASE_URL| A
-  A --> DB
-  A --> R
+  F --> DB
+  F --> R
 ```
 
 | 组件 | 配置项 | 示例默认值（开发模板） |
 |------|--------|------------------------|
-| 前端页面 | `frontend/.env.development` → `VITE_APP_PORT` | **5180**，即 **`http://127.0.0.1:5180`** |
+| Web前端 | `frontend/web/.env.development` → `VITE_PORT` | **5173**，即 **`http://127.0.0.1:5173`** |
+| 移动端H5 | `frontend/app` 开发服务器 | **8080**，即 **`http://127.0.0.1:8080`** |
+| 文档服务 | `frontend/docs` 开发服务器 | **5174**，即 **`http://127.0.0.1:5174`** |
 | 后端 HTTP | `backend/env/.env.dev` → `SERVER_HOST` / `SERVER_PORT` | **`0.0.0.0:8001`**，本机访问 **`http://127.0.0.1:8001`** |
 | 前端请求后端 | `VITE_API_BASE_URL` | **`http://127.0.0.1:8001`** |
-| API 前缀 | `ROOT_PATH`（后端）+ `VITE_APP_BASE_API`（前端） | 后端 **`/api/v1`**；前端代理前缀 **`/api/v1`** |
+| API 前缀 | `ROOT_PATH`（后端） | 后端 **`/api/v1`** |
 | Swagger / Redoc | — | **`http://127.0.0.1:8001/docs`**、`/redoc` |
 | WebSocket（可选） | `VITE_APP_WS_ENDPOINT` | 示例 **`ws://127.0.0.1:8001`** |
 | 数据库端口 | `DATABASE_PORT` | 模板为 MySQL **`3306`**；PostgreSQL 常见 **`5432`** |
@@ -259,8 +270,30 @@ python main.py run --env=dev
 
 ### 前端启动
 
+#### Web前端 (Vue3)
+
 ```bash
-cd frontend
+cd frontend/web
+pnpm install
+pnpm run dev
+# 构建生产版本
+pnpm run build
+```
+
+#### 移动端 (UniApp)
+
+```bash
+cd frontend/app
+pnpm install
+pnpm run dev:h5  # 启动H5开发服务器
+# 构建生产版本
+pnpm run build:h5
+```
+
+#### 文档网站 (VitePress)
+
+```bash
+cd frontend/docs
 pnpm install
 pnpm run dev
 # 构建生产版本
@@ -269,18 +302,20 @@ pnpm run build
 
 ### 启动后访问
 
-与 **`.env.dev.example` / `.env.development.example`** 对齐时：
+与 **`.env.dev.example` / `.env.development`** 对齐时：
 
 | 服务 | 地址（示例） |
 |------|----------------|
-| 前端 Web（Vite） | `http://127.0.0.1:5180` |
+| Web前端 (Vite) | `http://127.0.0.1:5173` |
+| 移动端H5 (UniApp) | `http://127.0.0.1:8080` |
+| 文档网站 (VitePress) | `http://127.0.0.1:5174` |
 | 后端 API 根 | `http://127.0.0.1:8001` |
 | Swagger | `http://127.0.0.1:8001/docs` |
 | 业务接口前缀 | `http://127.0.0.1:8001/api/v1`（与 `ROOT_PATH` 一致） |
 
 ### 🐳 Docker 部署
 
-#### 方式一：脚本放在项目内执行（推荐）
+#### 使用 deploy.sh 脚本（推荐）
 
 ```bash
 # 1. 克隆代码到服务器
@@ -300,32 +335,14 @@ chmod +x deploy.sh
 # 重启服务
 ./deploy.sh restart
 
-# 更新代码并重启（不重新构建镜像，适合后端代码热更新）
+# 仅更新代码并重启（不重新构建镜像）
 ./deploy.sh update
-```
 
-#### 方式二：脚本放在项目外执行
+# 跳过前端构建（使用已上传的静态文件）
+./deploy.sh --skip-frontend
 
-```bash
-# 1. 将部署脚本复制到服务器
-cp deploy.sh /home/
-cd /home
-chmod +x deploy.sh
-
-# 2. 执行一键部署（会自动克隆项目）
-./deploy.sh
-
-# 查看容器日志
-./deploy.sh logs
-
-# 停止服务
-./deploy.sh stop
-
-# 重启服务
-./deploy.sh restart
-
-# 更新代码并重启（不重新构建镜像，适合后端代码热更新）
-./deploy.sh update
+# 启用前端构建（在服务器上构建）
+./deploy.sh --build-frontend
 ```
 
 > **注意**：
