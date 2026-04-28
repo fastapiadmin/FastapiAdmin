@@ -1,6 +1,7 @@
 """
 行程报备 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,6 +25,7 @@ class TripCreateSchema(BaseModel):
 
 class TripUpdateSchema(TripCreateSchema):
     """更新行程报备模型"""
+
     pass
 
 

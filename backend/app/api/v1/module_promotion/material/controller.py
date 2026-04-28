@@ -1,6 +1,7 @@
 """
 物料管理 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -269,7 +270,9 @@ async def approve_controller(
     返回:
     - JSONResponse: 审批通过的JSON响应
     """
-    result_dict = await MaterialApplyService.approve_service(auth=auth, id=id, approved_quantity=approved_quantity)
+    result_dict = await MaterialApplyService.approve_service(
+        auth=auth, id=id, approved_quantity=approved_quantity
+    )
     log.info(f"审批通过物料申请成功 {id}")
     return SuccessResponse(data=result_dict, msg="审批通过")
 
@@ -296,7 +299,9 @@ async def reject_controller(
     返回:
     - JSONResponse: 审批拒绝的JSON响应
     """
-    result_dict = await MaterialApplyService.reject_service(auth=auth, id=id, approval_comment=approval_comment)
+    result_dict = await MaterialApplyService.reject_service(
+        auth=auth, id=id, approval_comment=approval_comment
+    )
     log.info(f"审批拒绝物料申请成功 {id}")
     return SuccessResponse(data=result_dict, msg="审批拒绝")
 
@@ -323,6 +328,8 @@ async def issue_controller(
     返回:
     - JSONResponse: 发放成功的JSON响应
     """
-    result_dict = await MaterialApplyService.issue_service(auth=auth, id=id, issued_quantity=issued_quantity)
+    result_dict = await MaterialApplyService.issue_service(
+        auth=auth, id=id, issued_quantity=issued_quantity
+    )
     log.info(f"发放物料成功 {id}")
     return SuccessResponse(data=result_dict, msg="发放成功")

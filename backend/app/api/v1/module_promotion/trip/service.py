@@ -1,6 +1,7 @@
 """
 行程报备 - 服务层
 """
+
 import uuid
 from datetime import datetime
 
@@ -213,7 +214,14 @@ class TripService:
         return TripOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def update_location_service(cls, auth: AuthSchema, id: int, latitude: float, longitude: float, address: str | None = None) -> dict:
+    async def update_location_service(
+        cls,
+        auth: AuthSchema,
+        id: int,
+        latitude: float,
+        longitude: float,
+        address: str | None = None,
+    ) -> dict:
         """
         更新位置
 

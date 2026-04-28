@@ -1,6 +1,7 @@
 """
 人员管理 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -10,7 +11,9 @@ from .model import PromotionPersonnelModel
 from .schema import PersonnelCreateSchema, PersonnelOutSchema, PersonnelUpdateSchema
 
 
-class PersonnelCRUD(CRUDBase[PromotionPersonnelModel, PersonnelCreateSchema, PersonnelUpdateSchema]):
+class PersonnelCRUD(
+    CRUDBase[PromotionPersonnelModel, PersonnelCreateSchema, PersonnelUpdateSchema]
+):
     """
     招生人员数据访问层
     """
@@ -62,7 +65,9 @@ class PersonnelCRUD(CRUDBase[PromotionPersonnelModel, PersonnelCreateSchema, Per
         """批量删除"""
         await self.delete(ids=ids)
 
-    async def get_by_personnel_code_crud(self, personnel_code: str) -> PromotionPersonnelModel | None:
+    async def get_by_personnel_code_crud(
+        self, personnel_code: str
+    ) -> PromotionPersonnelModel | None:
         """根据编号获取招生人员"""
         result = await self.get(row_key="personnel_code", row_value=personnel_code)
         return result

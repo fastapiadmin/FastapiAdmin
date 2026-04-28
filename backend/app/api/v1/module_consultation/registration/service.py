@@ -1,6 +1,7 @@
 """
 咨询会报名管理 - 服务层
 """
+
 from datetime import datetime
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -67,9 +68,7 @@ class RegistrationService:
         return result
 
     @classmethod
-    async def create_service(
-        cls, auth: AuthSchema, data: RegistrationCreateSchema
-    ) -> dict:
+    async def create_service(cls, auth: AuthSchema, data: RegistrationCreateSchema) -> dict:
         """创建报名"""
         create_data = data.model_dump(exclude_unset=True)
 
@@ -129,6 +128,16 @@ class RegistrationService:
             comment=data.comment,
         )
         log.info(f"审核通过报名 {id}")
+
+        # 自动创建行程待办项
+        try:
+            from app.api.v1.module_consultation.itinerary.service import ItineraryService
+
+            await ItineraryService.create_auto_itinerary_service(auth=auth, registration_id=id)
+            log.info(f"审核通过后自动创建行程待办项，报名ID: {id}")
+        except Exception as e:
+            log.warning(f"自动创建行程待办项失败: {e}")
+
         return RegistrationOutSchema.model_validate(obj).model_dump()
 
     @classmethod
@@ -188,3 +197,57 @@ class RegistrationService:
     ) -> dict:
         """统计某咨询会报名情况"""
         return await RegistrationCRUD(auth).statistics_by_consultation_crud(consultation_id)
+
+    @classmethod
+    async def one_click_register_service(cls, auth: AuthSchema, id: int) -> dict:
+        """一键报名 - 发送回执邮件"""
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+        from app.common.email_service import EmailService
+
+        # 获取报名记录
+        obj = await RegistrationCRUD(auth).get_by_id_crud(id=id)
+        if not obj:
+            raise CustomException(msg="该报名记录不存在")
+
+        if obj.registration_status != "approved":
+            raise CustomException(msg="只能在审核通过后发送回执邮件")
+
+        if obj.is_registered:
+            raise CustomException(msg="该报名已完成一键报名，请勿重复操作")
+
+        # 获取咨询会信息
+        consultation = await InfoCollectionCRUD(auth).get_by_id_crud(obj.consultation_id)
+        if not consultation:
+            raise CustomException(msg="关联的咨询会信息不存在")
+
+        # 获取报名接收邮箱
+        registration_email = obj.registration_email or consultation.registration_email
+        if not registration_email:
+            raise CustomException(msg="报名接收邮箱不能为空，请在咨询会信息中维护报名邮箱")
+
+        # 发送回执邮件
+        consultation_date = str(consultation.start_date) if consultation.start_date else "待定"
+        consultation_location = (
+            consultation.address or f"{consultation.city or ''}{consultation.address or ''}"
+        )
+
+        email_result = await EmailService.sendRegistrationReceipt(
+            to_email=registration_email,
+            university_name=obj.university_name or "未知高校",
+            consultation_title=consultation.title,
+            consultation_date=consultation_date,
+            consultation_location=consultation_location,
+            booth_number=obj.booth_number,
+            contact_person=obj.contact_person,
+        )
+
+        if not email_result.get("success"):
+            raise CustomException(msg=f"邮件发送失败: {email_result.get('message')}")
+
+        # 更新报名状态
+        obj = await RegistrationCRUD(auth).update_registered_crud(
+            id=id, registration_email=registration_email
+        )
+        log.info(f"一键报名成功，邮件已发送至 {registration_email}")
+
+        return RegistrationOutSchema.model_validate(obj).model_dump()

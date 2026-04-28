@@ -172,10 +172,18 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
             # 统一处理 search 为 None 的情况，避免重复判断
             if search:
                 # 表名过滤：忽略大小写，支持模糊匹配
-                if search.table_name and search.table_name[1] and search.table_name[1].lower() not in table_name.lower():
+                if (
+                    search.table_name
+                    and search.table_name[1]
+                    and search.table_name[1].lower() not in table_name.lower()
+                ):
                     continue
                 # 表注释过滤：忽略大小写，支持模糊匹配；table_comment 为 None 时视为空字符串
-                if search.table_comment and search.table_comment[1] and search.table_comment[1] not in table_comment:
+                if (
+                    search.table_comment
+                    and search.table_comment[1]
+                    and search.table_comment[1] not in table_comment
+                ):
                     continue
 
             table_info = {
@@ -266,7 +274,9 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         # PostgreSQL
         if db_type in {"postgresql", "postgres"}:
             # pg_description 需要通过 objsubid=0 获取 table comment
-            where_sql = "WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND c.relkind = 'r'"
+            where_sql = (
+                "WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND c.relkind = 'r'"
+            )
             params = {"offset": offset, "limit": limit}
             if name_kw:
                 where_sql += " AND c.relname ILIKE :name_kw"

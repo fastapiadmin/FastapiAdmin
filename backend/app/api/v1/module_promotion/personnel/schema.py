@@ -1,6 +1,7 @@
 """
 人员管理 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -33,6 +34,7 @@ class PersonnelCreateSchema(BaseModel):
 
 class PersonnelUpdateSchema(PersonnelCreateSchema):
     """更新招生人员模型"""
+
     pass
 
 

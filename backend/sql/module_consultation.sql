@@ -11,15 +11,24 @@ CREATE TABLE IF NOT EXISTS `consultation_info` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `uuid` VARCHAR(64) NOT NULL COMMENT 'UUID全局唯一标识',
   `status` VARCHAR(10) NOT NULL DEFAULT '0' COMMENT '是否启用(0:启用 1:禁用)',
-  
+
   -- 基本信息
   `title` VARCHAR(200) NOT NULL COMMENT '咨询会标题',
   `description` TEXT COMMENT '咨询会描述',
-  
+
   -- 主办方信息
   `organizer` VARCHAR(200) NOT NULL COMMENT '主办方',
   `organizer_type` VARCHAR(50) COMMENT '主办方类型(教育部门/高校/中学/机构)',
-  
+  `organizer_nature` VARCHAR(50) COMMENT '主办机构性质(用于合规评分)',
+  `organizer_detail` JSON COMMENT '主办方详细信息(机构类型、级别等)',
+
+  -- 第三方机构信息
+  `has_third_party` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否有第三方机构参与',
+  `third_party_info` JSON COMMENT '第三方机构信息',
+
+  -- 报名信息
+  `registration_email` VARCHAR(100) COMMENT '报名接收邮箱',
+
   -- 时间和地点
   `start_date` DATE NOT NULL COMMENT '开始日期',
   `end_date` DATE COMMENT '结束日期',

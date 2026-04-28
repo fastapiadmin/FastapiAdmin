@@ -1,6 +1,7 @@
 """
 活动撰写 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -37,6 +38,7 @@ class DocumentCreateSchema(BaseModel):
 
 class DocumentUpdateSchema(DocumentCreateSchema):
     """更新活动撰写模型"""
+
     pass
 
 

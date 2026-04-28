@@ -11,7 +11,9 @@ class WorkflowNodeTypeCreateSchema(BaseModel):
 
     name: str = Field(..., max_length=128, description="显示名称")
     code: str = Field(..., max_length=64, description="节点编码")
-    category: str = Field(default="action", max_length=32, description="trigger/action/condition/control")
+    category: str = Field(
+        default="action", max_length=32, description="trigger/action/condition/control"
+    )
     func: str = Field(..., description="代码块，须定义 handler")
     args: str | None = Field(default=None, description="默认位置参数")
     kwargs: str | None = Field(default=None, description="默认 kwargs JSON")

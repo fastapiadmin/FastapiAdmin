@@ -15,15 +15,20 @@
       class="consultation-form"
     >
       <el-divider content-position="left">基本信息</el-divider>
-      
+
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item label="咨询会标题" prop="title">
-            <el-input v-model="formData.title" placeholder="请输入咨询会标题" maxlength="200" show-word-limit />
+            <el-input
+              v-model="formData.title"
+              placeholder="请输入咨询会标题"
+              maxlength="200"
+              show-word-limit
+            />
           </el-form-item>
         </el-col>
       </el-row>
-      
+
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item label="咨询会描述" prop="description">
@@ -40,7 +45,7 @@
       </el-row>
 
       <el-divider content-position="left">主办方信息</el-divider>
-      
+
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="主办方" prop="organizer">
@@ -49,7 +54,12 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="主办方类型" prop="organizer_type">
-            <el-select v-model="formData.organizer_type" placeholder="请选择" clearable style="width: 100%">
+            <el-select
+              v-model="formData.organizer_type"
+              placeholder="请选择"
+              clearable
+              style="width: 100%"
+            >
               <el-option label="教育部门" value="education_dept" />
               <el-option label="高校" value="university" />
               <el-option label="中学" value="high_school" />
@@ -61,7 +71,7 @@
       </el-row>
 
       <el-divider content-position="left">时间地点</el-divider>
-      
+
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="开始日期" prop="start_date">
@@ -86,7 +96,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      
+
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="开始时间" prop="start_time">
@@ -111,7 +121,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      
+
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="省份" prop="province">
@@ -129,7 +139,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      
+
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item label="详细地址" prop="address">
@@ -139,7 +149,7 @@
       </el-row>
 
       <el-divider content-position="left">其他信息</el-divider>
-      
+
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="预计参观人数" prop="estimated_visitors">
@@ -165,11 +175,15 @@
           </el-form-item>
         </el-col>
       </el-row>
-      
+
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="信息来源" prop="source_type">
-            <el-select v-model="formData.source_type" placeholder="请选择信息来源" style="width: 100%">
+            <el-select
+              v-model="formData.source_type"
+              placeholder="请选择信息来源"
+              style="width: 100%"
+            >
               <el-option label="全网抓取" value="crawler" />
               <el-option label="第三方上传" value="upload" />
               <el-option label="手动录入" value="manual" />
@@ -187,9 +201,7 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
-          确定
-        </el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </div>
     </template>
   </el-dialog>
@@ -200,7 +212,10 @@ import { computed, reactive, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import ConsultationInfoAPI from "@/api/module_consultation/consultation";
-import type { ConsultationInfoItem, ConsultationInfoForm } from "@/api/module_consultation/consultation";
+import type {
+  ConsultationInfoItem,
+  ConsultationInfoForm,
+} from "@/api/module_consultation/consultation";
 
 // Props & Emits
 interface Props {

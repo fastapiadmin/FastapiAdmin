@@ -130,7 +130,9 @@ class TargetSchoolService:
             raise CustomException(msg="该目标学校不存在")
 
         if data.get("school_code") and data["school_code"] != existing.school_code:
-            code_existing = await TargetSchoolCRUD(auth).get_by_school_code_crud(data["school_code"])
+            code_existing = await TargetSchoolCRUD(auth).get_by_school_code_crud(
+                data["school_code"]
+            )
             if code_existing:
                 raise CustomException(msg="学校代码已存在")
 

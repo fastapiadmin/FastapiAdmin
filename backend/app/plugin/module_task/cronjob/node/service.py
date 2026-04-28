@@ -201,7 +201,9 @@ class NodeService:
         await NodeCRUD(auth).clear_obj_crud()
 
     @classmethod
-    async def execute_node_service(cls, auth: AuthSchema, id: int, execute_data: NodeExecuteSchema) -> dict:
+    async def execute_node_service(
+        cls, auth: AuthSchema, id: int, execute_data: NodeExecuteSchema
+    ) -> dict:
         """
         调试节点 - 根据任务配置创建调度器任务并执行
 

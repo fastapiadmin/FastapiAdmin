@@ -9,6 +9,7 @@ from app.config.setting import settings
 
 class AgnoFactory:
     """Agno 工厂类 - 统一管理 Agent、Team 创建逻辑"""
+
     # 配置常量
     AGENT_DESCRIPTION = "你是一个有用的AI助手，可以帮助用户回答问题和提供帮助。"
     AGENT_INSTRUCTIONS = ["保持回答简洁明了", "如果不确定，请说明"]
@@ -17,11 +18,7 @@ class AgnoFactory:
     NUM_HISTORY_RUNS = 3
 
     def create_agent(
-        self,
-        user_id: str,
-        dept_id: str,
-        session_id: str,
-        db: Any | None = None
+        self, user_id: str, dept_id: str, session_id: str, db: Any | None = None
     ) -> Team:
         """
         创建带 Agent 的 Team 实例。

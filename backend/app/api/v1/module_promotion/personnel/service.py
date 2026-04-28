@@ -1,6 +1,7 @@
 """
 人员管理 - 服务层
 """
+
 import uuid
 from datetime import datetime, timedelta
 
@@ -138,7 +139,9 @@ class PersonnelService:
             raise CustomException(msg="该招生人员不存在")
 
         if data.get("personnel_code") and data["personnel_code"] != existing.personnel_code:
-            code_existing = await PersonnelCRUD(auth).get_by_personnel_code_crud(data["personnel_code"])
+            code_existing = await PersonnelCRUD(auth).get_by_personnel_code_crud(
+                data["personnel_code"]
+            )
             if code_existing:
                 raise CustomException(msg="人员编号已存在")
 
@@ -241,6 +244,7 @@ class PersonnelService:
             raise CustomException(msg="该邀请已被使用")
 
         from datetime import date
+
         update_data = {
             "user_id": user_id,
             "status": PersonnelStatus.ACTIVE.value,
@@ -271,6 +275,7 @@ class PersonnelService:
         update_data = {"status": status}
         if status == PersonnelStatus.INACTIVE.value:
             from datetime import date
+
             update_data["leave_date"] = date.today()
 
         obj = await PersonnelCRUD(auth).update_crud(id=id, data=update_data)

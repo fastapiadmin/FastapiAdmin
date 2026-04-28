@@ -22,26 +22,28 @@ from .schema import (
 from .utils import AgnoFactory
 
 
-async def _format_session_data(session: TeamSession, auth: AuthSchema | None = None) -> dict[str, Any]:
+async def _format_session_data(
+    session: TeamSession, auth: AuthSchema | None = None
+) -> dict[str, Any]:
     """格式化会话数据，添加前端需要的字段"""
-    if hasattr(session, 'to_dict'):
+    if hasattr(session, "to_dict"):
         session_dict = session.to_dict()
     else:
         session_dict = {
-            'session_id': getattr(session, 'session_id', ''),
-            'agent_id': getattr(session, 'agent_id', None),
-            'team_id': getattr(session, 'team_id', None),
-            'workflow_id': getattr(session, 'workflow_id', None),
-            'user_id': getattr(session, 'user_id', None),
-            'session_data': getattr(session, 'session_data', None),
-            'agent_data': getattr(session, 'agent_data', None),
-            'team_data': getattr(session, 'team_data', None),
-            'workflow_data': getattr(session, 'workflow_data', None),
-            'metadata': getattr(session, 'metadata', None),
-            'runs': getattr(session, 'runs', []),
-            'summary': getattr(session, 'summary', None),
-            'created_at': getattr(session, 'created_at', None),
-            'updated_at': getattr(session, 'updated_at', None),
+            "session_id": getattr(session, "session_id", ""),
+            "agent_id": getattr(session, "agent_id", None),
+            "team_id": getattr(session, "team_id", None),
+            "workflow_id": getattr(session, "workflow_id", None),
+            "user_id": getattr(session, "user_id", None),
+            "session_data": getattr(session, "session_data", None),
+            "agent_data": getattr(session, "agent_data", None),
+            "team_data": getattr(session, "team_data", None),
+            "workflow_data": getattr(session, "workflow_data", None),
+            "metadata": getattr(session, "metadata", None),
+            "runs": getattr(session, "runs", []),
+            "summary": getattr(session, "summary", None),
+            "created_at": getattr(session, "created_at", None),
+            "updated_at": getattr(session, "updated_at", None),
         }
 
     session_data = session_dict.get("session_data") or {}
@@ -149,6 +151,7 @@ class ChatService:
             if not session_id:
                 # 创建新会话
                 import uuid
+
                 session_id = str(uuid.uuid4())
                 session: TeamSession | None = await crud.create_crud(
                     data=ChatSessionCreateSchema(title="新对话")
@@ -159,12 +162,16 @@ class ChatService:
 
             # 创建 AgnoFactory 实例并创建 Team，传入数据库连接
             agno_factory = AgnoFactory()
-            dept_id = str(auth.user.dept_id) if auth and auth.user and hasattr(auth.user, 'dept_id') and auth.user.dept_id else "default"
+            dept_id = (
+                str(auth.user.dept_id)
+                if auth and auth.user and hasattr(auth.user, "dept_id") and auth.user.dept_id
+                else "default"
+            )
             agent = agno_factory.create_agent(
                 user_id=auth.user.username if auth and auth.user else "user",
                 dept_id=dept_id,
                 session_id=session_id,
-                db=crud.db
+                db=crud.db,
             )
 
             # 执行聊天查询 - 使用流式输出
@@ -199,6 +206,7 @@ class ChatService:
             if not session_id:
                 # 创建新会话
                 import uuid
+
                 session_id = str(uuid.uuid4())
                 session: TeamSession | None = await crud.create_crud(
                     data=ChatSessionCreateSchema(title="新对话")
@@ -209,12 +217,16 @@ class ChatService:
 
             # 创建 AgnoFactory 实例并创建 Team，传入数据库连接
             agno_factory = AgnoFactory()
-            dept_id = str(auth.user.dept_id) if auth and auth.user and hasattr(auth.user, 'dept_id') and auth.user.dept_id else "default"
+            dept_id = (
+                str(auth.user.dept_id)
+                if auth and auth.user and hasattr(auth.user, "dept_id") and auth.user.dept_id
+                else "default"
+            )
             agent: Team = agno_factory.create_agent(
                 user_id=auth.user.username if auth and auth.user else "user",
                 dept_id=dept_id,
                 session_id=session_id,
-                db=crud.db
+                db=crud.db,
             )
 
             # 执行聊天查询
@@ -229,14 +241,17 @@ class ChatService:
                 # 尝试从 response 中解析操作建议
                 # 如果 AI 返回了 JSON 格式的操作建议
                 import json
+
                 try:
                     # 检查响应是否包含 JSON 格式的操作建议
-                    if response_text.strip().startswith('{') and response_text.strip().endswith('}'):
+                    if response_text.strip().startswith("{") and response_text.strip().endswith(
+                        "}"
+                    ):
                         action = json.loads(response_text)
-                    elif '```json' in response_text:
+                    elif "```json" in response_text:
                         # 提取 JSON 代码块
-                        json_start = response_text.find('```json') + 7
-                        json_end = response_text.find('```', json_start)
+                        json_start = response_text.find("```json") + 7
+                        json_end = response_text.find("```", json_start)
                         if json_end > json_start:
                             json_str = response_text[json_start:json_end].strip()
                             action = json.loads(json_str)
@@ -258,7 +273,7 @@ class ChatService:
             log.error(f"聊天查询失败: {e}")
             return {
                 "response": f"抱歉，处理您的请求时出现错误：{str(e)}",
-                "session_id": session_id if 'session_id' in locals() else None,
+                "session_id": session_id if "session_id" in locals() else None,
                 "function_calls": None,
                 "action": None,
             }
@@ -334,9 +349,7 @@ class ChatService:
         return None
 
     @classmethod
-    async def get_session_service(
-        cls, auth: AuthSchema, session_id: str
-    ) -> dict[str, Any] | None:
+    async def get_session_service(cls, auth: AuthSchema, session_id: str) -> dict[str, Any] | None:
         """
         获取单个会话详情。
 

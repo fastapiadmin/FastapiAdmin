@@ -98,7 +98,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
             log.info("✅ 请求限制器已关闭")
         else:
             log.info("ℹ️ Redis已禁用，跳过Redis相关关闭")
-        await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)
+        await import_modules_async(
+            modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False
+        )
         log.info("✅ 全局事件模块卸载完成")
         console_close()
 
@@ -235,5 +237,5 @@ def reset_api_docs(app: FastAPI) -> None:
             title=app.title + " - LangJin UI",
             swagger_js_url=settings.CUSTOM_JS_URL,
             swagger_css_url=settings.CUSTOM_CSS_URL,
-            swagger_favicon_url=settings.FAVICON_URL
+            swagger_favicon_url=settings.FAVICON_URL,
         )

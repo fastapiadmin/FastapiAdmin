@@ -1,6 +1,7 @@
 """
 咨询会报名管理 - 数据访问层
 """
+
 from datetime import datetime
 from typing import Any
 
@@ -14,7 +15,9 @@ from .model import RegistrationModel
 from .schema import RegistrationCreateSchema, RegistrationOutSchema, RegistrationUpdateSchema
 
 
-class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, RegistrationUpdateSchema]):
+class RegistrationCRUD(
+    CRUDBase[RegistrationModel, RegistrationCreateSchema, RegistrationUpdateSchema]
+):
     """
     咨询会报名数据访问层
     """
@@ -118,6 +121,18 @@ class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, Reg
             data["approval_comment"] = comment
         return await self.update(id=id, data=data)
 
+    async def update_registered_crud(
+        self, id: int, registration_email: str | None = None
+    ) -> RegistrationModel:
+        """更新一键报名状态"""
+        data = {
+            "is_registered": True,
+            "register_time": datetime.now(),
+        }
+        if registration_email:
+            data["registration_email"] = registration_email
+        return await self.update(id=id, data=data)
+
     async def get_by_consultation_and_university(
         self, consultation_id: int, university_id: int
     ) -> RegistrationModel | None:
@@ -144,11 +159,13 @@ class RegistrationCRUD(CRUDBase[RegistrationModel, RegistrationCreateSchema, Reg
     async def statistics_by_consultation_crud(self, consultation_id: int) -> dict:
         """统计某咨询会的报名情况"""
         async with async_db_session() as session:
-            stmt = select(
-                RegistrationModel.registration_status,
-                func.count(RegistrationModel.id).label("count"),
-            ).where(RegistrationModel.consultation_id == consultation_id).group_by(
-                RegistrationModel.registration_status
+            stmt = (
+                select(
+                    RegistrationModel.registration_status,
+                    func.count(RegistrationModel.id).label("count"),
+                )
+                .where(RegistrationModel.consultation_id == consultation_id)
+                .group_by(RegistrationModel.registration_status)
             )
             result = await session.execute(stmt)
             rows = result.all()

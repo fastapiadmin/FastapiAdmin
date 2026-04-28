@@ -1,6 +1,7 @@
 """
 表彰评优 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -233,7 +234,9 @@ async def review_controller(
     返回:
     - JSONResponse: 审核成功的JSON响应
     """
-    result_dict = await EvaluationService.review_service(auth=auth, id=id, review_comment=review_comment)
+    result_dict = await EvaluationService.review_service(
+        auth=auth, id=id, review_comment=review_comment
+    )
     log.info(f"审核表彰评优成功 {id}")
     return SuccessResponse(data=result_dict, msg="审核成功")
 
@@ -264,7 +267,13 @@ async def approve_controller(
     返回:
     - JSONResponse: 批准成功的JSON响应
     """
-    result_dict = await EvaluationService.approve_service(auth=auth, id=id, approval_comment=approval_comment, reward_type=reward_type, reward_amount=reward_amount)
+    result_dict = await EvaluationService.approve_service(
+        auth=auth,
+        id=id,
+        approval_comment=approval_comment,
+        reward_type=reward_type,
+        reward_amount=reward_amount,
+    )
     log.info(f"批准表彰评优成功 {id}")
     return SuccessResponse(data=result_dict, msg="批准成功")
 
@@ -291,6 +300,8 @@ async def reject_controller(
     返回:
     - JSONResponse: 拒绝成功的JSON响应
     """
-    result_dict = await EvaluationService.reject_service(auth=auth, id=id, approval_comment=approval_comment)
+    result_dict = await EvaluationService.reject_service(
+        auth=auth, id=id, approval_comment=approval_comment
+    )
     log.info(f"拒绝表彰评优成功 {id}")
     return SuccessResponse(data=result_dict, msg="拒绝成功")

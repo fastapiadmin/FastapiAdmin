@@ -1,6 +1,7 @@
 """
 目标学校管理 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -37,6 +38,7 @@ class TargetSchoolCreateSchema(BaseModel):
 
 class TargetSchoolUpdateSchema(TargetSchoolCreateSchema):
     """更新目标学校模型"""
+
     pass
 
 

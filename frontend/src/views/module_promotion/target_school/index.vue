@@ -4,13 +4,28 @@
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
         <el-form-item label="学校名称" prop="school_name">
-          <el-input v-model="searchForm.school_name" placeholder="请输入学校名称" clearable style="width: 180px" />
+          <el-input
+            v-model="searchForm.school_name"
+            placeholder="请输入学校名称"
+            clearable
+            style="width: 180px"
+          />
         </el-form-item>
         <el-form-item label="学校编码" prop="school_code">
-          <el-input v-model="searchForm.school_code" placeholder="请输入学校编码" clearable style="width: 140px" />
+          <el-input
+            v-model="searchForm.school_code"
+            placeholder="请输入学校编码"
+            clearable
+            style="width: 140px"
+          />
         </el-form-item>
         <el-form-item label="学校级别" prop="school_level">
-          <el-select v-model="searchForm.school_level" placeholder="请选择级别" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.school_level"
+            placeholder="请选择级别"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="高中" value="high_school" />
             <el-option label="初中" value="middle_school" />
             <el-option label="完全中学" value="complete_school" />
@@ -18,13 +33,28 @@
           </el-select>
         </el-form-item>
         <el-form-item label="省份" prop="province">
-          <el-input v-model="searchForm.province" placeholder="请输入省份" clearable style="width: 120px" />
+          <el-input
+            v-model="searchForm.province"
+            placeholder="请输入省份"
+            clearable
+            style="width: 120px"
+          />
         </el-form-item>
         <el-form-item label="城市" prop="city">
-          <el-input v-model="searchForm.city" placeholder="请输入城市" clearable style="width: 120px" />
+          <el-input
+            v-model="searchForm.city"
+            placeholder="请输入城市"
+            clearable
+            style="width: 120px"
+          />
         </el-form-item>
         <el-form-item label="跟进状态" prop="follow_status">
-          <el-select v-model="searchForm.follow_status" placeholder="请选择状态" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.follow_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="新增" value="new" />
             <el-option label="已联系" value="contacted" />
             <el-option label="已拜访" value="visited" />
@@ -33,8 +63,14 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -44,19 +80,40 @@
         <div class="card-header">
           <span class="title">目标学校列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:target_school:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:target_school:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:target_school:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:target_school:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="school_no" label="学校编号" width="150" />
         <el-table-column prop="school_name" label="学校名称" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.school_name || '-' }}</el-link>
+            <el-link type="primary" @click="handleView(row)">{{ row.school_name || "-" }}</el-link>
           </template>
         </el-table-column>
         <el-table-column prop="school_code" label="学校编码" width="120" />
@@ -71,51 +128,116 @@
         <el-table-column prop="contact_phone" label="联系电话" width="130" />
         <el-table-column prop="follow_status" label="跟进状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.follow_status)">{{ getStatusLabel(row.follow_status) }}</el-tag>
+            <el-tag :type="getStatusType(row.follow_status)">
+              {{ getStatusLabel(row.follow_status) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:target_school:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:target_school:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:target_school:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:target_school:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:target_school:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:target_school:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="目标学校详情" width="650px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="学校编号">{{ detailDialog.data.school_no }}</el-descriptions-item>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="学校编号">
+          {{ detailDialog.data.school_no }}
+        </el-descriptions-item>
         <el-descriptions-item label="学校级别">
           <el-tag>{{ getLevelLabel(detailDialog.data.school_level) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="学校名称" :span="2">{{ detailDialog.data.school_name }}</el-descriptions-item>
-        <el-descriptions-item label="学校编码">{{ detailDialog.data.school_code || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="跟进状态">
-          <el-tag :type="getStatusType(detailDialog.data.follow_status)">{{ getStatusLabel(detailDialog.data.follow_status) }}</el-tag>
+        <el-descriptions-item label="学校名称" :span="2">
+          {{ detailDialog.data.school_name }}
         </el-descriptions-item>
-        <el-descriptions-item label="省份">{{ detailDialog.data.province || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="城市">{{ detailDialog.data.city || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="区县">{{ detailDialog.data.district || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="详细地址" :span="2">{{ detailDialog.data.address || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="联系人">{{ detailDialog.data.contact_person || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="联系电话">{{ detailDialog.data.contact_phone || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="优先级别">{{ detailDialog.data.priority_level || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="学生数量">{{ detailDialog.data.student_count || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ detailDialog.data.remark || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="学校编码">
+          {{ detailDialog.data.school_code || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="跟进状态">
+          <el-tag :type="getStatusType(detailDialog.data.follow_status)">
+            {{ getStatusLabel(detailDialog.data.follow_status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="省份">
+          {{ detailDialog.data.province || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="城市">
+          {{ detailDialog.data.city || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="区县">
+          {{ detailDialog.data.district || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="详细地址" :span="2">
+          {{ detailDialog.data.address || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="联系人">
+          {{ detailDialog.data.contact_person || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="联系电话">
+          {{ detailDialog.data.contact_phone || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="优先级别">
+          {{ detailDialog.data.priority_level || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="学生数量">
+          {{ detailDialog.data.student_count || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          {{ detailDialog.data.remark || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增目标学校' : '编辑目标学校'" width="600px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增目标学校' : '编辑目标学校'"
+      width="600px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="学校名称" prop="school_name">
           <el-input v-model="form.school_name" placeholder="请输入学校名称" />
@@ -181,7 +303,11 @@ import { ref, reactive, onMounted } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import TargetSchoolAPI from "@/api/module_promotion/target_school";
-import type { TargetSchoolItem, TargetSchoolForm, TargetSchoolQuery } from "@/api/module_promotion/target_school";
+import type {
+  TargetSchoolItem,
+  TargetSchoolForm,
+  TargetSchoolQuery,
+} from "@/api/module_promotion/target_school";
 
 const loading = ref(false);
 const tableData = ref<TargetSchoolItem[]>([]);
@@ -402,9 +528,13 @@ async function handleDelete(row: TargetSchoolItem) {
 async function handleBatchDelete() {
   if (!selectedIds.value.length) return;
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个目标学校吗？`, "提示", {
-      type: "warning",
-    });
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedIds.value.length} 个目标学校吗？`,
+      "提示",
+      {
+        type: "warning",
+      }
+    );
     const res = await TargetSchoolAPI.batchDelete(selectedIds.value);
     if (res.data.code === 0) {
       ElMessage.success("批量删除成功");

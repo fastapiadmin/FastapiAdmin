@@ -4,13 +4,28 @@
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
         <el-form-item label="人员姓名" prop="personnel_name">
-          <el-input v-model="searchForm.personnel_name" placeholder="请输入人员姓名" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.personnel_name"
+            placeholder="请输入人员姓名"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="人员编号" prop="personnel_code">
-          <el-input v-model="searchForm.personnel_code" placeholder="请输入人员编号" clearable style="width: 140px" />
+          <el-input
+            v-model="searchForm.personnel_code"
+            placeholder="请输入人员编号"
+            clearable
+            style="width: 140px"
+          />
         </el-form-item>
         <el-form-item label="人员类型" prop="personnel_type">
-          <el-select v-model="searchForm.personnel_type" placeholder="请选择类型" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.personnel_type"
+            placeholder="请选择类型"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="招聘" value="recruit" />
             <el-option label="邀请" value="invite" />
             <el-option label="手动添加" value="manual" />
@@ -20,15 +35,26 @@
           <el-input-number v-model="searchForm.team_id" :min="1" style="width: 120px" />
         </el-form-item>
         <el-form-item label="状态" prop="personnel_status">
-          <el-select v-model="searchForm.personnel_status" placeholder="请选择状态" clearable style="width: 120px">
+          <el-select
+            v-model="searchForm.personnel_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 120px"
+          >
             <el-option label="在岗" value="active" />
             <el-option label="离岗" value="inactive" />
             <el-option label="待审核" value="pending" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -38,19 +64,42 @@
         <div class="card-header">
           <span class="title">人员列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:personnel:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:personnel:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:personnel:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:personnel:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="personnel_no" label="人员编号" width="150" />
         <el-table-column prop="personnel_name" label="姓名" min-width="100" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.personnel_name || '-' }}</el-link>
+            <el-link type="primary" @click="handleView(row)">
+              {{ row.personnel_name || "-" }}
+            </el-link>
           </template>
         </el-table-column>
         <el-table-column prop="personnel_code" label="编号" width="120" />
@@ -65,48 +114,107 @@
         <el-table-column prop="join_date" label="加入日期" width="110" />
         <el-table-column prop="personnel_status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.personnel_status)">{{ getStatusLabel(row.personnel_status) }}</el-tag>
+            <el-tag :type="getStatusType(row.personnel_status)">
+              {{ getStatusLabel(row.personnel_status) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:personnel:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:personnel:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:personnel:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:personnel:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:personnel:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:personnel:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="人员详情" width="600px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="人员编号">{{ detailDialog.data.personnel_no }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="getStatusType(detailDialog.data.personnel_status)">{{ getStatusLabel(detailDialog.data.personnel_status) }}</el-tag>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="人员编号">
+          {{ detailDialog.data.personnel_no }}
         </el-descriptions-item>
-        <el-descriptions-item label="姓名" :span="2">{{ detailDialog.data.personnel_name }}</el-descriptions-item>
-        <el-descriptions-item label="人员编号">{{ detailDialog.data.personnel_code || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(detailDialog.data.personnel_status)">
+            {{ getStatusLabel(detailDialog.data.personnel_status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="姓名" :span="2">
+          {{ detailDialog.data.personnel_name }}
+        </el-descriptions-item>
+        <el-descriptions-item label="人员编号">
+          {{ detailDialog.data.personnel_code || "-" }}
+        </el-descriptions-item>
         <el-descriptions-item label="人员类型">
           <el-tag>{{ getTypeLabel(detailDialog.data.personnel_type) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="所属团队">{{ detailDialog.data.team_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="身份证号">{{ detailDialog.data.id_card || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="联系电话">{{ detailDialog.data.phone || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="邮箱" :span="2">{{ detailDialog.data.email || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="加入日期">{{ detailDialog.data.join_date || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ detailDialog.data.remark || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="所属团队">
+          {{ detailDialog.data.team_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="身份证号">
+          {{ detailDialog.data.id_card || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="联系电话">
+          {{ detailDialog.data.phone || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="邮箱" :span="2">
+          {{ detailDialog.data.email || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="加入日期">
+          {{ detailDialog.data.join_date || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          {{ detailDialog.data.remark || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增人员' : '编辑人员'" width="550px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增人员' : '编辑人员'"
+      width="550px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="姓名" prop="personnel_name">
           <el-input v-model="form.personnel_name" placeholder="请输入姓名" />
@@ -122,7 +230,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="所属团队" prop="team_id">
-          <el-input-number v-model="form.team_id" :min="0" placeholder="团队ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.team_id"
+            :min="0"
+            placeholder="团队ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="身份证号" prop="id_card">
           <el-input v-model="form.id_card" placeholder="请输入身份证号" />
@@ -134,7 +247,13 @@
           <el-input v-model="form.email" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="加入日期" prop="join_date">
-          <el-date-picker v-model="form.join_date" type="date" placeholder="选择加入日期" value-format="YYYY-MM-DD" style="width: 100%" />
+          <el-date-picker
+            v-model="form.join_date"
+            type="date"
+            placeholder="选择加入日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="personnel_status">
           <el-radio-group v-model="form.personnel_status">
@@ -160,7 +279,11 @@ import { ref, reactive, onMounted } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import PersonnelAPI from "@/api/module_promotion/personnel";
-import type { PersonnelItem, PersonnelForm, PersonnelQuery } from "@/api/module_promotion/personnel";
+import type {
+  PersonnelItem,
+  PersonnelForm,
+  PersonnelQuery,
+} from "@/api/module_promotion/personnel";
 
 const loading = ref(false);
 const tableData = ref<PersonnelItem[]>([]);

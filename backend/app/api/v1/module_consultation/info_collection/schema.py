@@ -1,6 +1,7 @@
 """
 咨询会信息聚合 - 数据验证Schema
 """
+
 from dataclasses import dataclass
 
 from fastapi import Query
@@ -51,6 +52,9 @@ class ThirdPartyUploadSchema(BaseModel):
     contact_phone: str | None = Field(default=None, description="联系电话", max_length=20)
     contact_email: str | None = Field(default=None, description="联系邮箱", max_length=100)
 
+    # 报名信息
+    registration_email: str | None = Field(default=None, description="报名接收邮箱", max_length=100)
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -94,6 +98,9 @@ class InfoCollectionCreateSchema(BaseModel):
     source_type: str = Field(default="crawler", description="信息来源")
     source_url: str | None = Field(default=None, description="来源链接", max_length=1000)
 
+    # 报名信息
+    registration_email: str | None = Field(default=None, description="报名接收邮箱", max_length=100)
+
     @field_validator("title", "organizer")
     @classmethod
     def validate_required_string(cls, v: str) -> str:
@@ -114,6 +121,7 @@ class InfoCollectionCreateSchema(BaseModel):
 
 class InfoCollectionUpdateSchema(InfoCollectionCreateSchema):
     """更新咨询会信息模型"""
+
     pass
 
 

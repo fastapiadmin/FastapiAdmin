@@ -1,6 +1,7 @@
 """
 目标学校管理 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
@@ -258,6 +259,8 @@ async def get_by_personnel_controller(
     返回:
     - JSONResponse: 包含目标学校列表的JSON响应
     """
-    result_list = await TargetSchoolService.get_by_personnel_service(auth=auth, personnel_id=personnel_id)
+    result_list = await TargetSchoolService.get_by_personnel_service(
+        auth=auth, personnel_id=personnel_id
+    )
     log.info("获取负责人目标学校列表成功")
     return SuccessResponse(data=result_list, msg="获取列表成功")

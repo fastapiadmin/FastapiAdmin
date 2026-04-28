@@ -1,6 +1,7 @@
 """
 物料管理 - 服务层
 """
+
 import uuid
 from datetime import datetime
 
@@ -140,7 +141,9 @@ class MaterialService:
         log.info(f"批量删除物料成功: {ids}")
 
     @classmethod
-    async def stock_change_service(cls, auth: AuthSchema, id: int, change_type: str, quantity: int) -> dict:
+    async def stock_change_service(
+        cls, auth: AuthSchema, id: int, change_type: str, quantity: int
+    ) -> dict:
         """
         库存变动
 
@@ -257,7 +260,9 @@ class MaterialApplyService:
         return MaterialApplyOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def approve_service(cls, auth: AuthSchema, id: int, approved_quantity: int | None = None) -> dict:
+    async def approve_service(
+        cls, auth: AuthSchema, id: int, approved_quantity: int | None = None
+    ) -> dict:
         """
         审批通过
 
@@ -327,7 +332,9 @@ class MaterialApplyService:
         return MaterialApplyOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def issue_service(cls, auth: AuthSchema, id: int, issued_quantity: int | None = None) -> dict:
+    async def issue_service(
+        cls, auth: AuthSchema, id: int, issued_quantity: int | None = None
+    ) -> dict:
         """
         发放物料
 

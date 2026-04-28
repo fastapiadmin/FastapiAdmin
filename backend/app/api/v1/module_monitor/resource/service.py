@@ -71,9 +71,7 @@ class ResourceService:
 
         # 支持前端传递的完整URL或以STATIC_URL/ROOT_PATH+STATIC_URL开头的URL路径，转换为相对资源路径
         static_prefix = settings.STATIC_URL.rstrip("/")
-        root_prefix = (
-            settings.ROOT_PATH.rstrip("/") if getattr(settings, "ROOT_PATH", "") else ""
-        )
+        root_prefix = settings.ROOT_PATH.rstrip("/") if getattr(settings, "ROOT_PATH", "") else ""
         root_static_prefix = f"{root_prefix}{static_prefix}" if root_prefix else static_prefix
 
         def strip_prefix(p: str) -> str:
@@ -130,8 +128,13 @@ class ResourceService:
         safe_path_abs = os.path.normpath(os.path.abspath(safe_path))
 
         # 核心安全检查：确保最终路径在允许的根目录下
-        if not safe_path_abs.startswith(resource_root_abs + os.sep) and safe_path_abs != resource_root_abs:
-            log.error(f"路径遍历攻击被阻止: 尝试访问 {safe_path_abs}, 但根目录是 {resource_root_abs}")
+        if (
+            not safe_path_abs.startswith(resource_root_abs + os.sep)
+            and safe_path_abs != resource_root_abs
+        ):
+            log.error(
+                f"路径遍历攻击被阻止: 尝试访问 {safe_path_abs}, 但根目录是 {resource_root_abs}"
+            )
             raise CustomException(msg="访问路径不在允许范围内")
 
         # 检查路径深度
@@ -178,11 +181,11 @@ class ResourceService:
         # 首先检查原始文件名是否包含路径遍历特征
         # 攻击者可能使用 ..\..\etc\passwd 或 ../../etc/passwd
         dangerous_patterns = [
-            r"\.\.",           # .. 路径遍历
-            r"[\/]",            # 任何斜杠（目录分隔符）
-            r"\x00",            # 空字节
-            r"%2e%2e",          # URL 编码的 ..
-            r"%252e%252e",      # 双重 URL 编码的 ..
+            r"\.\.",  # .. 路径遍历
+            r"[\/]",  # 任何斜杠（目录分隔符）
+            r"\x00",  # 空字节
+            r"%2e%2e",  # URL 编码的 ..
+            r"%252e%252e",  # 双重 URL 编码的 ..
         ]
         for pattern in dangerous_patterns:
             if re.search(pattern, filename, re.IGNORECASE):
@@ -273,7 +276,9 @@ class ResourceService:
             static_part = settings.STATIC_URL.lstrip("/")
             file_part = url_path.lstrip("/")
 
-            http_url = f"{base_part}/{static_part}/{file_part}".replace("//", "/").replace(":/", "://")
+            http_url = f"{base_part}/{static_part}/{file_part}".replace("//", "/").replace(
+                ":/", "://"
+            )
         else:
             http_url = f"{settings.STATIC_URL}/{url_path}".replace("//", "/")
 
@@ -666,9 +671,7 @@ class ResourceService:
             if detected_type:
                 expected_ext = MIME_TYPE_MAPPING.get(detected_type, "")
                 if expected_ext and expected_ext != ext:
-                    log.warning(
-                        f"文件类型不匹配: 声明扩展名={ext}, 检测类型={detected_type}"
-                    )
+                    log.warning(f"文件类型不匹配: 声明扩展名={ext}, 检测类型={detected_type}")
 
             # 获取安全的目录路径（_get_safe_path 已经包含路径遍历防护）
             safe_dir = (
@@ -687,13 +690,21 @@ class ResourceService:
             resource_root_abs = os.path.normpath(os.path.abspath(cls._get_resource_root()))
 
             # 检查文件路径是否在目标目录下
-            if not file_path_abs.startswith(safe_dir_abs + os.sep) and file_path_abs != safe_dir_abs:
+            if (
+                not file_path_abs.startswith(safe_dir_abs + os.sep)
+                and file_path_abs != safe_dir_abs
+            ):
                 log.error(f"检测到路径穿越攻击，目标路径: {file_path}")
                 raise CustomException(msg="非法的文件路径")
 
             # 再次确保文件路径在资源根目录下（防止通过 target_path 绕过）
-            if not file_path_abs.startswith(resource_root_abs + os.sep) and file_path_abs != resource_root_abs:
-                log.error(f"检测到越权访问尝试，目标路径: {file_path_abs}, 根目录: {resource_root_abs}")
+            if (
+                not file_path_abs.startswith(resource_root_abs + os.sep)
+                and file_path_abs != resource_root_abs
+            ):
+                log.error(
+                    f"检测到越权访问尝试，目标路径: {file_path_abs}, 根目录: {resource_root_abs}"
+                )
                 raise CustomException(msg="访问路径不在允许范围内")
 
             if os.path.exists(file_path):
@@ -951,7 +962,10 @@ class ResourceService:
             new_path_abs = os.path.normpath(os.path.abspath(new_path))
             resource_root_abs = os.path.normpath(os.path.abspath(cls._get_resource_root()))
 
-            if not new_path_abs.startswith(resource_root_abs + os.sep) and new_path_abs != resource_root_abs:
+            if (
+                not new_path_abs.startswith(resource_root_abs + os.sep)
+                and new_path_abs != resource_root_abs
+            ):
                 log.error(f"重命名时检测到越权访问: {new_path_abs}")
                 raise CustomException(msg="目标路径不在允许范围内")
 
@@ -1003,7 +1017,10 @@ class ResourceService:
             new_dir_path_abs = os.path.normpath(os.path.abspath(new_dir_path))
             resource_root_abs = os.path.normpath(os.path.abspath(cls._get_resource_root()))
 
-            if not new_dir_path_abs.startswith(resource_root_abs + os.sep) and new_dir_path_abs != resource_root_abs:
+            if (
+                not new_dir_path_abs.startswith(resource_root_abs + os.sep)
+                and new_dir_path_abs != resource_root_abs
+            ):
                 log.error(f"创建目录时检测到越权访问: {new_dir_path_abs}")
                 raise CustomException(msg="目标路径不在允许范围内")
 

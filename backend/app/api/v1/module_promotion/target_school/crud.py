@@ -1,6 +1,7 @@
 """
 目标学校管理 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -10,7 +11,9 @@ from .model import PromotionTargetSchoolModel
 from .schema import TargetSchoolCreateSchema, TargetSchoolOutSchema, TargetSchoolUpdateSchema
 
 
-class TargetSchoolCRUD(CRUDBase[PromotionTargetSchoolModel, TargetSchoolCreateSchema, TargetSchoolUpdateSchema]):
+class TargetSchoolCRUD(
+    CRUDBase[PromotionTargetSchoolModel, TargetSchoolCreateSchema, TargetSchoolUpdateSchema]
+):
     """
     目标学校数据访问层
     """

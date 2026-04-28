@@ -1,6 +1,7 @@
 """
 咨询会筛选匹配 - 服务层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -64,9 +65,7 @@ class ScreeningService:
         return result
 
     @classmethod
-    async def create_service(
-        cls, auth: AuthSchema, data: ScreeningFilterCreateSchema
-    ) -> dict:
+    async def create_service(cls, auth: AuthSchema, data: ScreeningFilterCreateSchema) -> dict:
         """创建"""
         create_data = data.model_dump(exclude_unset=True)
         obj = await ScreeningCRUD(auth).create_crud(create_data)

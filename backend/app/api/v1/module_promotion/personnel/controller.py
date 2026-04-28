@@ -1,6 +1,7 @@
 """
 人员管理 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -232,7 +233,9 @@ async def join_controller(
     - JSONResponse: 加入成功的JSON响应
     """
     user_id = auth.user.id if auth.user else None
-    result_dict = await PersonnelService.join_service(auth=auth, invite_code=invite_code, user_id=user_id)
+    result_dict = await PersonnelService.join_service(
+        auth=auth, invite_code=invite_code, user_id=user_id
+    )
     log.info("招生人员加入成功")
     return SuccessResponse(data=result_dict, msg="加入成功")
 

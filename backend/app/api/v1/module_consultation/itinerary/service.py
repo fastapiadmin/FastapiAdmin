@@ -63,18 +63,14 @@ class ItineraryService:
         return result
 
     @classmethod
-    async def create_service(
-        cls, auth: AuthSchema, data: ItineraryCreateSchema
-    ) -> dict:
+    async def create_service(cls, auth: AuthSchema, data: ItineraryCreateSchema) -> dict:
         """创建"""
         create_data = data.model_dump(exclude_unset=True)
         obj = await ItineraryCRUD(auth).create_crud(create_data)
         return ItineraryOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def update_service(
-        cls, auth: AuthSchema, id: int, data: ItineraryUpdateSchema
-    ) -> dict:
+    async def update_service(cls, auth: AuthSchema, id: int, data: ItineraryUpdateSchema) -> dict:
         """更新"""
         obj = await ItineraryCRUD(auth).get_by_id_crud(id=id)
         if not obj:
@@ -146,6 +142,7 @@ class ItineraryService:
             raise CustomException(msg="该行程方案不存在")
 
         from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+
         consultation = await InfoCollectionCRUD(auth).get_by_id_crud(consultation_id)
         if not consultation:
             raise CustomException(msg="该咨询会不存在")
@@ -158,7 +155,9 @@ class ItineraryService:
             "address": consultation.address,
         }
 
-        obj = await ItineraryCRUD(auth).add_consultation_crud(id, consultation_id, consultation_detail)
+        obj = await ItineraryCRUD(auth).add_consultation_crud(
+            id, consultation_id, consultation_detail
+        )
         log.info(f"添加咨询会 {consultation_id} 到行程 {id}")
         return ItineraryOutSchema.model_validate(obj).model_dump()
 
@@ -182,4 +181,107 @@ class ItineraryService:
             raise CustomException(msg="该行程方案不存在")
         obj = await ItineraryCRUD(auth).optimize_route_crud(id)
         log.info(f"优化行程路线 {id}")
+        return ItineraryOutSchema.model_validate(obj).model_dump()
+
+    @classmethod
+    async def move_task_service(cls, auth: AuthSchema, id: int, board_column: str) -> dict:
+        """移动任务到不同看板列"""
+        if board_column not in ["todo", "doing", "done"]:
+            raise CustomException(msg="看板列必须是 todo/doing/done 之一")
+        obj = await ItineraryCRUD(auth).get_by_id_crud(id=id)
+        if not obj:
+            raise CustomException(msg="该行程方案不存在")
+        obj = await ItineraryCRUD(auth).move_task_crud(id, board_column)
+        log.info(f"移动任务 {id} 到 {board_column}")
+        return ItineraryOutSchema.model_validate(obj).model_dump()
+
+    @classmethod
+    async def kanban_board_service(cls, auth: AuthSchema) -> dict:
+        """获取看板视图"""
+        all_items = await ItineraryCRUD(auth).list_crud(
+            search={"status": "archived"}, order_by=[{"created_time": "desc"}]
+        )
+        non_archived = await ItineraryCRUD(auth).list_crud(order_by=[{"created_time": "desc"}])
+        todo_list = [
+            ItineraryOutSchema.model_validate(obj).model_dump()
+            for obj in non_archived
+            if obj.board_column == "todo" or not obj.board_column
+        ]
+        doing_list = [
+            ItineraryOutSchema.model_validate(obj).model_dump()
+            for obj in non_archived
+            if obj.board_column == "doing"
+        ]
+        done_list = [
+            ItineraryOutSchema.model_validate(obj).model_dump()
+            for obj in non_archived
+            if obj.board_column == "done"
+        ]
+        archived_list = [
+            ItineraryOutSchema.model_validate(obj).model_dump()
+            for obj in all_items
+            if obj.board_column == "archived"
+        ]
+        return {
+            "todo": todo_list,
+            "doing": doing_list,
+            "done": done_list,
+            "archived": archived_list,
+        }
+
+    @classmethod
+    async def calendar_board_service(
+        cls,
+        auth: AuthSchema,
+        start_date_begin: str | None = None,
+        start_date_end: str | None = None,
+    ) -> dict:
+        """获取日历视图（按日期分组）"""
+        search = {}
+        if start_date_begin:
+            search["start_date"] = ("ge", start_date_begin)
+        if start_date_end:
+            search["start_date"] = ("le", start_date_end)
+        all_items = await ItineraryCRUD(auth).list_crud(
+            search=search if search else None, order_by=[{"start_date": "asc"}]
+        )
+        items = [ItineraryOutSchema.model_validate(obj).model_dump() for obj in all_items]
+        calendar_dict = {}
+        for item in items:
+            date_key = item.get("start_date")
+            if date_key:
+                if date_key not in calendar_dict:
+                    calendar_dict[date_key] = []
+                calendar_dict[date_key].append(item)
+        return {
+            "dates": calendar_dict,
+            "items": items,
+        }
+
+    @classmethod
+    async def create_auto_itinerary_service(cls, auth: AuthSchema, registration_id: int) -> dict:
+        """根据报名记录自动创建行程待办项"""
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+        from app.api.v1.module_consultation.registration.crud import RegistrationCRUD
+
+        registration = await RegistrationCRUD(auth).get_by_id_crud(registration_id)
+        if not registration:
+            raise CustomException(msg="该报名记录不存在")
+
+        consultation = await InfoCollectionCRUD(auth).get_by_id_crud(registration.consultation_id)
+        if not consultation:
+            raise CustomException(msg="关联的咨询会不存在")
+
+        create_data = {
+            "consultation_id": consultation.id,
+            "itinerary_name": f"{consultation.title} - {registration.university_name or '待分配'}",
+            "start_date": consultation.start_date,
+            "end_date": consultation.end_date or consultation.start_date,
+            "destination_city": consultation.city,
+            "board_column": "todo",
+            "task_type": "auto_register",
+            "auto_generated": True,
+        }
+        obj = await ItineraryCRUD(auth).create_auto_generated_crud(create_data)
+        log.info(f"自动创建行程待办项 {obj.id}，关联报名 {registration_id}")
         return ItineraryOutSchema.model_validate(obj).model_dump()

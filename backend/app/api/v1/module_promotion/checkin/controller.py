@@ -1,6 +1,7 @@
 """
 活动打卡 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query

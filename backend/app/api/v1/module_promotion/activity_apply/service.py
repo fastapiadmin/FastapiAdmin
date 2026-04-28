@@ -1,6 +1,7 @@
 """
 活动申请审批 - 服务层
 """
+
 from datetime import datetime
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -106,7 +107,9 @@ class ActivityApplyService:
         - dict: 创建的活动申请模型实例字典
         """
         if data.get("activity_code"):
-            existing = await ActivityApplyCRUD(auth).get_by_activity_code_crud(data["activity_code"])
+            existing = await ActivityApplyCRUD(auth).get_by_activity_code_crud(
+                data["activity_code"]
+            )
             if existing:
                 raise CustomException(msg="活动编码已存在")
 
@@ -135,7 +138,9 @@ class ActivityApplyService:
             raise CustomException(msg="只有待审批状态的申请可以编辑")
 
         if data.get("activity_code") and data["activity_code"] != existing.activity_code:
-            code_existing = await ActivityApplyCRUD(auth).get_by_activity_code_crud(data["activity_code"])
+            code_existing = await ActivityApplyCRUD(auth).get_by_activity_code_crud(
+                data["activity_code"]
+            )
             if code_existing:
                 raise CustomException(msg="活动编码已存在")
 
@@ -180,7 +185,9 @@ class ActivityApplyService:
         log.info(f"批量删除活动申请成功: {ids}")
 
     @classmethod
-    async def approve_service(cls, auth: AuthSchema, id: int, approval_comment: str | None = None) -> dict:
+    async def approve_service(
+        cls, auth: AuthSchema, id: int, approval_comment: str | None = None
+    ) -> dict:
         """
         审批通过
 
@@ -268,7 +275,10 @@ class ActivityApplyService:
         if not existing:
             raise CustomException(msg="该活动申请不存在")
 
-        if existing.approval_status not in [ApprovalStatus.PENDING.value, ApprovalStatus.APPROVED.value]:
+        if existing.approval_status not in [
+            ApprovalStatus.PENDING.value,
+            ApprovalStatus.APPROVED.value,
+        ]:
             raise CustomException(msg="当前状态无法取消")
 
         update_data = {

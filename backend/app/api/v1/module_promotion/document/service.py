@@ -1,6 +1,7 @@
 """
 活动撰写 - 服务层
 """
+
 import json
 import uuid
 from datetime import datetime

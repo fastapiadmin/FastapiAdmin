@@ -2,7 +2,6 @@
 咨询会信息聚合 - 服务层
 """
 
-
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
 
@@ -94,9 +93,7 @@ class InfoCollectionService:
         return result
 
     @classmethod
-    async def create_service(
-        cls, auth: AuthSchema, data: InfoCollectionCreateSchema
-    ) -> dict:
+    async def create_service(cls, auth: AuthSchema, data: InfoCollectionCreateSchema) -> dict:
         """
         创建
 
@@ -201,9 +198,7 @@ class InfoCollectionService:
         return InfoCollectionOutSchema.model_validate(updated_obj).model_dump()
 
     @classmethod
-    async def reject_service(
-        cls, auth: AuthSchema, id: int, review_comment: str
-    ) -> dict:
+    async def reject_service(cls, auth: AuthSchema, id: int, review_comment: str) -> dict:
         """
         审核拒绝
 
@@ -281,3 +276,79 @@ class InfoCollectionService:
 
         updated_obj = await InfoCollectionCRUD(auth).update_crud(id, update_data)
         return InfoCollectionOutSchema.model_validate(updated_obj).model_dump()
+
+    @classmethod
+    async def preview_list_service(
+        cls,
+        auth: AuthSchema,
+        page_no: int,
+        page_size: int,
+        title: str | None = None,
+        organizer: str | None = None,
+        province: str | None = None,
+        city: str | None = None,
+        organizer_nature: str | None = None,
+        compliance_level: str | None = None,
+        source_type: str | None = None,
+        status: str | None = None,
+        start_date_begin: str | None = None,
+        start_date_end: str | None = None,
+    ) -> dict:
+        """
+        全部咨询会预览列表（带筛选）
+
+        直接在列表页按多维度筛选，无需先保存筛选条件
+
+        参数:
+        - auth: 认证信息
+        - page_no: 页码
+        - page_size: 每页数量
+        - title: 咨询会标题（模糊搜索）
+        - organizer: 主办方（模糊搜索）
+        - province: 省份
+        - city: 城市
+        - organizer_nature: 主办机构性质
+        - compliance_level: 合规等级
+        - source_type: 信息来源
+        - status: 状态
+        - start_date_begin: 开始日期-起
+        - start_date_end: 开始日期-止
+
+        返回:
+        - dict: 分页数据
+        """
+        from app.common.enums import QueueEnum
+
+        search = {}
+
+        if title:
+            search["title"] = (QueueEnum.like.value, title)
+        if organizer:
+            search["organizer"] = (QueueEnum.like.value, organizer)
+        if province:
+            search["province"] = (QueueEnum.eq.value, province)
+        if city:
+            search["city"] = (QueueEnum.eq.value, city)
+        if organizer_nature:
+            search["organizer_nature"] = (QueueEnum.eq.value, organizer_nature)
+        if compliance_level:
+            search["compliance_level"] = (QueueEnum.eq.value, compliance_level)
+        if source_type:
+            search["source_type"] = (QueueEnum.eq.value, source_type)
+        if status:
+            search["status"] = (QueueEnum.eq.value, status)
+
+        if start_date_begin and start_date_end:
+            search["start_date"] = (QueueEnum.between.value, (start_date_begin, start_date_end))
+        elif start_date_begin:
+            search["start_date"] = (QueueEnum.ge.value, start_date_begin)
+        elif start_date_end:
+            search["start_date"] = (QueueEnum.le.value, start_date_end)
+
+        offset = (page_no - 1) * page_size
+        return await InfoCollectionCRUD(auth).page_crud(
+            offset=offset,
+            limit=page_size,
+            order_by=[{"id": "desc"}],
+            search=search,
+        )

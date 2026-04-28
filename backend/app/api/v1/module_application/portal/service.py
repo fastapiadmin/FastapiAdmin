@@ -65,9 +65,7 @@ class ApplicationService:
         - list[dict]: 应用详情字典列表
         """
         search_dict = search.__dict__ if search else None
-        obj_list = await ApplicationCRUD(auth).list_crud(
-            search=search_dict, order_by=order_by
-        )
+        obj_list = await ApplicationCRUD(auth).list_crud(search=search_dict, order_by=order_by)
         return [ApplicationOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod

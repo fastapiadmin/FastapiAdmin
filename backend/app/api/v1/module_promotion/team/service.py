@@ -114,7 +114,9 @@ class TeamService:
             if not parent:
                 raise CustomException(msg="上级招生组不存在")
             data["level_depth"] = parent.level_depth + 1
-            data["level_path"] = f"{parent.level_path}{parent.id}/" if parent.level_path else f"/{parent.id}/"
+            data["level_path"] = (
+                f"{parent.level_path}{parent.id}/" if parent.level_path else f"/{parent.id}/"
+            )
         else:
             data["level_depth"] = 1
             data["level_path"] = "/"
@@ -152,7 +154,9 @@ class TeamService:
             if not parent:
                 raise CustomException(msg="上级招生组不存在")
             data["level_depth"] = parent.level_depth + 1
-            data["level_path"] = f"{parent.level_path}{parent.id}/" if parent.level_path else f"/{parent.id}/"
+            data["level_path"] = (
+                f"{parent.level_path}{parent.id}/" if parent.level_path else f"/{parent.id}/"
+            )
 
         obj = await TeamCRUD(auth).update_crud(id=id, data=data)
         log.info(f"更新招生组成功: {id}")
@@ -198,13 +202,13 @@ class TeamService:
     @classmethod
     async def tree_service(cls, auth: AuthSchema) -> list[dict]:
         """
-        获取招生组树形结构
+         获取招生组树形结构
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
+         参数:
+         - auth (AuthSchema): 认证信息模型
 
-       返回:
-        - list[dict]: 树形结构的招生组列表
+        返回:
+         - list[dict]: 树形结构的招生组列表
         """
         root_teams = await TeamCRUD(auth).get_root_teams_crud()
         result = []

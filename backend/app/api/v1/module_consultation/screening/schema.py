@@ -1,6 +1,7 @@
 """
 咨询会筛选匹配 - 数据验证Schema
 """
+
 from dataclasses import dataclass
 
 from fastapi import Query
@@ -37,6 +38,7 @@ class ScreeningFilterCreateSchema(BaseModel):
 
 class ScreeningFilterUpdateSchema(ScreeningFilterCreateSchema):
     """更新筛选条件模型"""
+
     pass
 
 

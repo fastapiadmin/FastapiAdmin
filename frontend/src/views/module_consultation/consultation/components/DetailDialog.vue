@@ -1,34 +1,31 @@
 <!-- 详情对话框 -->
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="咨询会信息详情"
-    width="700px"
-    destroy-on-close
-  >
-    <el-descriptions :column="2" border v-if="data">
+  <el-dialog v-model="dialogVisible" title="咨询会信息详情" width="700px" destroy-on-close>
+    <el-descriptions v-if="data" :column="2" border>
       <el-descriptions-item label="标题" :span="2">{{ data.title }}</el-descriptions-item>
       <el-descriptions-item label="描述" :span="2">
-        {{ data.description || '-' }}
+        {{ data.description || "-" }}
       </el-descriptions-item>
       <el-descriptions-item label="主办方">{{ data.organizer }}</el-descriptions-item>
       <el-descriptions-item label="主办方类型">
         {{ getOrganizerTypeLabel(data.organizer_type) }}
       </el-descriptions-item>
       <el-descriptions-item label="开始日期">{{ data.start_date }}</el-descriptions-item>
-      <el-descriptions-item label="结束日期">{{ data.end_date || '-' }}</el-descriptions-item>
-      <el-descriptions-item label="开始时间">{{ data.start_time || '-' }}</el-descriptions-item>
-      <el-descriptions-item label="结束时间">{{ data.end_time || '-' }}</el-descriptions-item>
-      <el-descriptions-item label="省份">{{ data.province || '-' }}</el-descriptions-item>
-      <el-descriptions-item label="城市">{{ data.city || '-' }}</el-descriptions-item>
-      <el-descriptions-item label="区县">{{ data.district || '-' }}</el-descriptions-item>
-      <el-descriptions-item label="详细地址" :span="2">{{ data.address || '-' }}</el-descriptions-item>
+      <el-descriptions-item label="结束日期">{{ data.end_date || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="开始时间">{{ data.start_time || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="结束时间">{{ data.end_time || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="省份">{{ data.province || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="城市">{{ data.city || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="区县">{{ data.district || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="详细地址" :span="2">
+        {{ data.address || "-" }}
+      </el-descriptions-item>
       <el-descriptions-item label="参与高校数量">{{ data.university_count }}</el-descriptions-item>
       <el-descriptions-item label="预计参观人数">
-        {{ data.estimated_visitors || '-' }}
+        {{ data.estimated_visitors || "-" }}
       </el-descriptions-item>
       <el-descriptions-item label="展位费用">
-        {{ data.booth_fee ? '¥' + data.booth_fee : '-' }}
+        {{ data.booth_fee ? "¥" + data.booth_fee : "-" }}
       </el-descriptions-item>
       <el-descriptions-item label="信息来源">
         <el-tag :type="getSourceTypeType(data.source_type)">
@@ -49,7 +46,7 @@
         {{ getComplianceLevelLabel(data.compliance_level) }}
       </el-descriptions-item>
       <el-descriptions-item label="是否归档">
-        {{ data.is_archived ? '是' : '否' }}
+        {{ data.is_archived ? "是" : "否" }}
       </el-descriptions-item>
       <el-descriptions-item v-if="data.is_archived" label="归档时间">
         {{ data.archived_time }}

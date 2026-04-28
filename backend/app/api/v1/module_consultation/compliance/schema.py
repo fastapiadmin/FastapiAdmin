@@ -1,6 +1,7 @@
 """
 合规诊断 - 数据验证Schema
 """
+
 from datetime import datetime
 
 from pydantic import ConfigDict, Field
@@ -24,6 +25,7 @@ class ComplianceDiagnosisCreateSchema(BaseSchema):
 
 class ComplianceDiagnosisUpdateSchema(ComplianceDiagnosisCreateSchema):
     """更新诊断记录模型"""
+
     pass
 
 
@@ -61,6 +63,7 @@ class ComplianceRuleCreateSchema(BaseSchema):
 
 class ComplianceRuleUpdateSchema(ComplianceRuleCreateSchema):
     """更新合规规则模型"""
+
     pass
 
 

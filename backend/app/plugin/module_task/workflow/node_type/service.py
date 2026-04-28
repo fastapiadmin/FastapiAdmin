@@ -148,7 +148,9 @@ class WorkflowNodeTypeService:
         return cls._out(obj)
 
     @classmethod
-    async def update_service(cls, auth: AuthSchema, id: int, data: WorkflowNodeTypeUpdateSchema) -> dict:
+    async def update_service(
+        cls, auth: AuthSchema, id: int, data: WorkflowNodeTypeUpdateSchema
+    ) -> dict:
         """
         更新编排节点类型。
 

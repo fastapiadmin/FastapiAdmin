@@ -1,6 +1,7 @@
 """
 合规诊断 - 数据模型
 """
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -35,8 +36,12 @@ class ComplianceDiagnosisModel(ModelMixin, UserMixin):
     diagnosis_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, comment="诊断时间")
 
     # 合规评分
-    compliance_score: Mapped[int] = mapped_column(Integer, nullable=False, comment="合规评分(0-100)")
-    compliance_level: Mapped[str] = mapped_column(String(20), nullable=False, comment="合规等级(low/medium/high)")
+    compliance_score: Mapped[int] = mapped_column(
+        Integer, nullable=False, comment="合规评分(0-100)"
+    )
+    compliance_level: Mapped[str] = mapped_column(
+        String(20), nullable=False, comment="合规等级(low/medium/high)"
+    )
 
     # 风险因素
     risk_factors: Mapped[list | None] = mapped_column(JSON, comment="风险因素列表")
@@ -48,11 +53,15 @@ class ComplianceDiagnosisModel(ModelMixin, UserMixin):
     improvement_suggestions: Mapped[list | None] = mapped_column(JSON, comment="改进建议列表")
 
     # 诊断结果
-    is_high_risk: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="是否高风险")
+    is_high_risk: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否高风险"
+    )
     risk_warning: Mapped[str | None] = mapped_column(Text, comment="风险警告")
 
     # 历史记录
-    is_latest: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, comment="是否最新诊断")
+    is_latest: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, comment="是否最新诊断"
+    )
 
 
 class ComplianceRuleModel(ModelMixin, UserMixin):
@@ -71,11 +80,19 @@ class ComplianceRuleModel(ModelMixin, UserMixin):
     description: Mapped[str | None] = mapped_column(Text, comment="规则描述")
 
     # 规则配置
-    rule_type: Mapped[str] = mapped_column(String(50), nullable=False, comment="规则类型(organizer/location/scale/fee/other)")
+    rule_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, comment="规则类型(organizer/location/scale/fee/other)"
+    )
     rule_condition: Mapped[dict] = mapped_column(JSON, nullable=False, comment="规则条件")
-    rule_weight: Mapped[int] = mapped_column(Integer, default=10, nullable=False, comment="规则权重(1-100)")
-    risk_level: Mapped[str] = mapped_column(String(20), nullable=False, comment="风险等级(low/medium/high)")
+    rule_weight: Mapped[int] = mapped_column(
+        Integer, default=10, nullable=False, comment="规则权重(1-100)"
+    )
+    risk_level: Mapped[str] = mapped_column(
+        String(20), nullable=False, comment="风险等级(low/medium/high)"
+    )
 
     # 状态
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, comment="是否启用")
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, comment="是否启用"
+    )
     order: Mapped[int] = mapped_column(Integer, default=0, nullable=False, comment="排序")

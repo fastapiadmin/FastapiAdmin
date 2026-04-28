@@ -4,13 +4,28 @@
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
         <el-form-item label="团队名称" prop="team_name">
-          <el-input v-model="searchForm.team_name" placeholder="请输入团队名称" clearable style="width: 180px" />
+          <el-input
+            v-model="searchForm.team_name"
+            placeholder="请输入团队名称"
+            clearable
+            style="width: 180px"
+          />
         </el-form-item>
         <el-form-item label="团队编码" prop="team_code">
-          <el-input v-model="searchForm.team_code" placeholder="请输入团队编码" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.team_code"
+            placeholder="请输入团队编码"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="团队级别" prop="team_level">
-          <el-select v-model="searchForm.team_level" placeholder="请选择级别" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.team_level"
+            placeholder="请选择级别"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="总部" value="headquarters" />
             <el-option label="大区" value="region" />
             <el-option label="省区" value="province" />
@@ -18,14 +33,25 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="team_status">
-          <el-select v-model="searchForm.team_status" placeholder="请选择状态" clearable style="width: 120px">
+          <el-select
+            v-model="searchForm.team_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 120px"
+          >
             <el-option label="在用" value="active" />
             <el-option label="停用" value="inactive" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -35,19 +61,40 @@
         <div class="card-header">
           <span class="title">团队列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:team:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:team:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:team:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:team:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="team_no" label="团队编号" width="150" />
         <el-table-column prop="team_name" label="团队名称" min-width="150" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.team_name || '-' }}</el-link>
+            <el-link type="primary" @click="handleView(row)">{{ row.team_name || "-" }}</el-link>
           </template>
         </el-table-column>
         <el-table-column prop="team_code" label="团队编码" width="120" />
@@ -61,47 +108,104 @@
         <el-table-column prop="member_count" label="成员数量" width="100" />
         <el-table-column prop="team_status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.team_status === 'active' ? 'success' : 'info'">{{ row.team_status === 'active' ? '在用' : '停用' }}</el-tag>
+            <el-tag :type="row.team_status === 'active' ? 'success' : 'info'">
+              {{ row.team_status === "active" ? "在用" : "停用" }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:team:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:team:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:team:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:team:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:team:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:team:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="团队详情" width="600px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="团队编号">{{ detailDialog.data.team_no }}</el-descriptions-item>
-        <el-descriptions-item label="团队状态">
-          <el-tag :type="detailDialog.data.team_status === 'active' ? 'success' : 'info'">{{ detailDialog.data.team_status === 'active' ? '在用' : '停用' }}</el-tag>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="团队编号">
+          {{ detailDialog.data.team_no }}
         </el-descriptions-item>
-        <el-descriptions-item label="团队名称" :span="2">{{ detailDialog.data.team_name }}</el-descriptions-item>
-        <el-descriptions-item label="团队编码">{{ detailDialog.data.team_code || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="团队状态">
+          <el-tag :type="detailDialog.data.team_status === 'active' ? 'success' : 'info'">
+            {{ detailDialog.data.team_status === "active" ? "在用" : "停用" }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="团队名称" :span="2">
+          {{ detailDialog.data.team_name }}
+        </el-descriptions-item>
+        <el-descriptions-item label="团队编码">
+          {{ detailDialog.data.team_code || "-" }}
+        </el-descriptions-item>
         <el-descriptions-item label="团队级别">
           <el-tag>{{ getLevelLabel(detailDialog.data.team_level) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="上级团队">{{ detailDialog.data.parent_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="负责人">{{ detailDialog.data.leader_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="联系电话">{{ detailDialog.data.leader_phone || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="成员数量">{{ detailDialog.data.member_count || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ detailDialog.data.remark || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="上级团队">
+          {{ detailDialog.data.parent_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="负责人">
+          {{ detailDialog.data.leader_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="联系电话">
+          {{ detailDialog.data.leader_phone || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="成员数量">
+          {{ detailDialog.data.member_count || 0 }}
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          {{ detailDialog.data.remark || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增团队' : '编辑团队'" width="550px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增团队' : '编辑团队'"
+      width="550px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="团队名称" prop="team_name">
           <el-input v-model="form.team_name" placeholder="请输入团队名称" />
@@ -118,7 +222,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="上级团队" prop="parent_id">
-          <el-input-number v-model="form.parent_id" :min="0" placeholder="上级团队ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.parent_id"
+            :min="0"
+            placeholder="上级团队ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="负责人" prop="leader_name">
           <el-input v-model="form.leader_name" placeholder="请输入负责人姓名" />

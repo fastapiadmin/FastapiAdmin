@@ -1,6 +1,7 @@
 """
 费用报销 - 服务层
 """
+
 import uuid
 from datetime import datetime
 
@@ -147,7 +148,9 @@ class ExpenseService:
         log.info(f"批量删除费用报销成功: {ids}")
 
     @classmethod
-    async def approve_service(cls, auth: AuthSchema, id: int, approval_comment: str | None = None) -> dict:
+    async def approve_service(
+        cls, auth: AuthSchema, id: int, approval_comment: str | None = None
+    ) -> dict:
         """
         审批通过
 
@@ -217,7 +220,9 @@ class ExpenseService:
         return ExpenseOutSchema.model_validate(obj).model_dump()
 
     @classmethod
-    async def reimburse_service(cls, auth: AuthSchema, id: int, reimbursement_account: str | None = None) -> dict:
+    async def reimburse_service(
+        cls, auth: AuthSchema, id: int, reimbursement_account: str | None = None
+    ) -> dict:
         """
         报销
 

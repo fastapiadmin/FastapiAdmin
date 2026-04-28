@@ -70,7 +70,9 @@ class Permission:
             return None
 
         # 获取模型的权限过滤策略
-        strategy = getattr(self.model, "__permission_strategy__", PermissionFilterStrategy.DATA_SCOPE)
+        strategy = getattr(
+            self.model, "__permission_strategy__", PermissionFilterStrategy.DATA_SCOPE
+        )
 
         # 根据策略选择过滤方法
         if strategy == PermissionFilterStrategy.ROLE_BASED:
@@ -246,9 +248,7 @@ class Permission:
             return created_id_attr == self.auth.user.id
         return None
 
-    async def __get_accessible_dept_ids(
-        self, data_scopes: set, custom_dept_ids: set
-    ) -> set[int]:
+    async def __get_accessible_dept_ids(self, data_scopes: set, custom_dept_ids: set) -> set[int]:
         """
         获取用户可访问的所有部门ID
 

@@ -3,6 +3,7 @@
 
 根据主办机构性质进行合规性评估和评分
 """
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -15,12 +16,13 @@ from .model import ComplianceDiagnosisModel
 @dataclass
 class ComplianceScoreResult:
     """合规评分结果"""
-    score: int                          # 合规评分(0-100)
-    level: str                          # 合规等级(low/medium/high)
-    is_high_risk: bool                  # 是否高风险
-    risk_factors: list[str]             # 风险因素列表
+
+    score: int  # 合规评分(0-100)
+    level: str  # 合规等级(low/medium/high)
+    is_high_risk: bool  # 是否高风险
+    risk_factors: list[str]  # 风险因素列表
     improvement_suggestions: list[str]  # 改进建议列表
-    diagnosis_details: dict[str, Any]   # 诊断详情
+    diagnosis_details: dict[str, Any]  # 诊断详情
 
 
 class ComplianceScoringServiceV1:
@@ -91,7 +93,9 @@ class ComplianceScoringServiceV1:
     }
 
     @classmethod
-    async def diagnose_consultation(cls, consultation: ConsultationInfoModel) -> ComplianceScoreResult:
+    async def diagnose_consultation(
+        cls, consultation: ConsultationInfoModel
+    ) -> ComplianceScoreResult:
         """
         对咨询会进行合规诊断评分
 
@@ -140,7 +144,9 @@ class ComplianceScoringServiceV1:
             diagnosis_details=diagnosis_details,
         )
 
-        log.info(f"合规诊断完成: 评分={final_score}, 等级={compliance_level}, 高风险={is_high_risk}")
+        log.info(
+            f"合规诊断完成: 评分={final_score}, 等级={compliance_level}, 高风险={is_high_risk}"
+        )
         return result
 
     @classmethod
@@ -253,10 +259,14 @@ class ComplianceScoringServiceV1:
     def _is_high_risk(cls, organizer_nature: OrganizerNature, score: int) -> bool:
         """判断是否高风险"""
         # 第三方机构且评分低于60分
-        if organizer_nature in [
-            OrganizerNature.THIRD_PARTY_SINGLE,
-            OrganizerNature.THIRD_PARTY_MULTIPLE,
-        ] and score < 60:
+        if (
+            organizer_nature
+            in [
+                OrganizerNature.THIRD_PARTY_SINGLE,
+                OrganizerNature.THIRD_PARTY_MULTIPLE,
+            ]
+            and score < 60
+        ):
             return True
 
         # 评分低于40分
@@ -403,7 +413,9 @@ class ComplianceScoringServiceV1:
             await session.commit()
 
     @classmethod
-    async def batch_diagnose_consultations(cls, consultation_ids: list[int]) -> dict[int, ComplianceScoreResult]:
+    async def batch_diagnose_consultations(
+        cls, consultation_ids: list[int]
+    ) -> dict[int, ComplianceScoreResult]:
         """
         批量诊断咨询会
 

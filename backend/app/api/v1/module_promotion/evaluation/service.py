@@ -1,6 +1,7 @@
 """
 表彰评优 - 服务层
 """
+
 import json
 import uuid
 from datetime import datetime
@@ -114,7 +115,10 @@ class EvaluationService:
         if not existing:
             raise CustomException(msg="该表彰记录不存在")
 
-        if existing.evaluation_status not in [EvaluationStatus.DRAFT.value, EvaluationStatus.REJECTED.value]:
+        if existing.evaluation_status not in [
+            EvaluationStatus.DRAFT.value,
+            EvaluationStatus.REJECTED.value,
+        ]:
             raise CustomException(msg="只有草稿或已拒绝状态的记录可以编辑")
 
         if "evidence_urls" in data and isinstance(data["evidence_urls"], list):
@@ -191,7 +195,9 @@ class EvaluationService:
         return cls._format_evaluation_output(obj)
 
     @classmethod
-    async def review_service(cls, auth: AuthSchema, id: int, review_comment: str | None = None) -> dict:
+    async def review_service(
+        cls, auth: AuthSchema, id: int, review_comment: str | None = None
+    ) -> dict:
         """
         审核表彰评优
 
@@ -226,7 +232,14 @@ class EvaluationService:
         return cls._format_evaluation_output(obj)
 
     @classmethod
-    async def approve_service(cls, auth: AuthSchema, id: int, approval_comment: str | None = None, reward_type: str | None = None, reward_amount: float | None = None) -> dict:
+    async def approve_service(
+        cls,
+        auth: AuthSchema,
+        id: int,
+        approval_comment: str | None = None,
+        reward_type: str | None = None,
+        reward_amount: float | None = None,
+    ) -> dict:
         """
         批准表彰评优
 
@@ -244,7 +257,10 @@ class EvaluationService:
         if not existing:
             raise CustomException(msg="该表彰记录不存在")
 
-        if existing.evaluation_status not in [EvaluationStatus.SUBMITTED.value, EvaluationStatus.REVIEWING.value]:
+        if existing.evaluation_status not in [
+            EvaluationStatus.SUBMITTED.value,
+            EvaluationStatus.REVIEWING.value,
+        ]:
             raise CustomException(msg="只有已提交或审核中的记录可以批准")
 
         user_id = auth.user.id if auth.user else None
@@ -284,7 +300,10 @@ class EvaluationService:
         if not existing:
             raise CustomException(msg="该表彰记录不存在")
 
-        if existing.evaluation_status not in [EvaluationStatus.SUBMITTED.value, EvaluationStatus.REVIEWING.value]:
+        if existing.evaluation_status not in [
+            EvaluationStatus.SUBMITTED.value,
+            EvaluationStatus.REVIEWING.value,
+        ]:
             raise CustomException(msg="只有已提交或审核中的记录可以拒绝")
 
         user_id = auth.user.id if auth.user else None

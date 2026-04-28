@@ -1,6 +1,7 @@
 """
 行程报备 - 数据模型
 """
+
 from datetime import datetime
 from enum import Enum
 
@@ -12,6 +13,7 @@ from app.core.base_model import ModelMixin, UserMixin
 
 class TripStatus(str, Enum):
     """行程状态枚举"""
+
     PLANNED = "planned"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -28,82 +30,50 @@ class PromotionTripModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_trip"
     __table_args__: dict[str, str] = {"comment": "行程报备表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
-    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description", "enable_location_sharing"]}
+    __mapper_args__: dict[str, list[str]] = {
+        "exclude_properties": ["description", "enable_location_sharing"]
+    }
 
-    personnel_id: Mapped[int | None] = mapped_column(
-        BIGINT,
-        nullable=True,
-        comment="人员ID"
-    )
+    personnel_id: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="人员ID")
 
-    trip_name: Mapped[str | None] = mapped_column(
-        String(200),
-        nullable=True,
-        comment="行程名称"
-    )
+    trip_name: Mapped[str | None] = mapped_column(String(200), nullable=True, comment="行程名称")
 
     departure_location: Mapped[str | None] = mapped_column(
-        String(200),
-        nullable=True,
-        comment="出发地"
+        String(200), nullable=True, comment="出发地"
     )
 
-    destination: Mapped[str | None] = mapped_column(
-        String(200),
-        nullable=True,
-        comment="目的地"
-    )
+    destination: Mapped[str | None] = mapped_column(String(200), nullable=True, comment="目的地")
 
     plan_start_time: Mapped[datetime | None] = mapped_column(
-        DateTime,
-        nullable=True,
-        comment="计划开始时间"
+        DateTime, nullable=True, comment="计划开始时间"
     )
 
     plan_end_time: Mapped[datetime | None] = mapped_column(
-        DateTime,
-        nullable=True,
-        comment="计划结束时间"
+        DateTime, nullable=True, comment="计划结束时间"
     )
 
     transportation: Mapped[str | None] = mapped_column(
-        String(50),
-        nullable=True,
-        comment="交通方式"
+        String(50), nullable=True, comment="交通方式"
     )
 
-    trip_status: Mapped[str | None] = mapped_column(
-        String(20),
-        nullable=True,
-        comment="行程状态"
-    )
+    trip_status: Mapped[str | None] = mapped_column(String(20), nullable=True, comment="行程状态")
 
     enable_location_sharing: Mapped[int | None] = mapped_column(
-        Integer,
-        nullable=True,
-        comment="启用位置共享"
+        Integer, nullable=True, comment="启用位置共享"
     )
 
     last_location_time: Mapped[datetime | None] = mapped_column(
-        DateTime,
-        nullable=True,
-        comment="最后位置时间"
+        DateTime, nullable=True, comment="最后位置时间"
     )
 
     last_latitude: Mapped[Numeric | None] = mapped_column(
-        Numeric(10, 7),
-        nullable=True,
-        comment="最后纬度"
+        Numeric(10, 7), nullable=True, comment="最后纬度"
     )
 
     last_longitude: Mapped[Numeric | None] = mapped_column(
-        Numeric(10, 7),
-        nullable=True,
-        comment="最后经度"
+        Numeric(10, 7), nullable=True, comment="最后经度"
     )
 
     last_location_address: Mapped[str | None] = mapped_column(
-        String(500),
-        nullable=True,
-        comment="最后位置地址"
+        String(500), nullable=True, comment="最后位置地址"
     )

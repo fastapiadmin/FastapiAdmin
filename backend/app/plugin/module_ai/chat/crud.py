@@ -23,7 +23,11 @@ class ChatSessionCRUD:
         """初始化CRUD数据层"""
         self.auth = auth
         self.user_id = auth.user.username if auth and auth.user else "user"
-        self.team_id = str(auth.user.dept_id) if auth and auth.user and hasattr(auth.user, 'dept_id') and auth.user.dept_id else None
+        self.team_id = (
+            str(auth.user.dept_id)
+            if auth and auth.user and hasattr(auth.user, "dept_id") and auth.user.dept_id
+            else None
+        )
         self.db = self._get_db()
 
     def _get_db(self) -> Any:
@@ -58,9 +62,7 @@ class ChatSessionCRUD:
         """
         try:
             return self.db.get_session(
-                session_id=session_id,
-                session_type=self.SESSION_TYPE,
-                user_id=self.user_id
+                session_id=session_id, session_type=self.SESSION_TYPE, user_id=self.user_id
             )
         except Exception as e:
             log.error(f"获取会话详情失败: {e}")
@@ -82,10 +84,7 @@ class ChatSessionCRUD:
         - list[TeamSession]: 会话列表；失败时为空列表。
         """
         try:
-            result = self.db.get_sessions(
-                session_type=self.SESSION_TYPE,
-                user_id=self.user_id
-            )
+            result = self.db.get_sessions(session_type=self.SESSION_TYPE, user_id=self.user_id)
             if isinstance(result, tuple) and len(result) == 2:
                 return result[0]
             return result if isinstance(result, list) else []
@@ -148,7 +147,7 @@ class ChatSessionCRUD:
                 session_id=session_id,
                 session_type=self.SESSION_TYPE,
                 session_name=data.title,
-                user_id=self.user_id
+                user_id=self.user_id,
             )
             return True
         except Exception as e:
@@ -167,10 +166,7 @@ class ChatSessionCRUD:
         """
         try:
             for session_id in session_ids:
-                self.db.delete_session(
-                    session_id=session_id,
-                    user_id=self.user_id
-                )
+                self.db.delete_session(session_id=session_id, user_id=self.user_id)
             return True
         except Exception as e:
             log.error(f"删除会话失败: {e}")

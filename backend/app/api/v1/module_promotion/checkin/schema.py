@@ -1,6 +1,7 @@
 """
 活动打卡 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,6 +25,7 @@ class CheckinCreateSchema(BaseModel):
 
 class CheckinUpdateSchema(CheckinCreateSchema):
     """更新活动打卡模型"""
+
     pass
 
 

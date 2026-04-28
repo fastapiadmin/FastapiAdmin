@@ -141,9 +141,7 @@ def _scan_controllers(
 
         except Exception as e:
             hint = _import_failure_hint(e)
-            log.exception(
-                f"❌ 处理模块失败: {module_path}\n   {hint}\n   异常: {e!s}"
-            )
+            log.exception(f"❌ 处理模块失败: {module_path}\n   {hint}\n   异常: {e!s}")
 
 
 def get_dynamic_router() -> APIRouter:

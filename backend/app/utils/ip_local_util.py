@@ -58,11 +58,7 @@ class IpLocalUtil:
         if not ip:
             return None
         if settings.DEBUG:
-            return (
-                "内网IP"
-                if cls.is_private_ip(ip)
-                else "未解析(已关闭归属地查询)"
-            )
+            return "内网IP" if cls.is_private_ip(ip) else "未解析(已关闭归属地查询)"
         return await cls.get_ip_location(ip)
 
     @classmethod

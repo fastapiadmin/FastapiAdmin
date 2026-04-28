@@ -1,6 +1,7 @@
 """
 物料管理 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -70,7 +71,9 @@ class MaterialCRUD(CRUDBase[PromotionMaterialModel, MaterialCreateSchema, Materi
         await self.delete(ids=ids)
 
 
-class MaterialApplyCRUD(CRUDBase[PromotionMaterialApplyModel, MaterialApplyCreateSchema, MaterialApplyUpdateSchema]):
+class MaterialApplyCRUD(
+    CRUDBase[PromotionMaterialApplyModel, MaterialApplyCreateSchema, MaterialApplyUpdateSchema]
+):
     """
     物料申请数据访问层
     """

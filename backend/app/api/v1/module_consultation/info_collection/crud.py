@@ -1,6 +1,7 @@
 """
 咨询会信息聚合 - 数据访问层
 """
+
 from datetime import datetime
 from typing import Any
 
@@ -11,7 +12,9 @@ from .model import ConsultationInfoModel, InfoStatus
 from .schema import InfoCollectionCreateSchema, InfoCollectionOutSchema, InfoCollectionUpdateSchema
 
 
-class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSchema, InfoCollectionUpdateSchema]):
+class InfoCollectionCRUD(
+    CRUDBase[ConsultationInfoModel, InfoCollectionCreateSchema, InfoCollectionUpdateSchema]
+):
     """
     咨询会信息数据访问层
     """
@@ -63,7 +66,9 @@ class InfoCollectionCRUD(CRUDBase[ConsultationInfoModel, InfoCollectionCreateSch
         """批量删除"""
         await self.delete(ids=ids)
 
-    async def approve_crud(self, id: int, review_comment: str | None = None) -> ConsultationInfoModel:
+    async def approve_crud(
+        self, id: int, review_comment: str | None = None
+    ) -> ConsultationInfoModel:
         """审核通过"""
         data = {
             "status": InfoStatus.APPROVED.value,

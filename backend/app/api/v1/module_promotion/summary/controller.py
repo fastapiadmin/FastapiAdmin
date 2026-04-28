@@ -1,6 +1,7 @@
 """
 总结上传 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -228,7 +229,9 @@ async def approve_controller(
     返回:
     - JSONResponse: 审批通过的JSON响应
     """
-    result_dict = await SummaryService.approve_service(auth=auth, id=id, approval_comment=approval_comment)
+    result_dict = await SummaryService.approve_service(
+        auth=auth, id=id, approval_comment=approval_comment
+    )
     log.info(f"审批通过总结成功 {id}")
     return SuccessResponse(data=result_dict, msg="审批通过")
 
@@ -255,6 +258,8 @@ async def reject_controller(
     返回:
     - JSONResponse: 审批拒绝的JSON响应
     """
-    result_dict = await SummaryService.reject_service(auth=auth, id=id, approval_comment=approval_comment)
+    result_dict = await SummaryService.reject_service(
+        auth=auth, id=id, approval_comment=approval_comment
+    )
     log.info(f"审批拒绝总结成功 {id}")
     return SuccessResponse(data=result_dict, msg="审批拒绝")

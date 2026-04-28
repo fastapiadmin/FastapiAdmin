@@ -64,6 +64,23 @@ const RegistrationAPI = {
       data,
     });
   },
+
+  /** 一键报名 */
+  oneClickRegister(id: number) {
+    return request<ApiResponse<RegistrationItem>>({
+      url: `${API_PATH}/one-click-register/${id}`,
+      method: "post",
+    });
+  },
+
+  /** 转发至招生组 */
+  forwardToTeam(id: number, data: { team_leader_id?: number; assignee_ids?: number[] }) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/forward-to-team/${id}`,
+      method: "post",
+      data,
+    });
+  },
 };
 
 export default RegistrationAPI;
@@ -94,4 +111,7 @@ export interface RegistrationItem extends RegistrationForm, BaseType {
   approval_time?: string;
   approval_by?: number;
   approval_comment?: string;
+  registration_email?: string;
+  is_registered?: boolean;
+  register_time?: string;
 }

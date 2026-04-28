@@ -1,21 +1,16 @@
 <!-- 审核对话框 -->
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    :title="dialogTitle"
-    width="500px"
-    destroy-on-close
-  >
+  <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" destroy-on-close>
     <el-form :model="formData" label-width="100px">
       <el-divider content-position="left">咨询会信息</el-divider>
       <el-descriptions :column="1" border>
         <el-descriptions-item label="标题">{{ data?.title }}</el-descriptions-item>
         <el-descriptions-item label="主办方">{{ data?.organizer }}</el-descriptions-item>
         <el-descriptions-item label="开始日期">{{ data?.start_date }}</el-descriptions-item>
-        <el-descriptions-item label="城市">{{ data?.city || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="城市">{{ data?.city || "-" }}</el-descriptions-item>
       </el-descriptions>
-      
-      <el-divider content-position="left" style="margin-top: 20px;">审核意见</el-divider>
+
+      <el-divider content-position="left" style="margin-top: 20px">审核意见</el-divider>
       <el-form-item v-if="type === 'reject'" label="拒绝理由">
         <el-input
           v-model="formData.review_comment"
@@ -42,7 +37,7 @@
           :loading="submitLoading"
           @click="handleSubmit"
         >
-          {{ type === 'approve' ? '通过' : '拒绝' }}
+          {{ type === "approve" ? "通过" : "拒绝" }}
         </el-button>
       </div>
     </template>

@@ -196,7 +196,9 @@ class DictTypeService:
                 search={"dict_type": data.dict_type}
             )
             dict_data = [
-                DictDataOutSchema.model_validate(row).model_dump(mode="json") for row in dict_data_list if row
+                DictDataOutSchema.model_validate(row).model_dump(mode="json")
+                for row in dict_data_list
+                if row
             ]
 
             value = json.dumps(dict_data, ensure_ascii=False)
@@ -500,7 +502,9 @@ class DictDataService:
                 search={"dict_type": data.dict_type}
             )
             dict_data = [
-                DictDataOutSchema.model_validate(row).model_dump(mode="json") for row in dict_data_list if row
+                DictDataOutSchema.model_validate(row).model_dump(mode="json")
+                for row in dict_data_list
+                if row
             ]
 
             value = json.dumps(dict_data, ensure_ascii=False)
@@ -589,7 +593,9 @@ class DictDataService:
                 search={"dict_type": data.dict_type}
             )
             dict_data = [
-                DictDataOutSchema.model_validate(row).model_dump(mode="json") for row in dict_data_list if row
+                DictDataOutSchema.model_validate(row).model_dump(mode="json")
+                for row in dict_data_list
+                if row
             ]
 
             value = json.dumps(dict_data, ensure_ascii=False)

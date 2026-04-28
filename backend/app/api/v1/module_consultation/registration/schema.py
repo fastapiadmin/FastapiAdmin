@@ -1,6 +1,7 @@
 """
 咨询会报名管理 - 数据验证Schema
 """
+
 from datetime import datetime
 
 from pydantic import ConfigDict, Field
@@ -20,10 +21,12 @@ class RegistrationCreateSchema(BaseSchema):
     contact_email: str | None = Field(default=None, description="联系邮箱")
     booth_number: str | None = Field(default=None, description="展位号")
     booth_size: str | None = Field(default=None, description="展位大小")
+    registration_email: str | None = Field(default=None, description="报名接收邮箱")
 
 
 class RegistrationUpdateSchema(RegistrationCreateSchema):
     """更新报名模型"""
+
     pass
 
 
@@ -37,6 +40,8 @@ class RegistrationOutSchema(RegistrationCreateSchema, BaseSchema, UserBySchema):
     approval_time: datetime | None = Field(default=None, description="审核时间")
     approval_by: int | None = Field(default=None, description="审核人ID")
     approval_comment: str | None = Field(default=None, description="审核意见")
+    is_registered: bool = Field(default=False, description="是否已完成一键报名")
+    register_time: datetime | None = Field(default=None, description="一键报名时间")
 
 
 class RegistrationQuerySchema(BaseSchema):

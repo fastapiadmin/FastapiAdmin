@@ -21,10 +21,18 @@ class NodeCreateSchema(BaseModel):
     func: str | None = Field(default=None, description="代码块")
     args: str | None = Field(default=None, description="位置参数")
     kwargs: str | None = Field(default=None, description="关键字参数")
-    coalesce: bool | None = Field(default=False, description="是否合并运行:是否在多个运行时间到期时仅运行作业一次")
-    max_instances: int | None = Field(default=1, ge=1, description="最大实例数:允许的最大并发执行实例数")
+    coalesce: bool | None = Field(
+        default=False, description="是否合并运行:是否在多个运行时间到期时仅运行作业一次"
+    )
+    max_instances: int | None = Field(
+        default=1, ge=1, description="最大实例数:允许的最大并发执行实例数"
+    )
     jobstore: str | None = Field(default="default", max_length=64, description="任务存储")
-    executor: str | None = Field(default="default", max_length=64, description="任务执行器:将运行此作业的执行程序的名称",)
+    executor: str | None = Field(
+        default="default",
+        max_length=64,
+        description="任务执行器:将运行此作业的执行程序的名称",
+    )
     start_date: str | None = Field(default=None, description="开始时间")
     end_date: str | None = Field(default=None, description="结束时间")
     code: str | None = Field(default=None, description="节点编码")

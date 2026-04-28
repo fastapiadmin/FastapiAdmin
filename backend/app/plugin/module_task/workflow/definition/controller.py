@@ -20,7 +20,9 @@ from .schema import (
 )
 from .service import WorkflowService
 
-WorkflowRouter = APIRouter(route_class=OperationLogRoute, prefix="/workflow/definition", tags=["工作流"])
+WorkflowRouter = APIRouter(
+    route_class=OperationLogRoute, prefix="/workflow/definition", tags=["工作流"]
+)
 
 
 @WorkflowRouter.get(
@@ -31,7 +33,9 @@ WorkflowRouter = APIRouter(route_class=OperationLogRoute, prefix="/workflow/defi
 )
 async def get_workflow_detail_controller(
     id: Annotated[int, Path(description="工作流ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:detail"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:detail"]))
+    ],
 ) -> JSONResponse:
     """
     根据 ID 获取工作流详情（含画布 nodes/edges）。
@@ -89,7 +93,9 @@ async def get_workflow_list_controller(
 )
 async def create_workflow_controller(
     data: WorkflowCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:create"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:create"]))
+    ],
 ) -> JSONResponse:
     """
     创建草稿工作流。
@@ -115,7 +121,9 @@ async def create_workflow_controller(
 async def update_workflow_controller(
     id: Annotated[int, Path(description="工作流ID")],
     data: WorkflowUpdateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:update"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:update"]))
+    ],
 ) -> JSONResponse:
     """
     更新工作流及画布。
@@ -141,7 +149,9 @@ async def update_workflow_controller(
 )
 async def delete_workflow_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:delete"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:delete"]))
+    ],
 ) -> JSONResponse:
     """
     批量删除工作流。
@@ -166,7 +176,9 @@ async def delete_workflow_controller(
 )
 async def publish_workflow_controller(
     id: Annotated[int, Path(description="工作流ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:update"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:update"]))
+    ],
     body: Annotated[WorkflowPublishSchema | None, Body()] = None,
 ) -> JSONResponse:
     """
@@ -193,7 +205,9 @@ async def publish_workflow_controller(
 )
 async def execute_workflow_controller(
     body: WorkflowExecuteSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:execute"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_task:workflow:definition:execute"]))
+    ],
 ) -> JSONResponse:
     """
     使用 Prefect 按拓扑顺序执行已发布工作流。

@@ -4,10 +4,20 @@
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
         <el-form-item label="文档编号" prop="document_no">
-          <el-input v-model="searchForm.document_no" placeholder="请输入文档编号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.document_no"
+            placeholder="请输入文档编号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="文档类型" prop="document_type">
-          <el-select v-model="searchForm.document_type" placeholder="请选择类型" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.document_type"
+            placeholder="请选择类型"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="新闻稿" value="news" />
             <el-option label="宣传稿" value="publicity" />
             <el-option label="邀请函" value="invitation" />
@@ -16,10 +26,20 @@
           </el-select>
         </el-form-item>
         <el-form-item label="作者" prop="author_name">
-          <el-input v-model="searchForm.author_name" placeholder="请输入作者" clearable style="width: 120px" />
+          <el-input
+            v-model="searchForm.author_name"
+            placeholder="请输入作者"
+            clearable
+            style="width: 120px"
+          />
         </el-form-item>
         <el-form-item label="文档状态" prop="document_status">
-          <el-select v-model="searchForm.document_status" placeholder="请选择状态" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.document_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="草稿" value="draft" />
             <el-option label="待发布" value="pending" />
             <el-option label="已发布" value="published" />
@@ -27,8 +47,14 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -38,19 +64,40 @@
         <div class="card-header">
           <span class="title">活动撰写列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:document:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:document:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:document:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:document:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="document_no" label="文档编号" width="150" />
         <el-table-column prop="title" label="文档标题" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.title || '-' }}</el-link>
+            <el-link type="primary" @click="handleView(row)">{{ row.title || "-" }}</el-link>
           </template>
         </el-table-column>
         <el-table-column prop="document_type" label="文档类型" width="100">
@@ -62,51 +109,110 @@
         <el-table-column prop="published_date" label="发布日期" width="110" />
         <el-table-column prop="document_status" label="文档状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.document_status)">{{ getStatusLabel(row.document_status) }}</el-tag>
+            <el-tag :type="getStatusType(row.document_status)">
+              {{ getStatusLabel(row.document_status) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:document:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:document:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:document:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:document:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:document:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:document:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="活动撰写详情" width="650px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="文档编号">{{ detailDialog.data.document_no }}</el-descriptions-item>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="文档编号">
+          {{ detailDialog.data.document_no }}
+        </el-descriptions-item>
         <el-descriptions-item label="文档类型">
           <el-tag>{{ getTypeLabel(detailDialog.data.document_type) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="文档标题" :span="2">{{ detailDialog.data.title || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="作者">{{ detailDialog.data.author_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="发布日期">{{ detailDialog.data.published_date || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="文档标题" :span="2">
+          {{ detailDialog.data.title || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="作者">
+          {{ detailDialog.data.author_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="发布日期">
+          {{ detailDialog.data.published_date || "-" }}
+        </el-descriptions-item>
         <el-descriptions-item label="文档状态">
-          <el-tag :type="getStatusType(detailDialog.data.document_status)">{{ getStatusLabel(detailDialog.data.document_status) }}</el-tag>
+          <el-tag :type="getStatusType(detailDialog.data.document_status)">
+            {{ getStatusLabel(detailDialog.data.document_status) }}
+          </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="附件">
-          <a v-if="detailDialog.data.attachment_url" :href="detailDialog.data.attachment_url" target="_blank">查看附件</a>
+          <a
+            v-if="detailDialog.data.attachment_url"
+            :href="detailDialog.data.attachment_url"
+            target="_blank"
+          >
+            查看附件
+          </a>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="文档内容" :span="2">
-          <div style="white-space: pre-wrap; max-height: 300px; overflow-y: auto;">{{ detailDialog.data.document_content || '-' }}</div>
+          <div style="white-space: pre-wrap; max-height: 300px; overflow-y: auto">
+            {{ detailDialog.data.document_content || "-" }}
+          </div>
         </el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ detailDialog.data.remark || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          {{ detailDialog.data.remark || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增活动撰写' : '编辑活动撰写'" width="650px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增活动撰写' : '编辑活动撰写'"
+      width="650px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="文档标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入文档标题" />
@@ -121,16 +227,31 @@
           </el-select>
         </el-form-item>
         <el-form-item label="作者ID" prop="author_id">
-          <el-input-number v-model="form.author_id" :min="0" placeholder="作者ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.author_id"
+            :min="0"
+            placeholder="作者ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="作者" prop="author_name">
           <el-input v-model="form.author_name" placeholder="请输入作者" />
         </el-form-item>
         <el-form-item label="发布日期" prop="published_date">
-          <el-date-picker v-model="form.published_date" type="date" placeholder="选择发布日期" value-format="YYYY-MM-DD" style="width: 100%" />
+          <el-date-picker
+            v-model="form.published_date"
+            type="date"
+            placeholder="选择发布日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="文档状态" prop="document_status">
-          <el-select v-model="form.document_status" placeholder="请选择文档状态" style="width: 100%">
+          <el-select
+            v-model="form.document_status"
+            placeholder="请选择文档状态"
+            style="width: 100%"
+          >
             <el-option label="草稿" value="draft" />
             <el-option label="待发布" value="pending" />
             <el-option label="已发布" value="published" />
@@ -141,7 +262,12 @@
           <el-input v-model="form.attachment_url" placeholder="请输入附件URL" />
         </el-form-item>
         <el-form-item label="文档内容" prop="document_content">
-          <el-input v-model="form.document_content" type="textarea" :rows="6" placeholder="请输入文档内容" />
+          <el-input
+            v-model="form.document_content"
+            type="textarea"
+            :rows="6"
+            placeholder="请输入文档内容"
+          />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="请输入备注" />
@@ -370,9 +496,13 @@ async function handleDelete(row: DocumentItem) {
 async function handleBatchDelete() {
   if (!selectedIds.value.length) return;
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个活动撰写吗？`, "提示", {
-      type: "warning",
-    });
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedIds.value.length} 个活动撰写吗？`,
+      "提示",
+      {
+        type: "warning",
+      }
+    );
     const res = await DocumentAPI.batchDelete(selectedIds.value);
     if (res.data.code === 0) {
       ElMessage.success("批量删除成功");

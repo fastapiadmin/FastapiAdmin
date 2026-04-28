@@ -27,9 +27,15 @@ class JobModel(ModelMixin):
 
     job_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True, comment="任务ID")
     job_name: Mapped[str | None] = mapped_column(String(128), nullable=True, comment="任务名称")
-    trigger_type: Mapped[str | None] = mapped_column(String(32), nullable=True, comment="触发方式: cron/interval/date/manual")
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default=JobStatusEnum.PENDING.value, comment="执行状态")
-    next_run_time: Mapped[str | None] = mapped_column(String(64), nullable=True, comment="下次执行时间")
+    trigger_type: Mapped[str | None] = mapped_column(
+        String(32), nullable=True, comment="触发方式: cron/interval/date/manual"
+    )
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, default=JobStatusEnum.PENDING.value, comment="执行状态"
+    )
+    next_run_time: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, comment="下次执行时间"
+    )
     job_state: Mapped[str | None] = mapped_column(Text, nullable=True, comment="任务状态信息")
     result: Mapped[str | None] = mapped_column(Text, nullable=True, comment="执行结果")
     error: Mapped[str | None] = mapped_column(Text, nullable=True, comment="错误信息")

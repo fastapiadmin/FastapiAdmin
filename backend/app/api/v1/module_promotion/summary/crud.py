@@ -1,6 +1,7 @@
 """
 总结上传 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema

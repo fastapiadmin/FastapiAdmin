@@ -1,6 +1,7 @@
 """
 行程方案管理 - 数据模型
 """
+
 from datetime import date, datetime
 
 from sqlalchemy import (
@@ -46,5 +47,23 @@ class ItineraryModel(ModelMixin, UserMixin):
     check_out_date: Mapped[date | None] = mapped_column(Date, comment="退房日期")
     room_number: Mapped[str | None] = mapped_column(String(50), comment="房间号")
 
-    itinerary_status: Mapped[str] = mapped_column(String(20), default="draft", nullable=False, comment="状态(draft/confirmed/executed/archived)")
-    is_synced: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="是否已同步到日历")
+    itinerary_status: Mapped[str] = mapped_column(
+        String(20),
+        default="draft",
+        nullable=False,
+        comment="状态(draft/confirmed/executed/archived)",
+    )
+    is_synced: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否已同步到日历"
+    )
+
+    # 看板相关
+    board_column: Mapped[str | None] = mapped_column(
+        String(20), default="todo", comment="看板列(todo/doing/done)"
+    )
+    task_type: Mapped[str | None] = mapped_column(
+        String(20), default="manual", comment="任务类型(auto_register/manual)"
+    )
+    auto_generated: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否自动生成的待办项"
+    )

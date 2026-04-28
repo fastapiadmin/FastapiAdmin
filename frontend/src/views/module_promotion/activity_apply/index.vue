@@ -4,21 +4,42 @@
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="90px">
         <el-form-item label="活动名称" prop="activity_name">
-          <el-input v-model="searchForm.activity_name" placeholder="请输入活动名称" clearable style="width: 180px" />
+          <el-input
+            v-model="searchForm.activity_name"
+            placeholder="请输入活动名称"
+            clearable
+            style="width: 180px"
+          />
         </el-form-item>
         <el-form-item label="活动编号" prop="activity_no">
-          <el-input v-model="searchForm.activity_no" placeholder="请输入活动编号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.activity_no"
+            placeholder="请输入活动编号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="申请状态" prop="apply_status">
-          <el-select v-model="searchForm.apply_status" placeholder="请选择状态" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.apply_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="待审批" value="pending" />
             <el-option label="已通过" value="approved" />
             <el-option label="已拒绝" value="rejected" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -28,19 +49,47 @@
         <div class="card-header">
           <span class="title">活动申请列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:activity_apply:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:activity_apply:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:activity_apply:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:activity_apply:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="activity_no" label="活动编号" width="150" />
-        <el-table-column prop="activity_name" label="活动名称" min-width="180" show-overflow-tooltip>
+        <el-table-column
+          prop="activity_name"
+          label="活动名称"
+          min-width="180"
+          show-overflow-tooltip
+        >
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.activity_name || '-' }}</el-link>
+            <el-link type="primary" @click="handleView(row)">
+              {{ row.activity_name || "-" }}
+            </el-link>
           </template>
         </el-table-column>
         <el-table-column prop="activity_type" label="活动类型" width="100">
@@ -48,60 +97,134 @@
             <el-tag>{{ getTypeLabel(row.activity_type) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="target_school_name" label="目标学校" width="150" show-overflow-tooltip />
+        <el-table-column
+          prop="target_school_name"
+          label="目标学校"
+          width="150"
+          show-overflow-tooltip
+        />
         <el-table-column prop="planned_date" label="计划日期" width="110" />
         <el-table-column prop="expected_headcount" label="预计人数" width="100" />
         <el-table-column prop="expected_budget" label="预计预算" width="100">
           <template #default="{ row }">
-            {{ row.expected_budget ? `¥${row.expected_budget}` : '-' }}
+            {{ row.expected_budget ? `¥${row.expected_budget}` : "-" }}
           </template>
         </el-table-column>
         <el-table-column prop="apply_status" label="申请状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.apply_status)">{{ getStatusLabel(row.apply_status) }}</el-tag>
+            <el-tag :type="getStatusType(row.apply_status)">
+              {{ getStatusLabel(row.apply_status) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:activity_apply:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:activity_apply:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:activity_apply:approve']" link type="success" :disabled="row.apply_status !== 'pending'" @click="handleApprove(row)">审批</el-button>
-            <el-button v-permission="['module_promotion:activity_apply:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:activity_apply:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:activity_apply:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:activity_apply:approve']"
+              link
+              type="success"
+              :disabled="row.apply_status !== 'pending'"
+              @click="handleApprove(row)"
+            >
+              审批
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:activity_apply:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="活动申请详情" width="650px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="活动编号">{{ detailDialog.data.activity_no }}</el-descriptions-item>
-        <el-descriptions-item label="申请状态">
-          <el-tag :type="getStatusType(detailDialog.data.apply_status)">{{ getStatusLabel(detailDialog.data.apply_status) }}</el-tag>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="活动编号">
+          {{ detailDialog.data.activity_no }}
         </el-descriptions-item>
-        <el-descriptions-item label="活动名称" :span="2">{{ detailDialog.data.activity_name }}</el-descriptions-item>
+        <el-descriptions-item label="申请状态">
+          <el-tag :type="getStatusType(detailDialog.data.apply_status)">
+            {{ getStatusLabel(detailDialog.data.apply_status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="活动名称" :span="2">
+          {{ detailDialog.data.activity_name }}
+        </el-descriptions-item>
         <el-descriptions-item label="活动类型">
           <el-tag>{{ getTypeLabel(detailDialog.data.activity_type) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="目标学校">{{ detailDialog.data.target_school_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="计划日期">{{ detailDialog.data.planned_date || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="结束日期">{{ detailDialog.data.end_date || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="预计人数">{{ detailDialog.data.expected_headcount || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="预计预算">{{ detailDialog.data.expected_budget ? `¥${detailDialog.data.expected_budget}` : '-' }}</el-descriptions-item>
-        <el-descriptions-item label="联系人">{{ detailDialog.data.contact_person || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="联系电话">{{ detailDialog.data.contact_phone || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="活动描述" :span="2">{{ detailDialog.data.description || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="目标学校">
+          {{ detailDialog.data.target_school_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="计划日期">
+          {{ detailDialog.data.planned_date || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="结束日期">
+          {{ detailDialog.data.end_date || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="预计人数">
+          {{ detailDialog.data.expected_headcount || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="预计预算">
+          {{ detailDialog.data.expected_budget ? `¥${detailDialog.data.expected_budget}` : "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="联系人">
+          {{ detailDialog.data.contact_person || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="联系电话">
+          {{ detailDialog.data.contact_phone || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="活动描述" :span="2">
+          {{ detailDialog.data.description || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增活动申请' : '编辑活动申请'" width="600px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增活动申请' : '编辑活动申请'"
+      width="600px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="活动名称" prop="activity_name">
           <el-input v-model="form.activity_name" placeholder="请输入活动名称" />
@@ -115,19 +238,41 @@
           </el-select>
         </el-form-item>
         <el-form-item label="目标学校" prop="target_school_id">
-          <el-input-number v-model="form.target_school_id" :min="0" placeholder="目标学校ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.target_school_id"
+            :min="0"
+            placeholder="目标学校ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="计划日期" prop="planned_date">
-          <el-date-picker v-model="form.planned_date" type="date" placeholder="选择计划日期" value-format="YYYY-MM-DD" style="width: 100%" />
+          <el-date-picker
+            v-model="form.planned_date"
+            type="date"
+            placeholder="选择计划日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="结束日期" prop="end_date">
-          <el-date-picker v-model="form.end_date" type="date" placeholder="选择结束日期" value-format="YYYY-MM-DD" style="width: 100%" />
+          <el-date-picker
+            v-model="form.end_date"
+            type="date"
+            placeholder="选择结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="预计人数" prop="expected_headcount">
           <el-input-number v-model="form.expected_headcount" :min="0" style="width: 100%" />
         </el-form-item>
         <el-form-item label="预计预算" prop="expected_budget">
-          <el-input-number v-model="form.expected_budget" :min="0" :precision="2" style="width: 100%" />
+          <el-input-number
+            v-model="form.expected_budget"
+            :min="0"
+            :precision="2"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="联系人" prop="contact_person">
           <el-input v-model="form.contact_person" placeholder="请输入联系人" />
@@ -136,7 +281,12 @@
           <el-input v-model="form.contact_phone" placeholder="请输入联系电话" />
         </el-form-item>
         <el-form-item label="活动描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入活动描述" />
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入活动描述"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -155,7 +305,12 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="审批意见">
-          <el-input v-model="approveForm.comment" type="textarea" :rows="3" placeholder="请输入审批意见" />
+          <el-input
+            v-model="approveForm.comment"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入审批意见"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -171,7 +326,11 @@ import { ref, reactive, onMounted } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import ActivityApplyAPI from "@/api/module_promotion/activity_apply";
-import type { ActivityApplyItem, ActivityApplyForm, ActivityApplyQuery } from "@/api/module_promotion/activity_apply";
+import type {
+  ActivityApplyItem,
+  ActivityApplyForm,
+  ActivityApplyQuery,
+} from "@/api/module_promotion/activity_apply";
 
 const loading = ref(false);
 const tableData = ref<ActivityApplyItem[]>([]);
@@ -419,9 +578,13 @@ async function handleDelete(row: ActivityApplyItem) {
 async function handleBatchDelete() {
   if (!selectedIds.value.length) return;
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个活动申请吗？`, "提示", {
-      type: "warning",
-    });
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedIds.value.length} 个活动申请吗？`,
+      "提示",
+      {
+        type: "warning",
+      }
+    );
     const res = await ActivityApplyAPI.batchDelete(selectedIds.value);
     if (res.data.code === 0) {
       ElMessage.success("批量删除成功");

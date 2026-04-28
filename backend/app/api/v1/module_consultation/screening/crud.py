@@ -1,6 +1,7 @@
 """
 咨询会筛选匹配 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -14,7 +15,9 @@ from .schema import (
 )
 
 
-class ScreeningCRUD(CRUDBase[ScreeningFilterModel, ScreeningFilterCreateSchema, ScreeningFilterUpdateSchema]):
+class ScreeningCRUD(
+    CRUDBase[ScreeningFilterModel, ScreeningFilterCreateSchema, ScreeningFilterUpdateSchema]
+):
     """
     咨询会筛选数据访问层
     """
@@ -87,9 +90,11 @@ class ScreeningCRUD(CRUDBase[ScreeningFilterModel, ScreeningFilterCreateSchema, 
         from app.core.database import async_db_session
 
         async with async_db_session() as session:
-            stmt = update(ScreeningFilterModel).where(
-                ScreeningFilterModel.is_default.is_(True)
-            ).values(is_default=False)
+            stmt = (
+                update(ScreeningFilterModel)
+                .where(ScreeningFilterModel.is_default.is_(True))
+                .values(is_default=False)
+            )
             await session.execute(stmt)
             await session.commit()
 

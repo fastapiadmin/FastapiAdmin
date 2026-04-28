@@ -48,9 +48,57 @@ const ItineraryAPI = {
       data: ids,
     });
   },
+
+  /** 获取看板视图 */
+  getKanbanBoard(params?: KanbanBoardQuery) {
+    return request<ApiResponse<KanbanBoardData>>({
+      url: `${API_PATH}/kanban-board`,
+      method: "get",
+      params,
+    });
+  },
+
+  /** 获取日历视图 */
+  getCalendarBoard(params?: CalendarBoardQuery) {
+    return request<ApiResponse<CalendarBoardData>>({
+      url: `${API_PATH}/calendar-board`,
+      method: "get",
+      params,
+    });
+  },
+
+  /** 移动任务到其他列 */
+  moveTask(id: number, data: { board_column: string }) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/move-task/${id}`,
+      method: "post",
+      data,
+    });
+  },
 };
 
 export default ItineraryAPI;
+
+export interface KanbanBoardQuery {
+  start_date_begin?: string;
+  start_date_end?: string;
+}
+
+export interface KanbanBoardData {
+  todo: ItineraryItem[];
+  doing: ItineraryItem[];
+  done: ItineraryItem[];
+}
+
+export interface CalendarBoardQuery {
+  start_date_begin?: string;
+  start_date_end?: string;
+  month?: string;
+}
+
+export interface CalendarBoardData {
+  [date: string]: ItineraryItem[];
+}
 
 export interface ItineraryQuery {
   consultation_id?: number;
@@ -81,4 +129,7 @@ export interface ItineraryForm {
 export interface ItineraryItem extends ItineraryForm, BaseType {
   itinerary_status: string;
   is_synced: boolean;
+  board_column?: string;
+  task_type?: string;
+  auto_generated?: boolean;
 }

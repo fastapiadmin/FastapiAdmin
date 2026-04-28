@@ -103,7 +103,8 @@ class WorkflowService:
             out_schema=WorkflowOutSchema,
         )
         result["items"] = [
-            WorkflowOutSchema.model_validate(item).model_dump(mode="json") for item in result["items"]
+            WorkflowOutSchema.model_validate(item).model_dump(mode="json")
+            for item in result["items"]
         ]
         return result
 
@@ -222,9 +223,7 @@ class WorkflowService:
         return cls._out(updated)
 
     @classmethod
-    async def execute_workflow_service(
-        cls, auth: AuthSchema, body: WorkflowExecuteSchema
-    ) -> dict:
+    async def execute_workflow_service(cls, auth: AuthSchema, body: WorkflowExecuteSchema) -> dict:
         """
         执行已发布工作流（Prefect 同步入口在线程池中运行）。
 
@@ -254,7 +253,9 @@ class WorkflowService:
         for code in codes:
             node_type = await WorkflowNodeTypeCRUD(auth).get(code=code)
             if not node_type:
-                raise CustomException(msg=f"编排节点类型未注册（请在「工作流编排节点类型」中维护，非定时任务节点）: {code}")
+                raise CustomException(
+                    msg=f"编排节点类型未注册（请在「工作流编排节点类型」中维护，非定时任务节点）: {code}"
+                )
             if not node_type.func or not str(node_type.func).strip():
                 raise CustomException(msg=f"编排节点类型未配置 func 代码块: {code}")
             templates[code] = {

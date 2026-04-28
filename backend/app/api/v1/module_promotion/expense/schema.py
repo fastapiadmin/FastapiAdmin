@@ -1,6 +1,7 @@
 """
 费用报销 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -30,6 +31,7 @@ class ExpenseCreateSchema(BaseModel):
 
 class ExpenseUpdateSchema(ExpenseCreateSchema):
     """更新费用报销模型"""
+
     pass
 
 

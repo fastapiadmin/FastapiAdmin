@@ -1,6 +1,7 @@
 """
 行程方案管理 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -93,10 +94,13 @@ class ItineraryCRUD(CRUDBase[ItineraryModel, ItineraryCreateSchema, ItineraryUpd
             consultation_ids.append(consultation_id)
             consultation_details.append(consultation_detail)
 
-        return await self.update(id=id, data={
-            "consultation_ids": consultation_ids,
-            "consultation_details": consultation_details,
-        })
+        return await self.update(
+            id=id,
+            data={
+                "consultation_ids": consultation_ids,
+                "consultation_details": consultation_details,
+            },
+        )
 
     async def remove_consultation_crud(self, id: int, consultation_id: int) -> ItineraryModel:
         """从行程中移除咨询会"""
@@ -113,10 +117,13 @@ class ItineraryCRUD(CRUDBase[ItineraryModel, ItineraryCreateSchema, ItineraryUpd
                 d for d in consultation_details if d.get("id") != consultation_id
             ]
 
-        return await self.update(id=id, data={
-            "consultation_ids": consultation_ids,
-            "consultation_details": consultation_details,
-        })
+        return await self.update(
+            id=id,
+            data={
+                "consultation_ids": consultation_ids,
+                "consultation_details": consultation_details,
+            },
+        )
 
     async def optimize_route_crud(self, id: int) -> ItineraryModel:
         """优化路线"""
@@ -137,5 +144,18 @@ class ItineraryCRUD(CRUDBase[ItineraryModel, ItineraryCreateSchema, ItineraryUpd
         if not consultations:
             return consultations
 
-        sorted_list = sorted(consultations, key=lambda x: (x.get("start_date", ""), x.get("city", "")))
+        sorted_list = sorted(
+            consultations, key=lambda x: (x.get("start_date", ""), x.get("city", ""))
+        )
         return sorted_list
+
+    async def move_task_crud(self, id: int, board_column: str) -> ItineraryModel:
+        """移动任务到不同列"""
+        return await self.update(id=id, data={"board_column": board_column})
+
+    async def create_auto_generated_crud(self, data: dict) -> ItineraryModel:
+        """创建自动生成的行程待办项"""
+        data["auto_generated"] = True
+        data["board_column"] = "todo"
+        data["task_type"] = "auto_register"
+        return await self.create(data=data)

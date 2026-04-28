@@ -183,14 +183,14 @@ class GenUtils:
         target_str = str(target_value)
 
         # 移除 COLLATE 子句
-        collate_pattern = re.compile(r'\s+COLLATE\s+', re.IGNORECASE)
+        collate_pattern = re.compile(r"\s+COLLATE\s+", re.IGNORECASE)
         if collate_pattern.search(target_str):
             target_str = collate_pattern.split(target_str)[0].strip()
 
         # 移除 UNSIGNED 标记
-        unsigned_pattern = re.compile(r'\s+UNSIGNED', re.IGNORECASE)
+        unsigned_pattern = re.compile(r"\s+UNSIGNED", re.IGNORECASE)
         if unsigned_pattern.search(target_str):
-            target_str = unsigned_pattern.sub('', target_str).strip()
+            target_str = unsigned_pattern.sub("", target_str).strip()
 
         # 转换为小写进行比较
         target_str = target_str.lower()
@@ -248,14 +248,14 @@ class GenUtils:
         - str: 数据库类型。
         """
         # 移除 COLLATE 子句（处理带引号和不带引号的情况，不区分大小写）
-        collate_pattern = re.compile(r'\s+COLLATE\s+', re.IGNORECASE)
+        collate_pattern = re.compile(r"\s+COLLATE\s+", re.IGNORECASE)
         if collate_pattern.search(column_type):
             column_type = collate_pattern.split(column_type)[0].strip()
 
         # 移除 UNSIGNED 标记（不区分大小写）
-        unsigned_pattern = re.compile(r'\s+UNSIGNED', re.IGNORECASE)
+        unsigned_pattern = re.compile(r"\s+UNSIGNED", re.IGNORECASE)
         if unsigned_pattern.search(column_type):
-            column_type = unsigned_pattern.sub('', column_type).strip()
+            column_type = unsigned_pattern.sub("", column_type).strip()
 
         # 特殊处理tinyint(1)，映射为boolean
         if column_type.lower().startswith("tinyint(1)"):

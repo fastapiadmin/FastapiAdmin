@@ -1,6 +1,7 @@
 """
 合规诊断 - 服务层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -42,7 +43,9 @@ class ComplianceDiagnosisService:
     ) -> list[dict]:
         """列表查询"""
         search_dict = search.__dict__ if search else None
-        obj_list = await ComplianceDiagnosisCRUD(auth).list_crud(search=search_dict, order_by=order_by)
+        obj_list = await ComplianceDiagnosisCRUD(auth).list_crud(
+            search=search_dict, order_by=order_by
+        )
         return [ComplianceDiagnosisOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
@@ -68,9 +71,7 @@ class ComplianceDiagnosisService:
         return result
 
     @classmethod
-    async def create_service(
-        cls, auth: AuthSchema, data: ComplianceDiagnosisCreateSchema
-    ) -> dict:
+    async def create_service(cls, auth: AuthSchema, data: ComplianceDiagnosisCreateSchema) -> dict:
         """创建诊断记录"""
         create_data = data.model_dump(exclude_unset=True)
         obj = await ComplianceDiagnosisCRUD(auth).create_crud(create_data)
@@ -113,9 +114,7 @@ class ComplianceDiagnosisService:
         return None
 
     @classmethod
-    async def check_compliance_service(
-        cls, auth: AuthSchema, consultation_id: int
-    ) -> dict:
+    async def check_compliance_service(cls, auth: AuthSchema, consultation_id: int) -> dict:
         """执行合规检查"""
         from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
 
@@ -265,9 +264,7 @@ class ComplianceRuleService:
         return result
 
     @classmethod
-    async def create_service(
-        cls, auth: AuthSchema, data: ComplianceRuleCreateSchema
-    ) -> dict:
+    async def create_service(cls, auth: AuthSchema, data: ComplianceRuleCreateSchema) -> dict:
         """创建规则"""
         create_data = data.model_dump(exclude_unset=True)
         obj = await ComplianceRuleCRUD(auth).create_crud(create_data)

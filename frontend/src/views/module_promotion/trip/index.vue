@@ -10,16 +10,36 @@
           <el-input-number v-model="searchForm.personnel_id" :min="1" style="width: 120px" />
         </el-form-item>
         <el-form-item label="行程编号" prop="trip_no">
-          <el-input v-model="searchForm.trip_no" placeholder="请输入行程编号" clearable style="width: 150px" />
+          <el-input
+            v-model="searchForm.trip_no"
+            placeholder="请输入行程编号"
+            clearable
+            style="width: 150px"
+          />
         </el-form-item>
         <el-form-item label="出发城市" prop="departure_city">
-          <el-input v-model="searchForm.departure_city" placeholder="请输入出发城市" clearable style="width: 120px" />
+          <el-input
+            v-model="searchForm.departure_city"
+            placeholder="请输入出发城市"
+            clearable
+            style="width: 120px"
+          />
         </el-form-item>
         <el-form-item label="目的城市" prop="destination_city">
-          <el-input v-model="searchForm.destination_city" placeholder="请输入目的城市" clearable style="width: 120px" />
+          <el-input
+            v-model="searchForm.destination_city"
+            placeholder="请输入目的城市"
+            clearable
+            style="width: 120px"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="trip_status">
-          <el-select v-model="searchForm.trip_status" placeholder="请选择状态" clearable style="width: 120px">
+          <el-select
+            v-model="searchForm.trip_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 120px"
+          >
             <el-option label="待出发" value="pending" />
             <el-option label="进行中" value="in_progress" />
             <el-option label="已完成" value="completed" />
@@ -27,8 +47,14 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -38,17 +64,43 @@
         <div class="card-header">
           <span class="title">行程报备列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:trip:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:trip:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:trip:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:trip:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="trip_no" label="行程编号" width="150" />
-        <el-table-column prop="activity_name" label="活动名称" min-width="150" show-overflow-tooltip />
+        <el-table-column
+          prop="activity_name"
+          label="活动名称"
+          min-width="150"
+          show-overflow-tooltip
+        />
         <el-table-column prop="personnel_name" label="人员姓名" width="100" />
         <el-table-column prop="departure_city" label="出发城市" width="100" />
         <el-table-column prop="destination_city" label="目的城市" width="100" />
@@ -57,58 +109,146 @@
         <el-table-column prop="transportation" label="交通方式" width="100" />
         <el-table-column prop="trip_status" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.trip_status)">{{ getStatusLabel(row.trip_status) }}</el-tag>
+            <el-tag :type="getStatusType(row.trip_status)">
+              {{ getStatusLabel(row.trip_status) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:trip:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:trip:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:trip:location']" link type="success" @click="handleLocation(row)">更新位置</el-button>
-            <el-button v-permission="['module_promotion:trip:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:trip:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:trip:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:trip:location']"
+              link
+              type="success"
+              @click="handleLocation(row)"
+            >
+              更新位置
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:trip:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="行程详情" width="650px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="行程编号">{{ detailDialog.data.trip_no }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="getStatusType(detailDialog.data.trip_status)">{{ getStatusLabel(detailDialog.data.trip_status) }}</el-tag>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="行程编号">
+          {{ detailDialog.data.trip_no }}
         </el-descriptions-item>
-        <el-descriptions-item label="活动名称" :span="2">{{ detailDialog.data.activity_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="人员姓名">{{ detailDialog.data.personnel_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="交通方式">{{ detailDialog.data.transportation || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="出发城市">{{ detailDialog.data.departure_city || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="目的城市">{{ detailDialog.data.destination_city || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="出发时间">{{ detailDialog.data.departure_time || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="到达时间">{{ detailDialog.data.arrival_time || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="车次/航班">{{ detailDialog.data.transportation_no || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="酒店名称">{{ detailDialog.data.hotel_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="酒店地址" :span="2">{{ detailDialog.data.hotel_address || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="入住日期">{{ detailDialog.data.check_in_date || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="退房日期">{{ detailDialog.data.check_out_date || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="当前位置" :span="2">{{ detailDialog.data.current_address || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ detailDialog.data.remark || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(detailDialog.data.trip_status)">
+            {{ getStatusLabel(detailDialog.data.trip_status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="活动名称" :span="2">
+          {{ detailDialog.data.activity_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="人员姓名">
+          {{ detailDialog.data.personnel_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="交通方式">
+          {{ detailDialog.data.transportation || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="出发城市">
+          {{ detailDialog.data.departure_city || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="目的城市">
+          {{ detailDialog.data.destination_city || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="出发时间">
+          {{ detailDialog.data.departure_time || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="到达时间">
+          {{ detailDialog.data.arrival_time || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="车次/航班">
+          {{ detailDialog.data.transportation_no || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="酒店名称">
+          {{ detailDialog.data.hotel_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="酒店地址" :span="2">
+          {{ detailDialog.data.hotel_address || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="入住日期">
+          {{ detailDialog.data.check_in_date || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="退房日期">
+          {{ detailDialog.data.check_out_date || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="当前位置" :span="2">
+          {{ detailDialog.data.current_address || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          {{ detailDialog.data.remark || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增行程' : '编辑行程'" width="600px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增行程' : '编辑行程'"
+      width="600px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="活动ID" prop="activity_id">
-          <el-input-number v-model="form.activity_id" :min="0" placeholder="活动ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.activity_id"
+            :min="0"
+            placeholder="活动ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="人员ID" prop="personnel_id">
-          <el-input-number v-model="form.personnel_id" :min="0" placeholder="人员ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.personnel_id"
+            :min="0"
+            placeholder="人员ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="出发城市" prop="departure_city">
           <el-input v-model="form.departure_city" placeholder="请输入出发城市" />
@@ -117,10 +257,22 @@
           <el-input v-model="form.destination_city" placeholder="请输入目的城市" />
         </el-form-item>
         <el-form-item label="出发时间" prop="departure_time">
-          <el-date-picker v-model="form.departure_time" type="datetime" placeholder="选择出发时间" value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
+          <el-date-picker
+            v-model="form.departure_time"
+            type="datetime"
+            placeholder="选择出发时间"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="到达时间" prop="arrival_time">
-          <el-date-picker v-model="form.arrival_time" type="datetime" placeholder="选择到达时间" value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
+          <el-date-picker
+            v-model="form.arrival_time"
+            type="datetime"
+            placeholder="选择到达时间"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="交通方式" prop="transportation">
           <el-input v-model="form.transportation" placeholder="请输入交通方式" />
@@ -135,10 +287,22 @@
           <el-input v-model="form.hotel_address" placeholder="请输入酒店地址" />
         </el-form-item>
         <el-form-item label="入住日期" prop="check_in_date">
-          <el-date-picker v-model="form.check_in_date" type="date" placeholder="选择入住日期" value-format="YYYY-MM-DD" style="width: 100%" />
+          <el-date-picker
+            v-model="form.check_in_date"
+            type="date"
+            placeholder="选择入住日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="退房日期" prop="check_out_date">
-          <el-date-picker v-model="form.check_out_date" type="date" placeholder="选择退房日期" value-format="YYYY-MM-DD" style="width: 100%" />
+          <el-date-picker
+            v-model="form.check_out_date"
+            type="date"
+            placeholder="选择退房日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="trip_status">
           <el-select v-model="form.trip_status" placeholder="请选择状态" style="width: 100%">
@@ -162,10 +326,20 @@
     <el-dialog v-model="locationDialog.visible" title="更新位置" width="450px">
       <el-form ref="locationFormRef" :model="locationForm" label-width="80px">
         <el-form-item label="纬度" prop="latitude">
-          <el-input-number v-model="locationForm.latitude" :precision="6" :step="0.000001" style="width: 100%" />
+          <el-input-number
+            v-model="locationForm.latitude"
+            :precision="6"
+            :step="0.000001"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="经度" prop="longitude">
-          <el-input-number v-model="locationForm.longitude" :precision="6" :step="0.000001" style="width: 100%" />
+          <el-input-number
+            v-model="locationForm.longitude"
+            :precision="6"
+            :step="0.000001"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="地址" prop="address">
           <el-input v-model="locationForm.address" placeholder="请输入地址" />

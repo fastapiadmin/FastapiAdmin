@@ -104,7 +104,9 @@ class GenTableService:
         return pn if pn.startswith("module_") else f"module_{pn}"
 
     @classmethod
-    async def _assert_parent_menu_is_catalog(cls, auth: AuthSchema, parent_menu_id: int | None) -> None:
+    async def _assert_parent_menu_is_catalog(
+        cls, auth: AuthSchema, parent_menu_id: int | None
+    ) -> None:
         """上级菜单仅允许目录：与前端树只展示目录一致，避免挂到菜单/按钮下。"""
         if parent_menu_id is None:
             return
@@ -396,9 +398,7 @@ class GenTableService:
         try:
             for table in gen_table_list:
                 _row = {
-                    k: v
-                    for k, v in table.model_dump().items()
-                    if k in GenTableSchema.model_fields
+                    k: v for k, v in table.model_dump().items() if k in GenTableSchema.model_fields
                 }
                 cls.normalize_and_validate_master_sub(GenTableSchema.model_validate(_row))
                 table_name = table.table_name
@@ -469,7 +469,9 @@ class GenTableService:
 
             forbidden = (Delete, Drop, Insert, TruncateTable, Update)
             if any(isinstance(s, forbidden) for s in sql_statements):
-                raise CustomException(msg="sql语句包含禁止的关键操作（DROP/DELETE/INSERT/UPDATE/TRUNCATE）")
+                raise CustomException(
+                    msg="sql语句包含禁止的关键操作（DROP/DELETE/INSERT/UPDATE/TRUNCATE）"
+                )
 
             # 获取要创建的表名
             table_names = []
@@ -986,7 +988,9 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def sync_db_service(cls, auth: AuthSchema, table_name: str, _sync_sub: bool = True) -> None:
+    async def sync_db_service(
+        cls, auth: AuthSchema, table_name: str, _sync_sub: bool = True
+    ) -> None:
         """
         同步数据库表结构到业务表。
 
@@ -1034,7 +1038,9 @@ class GenTableService:
                     prev_column = table_column_map[column.column_name]
                     if getattr(prev_column, "id", None):
                         column.id = prev_column.id
-                    prev_dump = prev_column.model_dump() if hasattr(prev_column, "model_dump") else {}
+                    prev_dump = (
+                        prev_column.model_dump() if hasattr(prev_column, "model_dump") else {}
+                    )
                     for k in preserve_keys:
                         if k in prev_dump and prev_dump.get(k) not in (None, ""):
                             setattr(column, k, prev_dump.get(k))
@@ -1050,7 +1056,9 @@ class GenTableService:
                         column.is_query = False
                         column.query_type = None
                     # is_nullable：主键列以 DB 为准，其余保留用户设置
-                    if not bool(getattr(column, "is_pk", False)) and hasattr(prev_column, "is_nullable"):
+                    if not bool(getattr(column, "is_pk", False)) and hasattr(
+                        prev_column, "is_nullable"
+                    ):
                         column.is_nullable = prev_column.is_nullable
                     if hasattr(column, "id") and column.id:
                         await GenTableColumnCRUD(auth).update_gen_table_column_crud(
@@ -1123,7 +1131,9 @@ class GenTableService:
 
         # 1) 若子表已作为 gen_table 导入，则使用其 columns 配置（可控、可复用）
         try:
-            sub_cfg_model = await GenTableCRUD(auth).get_gen_table_by_name(sub_name_raw, preload=["columns"])
+            sub_cfg_model = await GenTableCRUD(auth).get_gen_table_by_name(
+                sub_name_raw, preload=["columns"]
+            )
         except Exception:
             sub_cfg_model = None
         if sub_cfg_model:
@@ -1174,24 +1184,22 @@ class GenTableService:
             )
             return
         table_comment = await GenTableCRUD(auth).get_db_table_comment(sub_name_raw)
-        sub = GenTableOutSchema.model_validate(
-            {
-                "id": -1,
-                "table_name": sub_name_raw,
-                "table_comment": table_comment or None,
-                "class_name": GenUtils.convert_class_name(sub_name_raw),
-                "package_name": gen_table.package_name,
-                "module_name": gen_table.module_name,
-                "business_name": sub_name_raw,
-                "function_name": re.sub(r"(?:表|测试)", "", table_comment or "") or sub_name_raw,
-                "sub_table_name": None,
-                "sub_table_fk_name": None,
-                "parent_menu_id": gen_table.parent_menu_id,
-                "columns": [],
-                "sub": False,
-                "sub_table": None,
-            }
-        )
+        sub = GenTableOutSchema.model_validate({
+            "id": -1,
+            "table_name": sub_name_raw,
+            "table_comment": table_comment or None,
+            "class_name": GenUtils.convert_class_name(sub_name_raw),
+            "package_name": gen_table.package_name,
+            "module_name": gen_table.module_name,
+            "business_name": sub_name_raw,
+            "function_name": re.sub(r"(?:表|测试)", "", table_comment or "") or sub_name_raw,
+            "sub_table_name": None,
+            "sub_table_fk_name": None,
+            "parent_menu_id": gen_table.parent_menu_id,
+            "columns": [],
+            "sub": False,
+            "sub_table": None,
+        })
         for column in gen_table_columns:
             col_dump = column.model_dump()
             col_dump["table_id"] = -1
@@ -1260,9 +1268,7 @@ class GenTableService:
 
     @classmethod
     @handle_service_exception
-    async def sync_db_preview_service(
-        cls, auth: AuthSchema, table_name: str
-    ) -> dict[str, Any]:
+    async def sync_db_preview_service(cls, auth: AuthSchema, table_name: str) -> dict[str, Any]:
         """
         同步数据库前差异预览（主表 + 可选子表）。
 
@@ -1334,8 +1340,7 @@ class GenTableService:
             return
         if not sn or not fk:
             raise CustomException(
-                msg=gen_table.master_sub_hint
-                or "子表表名与子表外键列须同时填写或同时留空"
+                msg=gen_table.master_sub_hint or "子表表名与子表外键列须同时填写或同时留空"
             )
         if not gen_table.sub_table:
             raise CustomException(

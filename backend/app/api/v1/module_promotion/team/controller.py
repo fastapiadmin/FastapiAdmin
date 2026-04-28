@@ -1,6 +1,7 @@
 """
 组织架构管理 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query

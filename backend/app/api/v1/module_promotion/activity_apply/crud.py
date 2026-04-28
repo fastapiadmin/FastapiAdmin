@@ -1,6 +1,7 @@
 """
 活动申请审批 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -10,7 +11,9 @@ from .model import ActivityApplyModel
 from .schema import ActivityApplyCreateSchema, ActivityApplyOutSchema, ActivityApplyUpdateSchema
 
 
-class ActivityApplyCRUD(CRUDBase[ActivityApplyModel, ActivityApplyCreateSchema, ActivityApplyUpdateSchema]):
+class ActivityApplyCRUD(
+    CRUDBase[ActivityApplyModel, ActivityApplyCreateSchema, ActivityApplyUpdateSchema]
+):
     """
     活动申请数据访问层
     """

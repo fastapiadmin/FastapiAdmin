@@ -188,7 +188,9 @@ class Jinja2TemplateUtil:
         parent_rel_name = ""
         if gen_table.sub and gen_table.sub_table:
             st = gen_table.sub_table
-            scn = (st.class_name or GenUtils.convert_class_name(gen_table.sub_table_name or "")).strip()
+            scn = (
+                st.class_name or GenUtils.convert_class_name(gen_table.sub_table_name or "")
+            ).strip()
             sub_class_name = scn
             sub_model_class_name = f"{scn}Model"
             sub_rel_list_name = f"{SnakeCaseUtil.camel_to_snake(scn)}_list"
@@ -234,7 +236,9 @@ class Jinja2TemplateUtil:
             # 数据表实际主键列名（用于生成前端行键等；ModelMixin 仍默认带 id 字段）
             "pk_column_name": (gen_table.pk_column.column_name if gen_table.pk_column else None)
             or "id",
-            "parent_pk_column_name": (gen_table.pk_column.column_name if gen_table.pk_column else None)
+            "parent_pk_column_name": (
+                gen_table.pk_column.column_name if gen_table.pk_column else None
+            )
             or "id",
             "sub_table_fk_name": "",
         }
@@ -283,7 +287,9 @@ class Jinja2TemplateUtil:
         ctx["parent_class_name"] = parent.class_name or ""
         ctx["parent_model_class_name"] = f"{parent.class_name}Model"
         ctx["parent_table_name"] = parent.table_name or ""
-        ctx["parent_pk_column_name"] = (parent.pk_column.column_name if parent.pk_column else None) or "id"
+        ctx["parent_pk_column_name"] = (
+            parent.pk_column.column_name if parent.pk_column else None
+        ) or "id"
         ctx["parent_rel_name"] = SnakeCaseUtil.camel_to_snake(parent.class_name or "parent")
         ctx["parent_list_rel_name"] = f"{SnakeCaseUtil.camel_to_snake(scn)}_list"
         ctx["sub_table_fk_name"] = (parent.sub_table_fk_name or "").strip()
@@ -487,7 +493,12 @@ class Jinja2TemplateUtil:
                 import_list.add("from decimal import Decimal")
         if gen_table.sub or is_sub_entity:
             import_list.add("from sqlalchemy import ForeignKey")
-            if gen_table.sub and not is_sub_entity and gen_table.sub_table and gen_table.sub_table.columns:
+            if (
+                gen_table.sub
+                and not is_sub_entity
+                and gen_table.sub_table
+                and gen_table.sub_table.columns
+            ):
                 sub_columns = gen_table.sub_table.columns or []
                 for sub_column in sub_columns:
                     if sub_column.column_type:
@@ -532,14 +543,14 @@ class Jinja2TemplateUtil:
         - str: 数据库类型（去除长度等修饰）。
         """
         # 移除 COLLATE 子句（处理带引号和不带引号的情况，不区分大小写）
-        collate_pattern = re.compile(r'\s+COLLATE\s+', re.IGNORECASE)
+        collate_pattern = re.compile(r"\s+COLLATE\s+", re.IGNORECASE)
         if collate_pattern.search(column_type):
             column_type = collate_pattern.split(column_type)[0].strip()
 
         # 移除 UNSIGNED 标记（不区分大小写）
-        unsigned_pattern = re.compile(r'\s+UNSIGNED', re.IGNORECASE)
+        unsigned_pattern = re.compile(r"\s+UNSIGNED", re.IGNORECASE)
         if unsigned_pattern.search(column_type):
-            column_type = unsigned_pattern.sub('', column_type).strip()
+            column_type = unsigned_pattern.sub("", column_type).strip()
 
         # 处理PostgreSQL数组类型（如 integer[], text[]）
         if "[]" in column_type:

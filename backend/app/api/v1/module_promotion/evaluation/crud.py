@@ -1,6 +1,7 @@
 """
 表彰评优 - 数据访问层
 """
+
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -10,7 +11,9 @@ from .model import PromotionEvaluationModel
 from .schema import EvaluationCreateSchema, EvaluationOutSchema, EvaluationUpdateSchema
 
 
-class EvaluationCRUD(CRUDBase[PromotionEvaluationModel, EvaluationCreateSchema, EvaluationUpdateSchema]):
+class EvaluationCRUD(
+    CRUDBase[PromotionEvaluationModel, EvaluationCreateSchema, EvaluationUpdateSchema]
+):
     """
     表彰评优数据访问层
     """

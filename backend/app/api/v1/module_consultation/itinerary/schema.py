@@ -27,10 +27,14 @@ class ItineraryCreateSchema(BaseSchema):
     check_in_date: DateStr | None = Field(default=None, description="入住日期")
     check_out_date: DateStr | None = Field(default=None, description="退房日期")
     room_number: str | None = Field(default=None, description="房间号", max_length=50)
+    board_column: str | None = Field(default="todo", description="看板列(todo/doing/done)")
+    task_type: str | None = Field(default="manual", description="任务类型(auto_register/manual)")
+    auto_generated: bool = Field(default=False, description="是否自动生成")
 
 
 class ItineraryUpdateSchema(ItineraryCreateSchema):
     """更新行程方案模型"""
+
     pass
 
 
@@ -41,6 +45,9 @@ class ItineraryOutSchema(ItineraryCreateSchema, BaseSchema, UserBySchema):
 
     itinerary_status: str = Field(default="draft", description="状态")
     is_synced: bool = Field(default=False, description="是否已同步")
+    board_column: str | None = Field(default="todo", description="看板列")
+    task_type: str | None = Field(default="manual", description="任务类型")
+    auto_generated: bool = Field(default=False, description="是否自动生成")
 
 
 class ItineraryQuerySchema(BaseSchema):
@@ -50,6 +57,7 @@ class ItineraryQuerySchema(BaseSchema):
     team_id: int | None = Field(default=None, description="招生组ID")
     itinerary_name: str | None = Field(default=None, description="行程方案名称")
     itinerary_status: str | None = Field(default=None, description="状态")
+    board_column: str | None = Field(default=None, description="看板列")
     start_date_begin: DateStr | None = Field(default=None, description="开始日期-起")
     start_date_end: DateStr | None = Field(default=None, description="开始日期-止")
 

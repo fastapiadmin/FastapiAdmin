@@ -1,6 +1,7 @@
 """
 组织架构管理 - 数据模型
 """
+
 from enum import Enum
 
 from sqlalchemy import (
@@ -15,8 +16,9 @@ from app.core.base_model import ModelMixin, UserMixin
 
 class TeamStatus(str, Enum):
     """招生组状态枚举"""
-    ACTIVE = "0"        # 在用
-    INACTIVE = "1"      # 停用
+
+    ACTIVE = "0"  # 在用
+    INACTIVE = "1"  # 停用
 
 
 class PromotionTeamModel(ModelMixin, UserMixin):
@@ -31,33 +33,14 @@ class PromotionTeamModel(ModelMixin, UserMixin):
     __loader_options__: list[str] = ["created_by", "updated_by"]
     __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
 
-    name: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False,
-        comment="招生组名称"
-    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False, comment="招生组名称")
 
-    parent_id: Mapped[int | None] = mapped_column(
-        BIGINT,
-        nullable=True,
-        comment="上级招生组ID"
-    )
+    parent_id: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="上级招生组ID")
 
-    level: Mapped[int] = mapped_column(
-        Integer,
-        default=1,
-        nullable=False,
-        comment="层级"
-    )
+    level: Mapped[int] = mapped_column(Integer, default=1, nullable=False, comment="层级")
 
-    leader_id: Mapped[int | None] = mapped_column(
-        BIGINT,
-        nullable=True,
-        comment="负责人用户ID"
-    )
+    leader_id: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="负责人用户ID")
 
     responsible_area: Mapped[str | None] = mapped_column(
-        String(200),
-        nullable=True,
-        comment="负责区域"
+        String(200), nullable=True, comment="负责区域"
     )

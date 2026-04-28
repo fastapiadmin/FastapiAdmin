@@ -9,7 +9,9 @@ from .model import WorkflowNodeTypeModel
 from .schema import WorkflowNodeTypeCreateSchema, WorkflowNodeTypeUpdateSchema
 
 
-class WorkflowNodeTypeCRUD(CRUDBase[WorkflowNodeTypeModel, WorkflowNodeTypeCreateSchema, WorkflowNodeTypeUpdateSchema]):
+class WorkflowNodeTypeCRUD(
+    CRUDBase[WorkflowNodeTypeModel, WorkflowNodeTypeCreateSchema, WorkflowNodeTypeUpdateSchema]
+):
     """编排节点类型 CRUD"""
 
     def __init__(self, auth: AuthSchema) -> None:
@@ -59,7 +61,9 @@ class WorkflowNodeTypeCRUD(CRUDBase[WorkflowNodeTypeModel, WorkflowNodeTypeCreat
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
 
-    async def create_obj_crud(self, data: WorkflowNodeTypeCreateSchema) -> WorkflowNodeTypeModel | None:
+    async def create_obj_crud(
+        self, data: WorkflowNodeTypeCreateSchema
+    ) -> WorkflowNodeTypeModel | None:
         """
         创建节点类型。
 
@@ -71,7 +75,9 @@ class WorkflowNodeTypeCRUD(CRUDBase[WorkflowNodeTypeModel, WorkflowNodeTypeCreat
         """
         return await self.create(data=data)
 
-    async def update_obj_crud(self, id: int, data: WorkflowNodeTypeUpdateSchema) -> WorkflowNodeTypeModel | None:
+    async def update_obj_crud(
+        self, id: int, data: WorkflowNodeTypeUpdateSchema
+    ) -> WorkflowNodeTypeModel | None:
         """
         更新节点类型。
 

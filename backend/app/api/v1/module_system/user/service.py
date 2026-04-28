@@ -595,7 +595,9 @@ class UserService:
                 try:
                     count = count + 1
                     # 数据转换
-                    gender = "1" if row["gender"] == "男" else ("2" if row["gender"] == "女" else "1")
+                    gender = (
+                        "1" if row["gender"] == "男" else ("2" if row["gender"] == "女" else "1")
+                    )
                     status = "0" if row["status"] == "正常" else "1"
 
                     # 构建用户数据
@@ -635,7 +637,10 @@ class UserService:
                             await UserCRUD(auth).set_user_roles_crud(
                                 user_ids=[new_user.id], role_ids=user_create_schema.role_ids
                             )
-                        if user_create_schema.position_ids and len(user_create_schema.position_ids) > 0:
+                        if (
+                            user_create_schema.position_ids
+                            and len(user_create_schema.position_ids) > 0
+                        ):
                             await UserCRUD(auth).set_user_positions_crud(
                                 user_ids=[new_user.id], position_ids=user_create_schema.position_ids
                             )

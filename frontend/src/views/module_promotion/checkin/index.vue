@@ -10,7 +10,12 @@
           <el-input-number v-model="searchForm.personnel_id" :min="1" style="width: 120px" />
         </el-form-item>
         <el-form-item label="打卡类型" prop="checkin_type">
-          <el-select v-model="searchForm.checkin_type" placeholder="请选择类型" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.checkin_type"
+            placeholder="请选择类型"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="上班打卡" value="check_in" />
             <el-option label="下班打卡" value="check_out" />
             <el-option label="位置打卡" value="location" />
@@ -18,14 +23,25 @@
           </el-select>
         </el-form-item>
         <el-form-item label="打卡状态" prop="checkin_status">
-          <el-select v-model="searchForm.checkin_status" placeholder="请选择状态" clearable style="width: 140px">
+          <el-select
+            v-model="searchForm.checkin_status"
+            placeholder="请选择状态"
+            clearable
+            style="width: 140px"
+          >
             <el-option label="正常" value="normal" />
             <el-option label="异常" value="abnormal" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch"><i-ep-search /> 搜索</el-button>
-          <el-button @click="handleReset"><i-ep-refresh /> 重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -35,17 +51,43 @@
         <div class="card-header">
           <span class="title">活动打卡列表</span>
           <div class="operations">
-            <el-button v-permission="['module_promotion:checkin:create']" type="primary" @click="handleCreate"><i-ep-plus /> 新增</el-button>
-            <el-button v-permission="['module_promotion:checkin:delete']" type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete"><i-ep-delete /> 批量删除</el-button>
+            <el-button
+              v-permission="['module_promotion:checkin:create']"
+              type="primary"
+              @click="handleCreate"
+            >
+              <i-ep-plus />
+              新增
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:checkin:delete']"
+              type="danger"
+              :disabled="!selectedIds.length"
+              @click="handleBatchDelete"
+            >
+              <i-ep-delete />
+              批量删除
+            </el-button>
           </div>
         </div>
       </template>
 
-      <el-table v-loading="loading" :data="tableData" stripe border @selection-change="handleSelectionChange">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="checkin_no" label="打卡编号" width="150" />
-        <el-table-column prop="activity_name" label="活动名称" min-width="150" show-overflow-tooltip />
+        <el-table-column
+          prop="activity_name"
+          label="活动名称"
+          min-width="150"
+          show-overflow-tooltip
+        />
         <el-table-column prop="personnel_name" label="人员姓名" width="100" />
         <el-table-column prop="checkin_time" label="打卡时间" width="160" />
         <el-table-column prop="checkin_type" label="打卡类型" width="100">
@@ -57,60 +99,125 @@
         <el-table-column prop="checkin_status" label="打卡状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.checkin_status === 'normal' ? 'success' : 'danger'">
-              {{ row.checkin_status === 'normal' ? '正常' : '异常' }}
+              {{ row.checkin_status === "normal" ? "正常" : "异常" }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button v-permission="['module_promotion:checkin:detail']" link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button v-permission="['module_promotion:checkin:update']" link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-permission="['module_promotion:checkin:delete']" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-permission="['module_promotion:checkin:detail']"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:checkin:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:checkin:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.pageSize" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handlePageChange" />
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
       </div>
     </el-card>
 
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="活动打卡详情" width="600px">
-      <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="打卡编号">{{ detailDialog.data.checkin_no }}</el-descriptions-item>
+      <el-descriptions v-if="detailDialog.data" :column="2" border>
+        <el-descriptions-item label="打卡编号">
+          {{ detailDialog.data.checkin_no }}
+        </el-descriptions-item>
         <el-descriptions-item label="打卡状态">
           <el-tag :type="detailDialog.data.checkin_status === 'normal' ? 'success' : 'danger'">
-            {{ detailDialog.data.checkin_status === 'normal' ? '正常' : '异常' }}
+            {{ detailDialog.data.checkin_status === "normal" ? "正常" : "异常" }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="活动名称" :span="2">{{ detailDialog.data.activity_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="人员姓名">{{ detailDialog.data.personnel_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="活动名称" :span="2">
+          {{ detailDialog.data.activity_name || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="人员姓名">
+          {{ detailDialog.data.personnel_name || "-" }}
+        </el-descriptions-item>
         <el-descriptions-item label="打卡类型">
           <el-tag>{{ getTypeLabel(detailDialog.data.checkin_type) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="打卡时间">{{ detailDialog.data.checkin_time || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="打卡位置" :span="2">{{ detailDialog.data.location_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="打卡时间">
+          {{ detailDialog.data.checkin_time || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="打卡位置" :span="2">
+          {{ detailDialog.data.location_name || "-" }}
+        </el-descriptions-item>
         <el-descriptions-item label="经纬度" :span="2">
           {{ detailDialog.data.latitude }}, {{ detailDialog.data.longitude }}
         </el-descriptions-item>
-        <el-descriptions-item label="打卡描述" :span="2">{{ detailDialog.data.description || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detailDialog.data.created_time }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detailDialog.data.updated_time }}</el-descriptions-item>
+        <el-descriptions-item label="打卡描述" :span="2">
+          {{ detailDialog.data.description || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ detailDialog.data.created_time }}
+        </el-descriptions-item>
+        <el-descriptions-item label="更新时间">
+          {{ detailDialog.data.updated_time }}
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="formDialog.visible" :title="formDialog.type === 'create' ? '新增打卡' : '编辑打卡'" width="550px">
+    <el-dialog
+      v-model="formDialog.visible"
+      :title="formDialog.type === 'create' ? '新增打卡' : '编辑打卡'"
+      width="550px"
+    >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
         <el-form-item label="活动ID" prop="activity_id">
-          <el-input-number v-model="form.activity_id" :min="0" placeholder="活动ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.activity_id"
+            :min="0"
+            placeholder="活动ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="人员ID" prop="personnel_id">
-          <el-input-number v-model="form.personnel_id" :min="0" placeholder="人员ID" style="width: 100%" />
+          <el-input-number
+            v-model="form.personnel_id"
+            :min="0"
+            placeholder="人员ID"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="打卡时间" prop="checkin_time">
-          <el-date-picker v-model="form.checkin_time" type="datetime" placeholder="选择打卡时间" value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
+          <el-date-picker
+            v-model="form.checkin_time"
+            type="datetime"
+            placeholder="选择打卡时间"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="打卡类型" prop="checkin_type">
           <el-select v-model="form.checkin_type" placeholder="请选择打卡类型" style="width: 100%">
@@ -124,13 +231,28 @@
           <el-input v-model="form.location_name" placeholder="请输入打卡位置" />
         </el-form-item>
         <el-form-item label="纬度" prop="latitude">
-          <el-input-number v-model="form.latitude" :precision="6" :step="0.000001" style="width: 100%" />
+          <el-input-number
+            v-model="form.latitude"
+            :precision="6"
+            :step="0.000001"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="经度" prop="longitude">
-          <el-input-number v-model="form.longitude" :precision="6" :step="0.000001" style="width: 100%" />
+          <el-input-number
+            v-model="form.longitude"
+            :precision="6"
+            :step="0.000001"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="打卡描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入打卡描述" />
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入打卡描述"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -340,9 +462,13 @@ async function handleDelete(row: CheckinItem) {
 async function handleBatchDelete() {
   if (!selectedIds.value.length) return;
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个打卡记录吗？`, "提示", {
-      type: "warning",
-    });
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedIds.value.length} 个打卡记录吗？`,
+      "提示",
+      {
+        type: "warning",
+      }
+    );
     const res = await CheckinAPI.batchDelete(selectedIds.value);
     if (res.data.code === 0) {
       ElMessage.success("批量删除成功");

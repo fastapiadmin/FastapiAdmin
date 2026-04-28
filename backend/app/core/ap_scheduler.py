@@ -58,7 +58,7 @@ scheduler.configure(
             username=settings.REDIS_USER,
             password=settings.REDIS_PASSWORD,
             db=int(settings.REDIS_DB_NAME),
-        )
+        ),
     },
     executors={
         "default": AsyncIOExecutor(),
@@ -451,7 +451,9 @@ class SchedulerUtil:
         log.warning(f"任务 {job_id} 已达到最大实例数限制，无法启动新实例")
 
     @classmethod
-    def _handle_other_event(cls, event: SchedulerEvent | JobEvent | JobExecutionEvent | JobSubmissionEvent) -> None:
+    def _handle_other_event(
+        cls, event: SchedulerEvent | JobEvent | JobExecutionEvent | JobSubmissionEvent
+    ) -> None:
         """
         处理其他事件
         """
@@ -473,7 +475,12 @@ class SchedulerUtil:
             from app.api.v1.module_system.params.model import ParamsModel
 
             with Session(engine) as session:
-                param = session.query(ParamsModel).filter(ParamsModel.config_key == "scheduler_status").first()
+                param = (
+                    session
+                    .query(ParamsModel)
+                    .filter(ParamsModel.config_key == "scheduler_status")
+                    .first()
+                )
                 if param:
                     param.config_value = status
                 else:
@@ -600,9 +607,9 @@ class SchedulerUtil:
             from app.plugin.module_task.cronjob.job.model import JobModel
 
             with Session(engine) as session:
-                session.query(JobModel).filter(JobModel.status == "pending").update(
-                    {"status": "cancelled"}
-                )
+                session.query(JobModel).filter(JobModel.status == "pending").update({
+                    "status": "cancelled"
+                })
                 session.commit()
                 log.info("所有待执行任务日志已标记为已取消")
         except Exception as e:
@@ -795,7 +802,13 @@ class SchedulerUtil:
             return {"error": str(e), "raw_data": str(blob_data[:200])}
 
     @classmethod
-    def _create_job_log(cls, job_id: str, job_name: str | None = None, trigger_type: str = "manual", status: str = "running") -> int | None:
+    def _create_job_log(
+        cls,
+        job_id: str,
+        job_name: str | None = None,
+        trigger_type: str = "manual",
+        status: str = "running",
+    ) -> int | None:
         """
         创建执行日志
         """
@@ -829,7 +842,9 @@ class SchedulerUtil:
             return None
 
     @classmethod
-    def _update_job_log(cls, job_id: str, status: str, result: str | None = None, error: str | None = None) -> None:
+    def _update_job_log(
+        cls, job_id: str, status: str, result: str | None = None, error: str | None = None
+    ) -> None:
         """
         更新执行日志（更新该 job_id 最新的 pending 状态日志）
         用于周期性任务在提交执行时将 pending 更新为 running
@@ -844,7 +859,8 @@ class SchedulerUtil:
 
         with Session(engine) as session:
             job_log = (
-                session.query(JobModel)
+                session
+                .query(JobModel)
                 .filter(JobModel.job_id == job_id, JobModel.status == "pending")
                 .order_by(JobModel.created_time.desc())
                 .first()
@@ -864,7 +880,9 @@ class SchedulerUtil:
                 log.warning(f"未找到任务 {job_id} 的待执行日志记录")
 
     @classmethod
-    def _update_latest_job_log(cls, job_id: str, status: str, result: str | None = None, error: str | None = None) -> None:
+    def _update_latest_job_log(
+        cls, job_id: str, status: str, result: str | None = None, error: str | None = None
+    ) -> None:
         """
         更新最新的执行日志（更新该 job_id 最新的一条日志）
         用于每次执行完成后更新状态
@@ -881,7 +899,8 @@ class SchedulerUtil:
             with Session(engine) as session:
                 # 首先尝试更新 running 状态的日志
                 job_log = (
-                    session.query(JobModel)
+                    session
+                    .query(JobModel)
                     .filter(JobModel.job_id == job_id, JobModel.status == "running")
                     .order_by(JobModel.created_time.desc())
                     .first()
@@ -903,7 +922,8 @@ class SchedulerUtil:
                 # 没有找到 running 状态的日志，尝试更新 cancelled 状态的日志
                 # 这种情况发生在 EVENT_JOB_REMOVED 先于 EVENT_JOB_SUBMITTED 触发时
                 job_log = (
-                    session.query(JobModel)
+                    session
+                    .query(JobModel)
                     .filter(JobModel.job_id == job_id, JobModel.status == "cancelled")
                     .order_by(JobModel.created_time.desc())
                     .first()
@@ -939,7 +959,9 @@ class SchedulerUtil:
                 session.commit()
                 log.info(f"执行日志创建成功: job_id={job_id}, id={new_log.id}, status={status}")
         except Exception as e:
-            log.error(f"更新执行日志失败: job_id={job_id}, status={status}, error={e}", exc_info=True)
+            log.error(
+                f"更新执行日志失败: job_id={job_id}, status={status}, error={e}", exc_info=True
+            )
 
     @classmethod
     def _update_job_log_on_removed(cls, job_id: str) -> None:
@@ -973,11 +995,9 @@ class SchedulerUtil:
 
         with Session(engine) as session:
             job_log = (
-                session.query(JobModel)
-                .filter(
-                    JobModel.job_id == job_id,
-                    JobModel.status.in_(['pending', 'running'])
-                )
+                session
+                .query(JobModel)
+                .filter(JobModel.job_id == job_id, JobModel.status.in_(["pending", "running"]))
                 .order_by(JobModel.created_time.desc())
                 .first()
             )
@@ -1023,6 +1043,7 @@ class SchedulerUtil:
         """
         # 使用稍微延迟的时间，确保事件监听器能够捕获事件
         from datetime import timedelta
+
         trigger = DateTrigger(run_date=datetime.now() + timedelta(seconds=0.1))
         job = cls._add_job_with_trigger(job_info, trigger)
         # 注意：不需要手动创建执行日志，EVENT_JOB_SUBMITTED 事件会自动创建
@@ -1064,8 +1085,17 @@ class SchedulerUtil:
 
         second, minute, hour, day, month, day_of_week, year = tuple(parsed_fields)
 
-        if second == "*" and minute == "*" and hour == "*" and day == "*" and month == "*" and day_of_week in ("*", "?"):
-            raise ValueError("Cron表达式不允许每秒执行，请至少指定秒数（如：0 * * * * ? * 表示每分钟执行）")
+        if (
+            second == "*"
+            and minute == "*"
+            and hour == "*"
+            and day == "*"
+            and month == "*"
+            and day_of_week in ("*", "?")
+        ):
+            raise ValueError(
+                "Cron表达式不允许每秒执行，请至少指定秒数（如：0 * * * * ? * 表示每分钟执行）"
+            )
 
         trigger = CronTrigger(
             second=second,
@@ -1232,7 +1262,9 @@ class SchedulerUtil:
         return scheduler.shutdown(wait=wait)
 
     @classmethod
-    def configure(cls, gconfig: dict | None = None, prefix: str = "apscheduler.", **options) -> None:
+    def configure(
+        cls, gconfig: dict | None = None, prefix: str = "apscheduler.", **options
+    ) -> None:
         """
         透传配置底层 APScheduler。
 
@@ -1388,7 +1420,8 @@ class SchedulerUtil:
         with Session(engine) as session:
             for job in jobs:
                 existing_log = (
-                    session.query(JobModel)
+                    session
+                    .query(JobModel)
                     .filter(JobModel.job_id == str(job.id), JobModel.status == "pending")
                     .first()
                 )
@@ -1478,7 +1511,10 @@ class SchedulerUtil:
 
         # 创建临时任务，延迟 0.1 秒执行，确保事件监听器能够捕获事件
         from datetime import timedelta
-        trigger = DateTrigger(run_date=datetime.now() + timedelta(seconds=0.1), timezone="Asia/Shanghai")
+
+        trigger = DateTrigger(
+            run_date=datetime.now() + timedelta(seconds=0.1), timezone="Asia/Shanghai"
+        )
         temp_job = scheduler.add_job(
             func=job.func,
             trigger=trigger,

@@ -3,12 +3,7 @@
   <div class="app-container">
     <!-- 搜索区域 -->
     <el-card class="search-card" shadow="never">
-      <el-form
-        ref="searchFormRef"
-        :model="searchForm"
-        :inline="true"
-        label-width="80px"
-      >
+      <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
         <el-form-item label="标题" prop="title">
           <el-input
             v-model="searchForm.title"
@@ -71,10 +66,12 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
-            <i-ep-search /> 搜索
+            <i-ep-search />
+            搜索
           </el-button>
           <el-button @click="handleReset">
-            <i-ep-refresh /> 重置
+            <i-ep-refresh />
+            重置
           </el-button>
         </el-form-item>
       </el-form>
@@ -91,7 +88,8 @@
               type="primary"
               @click="handleCreate"
             >
-              <i-ep-plus /> 新增
+              <i-ep-plus />
+              新增
             </el-button>
             <el-button
               v-permission="['module_consultation:info_collection:delete']"
@@ -99,10 +97,12 @@
               :disabled="!selectedIds.length"
               @click="handleBatchDelete"
             >
-              <i-ep-delete /> 批量删除
+              <i-ep-delete />
+              批量删除
             </el-button>
             <el-button @click="handleExport">
-              <i-ep-download /> 导出
+              <i-ep-download />
+              导出
             </el-button>
           </div>
         </div>
@@ -143,7 +143,10 @@
         </el-table-column>
         <el-table-column prop="compliance_score" label="合规评分" width="100" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.compliance_score !== null" :type="getComplianceType(row.compliance_score)">
+            <el-tag
+              v-if="row.compliance_score !== null"
+              :type="getComplianceType(row.compliance_score)"
+            >
               {{ row.compliance_score }}
             </el-tag>
             <span v-else>-</span>
@@ -229,10 +232,7 @@
     />
 
     <!-- 详情弹窗 -->
-    <DetailDialog
-      v-model:visible="detailDialog.visible"
-      :data="detailDialog.data"
-    />
+    <DetailDialog v-model:visible="detailDialog.visible" :data="detailDialog.data" />
   </div>
 </template>
 
@@ -299,7 +299,7 @@ const fetchList = async () => {
       page_size: pagination.pageSize,
       ...searchForm,
     };
-    
+
     const res = await ConsultationInfoAPI.getList(params);
     if (res.data?.data) {
       tableData.value = res.data.data.items || [];
@@ -409,15 +409,11 @@ const handleView = (row: ConsultationInfoItem) => {
 };
 
 const handleDelete = (row: ConsultationInfoItem) => {
-  ElMessageBox.confirm(
-    `确定要删除 "${row.title}" 吗？删除后不可恢复！`,
-    "删除确认",
-    {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    }
-  )
+  ElMessageBox.confirm(`确定要删除 "${row.title}" 吗？删除后不可恢复！`, "删除确认", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
     .then(async () => {
       await ConsultationInfoAPI.delete(row.id!);
       ElMessage.success("删除成功");
@@ -461,15 +457,11 @@ const handleReject = (row: ConsultationInfoItem) => {
 };
 
 const handleArchive = (row: ConsultationInfoItem) => {
-  ElMessageBox.confirm(
-    `确定要归档 "${row.title}" 吗？归档后将被移入历史记录。`,
-    "归档确认",
-    {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    }
-  )
+  ElMessageBox.confirm(`确定要归档 "${row.title}" 吗？归档后将被移入历史记录。`, "归档确认", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
     .then(async () => {
       await ConsultationInfoAPI.archive(row.id!);
       ElMessage.success("归档成功");

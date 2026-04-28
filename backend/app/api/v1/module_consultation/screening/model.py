@@ -1,6 +1,7 @@
 """
 咨询会筛选匹配 - 数据模型
 """
+
 from datetime import date
 
 from sqlalchemy import (
@@ -25,7 +26,9 @@ class ScreeningFilterModel(ModelMixin, UserMixin):
     __tablename__: str = "consultation_screening_filter"
     __table_args__: dict[str, str] = {"comment": "咨询会筛选条件表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
-    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description", "sort_by", "sort_order", "page_size", "is_default"]}
+    __mapper_args__: dict[str, list[str]] = {
+        "exclude_properties": ["description", "sort_by", "sort_order", "page_size", "is_default"]
+    }
 
     # 基本信息
     name: Mapped[str] = mapped_column(String(100), nullable=False, comment="筛选名称")
@@ -49,12 +52,18 @@ class ScreeningFilterModel(ModelMixin, UserMixin):
     status: Mapped[str | None] = mapped_column(String(20), comment="状态")
 
     # 排序和分页
-    sort_by: Mapped[str] = mapped_column(String(50), default="start_date", nullable=False, comment="排序字段")
-    sort_order: Mapped[str] = mapped_column(String(10), default="desc", nullable=False, comment="排序方向")
+    sort_by: Mapped[str] = mapped_column(
+        String(50), default="start_date", nullable=False, comment="排序字段"
+    )
+    sort_order: Mapped[str] = mapped_column(
+        String(10), default="desc", nullable=False, comment="排序方向"
+    )
     page_size: Mapped[int] = mapped_column(Integer, default=20, nullable=False, comment="每页条数")
 
     # 默认筛选
-    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="是否默认筛选")
+    is_default: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否默认筛选"
+    )
 
 
 class ScreeningResultModel(ModelMixin, UserMixin):
@@ -77,6 +86,10 @@ class ScreeningResultModel(ModelMixin, UserMixin):
     match_details: Mapped[str | None] = mapped_column(String(500), comment="匹配详情")
 
     # 用户操作
-    is_favorite: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="是否收藏")
-    is_ignored: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="是否忽略")
+    is_favorite: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否收藏"
+    )
+    is_ignored: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否忽略"
+    )
     notes: Mapped[str | None] = mapped_column(String(500), comment="备注")

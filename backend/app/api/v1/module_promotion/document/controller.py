@@ -1,6 +1,7 @@
 """
 活动撰写 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path

@@ -1,6 +1,7 @@
 """
 行程方案管理 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -246,3 +247,56 @@ async def optimize_route_controller(
     result_dict = await ItineraryService.optimize_route_service(auth=auth, id=id)
     log.info(f"优化行程路线 {id}")
     return SuccessResponse(data=result_dict, msg="优化成功")
+
+
+@ItineraryRouter.get(
+    "/kanban-board",
+    summary="获取看板视图",
+    description="按看板列（todo/doing/done）返回所有行程任务",
+)
+async def kanban_board_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:itinerary:query"]))],
+) -> JSONResponse:
+    """获取看板视图"""
+    result = await ItineraryService.kanban_board_service(auth=auth)
+    log.info("获取看板视图成功")
+    return SuccessResponse(data=result, msg="获取成功")
+
+
+@ItineraryRouter.get(
+    "/calendar-board",
+    summary="获取日历视图",
+    description="按日期分组返回所有行程任务",
+)
+async def calendar_board_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:itinerary:query"]))],
+    start_date_begin: Annotated[str | None, Query(description="开始日期-起")] = None,
+    start_date_end: Annotated[str | None, Query(description="开始日期-止")] = None,
+) -> JSONResponse:
+    """获取日历视图"""
+    result = await ItineraryService.calendar_board_service(
+        auth=auth,
+        start_date_begin=start_date_begin,
+        start_date_end=start_date_end,
+    )
+    log.info("获取日历视图成功")
+    return SuccessResponse(data=result, msg="获取成功")
+
+
+@ItineraryRouter.post(
+    "/move-task/{id}",
+    summary="移动任务到不同列",
+    description="拖拽移动任务到不同看板列",
+    response_model=ResponseSchema[ItineraryOutSchema],
+)
+async def move_task_controller(
+    id: Annotated[int, Path(description="行程方案ID")],
+    board_column: Annotated[str, Query(description="目标看板列(todo/doing/done)")],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:itinerary:move_task"]))
+    ],
+) -> JSONResponse:
+    """移动任务到不同列"""
+    result = await ItineraryService.move_task_service(auth=auth, id=id, board_column=board_column)
+    log.info(f"移动任务 {id} 到 {board_column}")
+    return SuccessResponse(data=result, msg="移动成功")

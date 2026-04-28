@@ -1,6 +1,7 @@
 """
 合规诊断 - 数据访问层
 """
+
 from datetime import datetime
 from typing import Any
 
@@ -21,7 +22,11 @@ from .schema import (
 )
 
 
-class ComplianceDiagnosisCRUD(CRUDBase[ComplianceDiagnosisModel, ComplianceDiagnosisCreateSchema, ComplianceDiagnosisUpdateSchema]):
+class ComplianceDiagnosisCRUD(
+    CRUDBase[
+        ComplianceDiagnosisModel, ComplianceDiagnosisCreateSchema, ComplianceDiagnosisUpdateSchema
+    ]
+):
     """
     合规诊断数据访问层
     """
@@ -103,7 +108,9 @@ class ComplianceDiagnosisCRUD(CRUDBase[ComplianceDiagnosisModel, ComplianceDiagn
             await session.commit()
 
 
-class ComplianceRuleCRUD(CRUDBase[ComplianceRuleModel, ComplianceRuleCreateSchema, ComplianceRuleUpdateSchema]):
+class ComplianceRuleCRUD(
+    CRUDBase[ComplianceRuleModel, ComplianceRuleCreateSchema, ComplianceRuleUpdateSchema]
+):
     """
     合规规则数据访问层
     """

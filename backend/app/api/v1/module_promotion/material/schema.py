@@ -1,6 +1,7 @@
 """
 物料管理 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -30,6 +31,7 @@ class MaterialCreateSchema(BaseModel):
 
 class MaterialUpdateSchema(MaterialCreateSchema):
     """更新物料模型"""
+
     pass
 
 
@@ -74,6 +76,7 @@ class MaterialApplyCreateSchema(BaseModel):
 
 class MaterialApplyUpdateSchema(MaterialApplyCreateSchema):
     """更新物料申领模型"""
+
     pass
 
 

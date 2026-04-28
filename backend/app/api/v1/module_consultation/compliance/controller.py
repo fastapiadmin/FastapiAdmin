@@ -1,6 +1,7 @@
 """
 合规诊断 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
@@ -221,7 +222,7 @@ async def score_consultation_controller(
                 "improvement_suggestions": result.improvement_suggestions,
                 "diagnosis_details": result.diagnosis_details,
             },
-            msg="合规评分完成"
+            msg="合规评分完成",
         )
 
 
@@ -252,7 +253,9 @@ async def batch_score_controller(
     high_risk_count = sum(1 for r in results.values() if r.is_high_risk)
     avg_score = sum(r.score for r in results.values()) / len(results) if results else 0
 
-    log.info(f"批量合规评分完成，共{len(results)}条，高风险{high_risk_count}条，平均分{avg_score:.1f}")
+    log.info(
+        f"批量合规评分完成，共{len(results)}条，高风险{high_risk_count}条，平均分{avg_score:.1f}"
+    )
 
     return SuccessResponse(
         data={
@@ -268,7 +271,7 @@ async def batch_score_controller(
                 for consultation_id, r in results.items()
             },
         },
-        msg=f"批量评分完成，共{len(results)}条"
+        msg=f"批量评分完成，共{len(results)}条",
     )
 
 

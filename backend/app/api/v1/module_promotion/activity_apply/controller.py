@@ -1,6 +1,7 @@
 """
 活动申请审批 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -36,7 +37,9 @@ ActivityApplyRouter = APIRouter(
 )
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="活动申请ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:detail"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:detail"]))
+    ],
 ) -> JSONResponse:
     """
     获取活动申请详情
@@ -94,7 +97,9 @@ async def get_obj_list_controller(
 )
 async def create_obj_controller(
     data: ActivityApplyCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:create"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:create"]))
+    ],
 ) -> JSONResponse:
     """
     创建活动申请
@@ -120,7 +125,9 @@ async def create_obj_controller(
 async def update_obj_controller(
     id: Annotated[int, Path(description="活动申请ID")],
     data: ActivityApplyUpdateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:update"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:update"]))
+    ],
 ) -> JSONResponse:
     """
     更新活动申请
@@ -145,7 +152,9 @@ async def update_obj_controller(
 )
 async def delete_obj_controller(
     id: Annotated[int, Path(description="活动申请ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:delete"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:delete"]))
+    ],
 ) -> JSONResponse:
     """
     删除活动申请
@@ -169,7 +178,9 @@ async def delete_obj_controller(
 )
 async def batch_delete_obj_controller(
     ids: list[int],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:delete"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:delete"]))
+    ],
 ) -> JSONResponse:
     """
     批量删除活动申请
@@ -194,7 +205,9 @@ async def batch_delete_obj_controller(
 )
 async def approve_controller(
     id: Annotated[int, Path(description="活动申请ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:approve"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:approve"]))
+    ],
     approval_comment: Annotated[str | None, Query(description="审批意见")] = None,
 ) -> JSONResponse:
     """
@@ -208,7 +221,9 @@ async def approve_controller(
     返回:
     - JSONResponse: 审批通过的JSON响应
     """
-    result_dict = await ActivityApplyService.approve_service(auth=auth, id=id, approval_comment=approval_comment)
+    result_dict = await ActivityApplyService.approve_service(
+        auth=auth, id=id, approval_comment=approval_comment
+    )
     log.info(f"审批通过活动申请成功 {id}")
     return SuccessResponse(data=result_dict, msg="审批通过")
 
@@ -221,7 +236,9 @@ async def approve_controller(
 )
 async def reject_controller(
     id: Annotated[int, Path(description="活动申请ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:approve"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:approve"]))
+    ],
     approval_comment: Annotated[str, Query(..., description="审批意见")],
 ) -> JSONResponse:
     """
@@ -235,7 +252,9 @@ async def reject_controller(
     返回:
     - JSONResponse: 审批拒绝的JSON响应
     """
-    result_dict = await ActivityApplyService.reject_service(auth=auth, id=id, approval_comment=approval_comment)
+    result_dict = await ActivityApplyService.reject_service(
+        auth=auth, id=id, approval_comment=approval_comment
+    )
     log.info(f"审批拒绝活动申请成功 {id}")
     return SuccessResponse(data=result_dict, msg="审批拒绝")
 
@@ -248,7 +267,9 @@ async def reject_controller(
 )
 async def cancel_controller(
     id: Annotated[int, Path(description="活动申请ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:update"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_promotion:activity_apply:update"]))
+    ],
 ) -> JSONResponse:
     """
     取消活动申请

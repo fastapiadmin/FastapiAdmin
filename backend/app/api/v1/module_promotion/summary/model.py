@@ -1,6 +1,7 @@
 """
 总结上传 - 数据模型
 """
+
 from enum import Enum
 
 from sqlalchemy import BIGINT, JSON, String, Text
@@ -11,6 +12,7 @@ from app.core.base_model import ModelMixin, UserMixin
 
 class SummaryStatus(str, Enum):
     """总结状态枚举"""
+
     DRAFT = "draft"
     SUBMITTED = "submitted"
     APPROVED = "approved"
@@ -27,46 +29,22 @@ class PromotionSummaryModel(ModelMixin, UserMixin):
     __tablename__: str = "promotion_summary"
     __table_args__: dict[str, str] = {"comment": "总结上传表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
-    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description", "summary_status"]}
+    __mapper_args__: dict[str, list[str]] = {
+        "exclude_properties": ["description", "summary_status"]
+    }
 
-    activity_id: Mapped[int | None] = mapped_column(
-        BIGINT,
-        nullable=True,
-        comment="活动ID"
-    )
+    activity_id: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="活动ID")
 
-    summary_type: Mapped[str | None] = mapped_column(
-        String(50),
-        nullable=True,
-        comment="总结类型"
-    )
+    summary_type: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="总结类型")
 
-    title: Mapped[str | None] = mapped_column(
-        String(200),
-        nullable=True,
-        comment="标题"
-    )
+    title: Mapped[str | None] = mapped_column(String(200), nullable=True, comment="标题")
 
-    content: Mapped[str | None] = mapped_column(
-        Text,
-        nullable=True,
-        comment="内容"
-    )
+    content: Mapped[str | None] = mapped_column(Text, nullable=True, comment="内容")
 
-    photo_urls: Mapped[JSON | None] = mapped_column(
-        JSON,
-        nullable=True,
-        comment="照片URLs"
-    )
+    photo_urls: Mapped[JSON | None] = mapped_column(JSON, nullable=True, comment="照片URLs")
 
-    attachment_urls: Mapped[JSON | None] = mapped_column(
-        JSON,
-        nullable=True,
-        comment="附件URLs"
-    )
+    attachment_urls: Mapped[JSON | None] = mapped_column(JSON, nullable=True, comment="附件URLs")
 
     summary_status: Mapped[str | None] = mapped_column(
-        String(20),
-        nullable=True,
-        comment="总结状态"
+        String(20), nullable=True, comment="总结状态"
     )

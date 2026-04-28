@@ -1,6 +1,7 @@
 """
 表彰评优 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -25,6 +26,7 @@ class EvaluationCreateSchema(BaseModel):
 
 class EvaluationUpdateSchema(EvaluationCreateSchema):
     """更新表彰评优模型"""
+
     pass
 
 

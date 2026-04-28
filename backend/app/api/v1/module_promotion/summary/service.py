@@ -1,6 +1,7 @@
 """
 总结上传 - 服务层
 """
+
 import json
 import uuid
 from datetime import datetime
@@ -186,7 +187,9 @@ class SummaryService:
         return cls._format_summary_output(obj)
 
     @classmethod
-    async def approve_service(cls, auth: AuthSchema, id: int, approval_comment: str | None = None) -> dict:
+    async def approve_service(
+        cls, auth: AuthSchema, id: int, approval_comment: str | None = None
+    ) -> dict:
         """
         审批通过
 

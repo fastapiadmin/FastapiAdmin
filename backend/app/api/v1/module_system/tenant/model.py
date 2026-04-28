@@ -21,8 +21,12 @@ class TenantModel(ModelMixin):
 
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, comment="租户名称")
     code: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, comment="租户编码")
-    start_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None, comment="开始时间")
-    end_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None, comment="结束时间")
+    start_time: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, default=None, comment="开始时间"
+    )
+    end_time: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, default=None, comment="结束时间"
+    )
 
     @validates("name")
     def validate_name(self, key: str, name: str) -> str:

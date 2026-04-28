@@ -74,9 +74,7 @@ class RoleModel(ModelMixin):
     __permission_strategy__: PermissionFilterStrategy = PermissionFilterStrategy.USER_ROLE
 
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="角色名称")
-    code: Mapped[str] = mapped_column(
-        String(16), nullable=False, unique=True, comment="角色编码"
-    )
+    code: Mapped[str] = mapped_column(String(16), nullable=False, unique=True, comment="角色编码")
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=999, comment="显示排序")
     data_scope: Mapped[int] = mapped_column(
         Integer,

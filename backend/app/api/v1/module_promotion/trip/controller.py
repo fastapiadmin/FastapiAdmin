@@ -1,6 +1,7 @@
 """
 行程报备 - 控制器
 """
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -282,6 +283,8 @@ async def update_location_controller(
     返回:
     - JSONResponse: 更新位置的JSON响应
     """
-    result_dict = await TripService.update_location_service(auth=auth, id=id, latitude=latitude, longitude=longitude, address=address)
+    result_dict = await TripService.update_location_service(
+        auth=auth, id=id, latitude=latitude, longitude=longitude, address=address
+    )
     log.info(f"更新位置成功 {id}")
     return SuccessResponse(data=result_dict, msg="更新位置成功")

@@ -1,6 +1,7 @@
 """
 总结上传 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,6 +25,7 @@ class SummaryCreateSchema(BaseModel):
 
 class SummaryUpdateSchema(SummaryCreateSchema):
     """更新总结上传模型"""
+
     pass
 
 

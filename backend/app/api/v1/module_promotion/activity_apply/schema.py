@@ -1,6 +1,7 @@
 """
 活动申请审批 - 数据验证Schema
 """
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -39,6 +40,7 @@ class ActivityApplyCreateSchema(BaseModel):
 
 class ActivityApplyUpdateSchema(ActivityApplyCreateSchema):
     """更新活动申请模型"""
+
     pass
 
 
