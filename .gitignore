@@ -21,6 +21,7 @@ backend/alembic/versions/*
 backend/*.db
 backend/.ruff_cache
 backend/.ruff.toml
+backend/.trae
 
 frontend/__pycache__
 frontend/.vscode
