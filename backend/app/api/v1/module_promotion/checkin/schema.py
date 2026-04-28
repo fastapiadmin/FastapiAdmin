@@ -19,6 +19,9 @@ class CheckinCreateSchema(BaseModel):
     location: str | None = Field(default=None, description="位置")
     longitude: float | None = Field(default=None, description="经度")
     latitude: float | None = Field(default=None, description="纬度")
+    target_longitude: float | None = Field(default=None, description="目标经度")
+    target_latitude: float | None = Field(default=None, description="目标纬度")
+    allowed_radius: float | None = Field(default=500, description="允许打卡半径(米)")
     photo_urls: dict | None = Field(default=None, description="照片URLs")
     remarks: str | None = Field(default=None, description="备注")
 
@@ -35,6 +38,8 @@ class CheckinOutSchema(CheckinCreateSchema, BaseSchema, UserBySchema):
     model_config = ConfigDict(from_attributes=True)
 
     status: str | None = Field(default=None, description="状态")
+    gps_validated: bool | None = Field(default=None, description="GPS是否验证通过")
+    gps_distance: float | None = Field(default=None, description="GPS距离(米)")
     created_by_name: str | None = Field(default=None, description="创建人")
     updated_by_name: str | None = Field(default=None, description="更新人")
 

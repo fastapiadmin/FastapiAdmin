@@ -3,6 +3,7 @@
 """
 
 from app.api.v1.module_system.auth.schema import AuthSchema
+from app.common.gps_service import GPSService
 from app.core.exceptions import CustomException
 from app.core.logger import log
 
@@ -82,6 +83,30 @@ class CheckinService:
         返回:
         - dict: 创建的活动打卡模型实例字典
         """
+        # 如果提供了GPS坐标，进行GPS验证
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        target_latitude = data.get("target_latitude")
+        target_longitude = data.get("target_longitude")
+        allowed_radius = data.get("allowed_radius", 500)
+
+        gps_validated = 0
+        gps_distance = None
+
+        if latitude and longitude and target_latitude and target_longitude:
+            result = GPSService.validate_location(
+                checkin_latitude=latitude,
+                checkin_longitude=longitude,
+                target_latitude=target_latitude,
+                target_longitude=target_longitude,
+                allowed_radius=allowed_radius,
+            )
+            gps_validated = 1 if result["is_valid"] else 0
+            gps_distance = result["distance"]
+            data["gps_validated"] = gps_validated
+            data["gps_distance"] = gps_distance
+            log.info(f"GPS验证结果: {result['message']}")
+
         obj = await CheckinCRUD(auth).create_crud(data=data)
         log.info(f"创建活动打卡成功: {obj.id}")
         return cls._format_checkin_output(obj)
@@ -190,6 +215,52 @@ class CheckinService:
         obj = await CheckinCRUD(auth).update_crud(id=id, data=update_data)
         log.info(f"无效打卡成功: {id}")
         return cls._format_checkin_output(obj)
+
+    @classmethod
+    async def gps_validate_service(cls, auth: AuthSchema, id: int) -> dict:
+        """
+        GPS位置验证
+
+        参数:
+        - auth (AuthSchema): 认证信息模型
+        - id (int): 活动打卡ID
+
+        返回:
+        - dict: 包含验证结果的字典
+        """
+        existing = await CheckinCRUD(auth).get_by_id_crud(id=id)
+        if not existing:
+            raise CustomException(msg="该活动打卡不存在")
+
+        latitude = existing.latitude
+        longitude = existing.longitude
+        target_latitude = existing.target_latitude
+        target_longitude = existing.target_longitude
+        allowed_radius = existing.allowed_radius
+
+        if not all([latitude, longitude, target_latitude, target_longitude]):
+            raise CustomException(msg="GPS坐标信息不完整，无法验证")
+
+        result = GPSService.validate_location(
+            checkin_latitude=float(latitude),
+            checkin_longitude=float(longitude),
+            target_latitude=float(target_latitude),
+            target_longitude=float(target_longitude),
+            allowed_radius=float(allowed_radius) if allowed_radius else 500,
+        )
+
+        update_data = {
+            "gps_validated": 1 if result["is_valid"] else 0,
+            "gps_distance": result["distance"],
+        }
+
+        obj = await CheckinCRUD(auth).update_crud(id=id, data=update_data)
+        log.info(f"GPS验证结果: {result['message']}, 打卡ID: {id}")
+
+        output = cls._format_checkin_output(obj)
+        output["gps_validation_message"] = result["message"]
+
+        return output
 
     @classmethod
     def _format_checkin_output(cls, obj: PromotionCheckinModel) -> dict:

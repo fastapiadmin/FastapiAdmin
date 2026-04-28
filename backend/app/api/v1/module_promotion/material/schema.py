@@ -15,7 +15,9 @@ class MaterialCreateSchema(BaseModel):
     name: str = Field(..., description="物料名称", min_length=2, max_length=200)
     material_type: str | None = Field(default=None, description="物料类型")
     specification: str | None = Field(default=None, description="规格")
-    stock_quantity: int | None = Field(default=None, description="库存数量")
+    total_stock: int = Field(default=0, description="总库存数量")
+    available_stock: int = Field(default=0, description="可用库存数量")
+    low_stock_threshold: int = Field(default=10, description="库存预警阈值")
     unit: str | None = Field(default=None, description="单位")
     storage_location: str | None = Field(default=None, description="存放位置")
 

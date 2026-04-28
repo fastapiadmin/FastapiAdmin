@@ -79,6 +79,14 @@ class PromotionDocumentModel(ModelMixin, UserMixin):
 
     attachment_names: Mapped[str | None] = mapped_column(Text, nullable=True, comment="附件名称")
 
+    wechat_formatted_content: Mapped[str | None] = mapped_column(
+        Text, nullable=True, comment="微信公众号格式化内容"
+    )
+
+    ai_generation_status: Mapped[str | None] = mapped_column(
+        String(20), default="pending", comment="AI生成状态(pending/generating/success/failed)"
+    )
+
     remark: Mapped[str | None] = mapped_column(Text, nullable=True, comment="备注")
 
     display_order: Mapped[int | None] = mapped_column(Integer, nullable=True, comment="显示排序")

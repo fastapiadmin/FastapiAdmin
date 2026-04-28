@@ -32,6 +32,8 @@ class DocumentCreateSchema(BaseModel):
     is_featured: int | None = Field(default=None, description="是否精选")
     attachment_urls: str | None = Field(default=None, description="附件URLs")
     attachment_names: str | None = Field(default=None, description="附件名称")
+    wechat_formatted_content: str | None = Field(default=None, description="微信公众号格式化内容")
+    ai_generation_status: str | None = Field(default=None, description="AI生成状态")
     remark: str | None = Field(default=None, description="备注")
     display_order: int | None = Field(default=None, description="显示排序")
 

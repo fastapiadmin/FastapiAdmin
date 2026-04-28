@@ -191,6 +191,35 @@ async def batch_delete_obj_controller(
 
 
 @MaterialRouter.post(
+    "/replenish/{id}",
+    summary="补充库存",
+    description="招生办录入全年物料总量",
+    response_model=ResponseSchema[MaterialOutSchema],
+)
+async def replenish_controller(
+    id: Annotated[int, Path(description="物料ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:material:create"]))],
+    add_quantity: Annotated[int, Query(description="补充数量")],
+) -> JSONResponse:
+    """
+    补充库存
+
+    参数:
+    - id (int): 物料ID
+    - add_quantity (int): 补充数量
+    - auth (AuthSchema): 认证信息模型
+
+    返回:
+    - JSONResponse: 补充库存成功的JSON响应
+    """
+    result_dict = await MaterialService.replenish_service(
+        auth=auth, id=id, add_quantity=add_quantity
+    )
+    log.info(f"补充库存成功 {id}")
+    return SuccessResponse(data=result_dict, msg="补充成功")
+
+
+@MaterialRouter.post(
     "/apply",
     summary="申领物料",
     description="申领物料",

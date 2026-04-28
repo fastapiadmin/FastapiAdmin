@@ -5,7 +5,7 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import BIGINT, JSON, DateTime, Numeric, String, Text
+from sqlalchemy import BIGINT, JSON, DateTime, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import ModelMixin, UserMixin
@@ -46,6 +46,26 @@ class PromotionCheckinModel(ModelMixin, UserMixin):
     longitude: Mapped[Numeric | None] = mapped_column(Numeric(10, 7), nullable=True, comment="经度")
 
     latitude: Mapped[Numeric | None] = mapped_column(Numeric(10, 7), nullable=True, comment="纬度")
+
+    target_longitude: Mapped[Numeric | None] = mapped_column(
+        Numeric(10, 7), nullable=True, comment="目标经度"
+    )
+
+    target_latitude: Mapped[Numeric | None] = mapped_column(
+        Numeric(10, 7), nullable=True, comment="目标纬度"
+    )
+
+    allowed_radius: Mapped[Numeric | None] = mapped_column(
+        Numeric(10, 2), nullable=True, comment="允许打卡半径(米)"
+    )
+
+    gps_validated: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, comment="GPS是否验证通过(0否,1是)"
+    )
+
+    gps_distance: Mapped[Numeric | None] = mapped_column(
+        Numeric(10, 2), nullable=True, comment="GPS距离(米)"
+    )
 
     photo_urls: Mapped[JSON | None] = mapped_column(JSON, nullable=True, comment="照片URLs")
 

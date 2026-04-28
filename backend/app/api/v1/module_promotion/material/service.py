@@ -141,6 +141,45 @@ class MaterialService:
         log.info(f"批量删除物料成功: {ids}")
 
     @classmethod
+    async def replenish_service(cls, auth: AuthSchema, id: int, add_quantity: int) -> dict:
+        """
+        补充库存（招生办录入全年物料总量）
+
+        参数:
+        - auth (AuthSchema): 认证信息模型
+        - id (int): 物料ID
+        - add_quantity (int): 补充数量
+
+        返回:
+        - dict: 更新后的物料模型实例字典
+        """
+        existing = await MaterialCRUD(auth).get_by_id_crud(id=id)
+        if not existing:
+            raise CustomException(msg="该物料不存在")
+
+        if add_quantity <= 0:
+            raise CustomException(msg="补充数量必须大于0")
+
+        new_available = existing.available_stock + add_quantity
+        new_total = existing.total_stock + add_quantity
+
+        # 更新库存状态
+        stock_update = {
+            "available_stock": new_available,
+            "total_stock": new_total,
+        }
+
+        # 如果之前是低库存或缺货状态，恢复正常
+        if new_available > existing.low_stock_threshold:
+            stock_update["status"] = MaterialStatus.ACTIVE.value
+
+        obj = await MaterialCRUD(auth).update_crud(id=id, data=stock_update)
+        log.info(
+            f"补充库存成功: 物料ID={id}, 补充数量={add_quantity}, 总库存={new_total}, 可用={new_available}"
+        )
+        return MaterialOutSchema.model_validate(obj).model_dump()
+
+    @classmethod
     async def stock_change_service(
         cls, auth: AuthSchema, id: int, change_type: str, quantity: int
     ) -> dict:
@@ -336,7 +375,7 @@ class MaterialApplyService:
         cls, auth: AuthSchema, id: int, issued_quantity: int | None = None
     ) -> dict:
         """
-        发放物料
+        发放物料（自动减库存）
 
         参数:
         - auth (AuthSchema): 认证信息模型
@@ -357,6 +396,31 @@ class MaterialApplyService:
         user_name = auth.user.name if auth.user else None
 
         issue_qty = issued_quantity or existing.approved_quantity or existing.apply_quantity
+
+        # 获取物料信息，扣减库存
+        material = await MaterialCRUD(auth).get_by_id_crud(id=existing.material_id)
+        if not material:
+            raise CustomException(msg="关联的物料不存在")
+
+        if material.available_stock < issue_qty:
+            raise CustomException(
+                msg=f"可用库存不足，当前可用: {material.available_stock}，申请: {issue_qty}"
+            )
+
+        # 扣减库存
+        new_available = material.available_stock - issue_qty
+        stock_update = {"available_stock": new_available}
+
+        # 检查库存状态
+        if new_available <= 0:
+            stock_update["status"] = MaterialStatus.OUT_OF_STOCK.value
+        elif new_available <= material.low_stock_threshold:
+            stock_update["status"] = MaterialStatus.LOW_STOCK.value
+
+        await MaterialCRUD(auth).update_crud(id=existing.material_id, data=stock_update)
+        log.info(
+            f"发放物料扣减库存: 物料ID={existing.material_id}, 扣减数量={issue_qty}, 剩余={new_available}"
+        )
 
         update_data = {
             "apply_status": ApplyStatus.ISSUED.value,

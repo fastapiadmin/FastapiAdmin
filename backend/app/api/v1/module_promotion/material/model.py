@@ -16,6 +16,8 @@ class MaterialStatus(str, Enum):
 
     ACTIVE = "active"
     INACTIVE = "inactive"
+    LOW_STOCK = "low"
+    OUT_OF_STOCK = "out"
 
 
 class ApplyStatus(str, Enum):
@@ -46,7 +48,15 @@ class PromotionMaterialModel(ModelMixin, UserMixin):
 
     specification: Mapped[str | None] = mapped_column(String(200), nullable=True, comment="规格")
 
-    stock_quantity: Mapped[int | None] = mapped_column(Integer, nullable=True, comment="库存数量")
+    total_stock: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False, comment="总库存数量"
+    )
+    available_stock: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False, comment="可用库存数量"
+    )
+    low_stock_threshold: Mapped[int] = mapped_column(
+        Integer, default=10, nullable=False, comment="库存预警阈值"
+    )
 
     unit: Mapped[str | None] = mapped_column(String(20), nullable=True, comment="单位")
 

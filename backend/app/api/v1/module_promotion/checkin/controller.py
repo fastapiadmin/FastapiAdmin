@@ -232,3 +232,29 @@ async def invalidate_controller(
     result_dict = await CheckinService.invalidate_service(auth=auth, id=id, reason=reason)
     log.info(f"无效打卡成功 {id}")
     return SuccessResponse(data=result_dict, msg="无效成功")
+
+
+@CheckinRouter.post(
+    "/gps-validate/{id}",
+    summary="GPS位置验证",
+    description="验证打卡位置是否在允许范围内",
+    response_model=ResponseSchema[CheckinOutSchema],
+)
+async def gps_validate_controller(
+    id: Annotated[int, Path(description="活动打卡ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:checkin:validate"]))],
+) -> JSONResponse:
+    """
+    GPS位置验证
+
+    参数:
+    - id (int): 活动打卡ID
+    - auth (AuthSchema): 认证信息模型
+
+    返回:
+    - JSONResponse: 包含GPS验证结果的JSON响应
+    """
+    result_dict = await CheckinService.gps_validate_service(auth=auth, id=id)
+    gps_msg = result_dict.pop("gps_validation_message", "验证完成")
+    log.info(f"GPS验证成功 {id}: {gps_msg}")
+    return SuccessResponse(data=result_dict, msg=gps_msg)

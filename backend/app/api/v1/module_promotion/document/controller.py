@@ -260,3 +260,28 @@ async def view_controller(
     result_dict = await DocumentService.view_service(auth=auth, id=id)
     log.info(f"阅读文档成功 {id}")
     return SuccessResponse(data=result_dict, msg="阅读成功")
+
+
+@DocumentRouter.post(
+    "/generate-wechat-content/{id}",
+    summary="AI生成微信公众号内容",
+    description="AI生成微信公众号格式化内容",
+    response_model=ResponseSchema[DocumentOutSchema],
+)
+async def generate_wechat_content_controller(
+    id: Annotated[int, Path(description="活动撰写ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:document:create"]))],
+) -> JSONResponse:
+    """
+    AI生成微信公众号内容
+
+    参数:
+    - id (int): 活动撰写ID
+    - auth (AuthSchema): 认证信息模型
+
+    返回:
+    - JSONResponse: 生成成功的JSON响应
+    """
+    result_dict = await DocumentService.generate_wechat_content_service(auth=auth, id=id)
+    log.info(f"AI生成微信公众号内容成功 {id}")
+    return SuccessResponse(data=result_dict, msg="生成成功")

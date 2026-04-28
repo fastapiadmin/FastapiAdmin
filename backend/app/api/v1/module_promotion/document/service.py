@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime
 
 from app.api.v1.module_system.auth.schema import AuthSchema
+from app.common.ai_service import AIService
 from app.core.exceptions import CustomException
 from app.core.logger import log
 
@@ -230,6 +231,53 @@ class DocumentService:
         obj = await DocumentCRUD(auth).update_crud(id=id, data=update_data)
         log.info(f"阅读文档成功: {id}")
         return cls._format_document_output(obj)
+
+    @classmethod
+    async def generate_wechat_content_service(cls, auth: AuthSchema, id: int) -> dict:
+        """
+        AI生成微信公众号格式化内容
+
+        参数:
+            auth (AuthSchema): 认证信息模型
+            id (int): 活动撰写ID
+
+        返回:
+            dict: 更新后的活动撰写模型实例字典
+        """
+        existing = await DocumentCRUD(auth).get_by_id_crud(id=id)
+        if not existing:
+            raise CustomException(msg="该文档不存在")
+
+        if not existing.document_content:
+            raise CustomException(msg="文档内容为空，无法生成")
+
+        # 更新状态为生成中
+        await DocumentCRUD(auth).update_crud(id=id, data={"ai_generation_status": "generating"})
+
+        try:
+            # 调用AI服务生成内容
+            wechat_content = await AIService.generate_wechat_content(
+                title=existing.document_title or "",
+                content=existing.document_content,
+                summary=existing.document_summary,
+                activity_name=existing.activity_name,
+            )
+
+            # 更新文档内容和状态
+            update_data = {
+                "wechat_formatted_content": wechat_content,
+                "ai_generation_status": "success",
+            }
+
+            obj = await DocumentCRUD(auth).update_crud(id=id, data=update_data)
+            log.info(f"AI生成微信公众号内容成功: {id}")
+            return cls._format_document_output(obj)
+
+        except Exception as e:
+            # 更新状态为失败
+            await DocumentCRUD(auth).update_crud(id=id, data={"ai_generation_status": "failed"})
+            log.error(f"AI生成失败: {id}, 错误: {str(e)}")
+            raise CustomException(msg=f"AI生成失败: {str(e)}")
 
     @classmethod
     def _format_document_output(cls, obj: PromotionDocumentModel) -> dict:
