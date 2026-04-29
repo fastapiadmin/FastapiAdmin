@@ -336,113 +336,113 @@
 </template>
 
 <script lang="ts" setup>
-  defineOptions({
-    name: 'Node',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Node",
+  inheritAttrs: false,
+});
 
-  import NodeAPI, {
-    NodeTable,
-    NodeForm,
-    NodePageQuery,
-    TriggerType,
-  } from '@/api/module_task/cronjob/node';
-  import { useDictStore } from '@/store/index';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import { nextTick, onMounted, reactive, ref } from 'vue';
-  import { ElMessage } from 'element-plus';
-  import { vue3CronPlus } from 'vue3-cron-plus';
-  import 'vue3-cron-plus/dist/index.css';
-  import OperationColumn from '@/components/OperationColumn/index.vue';
-  import IntervalTab from '@/components/IntervalTab/index.vue';
-  import Codemirror, { CmComponentRef } from 'codemirror-editor-vue3';
-  import type { EditorConfiguration } from 'codemirror';
-  import 'codemirror/mode/python/python.js';
-  import 'codemirror/theme/dracula.css';
+import NodeAPI, {
+  NodeTable,
+  NodeForm,
+  NodePageQuery,
+  TriggerType,
+} from "@/api/module_task/cronjob/node";
+import { useDictStore } from "@/store/index";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import { nextTick, onMounted, reactive, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { vue3CronPlus } from "vue3-cron-plus";
+import "vue3-cron-plus/dist/index.css";
+import OperationColumn from "@/components/OperationColumn/index.vue";
+import IntervalTab from "@/components/IntervalTab/index.vue";
+import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
+import type { EditorConfiguration } from "codemirror";
+import "codemirror/mode/python/python.js";
+import "codemirror/theme/dracula.css";
 
-  const dictStore = useDictStore();
+const dictStore = useDictStore();
 
-  const codeEditorOptions: EditorConfiguration = {
-    mode: 'python',
-    lineNumbers: true,
-    smartIndent: true,
-    indentUnit: 4,
-    tabSize: 4,
-    theme: 'dracula',
-    lineWrapping: true,
-    autofocus: false,
-  };
+const codeEditorOptions: EditorConfiguration = {
+  mode: "python",
+  lineNumbers: true,
+  smartIndent: true,
+  indentUnit: 4,
+  tabSize: 4,
+  theme: "dracula",
+  lineWrapping: true,
+  autofocus: false,
+};
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
-  const executeFormRef = ref();
-  const submitLoading = ref(false);
-  const openCron = ref(false);
-  const openInterval = ref(false);
-  const codeEditorRef = ref<CmComponentRef>();
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
+const executeFormRef = ref();
+const submitLoading = ref(false);
+const openCron = ref(false);
+const openInterval = ref(false);
+const codeEditorRef = ref<CmComponentRef>();
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_task:cronjob:node',
-    colon: true,
-    isExpandable: false,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '节点名称',
-        type: 'input',
-        attrs: { placeholder: '请输入节点名称', clearable: true },
-      },
-      {
-        prop: 'code',
-        label: '节点编码',
-        type: 'input',
-        attrs: { placeholder: '请输入节点编码', clearable: true },
-      },
-    ],
-  });
-
-  const contentConfig = reactive<IContentConfig<NodePageQuery>>({
-    permPrefix: 'module_task:cronjob:node',
-    cols: [],
-    hideColumnFilter: true,
-    toolbar: ['add', 'delete'],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_task:cronjob:node",
+  colon: true,
+  isExpandable: false,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "节点名称",
+      type: "input",
+      attrs: { placeholder: "请输入节点名称", clearable: true },
     },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await NodeAPI.listNode(params as NodePageQuery);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
+    {
+      prop: "code",
+      label: "节点编码",
+      type: "input",
+      attrs: { placeholder: "请输入节点编码", clearable: true },
     },
-    deleteAction: (ids) =>
-      NodeAPI.deleteNode(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n) && n > 0)
-      ),
-    deleteConfirm: {
-      title: '警告',
-      message:
-        '确认删除选中的节点吗？\n' +
-        '此操作将同时删除节点定义并移除调度器中的相关任务。\n' +
-        '正在运行的任务会被立即移除，待执行任务的日志将被标记为已取消。',
-      type: 'warning',
-    },
-  });
+  ],
+});
 
-  const defaultCodeBlock = `def handler(*args, **kwargs):
+const contentConfig = reactive<IContentConfig<NodePageQuery>>({
+  permPrefix: "module_task:cronjob:node",
+  cols: [],
+  hideColumnFilter: true,
+  toolbar: ["add", "delete"],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await NodeAPI.listNode(params as NodePageQuery);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: (ids) =>
+    NodeAPI.deleteNode(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n) && n > 0)
+    ),
+  deleteConfirm: {
+    title: "警告",
+    message:
+      "确认删除选中的节点吗？\n" +
+      "此操作将同时删除节点定义并移除调度器中的相关任务。\n" +
+      "正在运行的任务会被立即移除，待执行任务的日志将被标记为已取消。",
+    type: "warning",
+  },
+});
+
+const defaultCodeBlock = `def handler(*args, **kwargs):
     """
     Demo: 调用工程中的方法处理数据
     
@@ -492,308 +492,308 @@
     }
 `;
 
-  const formData = reactive<NodeForm>({
-    id: undefined,
-    name: '',
-    code: undefined,
-    jobstore: 'default',
-    executor: 'default',
-    func: defaultCodeBlock,
-    args: undefined,
-    kwargs: undefined,
-    coalesce: false,
-    max_instances: 1,
-    start_date: undefined,
-    end_date: undefined,
-  });
+const formData = reactive<NodeForm>({
+  id: undefined,
+  name: "",
+  code: undefined,
+  jobstore: "default",
+  executor: "default",
+  func: defaultCodeBlock,
+  args: undefined,
+  kwargs: undefined,
+  coalesce: false,
+  max_instances: 1,
+  start_date: undefined,
+  end_date: undefined,
+});
 
-  const argsList = ref<string[]>([]);
-  const kwargsList = ref<{ key: string; value: string }[]>([]);
+const argsList = ref<string[]>([]);
+const kwargsList = ref<{ key: string; value: string }[]>([]);
 
-  const executeDialogVisible = ref(false);
-  const currentExecuteNode = ref<NodeTable | null>(null);
-  const executeFormData = reactive<{
-    trigger: TriggerType;
-    trigger_args?: string;
-    start_date?: string;
-    end_date?: string;
-  }>({
-    trigger: 'now',
-    trigger_args: undefined,
-    start_date: undefined,
-    end_date: undefined,
-  });
+const executeDialogVisible = ref(false);
+const currentExecuteNode = ref<NodeTable | null>(null);
+const executeFormData = reactive<{
+  trigger: TriggerType;
+  trigger_args?: string;
+  start_date?: string;
+  end_date?: string;
+}>({
+  trigger: "now",
+  trigger_args: undefined,
+  start_date: undefined,
+  end_date: undefined,
+});
 
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
 
-  const rules = reactive({
-    name: [{ required: true, message: '请输入节点名称', trigger: 'blur' }],
-    code: [{ required: true, message: '请输入节点编码', trigger: 'blur' }],
-  });
+const rules = reactive({
+  name: [{ required: true, message: "请输入节点名称", trigger: "blur" }],
+  code: [{ required: true, message: "请输入节点编码", trigger: "blur" }],
+});
 
-  const executeRules = reactive({
-    trigger: [{ required: true, message: '请选择执行方式', trigger: 'change' }],
-    trigger_args: [{ required: true, message: '请设置执行参数', trigger: 'blur' }],
-  });
+const executeRules = reactive({
+  trigger: [{ required: true, message: "请选择执行方式", trigger: "change" }],
+  trigger_args: [{ required: true, message: "请设置执行参数", trigger: "blur" }],
+});
 
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+const initialFormData: Partial<NodeForm> = {
+  id: undefined,
+  name: "",
+  code: undefined,
+  jobstore: "sqlalchemy",
+  executor: "default",
+  func: defaultCodeBlock,
+  args: undefined,
+  kwargs: undefined,
+  coalesce: false,
+  max_instances: 5,
+  start_date: undefined,
+  end_date: undefined,
+};
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
   }
+  Object.assign(formData, initialFormData);
+  argsList.value = [];
+  kwargsList.value = [];
+}
 
-  const initialFormData: Partial<NodeForm> = {
-    id: undefined,
-    name: '',
-    code: undefined,
-    jobstore: 'sqlalchemy',
-    executor: 'default',
-    func: defaultCodeBlock,
-    args: undefined,
-    kwargs: undefined,
-    coalesce: false,
-    max_instances: 5,
-    start_date: undefined,
-    end_date: undefined,
-  };
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  resetForm();
+}
 
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
-    }
-    Object.assign(formData, initialFormData);
+async function handleOpenDialog(type: "create" | "update", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await NodeAPI.detailNode(id);
+    dialogVisible.title = "修改节点";
+    Object.assign(formData, response.data.data);
+    const data = response.data.data;
+    argsList.value = data.args ? data.args.split(",").map((v: string) => v.trim()) : [];
+    kwargsList.value = data.kwargs
+      ? Object.entries(JSON.parse(data.kwargs)).map(([key, value]) => ({
+          key,
+          value: String(value),
+        }))
+      : [];
+  } else {
+    dialogVisible.title = "新增节点";
+    formData.id = undefined;
     argsList.value = [];
     kwargsList.value = [];
   }
+  dialogVisible.visible = true;
+}
 
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    resetForm();
-  }
-
-  async function handleOpenDialog(type: 'create' | 'update', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await NodeAPI.detailNode(id);
-      dialogVisible.title = '修改节点';
-      Object.assign(formData, response.data.data);
-      const data = response.data.data;
-      argsList.value = data.args ? data.args.split(',').map((v: string) => v.trim()) : [];
-      kwargsList.value = data.kwargs
-        ? Object.entries(JSON.parse(data.kwargs)).map(([key, value]) => ({
-            key,
-            value: String(value),
-          }))
-        : [];
-    } else {
-      dialogVisible.title = '新增节点';
-      formData.id = undefined;
-      argsList.value = [];
-      kwargsList.value = [];
-    }
-    dialogVisible.visible = true;
-  }
-
-  function handleDialogOpened() {
-    nextTick(() => {
-      setTimeout(() => {
-        codeEditorRef.value?.refresh?.();
-      }, 100);
-    });
-  }
-
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: any) => {
-      if (valid) {
-        submitLoading.value = true;
-        const id = formData.id;
-        try {
-          const submitData = {
-            ...formData,
-            args: argsList.value.filter((v) => v.trim()).join(',') || undefined,
-            kwargs:
-              kwargsList.value.filter((v) => v.key.trim()).length > 0
-                ? JSON.stringify(
-                    Object.fromEntries(
-                      kwargsList.value.filter((v) => v.key.trim()).map((v) => [v.key, v.value])
-                    )
-                  )
-                : undefined,
-          };
-          if (id) {
-            await NodeAPI.updateNode(id, submitData);
-          } else {
-            await NodeAPI.createNode(submitData);
-          }
-          dialogVisible.visible = false;
-          resetForm();
-          refreshList();
-        } catch (error: any) {
-          console.log(error);
-        } finally {
-          submitLoading.value = false;
-        }
-      }
-    });
-  }
-
-  const handlechangeCron = (cronStr: string) => {
-    if (typeof cronStr == 'string') {
-      executeFormData.trigger_args = cronStr;
-    }
-  };
-
-  const handleIntervalConfirm = (value: string) => {
-    executeFormData.trigger_args = value;
-    openInterval.value = false;
-  };
-
-  function handleOpenExecuteDialog(row: NodeTable) {
-    currentExecuteNode.value = row;
-    executeFormData.trigger = 'now';
-    executeFormData.trigger_args = undefined;
-    executeFormData.start_date = undefined;
-    executeFormData.end_date = undefined;
-    executeDialogVisible.value = true;
-  }
-
-  function handleCloseExecuteDialog() {
-    executeDialogVisible.value = false;
-    currentExecuteNode.value = null;
-    if (executeFormRef.value) {
-      executeFormRef.value.resetFields();
-    }
-  }
-
-  async function handleExecuteNode() {
-    if (executeFormData.trigger !== 'now') {
-      const valid = await executeFormRef.value?.validate().catch(() => false);
-      if (!valid) return;
-    }
-
-    try {
-      submitLoading.value = true;
-      const params: any = {
-        trigger: executeFormData.trigger,
-      };
-
-      if (executeFormData.trigger !== 'now') {
-        params.trigger_args = executeFormData.trigger_args;
-        params.start_date = executeFormData.start_date;
-        params.end_date = executeFormData.end_date;
-      }
-
-      await NodeAPI.executeNode(currentExecuteNode.value?.id as number, params);
-
-      handleCloseExecuteDialog();
-
-      refreshList();
-    } catch (error: any) {
-      ElMessage.error({
-        message: error.response?.data?.msg || '调试失败',
-        type: 'error',
-        duration: 3000,
-      });
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
-    }
-  }
-
-  onMounted(async () => {
-    await dictStore.getDict(['sys_job_store', 'sys_job_executor']);
-    refreshList();
+function handleDialogOpened() {
+  nextTick(() => {
+    setTimeout(() => {
+      codeEditorRef.value?.refresh?.();
+    }, 100);
   });
+}
+
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: any) => {
+    if (valid) {
+      submitLoading.value = true;
+      const id = formData.id;
+      try {
+        const submitData = {
+          ...formData,
+          args: argsList.value.filter((v) => v.trim()).join(",") || undefined,
+          kwargs:
+            kwargsList.value.filter((v) => v.key.trim()).length > 0
+              ? JSON.stringify(
+                  Object.fromEntries(
+                    kwargsList.value.filter((v) => v.key.trim()).map((v) => [v.key, v.value])
+                  )
+                )
+              : undefined,
+        };
+        if (id) {
+          await NodeAPI.updateNode(id, submitData);
+        } else {
+          await NodeAPI.createNode(submitData);
+        }
+        dialogVisible.visible = false;
+        resetForm();
+        refreshList();
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        submitLoading.value = false;
+      }
+    }
+  });
+}
+
+const handlechangeCron = (cronStr: string) => {
+  if (typeof cronStr == "string") {
+    executeFormData.trigger_args = cronStr;
+  }
+};
+
+const handleIntervalConfirm = (value: string) => {
+  executeFormData.trigger_args = value;
+  openInterval.value = false;
+};
+
+function handleOpenExecuteDialog(row: NodeTable) {
+  currentExecuteNode.value = row;
+  executeFormData.trigger = "now";
+  executeFormData.trigger_args = undefined;
+  executeFormData.start_date = undefined;
+  executeFormData.end_date = undefined;
+  executeDialogVisible.value = true;
+}
+
+function handleCloseExecuteDialog() {
+  executeDialogVisible.value = false;
+  currentExecuteNode.value = null;
+  if (executeFormRef.value) {
+    executeFormRef.value.resetFields();
+  }
+}
+
+async function handleExecuteNode() {
+  if (executeFormData.trigger !== "now") {
+    const valid = await executeFormRef.value?.validate().catch(() => false);
+    if (!valid) return;
+  }
+
+  try {
+    submitLoading.value = true;
+    const params: any = {
+      trigger: executeFormData.trigger,
+    };
+
+    if (executeFormData.trigger !== "now") {
+      params.trigger_args = executeFormData.trigger_args;
+      params.start_date = executeFormData.start_date;
+      params.end_date = executeFormData.end_date;
+    }
+
+    await NodeAPI.executeNode(currentExecuteNode.value?.id as number, params);
+
+    handleCloseExecuteDialog();
+
+    refreshList();
+  } catch (error: any) {
+    ElMessage.error({
+      message: error.response?.data?.msg || "调试失败",
+      type: "error",
+      duration: 3000,
+    });
+    console.error(error);
+  } finally {
+    submitLoading.value = false;
+  }
+}
+
+onMounted(async () => {
+  await dictStore.getDict(["sys_job_store", "sys_job_executor"]);
+  refreshList();
+});
 </script>
 
 <style scoped>
-  .code-editor-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding-left: 16px;
-  }
+.code-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-left: 16px;
+}
 
-  .code-editor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-  }
+.code-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
 
-  .code-editor-title {
-    font-size: 14px;
-    font-weight: 600;
-  }
+.code-editor-title {
+  font-size: 14px;
+  font-weight: 600;
+}
 
-  .code-editor-tip {
-    font-size: 12px;
-  }
+.code-editor-tip {
+  font-size: 12px;
+}
 
-  .dynamic-params {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+.dynamic-params {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .param-item {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+.param-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
-  .code-preview {
-    max-height: 200px;
-    padding: 10px;
-    overflow-y: auto;
-    font-family: monospace;
-    word-break: break-all;
-    white-space: pre-wrap;
-    border-radius: 4px;
-  }
+.code-preview {
+  max-height: 200px;
+  padding: 10px;
+  overflow-y: auto;
+  font-family: monospace;
+  word-break: break-all;
+  white-space: pre-wrap;
+  border-radius: 4px;
+}
 
-  .execution-log-drawer {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
+.execution-log-drawer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
 </style>
 
 <!-- popover 挂载到 body，需单独写；修复 vue3-cron-plus 全局 .el-tag--info { margin-left: -60px } 误伤多选下拉里 tag -->
 <style lang="scss">
-  .node-cron-popover-fix {
-    .vue3-cron-plus-container .el-select .el-tag {
-      margin-left: 0 !important;
+.node-cron-popover-fix {
+  .vue3-cron-plus-container .el-select .el-tag {
+    margin-left: 0 !important;
+  }
+
+  /* 具体秒数等多选行：避免文案与选择器挤在同一行错位 */
+  .vue3-cron-plus-container .tabBody .el-radio.long {
+    align-items: flex-start;
+    height: auto;
+    white-space: normal;
+
+    .el-radio__label {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 8px;
+      align-items: center;
+      line-height: 1.5;
     }
 
-    /* 具体秒数等多选行：避免文案与选择器挤在同一行错位 */
-    .vue3-cron-plus-container .tabBody .el-radio.long {
-      align-items: flex-start;
-      height: auto;
-      white-space: normal;
-
-      .el-radio__label {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 8px;
-        align-items: center;
-        line-height: 1.5;
-      }
-
-      .el-select {
-        flex: 1 1 200px;
-        min-width: 180px;
-        max-width: 100%;
-      }
+    .el-select {
+      flex: 1 1 200px;
+      min-width: 180px;
+      max-width: 100%;
     }
   }
+}
 </style>

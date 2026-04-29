@@ -4,7 +4,7 @@ export function greetings() {
   const currentDate = new Date();
   const hours = currentDate.getHours();
   if (hours >= 6 && hours < 8) {
-    return '晨起披衣出草堂，轩窗已自喜微凉🌅！';
+    return "晨起披衣出草堂，轩窗已自喜微凉🌅！";
   } else if (hours >= 8 && hours < 12) {
     return `上午好！`;
   } else if (hours >= 12 && hours < 14) {
@@ -14,7 +14,7 @@ export function greetings() {
   } else if (hours >= 18 && hours < 24) {
     return `晚上好！`;
   } else {
-    return '偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！';
+    return "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
   }
 }
 
@@ -43,14 +43,14 @@ export function getRangeDate(startDate: string | number | Date, endDate: string 
         if (i > startMax) {
           targetArr.push(
             `${endDateInfo.year}-${
-              endDateInfo.month < 10 ? '0' + endDateInfo.month : endDateInfo.month
-            }-${i - startMax < 10 ? '0' + (i - startMax) : i - startMax}`
+              endDateInfo.month < 10 ? "0" + endDateInfo.month : endDateInfo.month
+            }-${i - startMax < 10 ? "0" + (i - startMax) : i - startMax}`
           );
         } else {
           targetArr.push(
             `${startDateInfo.year}-${
-              startDateInfo.month < 10 ? '0' + startDateInfo.month : startDateInfo.month
-            }-${i < 10 ? '0' + i : i}`
+              startDateInfo.month < 10 ? "0" + startDateInfo.month : startDateInfo.month
+            }-${i < 10 ? "0" + i : i}`
           );
         }
       }
@@ -59,8 +59,8 @@ export function getRangeDate(startDate: string | number | Date, endDate: string 
       for (let i = startDateInfo.day; i <= endDateInfo.day; i++) {
         targetArr.push(
           `${startDateInfo.year}-${
-            startDateInfo.month < 10 ? '0' + startDateInfo.month : startDateInfo.month
-          }-${i < 10 ? '0' + i : i}`
+            startDateInfo.month < 10 ? "0" + startDateInfo.month : startDateInfo.month
+          }-${i < 10 ? "0" + i : i}`
         );
       }
     }
@@ -72,14 +72,14 @@ export function getRangeDate(startDate: string | number | Date, endDate: string 
       if (i > startMax) {
         targetArr.push(
           `${endDateInfo.year}-${
-            endDateInfo.month < 10 ? '0' + endDateInfo.month : endDateInfo.month
-          }-${i - startMax < 10 ? '0' + (i - startMax) : i - startMax}`
+            endDateInfo.month < 10 ? "0" + endDateInfo.month : endDateInfo.month
+          }-${i - startMax < 10 ? "0" + (i - startMax) : i - startMax}`
         );
       } else {
         targetArr.push(
           `${startDateInfo.year}-${
-            startDateInfo.month < 10 ? '0' + startDateInfo.month : startDateInfo.month
-          }-${i < 10 ? '0' + i : i}`
+            startDateInfo.month < 10 ? "0" + startDateInfo.month : startDateInfo.month
+          }-${i < 10 ? "0" + i : i}`
         );
       }
     }
@@ -119,7 +119,7 @@ export function formatTree(nodes: any[]): any[] {
     const formattedNode = {
       value: node.id,
       label: node.name,
-      disabled: node.status === false || String(node.status) === 'false',
+      disabled: node.status === false || String(node.status) === "false",
     };
 
     if (node.children && node.children.length > 0) {
@@ -135,7 +135,7 @@ export function cloneDeep(obj: any) {
 }
 
 export function isEmpty(obj: string | null | undefined) {
-  if (obj === undefined || obj === null || obj === '') {
+  if (obj === undefined || obj === null || obj === "") {
     return true;
   } else {
     return false;
@@ -144,5 +144,5 @@ export function isEmpty(obj: string | null | undefined) {
 
 // 验证是否为blob格式
 export function blobValidate(data: Blob): boolean {
-  return data.type !== 'application/json';
+  return data.type !== "application/json";
 }

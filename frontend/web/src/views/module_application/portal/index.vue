@@ -48,7 +48,7 @@
                       effect="plain"
                       class="app-status"
                     >
-                      {{ app.status ? '启用' : '停用' }}
+                      {{ app.status ? "启用" : "停用" }}
                     </el-tag>
                   </div>
                 </template>
@@ -60,7 +60,7 @@
                 <template #footer>
                   <div class="card-footer-row">
                     <div class="card-meta">
-                      {{ app.created_by?.name || '—' }} · {{ formatTime(app.created_time) }}
+                      {{ app.created_by?.name || "—" }} · {{ formatTime(app.created_time) }}
                     </div>
                     <div class="card-actions" @click.stop>
                       <el-button
@@ -144,390 +144,390 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'PortalApplication',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "PortalApplication",
+  inheritAttrs: false,
+});
 
-  import { useAppStore } from '@/store/modules/app.store';
-  import { DeviceEnum } from '@/enums/settings/device.enum';
-  import { Monitor } from '@element-plus/icons-vue';
-  import ApplicationAPI, {
-    type ApplicationForm,
-    type ApplicationInfo,
-    type ApplicationPageQuery,
-  } from '@/api/module_application/portal';
-  import { formatToDateTime } from '@/utils/dateUtil';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDrawer from '@/components/CURD/EnhancedDrawer.vue';
-  import UserTableSelect from '@/views/module_system/user/components/UserTableSelect.vue';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import { computed, markRaw, nextTick, reactive, ref } from 'vue';
+import { useAppStore } from "@/store/modules/app.store";
+import { DeviceEnum } from "@/enums/settings/device.enum";
+import { Monitor } from "@element-plus/icons-vue";
+import ApplicationAPI, {
+  type ApplicationForm,
+  type ApplicationInfo,
+  type ApplicationPageQuery,
+} from "@/api/module_application/portal";
+import { formatToDateTime } from "@/utils/dateUtil";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import { computed, markRaw, nextTick, reactive, ref } from "vue";
 
-  const appStore = useAppStore();
+const appStore = useAppStore();
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const formRef = ref();
-  const dialogVisible = ref(false);
-  const dialogType = ref<'create' | 'edit'>('create');
-  const currentApp = ref<ApplicationInfo | null>(null);
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const formRef = ref();
+const dialogVisible = ref(false);
+const dialogType = ref<"create" | "edit">("create");
+const currentApp = ref<ApplicationInfo | null>(null);
 
-  function triggerUserSearch() {
-    nextTick(() => refreshList());
-  }
+function triggerUserSearch() {
+  nextTick(() => refreshList());
+}
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_application:portal',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '应用名称',
-        type: 'input',
-        attrs: { placeholder: '请输入应用名称', clearable: true },
-      },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: true },
-          { label: '停用', value: false },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '170px' } },
-      },
-      {
-        prop: 'created_id',
-        label: '创建人',
-        type: 'user-table-select',
-        initialValue: null,
-        events: {
-          'confirm-click': triggerUserSearch,
-          'clear-click': triggerUserSearch,
-        },
-      },
-      {
-        prop: 'updated_id',
-        label: '更新人',
-        type: 'user-table-select',
-        initialValue: null,
-        events: {
-          'confirm-click': triggerUserSearch,
-          'clear-click': triggerUserSearch,
-        },
-      },
-    ],
-    customComponents: {
-      'user-table-select': markRaw(UserTableSelect),
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_application:portal",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "应用名称",
+      type: "input",
+      attrs: { placeholder: "请输入应用名称", clearable: true },
     },
-  });
-
-  const contentConfig = reactive<IContentConfig<ApplicationPageQuery>>({
-    permPrefix: 'module_application:portal',
-    cols: [],
-    hideColumnFilter: true,
-    showToolbar: false,
-    cardShadow: 'hover',
-    toolbar: [],
-    defaultToolbar: [],
-    pagination: {
-      pageSize: 12,
-      pageSizes: [12, 24, 48],
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: true },
+        { label: "停用", value: false },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "170px" } },
     },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await ApplicationAPI.listApp(params as ApplicationPageQuery);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
+    {
+      prop: "created_id",
+      label: "创建人",
+      type: "user-table-select",
+      initialValue: null,
+      events: {
+        "confirm-click": triggerUserSearch,
+        "clear-click": triggerUserSearch,
+      },
     },
-  });
+    {
+      prop: "updated_id",
+      label: "更新人",
+      type: "user-table-select",
+      initialValue: null,
+      events: {
+        "confirm-click": triggerUserSearch,
+        "clear-click": triggerUserSearch,
+      },
+    },
+  ],
+  customComponents: {
+    "user-table-select": markRaw(UserTableSelect),
+  },
+});
 
-  // 表单数据
-  const formData = reactive<ApplicationForm>({
-    name: '',
-    access_url: '',
-    icon_url: '',
-    status: '0',
-    description: '',
-  });
+const contentConfig = reactive<IContentConfig<ApplicationPageQuery>>({
+  permPrefix: "module_application:portal",
+  cols: [],
+  hideColumnFilter: true,
+  showToolbar: false,
+  cardShadow: "hover",
+  toolbar: [],
+  defaultToolbar: [],
+  pagination: {
+    pageSize: 12,
+    pageSizes: [12, 24, 48],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await ApplicationAPI.listApp(params as ApplicationPageQuery);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+});
 
-  // 表单验证规则
-  const formRules = reactive({
-    name: [
-      { required: true, message: '请输入应用名称', trigger: 'blur' },
-      { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' },
-    ],
-    access_url: [
-      { required: true, message: '请输入访问地址', trigger: 'blur' },
-      { type: 'url' as const, message: '请输入正确的URL格式', trigger: 'blur' },
-    ],
-    icon_url: [
-      { required: true, message: '请输入图标地址', trigger: 'blur' },
-      { type: 'url' as const, message: '请输入正确的URL格式', trigger: 'blur' },
-    ],
-    status: [{ required: true, message: '请选择应用状态', trigger: 'change' }],
-  });
+// 表单数据
+const formData = reactive<ApplicationForm>({
+  name: "",
+  access_url: "",
+  icon_url: "",
+  status: "0",
+  description: "",
+});
 
-  // 计算属性
-  const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? '500px' : '90%'));
-  const dialogTitle = computed(() => (dialogType.value === 'create' ? '创建应用' : '编辑应用'));
+// 表单验证规则
+const formRules = reactive({
+  name: [
+    { required: true, message: "请输入应用名称", trigger: "blur" },
+    { min: 2, max: 30, message: "长度在 2 到 30 个字符", trigger: "blur" },
+  ],
+  access_url: [
+    { required: true, message: "请输入访问地址", trigger: "blur" },
+    { type: "url" as const, message: "请输入正确的URL格式", trigger: "blur" },
+  ],
+  icon_url: [
+    { required: true, message: "请输入图标地址", trigger: "blur" },
+    { type: "url" as const, message: "请输入正确的URL格式", trigger: "blur" },
+  ],
+  status: [{ required: true, message: "请选择应用状态", trigger: "change" }],
+});
 
-  // 格式化时间
-  const formatTime = (time: string | undefined) => {
-    if (!time) return '—';
-    return formatToDateTime(time, 'YYYY-MM-DD HH:mm:ss');
-  };
+// 计算属性
+const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "500px" : "90%"));
+const dialogTitle = computed(() => (dialogType.value === "create" ? "创建应用" : "编辑应用"));
 
-  // 创建应用
-  function handleCreateApp() {
-    dialogType.value = 'create';
-    resetForm();
-    dialogVisible.value = true;
-  }
+// 格式化时间
+const formatTime = (time: string | undefined) => {
+  if (!time) return "—";
+  return formatToDateTime(time, "YYYY-MM-DD HH:mm:ss");
+};
 
-  // 编辑应用
-  function handleEditApp(app: ApplicationInfo) {
-    dialogType.value = 'edit';
-    currentApp.value = app;
-    Object.assign(formData, app);
-    dialogVisible.value = true;
-  }
+// 创建应用
+function handleCreateApp() {
+  dialogType.value = "create";
+  resetForm();
+  dialogVisible.value = true;
+}
 
-  // 删除应用
-  async function handleDeleteApp(app: ApplicationInfo) {
-    try {
-      await ElMessageBox.confirm('确认删除该应用？', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      });
+// 编辑应用
+function handleEditApp(app: ApplicationInfo) {
+  dialogType.value = "edit";
+  currentApp.value = app;
+  Object.assign(formData, app);
+  dialogVisible.value = true;
+}
 
-      await ApplicationAPI.deleteApp([app.id!]);
-      await refreshList();
-    } catch (error) {
-      if (error !== 'cancel') {
-        console.error('删除应用失败:', error);
-      }
-    }
-  }
-
-  // 应用操作
-  async function handleAppAction(command: string, app: ApplicationInfo) {
-    switch (command) {
-      case 'edit':
-        handleEditApp(app);
-        break;
-      case 'delete':
-        await handleDeleteApp(app);
-        break;
-    }
-  }
-
-  // 内部打开应用
-  function openAppInternal() {
-    ElMessage.warning('插件应用点击，业务场景暂时开放中。。。');
-    return;
-  }
-
-  // 重置表单
-  function resetForm() {
-    Object.assign(formData, {
-      name: '',
-      access_url: '',
-      icon_url: '',
-      status: '0',
-      description: '',
+// 删除应用
+async function handleDeleteApp(app: ApplicationInfo) {
+  try {
+    await ElMessageBox.confirm("确认删除该应用？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     });
-    formRef.value?.resetFields();
-  }
 
-  // 关闭弹窗
-  function handleCloseDialog() {
+    await ApplicationAPI.deleteApp([app.id!]);
+    await refreshList();
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("删除应用失败:", error);
+    }
+  }
+}
+
+// 应用操作
+async function handleAppAction(command: string, app: ApplicationInfo) {
+  switch (command) {
+    case "edit":
+      handleEditApp(app);
+      break;
+    case "delete":
+      await handleDeleteApp(app);
+      break;
+  }
+}
+
+// 内部打开应用
+function openAppInternal() {
+  ElMessage.warning("插件应用点击，业务场景暂时开放中。。。");
+  return;
+}
+
+// 重置表单
+function resetForm() {
+  Object.assign(formData, {
+    name: "",
+    access_url: "",
+    icon_url: "",
+    status: "0",
+    description: "",
+  });
+  formRef.value?.resetFields();
+}
+
+// 关闭弹窗
+function handleCloseDialog() {
+  dialogVisible.value = false;
+  resetForm();
+}
+
+// 提交表单
+async function handleSubmit() {
+  try {
+    await formRef.value?.validate();
+
+    if (dialogType.value === "create") {
+      await ApplicationAPI.createApp(formData);
+    } else {
+      await ApplicationAPI.updateApp(currentApp.value!.id!, formData);
+    }
+
     dialogVisible.value = false;
     resetForm();
+    await refreshList();
+  } catch (error) {
+    console.error("提交失败:", error);
   }
-
-  // 提交表单
-  async function handleSubmit() {
-    try {
-      await formRef.value?.validate();
-
-      if (dialogType.value === 'create') {
-        await ApplicationAPI.createApp(formData);
-      } else {
-        await ApplicationAPI.updateApp(currentApp.value!.id!, formData);
-      }
-
-      dialogVisible.value = false;
-      resetForm();
-      await refreshList();
-    } catch (error) {
-      console.error('提交失败:', error);
-    }
-  }
+}
 </script>
 
 <style lang="scss" scoped>
-  /* 高度交给外层 flex：app-container + PageContent(flex-1 min-h-0)，勿再用 100vh 计算，否则会超出 app-main、底部 padding 不显 */
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+/* 高度交给外层 flex：app-container + PageContent(flex-1 min-h-0)，勿再用 100vh 计算，否则会超出 app-main、底部 padding 不显 */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.market-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.app-grid-container {
+  flex: 1;
+  min-height: 200px;
+}
+
+.app-grid-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}
+
+.grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.app-grid-item {
+  min-width: 0;
+}
+
+.app-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 120px;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+
+  &:hover:not(.card-disabled) {
+    box-shadow: var(--el-box-shadow-light);
   }
 
-  .market-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
+  &.card-disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 
-  .app-grid-container {
-    flex: 1;
-    min-height: 200px;
+  /* 仅保留底栏一条横线，避免与表头下边框重复成「双线」 */
+  :deep(.el-card__header) {
+    padding: 14px 14px 12px;
+    border-bottom: none;
   }
 
-  .app-grid-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 220px;
-  }
-
-  .grid-wrapper {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  .app-grid-item {
-    min-width: 0;
-  }
-
-  .app-card {
+  :deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
-    height: 100%;
-    min-height: 120px;
-    cursor: pointer;
-    transition: box-shadow 0.2s ease;
-
-    &:hover:not(.card-disabled) {
-      box-shadow: var(--el-box-shadow-light);
-    }
-
-    &.card-disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
-
-    /* 仅保留底栏一条横线，避免与表头下边框重复成「双线」 */
-    :deep(.el-card__header) {
-      padding: 14px 14px 12px;
-      border-bottom: none;
-    }
-
-    :deep(.el-card__body) {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      justify-content: center;
-      min-height: 0;
-      padding: 12px 14px;
-    }
-
-    :deep(.el-card__footer) {
-      padding: 10px 14px 14px;
-      margin-top: auto;
-    }
+    justify-content: center;
+    min-height: 0;
+    padding: 12px 14px;
   }
 
-  .app-info-header {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    min-width: 0;
+  :deep(.el-card__footer) {
+    padding: 10px 14px 14px;
+    margin-top: auto;
   }
+}
 
-  .app-name {
-    flex: 1;
-    min-width: 0;
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 15px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
+.app-info-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
 
-  .app-status {
-    flex-shrink: 0;
+.app-name {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.app-status {
+  flex-shrink: 0;
+}
+
+.card-footer-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+}
+
+.card-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0;
+  align-items: center;
+}
+
+.app-description {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--el-text-color-secondary);
+  -webkit-box-orient: vertical;
+}
+
+.card-meta {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--el-text-color-placeholder);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .grid-wrapper {
+    grid-template-columns: 1fr;
   }
 
   .card-footer-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 28px;
-  }
-
-  .card-actions {
-    display: inline-flex;
-    flex-shrink: 0;
-    gap: 0;
-    align-items: center;
-  }
-
-  .app-description {
-    display: -webkit-box;
-    margin: 0;
-    overflow: hidden;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--el-text-color-secondary);
-    -webkit-box-orient: vertical;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 0;
   }
 
   .card-meta {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--el-text-color-placeholder);
-    white-space: nowrap;
+    flex: 1 1 100%;
+    word-break: break-all;
+    white-space: normal;
   }
 
-  @media (max-width: 480px) {
-    .grid-wrapper {
-      grid-template-columns: 1fr;
-    }
-
-    .card-footer-row {
-      flex-wrap: wrap;
-      gap: 8px;
-      min-height: 0;
-    }
-
-    .card-meta {
-      flex: 1 1 100%;
-      word-break: break-all;
-      white-space: normal;
-    }
-
-    .card-actions {
-      margin-left: auto;
-    }
+  .card-actions {
+    margin-left: auto;
   }
+}
 </style>

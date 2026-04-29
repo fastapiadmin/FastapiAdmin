@@ -1,78 +1,51 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/dept';
+const API_PATH = "/system/dept";
 
 const DeptAPI = {
-  /**
-   * 获取部门树
-   * @param query 查询参数
-   * @returns 部门树
-   */
   listDept(query?: DeptPageQuery) {
     return request<ApiResponse<DeptTable[]>>({
       url: `${API_PATH}/tree`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取部门详情
-   * @param query 部门ID
-   * @returns 部门详情
-   */
   detailDept(query: number) {
     return request<ApiResponse<DeptTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建部门
-   * @param body 部门信息
-   */
   createDept(body: DeptForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新部门
-   * @param id 部门ID
-   * @param body 部门信息
-   */
   updateDept(id: number, body: DeptForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除部门
-   * @param body 部门ID列表
-   */
   deleteDept(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 批量设置部门状态
-   * @param body 批量设置部门状态请求体
-   */
   batchDept(body: BatchType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },

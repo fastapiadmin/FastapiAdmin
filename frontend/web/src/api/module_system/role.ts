@@ -1,105 +1,69 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/role';
+const API_PATH = "/system/role";
 
 const RoleAPI = {
-  /**
-   * 获取角色列表
-   * @param query 查询参数
-   * @returns 角色列表
-   */
   listRole(query?: TablePageQuery) {
-    return request<PageResult<RoleTable[]>>({
+    return request<ApiResponse<PageResult<RoleTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取角色详情
-   * @param query 角色ID
-   * @returns 角色详情
-   */
   detailRole(query: number) {
     return request<ApiResponse<RoleTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建角色
-   * @param body 角色信息
-   */
   createRole(body: RoleForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新角色
-   * @param id 角色ID
-   * @param body 角色信息
-   */
   updateRole(id: number, body: RoleForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除角色
-   * @param body 角色ID列表
-   */
   deleteRole(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 批量设置角色状态
-   * @param body 批量操作参数
-   */
   batchRole(body: BatchType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },
 
-  /**
-   * 批量设置角色权限
-   * @param body 批量操作参数
-   */
   setPermission(body: permissionDataType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/permission/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },
 
-  /**
-   * 导出角色列表
-   * @param body 查询参数
-   * @returns 导出的文件
-   */
   exportRole(body: TablePageQuery) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/export`,
-      method: 'post',
+      method: "post",
       data: body,
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 };
@@ -131,9 +95,9 @@ export interface RoleForm extends BaseFormType {
 
 export interface permissionDataType {
   data_scope: number;
-  role_ids: RoleTable['id'][];
-  menu_ids: permissionMenuType['id'][];
-  dept_ids: permissionDeptType['id'][];
+  role_ids: RoleTable["id"][];
+  menu_ids: permissionMenuType["id"][];
+  dept_ids: permissionDeptType["id"][];
 }
 
 export interface permissionDeptType {

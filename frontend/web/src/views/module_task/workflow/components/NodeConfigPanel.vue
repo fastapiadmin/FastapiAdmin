@@ -58,162 +58,162 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, onMounted } from 'vue';
-  import {
-    ElButton,
-    ElForm,
-    ElFormItem,
-    ElInput,
-    ElSelect,
-    ElOption,
-    ElMessage,
-    ElIcon,
-  } from 'element-plus';
-  import { Close } from '@element-plus/icons-vue';
-  import WorkflowNodeTypeAPI, {
-    type WorkflowNodeTypeOption,
-  } from '@/api/module_task/workflow/node-type';
+import { ref, watch, onMounted } from "vue";
+import {
+  ElButton,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElMessage,
+  ElIcon,
+} from "element-plus";
+import { Close } from "@element-plus/icons-vue";
+import WorkflowNodeTypeAPI, {
+  type WorkflowNodeTypeOption,
+} from "@/api/module_task/workflow/node-type";
 
-  const props = defineProps({
-    node: {
-      type: Object,
-      default: () => ({}),
-    },
-  });
+const props = defineProps({
+  node: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
-  const emit = defineEmits(['close', 'save', 'delete']);
+const emit = defineEmits(["close", "save", "delete"]);
 
-  const nodeTypes = ref<WorkflowNodeTypeOption[]>([]);
+const nodeTypes = ref<WorkflowNodeTypeOption[]>([]);
 
-  const formData = ref({
-    type: props.node?.type || '',
-    label: props.node?.data?.label || '',
-    args: props.node?.data?.args || '',
-    kwargsStr: props.node?.data?.kwargsStr || '{}',
-    description: props.node?.data?.description || '',
-  });
+const formData = ref({
+  type: props.node?.type || "",
+  label: props.node?.data?.label || "",
+  args: props.node?.data?.args || "",
+  kwargsStr: props.node?.data?.kwargsStr || "{}",
+  description: props.node?.data?.description || "",
+});
 
-  const loadNodeTypes = async () => {
-    try {
-      const res = await WorkflowNodeTypeAPI.getWorkflowNodeTypeOptions();
-      if (res.data) {
-        nodeTypes.value = res.data.data || [];
-      }
-    } catch {
-      ElMessage.error('加载节点类型失败');
+const loadNodeTypes = async () => {
+  try {
+    const res = await WorkflowNodeTypeAPI.getWorkflowNodeTypeOptions();
+    if (res.data) {
+      nodeTypes.value = res.data.data || [];
     }
-  };
+  } catch {
+    ElMessage.error("加载节点类型失败");
+  }
+};
 
-  const handleTypeChange = async (typeCode: string) => {
-    const nodeType = nodeTypes.value.find((t) => t.code === typeCode);
-    if (nodeType) {
-      formData.value.args = nodeType.args || '';
-      formData.value.kwargsStr = nodeType.kwargs || '{}';
-    }
-  };
+const handleTypeChange = async (typeCode: string) => {
+  const nodeType = nodeTypes.value.find((t) => t.code === typeCode);
+  if (nodeType) {
+    formData.value.args = nodeType.args || "";
+    formData.value.kwargsStr = nodeType.kwargs || "{}";
+  }
+};
 
-  watch(
-    () => props.node,
-    (newNode) => {
-      if (newNode) {
-        const kwargsData = newNode.data?.kwargs;
-        let kwargsStr = '{}';
-        if (kwargsData) {
-          if (typeof kwargsData === 'string') {
-            kwargsStr = kwargsData;
-          } else if (typeof kwargsData === 'object') {
-            kwargsStr = JSON.stringify(kwargsData, null, 2);
-          }
+watch(
+  () => props.node,
+  (newNode) => {
+    if (newNode) {
+      const kwargsData = newNode.data?.kwargs;
+      let kwargsStr = "{}";
+      if (kwargsData) {
+        if (typeof kwargsData === "string") {
+          kwargsStr = kwargsData;
+        } else if (typeof kwargsData === "object") {
+          kwargsStr = JSON.stringify(kwargsData, null, 2);
         }
-
-        formData.value = {
-          type: newNode.type || '',
-          label: newNode.data?.label || '',
-          args: newNode.data?.args || '',
-          kwargsStr,
-          description: newNode.data?.description || '',
-        };
       }
-    },
-    { deep: true, immediate: true }
-  );
 
-  function handleClose() {
-    emit('close');
-  }
-
-  function handleSave() {
-    try {
-      if (formData.value.kwargsStr && formData.value.kwargsStr.trim()) {
-        JSON.parse(formData.value.kwargsStr);
-      }
-    } catch {
-      ElMessage.error('关键字参数 JSON 格式错误');
-      return;
+      formData.value = {
+        type: newNode.type || "",
+        label: newNode.data?.label || "",
+        args: newNode.data?.args || "",
+        kwargsStr,
+        description: newNode.data?.description || "",
+      };
     }
+  },
+  { deep: true, immediate: true }
+);
 
-    emit('save', {
-      type: formData.value.type,
-      label: formData.value.label,
-      args: formData.value.args,
-      kwargs: formData.value.kwargsStr,
-      description: formData.value.description,
-    });
-    ElMessage.success('保存成功');
-  }
+function handleClose() {
+  emit("close");
+}
 
-  function handleDelete() {
-    emit('delete');
-  }
-
-  onMounted(() => {
-    loadNodeTypes();
-    if (props.node?.type) {
-      handleTypeChange(props.node.type);
+function handleSave() {
+  try {
+    if (formData.value.kwargsStr && formData.value.kwargsStr.trim()) {
+      JSON.parse(formData.value.kwargsStr);
     }
+  } catch {
+    ElMessage.error("关键字参数 JSON 格式错误");
+    return;
+  }
+
+  emit("save", {
+    type: formData.value.type,
+    label: formData.value.label,
+    args: formData.value.args,
+    kwargs: formData.value.kwargsStr,
+    description: formData.value.description,
   });
+  ElMessage.success("保存成功");
+}
+
+function handleDelete() {
+  emit("delete");
+}
+
+onMounted(() => {
+  loadNodeTypes();
+  if (props.node?.type) {
+    handleTypeChange(props.node.type);
+  }
+});
 </script>
 
 <style scoped>
-  .node-config-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
+.node-config-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    font-weight: 600;
-    border-bottom: 1px solid #e5e7eb;
-  }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
 
-  .close-btn {
-    padding: 4px;
-  }
+.close-btn {
+  padding: 4px;
+}
 
-  .panel-content {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-  }
+.panel-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
 
-  .field-hint {
-    margin-top: 4px;
-    font-size: 12px;
-    color: #909399;
-  }
+.field-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #909399;
+}
 
-  .panel-actions {
-    display: flex;
-    gap: 8px;
-    padding-top: 16px;
-    border-top: 1px solid #e5e7eb;
-  }
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
 
-  .panel-actions .el-button {
-    flex: 1;
-  }
+.panel-actions .el-button {
+  flex: 1;
+}
 </style>

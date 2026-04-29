@@ -13,7 +13,7 @@
           <div v-for="(item, index) in noticeList" :key="index" class="w-400px py-3">
             <div class="flex-y-center">
               <el-tag :type="item.notice_type === '1' ? 'primary' : 'warning'">
-                {{ item.notice_type === '1' ? '通知' : '公告' }}
+                {{ item.notice_type === "1" ? "通知" : "公告" }}
               </el-tag>
 
               <!-- truncated: 超出部分省略 -->
@@ -85,43 +85,43 @@
 </template>
 
 <script setup lang="ts">
-  import NoticeAPI, { NoticeTable } from '@/api/module_system/notice';
-  import router from '@/router';
-  import { useNoticeStore } from '@/store';
+import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
+import router from "@/router";
+import { useNoticeStore } from "@/store";
 
-  const noticeStore = useNoticeStore();
+const noticeStore = useNoticeStore();
 
-  const noticeList = ref<NoticeTable[]>([]);
-  const noticeDialogVisible = ref(false);
-  const noticeDetail = ref<NoticeTable | null>(null);
+const noticeList = ref<NoticeTable[]>([]);
+const noticeDialogVisible = ref(false);
+const noticeDetail = ref<NoticeTable | null>(null);
 
-  /**
-   * 获取我的通知公告
-   */
-  async function featchMyNotice() {
+/**
+ * 获取我的通知公告
+ */
+async function featchMyNotice() {
+  await noticeStore.getNotice();
+  noticeList.value = noticeStore.noticeList;
+}
+
+// 查看更多
+function handleViewMoreNotice() {
+  router.push({ name: "Notice" });
+}
+
+// 全部已读：将这些公告禁用（status=false），刷新后不再出现
+function handleMarkAllAsRead() {
+  const ids = noticeList.value
+    .map((item) => item.id)
+    .filter((id): id is number => id !== undefined);
+  NoticeAPI.batchNotice({ ids, status: "1" }).then(async () => {
     await noticeStore.getNotice();
     noticeList.value = noticeStore.noticeList;
-  }
-
-  // 查看更多
-  function handleViewMoreNotice() {
-    router.push({ name: 'Notice' });
-  }
-
-  // 全部已读：将这些公告禁用（status=false），刷新后不再出现
-  function handleMarkAllAsRead() {
-    const ids = noticeList.value
-      .map((item) => item.id)
-      .filter((id): id is number => id !== undefined);
-    NoticeAPI.batchNotice({ ids, status: '1' }).then(async () => {
-      await noticeStore.getNotice();
-      noticeList.value = noticeStore.noticeList;
-    });
-  }
-
-  onMounted(() => {
-    featchMyNotice();
   });
+}
+
+onMounted(() => {
+  featchMyNotice();
+});
 </script>
 
 <style lang="scss" scoped></style>

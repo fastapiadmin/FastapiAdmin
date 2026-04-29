@@ -139,7 +139,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === '0' ? '启用' : '停用' }}
+                  {{ scope.row.status === "0" ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -276,7 +276,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
             <el-tag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-              {{ detailFormData.status === '0' ? '启用' : '停用' }}
+              {{ detailFormData.status === "0" ? "启用" : "停用" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" :span="2">
@@ -376,308 +376,308 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'Role',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Role",
+  inheritAttrs: false,
+});
 
-  import { ElMessage, ElMessageBox } from 'element-plus';
-  import { ref, reactive, computed, unref } from 'vue';
-  import { fetchAllPages } from '@/utils/fetchAllPages';
-  import RoleAPI, { RoleTable, RoleForm, TablePageQuery } from '@/api/module_system/role';
-  import { useUserStore } from '@/store';
-  import ExportModal from '@/components/CURD/ExportModal.vue';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import PermissonDrawer from './components/PermissonDrawer.vue';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
+import { ElMessage, ElMessageBox } from "element-plus";
+import { ref, reactive, computed, unref } from "vue";
+import { fetchAllPages } from "@/utils/fetchAllPages";
+import RoleAPI, { RoleTable, RoleForm, TablePageQuery } from "@/api/module_system/role";
+import { useUserStore } from "@/store";
+import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import PermissonDrawer from "./components/PermissonDrawer.vue";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
-  const submitLoading = ref(false);
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
+const submitLoading = ref(false);
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:role',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '角色名称',
-        type: 'input',
-        attrs: { placeholder: '请输入角色名称', clearable: true },
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:role",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "角色名称",
+      type: "input",
+      attrs: { placeholder: "请输入角色名称", clearable: true },
+    },
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "true" },
+        { label: "停用", value: "false" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        style: { width: "340px" },
       },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: 'true' },
-          { label: '停用', value: 'false' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '167.5px' } },
-      },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          style: { width: '340px' },
-        },
-      },
-    ],
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'name', label: '角色名称', show: true },
-    { prop: 'data_scope', label: '数据权限', show: true },
-    { prop: 'depts', label: '所属部门', show: true },
-    { prop: 'order', label: '排序', show: true },
-    { prop: 'code', label: '角色编码', show: true },
-    { prop: 'status', label: '状态', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  const contentConfig = reactive<IContentConfig<TablePageQuery>>({
-    permPrefix: 'module_system:role',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: false,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
     },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await RoleAPI.listRole(params as TablePageQuery);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    },
-    deleteAction: async (ids) => {
-      await RoleAPI.deleteRole(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      const userStore = useUserStore();
-      await userStore.getUserInfo();
-    },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
+  ],
+});
 
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
-  }
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "name", label: "角色名称", show: true },
+  { prop: "data_scope", label: "数据权限", show: true },
+  { prop: "depts", label: "所属部门", show: true },
+  { prop: "order", label: "排序", show: true },
+  { prop: "code", label: "角色编码", show: true },
+  { prop: "status", label: "状态", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
 
-  const drawerVisible = ref(false);
-  const checkedRole = ref({ id: 0, name: '' });
+const contentConfig = reactive<IContentConfig<TablePageQuery>>({
+  permPrefix: "module_system:role",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: false,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await RoleAPI.listRole(params as TablePageQuery);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: async (ids) => {
+    await RoleAPI.deleteRole(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    const userStore = useUserStore();
+    await userStore.getUserInfo();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
 
-  const exportsDialogVisible = ref(false);
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
 
-  const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+const drawerVisible = ref(false);
+const checkedRole = ref({ id: 0, name: "" });
 
-  const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as RoleTable[]);
+const exportsDialogVisible = ref(false);
 
-  const exportSelectionData = computed(
-    () => (contentRef.value?.getSelectionData() ?? []) as RoleTable[]
-  );
+const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
 
-  const exportColumns = [
-    { prop: 'name', label: '角色名称' },
-    { prop: 'code', label: '角色编码' },
-    { prop: 'data_scope', label: '数据权限' },
-    { prop: 'depts', label: '所属部门' },
-    { prop: 'order', label: '排序' },
-    { prop: 'status', label: '状态' },
-    { prop: 'description', label: '描述' },
-    { prop: 'created_time', label: '创建时间' },
-    { prop: 'updated_time', label: '更新时间' },
-  ];
+const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as RoleTable[]);
 
-  const curdContentConfig = {
-    permPrefix: 'module_system:role',
-    cols: exportColumns as unknown as IContentConfig['cols'],
-    exportsAction: async (params: Record<string, unknown>) => {
-      const query: Record<string, unknown> = { ...params };
-      if (typeof query.status === 'string') {
-        query.status = query.status === 'true';
-      }
-      return fetchAllPages<RoleTable>({
-        initialQuery: query,
-        fetchPage: async (q) => {
-          const res = await RoleAPI.listRole(q as unknown as TablePageQuery);
-          return {
-            total: res.data?.data?.total ?? 0,
-            list: res.data?.data?.items ?? [],
-          };
-        },
-      });
-    },
-  } as unknown as IContentConfig;
+const exportSelectionData = computed(
+  () => (contentRef.value?.getSelectionData() ?? []) as RoleTable[]
+);
 
-  function handleOpenExportsModal() {
-    exportsDialogVisible.value = true;
-  }
+const exportColumns = [
+  { prop: "name", label: "角色名称" },
+  { prop: "code", label: "角色编码" },
+  { prop: "data_scope", label: "数据权限" },
+  { prop: "depts", label: "所属部门" },
+  { prop: "order", label: "排序" },
+  { prop: "status", label: "状态" },
+  { prop: "description", label: "描述" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
+];
 
-  const detailFormData = ref<RoleTable>({} as RoleTable);
-
-  const formData = reactive<RoleForm>({
-    id: undefined,
-    name: undefined,
-    order: 1,
-    code: '',
-    status: '0',
-    description: undefined,
-  });
-
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
-
-  const rules = reactive({
-    name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
-    code: [
-      { required: true, message: '请输入角色编码', trigger: 'blur' },
-      {
-        pattern: CODE_PATTERN,
-        message: '字母开头，2-16位字母/数字/下划线',
-        trigger: 'blur',
-      },
-    ],
-    order: [{ required: true, message: '请输入角色排序', trigger: 'blur' }],
-    status: [{ required: true, message: '请选择状态', trigger: 'blur' }],
-  });
-
-  const initialFormData: RoleForm = {
-    id: undefined,
-    name: undefined,
-    order: 1,
-    code: '',
-    status: '0',
-    description: undefined,
-  };
-
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
+const curdContentConfig = {
+  permPrefix: "module_system:role",
+  cols: exportColumns as unknown as IContentConfig["cols"],
+  exportsAction: async (params: Record<string, unknown>) => {
+    const query: Record<string, unknown> = { ...params };
+    if (typeof query.status === "string") {
+      query.status = query.status === "true";
     }
-    Object.assign(formData, initialFormData);
-  }
-
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    await resetForm();
-  }
-
-  async function handleOpenDialog(type: 'create' | 'update' | 'detail', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await RoleAPI.detailRole(id);
-      if (type === 'detail') {
-        dialogVisible.title = '角色详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改角色';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增角色';
-      formData.id = undefined;
-    }
-    dialogVisible.visible = true;
-  }
-
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: boolean) => {
-      if (valid) {
-        submitLoading.value = true;
-        const id = formData.id;
-        try {
-          if (id) {
-            await RoleAPI.updateRole(id, { id, ...formData });
-          } else {
-            await RoleAPI.createRole(formData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-          const userStore = useUserStore();
-          await userStore.getUserInfo();
-        } catch (error: unknown) {
-          console.error(error);
-        } finally {
-          submitLoading.value = false;
-        }
-      }
+    return fetchAllPages<RoleTable>({
+      initialQuery: query,
+      fetchPage: async (q) => {
+        const res = await RoleAPI.listRole(q as unknown as TablePageQuery);
+        return {
+          total: res.data?.data?.total ?? 0,
+          list: res.data?.data?.items ?? [],
+        };
+      },
     });
-  }
+  },
+} as unknown as IContentConfig;
 
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() as RoleTable[] | undefined;
-    const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
-    if (!ids.length) {
-      ElMessage.warning('请先选择要操作的数据');
-      return;
+function handleOpenExportsModal() {
+  exportsDialogVisible.value = true;
+}
+
+const detailFormData = ref<RoleTable>({} as RoleTable);
+
+const formData = reactive<RoleForm>({
+  id: undefined,
+  name: undefined,
+  order: 1,
+  code: "",
+  status: "0",
+  description: undefined,
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
+
+const rules = reactive({
+  name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
+  code: [
+    { required: true, message: "请输入角色编码", trigger: "blur" },
+    {
+      pattern: CODE_PATTERN,
+      message: "字母开头，2-16位字母/数字/下划线",
+      trigger: "blur",
+    },
+  ],
+  order: [{ required: true, message: "请输入角色排序", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+});
+
+const initialFormData: RoleForm = {
+  id: undefined,
+  name: undefined,
+  order: 1,
+  code: "",
+  status: "0",
+  description: undefined,
+};
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
+  }
+  Object.assign(formData, initialFormData);
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await RoleAPI.detailRole(id);
+    if (type === "detail") {
+      dialogVisible.title = "角色详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改角色";
+      Object.assign(formData, response.data.data);
     }
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        try {
-          await RoleAPI.batchRole({ ids, status });
-          refreshList();
-          const userStore = useUserStore();
-          await userStore.getUserInfo();
-        } catch (error: unknown) {
-          console.error(error);
-        }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
+  } else {
+    dialogVisible.title = "新增角色";
+    formData.id = undefined;
   }
+  dialogVisible.visible = true;
+}
 
-  function handleOpenAssignPermDialog(roleId: number, roleName: string) {
-    checkedRole.value = { id: roleId, name: roleName };
-    drawerVisible.value = true;
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      submitLoading.value = true;
+      const id = formData.id;
+      try {
+        if (id) {
+          await RoleAPI.updateRole(id, { id, ...formData });
+        } else {
+          await RoleAPI.createRole(formData);
+        }
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+        const userStore = useUserStore();
+        await userStore.getUserInfo();
+      } catch (error: unknown) {
+        console.error(error);
+      } finally {
+        submitLoading.value = false;
+      }
+    }
+  });
+}
+
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() as RoleTable[] | undefined;
+  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+  if (!ids.length) {
+    ElMessage.warning("请先选择要操作的数据");
+    return;
   }
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await RoleAPI.batchRole({ ids, status });
+        refreshList();
+        const userStore = useUserStore();
+        await userStore.getUserInfo();
+      } catch (error: unknown) {
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
+
+function handleOpenAssignPermDialog(roleId: number, roleName: string) {
+  checkedRole.value = { id: roleId, name: roleName };
+  drawerVisible.value = true;
+}
 </script>

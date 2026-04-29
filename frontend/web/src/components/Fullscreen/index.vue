@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-  const { isFullscreen, toggle } = useFullscreen();
+const { isFullscreen, toggle } = useFullscreen();
 </script>
 
 <style lang="scss" scoped></style>

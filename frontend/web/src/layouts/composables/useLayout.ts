@@ -1,6 +1,7 @@
-import { useAppStore, useSettingsStore } from '@/store';
-import { defaultSettings } from '@/settings';
-import { DeviceEnum } from '@/enums';
+import { useAppStore, useSettingsStore } from "@/store";
+import { defaultSettings } from "@/settings";
+import { DeviceEnum } from "@/enums";
+import { computed } from "vue";
 
 /**
  * 布局相关的通用逻辑

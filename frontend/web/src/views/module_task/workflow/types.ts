@@ -1,18 +1,18 @@
-import type { CSSProperties } from 'vue';
+import type { CSSProperties } from "vue";
 
 export type NodeType =
-  | 'input'
-  | 'output'
-  | 'trigger'
-  | 'action'
-  | 'condition'
-  | 'control'
-  | 'integration'
-  | 'custom';
+  | "input"
+  | "output"
+  | "trigger"
+  | "action"
+  | "condition"
+  | "control"
+  | "integration"
+  | "custom";
 
-export type EdgeType = 'default' | 'straight' | 'step' | 'smoothstep' | 'bezier';
+export type EdgeType = "default" | "straight" | "step" | "smoothstep" | "bezier";
 
-export type HandlePosition = 'left' | 'right' | 'top' | 'bottom';
+export type HandlePosition = "left" | "right" | "top" | "bottom";
 
 export interface NodeConfigSchema {
   type: string;
@@ -20,7 +20,7 @@ export interface NodeConfigSchema {
 }
 
 export interface PropertySchema {
-  type: 'string' | 'number' | 'boolean' | 'select' | 'textarea' | 'json' | 'code';
+  type: "string" | "number" | "boolean" | "select" | "textarea" | "json" | "code";
   label: string;
   description?: string;
   default?: any;
@@ -59,7 +59,7 @@ export interface Node {
   selectable?: boolean;
   focusable?: boolean;
   dragHandle?: string;
-  extent?: 'parent' | [number, number] | [[number, number], [number, number]];
+  extent?: "parent" | [number, number] | [[number, number], [number, number]];
   parentNode?: string;
   expandParent?: boolean;
   zIndex?: number;
@@ -86,7 +86,7 @@ export interface Edge {
   deletable?: boolean;
   selectable?: boolean;
   focusable?: boolean;
-  updatable?: boolean | 'source' | 'target';
+  updatable?: boolean | "source" | "target";
   markerStart?: Marker | string;
   markerEnd?: Marker | string;
   pathOptions?: {
@@ -98,11 +98,11 @@ export interface Edge {
 }
 
 export interface Marker {
-  type: 'arrow' | 'arrowclosed';
+  type: "arrow" | "arrowclosed";
   color?: string;
   width?: number;
   height?: number;
-  orient?: 'auto' | 'auto-start-reverse';
+  orient?: "auto" | "auto-start-reverse";
 }
 
 export interface WorkflowTemplate {
@@ -137,7 +137,7 @@ export interface EdgeConfig {
 export interface NodeTypeDefinition {
   code: string;
   name: string;
-  category: 'trigger' | 'action' | 'condition' | 'control' | 'integration' | 'custom';
+  category: "trigger" | "action" | "condition" | "control" | "integration" | "custom";
   description?: string;
   icon?: string;
   color?: string;

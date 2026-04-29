@@ -246,136 +246,136 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from 'vue';
-  import { Search } from '@element-plus/icons-vue';
-  import { useDraggable } from 'vue-draggable-plus';
-  import type { GenTableSchema } from '@/api/module_generator/gencode';
-  import type { DictTable } from '@/api/module_system/dict';
+import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from "vue";
+import { Search } from "@element-plus/icons-vue";
+import { useDraggable } from "vue-draggable-plus";
+import type { GenTableSchema } from "@/api/module_generator/gencode";
+import type { DictTable } from "@/api/module_system/dict";
 
-  defineOptions({ name: 'GenColumnsStep' });
+defineOptions({ name: "GenColumnsStep" });
 
-  const props = defineProps<{
-    info: GenTableSchema;
-    dictOptions: DictTable[];
-    loading: boolean;
-    bulkSet: (field: string | string[], value: unknown) => void;
-  }>();
+const props = defineProps<{
+  info: GenTableSchema;
+  dictOptions: DictTable[];
+  loading: boolean;
+  bulkSet: (field: string | string[], value: unknown) => void;
+}>();
 
-  const columnKeyword = ref('');
-  const dragTable = ref<any>(null);
-  const dragContainer = ref<HTMLElement | null>(null);
-  let draggableApi: { destroy?: () => void; pause?: () => void; start?: () => void } | null = null;
+const columnKeyword = ref("");
+const dragTable = ref<any>(null);
+const dragContainer = ref<HTMLElement | null>(null);
+let draggableApi: { destroy?: () => void; pause?: () => void; start?: () => void } | null = null;
 
-  // 计算表格高度：视口高度 - 顶部导航栏 - 步骤条 - 提示文字 - 筛选栏 - 底部按钮 - 边距
-  // 大约：60(顶部) + 60(步骤) + 30(提示) + 50(筛选) + 80(底部按钮) + 100(边距) = 380px
-  const tableHeight = computed(() => {
-    return 'calc(100vh - 300px)'; // -80 底部按钮
+// 计算表格高度：视口高度 - 顶部导航栏 - 步骤条 - 提示文字 - 筛选栏 - 底部按钮 - 边距
+// 大约：60(顶部) + 60(步骤) + 30(提示) + 50(筛选) + 80(底部按钮) + 100(边距) = 380px
+const tableHeight = computed(() => {
+  return "calc(100vh - 300px)"; // -80 底部按钮
+});
+
+const columnsModel = computed({
+  get: () => props.info.columns || [],
+  set: (v) => {
+    // props.info 是父组件传入的 reactive 对象，可以直接回写
+    props.info.columns = v as any;
+  },
+});
+
+const displayColumns = computed(() => {
+  const cols = props.info.columns || [];
+  const q = columnKeyword.value.trim().toLowerCase();
+  if (!q) return cols;
+  return cols.filter((c) => {
+    const name = String(c.column_name ?? "").toLowerCase();
+    const comment = String(c.column_comment ?? "").toLowerCase();
+    return name.includes(q) || comment.includes(q);
   });
+});
 
-  const columnsModel = computed({
-    get: () => props.info.columns || [],
-    set: (v) => {
-      // props.info 是父组件传入的 reactive 对象，可以直接回写
-      props.info.columns = v as any;
-    },
+function syncSortNumbers() {
+  const cols = columnsModel.value || [];
+  cols.forEach((c: any, idx: number) => {
+    c.sort = idx + 1;
   });
+}
 
-  const displayColumns = computed(() => {
-    const cols = props.info.columns || [];
-    const q = columnKeyword.value.trim().toLowerCase();
-    if (!q) return cols;
-    return cols.filter((c) => {
-      const name = String(c.column_name ?? '').toLowerCase();
-      const comment = String(c.column_comment ?? '').toLowerCase();
-      return name.includes(q) || comment.includes(q);
-    });
-  });
-
-  function syncSortNumbers() {
-    const cols = columnsModel.value || [];
-    cols.forEach((c: any, idx: number) => {
-      c.sort = idx + 1;
-    });
-  }
-
-  async function setupRowDraggable() {
-    // 筛选状态下禁用拖拽：displayColumns 是子集，直接拖拽会导致索引映射混乱
-    if (columnKeyword.value.trim()) {
-      draggableApi?.destroy?.();
-      draggableApi = null;
-      dragContainer.value = null;
-      return;
-    }
-
-    await nextTick();
-    const el = dragTable.value?.$el as HTMLElement | undefined;
-    const tbody = el?.querySelector?.('.el-table__body-wrapper tbody') as HTMLElement | null;
-    if (!tbody) return;
-    dragContainer.value = tbody;
-
-    // 重新绑定
-    draggableApi?.destroy?.();
-    draggableApi = useDraggable(dragContainer, columnsModel, {
-      animation: 150,
-      draggable: 'tr',
-      handle: '.gencode-drag-handle:not(.disabled)',
-      onEnd() {
-        syncSortNumbers();
-      },
-    });
-  }
-
-  onMounted(() => {
-    void setupRowDraggable();
-  });
-
-  watch(
-    () => [columnKeyword.value, (props.info.columns || []).length],
-    async () => {
-      await setupRowDraggable();
-    }
-  );
-
-  onBeforeUnmount(() => {
+async function setupRowDraggable() {
+  // 筛选状态下禁用拖拽：displayColumns 是子集，直接拖拽会导致索引映射混乱
+  if (columnKeyword.value.trim()) {
     draggableApi?.destroy?.();
     draggableApi = null;
+    dragContainer.value = null;
+    return;
+  }
+
+  await nextTick();
+  const el = dragTable.value?.$el as HTMLElement | undefined;
+  const tbody = el?.querySelector?.(".el-table__body-wrapper tbody") as HTMLElement | null;
+  if (!tbody) return;
+  dragContainer.value = tbody;
+
+  // 重新绑定
+  draggableApi?.destroy?.();
+  draggableApi = useDraggable(dragContainer, columnsModel, {
+    animation: 150,
+    draggable: "tr",
+    handle: ".gencode-drag-handle:not(.disabled)",
+    onEnd() {
+      syncSortNumbers();
+    },
   });
+}
+
+onMounted(() => {
+  void setupRowDraggable();
+});
+
+watch(
+  () => [columnKeyword.value, (props.info.columns || []).length],
+  async () => {
+    await setupRowDraggable();
+  }
+);
+
+onBeforeUnmount(() => {
+  draggableApi?.destroy?.();
+  draggableApi = null;
+});
 </script>
 
 <style scoped lang="scss">
-  .gencode-columns-tip {
-    margin: 0 0 10px;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--el-text-color-secondary);
-  }
+.gencode-columns-tip {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+}
 
-  .gencode-column-filter {
-    width: 200px;
-    max-width: 100%;
-  }
+.gencode-column-filter {
+  width: 200px;
+  max-width: 100%;
+}
 
-  .gencode-bulk-hint {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    user-select: none;
-  }
+.gencode-bulk-hint {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  user-select: none;
+}
 
-  .gencode-drag-handle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 22px;
-    font-size: 14px;
-    line-height: 1;
-    color: var(--el-text-color-secondary);
-    cursor: grab;
-    user-select: none;
-  }
+.gencode-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 22px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--el-text-color-secondary);
+  cursor: grab;
+  user-select: none;
+}
 
-  .gencode-drag-handle.disabled {
-    cursor: not-allowed;
-    opacity: 0.35;
-  }
+.gencode-drag-handle.disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
 </style>

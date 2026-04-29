@@ -14,27 +14,28 @@
 </template>
 
 <script setup lang="ts">
-  import { translateRouteTitle } from '@/utils/i18n';
+import { translateRouteTitle } from "@/utils/i18n";
+import { computed } from "vue";
 
-  const props = defineProps<{
-    icon?: string;
-    title?: string;
-  }>();
+const props = defineProps<{
+  icon?: string;
+  title?: string;
+}>();
 
-  const isElIcon = computed(() => props.icon?.startsWith('el-icon'));
-  const iconComponent = computed(() => props.icon?.replace('el-icon-', ''));
+const isElIcon = computed(() => props.icon?.startsWith("el-icon"));
+const iconComponent = computed(() => props.icon?.replace("el-icon-", ""));
 </script>
 
 <style lang="scss" scoped>
-  .menu-icon {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    margin-right: 5px;
-    font-size: 18px;
-    color: currentcolor;
-  }
+.menu-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  font-size: 18px;
+  color: currentcolor;
+}
 </style>

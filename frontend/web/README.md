@@ -39,7 +39,7 @@ FastapiAdmin/frontend
 
 ```sh
 # 进入前端工程目录
-cd frontend/web
+cd frontend
 # 安装依赖
 pnpm install
 # 启动前端服务
@@ -49,45 +49,3 @@ pnpm run build
 # 运行命令，查看未用到的依赖
 depcheck
 ```
-
-### 4. 开发模式启动
-
-#### 方式：一键启动（推荐）
-
-```bash
-# 直接启动Electron开发模式（自动启动后端）
-cd frontend/web
-npm run electron:dev
-```
-
-## 📦 生产环境打包
-
-### 完整打包流程
-
-```bash
-# 1. 打包后端为独立可执行文件
-cd backend
-uv run pyinstaller --onefile --name fastapi-backend main.py
-
-# 2. 复制后端可执行文件到前端资源目录
-# 注意：PyInstaller会根据平台自动添加后缀（.exe on Windows, no suffix on macOS/Linux）
-cp dist/fastapi-backend* ../frontend/web/resources/
-
-# 3. 构建前端
-cd ../frontend/web
-npm run build
-
-# 4. 打包Electron应用
-# electron-builder配置位于package.json的build字段中
-npm run electron:build
-```
-
-### 输出文件
-- **Windows**：
-  - 安装包：`frontend/release/MyElectronApp Setup 1.0.0.exe`
-  - 便携版：`frontend/release/win-unpacked/MyElectronApp.exe`
-- **macOS**：
-  - 安装包：`frontend/release/MyElectronApp-1.0.0-arm64-mac.zip`（或类似名称）
-  - 应用程序：`frontend/release/mac-arm64/MyElectronApp.app`
-- **Linux**：
-  - AppImage：`frontend/release/MyElectronApp-1.0.0-arm64.AppImage`（或类似名称）

@@ -5,43 +5,43 @@ export const enum PageSwitchingAnimationEnum {
   /**
    * 无动画
    */
-  NONE = 'none',
+  NONE = "none",
   /**
    * 淡入淡出
    */
-  FADE = 'fade',
+  FADE = "fade",
   /**
    * 平滑切换
    */
-  FADE_SLIDE = 'fade-slide',
+  FADE_SLIDE = "fade-slide",
   /**
    * 缩放切换
    */
-  FADE_SCALE = 'fade-scale',
+  FADE_SCALE = "fade-scale",
   /**
    * 左右滑动
    */
-  SLIDE_LEFT_RIGHT = 'slide-left-right',
+  SLIDE_LEFT_RIGHT = "slide-left-right",
   /**
    * 缩放进出
    */
-  ZOOM_IN_OUT = 'zoom-in-out',
+  ZOOM_IN_OUT = "zoom-in-out",
   /**
    * 上下滑动
    */
-  SLIDE_UP_DOWN = 'slide-up-down',
+  SLIDE_UP_DOWN = "slide-up-down",
   /**
    * 弹性效果
    */
-  BOUNCE = 'bounce',
+  BOUNCE = "bounce",
 }
 export const PageSwitchingAnimationOptions: Record<string, OptionType> = {
-  none: { value: 'none', label: '无动画' },
-  fade: { value: 'fade', label: '淡入淡出' },
-  'fade-slide': { value: 'fade-slide', label: '平滑切换' },
-  'fade-scale': { value: 'fade-scale', label: '缩放切换' },
-  'slide-left-right': { value: 'slide-left-right', label: '左右滑动' },
-  'zoom-in-out': { value: 'zoom-in-out', label: '缩放进出' },
-  'slide-up-down': { value: 'slide-up-down', label: '上下滑动' },
-  bounce: { value: 'bounce', label: '弹性效果' },
+  none: { value: "none", label: "无动画" },
+  fade: { value: "fade", label: "淡入淡出" },
+  "fade-slide": { value: "fade-slide", label: "平滑切换" },
+  "fade-scale": { value: "fade-scale", label: "缩放切换" },
+  "slide-left-right": { value: "slide-left-right", label: "左右滑动" },
+  "zoom-in-out": { value: "zoom-in-out", label: "缩放进出" },
+  "slide-up-down": { value: "slide-up-down", label: "上下滑动" },
+  bounce: { value: "bounce", label: "弹性效果" },
 };

@@ -274,271 +274,271 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, computed, unref } from 'vue';
-  import { fetchAllPages } from '@/utils/fetchAllPages';
-  import ParamsAPI, { ConfigTable, ConfigForm, ConfigPageQuery } from '@/api/module_system/params';
-  import { useConfigStore } from '@/store';
-  import ExportModal from '@/components/CURD/ExportModal.vue';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import type { IContentConfig, ISearchConfig, IObject } from '@/components/CURD/types';
+import { ref, reactive, computed, unref } from "vue";
+import { fetchAllPages } from "@/utils/fetchAllPages";
+import ParamsAPI, { ConfigTable, ConfigForm, ConfigPageQuery } from "@/api/module_system/params";
+import { useConfigStore } from "@/store";
+import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import type { IContentConfig, ISearchConfig, IObject } from "@/components/CURD/types";
 
-  defineOptions({
-    name: 'Params',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Params",
+  inheritAttrs: false,
+});
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
-  const submitLoading = ref(false);
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
+const submitLoading = ref(false);
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:param',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'config_name',
-        label: '配置名称',
-        type: 'input',
-        attrs: { placeholder: '请输入配置名称', clearable: true },
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:param",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "config_name",
+      label: "配置名称",
+      type: "input",
+      attrs: { placeholder: "请输入配置名称", clearable: true },
+    },
+    {
+      prop: "config_key",
+      label: "配置键名",
+      type: "input",
+      attrs: { placeholder: "请输入配置键名", clearable: true },
+    },
+    {
+      prop: "config_type",
+      label: "系统内置",
+      type: "select",
+      options: [
+        { label: "是", value: "true" },
+        { label: "否", value: "false" },
+      ],
+      attrs: { placeholder: "请选择系统内置", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        style: { width: "340px" },
       },
-      {
-        prop: 'config_key',
-        label: '配置键名',
-        type: 'input',
-        attrs: { placeholder: '请输入配置键名', clearable: true },
+    },
+  ],
+});
+
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "config_name", label: "配置名称", show: true },
+  { prop: "config_key", label: "配置键", show: true },
+  { prop: "config_value", label: "配置值", show: true },
+  { prop: "config_type", label: "系统内置", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
+
+const configStore = useConfigStore();
+
+function normalizeListQuery(params: IObject): ConfigPageQuery {
+  const q = { ...params } as IObject;
+  if (typeof q.config_type === "string") {
+    q.config_type = q.config_type === "true";
+  }
+  return q as unknown as ConfigPageQuery;
+}
+
+const contentConfig = reactive<IContentConfig<ConfigPageQuery>>({
+  permPrefix: "module_system:param",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: false,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await ParamsAPI.listParams(normalizeListQuery(params as IObject));
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: async (ids) => {
+    await ParamsAPI.deleteParams(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    configStore.isConfigLoaded = false;
+    await configStore.getConfig();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+const detailFormData = ref<ConfigTable>({} as ConfigTable);
+
+const formData = reactive<ConfigForm>({
+  id: undefined,
+  config_name: "",
+  config_key: "",
+  config_value: "",
+  config_type: false,
+  description: "",
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const rules = reactive({
+  config_name: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
+  config_key: [{ required: true, message: "请输入系统配置键", trigger: "blur" }],
+  config_value: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
+  config_type: [{ required: true, message: "请选择系统配置类型", trigger: "blur" }],
+});
+
+const initialFormData: ConfigForm = {
+  id: undefined,
+  config_name: "",
+  config_key: "",
+  config_value: "",
+  config_type: false,
+  description: "",
+};
+
+const exportsDialogVisible = ref(false);
+
+const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+
+const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as ConfigTable[]);
+
+const exportSelectionData = computed(
+  () => (contentRef.value?.getSelectionData() ?? []) as ConfigTable[]
+);
+
+const exportColumns = [
+  { prop: "config_name", label: "配置名称" },
+  { prop: "config_key", label: "配置键" },
+  { prop: "config_value", label: "配置值" },
+  { prop: "config_type", label: "系统内置" },
+  { prop: "description", label: "描述" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
+];
+
+const curdContentConfig = {
+  permPrefix: "module_system:param",
+  cols: exportColumns as any,
+  exportsAction: async (params: any) => {
+    const query = { ...normalizeListQuery(params) } as Record<string, unknown>;
+    return fetchAllPages({
+      initialQuery: query,
+      fetchPage: async (q) => {
+        const res = await ParamsAPI.listParams(q as unknown as ConfigPageQuery);
+        return {
+          total: res.data?.data?.total ?? 0,
+          list: res.data?.data?.items ?? [],
+        };
       },
-      {
-        prop: 'config_type',
-        label: '系统内置',
-        type: 'select',
-        options: [
-          { label: '是', value: 'true' },
-          { label: '否', value: 'false' },
-        ],
-        attrs: { placeholder: '请选择系统内置', clearable: true, style: { width: '167.5px' } },
-      },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          style: { width: '340px' },
-        },
-      },
-    ],
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'config_name', label: '配置名称', show: true },
-    { prop: 'config_key', label: '配置键', show: true },
-    { prop: 'config_value', label: '配置值', show: true },
-    { prop: 'config_type', label: '系统内置', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  const configStore = useConfigStore();
-
-  function normalizeListQuery(params: IObject): ConfigPageQuery {
-    const q = { ...params } as IObject;
-    if (typeof q.config_type === 'string') {
-      q.config_type = q.config_type === 'true';
-    }
-    return q as unknown as ConfigPageQuery;
-  }
-
-  const contentConfig = reactive<IContentConfig<ConfigPageQuery>>({
-    permPrefix: 'module_system:param',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: false,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
-    },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await ParamsAPI.listParams(normalizeListQuery(params as IObject));
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    },
-    deleteAction: async (ids) => {
-      await ParamsAPI.deleteParams(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      configStore.isConfigLoaded = false;
-      await configStore.getConfig();
-    },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
-
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
-  }
-
-  const detailFormData = ref<ConfigTable>({} as ConfigTable);
-
-  const formData = reactive<ConfigForm>({
-    id: undefined,
-    config_name: '',
-    config_key: '',
-    config_value: '',
-    config_type: false,
-    description: '',
-  });
-
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const rules = reactive({
-    config_name: [{ required: true, message: '请输入系统配置名称', trigger: 'blur' }],
-    config_key: [{ required: true, message: '请输入系统配置键', trigger: 'blur' }],
-    config_value: [{ required: true, message: '请输入系统配置值', trigger: 'blur' }],
-    config_type: [{ required: true, message: '请选择系统配置类型', trigger: 'blur' }],
-  });
-
-  const initialFormData: ConfigForm = {
-    id: undefined,
-    config_name: '',
-    config_key: '',
-    config_value: '',
-    config_type: false,
-    description: '',
-  };
-
-  const exportsDialogVisible = ref(false);
-
-  const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
-
-  const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as ConfigTable[]);
-
-  const exportSelectionData = computed(
-    () => (contentRef.value?.getSelectionData() ?? []) as ConfigTable[]
-  );
-
-  const exportColumns = [
-    { prop: 'config_name', label: '配置名称' },
-    { prop: 'config_key', label: '配置键' },
-    { prop: 'config_value', label: '配置值' },
-    { prop: 'config_type', label: '系统内置' },
-    { prop: 'description', label: '描述' },
-    { prop: 'created_time', label: '创建时间' },
-    { prop: 'updated_time', label: '更新时间' },
-  ];
-
-  const curdContentConfig = {
-    permPrefix: 'module_system:param',
-    cols: exportColumns as any,
-    exportsAction: async (params: any) => {
-      const query = { ...normalizeListQuery(params) } as Record<string, unknown>;
-      return fetchAllPages({
-        initialQuery: query,
-        fetchPage: async (q) => {
-          const res = await ParamsAPI.listParams(q as unknown as ConfigPageQuery);
-          return {
-            total: res.data?.data?.total ?? 0,
-            list: res.data?.data?.items ?? [],
-          };
-        },
-      });
-    },
-  } as unknown as IContentConfig;
-
-  function handleOpenExportsModal() {
-    exportsDialogVisible.value = true;
-  }
-
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
-    }
-    Object.assign(formData, initialFormData);
-  }
-
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    await resetForm();
-  }
-
-  async function handleOpenDialog(type: 'create' | 'update' | 'detail', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await ParamsAPI.detailParams(id);
-      if (type === 'detail') {
-        dialogVisible.title = '系统配置详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改系统配置';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增系统配置';
-      formData.id = undefined;
-    }
-    dialogVisible.visible = true;
-  }
-
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: any) => {
-      if (valid) {
-        submitLoading.value = true;
-        const id = formData.id;
-        try {
-          if (id) {
-            await ParamsAPI.updateParams(id, { id, ...formData });
-          } else {
-            await ParamsAPI.createParams(formData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-          configStore.isConfigLoaded = false;
-          await configStore.getConfig();
-        } catch (error: any) {
-          console.error(error);
-        } finally {
-          submitLoading.value = false;
-        }
-      }
     });
+  },
+} as unknown as IContentConfig;
+
+function handleOpenExportsModal() {
+  exportsDialogVisible.value = true;
+}
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
   }
+  Object.assign(formData, initialFormData);
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await ParamsAPI.detailParams(id);
+    if (type === "detail") {
+      dialogVisible.title = "系统配置详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改系统配置";
+      Object.assign(formData, response.data.data);
+    }
+  } else {
+    dialogVisible.title = "新增系统配置";
+    formData.id = undefined;
+  }
+  dialogVisible.visible = true;
+}
+
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: any) => {
+    if (valid) {
+      submitLoading.value = true;
+      const id = formData.id;
+      try {
+        if (id) {
+          await ParamsAPI.updateParams(id, { id, ...formData });
+        } else {
+          await ParamsAPI.createParams(formData);
+        }
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+        configStore.isConfigLoaded = false;
+        await configStore.getConfig();
+      } catch (error: any) {
+        console.error(error);
+      } finally {
+        submitLoading.value = false;
+      }
+    }
+  });
+}
 </script>

@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
-import { store } from '../index';
+import { defineStore } from "pinia";
+import { store } from "../index";
 
 interface lockInfo {
   isLock?: boolean;
@@ -10,7 +10,7 @@ interface LockState {
   lockInfo: lockInfo;
 }
 
-export const useLockStore = defineStore('lock', {
+export const useLockStore = defineStore("lock", {
   state: (): LockState => {
     return {
       lockInfo: {

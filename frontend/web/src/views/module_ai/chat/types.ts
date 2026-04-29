@@ -1,7 +1,7 @@
 // 聊天消息类型
 export interface ChatMessage {
   id: string;
-  type: 'user' | 'assistant';
+  type: "user" | "assistant";
   content: string;
   timestamp: number;
   loading?: boolean;
@@ -22,7 +22,7 @@ export interface UploadedFile {
 // 会话消息类型（来自后端）
 export interface SessionMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   created_time?: string;
 }

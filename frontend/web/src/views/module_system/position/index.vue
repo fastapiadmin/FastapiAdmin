@@ -83,7 +83,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === '0' ? '启用' : '停用' }}
+                  {{ scope.row.status === "0" ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -278,303 +278,301 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'Position',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Position",
+  inheritAttrs: false,
+});
 
-  import { ref, reactive, computed, markRaw, nextTick, unref } from 'vue';
-  import { fetchAllPages } from '@/utils/fetchAllPages';
-  import PositionAPI, {
-    PositionTable,
-    PositionForm,
-    PositionPageQuery,
-  } from '@/api/module_system/position';
-  import { useUserStore } from '@/store';
-  import UserTableSelect from '@/views/module_system/user/components/UserTableSelect.vue';
-  import ExportModal from '@/components/CURD/ExportModal.vue';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
+import { ref, reactive, computed, markRaw, nextTick, unref } from "vue";
+import { fetchAllPages } from "@/utils/fetchAllPages";
+import PositionAPI, {
+  PositionTable,
+  PositionForm,
+  PositionPageQuery,
+} from "@/api/module_system/position";
+import { useUserStore } from "@/store";
+import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
+import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
-  const submitLoading = ref(false);
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
+const submitLoading = ref(false);
 
-  function triggerUserSearch() {
-    nextTick(() => refreshList());
-  }
+function triggerUserSearch() {
+  nextTick(() => refreshList());
+}
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:position',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '岗位名称',
-        type: 'input',
-        attrs: { placeholder: '请输入岗位名称', clearable: true },
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:position",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "岗位名称",
+      type: "input",
+      attrs: { placeholder: "请输入岗位名称", clearable: true },
+    },
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        style: { width: "340px" },
       },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: '0' },
-          { label: '停用', value: '1' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '167.5px' } },
+    },
+    {
+      prop: "created_id",
+      label: "创建人",
+      type: "user-table-select",
+      initialValue: null,
+      events: {
+        "confirm-click": triggerUserSearch,
+        "clear-click": triggerUserSearch,
       },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          style: { width: '340px' },
-        },
+    },
+  ],
+  customComponents: {
+    "user-table-select": markRaw(UserTableSelect),
+  },
+});
+
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "name", label: "岗位名称", show: true },
+  { prop: "order", label: "岗位排序", show: true },
+  { prop: "status", label: "状态", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "created_id", label: "创建人", show: true },
+  { prop: "updated_id", label: "更新人", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
+
+const contentConfig = reactive<IContentConfig<PositionPageQuery>>({
+  permPrefix: "module_system:position",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: false,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await PositionAPI.listPosition(params as PositionPageQuery);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: async (ids) => {
+    await PositionAPI.deletePosition(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    const userStore = useUserStore();
+    await userStore.getUserInfo();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+const exportsDialogVisible = ref(false);
+
+const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+
+const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as PositionTable[]);
+
+const exportSelectionData = computed(
+  () => (contentRef.value?.getSelectionData() ?? []) as PositionTable[]
+);
+
+const exportColumns = [
+  { prop: "name", label: "岗位名称" },
+  { prop: "order", label: "岗位排序" },
+  { prop: "status", label: "状态" },
+  { prop: "description", label: "描述" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
+];
+
+const curdContentConfig = {
+  permPrefix: "module_system:position",
+  cols: exportColumns as unknown as IContentConfig["cols"],
+  exportsAction: async (params: Record<string, unknown>) => {
+    const query = { ...params } as Record<string, unknown>;
+    return fetchAllPages<PositionTable>({
+      initialQuery: query,
+      fetchPage: async (q) => {
+        const res = await PositionAPI.listPosition(q as unknown as PositionPageQuery);
+        return {
+          total: res.data?.data?.total ?? 0,
+          list: res.data?.data?.items ?? [],
+        };
       },
-      {
-        prop: 'created_id',
-        label: '创建人',
-        type: 'user-table-select',
-        initialValue: null,
-        events: {
-          'confirm-click': triggerUserSearch,
-          'clear-click': triggerUserSearch,
-        },
-      },
-    ],
-    customComponents: {
-      'user-table-select': markRaw(UserTableSelect),
-    },
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'name', label: '岗位名称', show: true },
-    { prop: 'order', label: '岗位排序', show: true },
-    { prop: 'status', label: '状态', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'created_id', label: '创建人', show: true },
-    { prop: 'updated_id', label: '更新人', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  const contentConfig = reactive<IContentConfig<PositionPageQuery>>({
-    permPrefix: 'module_system:position',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: false,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
-    },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await PositionAPI.listPosition(params as PositionPageQuery);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    },
-    deleteAction: async (ids) => {
-      await PositionAPI.deletePosition(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      const userStore = useUserStore();
-      await userStore.getUserInfo();
-    },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
-
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
-  }
-
-  const exportsDialogVisible = ref(false);
-
-  const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
-
-  const exportPageData = computed(
-    () => (unref(contentRef.value?.pageData) ?? []) as PositionTable[]
-  );
-
-  const exportSelectionData = computed(
-    () => (contentRef.value?.getSelectionData() ?? []) as PositionTable[]
-  );
-
-  const exportColumns = [
-    { prop: 'name', label: '岗位名称' },
-    { prop: 'order', label: '岗位排序' },
-    { prop: 'status', label: '状态' },
-    { prop: 'description', label: '描述' },
-    { prop: 'created_time', label: '创建时间' },
-    { prop: 'updated_time', label: '更新时间' },
-  ];
-
-  const curdContentConfig = {
-    permPrefix: 'module_system:position',
-    cols: exportColumns as unknown as IContentConfig['cols'],
-    exportsAction: async (params: Record<string, unknown>) => {
-      const query = { ...params } as Record<string, unknown>;
-      return fetchAllPages<PositionTable>({
-        initialQuery: query,
-        fetchPage: async (q) => {
-          const res = await PositionAPI.listPosition(q as unknown as PositionPageQuery);
-          return {
-            total: res.data?.data?.total ?? 0,
-            list: res.data?.data?.items ?? [],
-          };
-        },
-      });
-    },
-  } as unknown as IContentConfig;
-
-  function handleOpenExportsModal() {
-    exportsDialogVisible.value = true;
-  }
-
-  const detailFormData = ref<PositionTable>({});
-
-  const formData = reactive<PositionForm>({
-    id: undefined,
-    name: undefined,
-    order: 1,
-    status: '0',
-    description: undefined,
-  });
-
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const rules = reactive({
-    name: [{ required: true, message: '请输入岗位名称', trigger: 'blur' }],
-    order: [{ required: true, message: '请输入岗位排序', trigger: 'blur' }],
-    status: [{ required: true, message: '请选择岗位状态', trigger: 'blur' }],
-  });
-
-  const initialFormData: PositionForm = {
-    id: undefined,
-    name: undefined,
-    order: 1,
-    status: '0',
-    description: undefined,
-  };
-
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
-    }
-    Object.assign(formData, initialFormData);
-  }
-
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    await resetForm();
-  }
-
-  async function handleOpenDialog(type: 'create' | 'update' | 'detail', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await PositionAPI.detailPosition(id);
-      if (type === 'detail') {
-        dialogVisible.title = '岗位详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改岗位';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增岗位';
-      formData.id = undefined;
-    }
-    dialogVisible.visible = true;
-  }
-
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: boolean) => {
-      if (valid) {
-        submitLoading.value = true;
-        const id = formData.id;
-        try {
-          if (id) {
-            await PositionAPI.updatePosition(id, { id, ...formData });
-          } else {
-            await PositionAPI.createPosition(formData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-          const userStore = useUserStore();
-          await userStore.getUserInfo();
-        } catch (error: unknown) {
-          console.error(error);
-        } finally {
-          submitLoading.value = false;
-        }
-      }
     });
-  }
+  },
+} as unknown as IContentConfig;
 
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() as PositionTable[] | undefined;
-    const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
-    if (!ids.length) {
-      ElMessage.warning('请先选择要操作的数据');
-      return;
-    }
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        try {
-          await PositionAPI.batchPosition({ ids, status });
-          refreshList();
-          const userStore = useUserStore();
-          await userStore.getUserInfo();
-        } catch (error: unknown) {
-          console.error(error);
-        }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
+function handleOpenExportsModal() {
+  exportsDialogVisible.value = true;
+}
+
+const detailFormData = ref<PositionTable>({});
+
+const formData = reactive<PositionForm>({
+  id: undefined,
+  name: undefined,
+  order: 1,
+  status: "0",
+  description: undefined,
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const rules = reactive({
+  name: [{ required: true, message: "请输入岗位名称", trigger: "blur" }],
+  order: [{ required: true, message: "请输入岗位排序", trigger: "blur" }],
+  status: [{ required: true, message: "请选择岗位状态", trigger: "blur" }],
+});
+
+const initialFormData: PositionForm = {
+  id: undefined,
+  name: undefined,
+  order: 1,
+  status: "0",
+  description: undefined,
+};
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
   }
+  Object.assign(formData, initialFormData);
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await PositionAPI.detailPosition(id);
+    if (type === "detail") {
+      dialogVisible.title = "岗位详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改岗位";
+      Object.assign(formData, response.data.data);
+    }
+  } else {
+    dialogVisible.title = "新增岗位";
+    formData.id = undefined;
+  }
+  dialogVisible.visible = true;
+}
+
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      submitLoading.value = true;
+      const id = formData.id;
+      try {
+        if (id) {
+          await PositionAPI.updatePosition(id, { id, ...formData });
+        } else {
+          await PositionAPI.createPosition(formData);
+        }
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+        const userStore = useUserStore();
+        await userStore.getUserInfo();
+      } catch (error: unknown) {
+        console.error(error);
+      } finally {
+        submitLoading.value = false;
+      }
+    }
+  });
+}
+
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() as PositionTable[] | undefined;
+  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+  if (!ids.length) {
+    ElMessage.warning("请先选择要操作的数据");
+    return;
+  }
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await PositionAPI.batchPosition({ ids, status });
+        refreshList();
+        const userStore = useUserStore();
+        await userStore.getUserInfo();
+      } catch (error: unknown) {
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
 </script>

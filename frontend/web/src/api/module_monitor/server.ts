@@ -1,16 +1,13 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/monitor/server';
+const API_PATH = "/monitor/server";
 
 const ServerAPI = {
-  /**
-   * 获取当前服务信息
-   * @returns 服务信息
-   */
+  // 获取服务信息
   getServer() {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/info`,
-      method: 'get',
+      method: "get",
     });
   },
 };

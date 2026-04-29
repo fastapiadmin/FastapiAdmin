@@ -1,148 +1,109 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/generator/gencode';
+const API_PATH = "/generator/gencode";
 
 const GencodeAPI = {
-  /**
-   * 查询生成表列表
-   * @param query 查询参数
-   * @returns 生成表列表
-   */
+  // 查询生成表数据
   listTable(query: GenTablePageQuery) {
-    return request<PageResult<GenTableSchema[]>>({
+    return request<ApiResponse<PageResult<GenTableSchema[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 查询db数据库列表
-   * @param query 查询参数
-   * @returns db数据库列表
-   */
+  // 查询db数据库列表
   listDbTable(query: DBTablePageQuery) {
-    return request<PageResult<DBTableSchema[]>>({
+    return request<ApiResponse<PageResult<DBTableSchema[]>>>({
       url: `${API_PATH}/db/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 导入表
-   * @param table_names 表名列表
-   */
+  // 导入表
   importTable(table_names: string[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/import`,
-      method: 'post',
+      method: "post",
       data: table_names,
     });
   },
 
-  /**
-   * 查询表详细信息
-   * @param table_id 表ID
-   */
+  // 查询表详细信息
   detailTable(table_id: number) {
     return request<ApiResponse<GenTableSchema>>({
       url: `${API_PATH}/detail/${table_id}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建表（与后端 GenCreateTableSqlBody 一致）
-   * @param sql 表SQL语句
-   */
+  // 创建表（与后端 GenCreateTableSqlBody 一致）
   createTable(sql: string) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: { sql },
     });
   },
 
-  /**
-   * 更新表信息
-   * @param data 表数据
-   * @param table_id 表ID
-   */
+  // 更新表信息
   updateTable(data: GenTableSchema, table_id: number) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${table_id}`,
-      method: 'put',
+      method: "put",
       data,
     });
   },
 
-  /**
-   * 删除表数据
-   * @param table_ids 表ID列表
-   */
+  // 删除表数据
   deleteTable(table_ids: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: table_ids,
     });
   },
 
-  /**
-   * 批量生成代码
-   * @param table_names 表名列表
-   */
+  // 批量生成代码
   batchGenCode(table_names: string[]) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/batch/output`,
-      method: 'patch',
+      method: "patch",
       data: table_names,
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 
-  /**
-   * 生成代码到指定路径
-   * @param table_name 表名
-   */
+  // 生成代码到指定路径
   genCodeToPath(table_name: string) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/output/${table_name}`,
-      method: 'post',
+      method: "post",
     });
   },
 
-  /**
-   * 预览生成代码
-   * @param id 表ID
-   */
+  // 预览生成代码
   previewTable(id: number) {
-    return request<Record<string, string>>({
+    return request<ApiResponse<Record<string, string>>>({
       url: `${API_PATH}/preview/${id}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 同步数据库
-   * @param table_name 表名
-   */
+  // 同步数据库
   syncDb(table_name: string) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/sync_db/${table_name}`,
-      method: 'post',
+      method: "post",
     });
   },
 
-  /**
-   * 同步数据库差异预览（不落库）
-   * @param table_name 表名
-   */
+  // 同步数据库差异预览（不落库）
   syncDbPreview(table_name: string) {
     return request<ApiResponse<GenSyncPreviewSchema>>({
       url: `${API_PATH}/sync_db/preview/${table_name}`,
-      method: 'get',
+      method: "get",
     });
   },
 };

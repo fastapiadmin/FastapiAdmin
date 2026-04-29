@@ -7,33 +7,33 @@
  */
 
 // 🔐 用户认证相关
-export const ACCESS_TOKEN_KEY = 'access_token';
-export const REFRESH_TOKEN_KEY = 'refresh_token';
-export const REMEMBER_ME_KEY = 'remember_me';
+export const ACCESS_TOKEN_KEY = "access_token";
+export const REFRESH_TOKEN_KEY = "refresh_token";
+export const REMEMBER_ME_KEY = "remember_me";
 
 // 📊 数据缓存相关
-export const DICT_CACHE_KEY = 'dict_cache';
+export const DICT_CACHE_KEY = "dict_cache";
 
 // 🎨 系统设置相关
-export const SHOW_TAGS_VIEW_KEY = 'showTagsView';
-export const SHOW_APP_LOGO_KEY = 'showAppLogo';
-export const SHOW_WATERMARK_KEY = 'showWatermark';
-export const SHOW_SETTINGS_KEY = 'showSettings';
-export const SHOW_MENU_SEARCH_KEY = 'showMenuSearch';
-export const SHOW_FULLSCREEN_KEY = 'showFullscreen';
-export const SHOW_SIZE_SELECT_KEY = 'showSizeSelect';
-export const SHOW_LANG_SELECT_KEY = 'showLangSelect';
-export const SHOW_NOTIFICATION_KEY = 'showNotification';
-export const SHOW_GUIDE_KEY = 'showGuide'; // 引导功能开关
-export const LAYOUT_KEY = 'layout';
-export const SIDEBAR_COLOR_SCHEME_KEY = 'sidebarColorScheme';
-export const THEME_KEY = 'theme';
-export const THEME_COLOR_KEY = 'themeColor';
-export const GRAY_MODE_KEY = 'grayMode';
-export const AI_ENABLED_KEY = 'aiEnabled';
-export const PAGE_SWITCHING_ANIMATION_KEY = 'pageSwitchingAnimation';
+export const SHOW_TAGS_VIEW_KEY = "showTagsView";
+export const SHOW_APP_LOGO_KEY = "showAppLogo";
+export const SHOW_WATERMARK_KEY = "showWatermark";
+export const SHOW_SETTINGS_KEY = "showSettings";
+export const SHOW_MENU_SEARCH_KEY = "showMenuSearch";
+export const SHOW_FULLSCREEN_KEY = "showFullscreen";
+export const SHOW_SIZE_SELECT_KEY = "showSizeSelect";
+export const SHOW_LANG_SELECT_KEY = "showLangSelect";
+export const SHOW_NOTIFICATION_KEY = "showNotification";
+export const SHOW_GUIDE_KEY = "showGuide"; // 引导功能开关
+export const LAYOUT_KEY = "layout";
+export const SIDEBAR_COLOR_SCHEME_KEY = "sidebarColorScheme";
+export const THEME_KEY = "theme";
+export const THEME_COLOR_KEY = "themeColor";
+export const GRAY_MODE_KEY = "grayMode";
+export const AI_ENABLED_KEY = "aiEnabled";
+export const PAGE_SWITCHING_ANIMATION_KEY = "pageSwitchingAnimation";
 
-export const ROLE_ROOT = 'ADMIN'; // 超级管理员角色
+export const ROLE_ROOT = "ADMIN"; // 超级管理员角色
 
 // 🎯 功能分组的键映射对象
 

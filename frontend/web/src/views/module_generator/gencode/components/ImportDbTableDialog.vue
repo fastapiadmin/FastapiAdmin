@@ -100,58 +100,58 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue';
-  import type { FormInstance, TableInstance } from 'element-plus';
-  import type { DBTableSchema, GenTablePageQuery } from '@/api/module_generator/gencode';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
+import { ref, computed } from "vue";
+import type { FormInstance, TableInstance } from "element-plus";
+import type { DBTableSchema, GenTablePageQuery } from "@/api/module_generator/gencode";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
 
-  defineOptions({ name: 'ImportDbTableDialog' });
+defineOptions({ name: "ImportDbTableDialog" });
 
-  defineProps<{
-    data: DBTableSchema[];
-    total: number;
-    confirmLoading: boolean;
-  }>();
+defineProps<{
+  data: DBTableSchema[];
+  total: number;
+  confirmLoading: boolean;
+}>();
 
-  const open = defineModel<boolean>({ required: true });
-  const query = defineModel<GenTablePageQuery>('query', { required: true });
+const open = defineModel<boolean>({ required: true });
+const query = defineModel<GenTablePageQuery>("query", { required: true });
 
-  const emit = defineEmits<{
-    query: [];
-    reset: [];
-    confirm: [];
-    fetch: [];
-    'selection-change': [rows: { table_name: string; table_comment: string }[]];
-  }>();
+const emit = defineEmits<{
+  query: [];
+  reset: [];
+  confirm: [];
+  fetch: [];
+  "selection-change": [rows: { table_name: string; table_comment: string }[]];
+}>();
 
-  const importQueryRef = ref<FormInstance>();
-  const tableRef = ref<TableInstance>();
-  const isFullscreen = ref(false);
+const importQueryRef = ref<FormInstance>();
+const tableRef = ref<TableInstance>();
+const isFullscreen = ref(false);
 
-  // 根据全屏状态计算表格高度
-  const tableHeight = computed(() => {
-    return isFullscreen.value ? 'calc(100vh - 320px)' : '300px';
-  });
+// 根据全屏状态计算表格高度
+const tableHeight = computed(() => {
+  return isFullscreen.value ? "calc(100vh - 320px)" : "300px";
+});
 
-  function onFullscreenChange(fullscreen: boolean) {
-    isFullscreen.value = fullscreen;
-  }
+function onFullscreenChange(fullscreen: boolean) {
+  isFullscreen.value = fullscreen;
+}
 
-  function onRowClick(row: DBTableSchema) {
-    tableRef.value?.toggleRowSelection(row);
-  }
+function onRowClick(row: DBTableSchema) {
+  tableRef.value?.toggleRowSelection(row);
+}
 
-  function onSelectionChange(selection: DBTableSchema[]) {
-    emit(
-      'selection-change',
-      selection.map((item) => ({
-        table_name: item.table_name || '',
-        table_comment: item.table_comment || '',
-      }))
-    );
-  }
+function onSelectionChange(selection: DBTableSchema[]) {
+  emit(
+    "selection-change",
+    selection.map((item) => ({
+      table_name: item.table_name || "",
+      table_comment: item.table_comment || "",
+    }))
+  );
+}
 
-  defineExpose({
-    resetQueryForm: () => importQueryRef.value?.resetFields(),
-  });
+defineExpose({
+  resetQueryForm: () => importQueryRef.value?.resetFields(),
+});
 </script>

@@ -82,11 +82,11 @@ declare global {
     /** 是否显示应用Logo */
     showAppLogo: boolean;
     /** 导航栏布局(left|top|mix) */
-    layout: 'left' | 'top' | 'mix';
+    layout: "left" | "top" | "mix";
     /** 主题颜色 */
     themeColor: string;
     /** 主题模式(dark|light) */
-    theme: import('@/enums/settings/theme.enum').ThemeMode;
+    theme: import("@/enums/settings/theme.enum").ThemeMode;
     /** 布局大小(default |large |small) */
     size: string;
     /** 语言( zh-cn| en) */
@@ -96,7 +96,7 @@ declare global {
     /** 水印内容 */
     watermarkContent: string;
     /** 侧边栏配色方案 */
-    sidebarColorScheme: 'classic-blue' | 'minimal-white';
+    sidebarColorScheme: "classic-blue" | "minimal-white";
     /** 项目引导 */
     guideVisible: boolean;
     /** 是否启动引导 */

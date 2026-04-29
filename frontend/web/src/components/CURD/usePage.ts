@@ -1,6 +1,6 @@
-import { ref, Ref } from 'vue';
-import type { IObject, PageContentInstance, PageModalInstance } from './types';
-import { useCrudList } from './useCrudList';
+import { ref, Ref } from "vue";
+import type { IObject, PageContentInstance, PageModalInstance } from "./types";
+import { useCrudList } from "./useCrudList";
 
 /**
  * CURD页面组合式函数
@@ -26,9 +26,9 @@ function usePage() {
         addModalRef.value?.handleDisabled(false);
       }
     } catch (error) {
-      console.error('打开新增模态框失败:', error);
+      console.error("打开新增模态框失败:", error);
       ElMessage.error(
-        '打开新增模态框失败: ' + (error instanceof Error ? error.message : String(error))
+        "打开新增模态框失败: " + (error instanceof Error ? error.message : String(error))
       );
     }
   }
@@ -57,9 +57,9 @@ function usePage() {
         editModalRef.value?.setFormData(from ? from : row);
       }
     } catch (error) {
-      console.error('打开编辑模态框失败:', error);
+      console.error("打开编辑模态框失败:", error);
       ElMessage.error(
-        '打开编辑模态框失败: ' + (error instanceof Error ? error.message : String(error))
+        "打开编辑模态框失败: " + (error instanceof Error ? error.message : String(error))
       );
     }
   }
@@ -88,9 +88,9 @@ function usePage() {
         viewModalRef.value?.setFormData(from ? from : row);
       }
     } catch (error) {
-      console.error('打开查看模态框失败:', error);
+      console.error("打开查看模态框失败:", error);
       ElMessage.error(
-        '打开查看模态框失败: ' + (error instanceof Error ? error.message : String(error))
+        "打开查看模态框失败: " + (error instanceof Error ? error.message : String(error))
       );
     }
   }
@@ -104,8 +104,8 @@ function usePage() {
       const queryParams = searchRef.value?.getQueryParams() || {};
       contentRef.value?.fetchPageData(queryParams, true);
     } catch (error) {
-      console.error('提交表单失败:', error);
-      ElMessage.error('提交表单失败: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("提交表单失败:", error);
+      ElMessage.error("提交表单失败: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -118,8 +118,8 @@ function usePage() {
       const queryParams = searchRef.value?.getQueryParams() || {};
       contentRef.value?.exportPageData(queryParams);
     } catch (error) {
-      console.error('导出数据失败:', error);
-      ElMessage.error('导出数据失败: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("导出数据失败:", error);
+      ElMessage.error("导出数据失败: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -132,8 +132,8 @@ function usePage() {
       const queryParams = searchRef.value?.getQueryParams() || {};
       contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);
     } catch (error) {
-      console.error('筛选数据失败:', error);
-      ElMessage.error('筛选数据失败: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("筛选数据失败:", error);
+      ElMessage.error("筛选数据失败: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -155,9 +155,9 @@ function usePage() {
       // 默认刷新数据
       handleSubmitClick();
     } catch (error) {
-      console.error('处理更多操作失败:', error);
+      console.error("处理更多操作失败:", error);
       ElMessage.error(
-        '处理更多操作失败: ' + (error instanceof Error ? error.message : String(error))
+        "处理更多操作失败: " + (error instanceof Error ? error.message : String(error))
       );
     }
   }
@@ -181,4 +181,4 @@ function usePage() {
 }
 
 export default usePage;
-export { useCrudList } from './useCrudList';
+export { useCrudList } from "./useCrudList";

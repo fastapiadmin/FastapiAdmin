@@ -1,8 +1,11 @@
-import { defaultSettings } from '@/settings';
-import { SidebarColor, ThemeMode } from '@/enums/settings/theme.enum';
-import type { LayoutMode } from '@/enums/settings/layout.enum';
-import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from '@/utils/theme';
-import { SETTINGS_KEYS } from '@/constants';
+import { defaultSettings } from "@/settings";
+import { SidebarColor, ThemeMode } from "@/enums/settings/theme.enum";
+import type { LayoutMode } from "@/enums/settings/layout.enum";
+import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
+import { SETTINGS_KEYS } from "@/constants";
+import { defineStore } from "pinia";
+import { Ref, ref, watch } from "vue";
+import { useStorage } from "@vueuse/core";
 
 // 🎯 设置项类型定义
 interface SettingsState {
@@ -34,10 +37,10 @@ interface SettingsState {
 }
 
 // 🎯 可变更的设置项类型
-type MutableSetting = Exclude<keyof SettingsState, 'settingsVisible'>;
+type MutableSetting = Exclude<keyof SettingsState, "settingsVisible">;
 type SettingValue<K extends MutableSetting> = SettingsState[K];
 
-export const useSettingsStore = defineStore('setting', () => {
+export const useSettingsStore = defineStore("setting", () => {
   // 🎯 基础设置 - 非持久化
   const settingsVisible = ref<boolean>(false);
 
@@ -157,7 +160,7 @@ export const useSettingsStore = defineStore('setting', () => {
   watch(
     grayMode,
     (v) => {
-      document.documentElement.style.filter = v ? 'grayscale(100%)' : '';
+      document.documentElement.style.filter = v ? "grayscale(100%)" : "";
     },
     { immediate: true }
   );

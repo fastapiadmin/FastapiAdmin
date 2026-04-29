@@ -1,28 +1,28 @@
-@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+@forward "element-plus/theme-chalk/src/common/var.scss" with (
   $colors: (
-    'primary': (
+    "primary": (
       // 默认主题色 - 修改此值时需同步修改 src/settings.ts 中的 themeColor
-      'base': #4080ff,
+      "base": #4080ff,
     ),
-    'success': (
-      'base': #23c343,
+    "success": (
+      "base": #23c343,
     ),
-    'warning': (
-      'base': #ff9a2e,
+    "warning": (
+      "base": #ff9a2e,
     ),
-    'danger': (
-      'base': #f76560,
+    "danger": (
+      "base": #f76560,
     ),
-    'info': (
-      'base': #a9aeb8,
+    "info": (
+      "base": #a9aeb8,
     ),
-    'default': (
-      'base': #f5f5f5,
+    "default": (
+      "base": #f5f5f5,
     ),
   ),
 
   $bg-color: (
-    'page': #f5f8fd,
+    "page": #f5f8fd,
   )
 );
 

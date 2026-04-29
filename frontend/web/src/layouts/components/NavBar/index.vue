@@ -14,33 +14,34 @@
 </template>
 
 <script setup lang="ts">
-  import { useAppStore } from '@/store';
-  import Hamburger from '@/components/Hamburger/index.vue';
-  import Breadcrumb from '@/components/Breadcrumb/index.vue';
-  import NavbarActions from './components/NavbarActions.vue';
+import { useAppStore } from "@/store";
+import Hamburger from "@/components/Hamburger/index.vue";
+import Breadcrumb from "@/components/Breadcrumb/index.vue";
+import NavbarActions from "./components/NavbarActions.vue";
+import { computed } from "vue";
 
-  const appStore = useAppStore();
+const appStore = useAppStore();
 
-  // 侧边栏展开状态
-  const isSidebarOpened = computed(() => appStore.sidebar.opened);
+// 侧边栏展开状态
+const isSidebarOpened = computed(() => appStore.sidebar.opened);
 
-  // 切换侧边栏展开/折叠状态
-  function toggleSideBar() {
-    appStore.toggleSidebar();
-  }
+// 切换侧边栏展开/折叠状态
+function toggleSideBar() {
+  appStore.toggleSidebar();
+}
 </script>
 
 <style lang="scss" scoped>
-  .navbar {
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $navbar-height;
+
+  &__actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: $navbar-height;
-
-    &__actions {
-      display: flex;
-      align-items: center;
-      height: 100%;
-    }
+    height: 100%;
   }
+}
 </style>

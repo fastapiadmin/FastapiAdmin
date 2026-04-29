@@ -1,4 +1,4 @@
-import { ElMessage } from 'element-plus';
+import { ElMessage } from "element-plus";
 
 /** 收藏数量上限（工作台「我的收藏」为 3 列 × 最多 5 排，共 15 个） */
 export const QUICK_LINK_MAX = 15;
@@ -13,7 +13,7 @@ export interface QuickLink {
 
 // 快速开始管理器类
 class QuickStartManager {
-  private storageKey = 'quick-start-links';
+  private storageKey = "quick-start-links";
   private listeners: Array<(links: QuickLink[]) => void> = [];
 
   // 获取所有快速链接
@@ -22,7 +22,7 @@ class QuickStartManager {
       const stored = localStorage.getItem(this.storageKey);
       return stored ? JSON.parse(stored) : this.getDefaultLinks();
     } catch (error) {
-      console.error('Failed to load quick links:', error);
+      console.error("Failed to load quick links:", error);
       return this.getDefaultLinks();
     }
   }
@@ -38,7 +38,7 @@ class QuickStartManager {
       localStorage.setItem(this.storageKey, JSON.stringify(links));
       this.notifyListeners(links);
     } catch (error) {
-      console.error('Failed to save quick links:', error);
+      console.error("Failed to save quick links:", error);
     }
   }
 
@@ -93,13 +93,13 @@ class QuickStartManager {
   // 从路由或菜单信息创建快速链接
   createQuickLinkFromRoute(route: any, customTitle?: string): QuickLink {
     // 确定最终使用的标题 - 优先使用route.title
-    const finalTitle = customTitle || route.title || route.name || '未命名页面';
+    const finalTitle = customTitle || route.title || route.name || "未命名页面";
 
     return {
       title: finalTitle,
       icon: route.icon,
       href: route.fullPath || route.path,
-      id: `route-${route.path.replace(/\//g, '-')}-${Date.now()}`,
+      id: `route-${route.path.replace(/\//g, "-")}-${Date.now()}`,
     };
   }
 
@@ -122,7 +122,7 @@ class QuickStartManager {
       try {
         callback(links);
       } catch (error) {
-        console.error('Error in quick start listener:', error);
+        console.error("Error in quick start listener:", error);
       }
     });
   }

@@ -1,9 +1,9 @@
-import type { DialogProps, DrawerProps, FormItemRule, PaginationProps } from 'element-plus';
-import type { FormProps, ColProps, ButtonProps, CardProps } from 'element-plus';
-import type PageContent from './PageContent.vue';
-import type PageModal from './PageModal.vue';
-import type PageSearch from './PageSearch.vue';
-import type { CSSProperties } from 'vue';
+import type { DialogProps, DrawerProps, FormItemRule, PaginationProps } from "element-plus";
+import type { FormProps, ColProps, ButtonProps, CardProps } from "element-plus";
+import type PageContent from "./PageContent.vue";
+import type PageModal from "./PageModal.vue";
+import type PageSearch from "./PageSearch.vue";
+import type { CSSProperties } from "vue";
 
 export type PageSearchInstance = InstanceType<typeof PageSearch>;
 export type PageContentInstance = InstanceType<typeof PageContent>;
@@ -17,35 +17,35 @@ export type IObject = Record<string, any>;
 /**
  * 组件类型定义
  */
-type DateComponent = 'date-picker' | 'time-picker' | 'time-select' | 'custom-tag' | 'input-tag';
-type InputComponent = 'input' | 'select' | 'input-number' | 'cascader' | 'tree-select';
+type DateComponent = "date-picker" | "time-picker" | "time-select" | "custom-tag" | "input-tag";
+type InputComponent = "input" | "select" | "input-number" | "cascader" | "tree-select";
 type OtherComponent =
-  | 'text'
-  | 'radio'
-  | 'checkbox'
-  | 'switch'
-  | 'rate'
-  | 'slider'
-  | 'icon-select'
-  | 'custom';
+  | "text"
+  | "radio"
+  | "checkbox"
+  | "switch"
+  | "rate"
+  | "slider"
+  | "icon-select"
+  | "custom";
 export type ISearchComponent =
   | DateComponent
   | InputComponent
-  | 'radio'
-  | 'checkbox'
-  | 'switch'
-  | 'rate'
-  | 'slider'
+  | "radio"
+  | "checkbox"
+  | "switch"
+  | "rate"
+  | "slider"
   /** 在 customComponents 中注册的自定义搜索控件类型 */
-  | 'user-table-select';
+  | "user-table-select";
 export type IComponentType = DateComponent | InputComponent | OtherComponent;
 
 /**
  * 工具按钮类型定义
  */
-type ToolbarLeft = 'add' | 'delete' | 'patch';
-type ToolbarRight = 'refresh' | 'filter' | 'import' | 'export';
-type ToolbarTable = 'edit' | 'view' | 'delete';
+type ToolbarLeft = "add" | "delete" | "patch";
+type ToolbarRight = "refresh" | "filter" | "import" | "export";
+type ToolbarTable = "edit" | "view" | "delete";
 
 /**
  * 工具按钮接口
@@ -103,7 +103,7 @@ export interface ISearchConfig {
   /** form组件属性 */
   form?: IForm;
   /** 启用等宽网格布局；为 "right" 时操作按钮靠行末 */
-  grid?: boolean | 'left' | 'right';
+  grid?: boolean | "left" | "right";
   /** 自定义组件映射 */
   customComponents?: Record<string, any>;
   /** 是否显示搜索按钮(默认：true) */
@@ -142,14 +142,14 @@ export interface IContentConfig<T = any> {
   /** 提示信息 */
   tooltip?: string | IObject;
   /** 分页组件位置(默认：left) */
-  pagePosition?: 'left' | 'right';
+  pagePosition?: "left" | "right";
   /** pagination组件属性 */
   pagination?:
     | boolean
     | Partial<
         Omit<
           PaginationProps,
-          'v-model:page-size' | 'v-model:current-page' | 'total' | 'currentPage'
+          "v-model:page-size" | "v-model:current-page" | "total" | "currentPage"
         >
       >;
   /** 列表的网络请求函数(需返回promise) */
@@ -184,7 +184,7 @@ export interface IContentConfig<T = any> {
     message?: string;
     confirmButtonText?: string;
     cancelButtonText?: string;
-    type?: 'warning' | 'info' | 'success' | 'error';
+    type?: "warning" | "info" | "success" | "error";
   };
   /** 后端导出的网络请求函数(需返回promise) */
   exportAction?: (queryParams: T) => Promise<any>;
@@ -207,7 +207,7 @@ export interface IContentConfig<T = any> {
   /** 内容区外层 el-card 额外 class */
   cardClass?: string;
   /** el-card 阴影（默认 never，与 Element Plus el-card shadow 一致） */
-  cardShadow?: 'always' | 'hover' | 'never';
+  cardShadow?: "always" | "hover" | "never";
   /** 是否显示表格上方工具条（默认 true；纯卡片/无按钮时可设为 false） */
   showToolbar?: boolean;
   /** 更多操作按钮配置 */
@@ -215,7 +215,7 @@ export interface IContentConfig<T = any> {
   /** table组件列属性(额外的属性templet,operat,slotName) */
   cols: Array<{
     /** 列类型 */
-    type?: 'default' | 'selection' | 'index' | 'expand';
+    type?: "default" | "selection" | "index" | "expand";
     /** 列标签 */
     label?: string;
     /** 列属性 */
@@ -225,7 +225,7 @@ export interface IContentConfig<T = any> {
     /** 最小列宽度 */
     minWidth?: string | number;
     /** 对齐方式 */
-    align?: 'left' | 'center' | 'right';
+    align?: "left" | "center" | "right";
     /** 列键名 */
     columnKey?: string;
     /** 是否保留选择 */
@@ -234,17 +234,17 @@ export interface IContentConfig<T = any> {
     show?: boolean;
     /** 模板类型 */
     templet?:
-      | 'image'
-      | 'list'
-      | 'url'
-      | 'switch'
-      | 'input'
-      | 'price'
-      | 'percent'
-      | 'icon'
-      | 'date'
-      | 'tool'
-      | 'custom';
+      | "image"
+      | "list"
+      | "url"
+      | "switch"
+      | "input"
+      | "price"
+      | "percent"
+      | "icon"
+      | "date"
+      | "tool"
+      | "custom";
     /** image模板相关参数 */
     imageWidth?: number;
     /** image模板相关参数 */
@@ -274,7 +274,7 @@ export interface IContentConfig<T = any> {
     /** 是否禁用 */
     disabled?: boolean;
     /** 固定列 */
-    fixed?: boolean | 'left' | 'right';
+    fixed?: boolean | "left" | "right";
     /** 权限 */
     perm?: string;
     [key: string]: any;
@@ -302,13 +302,13 @@ export interface IModalConfig<T = any> {
   /** 主键名(主要用于编辑数据,默认为id) */
   pk?: string;
   /** 组件类型(默认：dialog) */
-  component?: 'dialog' | 'drawer';
+  component?: "dialog" | "drawer";
   /** dialog组件属性（默认可拖拽；全屏由 EnhancedDialog 标题栏按钮切换） */
-  dialog?: Partial<Omit<DialogProps, 'modelValue'>> & { draggable?: boolean };
+  dialog?: Partial<Omit<DialogProps, "modelValue">> & { draggable?: boolean };
   /** drawer组件属性 */
-  drawer?: Partial<Omit<DrawerProps, 'modelValue'>>;
+  drawer?: Partial<Omit<DrawerProps, "modelValue">>;
   /** 查看模式渲染方式(默认：form；可选：descriptions) */
-  viewMode?: 'form' | 'descriptions';
+  viewMode?: "form" | "descriptions";
   /** descriptions组件属性（当 viewMode 为 descriptions 时生效） */
   descriptions?: IObject;
   /** form组件属性 */
@@ -324,7 +324,7 @@ export interface IModalConfig<T = any> {
 /**
  * 表单属性类型
  */
-export type IForm = Partial<Omit<FormProps, 'model' | 'rules'>>;
+export type IForm = Partial<Omit<FormProps, "model" | "rules">>;
 
 /**
  * 表单项类型

@@ -1,13 +1,13 @@
 // ==================== 主题变量导入 ====================
 // 1. 项目自定义变量（侧边栏、布局等）
-@use './variables';
+@use "./variables";
 
 // 2. 暗黑模式变量（合并）
-@use './dark/css-vars';
+@use "./dark/css-vars";
 
 // ==================== 基础样式 ====================
-@use './reset';
-@use './element-plus';
+@use "./reset";
+@use "./element-plus";
 
 // ==================== layout内容样式 ====================
 .app-container {
@@ -204,7 +204,7 @@ html.sidebar-color-blue .el-menu--popup {
     .el-menu-item,
     .el-sub-menu__title {
       .menu-title,
-      span:not([class*='i-svg']):not(.el-icon) {
+      span:not([class*="i-svg"]):not(.el-icon) {
         display: none !important;
       }
     }
@@ -215,7 +215,7 @@ html.sidebar-color-blue .el-menu--popup {
     .el-menu-item,
     .el-sub-menu__title {
       .menu-title,
-      span:not([class*='i-svg']):not(.el-icon) {
+      span:not([class*="i-svg"]):not(.el-icon) {
         display: none !important;
       }
     }

@@ -5,16 +5,16 @@ export const enum LayoutMode {
   /**
    * 左侧菜单布局
    */
-  LEFT = 'left',
+  LEFT = "left",
   /**
    * 顶部菜单布局
    */
-  TOP = 'top',
+  TOP = "top",
 
   /**
    * 混合菜单布局
    */
-  MIX = 'mix',
+  MIX = "mix",
 }
 
 /**
@@ -24,12 +24,12 @@ export const enum SidebarStatus {
   /**
    * 展开
    */
-  OPENED = 'opened',
+  OPENED = "opened",
 
   /**
    * 关闭
    */
-  CLOSED = 'closed',
+  CLOSED = "closed",
 }
 
 /**
@@ -39,15 +39,15 @@ export const enum ComponentSize {
   /**
    * 默认
    */
-  DEFAULT = 'default',
+  DEFAULT = "default",
 
   /**
    * 大型
    */
-  LARGE = 'large',
+  LARGE = "large",
 
   /**
    * 小型
    */
-  SMALL = 'small',
+  SMALL = "small",
 }

@@ -1,101 +1,65 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/task/cronjob/node';
+const API_PATH = "/task/cronjob/node";
 
 const NodeAPI = {
-  /**
-   * 获取节点类型选项
-   * @returns 节点类型选项
-   */
   getNodeTypeOptions() {
     return request<ApiResponse<NodeType[]>>({
       url: `${API_PATH}/options`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 获取节点列表
-   * @param query 查询参数
-   * @returns 节点列表
-   */
   listNode(query: NodePageQuery) {
-    return request<PageResult<NodeTable[]>>({
+    return request<ApiResponse<PageResult<NodeTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取节点详情
-   * @param id 节点ID
-   * @returns 节点详情
-   */
   detailNode(query: number) {
     return request<ApiResponse<NodeTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建节点
-   * @param body 节点信息
-   */
   createNode(body: NodeForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新节点
-   * @param id 节点ID
-   * @param body 节点信息
-   */
   updateNode(id: number, body: NodeForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除节点
-   * @param body 节点ID列表
-   */
   deleteNode(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 清空所有节点
-   */
   clearNode() {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/clear`,
-      method: 'delete',
+      method: "delete",
     });
   },
 
-  /**
-   * 执行节点
-   * @param id 节点ID
-   * @param params 执行参数
-   * @returns 执行结果
-   */
-  executeNode(id: number, params: ExecuteNodeParams = { trigger: 'now' }) {
+  executeNode(id: number, params: ExecuteNodeParams = { trigger: "now" }) {
     return request<ApiResponse<ExecuteNodeResult>>({
       url: `${API_PATH}/execute/${id}`,
-      method: 'post',
+      method: "post",
       data: params,
     });
   },
@@ -112,7 +76,7 @@ export interface NodePageQuery extends PageQuery {
   updated_time?: string[];
 }
 
-export type TriggerType = 'now' | 'cron' | 'interval' | 'date';
+export type TriggerType = "now" | "cron" | "interval" | "date";
 
 export interface ExecuteNodeParams {
   trigger: TriggerType;

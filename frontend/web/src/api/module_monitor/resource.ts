@@ -1,6 +1,6 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/monitor/resource';
+const API_PATH = "/monitor/resource";
 
 export const ResourceAPI = {
   /**
@@ -8,9 +8,9 @@ export const ResourceAPI = {
    * @param query 查询参数
    */
   listResource(query: ResourcePageQuery) {
-    return request<PageResult<ResourceItem[]>>({
+    return request<ApiResponse<PageResult<ResourceItem[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
@@ -22,9 +22,9 @@ export const ResourceAPI = {
   uploadFile(formData: FormData) {
     return request<ApiResponse<ResourceUploadSchema>>({
       url: `${API_PATH}/upload`,
-      method: 'post',
+      method: "post",
       data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { "Content-Type": "multipart/form-data" },
     });
   },
 
@@ -33,11 +33,11 @@ export const ResourceAPI = {
    * @param path 文件路径
    */
   downloadFile(path: string) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/download`,
-      method: 'get',
+      method: "get",
       params: { path },
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 
@@ -46,9 +46,9 @@ export const ResourceAPI = {
    * @param body 文件路径数组
    */
   deleteResource(body: string[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
@@ -58,9 +58,9 @@ export const ResourceAPI = {
    * @param body 移动参数
    */
   moveResource(body: ResourceMoveQuery) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/move`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
@@ -70,9 +70,9 @@ export const ResourceAPI = {
    * @param body 复制参数
    */
   copyResource(body: ResourceCopyQuery) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/copy`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
@@ -82,9 +82,9 @@ export const ResourceAPI = {
    * @param body 重命名参数
    */
   renameResource(body: ResourceRenameQuery) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/rename`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
@@ -94,9 +94,9 @@ export const ResourceAPI = {
    * @param body 创建目录参数
    */
   createDirectory(body: ResourceCreateDirQuery) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create-dir`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
@@ -106,11 +106,11 @@ export const ResourceAPI = {
    * @param body 导出条件
    */
   exportResource(body: ResourcePageQuery) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/export`,
-      method: 'post',
+      method: "post",
       data: body,
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 };

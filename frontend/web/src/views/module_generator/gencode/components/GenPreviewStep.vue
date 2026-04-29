@@ -71,83 +71,81 @@
 </template>
 
 <script setup lang="ts">
-  import 'codemirror/mode/javascript/javascript.js';
-  import 'codemirror/mode/python/python.js';
-  import 'codemirror/mode/htmlmixed/htmlmixed.js';
-  import 'codemirror/theme/dracula.css';
-  import { computed, inject, onUnmounted, ref, watch } from 'vue';
-  import Codemirror from 'codemirror-editor-vue3';
-  import type { EditorConfiguration } from 'codemirror';
-  import type { CmComponentRef } from 'codemirror-editor-vue3';
-  import { CopyDocument } from '@element-plus/icons-vue';
-  import { GENCODE_CM_KEY } from '../gencodeInjectionKeys';
-  import type { TreeNode } from '../types';
+import "codemirror/mode/javascript/javascript.js";
+import "codemirror/mode/python/python.js";
+import "codemirror/mode/htmlmixed/htmlmixed.js";
+import "codemirror/theme/dracula.css";
+import { computed, inject, onUnmounted, ref, watch } from "vue";
+import Codemirror from "codemirror-editor-vue3";
+import type { EditorConfiguration } from "codemirror";
+import type { CmComponentRef } from "codemirror-editor-vue3";
+import { CopyDocument } from "@element-plus/icons-vue";
+import { GENCODE_CM_KEY } from "../gencodeInjectionKeys";
+import type { TreeNode } from "../types";
 
-  defineOptions({ name: 'GenPreviewStep' });
+defineOptions({ name: "GenPreviewStep" });
 
-  const previewScope = defineModel<'all' | 'frontend' | 'backend'>('previewScope', {
-    required: true,
-  });
-  const previewTypes = defineModel<string[]>('previewTypes', { required: true });
+const previewScope = defineModel<"all" | "frontend" | "backend">("previewScope", {
+  required: true,
+});
+const previewTypes = defineModel<string[]>("previewTypes", { required: true });
 
-  const props = defineProps<{
-    previewLoading: boolean;
-    previewTypeOptions: string[];
-    filteredTreeData: TreeNode[];
-    cmOptions: EditorConfiguration;
-  }>();
+const props = defineProps<{
+  previewLoading: boolean;
+  previewTypeOptions: string[];
+  filteredTreeData: TreeNode[];
+  cmOptions: EditorConfiguration;
+}>();
 
-  const isTreeEmpty = computed(
-    () => !props.filteredTreeData || props.filteredTreeData.length === 0
-  );
+const isTreeEmpty = computed(() => !props.filteredTreeData || props.filteredTreeData.length === 0);
 
-  const code = defineModel<string>('code', { required: true });
+const code = defineModel<string>("code", { required: true });
 
-  const emit = defineEmits<{
-    'file-click': [data: TreeNode];
-    'copy-code': [];
-  }>();
+const emit = defineEmits<{
+  "file-click": [data: TreeNode];
+  "copy-code": [];
+}>();
 
-  const cmRef = ref<CmComponentRef>();
-  const injected = inject(GENCODE_CM_KEY, undefined);
+const cmRef = ref<CmComponentRef>();
+const injected = inject(GENCODE_CM_KEY, undefined);
 
-  watch(
-    cmRef,
-    (v) => {
-      if (injected) injected.value = v;
-    },
-    { immediate: true }
-  );
+watch(
+  cmRef,
+  (v) => {
+    if (injected) injected.value = v;
+  },
+  { immediate: true }
+);
 
-  onUnmounted(() => {
-    if (injected) injected.value = undefined;
-  });
+onUnmounted(() => {
+  if (injected) injected.value = undefined;
+});
 
-  function onTreeNodeClick(data: TreeNode) {
-    emit('file-click', data);
-  }
+function onTreeNodeClick(data: TreeNode) {
+  emit("file-click", data);
+}
 
-  function getFileTreeNodeIcon(label: string): string {
-    if (label.endsWith('.py')) return 'python';
-    if (label.endsWith('.vue')) return 'vue';
-    if (label.endsWith('.ts')) return 'typescript';
-    return 'file';
-  }
+function getFileTreeNodeIcon(label: string): string {
+  if (label.endsWith(".py")) return "python";
+  if (label.endsWith(".vue")) return "vue";
+  if (label.endsWith(".ts")) return "typescript";
+  return "file";
+}
 </script>
 
 <style scoped lang="scss">
-  .gencode-preview-meta-tip {
-    margin: 0 0 8px;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--el-text-color-secondary);
-  }
+.gencode-preview-meta-tip {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+}
 
-  .gencode-preview-empty-tip {
-    max-width: 420px;
-    margin: 0 auto;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--el-text-color-secondary);
-  }
+.gencode-preview-empty-tip {
+  max-width: 420px;
+  margin: 0 auto;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+}
 </style>

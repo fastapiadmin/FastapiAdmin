@@ -46,7 +46,7 @@
               {{ infoFormState.name }}
             </span>
 
-            <el-text>{{ infoFormState.roles?.map((item) => item.name).join('、') }}</el-text>
+            <el-text>{{ infoFormState.roles?.map((item) => item.name).join("、") }}</el-text>
           </div>
 
           <el-divider />
@@ -83,7 +83,7 @@
                   <span>岗位</span>
                 </div>
               </template>
-              <span>{{ infoFormState.positions?.map((item) => item.name).join('、') }}</span>
+              <span>{{ infoFormState.positions?.map((item) => item.name).join("、") }}</span>
             </el-descriptions-item>
             <el-descriptions-item>
               <template #label>
@@ -281,330 +281,330 @@
 </template>
 
 <script lang="ts" setup>
-  import type {
-    FormInstance,
-    UploadRequestOptions,
-    UploadFile,
-    ElUpload,
-    ComponentSize,
-  } from 'element-plus';
-  import UserAPI, { type InfoFormState, type PasswordFormState } from '@/api/module_system/user';
-  import { useUserStore, useDictStore } from '@/store';
-  import { Camera } from '@element-plus/icons-vue';
-  import { ElMessage } from 'element-plus';
-  import { useI18n } from 'vue-i18n';
-  import { nextTick } from 'vue';
-  import { redirectToLogin } from '@/utils/authRedirect';
+import type {
+  FormInstance,
+  UploadRequestOptions,
+  UploadFile,
+  ElUpload,
+  ComponentSize,
+} from "element-plus";
+import UserAPI, { type InfoFormState, type PasswordFormState } from "@/api/module_system/user";
+import { useUserStore, useDictStore } from "@/store";
+import { Camera } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
+import { nextTick } from "vue";
+import { redirectToLogin } from "@/utils/authRedirect";
 
-  const { t } = useI18n();
-  const userStore = useUserStore();
-  const dictStore = useDictStore();
-  const infoFormRef = ref<FormInstance>();
-  const passwordFormRef = ref<FormInstance>();
-  const loading = ref<boolean>(false);
+const { t } = useI18n();
+const userStore = useUserStore();
+const dictStore = useDictStore();
+const infoFormRef = ref<FormInstance>();
+const passwordFormRef = ref<FormInstance>();
+const loading = ref<boolean>(false);
 
-  const dictDataStore = computed(() => dictStore.dictData);
+const dictDataStore = computed(() => dictStore.dictData);
 
-  const size = ref<ComponentSize>('default');
+const size = ref<ComponentSize>("default");
 
-  const iconStyle = computed(() => {
-    const marginMap = {
-      large: '8px',
-      default: '6px',
-      small: '4px',
-    };
-    return {
-      marginRight: marginMap[size.value || 'default'],
-    };
-  });
-
-  // 字典数据
-  const getOptions = async () => {
-    return await dictStore.getDict(['sys_user_sex']);
+const iconStyle = computed(() => {
+  const marginMap = {
+    large: "8px",
+    default: "6px",
+    small: "4px",
   };
-
-  // 状态定义
-  const passwordChanging = ref(false);
-  const infoSubmitting = ref(false);
-
-  // 用户基础信息表单
-  const infoFormState = reactive<InfoFormState>({
-    name: undefined,
-    gender: 1,
-    mobile: undefined,
-    email: undefined,
-    username: undefined,
-    dept_name: undefined,
-    dept: {},
-    positions: [],
-    roles: [],
-    avatar: undefined,
-    created_time: undefined,
-  });
-
-  // 修改密码表单
-  const passwordFormState = reactive<PasswordFormState>({
-    old_password: '',
-    new_password: '',
-    confirm_password: '',
-  });
-
-  // 头像上传处理优化
-  const fileList = ref<any[]>([]);
-  const uploadRef = ref<InstanceType<typeof ElUpload>>();
-
-  // 文件上传前校验
-  const handleBeforeUpload = (file: File) => {
-    const isImage = file.type.startsWith('image/');
-    const isLt2M = file.size / 1024 / 1024 < 2;
-
-    if (!isImage) {
-      ElMessage.error('只能上传图片文件');
-      return false;
-    }
-    if (!isLt2M) {
-      ElMessage.error('上传图片大小不能超过 2MB!');
-      return false;
-    }
-    return true;
+  return {
+    marginRight: marginMap[size.value || "default"],
   };
+});
 
-  // 自定义上传处理
-  const handleUpload = async (options: UploadRequestOptions) => {
-    try {
-      const file = options.file;
-      const formData = new FormData();
-      formData.append('file', file);
+// 字典数据
+const getOptions = async () => {
+  return await dictStore.getDict(["sys_user_sex"]);
+};
 
-      const response = await UserAPI.uploadCurrentUserAvatar(formData);
+// 状态定义
+const passwordChanging = ref(false);
+const infoSubmitting = ref(false);
 
-      if (response.data.code === 0 && response.data.data) {
-        const fileUrl = response.data.data.file_url;
-        updateAvatar(fileUrl);
-        options.onSuccess(response);
-        // 重置上传组件状态，允许再次选择上传
-        if (uploadRef.value) {
-          uploadRef.value.clearFiles();
-        }
-        fileList.value = [];
-      } else {
-        const errorMsg = response.data.msg || '上传失败';
-        ElMessage.error(errorMsg);
-        options.onError({
-          ...new Error(errorMsg),
-          status: response.status || 500,
-          method: 'POST',
-          url: '/system/user/current/avatar/upload',
-        });
-      }
-    } catch (error) {
-      ElMessage.error('头像上传失败，请重试');
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      options.onError({
-        ...errorObj,
-        status: 500,
-        method: 'POST',
-        url: '/system/user/current/avatar/upload',
-      });
-      console.error('Upload error:', error);
-    }
-  };
+// 用户基础信息表单
+const infoFormState = reactive<InfoFormState>({
+  name: undefined,
+  gender: 1,
+  mobile: undefined,
+  email: undefined,
+  username: undefined,
+  dept_name: undefined,
+  dept: {},
+  positions: [],
+  roles: [],
+  avatar: undefined,
+  created_time: undefined,
+});
 
-  // 处理文件选择变化
-  const handleFileChange = (file: UploadFile, files: UploadFile[]) => {
-    // 当有新文件被添加且状态为ready时触发上传
-    if (file) {
-      // 更新文件列表
-      fileList.value = [...files];
-      // 提交上传
+// 修改密码表单
+const passwordFormState = reactive<PasswordFormState>({
+  old_password: "",
+  new_password: "",
+  confirm_password: "",
+});
+
+// 头像上传处理优化
+const fileList = ref<any[]>([]);
+const uploadRef = ref<InstanceType<typeof ElUpload>>();
+
+// 文件上传前校验
+const handleBeforeUpload = (file: File) => {
+  const isImage = file.type.startsWith("image/");
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isImage) {
+    ElMessage.error("只能上传图片文件");
+    return false;
+  }
+  if (!isLt2M) {
+    ElMessage.error("上传图片大小不能超过 2MB!");
+    return false;
+  }
+  return true;
+};
+
+// 自定义上传处理
+const handleUpload = async (options: UploadRequestOptions) => {
+  try {
+    const file = options.file;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await UserAPI.uploadCurrentUserAvatar(formData);
+
+    if (response.data.code === 0 && response.data.data) {
+      const fileUrl = response.data.data.file_url;
+      updateAvatar(fileUrl);
+      options.onSuccess(response);
+      // 重置上传组件状态，允许再次选择上传
       if (uploadRef.value) {
-        uploadRef.value.submit();
+        uploadRef.value.clearFiles();
       }
-    }
-  };
-
-  // 更新头像信息
-  const updateAvatar = (fileUrl: string) => {
-    if (fileUrl) {
-      // 更新头像状态
-      infoFormState.avatar = fileUrl;
-      // 确保DOM正确更新
-      nextTick(() => {
-        console.log('头像已更新:', infoFormState.avatar);
-      });
+      fileList.value = [];
     } else {
-      ElMessage.error('无效的头像URL');
-      console.error('Invalid fileUrl:', fileUrl);
+      const errorMsg = response.data.msg || "上传失败";
+      ElMessage.error(errorMsg);
+      options.onError({
+        ...new Error(errorMsg),
+        status: response.status || 500,
+        method: "POST",
+        url: "/system/user/current/avatar/upload",
+      });
     }
-  };
-
-  // 邮箱校验规则优化
-  const rules = {
-    name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-    mobile: [
-      {
-        pattern: /^1[3-9]\d{9}$/,
-        message: '请输入有效的手机号格式',
-        trigger: 'blur',
-      },
-    ],
-    email: [
-      {
-        pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
-        message: '请输入有效的邮箱格式',
-        trigger: 'blur',
-      },
-    ],
-  };
-
-  const resetPasswordRules = {
-    old_password: [
-      {
-        required: true,
-        trigger: 'blur',
-        message: t('login.password'),
-      },
-    ],
-    new_password: [
-      {
-        required: true,
-        trigger: 'blur',
-        message: t('login.message.password.required'),
-      },
-      {
-        min: 6,
-        message: t('login.message.password.min'),
-        trigger: 'blur',
-      },
-    ],
-    confirm_password: [
-      {
-        required: true,
-        trigger: 'blur',
-        message: t('login.message.password.required'),
-      },
-      {
-        min: 6,
-        message: t('login.message.password.min'),
-        trigger: 'blur',
-      },
-      {
-        validator: (_: any, value: string) => {
-          return value === passwordFormState.new_password;
-        },
-        trigger: 'blur',
-        message: t('login.message.password.inconformity'),
-      },
-    ],
-  };
-
-  // 初始化表单
-  const initInfoForm = () => {
-    const basicInfo = userStore.basicInfo;
-    Object.assign(infoFormState, { ...basicInfo });
-  };
-
-  // 初始化密码表单
-  const initPasswordForm = () => {
-    Object.assign(passwordFormState, {
-      old_password: '',
-      new_password: '',
-      confirm_password: '',
+  } catch (error) {
+    ElMessage.error("头像上传失败，请重试");
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    options.onError({
+      ...errorObj,
+      status: 500,
+      method: "POST",
+      url: "/system/user/current/avatar/upload",
     });
-  };
+    console.error("Upload error:", error);
+  }
+};
 
-  // 基本信息表单提交
-  const handleSave = async () => {
-    try {
-      infoSubmitting.value = true;
-      const valid = await infoFormRef.value?.validate().catch(() => false);
-      if (!valid) {
-        return;
-      }
-      // 确保avatar字段被正确处理
-      const response = await UserAPI.updateCurrentUserInfo({ ...infoFormState });
-      await userStore.setUserInfo(response.data.data);
-      ElMessage.success('个人资料已保存');
-    } finally {
-      infoSubmitting.value = false;
+// 处理文件选择变化
+const handleFileChange = (file: UploadFile, files: UploadFile[]) => {
+  // 当有新文件被添加且状态为ready时触发上传
+  if (file) {
+    // 更新文件列表
+    fileList.value = [...files];
+    // 提交上传
+    if (uploadRef.value) {
+      uploadRef.value.submit();
     }
-  };
+  }
+};
 
-  // 修改密码
-  const handlePasswordChange = async () => {
-    try {
-      passwordChanging.value = true;
-      const valid = await passwordFormRef.value?.validate().catch(() => false);
-      if (!valid) {
-        return;
-      }
-      const response = await UserAPI.changeCurrentUserPassword(passwordFormState);
-      initPasswordForm();
-      await redirectToLogin(response.data.msg);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      passwordChanging.value = false;
-    }
-  };
+// 更新头像信息
+const updateAvatar = (fileUrl: string) => {
+  if (fileUrl) {
+    // 更新头像状态
+    infoFormState.avatar = fileUrl;
+    // 确保DOM正确更新
+    nextTick(() => {
+      console.log("头像已更新:", infoFormState.avatar);
+    });
+  } else {
+    ElMessage.error("无效的头像URL");
+    console.error("Invalid fileUrl:", fileUrl);
+  }
+};
 
-  onMounted(async () => {
-    await getOptions();
-    initInfoForm();
+// 邮箱校验规则优化
+const rules = {
+  name: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  mobile: [
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: "请输入有效的手机号格式",
+      trigger: "blur",
+    },
+  ],
+  email: [
+    {
+      pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
+      message: "请输入有效的邮箱格式",
+      trigger: "blur",
+    },
+  ],
+};
+
+const resetPasswordRules = {
+  old_password: [
+    {
+      required: true,
+      trigger: "blur",
+      message: t("login.password"),
+    },
+  ],
+  new_password: [
+    {
+      required: true,
+      trigger: "blur",
+      message: t("login.message.password.required"),
+    },
+    {
+      min: 6,
+      message: t("login.message.password.min"),
+      trigger: "blur",
+    },
+  ],
+  confirm_password: [
+    {
+      required: true,
+      trigger: "blur",
+      message: t("login.message.password.required"),
+    },
+    {
+      min: 6,
+      message: t("login.message.password.min"),
+      trigger: "blur",
+    },
+    {
+      validator: (_: any, value: string) => {
+        return value === passwordFormState.new_password;
+      },
+      trigger: "blur",
+      message: t("login.message.password.inconformity"),
+    },
+  ],
+};
+
+// 初始化表单
+const initInfoForm = () => {
+  const basicInfo = userStore.basicInfo;
+  Object.assign(infoFormState, { ...basicInfo });
+};
+
+// 初始化密码表单
+const initPasswordForm = () => {
+  Object.assign(passwordFormState, {
+    old_password: "",
+    new_password: "",
+    confirm_password: "",
   });
+};
+
+// 基本信息表单提交
+const handleSave = async () => {
+  try {
+    infoSubmitting.value = true;
+    const valid = await infoFormRef.value?.validate().catch(() => false);
+    if (!valid) {
+      return;
+    }
+    // 确保avatar字段被正确处理
+    const response = await UserAPI.updateCurrentUserInfo({ ...infoFormState });
+    await userStore.setUserInfo(response.data.data);
+    ElMessage.success("个人资料已保存");
+  } finally {
+    infoSubmitting.value = false;
+  }
+};
+
+// 修改密码
+const handlePasswordChange = async () => {
+  try {
+    passwordChanging.value = true;
+    const valid = await passwordFormRef.value?.validate().catch(() => false);
+    if (!valid) {
+      return;
+    }
+    const response = await UserAPI.changeCurrentUserPassword(passwordFormState);
+    initPasswordForm();
+    await redirectToLogin(response.data.msg);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    passwordChanging.value = false;
+  }
+};
+
+onMounted(async () => {
+  await getOptions();
+  initInfoForm();
+});
 </script>
 
 <style lang="scss" scoped>
-  /* 样式调整 */
-  .user-info-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* 样式调整 */
+.user-info-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-    .avatar-wrapper {
-      position: relative;
-      margin-bottom: 16px;
+  .avatar-wrapper {
+    position: relative;
+    margin-bottom: 16px;
 
-      .el-upload {
-        &:hover {
-          opacity: 0.8; /* 鼠标悬浮时稍微降低透明度 */
-        }
-      }
-
-      .upload-trigger {
-        // top: 50%;
-        // left: 50%;
-        position: absolute;
-        width: 28px;
-        height: 28px;
-        background: var(--el-color-primary);
-        border-radius: 50%;
-        opacity: 0;
-        transform: translate(-50%, -50%);
-      }
-
-      /* 提升 hover 样式优先级 */
-      &:hover .upload-trigger {
-        opacity: 1 !important; /* 强制生效 */
+    .el-upload {
+      &:hover {
+        opacity: 0.8; /* 鼠标悬浮时稍微降低透明度 */
       }
     }
-  }
 
-  /* 修复表单输入框清除按钮导致的宽度变化问题 */
-  .el-input {
-    transition: none !important;
-  }
+    .upload-trigger {
+      // top: 50%;
+      // left: 50%;
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background: var(--el-color-primary);
+      border-radius: 50%;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
 
-  .el-input__wrapper {
-    transition: none !important;
+    /* 提升 hover 样式优先级 */
+    &:hover .upload-trigger {
+      opacity: 1 !important; /* 强制生效 */
+    }
   }
+}
 
-  .iconStyle {
-    margin-right: 6px;
-  }
+/* 修复表单输入框清除按钮导致的宽度变化问题 */
+.el-input {
+  transition: none !important;
+}
 
-  .cell-item {
-    display: flex;
-    align-items: center;
-  }
+.el-input__wrapper {
+  transition: none !important;
+}
+
+.iconStyle {
+  margin-right: 6px;
+}
+
+.cell-item {
+  display: flex;
+  align-items: center;
+}
 </style>

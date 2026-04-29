@@ -14,28 +14,28 @@
 </template>
 
 <script setup lang="ts">
-  import { useLayout } from '../composables/useLayout';
-  import { useLayoutResponsive } from '../composables/useLayoutResponsive';
+import { useLayout } from "../composables/useLayout";
+import { useLayoutResponsive } from "../composables/useLayoutResponsive";
 
-  // 布局相关
-  const { layoutClass, isSidebarOpen, closeSidebar } = useLayout();
+// 布局相关
+const { layoutClass, isSidebarOpen, closeSidebar } = useLayout();
 
-  // 响应式处理
-  const { isMobile } = useLayoutResponsive();
+// 响应式处理
+const { isMobile } = useLayoutResponsive();
 </script>
 
 <style lang="scss" scoped>
-  .layout {
+.layout {
+  width: 100%;
+  height: 100%;
+
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
     width: 100%;
     height: 100%;
-
-    &__overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 999;
-      width: 100%;
-      height: 100%;
-    }
   }
+}
 </style>

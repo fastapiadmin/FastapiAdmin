@@ -1,13 +1,13 @@
-import type { App } from 'vue';
-import type { NavigationGuardNext, RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
-import NProgress from '@/utils/nprogress';
-import { Auth } from '@/utils/auth';
-import router from '@/router';
-import { usePermissionStore, useUserStore } from '@/store';
+import type { App } from "vue";
+import type { NavigationGuardNext, RouteLocationNormalized, RouteRecordRaw } from "vue-router";
+import NProgress from "@/utils/nprogress";
+import { Auth } from "@/utils/auth";
+import router from "@/router";
+import { usePermissionStore, useUserStore } from "@/store";
 
 export function initPermission(app: App<Element>) {
   // 白名单路由
-  const whiteList = ['/login'];
+  const whiteList = ["/login"];
 
   router.beforeEach(async (to, from, next) => {
     NProgress.start();
@@ -17,8 +17,8 @@ export function initPermission(app: App<Element>) {
 
       if (isLoggedIn) {
         // 如果已登录但访问登录页，重定向到首页
-        if (to.path === '/login') {
-          next({ path: '/' });
+        if (to.path === "/login") {
+          next({ path: "/" });
           return;
         }
 
@@ -35,7 +35,7 @@ export function initPermission(app: App<Element>) {
       }
     } catch (error) {
       // 错误处理：重置状态并跳转登录（保留 redirect 与未登录分支一致）
-      console.error('Route guard error:', error);
+      console.error("Route guard error:", error);
       await useUserStore().resetAllState();
       next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
       NProgress.done();
@@ -79,14 +79,14 @@ async function handleAuthenticatedUser(
 
     // 路由已加载，检查路由是否存在
     if (to.matched.length === 0) {
-      next('/404');
+      next("/404");
       return;
     }
 
     // 动态设置页面标题（仅做简单净化，避免 query 注入标签/过长字符串影响标签栏展示）
     const rawTitle = (to.params.title as string) || (to.query.title as string);
-    if (rawTitle && typeof rawTitle === 'string') {
-      const safe = rawTitle.replace(/[<>]/g, '').trim().slice(0, 64);
+    if (rawTitle && typeof rawTitle === "string") {
+      const safe = rawTitle.replace(/[<>]/g, "").trim().slice(0, 64);
       if (safe) {
         to.meta.title = safe;
       }
@@ -94,7 +94,7 @@ async function handleAuthenticatedUser(
 
     next();
   } catch (error) {
-    console.error('❌ Route guard error:', error);
+    console.error("❌ Route guard error:", error);
     await useUserStore().resetAllState();
     next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
     NProgress.done();

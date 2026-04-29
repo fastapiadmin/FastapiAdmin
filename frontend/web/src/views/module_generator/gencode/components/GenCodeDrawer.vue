@@ -98,67 +98,67 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
-  import type { FormRules } from 'element-plus';
-  import { Close, Right, FolderOpened, Back, Download, Finished } from '@element-plus/icons-vue';
-  import type { EditorConfiguration } from 'codemirror';
-  import type { GenTableSchema } from '@/api/module_generator/gencode';
-  import type { DictTable } from '@/api/module_system/dict';
-  import EnhancedDrawer from '@/components/CURD/EnhancedDrawer.vue';
-  import type { TreeNode } from '../types';
-  import GenBasicStep from './GenBasicStep.vue';
-  import GenColumnsStep from './GenColumnsStep.vue';
-  import GenPreviewStep from './GenPreviewStep.vue';
+import { computed } from "vue";
+import type { FormRules } from "element-plus";
+import { Close, Right, FolderOpened, Back, Download, Finished } from "@element-plus/icons-vue";
+import type { EditorConfiguration } from "codemirror";
+import type { GenTableSchema } from "@/api/module_generator/gencode";
+import type { DictTable } from "@/api/module_system/dict";
+import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import type { TreeNode } from "../types";
+import GenBasicStep from "./GenBasicStep.vue";
+import GenColumnsStep from "./GenColumnsStep.vue";
+import GenPreviewStep from "./GenPreviewStep.vue";
 
-  defineOptions({ name: 'GenCodeDrawer' });
+defineOptions({ name: "GenCodeDrawer" });
 
-  const props = defineProps<{
-    info: GenTableSchema;
-    rules: FormRules;
-    activeStep: number;
-    menuOptions: OptionType[];
-    dictOptions: DictTable[];
-    loading: boolean;
-    nextStepLoading: boolean;
-    previewLoading: boolean;
-    previewTypeOptions: string[];
-    filteredTreeData: TreeNode[];
-    cmOptions: EditorConfiguration;
-    bulkSet: (field: string | string[], value: unknown) => void;
-  }>();
+const props = defineProps<{
+  info: GenTableSchema;
+  rules: FormRules;
+  activeStep: number;
+  menuOptions: OptionType[];
+  dictOptions: DictTable[];
+  loading: boolean;
+  nextStepLoading: boolean;
+  previewLoading: boolean;
+  previewTypeOptions: string[];
+  filteredTreeData: TreeNode[];
+  cmOptions: EditorConfiguration;
+  bulkSet: (field: string | string[], value: unknown) => void;
+}>();
 
-  const nextStepButtonLabel = computed(() =>
-    props.activeStep === 0 ? '下一步：字段配置' : '下一步：预览代码'
-  );
+const nextStepButtonLabel = computed(() =>
+  props.activeStep === 0 ? "下一步：字段配置" : "下一步：预览代码"
+);
 
-  const drawerVisible = defineModel<boolean>({ required: true });
+const drawerVisible = defineModel<boolean>({ required: true });
 
-  const previewScope = defineModel<'all' | 'frontend' | 'backend'>('previewScope', {
-    required: true,
-  });
-  const previewTypes = defineModel<string[]>('previewTypes', { required: true });
-  const code = defineModel<string>('code', { required: true });
+const previewScope = defineModel<"all" | "frontend" | "backend">("previewScope", {
+  required: true,
+});
+const previewTypes = defineModel<string[]>("previewTypes", { required: true });
+const code = defineModel<string>("code", { required: true });
 
-  const emit = defineEmits<{
-    close: [];
-    'prev-step': [];
-    'next-step': [];
-    save: [];
-    'gen-download': [];
-    'gen-write': [];
-    'clear-master-sub': [];
-    'master-sub-blur': [];
-    'file-click': [data: TreeNode];
-    'copy-code': [];
-  }>();
+const emit = defineEmits<{
+  close: [];
+  "prev-step": [];
+  "next-step": [];
+  save: [];
+  "gen-download": [];
+  "gen-write": [];
+  "clear-master-sub": [];
+  "master-sub-blur": [];
+  "file-click": [data: TreeNode];
+  "copy-code": [];
+}>();
 </script>
 
 <style scoped lang="scss">
-  /* 新版 ElDrawer 内部用 Splitter，size 需为百分比或纯数字(px)，勿用 min()，否则面板宽度可能异常 */
-  .gencode-drawer-step-wrap {
-    max-height: calc(100vh - 220px);
-    padding-right: 6px;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
+/* 新版 ElDrawer 内部用 Splitter，size 需为百分比或纯数字(px)，勿用 min()，否则面板宽度可能异常 */
+.gencode-drawer-step-wrap {
+  max-height: calc(100vh - 220px);
+  padding-right: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 </style>

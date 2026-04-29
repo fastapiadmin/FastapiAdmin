@@ -1,78 +1,51 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/tenant';
+const API_PATH = "/system/tenant";
 
 const TenantAPI = {
-  /**
-   * 获取租户列表
-   * @param query 查询参数
-   * @returns 租户列表
-   */
   listTenant(query?: TenantPageQuery) {
-    return request<PageResult<TenantTable[]>>({
+    return request<ApiResponse<PageResult<TenantTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取租户详情
-   * @param id 租户ID
-   * @returns 租户详情
-   */
   detailTenant(id: number) {
     return request<ApiResponse<TenantTable>>({
       url: `${API_PATH}/detail/${id}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建租户
-   * @param body 租户信息
-   */
   createTenant(body: TenantCreateForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新租户
-   * @param id 租户ID
-   * @param body 租户信息
-   */
   updateTenant(id: number, body: TenantUpdateForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除租户
-   * @param body 租户ID列表
-   */
   deleteTenant(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 批量设置租户状态
-   * @param body 批量操作参数
-   */
   batchTenant(body: BatchType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },

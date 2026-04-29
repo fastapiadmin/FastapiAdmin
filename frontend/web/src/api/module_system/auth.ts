@@ -1,93 +1,64 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/auth';
+const API_PATH = "/system/auth";
 
 const AuthAPI = {
-  /**
-   * 登录
-   * @param body 登录表单数据
-   * @returns 登录响应
-   */
   login(body: LoginFormData) {
     return request<ApiResponse<LoginResult>>({
       url: `${API_PATH}/login`,
-      method: 'post',
+      method: "post",
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
       data: body,
     });
   },
 
-  /**
-   * 刷新令牌
-   * @param body 刷新令牌请求体
-   * @returns 刷新响应
-   */
   refreshToken(body: RefreshToekenBody) {
     return request<ApiResponse<LoginResult>>({
       url: `${API_PATH}/token/refresh`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 获取验证码
-   * @returns 验证码信息
-   */
   getCaptcha() {
     return request<ApiResponse<CaptchaInfo>>({
       url: `${API_PATH}/captcha/get`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 退出登录
-   * @param body 退出登录操作
-   */
   logout(body: LogoutBody) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/logout`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 获取免登录用户列表
-   * @returns 免登录用户列表
-   */
+  /** 获取免登录用户列表 */
   getAutoLoginUsers() {
     return request<ApiResponse<AutoLoginUser[]>>({
       url: `${API_PATH}/auto-login/users`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 获取免登录Token
-   * @param userId 用户ID
-   * @returns 免登录Token响应
-   */
+  /** 获取免登录Token */
   getAutoLoginToken(userId: number) {
     return request<ApiResponse<AutoLoginToken>>({
       url: `${API_PATH}/auto-login/token`,
-      method: 'post',
+      method: "post",
       params: { user_id: userId },
     });
   },
 
-  /**
-   * 免登录
-   * @param token 免登录Token
-   * @returns 登录响应
-   */
+  /** 免登录 */
   autoLogin(token: string) {
     return request<ApiResponse<LoginResult>>({
       url: `${API_PATH}/auto-login`,
-      method: 'post',
+      method: "post",
       params: { token },
     });
   },

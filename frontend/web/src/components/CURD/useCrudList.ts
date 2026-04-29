@@ -1,6 +1,6 @@
-import { ElMessage } from 'element-plus';
-import { ref } from 'vue';
-import type { IObject, PageContentInstance, PageSearchInstance } from './types';
+import { ElMessage } from "element-plus";
+import { ref } from "vue";
+import type { IObject, PageContentInstance, PageSearchInstance } from "./types";
 
 /**
  * 仅列表查询区 + 表格区时复用：searchRef / contentRef 与查询、重置拉数逻辑。
@@ -16,8 +16,8 @@ export function useCrudList() {
       const filterParams = contentRef.value?.getFilterParams() || {};
       contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);
     } catch (error) {
-      console.error('查询数据失败:', error);
-      ElMessage.error('查询数据失败: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("查询数据失败:", error);
+      ElMessage.error("查询数据失败: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -26,8 +26,8 @@ export function useCrudList() {
       const filterParams = contentRef.value?.getFilterParams() || {};
       contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);
     } catch (error) {
-      console.error('重置数据失败:', error);
-      ElMessage.error('重置数据失败: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("重置数据失败:", error);
+      ElMessage.error("重置数据失败: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -38,8 +38,8 @@ export function useCrudList() {
       const f = contentRef.value?.getFilterParams() ?? {};
       contentRef.value?.fetchPageData({ ...q, ...f }, true);
     } catch (error) {
-      console.error('刷新列表失败:', error);
-      ElMessage.error('刷新列表失败: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("刷新列表失败:", error);
+      ElMessage.error("刷新列表失败: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 

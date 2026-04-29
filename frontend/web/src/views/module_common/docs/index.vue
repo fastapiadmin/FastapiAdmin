@@ -6,16 +6,16 @@
 </template>
 
 <script lang="ts" setup>
-  defineOptions({
-    name: 'Docs',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Docs",
+  inheritAttrs: false,
+});
 
-  const url = ref(import.meta.env.VITE_APP_BASE_API + '/docs');
+const url = ref(import.meta.env.VITE_APP_BASE_API + "/docs");
 
-  onBeforeUnmount(() => {
-    window.onresize = null;
-  });
+onBeforeUnmount(() => {
+  window.onresize = null;
+});
 </script>
 
 <style lang="scss" scoped></style>

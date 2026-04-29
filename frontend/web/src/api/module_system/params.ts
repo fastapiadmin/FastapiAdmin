@@ -1,106 +1,69 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/param';
+const API_PATH = "/system/param";
 
 const ParamsAPI = {
-  /**
-   * 上传文件
-   * @param body 文件数据
-   * @returns 上传后的文件路径
-   */
   uploadFile(body: any) {
     return request<ApiResponse<UploadFilePath>>({
       url: `${API_PATH}/upload`,
-      method: 'post',
+      method: "post",
       data: body,
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { "Content-Type": "multipart/form-data" },
     });
   },
 
-  /**
-   * 获取初始化配置
-   * @returns 初始化配置列表
-   */
   getInitConfig() {
     return request<ApiResponse<ConfigTable[]>>({
       url: `${API_PATH}/info`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 获取参数列表
-   * @param query 查询参数
-   * @returns 参数列表
-   */
   listParams(query: ConfigPageQuery) {
-    return request<PageResult<ConfigTable[]>>({
+    return request<ApiResponse<PageResult<ConfigTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取参数详情
-   * @param query 参数ID
-   * @returns 参数详情
-   */
   detailParams(query: number) {
     return request<ApiResponse<ConfigTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建参数
-   * @param body 参数信息
-   */
   createParams(body: ConfigForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新参数
-   * @param id 参数ID
-   * @param body 参数信息
-   */
   updateParams(id: number, body: ConfigForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除参数
-   * @param body 参数ID列表
-   */
   deleteParams(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 导出参数
-   * @param body 查询参数
-   * @returns 导出的参数文件
-   */
   exportParams(body: ConfigPageQuery) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/export`,
-      method: 'post',
+      method: "post",
       data: body,
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 };

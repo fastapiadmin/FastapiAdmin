@@ -1,82 +1,51 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
 /** 对应后端 `plugin.module_task.workflow.node_type` */
-const API_PATH = '/task/workflow/node-type';
+const API_PATH = "/task/workflow/node-type";
 
 const WorkflowNodeTypeAPI = {
-  /**
-   * 获取编排节点类型选项
-   * @returns 编排节点类型选项
-   */
   getWorkflowNodeTypeOptions() {
     return request<ApiResponse<WorkflowNodeTypeOption[]>>({
       url: `${API_PATH}/options`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 获取编排节点类型列表
-   * @param query 查询参数
-   * @returns 编排节点类型列表
-   */
   getWorkflowNodeTypeList(query: WorkflowNodeTypePageQuery) {
-    return request<PageResult<WorkflowNodeTypeTable[]>>({
+    return request<ApiResponse<PageResult<WorkflowNodeTypeTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取编排节点类型详情
-   * @param id 编排节点类型ID
-   * @returns 编排节点类型详情
-   */
   getWorkflowNodeTypeDetail(id: number) {
     return request<ApiResponse<WorkflowNodeTypeTable>>({
       url: `${API_PATH}/detail/${id}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建编排节点类型
-   * @param body 编排节点类型信息
-   * @returns 编排节点类型详情
-   */
   createWorkflowNodeType(body: WorkflowNodeTypeForm) {
     return request<ApiResponse<WorkflowNodeTypeTable>>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新编排节点类型
-   * @param id 编排节点类型ID
-   * @param body 编排节点类型信息
-   * @returns 编排节点类型详情
-   */
   updateWorkflowNodeType(id: number, body: WorkflowNodeTypeForm) {
     return request<ApiResponse<WorkflowNodeTypeTable>>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除编排节点类型
-   * @param body 编排节点类型ID列表
-   * @returns 删除结果
-   * @returns 删除结果
-   */
   deleteWorkflowNodeType(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },

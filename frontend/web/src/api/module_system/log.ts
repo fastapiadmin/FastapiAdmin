@@ -1,56 +1,37 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/log';
+const API_PATH = "/system/log";
 
 const LogAPI = {
-  /**
-   * 获取日志列表
-   * @param query 查询参数
-   * @returns 日志列表
-   */
   listLog(query: LogPageQuery) {
-    return request<PageResult<LogTable[]>>({
+    return request<ApiResponse<PageResult<LogTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取日志详情
-   * @param query 日志ID
-   * @returns 日志详情
-   */
   detailLog(query: number) {
     return request<ApiResponse<LogTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 删除日志
-   * @param body 日志ID列表
-   */
   deleteLog(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 导出日志
-   * @param body 查询参数
-   * @returns 日志导出文件
-   */
   exportLog(body: LogPageQuery) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/export`,
-      method: 'post',
+      method: "post",
       data: body,
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 };

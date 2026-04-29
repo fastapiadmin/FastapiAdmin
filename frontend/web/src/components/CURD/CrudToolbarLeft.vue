@@ -56,37 +56,37 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
-  import type { CrudToolbarConfigButton } from './types';
+import { computed } from "vue";
+import type { CrudToolbarConfigButton } from "./types";
 
-  const props = withDefaults(
-    defineProps<{
-      /** 与 PageContent `toolbarLeftBtn` 一致时走配置驱动（与 handleToolbar 对齐） */
-      configButtons?: CrudToolbarConfigButton[];
-      /** 勾选行主键，用于禁用批删 / 更多（插槽完全自定义时可不传） */
-      removeIds?: Array<string | number>;
-      /** 新增按钮权限，不传则不显示（configButtons 未传时） */
-      permCreate?: string | string[];
-      /** 批量删除权限，不传则不显示 */
-      permDelete?: string | string[];
-      /** 「更多」下拉权限，不传则不显示 */
-      permPatch?: string | string[];
-      /** 批量删除中（按钮 loading，并禁用「更多」） */
-      deleteLoading?: boolean;
-    }>(),
-    {
-      removeIds: () => [],
-      deleteLoading: false,
-    }
-  );
+const props = withDefaults(
+  defineProps<{
+    /** 与 PageContent `toolbarLeftBtn` 一致时走配置驱动（与 handleToolbar 对齐） */
+    configButtons?: CrudToolbarConfigButton[];
+    /** 勾选行主键，用于禁用批删 / 更多（插槽完全自定义时可不传） */
+    removeIds?: Array<string | number>;
+    /** 新增按钮权限，不传则不显示（configButtons 未传时） */
+    permCreate?: string | string[];
+    /** 批量删除权限，不传则不显示 */
+    permDelete?: string | string[];
+    /** 「更多」下拉权限，不传则不显示 */
+    permPatch?: string | string[];
+    /** 批量删除中（按钮 loading，并禁用「更多」） */
+    deleteLoading?: boolean;
+  }>(),
+  {
+    removeIds: () => [],
+    deleteLoading: false,
+  }
+);
 
-  defineEmits<{
-    /** 配置模式：与 PageContent handleToolbar 一致 */
-    toolbar: [name: string];
-    add: [];
-    delete: [];
-    more: [value: string];
-  }>();
+defineEmits<{
+  /** 配置模式：与 PageContent handleToolbar 一致 */
+  toolbar: [name: string];
+  add: [];
+  delete: [];
+  more: [value: string];
+}>();
 
-  const moreDisabled = computed(() => props.removeIds.length === 0 || props.deleteLoading);
+const moreDisabled = computed(() => props.removeIds.length === 0 || props.deleteLoading);
 </script>
