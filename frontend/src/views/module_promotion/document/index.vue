@@ -95,9 +95,9 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="document_no" label="文档编号" width="150" />
-        <el-table-column prop="title" label="文档标题" min-width="200" show-overflow-tooltip>
+        <el-table-column prop="document_title" label="文档标题" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.title || "-" }}</el-link>
+            <el-link type="primary" @click="handleView(row)">{{ row.document_title || "-" }}</el-link>
           </template>
         </el-table-column>
         <el-table-column prop="document_type" label="文档类型" width="100">
@@ -106,7 +106,14 @@
           </template>
         </el-table-column>
         <el-table-column prop="author_name" label="作者" width="100" />
-        <el-table-column prop="published_date" label="发布日期" width="110" />
+        <el-table-column prop="ai_generation_status" label="AI状态" width="100">
+          <template #default="{ row }">
+            <el-tag v-if="row.ai_generation_status" :type="getAiStatusType(row.ai_generation_status)">
+              {{ getAiStatusLabel(row.ai_generation_status) }}
+            </el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="document_status" label="文档状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.document_status)">
@@ -114,7 +121,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button
               v-permission="['module_promotion:document:detail']"
@@ -131,6 +138,15 @@
               @click="handleEdit(row)"
             >
               编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:document:generate']"
+              link
+              type="success"
+              :disabled="row.ai_generation_status === 'generating'"
+              @click="handleGenerateWechat(row)"
+            >
+              AI生成
             </el-button>
             <el-button
               v-permission="['module_promotion:document:delete']"
@@ -158,7 +174,7 @@
     </el-card>
 
     <!-- 详情弹窗 -->
-    <el-dialog v-model="detailDialog.visible" title="活动撰写详情" width="650px">
+    <el-dialog v-model="detailDialog.visible" title="活动撰写详情" width="800px">
       <el-descriptions v-if="detailDialog.data" :column="2" border>
         <el-descriptions-item label="文档编号">
           {{ detailDialog.data.document_no }}
@@ -167,33 +183,44 @@
           <el-tag>{{ getTypeLabel(detailDialog.data.document_type) }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="文档标题" :span="2">
-          {{ detailDialog.data.title || "-" }}
+          {{ detailDialog.data.document_title || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="活动名称">
+          {{ detailDialog.data.activity_name || "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="作者">
           {{ detailDialog.data.author_name || "-" }}
         </el-descriptions-item>
-        <el-descriptions-item label="发布日期">
-          {{ detailDialog.data.published_date || "-" }}
+        <el-descriptions-item label="AI生成状态">
+          <el-tag v-if="detailDialog.data.ai_generation_status" :type="getAiStatusType(detailDialog.data.ai_generation_status)">
+            {{ getAiStatusLabel(detailDialog.data.ai_generation_status) }}
+          </el-tag>
+          <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="文档状态">
           <el-tag :type="getStatusType(detailDialog.data.document_status)">
             {{ getStatusLabel(detailDialog.data.document_status) }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="附件">
-          <a
-            v-if="detailDialog.data.attachment_url"
-            :href="detailDialog.data.attachment_url"
-            target="_blank"
-          >
-            查看附件
-          </a>
-          <span v-else>-</span>
+        <el-descriptions-item label="浏览次数">
+          {{ detailDialog.data.view_count || 0 }}
+        </el-descriptions-item>
+        <el-descriptions-item label="关键词" :span="2">
+          {{ detailDialog.data.keywords || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="文档摘要" :span="2">
+          {{ detailDialog.data.document_summary || "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="文档内容" :span="2">
-          <div style="white-space: pre-wrap; max-height: 300px; overflow-y: auto">
+          <div style="white-space: pre-wrap; max-height: 200px; overflow-y: auto">
             {{ detailDialog.data.document_content || "-" }}
           </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="微信公众号内容" :span="2">
+          <div v-if="detailDialog.data.wechat_formatted_content" style="max-height: 300px; overflow-y: auto">
+            <div v-html="detailDialog.data.wechat_formatted_content"></div>
+          </div>
+          <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="备注" :span="2">
           {{ detailDialog.data.remark || "-" }}
@@ -214,8 +241,11 @@
       width="650px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="文档标题" prop="title">
-          <el-input v-model="form.title" placeholder="请输入文档标题" />
+        <el-form-item label="活动名称" prop="activity_name">
+          <el-input v-model="form.activity_name" placeholder="请输入活动名称" />
+        </el-form-item>
+        <el-form-item label="文档标题" prop="document_title">
+          <el-input v-model="form.document_title" placeholder="请输入文档标题" />
         </el-form-item>
         <el-form-item label="文档类型" prop="document_type">
           <el-select v-model="form.document_type" placeholder="请选择文档类型" style="width: 100%">
@@ -237,29 +267,11 @@
         <el-form-item label="作者" prop="author_name">
           <el-input v-model="form.author_name" placeholder="请输入作者" />
         </el-form-item>
-        <el-form-item label="发布日期" prop="published_date">
-          <el-date-picker
-            v-model="form.published_date"
-            type="date"
-            placeholder="选择发布日期"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
+        <el-form-item label="关键词" prop="keywords">
+          <el-input v-model="form.keywords" placeholder="请输入关键词，多个用逗号分隔" />
         </el-form-item>
-        <el-form-item label="文档状态" prop="document_status">
-          <el-select
-            v-model="form.document_status"
-            placeholder="请选择文档状态"
-            style="width: 100%"
-          >
-            <el-option label="草稿" value="draft" />
-            <el-option label="待发布" value="pending" />
-            <el-option label="已发布" value="published" />
-            <el-option label="已归档" value="archived" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="附件URL" prop="attachment_url">
-          <el-input v-model="form.attachment_url" placeholder="请输入附件URL" />
+        <el-form-item label="文档摘要" prop="document_summary">
+          <el-input v-model="form.document_summary" type="textarea" :rows="2" placeholder="请输入文档摘要" />
         </el-form-item>
         <el-form-item label="文档内容" prop="document_content">
           <el-input
@@ -319,19 +331,19 @@ const formDialog = reactive({
 
 const formRef = ref<FormInstance>();
 const form = reactive<DocumentForm>({
+  activity_name: "",
   document_type: "news",
-  title: "",
+  document_title: "",
   author_id: undefined,
   author_name: "",
+  keywords: "",
+  document_summary: "",
   document_content: "",
-  attachment_url: "",
-  published_date: "",
-  document_status: "draft",
   remark: "",
 });
 
 const formRules: FormRules = {
-  title: [{ required: true, message: "请输入文档标题", trigger: "blur" }],
+  document_title: [{ required: true, message: "请输入文档标题", trigger: "blur" }],
   document_type: [{ required: true, message: "请选择文档类型", trigger: "change" }],
 };
 
@@ -362,6 +374,26 @@ function getStatusType(status: string): string {
     pending: "warning",
     published: "success",
     archived: "info",
+  };
+  return map[status] || "info";
+}
+
+function getAiStatusLabel(status: string): string {
+  const map: Record<string, string> = {
+    pending: "待生成",
+    generating: "生成中",
+    success: "已生成",
+    failed: "失败",
+  };
+  return map[status] || status;
+}
+
+function getAiStatusType(status: string): string {
+  const map: Record<string, string> = {
+    pending: "info",
+    generating: "warning",
+    success: "success",
+    failed: "danger",
   };
   return map[status] || "info";
 }
@@ -413,14 +445,14 @@ function handleCreate() {
   formDialog.type = "create";
   formDialog.id = null;
   Object.assign(form, {
+    activity_name: "",
     document_type: "news",
-    title: "",
+    document_title: "",
     author_id: undefined,
     author_name: "",
+    keywords: "",
+    document_summary: "",
     document_content: "",
-    attachment_url: "",
-    published_date: "",
-    document_status: "draft",
     remark: "",
   });
   formDialog.visible = true;
@@ -444,6 +476,30 @@ async function handleView(row: DocumentItem) {
     }
   } catch {
     ElMessage.error("获取详情失败");
+  }
+}
+
+async function handleGenerateWechat(row: DocumentItem) {
+  if (!row.document_content) {
+    ElMessage.warning("文档内容为空，无法生成");
+    return;
+  }
+  try {
+    await ElMessageBox.confirm("确定要AI生成微信公众号内容吗？", "提示", {
+      type: "info",
+    });
+    const res = await DocumentAPI.generateWechatContent(row.id);
+    if (res.data.code === 0) {
+      ElMessage.success("生成成功");
+      fetchData();
+      if (detailDialog.visible && detailDialog.data?.id === row.id) {
+        detailDialog.data = res.data.data;
+      }
+    } else {
+      ElMessage.error(res.data.msg || "生成失败");
+    }
+  } catch {
+    // 用户取消
   }
 }
 

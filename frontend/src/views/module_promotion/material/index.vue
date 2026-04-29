@@ -3,9 +3,9 @@
   <div class="app-container">
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
-        <el-form-item label="物料名称" prop="material_name">
+        <el-form-item label="物料名称" prop="name">
           <el-input
-            v-model="searchForm.material_name"
+            v-model="searchForm.name"
             placeholder="请输入物料名称"
             clearable
             style="width: 180px"
@@ -25,25 +25,13 @@
             <el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="仓库位置" prop="warehouse_location">
+        <el-form-item label="存放位置" prop="storage_location">
           <el-input
-            v-model="searchForm.warehouse_location"
-            placeholder="请输入仓库位置"
+            v-model="searchForm.storage_location"
+            placeholder="请输入存放位置"
             clearable
             style="width: 150px"
           />
-        </el-form-item>
-        <el-form-item label="状态" prop="material_status">
-          <el-select
-            v-model="searchForm.material_status"
-            placeholder="请选择状态"
-            clearable
-            style="width: 120px"
-          >
-            <el-option label="充足" value="available" />
-            <el-option label="不足" value="low" />
-            <el-option label="缺货" value="out" />
-          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
@@ -93,16 +81,10 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="material_no" label="物料编号" width="150" />
-        <el-table-column
-          prop="material_name"
-          label="物料名称"
-          min-width="180"
-          show-overflow-tooltip
-        >
+        <el-table-column prop="name" label="物料名称" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
             <el-link type="primary" @click="handleView(row)">
-              {{ row.material_name || "-" }}
+              {{ row.name || "-" }}
             </el-link>
           </template>
         </el-table-column>
@@ -114,27 +96,28 @@
         <el-table-column prop="specification" label="规格" width="120" show-overflow-tooltip />
         <el-table-column prop="unit" label="单位" width="80" />
         <el-table-column
-          prop="warehouse_location"
-          label="仓库位置"
+          prop="storage_location"
+          label="存放位置"
           width="120"
           show-overflow-tooltip
         />
         <el-table-column prop="total_stock" label="总库存" width="100" />
         <el-table-column prop="available_stock" label="可用库存" width="100">
           <template #default="{ row }">
-            <span :class="{ 'stock-low': row.available_stock < 10 }">
-              {{ row.available_stock }}
+            <span :class="{ 'stock-low': (row.available_stock || 0) < (row.low_stock_threshold || 10) }">
+              {{ row.available_stock || 0 }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="material_status" label="状态" width="100">
+        <el-table-column prop="low_stock_threshold" label="预警阈值" width="80" />
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.material_status)">
-              {{ getStatusLabel(row.material_status) }}
+            <el-tag :type="getStatusType(row.status)">
+              {{ getStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button
               v-permission="['module_promotion:material:detail']"
@@ -151,6 +134,14 @@
               @click="handleEdit(row)"
             >
               编辑
+            </el-button>
+            <el-button
+              v-permission="['module_promotion:material:apply']"
+              link
+              type="success"
+              @click="handleApply(row)"
+            >
+              申领
             </el-button>
             <el-button
               v-permission="['module_promotion:material:delete']"
@@ -180,14 +171,11 @@
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="物料详情" width="600px">
       <el-descriptions v-if="detailDialog.data" :column="2" border>
-        <el-descriptions-item label="物料编号">
-          {{ detailDialog.data.material_no }}
+        <el-descriptions-item label="物料名称" :span="2">
+          {{ detailDialog.data.name }}
         </el-descriptions-item>
         <el-descriptions-item label="物料类型">
           <el-tag>{{ getTypeLabel(detailDialog.data.material_type) }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="物料名称" :span="2">
-          {{ detailDialog.data.material_name }}
         </el-descriptions-item>
         <el-descriptions-item label="规格">
           {{ detailDialog.data.specification || "-" }}
@@ -195,24 +183,25 @@
         <el-descriptions-item label="单位">
           {{ detailDialog.data.unit || "-" }}
         </el-descriptions-item>
-        <el-descriptions-item label="仓库位置">
-          {{ detailDialog.data.warehouse_location || "-" }}
+        <el-descriptions-item label="存放位置" :span="2">
+          {{ detailDialog.data.storage_location || "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="总库存">
           {{ detailDialog.data.total_stock || 0 }}
         </el-descriptions-item>
         <el-descriptions-item label="可用库存">
-          <span :class="{ 'stock-low': (detailDialog.data.available_stock || 0) < 10 }">
-            {{ detailDialog.data.available_stock || 0 }}
-          </span>
+          {{ detailDialog.data.available_stock || 0 }}
         </el-descriptions-item>
-        <el-descriptions-item label="物料状态">
-          <el-tag :type="getStatusType(detailDialog.data.material_status)">
-            {{ getStatusLabel(detailDialog.data.material_status) }}
+        <el-descriptions-item label="预警阈值">
+          {{ detailDialog.data.low_stock_threshold || 10 }}
+        </el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(detailDialog.data.status)">
+            {{ getStatusLabel(detailDialog.data.status) }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="备注" :span="2">
-          {{ detailDialog.data.remark || "-" }}
+          {{ detailDialog.data.description || "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="创建时间">
           {{ detailDialog.data.created_time }}
@@ -230,8 +219,8 @@
       width="550px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="物料名称" prop="material_name">
-          <el-input v-model="form.material_name" placeholder="请输入物料名称" />
+        <el-form-item label="物料名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入物料名称" />
         </el-form-item>
         <el-form-item label="物料类型" prop="material_type">
           <el-select v-model="form.material_type" placeholder="请选择物料类型" style="width: 100%">
@@ -248,8 +237,8 @@
         <el-form-item label="单位" prop="unit">
           <el-input v-model="form.unit" placeholder="请输入单位" />
         </el-form-item>
-        <el-form-item label="仓库位置" prop="warehouse_location">
-          <el-input v-model="form.warehouse_location" placeholder="请输入仓库位置" />
+        <el-form-item label="存放位置" prop="storage_location">
+          <el-input v-model="form.storage_location" placeholder="请输入存放位置" />
         </el-form-item>
         <el-form-item label="总库存" prop="total_stock">
           <el-input-number v-model="form.total_stock" :min="0" style="width: 100%" />
@@ -257,16 +246,8 @@
         <el-form-item label="可用库存" prop="available_stock">
           <el-input-number v-model="form.available_stock" :min="0" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="物料状态" prop="material_status">
-          <el-select
-            v-model="form.material_status"
-            placeholder="请选择物料状态"
-            style="width: 100%"
-          >
-            <el-option label="充足" value="available" />
-            <el-option label="不足" value="low" />
-            <el-option label="缺货" value="out" />
-          </el-select>
+        <el-form-item label="预警阈值" prop="low_stock_threshold">
+          <el-input-number v-model="form.low_stock_threshold" :min="0" style="width: 100%" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注" />
@@ -275,6 +256,40 @@
       <template #footer>
         <el-button @click="formDialog.visible = false">取消</el-button>
         <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 申领弹窗 -->
+    <el-dialog v-model="applyDialog.visible" title="申领物料" width="450px">
+      <el-form ref="applyFormRef" :model="applyForm" :rules="applyFormRules" label-width="100px">
+        <el-form-item label="物料名称">
+          {{ applyDialog.materialName }}
+        </el-form-item>
+        <el-form-item label="可用库存">
+          {{ applyDialog.availableStock }}
+        </el-form-item>
+        <el-form-item label="申领数量" prop="apply_quantity">
+          <el-input-number v-model="applyForm.apply_quantity" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="使用日期" prop="use_date">
+          <el-date-picker
+            v-model="applyForm.use_date"
+            type="date"
+            placeholder="选择使用日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="使用目的" prop="use_purpose">
+          <el-input v-model="applyForm.use_purpose" placeholder="请输入使用目的" />
+        </el-form-item>
+        <el-form-item label="备注" prop="remarks">
+          <el-input v-model="applyForm.remarks" type="textarea" :rows="2" placeholder="请输入备注" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="applyDialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="handleApplySubmit">确定申领</el-button>
       </template>
     </el-dialog>
   </div>
@@ -293,10 +308,9 @@ const selectedIds = ref<number[]>([]);
 
 const searchFormRef = ref<FormInstance>();
 const searchForm = reactive<MaterialQuery>({
-  material_name: "",
+  name: "",
   material_type: "",
-  warehouse_location: "",
-  material_status: "",
+  storage_location: "",
 });
 
 const pagination = reactive({
@@ -316,21 +330,40 @@ const formDialog = reactive({
   id: null as number | null,
 });
 
+const applyDialog = reactive({
+  visible: false,
+  materialId: null as number | null,
+  materialName: "",
+  availableStock: 0,
+});
+
+const applyFormRef = ref<FormInstance>();
+const applyForm = reactive({
+  apply_quantity: 1,
+  use_date: "",
+  use_purpose: "",
+  remarks: "",
+});
+
+const applyFormRules: FormRules = {
+  apply_quantity: [{ required: true, message: "请输入申领数量", trigger: "blur" }],
+};
+
 const formRef = ref<FormInstance>();
 const form = reactive<MaterialForm>({
-  material_name: "",
+  name: "",
   material_type: "brochure",
   specification: "",
   unit: "",
-  warehouse_location: "",
+  storage_location: "",
   total_stock: 0,
   available_stock: 0,
-  material_status: "available",
+  low_stock_threshold: 10,
   remark: "",
 });
 
 const formRules: FormRules = {
-  material_name: [{ required: true, message: "请输入物料名称", trigger: "blur" }],
+  name: [{ required: true, message: "请输入物料名称", trigger: "blur" }],
   material_type: [{ required: true, message: "请选择物料类型", trigger: "change" }],
 };
 
@@ -347,16 +380,18 @@ function getTypeLabel(type: string): string {
 
 function getStatusLabel(status: string): string {
   const map: Record<string, string> = {
-    available: "充足",
-    low: "不足",
+    active: "正常",
+    inactive: "禁用",
+    low: "低库存",
     out: "缺货",
   };
-  return map[status] || status;
+  return map[status] || status || "正常";
 }
 
 function getStatusType(status: string): string {
   const map: Record<string, string> = {
-    available: "success",
+    active: "success",
+    inactive: "info",
     low: "warning",
     out: "danger",
   };
@@ -410,14 +445,14 @@ function handleCreate() {
   formDialog.type = "create";
   formDialog.id = null;
   Object.assign(form, {
-    material_name: "",
+    name: "",
     material_type: "brochure",
     specification: "",
     unit: "",
-    warehouse_location: "",
+    storage_location: "",
     total_stock: 0,
     available_stock: 0,
-    material_status: "available",
+    low_stock_threshold: 10,
     remark: "",
   });
   formDialog.visible = true;
@@ -441,6 +476,45 @@ async function handleView(row: MaterialItem) {
     }
   } catch {
     ElMessage.error("获取详情失败");
+  }
+}
+
+function handleApply(row: MaterialItem) {
+  applyDialog.materialId = row.id;
+  applyDialog.materialName = row.name;
+  applyDialog.availableStock = row.available_stock || 0;
+  Object.assign(applyForm, {
+    apply_quantity: 1,
+    use_date: "",
+    use_purpose: "",
+    remarks: "",
+  });
+  applyDialog.visible = true;
+}
+
+async function handleApplySubmit() {
+  const valid = await applyFormRef.value?.validate().catch(() => false);
+  if (!valid) return;
+
+  try {
+    const res = await fetch(`/api/v1/promotion/material/apply`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        material_id: applyDialog.materialId,
+        ...applyForm,
+      }),
+    });
+    const data = await res.json();
+    if (data.code === 0) {
+      ElMessage.success("申领成功");
+      applyDialog.visible = false;
+      fetchData();
+    } else {
+      ElMessage.error(data.msg || "申领失败");
+    }
+  } catch {
+    ElMessage.error("申领失败");
   }
 }
 
@@ -493,9 +567,13 @@ async function handleDelete(row: MaterialItem) {
 async function handleBatchDelete() {
   if (!selectedIds.value.length) return;
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个物料吗？`, "提示", {
-      type: "warning",
-    });
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedIds.value.length} 个物料吗？`,
+      "提示",
+      {
+        type: "warning",
+      }
+    );
     const res = await MaterialAPI.batchDelete(selectedIds.value);
     if (res.data.code === 0) {
       ElMessage.success("批量删除成功");

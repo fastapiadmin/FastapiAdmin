@@ -48,6 +48,20 @@ const CheckinAPI = {
       data: ids,
     });
   },
+
+  validate(id: number) {
+    return request<ApiResponse<CheckinItem>>({
+      url: `${API_PATH}/validate/${id}`,
+      method: "post",
+    });
+  },
+
+  gpsValidate(id: number) {
+    return request<ApiResponse<CheckinItem>>({
+      url: `${API_PATH}/gps-validate/${id}`,
+      method: "post",
+    });
+  },
 };
 
 export default CheckinAPI;
@@ -56,26 +70,25 @@ export interface CheckinQuery {
   activity_id?: number;
   personnel_id?: number;
   checkin_type?: string;
-  checkin_status?: string;
 }
 
 export interface CheckinForm {
   activity_id?: number;
-  activity_name?: string;
   personnel_id?: number;
-  personnel_name?: string;
   checkin_time?: string;
   checkin_type?: string;
-  location_name?: string;
-  latitude?: number;
+  location?: string;
   longitude?: number;
-  checkin_photo?: string;
-  description?: string;
-  checkin_status?: string;
+  latitude?: number;
+  target_longitude?: number;
+  target_latitude?: number;
+  allowed_radius?: number;
+  photo_urls?: string;
+  remarks?: string;
 }
 
 export interface CheckinItem extends CheckinForm, BaseType {
-  checkin_no: string;
   checkin_type: string;
-  checkin_status: string;
+  gps_validated?: number;
+  gps_distance?: number;
 }

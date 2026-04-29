@@ -22,17 +22,6 @@
             <el-option label="照片打卡" value="photo" />
           </el-select>
         </el-form-item>
-        <el-form-item label="打卡状态" prop="checkin_status">
-          <el-select
-            v-model="searchForm.checkin_status"
-            placeholder="请选择状态"
-            clearable
-            style="width: 140px"
-          >
-            <el-option label="正常" value="normal" />
-            <el-option label="异常" value="abnormal" />
-          </el-select>
-        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
             <i-ep-search />
@@ -81,29 +70,31 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="checkin_no" label="打卡编号" width="150" />
-        <el-table-column
-          prop="activity_name"
-          label="活动名称"
-          min-width="150"
-          show-overflow-tooltip
-        />
-        <el-table-column prop="personnel_name" label="人员姓名" width="100" />
+        <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="checkin_time" label="打卡时间" width="160" />
         <el-table-column prop="checkin_type" label="打卡类型" width="100">
           <template #default="{ row }">
             <el-tag>{{ getTypeLabel(row.checkin_type) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="location_name" label="打卡位置" width="150" show-overflow-tooltip />
-        <el-table-column prop="checkin_status" label="打卡状态" width="100">
+        <el-table-column prop="location" label="打卡位置" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="latitude" label="纬度" width="120" />
+        <el-table-column prop="longitude" label="经度" width="120" />
+        <el-table-column prop="gps_validated" label="GPS验证" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.checkin_status === 'normal' ? 'success' : 'danger'">
-              {{ row.checkin_status === "normal" ? "正常" : "异常" }}
+            <el-tag v-if="row.gps_validated !== undefined" :type="row.gps_validated === 1 ? 'success' : 'danger'">
+              {{ row.gps_validated === 1 ? "通过" : "未通过" }}
             </el-tag>
+            <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column prop="gps_distance" label="距离(米)" width="100">
+          <template #default="{ row }">
+            {{ row.gps_distance !== undefined ? row.gps_distance : "-" }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="remarks" label="备注" min-width="100" show-overflow-tooltip />
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button
               v-permission="['module_promotion:checkin:detail']"
@@ -114,12 +105,12 @@
               详情
             </el-button>
             <el-button
-              v-permission="['module_promotion:checkin:update']"
+              v-permission="['module_promotion:checkin:gps_validate']"
               link
-              type="primary"
-              @click="handleEdit(row)"
+              type="success"
+              @click="handleGpsValidate(row)"
             >
-              编辑
+              GPS验证
             </el-button>
             <el-button
               v-permission="['module_promotion:checkin:delete']"
@@ -149,34 +140,50 @@
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="活动打卡详情" width="600px">
       <el-descriptions v-if="detailDialog.data" :column="2" border>
-        <el-descriptions-item label="打卡编号">
-          {{ detailDialog.data.checkin_no }}
+        <el-descriptions-item label="ID">
+          {{ detailDialog.data.id }}
         </el-descriptions-item>
-        <el-descriptions-item label="打卡状态">
-          <el-tag :type="detailDialog.data.checkin_status === 'normal' ? 'success' : 'danger'">
-            {{ detailDialog.data.checkin_status === "normal" ? "正常" : "异常" }}
-          </el-tag>
+        <el-descriptions-item label="活动ID">
+          {{ detailDialog.data.activity_id || "-" }}
         </el-descriptions-item>
-        <el-descriptions-item label="活动名称" :span="2">
-          {{ detailDialog.data.activity_name || "-" }}
-        </el-descriptions-item>
-        <el-descriptions-item label="人员姓名">
-          {{ detailDialog.data.personnel_name || "-" }}
-        </el-descriptions-item>
-        <el-descriptions-item label="打卡类型">
-          <el-tag>{{ getTypeLabel(detailDialog.data.checkin_type) }}</el-tag>
+        <el-descriptions-item label="人员ID">
+          {{ detailDialog.data.personnel_id || "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="打卡时间">
           {{ detailDialog.data.checkin_time || "-" }}
         </el-descriptions-item>
+        <el-descriptions-item label="打卡类型">
+          <el-tag>{{ getTypeLabel(detailDialog.data.checkin_type) }}</el-tag>
+        </el-descriptions-item>
         <el-descriptions-item label="打卡位置" :span="2">
-          {{ detailDialog.data.location_name || "-" }}
+          {{ detailDialog.data.location || "-" }}
         </el-descriptions-item>
-        <el-descriptions-item label="经纬度" :span="2">
-          {{ detailDialog.data.latitude }}, {{ detailDialog.data.longitude }}
+        <el-descriptions-item label="纬度">
+          {{ detailDialog.data.latitude || "-" }}
         </el-descriptions-item>
-        <el-descriptions-item label="打卡描述" :span="2">
-          {{ detailDialog.data.description || "-" }}
+        <el-descriptions-item label="经度">
+          {{ detailDialog.data.longitude || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="目标纬度">
+          {{ detailDialog.data.target_latitude || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="目标经度">
+          {{ detailDialog.data.target_longitude || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="允许半径(米)">
+          {{ detailDialog.data.allowed_radius || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="GPS验证">
+          <el-tag v-if="detailDialog.data.gps_validated !== undefined" :type="detailDialog.data.gps_validated === 1 ? 'success' : 'danger'">
+            {{ detailDialog.data.gps_validated === 1 ? "通过" : "未通过" }}
+          </el-tag>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="GPS距离(米)">
+          {{ detailDialog.data.gps_distance || "-" }}
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          {{ detailDialog.data.remarks || "-" }}
         </el-descriptions-item>
         <el-descriptions-item label="创建时间">
           {{ detailDialog.data.created_time }}
@@ -191,9 +198,9 @@
     <el-dialog
       v-model="formDialog.visible"
       :title="formDialog.type === 'create' ? '新增打卡' : '编辑打卡'"
-      width="550px"
+      width="600px"
     >
-      <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
+      <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px">
         <el-form-item label="活动ID" prop="activity_id">
           <el-input-number
             v-model="form.activity_id"
@@ -227,8 +234,8 @@
             <el-option label="照片打卡" value="photo" />
           </el-select>
         </el-form-item>
-        <el-form-item label="打卡位置" prop="location_name">
-          <el-input v-model="form.location_name" placeholder="请输入打卡位置" />
+        <el-form-item label="打卡位置" prop="location">
+          <el-input v-model="form.location" placeholder="请输入打卡位置" />
         </el-form-item>
         <el-form-item label="纬度" prop="latitude">
           <el-input-number
@@ -246,12 +253,39 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="打卡描述" prop="description">
+        <el-form-item label="目标纬度" prop="target_latitude">
+          <el-input-number
+            v-model="form.target_latitude"
+            :precision="6"
+            :step="0.000001"
+            style="width: 100%"
+            placeholder="目标地点纬度"
+          />
+        </el-form-item>
+        <el-form-item label="目标经度" prop="target_longitude">
+          <el-input-number
+            v-model="form.target_longitude"
+            :precision="6"
+            :step="0.000001"
+            style="width: 100%"
+            placeholder="目标地点经度"
+          />
+        </el-form-item>
+        <el-form-item label="允许半径(米)" prop="allowed_radius">
+          <el-input-number
+            v-model="form.allowed_radius"
+            :min="0"
+            :step="10"
+            style="width: 100%"
+            placeholder="允许打卡半径"
+          />
+        </el-form-item>
+        <el-form-item label="备注" prop="remarks">
           <el-input
-            v-model="form.description"
+            v-model="form.remarks"
             type="textarea"
             :rows="3"
-            placeholder="请输入打卡描述"
+            placeholder="请输入备注"
           />
         </el-form-item>
       </el-form>
@@ -279,7 +313,6 @@ const searchForm = reactive<CheckinQuery>({
   activity_id: undefined,
   personnel_id: undefined,
   checkin_type: "",
-  checkin_status: "",
 });
 
 const pagination = reactive({
@@ -302,17 +335,16 @@ const formDialog = reactive({
 const formRef = ref<FormInstance>();
 const form = reactive<CheckinForm>({
   activity_id: undefined,
-  activity_name: "",
   personnel_id: undefined,
-  personnel_name: "",
   checkin_time: "",
   checkin_type: "location",
-  location_name: "",
-  latitude: 0,
-  longitude: 0,
-  checkin_photo: "",
-  description: "",
-  checkin_status: "normal",
+  location: "",
+  latitude: undefined,
+  longitude: undefined,
+  target_latitude: undefined,
+  target_longitude: undefined,
+  allowed_radius: 500,
+  remarks: "",
 });
 
 const formRules: FormRules = {
@@ -377,25 +409,17 @@ function handleCreate() {
   formDialog.id = null;
   Object.assign(form, {
     activity_id: undefined,
-    activity_name: "",
     personnel_id: undefined,
-    personnel_name: "",
     checkin_time: "",
     checkin_type: "location",
-    location_name: "",
-    latitude: 0,
-    longitude: 0,
-    checkin_photo: "",
-    description: "",
-    checkin_status: "normal",
+    location: "",
+    latitude: undefined,
+    longitude: undefined,
+    target_latitude: undefined,
+    target_longitude: undefined,
+    allowed_radius: 500,
+    remarks: "",
   });
-  formDialog.visible = true;
-}
-
-function handleEdit(row: CheckinItem) {
-  formDialog.type = "edit";
-  formDialog.id = row.id;
-  Object.assign(form, row);
   formDialog.visible = true;
 }
 
@@ -410,6 +434,23 @@ async function handleView(row: CheckinItem) {
     }
   } catch {
     ElMessage.error("获取详情失败");
+  }
+}
+
+async function handleGpsValidate(row: CheckinItem) {
+  try {
+    const res = await CheckinAPI.gpsValidate(row.id);
+    if (res.data.code === 0) {
+      ElMessage.success(res.data.msg || "GPS验证成功");
+      fetchData();
+      if (detailDialog.visible && detailDialog.data?.id === row.id) {
+        detailDialog.data = res.data.data;
+      }
+    } else {
+      ElMessage.error(res.data.msg || "GPS验证失败");
+    }
+  } catch {
+    ElMessage.error("GPS验证失败");
   }
 }
 

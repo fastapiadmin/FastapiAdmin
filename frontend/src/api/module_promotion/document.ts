@@ -48,6 +48,13 @@ const DocumentAPI = {
       data: ids,
     });
   },
+
+  generateWechatContent(id: number) {
+    return request<ApiResponse<DocumentItem>>({
+      url: `${API_PATH}/generate-wechat-content/${id}`,
+      method: "post",
+    });
+  },
 };
 
 export default DocumentAPI;
@@ -70,6 +77,8 @@ export interface DocumentForm {
   published_date?: string;
   document_status?: string;
   remark?: string;
+  wechat_formatted_content?: string;
+  ai_generation_status?: string;
 }
 
 export interface DocumentItem extends DocumentForm, BaseType {

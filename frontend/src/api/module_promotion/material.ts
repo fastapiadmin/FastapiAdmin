@@ -53,26 +53,27 @@ const MaterialAPI = {
 export default MaterialAPI;
 
 export interface MaterialQuery {
-  material_name?: string;
+  name?: string;
   material_type?: string;
-  warehouse_location?: string;
-  material_status?: string;
+  storage_location?: string;
+  status?: string;
 }
 
 export interface MaterialForm {
-  material_name: string;
+  name: string;
   material_type?: string;
   specification?: string;
   unit?: string;
-  warehouse_location?: string;
+  storage_location?: string;
   total_stock?: number;
   available_stock?: number;
-  material_status?: string;
+  low_stock_threshold?: number;
   remark?: string;
 }
 
 export interface MaterialItem extends MaterialForm, BaseType {
-  material_no: string;
-  material_type: string;
-  material_status: string;
+  material_no?: string;
+  material_type?: string;
+  status?: string;
+  low_stock_threshold?: number;
 }

@@ -38,7 +38,6 @@ class PromotionMaterialModel(ModelMixin, UserMixin):
     """
 
     __tablename__: str = "promotion_material"
-    __mapper_args__: dict[str, list[str]] = {"exclude_properties": ["description"]}
     __table_args__: dict[str, str] = {"comment": "物料表"}
     __loader_options__: list[str] = ["created_by", "updated_by"]
 
@@ -63,6 +62,16 @@ class PromotionMaterialModel(ModelMixin, UserMixin):
     storage_location: Mapped[str | None] = mapped_column(
         String(200), nullable=True, comment="存放位置"
     )
+
+    # 设置默认值，确保未提供时使用默认值
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.total_stock is None:
+            self.total_stock = 0
+        if self.available_stock is None:
+            self.available_stock = 0
+        if self.low_stock_threshold is None:
+            self.low_stock_threshold = 10
 
 
 class PromotionMaterialApplyModel(ModelMixin, UserMixin):
