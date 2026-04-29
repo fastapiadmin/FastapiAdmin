@@ -23,7 +23,7 @@ requirePragma: false
 # 在语句末尾添加分号
 semi: true
 # 使用双引号而不是单引号
-singleQuote: true
+singleQuote: false
 # 缩进使用 2 个空格
 tabWidth: 2
 # 在多行元素的末尾添加逗号（ES5 支持的对象、数组等）
@@ -31,7 +31,7 @@ trailingComma: "es5"
 # 使用空格而不是制表符缩进
 useTabs: false
 # Vue 文件中的 <script> 和 <style> 不增加额外的缩进
-vueIndentScriptAndStyle: true
+vueIndentScriptAndStyle: false
 # 根据系统自动检测换行符
 endOfLine: "auto"
 # 对 HTML 文件应用特定格式化规则
@@ -39,5 +39,3 @@ overrides:
   - files: "*.html"
     options:
       parser: "html"
-# 从文件开头开始格式化
-rangeStart: 0

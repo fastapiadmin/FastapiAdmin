@@ -5,16 +5,16 @@ export const enum ThemeMode {
   /**
    * 明亮主题
    */
-  LIGHT = 'light',
+  LIGHT = "light",
   /**
    * 暗黑主题
    */
-  DARK = 'dark',
+  DARK = "dark",
 
   /**
    * 系统自动
    */
-  AUTO = 'auto',
+  AUTO = "auto",
 }
 
 /**
@@ -24,9 +24,9 @@ export const enum SidebarColor {
   /**
    * 经典蓝
    */
-  CLASSIC_BLUE = 'classic-blue',
+  CLASSIC_BLUE = "classic-blue",
   /**
    * 极简白
    */
-  MINIMAL_WHITE = 'minimal-white',
+  MINIMAL_WHITE = "minimal-white",
 }

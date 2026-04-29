@@ -58,7 +58,7 @@
             <el-table-column label="状态" prop="status" min-width="80" align="center">
               <template #default="scope">
                 <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === '0' ? '启用' : '停用' }}
+                  {{ scope.row.status === "0" ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -99,28 +99,28 @@
             <el-table-column label="是否缓存" prop="keep_alive" min-width="100">
               <template #default="scope">
                 <el-tag :type="scope.row.keep_alive ? 'success' : 'danger'">
-                  {{ scope.row.keep_alive ? '是' : '否' }}
+                  {{ scope.row.keep_alive ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="是否隐藏" prop="hidden" min-width="100">
               <template #default="scope">
                 <el-tag :type="scope.row.hidden ? 'success' : 'danger'">
-                  {{ scope.row.hidden ? '是' : '否' }}
+                  {{ scope.row.hidden ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="显示根路由" prop="always_show" min-width="120">
               <template #default="scope">
                 <el-tag :type="scope.row.always_show ? 'success' : 'danger'">
-                  {{ scope.row.always_show ? '是' : '否' }}
+                  {{ scope.row.always_show ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="固定路由" prop="affix" min-width="100">
               <template #default="scope">
                 <el-tag :type="scope.row.affix ? 'success' : 'danger'">
-                  {{ scope.row.affix ? '是' : '否' }}
+                  {{ scope.row.affix ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -257,17 +257,17 @@
           </el-descriptions-item>
           <el-descriptions-item label="是否缓存" :span="2">
             <el-tag :type="detailFormData.keep_alive ? 'success' : 'danger'">
-              {{ detailFormData.keep_alive ? '是' : '否' }}
+              {{ detailFormData.keep_alive ? "是" : "否" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="是否显示" :span="2">
             <el-tag :type="detailFormData.hidden ? 'success' : 'danger'">
-              {{ detailFormData.hidden ? '是' : '否' }}
+              {{ detailFormData.hidden ? "是" : "否" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="是否显示根路由" :span="2">
             <el-tag :type="detailFormData.always_show ? 'success' : 'danger'">
-              {{ detailFormData.always_show ? '是' : '否' }}
+              {{ detailFormData.always_show ? "是" : "否" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="菜单标题" :span="2">
@@ -278,12 +278,12 @@
           </el-descriptions-item>
           <el-descriptions-item label="是否固定路由" :span="2">
             <el-tag :type="detailFormData.affix ? 'success' : 'danger'">
-              {{ detailFormData.affix ? '是' : '否' }}
+              {{ detailFormData.affix ? "是" : "否" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
             <el-tag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-              {{ detailFormData.status === '0' ? '启用' : '停用' }}
+              {{ detailFormData.status === "0" ? "启用" : "停用" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="排序" :span="2">
@@ -620,417 +620,417 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'SysMenu',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "SysMenu",
+  inheritAttrs: false,
+});
 
-  import { ref, reactive, computed, watch, nextTick } from 'vue';
-  import { useAppStore } from '@/store/modules/app.store';
-  import { useUserStore } from '@/store/modules/user.store';
-  import { DeviceEnum } from '@/enums/settings/device.enum';
+import { ref, reactive, computed, watch, nextTick } from "vue";
+import { useAppStore } from "@/store/modules/app.store";
+import { useUserStore } from "@/store/modules/user.store";
+import { DeviceEnum } from "@/enums/settings/device.enum";
 
-  import MenuAPI, { MenuPageQuery, MenuForm, MenuTable } from '@/api/module_system/menu';
-  import { MenuTypeEnum } from '@/enums/system/menu.enum';
-  import { formatTree } from '@/utils/common';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDrawer from '@/components/CURD/EnhancedDrawer.vue';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import type { ISearchConfig, IContentConfig } from '@/components/CURD/types';
+import MenuAPI, { MenuPageQuery, MenuForm, MenuTable } from "@/api/module_system/menu";
+import { MenuTypeEnum } from "@/enums/system/menu.enum";
+import { formatTree } from "@/utils/common";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import type { ISearchConfig, IContentConfig } from "@/components/CURD/types";
 
-  const appStore = useAppStore();
-  const userStore = useUserStore();
+const appStore = useAppStore();
+const userStore = useUserStore();
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
-  const submitLoading = ref(false);
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
+const submitLoading = ref(false);
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:menu',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '菜单名称',
-        type: 'input',
-        attrs: { placeholder: '请输入菜单名称', clearable: true },
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:menu",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "菜单名称",
+      type: "input",
+      attrs: { placeholder: "请输入菜单名称", clearable: true },
+    },
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        style: { width: "340px" },
       },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: '0' },
-          { label: '停用', value: '1' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '167.5px' } },
-      },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          style: { width: '340px' },
-        },
-      },
-    ],
-  });
+    },
+  ],
+});
 
-  const contentCols = reactive([{ prop: 'name', label: '菜单名称', show: true }]);
+const contentCols = reactive([{ prop: "name", label: "菜单名称", show: true }]);
 
-  // 详情表单
-  const detailFormData = ref<MenuTable>({});
+// 详情表单
+const detailFormData = ref<MenuTable>({});
 
-  // 编辑表单
-  const formData = reactive<MenuForm>({
-    id: undefined,
-    name: undefined,
-    type: MenuTypeEnum.CATALOG,
-    icon: undefined,
-    order: 999,
-    permission: '',
-    route_name: '',
-    route_path: '',
-    component_path: undefined,
-    redirect: undefined,
-    parent_id: undefined,
-    keep_alive: false,
-    hidden: false,
-    always_show: false,
-    title: '',
-    params: undefined,
-    affix: false,
-    status: '0',
-    description: undefined,
-  });
+// 编辑表单
+const formData = reactive<MenuForm>({
+  id: undefined,
+  name: undefined,
+  type: MenuTypeEnum.CATALOG,
+  icon: undefined,
+  order: 999,
+  permission: "",
+  route_name: "",
+  route_path: "",
+  component_path: undefined,
+  redirect: undefined,
+  parent_id: undefined,
+  keep_alive: false,
+  hidden: false,
+  always_show: false,
+  title: "",
+  params: undefined,
+  affix: false,
+  status: "0",
+  description: undefined,
+});
 
-  // 弹窗状态
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
+// 弹窗状态
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
 
-  const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? '600px' : '90%'));
+const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
 
-  // 顶级菜单下拉选项（仅目录、菜单可作为父级）
-  const menuOptions = ref<OptionType[]>([]);
-  /** 完整树，用于根据 parent_id 解析父级类型 */
-  const fullMenuTree = ref<MenuTable[]>([]);
-  /** 从表格「在菜单下新增」进入时锁定父级（仅允许按钮） */
-  const createParentLocked = ref(false);
+// 顶级菜单下拉选项（仅目录、菜单可作为父级）
+const menuOptions = ref<OptionType[]>([]);
+/** 完整树，用于根据 parent_id 解析父级类型 */
+const fullMenuTree = ref<MenuTable[]>([]);
+/** 从表格「在菜单下新增」进入时锁定父级（仅允许按钮） */
+const createParentLocked = ref(false);
 
-  /** 目录下：目录、菜单、外链；菜单下：仅按钮 */
-  function typesAllowedUnderParent(parentType: MenuTypeEnum): MenuTypeEnum[] {
-    switch (parentType) {
-      case MenuTypeEnum.CATALOG:
-        return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
-      case MenuTypeEnum.MENU:
-        return [MenuTypeEnum.BUTTON];
-      case MenuTypeEnum.BUTTON:
-      case MenuTypeEnum.EXTLINK:
-        return [];
-      default:
-        return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
-    }
-  }
-
-  function findMenuNodeById(
-    id: number | undefined,
-    nodes: MenuTable[] = fullMenuTree.value
-  ): MenuTable | null {
-    if (id == null) return null;
-    for (const n of nodes) {
-      if (n.id === id) return n;
-      if (n.children?.length) {
-        const f = findMenuNodeById(id, n.children);
-        if (f) return f;
-      }
-    }
-    return null;
-  }
-
-  /** 新增/编辑表单项：当前父级下允许的菜单类型 */
-  const allowedMenuTypeValues = computed((): MenuTypeEnum[] => {
-    if (dialogVisible.type === 'detail') {
-      return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
-    }
-    const pid = formData.parent_id;
-    if (pid == null || pid === undefined) {
+/** 目录下：目录、菜单、外链；菜单下：仅按钮 */
+function typesAllowedUnderParent(parentType: MenuTypeEnum): MenuTypeEnum[] {
+  switch (parentType) {
+    case MenuTypeEnum.CATALOG:
       return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
-    }
-    const parentNode = findMenuNodeById(pid);
-    if (!parentNode?.type) {
+    case MenuTypeEnum.MENU:
+      return [MenuTypeEnum.BUTTON];
+    case MenuTypeEnum.BUTTON:
+    case MenuTypeEnum.EXTLINK:
+      return [];
+    default:
       return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
+  }
+}
+
+function findMenuNodeById(
+  id: number | undefined,
+  nodes: MenuTable[] = fullMenuTree.value
+): MenuTable | null {
+  if (id == null) return null;
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    if (n.children?.length) {
+      const f = findMenuNodeById(id, n.children);
+      if (f) return f;
     }
-    return typesAllowedUnderParent(parentNode.type as MenuTypeEnum);
-  });
-
-  watch(
-    () => [formData.parent_id, dialogVisible.visible, dialogVisible.type],
-    () => {
-      if (!dialogVisible.visible || dialogVisible.type === 'detail') return;
-      const allowed = allowedMenuTypeValues.value;
-      if (!allowed.length) return;
-      const t = formData.type as MenuTypeEnum;
-      if (!allowed.includes(t)) {
-        formData.type = allowed[0] as MenuForm['type'];
-      }
-    },
-    { flush: 'post' }
-  );
-
-  function filterMenuTypes(nodes: MenuTable[]) {
-    return nodes
-      .filter((node) => node.type === MenuTypeEnum.CATALOG || node.type === MenuTypeEnum.MENU)
-      .map((node: any): any => ({
-        ...node,
-        children: node.children ? filterMenuTypes(node.children) : [],
-      }));
   }
+  return null;
+}
 
-  const contentConfig = reactive<IContentConfig<MenuPageQuery>>({
-    permPrefix: 'module_system:menu',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: true,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: false,
-    indexAction: async (params) => {
-      const res = await MenuAPI.listMenu(params as MenuPageQuery);
-      const tree = res.data.data || [];
-      fullMenuTree.value = tree;
-      menuOptions.value = formatTree(filterMenuTypes(tree));
-      return tree;
-    },
-    deleteAction: async (ids) => {
-      await MenuAPI.deleteMenu(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      await userStore.getUserInfo();
-    },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
-
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
+/** 新增/编辑表单项：当前父级下允许的菜单类型 */
+const allowedMenuTypeValues = computed((): MenuTypeEnum[] => {
+  if (dialogVisible.type === "detail") {
+    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
   }
-
-  // 表单验证规则
-  const rules = reactive({
-    name: [
-      { required: true, message: '请输入菜单名称', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度 2 到 50 个字符', trigger: 'blur' },
-    ],
-    parent_id: [{ required: true, message: '请选择父级菜单', trigger: 'blur' }],
-    type: [{ required: true, message: '请选择菜单类型', trigger: 'blur' }],
-    order: [{ required: true, message: '请输入排序', trigger: 'blur' }],
-    permission: [{ required: true, message: '请输入权限标识', trigger: 'blur' }],
-    route_name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
-    route_path: [
-      { required: true, message: '请输入路由路径', trigger: 'blur' },
-      {
-        validator: (rule: any, value: string, callback: any) => {
-          if (value && !value.startsWith('/')) {
-            callback(new Error('目录和菜单路由必须以/开头'));
-          } else {
-            callback();
-          }
-        },
-        trigger: 'blur',
-      },
-    ],
-    component_path: [{ required: true, message: '请输入组件路径', trigger: 'blur' }],
-    title: [
-      { required: true, message: '请输入菜单标题', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度 2 到 50 个字符', trigger: 'blur' },
-    ],
-    keep_alive: [{ required: true, message: '请选择是否缓存', trigger: 'change' }],
-    hidden: [{ required: true, message: '请选择是否隐藏', trigger: 'change' }],
-    always_show: [{ required: true, message: '请选择始终显示', trigger: 'change' }],
-    status: [{ required: true, message: '请选择状态', trigger: 'change' }],
-    redirect: [
-      {
-        validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
-          if (formData.type === MenuTypeEnum.CATALOG) {
-            if (value === undefined || value === null || String(value).trim() === '') {
-              callback(new Error('目录类型必须填写重定向地址'));
-              return;
-            }
-          }
-          callback();
-        },
-        trigger: 'blur',
-      },
-    ],
-  });
-
-  // 选择表格的行菜单ID
-  const selectedMenuId = ref<number | undefined>();
-
-  // 定义初始表单数据常量
-  const initialFormData: MenuForm = {
-    id: undefined,
-    name: undefined,
-    type: MenuTypeEnum.MENU,
-    icon: undefined,
-    order: 1,
-    permission: '',
-    route_name: '',
-    route_path: '',
-    component_path: '',
-    redirect: '',
-    parent_id: undefined,
-    keep_alive: false,
-    hidden: false,
-    always_show: false,
-    title: '',
-    params: [] as { key: string; value: string }[],
-    affix: false,
-    status: '0',
-    description: undefined,
-  };
-
-  // 重置表单
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
-    }
-    // 完全重置 formData 为初始状态
-    Object.assign(formData, initialFormData);
+  const pid = formData.parent_id;
+  if (pid == null || pid === undefined) {
+    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
   }
-
-  // 行点击事件
-  async function handleRowClick(row: MenuTable) {
-    selectedMenuId.value = row.id;
+  const parentNode = findMenuNodeById(pid);
+  if (!parentNode?.type) {
+    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
   }
+  return typesAllowedUnderParent(parentNode.type as MenuTypeEnum);
+});
 
-  // 关闭弹窗
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    createParentLocked.value = false;
-    resetForm();
-  }
-
-  //打开弹窗
-  async function handleOpenDialog(
-    type: 'create' | 'update' | 'detail',
-    id?: number,
-    parentRow?: MenuTable
-  ) {
-    dialogVisible.type = type;
-    createParentLocked.value = false;
-    if (id) {
-      const response = await MenuAPI.detailMenu(id);
-      if (type === 'detail') {
-        dialogVisible.title = '菜单详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改菜单';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增菜单';
-      Object.assign(formData, initialFormData);
-      if (parentRow?.id != null) {
-        formData.parent_id = parentRow.id;
-        if (parentRow.type === MenuTypeEnum.MENU) {
-          createParentLocked.value = true;
-          formData.type = MenuTypeEnum.BUTTON;
-        } else if (parentRow.type === MenuTypeEnum.CATALOG) {
-          formData.type = MenuTypeEnum.MENU;
-        }
-      }
-    }
-    dialogVisible.visible = true;
-  }
-
-  // 菜单类型切换
-  function handleMenuTypeChange() {
-    if (formData.type === MenuTypeEnum.MENU) {
-      formData.component_path = '';
-    }
-    nextTick(() => {
-      dataFormRef.value?.clearValidate('redirect');
-      if (formData.type === MenuTypeEnum.CATALOG) {
-        dataFormRef.value?.validateField('redirect').catch(() => {});
-      }
-    });
-  }
-
-  // 提交表单
-  async function handleSubmit() {
+watch(
+  () => [formData.parent_id, dialogVisible.visible, dialogVisible.type],
+  () => {
+    if (!dialogVisible.visible || dialogVisible.type === "detail") return;
     const allowed = allowedMenuTypeValues.value;
-    if (!allowed.includes(formData.type as MenuTypeEnum)) {
-      ElMessage.warning('当前父级下不允许该菜单类型');
-      return;
+    if (!allowed.length) return;
+    const t = formData.type as MenuTypeEnum;
+    if (!allowed.includes(t)) {
+      formData.type = allowed[0] as MenuForm["type"];
     }
-    dataFormRef.value.validate(async (valid: any) => {
-      if (valid) {
-        submitLoading.value = true;
-        const id = formData.id;
-        try {
-          if (id) {
-            await MenuAPI.updateMenu(id, formData);
-          } else {
-            await MenuAPI.createMenu(formData);
-          }
-          await userStore.getUserInfo();
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-        } catch (error: any) {
-          console.error(error);
-        } finally {
-          submitLoading.value = false;
-        }
-      }
-    });
-  }
+  },
+  { flush: "post" }
+);
 
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() as MenuTable[] | undefined;
-    const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
-    if (!ids.length) {
-      ElMessage.warning('请先选择要操作的数据');
-      return;
-    }
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        try {
-          await MenuAPI.batchMenu({ ids, status });
-          refreshList();
-        } catch (error: any) {
-          console.error(error);
+function filterMenuTypes(nodes: MenuTable[]) {
+  return nodes
+    .filter((node) => node.type === MenuTypeEnum.CATALOG || node.type === MenuTypeEnum.MENU)
+    .map((node: any): any => ({
+      ...node,
+      children: node.children ? filterMenuTypes(node.children) : [],
+    }));
+}
+
+const contentConfig = reactive<IContentConfig<MenuPageQuery>>({
+  permPrefix: "module_system:menu",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: true,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: false,
+  indexAction: async (params) => {
+    const res = await MenuAPI.listMenu(params as MenuPageQuery);
+    const tree = res.data.data || [];
+    fullMenuTree.value = tree;
+    menuOptions.value = formatTree(filterMenuTypes(tree));
+    return tree;
+  },
+  deleteAction: async (ids) => {
+    await MenuAPI.deleteMenu(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    await userStore.getUserInfo();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+// 表单验证规则
+const rules = reactive({
+  name: [
+    { required: true, message: "请输入菜单名称", trigger: "blur" },
+    { min: 2, max: 50, message: "长度 2 到 50 个字符", trigger: "blur" },
+  ],
+  parent_id: [{ required: true, message: "请选择父级菜单", trigger: "blur" }],
+  type: [{ required: true, message: "请选择菜单类型", trigger: "blur" }],
+  order: [{ required: true, message: "请输入排序", trigger: "blur" }],
+  permission: [{ required: true, message: "请输入权限标识", trigger: "blur" }],
+  route_name: [{ required: true, message: "请输入路由名称", trigger: "blur" }],
+  route_path: [
+    { required: true, message: "请输入路由路径", trigger: "blur" },
+    {
+      validator: (rule: any, value: string, callback: any) => {
+        if (value && !value.startsWith("/")) {
+          callback(new Error("目录和菜单路由必须以/开头"));
+        } else {
+          callback();
         }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
+      },
+      trigger: "blur",
+    },
+  ],
+  component_path: [{ required: true, message: "请输入组件路径", trigger: "blur" }],
+  title: [
+    { required: true, message: "请输入菜单标题", trigger: "blur" },
+    { min: 2, max: 50, message: "长度 2 到 50 个字符", trigger: "blur" },
+  ],
+  keep_alive: [{ required: true, message: "请选择是否缓存", trigger: "change" }],
+  hidden: [{ required: true, message: "请选择是否隐藏", trigger: "change" }],
+  always_show: [{ required: true, message: "请选择始终显示", trigger: "change" }],
+  status: [{ required: true, message: "请选择状态", trigger: "change" }],
+  redirect: [
+    {
+      validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
+        if (formData.type === MenuTypeEnum.CATALOG) {
+          if (value === undefined || value === null || String(value).trim() === "") {
+            callback(new Error("目录类型必须填写重定向地址"));
+            return;
+          }
+        }
+        callback();
+      },
+      trigger: "blur",
+    },
+  ],
+});
+
+// 选择表格的行菜单ID
+const selectedMenuId = ref<number | undefined>();
+
+// 定义初始表单数据常量
+const initialFormData: MenuForm = {
+  id: undefined,
+  name: undefined,
+  type: MenuTypeEnum.MENU,
+  icon: undefined,
+  order: 1,
+  permission: "",
+  route_name: "",
+  route_path: "",
+  component_path: "",
+  redirect: "",
+  parent_id: undefined,
+  keep_alive: false,
+  hidden: false,
+  always_show: false,
+  title: "",
+  params: [] as { key: string; value: string }[],
+  affix: false,
+  status: "0",
+  description: undefined,
+};
+
+// 重置表单
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
   }
+  // 完全重置 formData 为初始状态
+  Object.assign(formData, initialFormData);
+}
+
+// 行点击事件
+async function handleRowClick(row: MenuTable) {
+  selectedMenuId.value = row.id;
+}
+
+// 关闭弹窗
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  createParentLocked.value = false;
+  resetForm();
+}
+
+//打开弹窗
+async function handleOpenDialog(
+  type: "create" | "update" | "detail",
+  id?: number,
+  parentRow?: MenuTable
+) {
+  dialogVisible.type = type;
+  createParentLocked.value = false;
+  if (id) {
+    const response = await MenuAPI.detailMenu(id);
+    if (type === "detail") {
+      dialogVisible.title = "菜单详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改菜单";
+      Object.assign(formData, response.data.data);
+    }
+  } else {
+    dialogVisible.title = "新增菜单";
+    Object.assign(formData, initialFormData);
+    if (parentRow?.id != null) {
+      formData.parent_id = parentRow.id;
+      if (parentRow.type === MenuTypeEnum.MENU) {
+        createParentLocked.value = true;
+        formData.type = MenuTypeEnum.BUTTON;
+      } else if (parentRow.type === MenuTypeEnum.CATALOG) {
+        formData.type = MenuTypeEnum.MENU;
+      }
+    }
+  }
+  dialogVisible.visible = true;
+}
+
+// 菜单类型切换
+function handleMenuTypeChange() {
+  if (formData.type === MenuTypeEnum.MENU) {
+    formData.component_path = "";
+  }
+  nextTick(() => {
+    dataFormRef.value?.clearValidate("redirect");
+    if (formData.type === MenuTypeEnum.CATALOG) {
+      dataFormRef.value?.validateField("redirect").catch(() => {});
+    }
+  });
+}
+
+// 提交表单
+async function handleSubmit() {
+  const allowed = allowedMenuTypeValues.value;
+  if (!allowed.includes(formData.type as MenuTypeEnum)) {
+    ElMessage.warning("当前父级下不允许该菜单类型");
+    return;
+  }
+  dataFormRef.value.validate(async (valid: any) => {
+    if (valid) {
+      submitLoading.value = true;
+      const id = formData.id;
+      try {
+        if (id) {
+          await MenuAPI.updateMenu(id, formData);
+        } else {
+          await MenuAPI.createMenu(formData);
+        }
+        await userStore.getUserInfo();
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+      } catch (error: any) {
+        console.error(error);
+      } finally {
+        submitLoading.value = false;
+      }
+    }
+  });
+}
+
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() as MenuTable[] | undefined;
+  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+  if (!ids.length) {
+    ElMessage.warning("请先选择要操作的数据");
+    return;
+  }
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await MenuAPI.batchMenu({ ids, status });
+        refreshList();
+      } catch (error: any) {
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
 </script>

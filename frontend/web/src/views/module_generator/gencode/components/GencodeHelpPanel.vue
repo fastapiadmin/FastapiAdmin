@@ -39,73 +39,73 @@
 </template>
 
 <script setup lang="ts">
-  import { InfoFilled } from '@element-plus/icons-vue';
+import { InfoFilled } from "@element-plus/icons-vue";
 
-  defineOptions({ name: 'GencodeHelpPanel' });
+defineOptions({ name: "GencodeHelpPanel" });
 
-  const rows = [
-    {
-      parent: '已选',
-      sidebar: '上级目录 → 短包名目录 → 功能菜单 → 按钮',
-      page: '/包名/业务名',
-      api: '/短包名/业务名',
-    },
-    {
-      parent: '未选',
-      sidebar: 'module_包名 → 功能菜单 → 按钮（与 plugin 目录一致）',
-      page: '/module_包名/业务名',
-      api: '/短包名/业务名',
-    },
-  ];
+const rows = [
+  {
+    parent: "已选",
+    sidebar: "上级目录 → 短包名目录 → 功能菜单 → 按钮",
+    page: "/包名/业务名",
+    api: "/短包名/业务名",
+  },
+  {
+    parent: "未选",
+    sidebar: "module_包名 → 功能菜单 → 按钮（与 plugin 目录一致）",
+    page: "/module_包名/业务名",
+    api: "/短包名/业务名",
+  },
+];
 </script>
 
 <style scoped lang="scss">
-  .gencode-help-collapse {
-    overflow: hidden;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: var(--el-border-radius-base);
-  }
+.gencode-help-collapse {
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--el-border-radius-base);
+}
 
-  .gencode-help-collapse :deep(.el-collapse-item__header) {
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    background: var(--el-fill-color-light);
-  }
+.gencode-help-collapse :deep(.el-collapse-item__header) {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--el-fill-color-light);
+}
 
-  .gencode-help-collapse :deep(.el-collapse-item__wrap) {
-    border-top: 1px solid var(--el-border-color-lighter);
-  }
+.gencode-help-collapse :deep(.el-collapse-item__wrap) {
+  border-top: 1px solid var(--el-border-color-lighter);
+}
 
-  .gencode-help-collapse :deep(.el-collapse-item__content) {
-    padding: 10px 12px 12px;
-  }
+.gencode-help-collapse :deep(.el-collapse-item__content) {
+  padding: 10px 12px 12px;
+}
 
-  .gencode-help-collapse__title {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-  }
+.gencode-help-collapse__title {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
 
-  .gencode-help-collapse__icon {
-    flex-shrink: 0;
-  }
+.gencode-help-collapse__icon {
+  flex-shrink: 0;
+}
 
-  .gencode-rules-table :deep(.el-table__cell) {
-    font-size: 12px;
-  }
+.gencode-rules-table :deep(.el-table__cell) {
+  font-size: 12px;
+}
 
-  .gencode-help-footnote {
-    margin: 10px 0 0;
-    font-size: 12px;
-    line-height: 1.55;
-    color: var(--el-text-color-secondary);
-  }
+.gencode-help-footnote {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--el-text-color-secondary);
+}
 
-  .gencode-help-footnote code {
-    padding: 0 4px;
-    font-size: 11px;
-    background: var(--el-fill-color);
-    border-radius: 3px;
-  }
+.gencode-help-footnote code {
+  padding: 0 4px;
+  font-size: 11px;
+  background: var(--el-fill-color);
+  border-radius: 3px;
+}
 </style>

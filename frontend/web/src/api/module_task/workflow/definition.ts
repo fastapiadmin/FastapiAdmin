@@ -1,95 +1,60 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/task/workflow/definition';
+/** 对应后端 `plugin.module_task.workflow.definition` */
+const API_PATH = "/task/workflow/definition";
 
 const WorkflowDefinitionAPI = {
-  /**
-   * 获取工作流列表
-   * @param query 查询参数
-   * @returns 工作流列表
-   */
   getWorkflowList(query: WorkflowPageQuery) {
-    return request<PageResult<WorkflowTable[]>>({
+    return request<ApiResponse<PageResult<WorkflowTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取工作流详情
-   * @param query 工作流ID
-   * @returns 工作流详情
-   */
   getWorkflowDetail(query: number) {
     return request<ApiResponse<WorkflowTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建工作流
-   * @param body 工作流信息
-   * @returns 工作流详情
-   */
   createWorkflow(body: WorkflowForm) {
     return request<ApiResponse<WorkflowTable>>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新工作流
-   * @param id 工作流ID
-   * @param body 工作流信息
-   * @returns 工作流详情
-   */
   updateWorkflow(id: number, body: WorkflowForm) {
     return request<ApiResponse<WorkflowTable>>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除工作流
-   * @param body 工作流ID列表
-   */
   deleteWorkflow(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 发布工作流
-   * @param id 工作流ID
-   * @param body 发布参数
-   * @returns 工作流详情
-   */
   publishWorkflow(id: number, body: WorkflowPublishForm) {
     return request<ApiResponse<WorkflowTable>>({
       url: `${API_PATH}/publish/${id}`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 执行工作流
-   * @param body 执行参数
-   * @returns 执行结果
-   */
   executeWorkflow(body: WorkflowExecuteForm) {
     return request<ApiResponse<WorkflowExecuteResult>>({
       url: `${API_PATH}/execute`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },

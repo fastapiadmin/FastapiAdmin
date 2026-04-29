@@ -1,7 +1,8 @@
-import { store } from '@/store';
-import NoticeAPI, { NoticeTable } from '@/api/module_system/notice';
+import { store } from "@/store";
+import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
+import { defineStore } from "pinia";
 
-export const useNoticeStore = defineStore('notice', {
+export const useNoticeStore = defineStore("notice", {
   state: () => ({
     noticeList: [] as NoticeTable[],
     total: 0,

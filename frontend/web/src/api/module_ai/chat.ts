@@ -1,12 +1,8 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/ai/chat';
+const API_PATH = "/ai/chat";
 
 export const AiChatAPI = {
-  /**
-   * 查询会话列表
-   * @param query 查询参数
-   */
   getSessionList(query: {
     page_no: number;
     page_size: number;
@@ -14,70 +10,49 @@ export const AiChatAPI = {
     created_at?: string[];
     updated_at?: string[];
   }) {
-    return request<PageResult<ChatSession[]>>({
+    return request<ApiResponse<PageResult<ChatSession[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 创建会话
-   * @param body 会话信息
-   */
   createSession(body: { title: string }) {
     return request<ApiResponse<ChatSession>>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新会话
-   * @param id 会话ID
-   * @param body 会话信息
-   */
   updateSession(id: string, body: { title: string }) {
     return request<ApiResponse<ChatSession>>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除会话
-   * @param body 会话ID数组
-   */
   deleteSession(body: string[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 调用AI模型
-   * @param body 调用参数
-   */
   chat(body: { message: string; session_id?: string | null }) {
     return request<ApiResponse<AiChatResponse>>({
       url: `${API_PATH}/ai-chat`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 查询会话详情
-   * @param sessionId 会话ID
-   */
   getSessionDetail(sessionId: string) {
     return request<ApiResponse<ChatSessionDetail>>({
       url: `${API_PATH}/detail/${sessionId}`,
-      method: 'get',
+      method: "get",
     });
   },
 };

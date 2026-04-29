@@ -61,107 +61,107 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
-  import {
-    ElButton,
-    ElForm,
-    ElFormItem,
-    ElInput,
-    ElSelect,
-    ElOption,
-    ElInputNumber,
-    ElSwitch,
-    ElColorPicker,
-    ElMessage,
-    ElIcon,
-  } from 'element-plus';
-  import { Close } from '@element-plus/icons-vue';
+import { ref, watch } from "vue";
+import {
+  ElButton,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElInputNumber,
+  ElSwitch,
+  ElColorPicker,
+  ElMessage,
+  ElIcon,
+} from "element-plus";
+import { Close } from "@element-plus/icons-vue";
 
-  const props = defineProps({
-    edge: {
-      type: Object,
-      default: () => ({}),
-    },
-  });
+const props = defineProps({
+  edge: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
-  const emit = defineEmits(['close', 'save', 'delete']);
+const emit = defineEmits(["close", "save", "delete"]);
 
-  const formData = ref({
-    label: props.edge?.label || '',
-    type: props.edge?.type || 'smoothstep',
-    color: props.edge?.style?.stroke || '#000000',
-    strokeWidth: props.edge?.style?.strokeWidth || 2,
-    animated: props.edge?.animated || false,
-    condition: props.edge?.data?.condition || '',
-    description: props.edge?.data?.description || '',
-  });
+const formData = ref({
+  label: props.edge?.label || "",
+  type: props.edge?.type || "smoothstep",
+  color: props.edge?.style?.stroke || "#000000",
+  strokeWidth: props.edge?.style?.strokeWidth || 2,
+  animated: props.edge?.animated || false,
+  condition: props.edge?.data?.condition || "",
+  description: props.edge?.data?.description || "",
+});
 
-  watch(
-    () => props.edge,
-    (newEdge) => {
-      if (newEdge) {
-        formData.value = {
-          label: newEdge.label || '',
-          type: newEdge.type || 'smoothstep',
-          color: newEdge.style?.stroke || '#000000',
-          strokeWidth: newEdge.style?.strokeWidth || 2,
-          animated: newEdge.animated || false,
-          condition: newEdge.data?.condition || '',
-          description: newEdge.data?.description || '',
-        };
-      }
-    },
-    { deep: true }
-  );
+watch(
+  () => props.edge,
+  (newEdge) => {
+    if (newEdge) {
+      formData.value = {
+        label: newEdge.label || "",
+        type: newEdge.type || "smoothstep",
+        color: newEdge.style?.stroke || "#000000",
+        strokeWidth: newEdge.style?.strokeWidth || 2,
+        animated: newEdge.animated || false,
+        condition: newEdge.data?.condition || "",
+        description: newEdge.data?.description || "",
+      };
+    }
+  },
+  { deep: true }
+);
 
-  function handleClose() {
-    emit('close');
-  }
+function handleClose() {
+  emit("close");
+}
 
-  function handleSave() {
-    emit('save', formData.value);
-    ElMessage.success('保存成功');
-  }
+function handleSave() {
+  emit("save", formData.value);
+  ElMessage.success("保存成功");
+}
 
-  function handleDelete() {
-    emit('delete');
-  }
+function handleDelete() {
+  emit("delete");
+}
 </script>
 
 <style scoped>
-  .edge-config-panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
+.edge-config-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    font-weight: 600;
-    border-bottom: 1px solid #e5e7eb;
-  }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
 
-  .close-btn {
-    padding: 4px;
-  }
+.close-btn {
+  padding: 4px;
+}
 
-  .panel-content {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-  }
+.panel-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
 
-  .panel-actions {
-    display: flex;
-    gap: 8px;
-    padding-top: 16px;
-    border-top: 1px solid #e5e7eb;
-  }
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
 
-  .panel-actions .el-button {
-    flex: 1;
-  }
+.panel-actions .el-button {
+  flex: 1;
+}
 </style>

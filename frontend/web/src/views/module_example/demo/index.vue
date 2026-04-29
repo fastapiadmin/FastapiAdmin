@@ -82,7 +82,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.status ? 'success' : 'info'">
-                  {{ scope.row.status ? '启用' : '停用' }}
+                  {{ scope.row.status ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -116,7 +116,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.d ? 'success' : 'danger'">
-                  {{ scope.row.d ? '是' : '否' }}
+                  {{ scope.row.d ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -252,7 +252,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
             <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
-              {{ detailFormData.status == '0' ? '启用' : '停用' }}
+              {{ detailFormData.status == "0" ? "启用" : "停用" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="整数" :span="2">
@@ -266,7 +266,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="布尔值" :span="2">
             <el-tag :type="detailFormData.d ? 'success' : 'danger'">
-              {{ detailFormData.d ? '是' : '否' }}
+              {{ detailFormData.d ? "是" : "否" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="日期" :span="2">
@@ -425,353 +425,353 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'Demo',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Demo",
+  inheritAttrs: false,
+});
 
-  import { ref, reactive, onMounted, markRaw, nextTick } from 'vue';
-  import { fetchAllPages } from '@/utils/fetchAllPages';
-  import { ElMessageBox } from 'element-plus';
-  import { ResultEnum } from '@/enums/api/result.enum';
-  import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from '@/api/module_example/demo';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import UserTableSelect from '@/views/module_system/user/components/UserTableSelect.vue';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
-  import JsonPretty from '@/components/JsonPretty/index.vue';
+import { ref, reactive, onMounted, markRaw, nextTick } from "vue";
+import { fetchAllPages } from "@/utils/fetchAllPages";
+import { ElMessageBox } from "element-plus";
+import { ResultEnum } from "@/enums/api/result.enum";
+import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_example/demo";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import JsonPretty from "@/components/JsonPretty/index.vue";
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
 
-  function triggerUserSearch() {
-    nextTick(() => refreshList());
-  }
+function triggerUserSearch() {
+  nextTick(() => refreshList());
+}
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_example:demo',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '名称',
-        type: 'input',
-        attrs: { placeholder: '请输入名称', clearable: true },
-      },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: '0' },
-          { label: '停用', value: '1' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '170px' } },
-      },
-      {
-        prop: 'created_id',
-        label: '创建人',
-        type: 'user-table-select',
-        initialValue: null,
-        events: {
-          'confirm-click': triggerUserSearch,
-          'clear-click': triggerUserSearch,
-        },
-      },
-      {
-        prop: 'updated_id',
-        label: '更新人',
-        type: 'user-table-select',
-        initialValue: null,
-        events: {
-          'confirm-click': triggerUserSearch,
-          'clear-click': triggerUserSearch,
-        },
-      },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始',
-          endPlaceholder: '结束',
-        },
-      },
-      {
-        prop: 'updated_time',
-        label: '更新时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始',
-          endPlaceholder: '结束',
-        },
-      },
-    ],
-    customComponents: {
-      'user-table-select': markRaw(UserTableSelect),
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_example:demo",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "名称",
+      type: "input",
+      attrs: { placeholder: "请输入名称", clearable: true },
     },
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'name', label: '名称', show: true },
-    { prop: 'uuid', label: 'UUID', show: true },
-    { prop: 'status', label: '状态', show: true },
-    { prop: 'a', label: '整数', show: true },
-    { prop: 'b', label: '大整数', show: true },
-    { prop: 'c', label: '浮点数', show: true },
-    { prop: 'd', label: '布尔值', show: true },
-    { prop: 'e', label: '日期', show: true },
-    { prop: 'f', label: '时间', show: true },
-    { prop: 'g', label: '日期时间', show: true },
-    { prop: 'h', label: '长文本', show: true },
-    { prop: 'i', label: '元数据', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'created_id', label: '创建人', show: true },
-    { prop: 'updated_id', label: '更新人', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  function normalizeDemoQuery(params: Record<string, unknown>) {
-    const p = { ...params } as Record<string, unknown>;
-    if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-    if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-    return p as unknown as DemoPageQuery;
-  }
-
-  const contentConfig = reactive<IContentConfig<DemoPageQuery>>({
-    permPrefix: 'module_example:demo',
-    hideColumnFilter: false,
-    initialFetch: false,
-    cols: contentCols as IContentConfig['cols'],
-    toolbar: [],
-    defaultToolbar: ['import', 'export', 'refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "170px" } },
     },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await DemoAPI.getDemoList(
-        normalizeDemoQuery(params as unknown as Record<string, unknown>)
-      );
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
+    {
+      prop: "created_id",
+      label: "创建人",
+      type: "user-table-select",
+      initialValue: null,
+      events: {
+        "confirm-click": triggerUserSearch,
+        "clear-click": triggerUserSearch,
+      },
     },
-    deleteAction: (ids) =>
-      DemoAPI.deleteDemo(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n) && n > 0)
-      ),
-    importTemplate: () => DemoAPI.downloadTemplateDemo(),
-    importAction: (file: File) => {
-      const fd = new FormData();
-      fd.append('file', file);
-      return DemoAPI.importDemo(fd).then((res) => {
-        if (res.data.code !== ResultEnum.SUCCESS) {
-          return Promise.reject(new Error(res.data.msg));
-        }
-      });
+    {
+      prop: "updated_id",
+      label: "更新人",
+      type: "user-table-select",
+      initialValue: null,
+      events: {
+        "confirm-click": triggerUserSearch,
+        "clear-click": triggerUserSearch,
+      },
     },
-    exportsAction: async (params: DemoPageQuery) => {
-      const query: Record<string, unknown> = { ...params };
-      if (typeof query.status === 'string') {
-        query.status = query.status === 'true';
-      }
-      return fetchAllPages<DemoTable>({
-        pageSize: 9999,
-        initialQuery: query,
-        fetchPage: async (q) => {
-          const res = await DemoAPI.getDemoList(
-            normalizeDemoQuery(q as unknown as Record<string, unknown>)
-          );
-          return {
-            total: res.data?.data?.total ?? 0,
-            list: res.data?.data?.items ?? [],
-          };
-        },
-      });
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始",
+        endPlaceholder: "结束",
+      },
     },
-  });
+    {
+      prop: "updated_time",
+      label: "更新时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始",
+        endPlaceholder: "结束",
+      },
+    },
+  ],
+  customComponents: {
+    "user-table-select": markRaw(UserTableSelect),
+  },
+});
 
-  const detailFormData = ref<DemoTable>({});
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "name", label: "名称", show: true },
+  { prop: "uuid", label: "UUID", show: true },
+  { prop: "status", label: "状态", show: true },
+  { prop: "a", label: "整数", show: true },
+  { prop: "b", label: "大整数", show: true },
+  { prop: "c", label: "浮点数", show: true },
+  { prop: "d", label: "布尔值", show: true },
+  { prop: "e", label: "日期", show: true },
+  { prop: "f", label: "时间", show: true },
+  { prop: "g", label: "日期时间", show: true },
+  { prop: "h", label: "长文本", show: true },
+  { prop: "i", label: "元数据", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "created_id", label: "创建人", show: true },
+  { prop: "updated_id", label: "更新人", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
 
-  const formData = reactive<DemoForm>({
-    id: undefined,
-    name: '',
-    status: '0',
-    description: undefined,
-    a: undefined,
-    b: undefined,
-    c: undefined,
-    d: true,
-    e: undefined,
-    f: undefined,
-    g: undefined,
-    h: undefined,
-    i: undefined,
-  });
+function normalizeDemoQuery(params: Record<string, unknown>) {
+  const p = { ...params } as Record<string, unknown>;
+  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
+  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
+  return p as unknown as DemoPageQuery;
+}
 
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const rules = reactive({
-    name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-    status: [{ required: true, message: '请选择状态', trigger: 'blur' }],
-  });
-
-  const dataFormRef = ref();
-
-  const metadataList = ref<{ key: string; value: string }[]>([]);
-
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
-  }
-
-  const initialFormData: DemoForm = {
-    id: undefined,
-    name: '',
-    status: '0',
-    description: undefined,
-    a: undefined,
-    b: undefined,
-    c: undefined,
-    d: true,
-    e: undefined,
-    f: undefined,
-    g: undefined,
-    h: undefined,
-    i: undefined,
-  };
-
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
-    }
-    Object.assign(formData, initialFormData);
-    metadataList.value = [];
-  }
-
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    resetForm();
-  }
-
-  async function handleOpenDialog(type: 'create' | 'update' | 'detail', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await DemoAPI.getDemoDetail(id);
-      if (type === 'detail') {
-        dialogVisible.title = '详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改';
-        Object.assign(formData, response.data.data);
-        if (formData.i && typeof formData.i === 'object') {
-          metadataList.value = Object.entries(formData.i).map(([key, value]) => ({
-            key,
-            value: String(value),
-          }));
-        } else {
-          metadataList.value = [];
-        }
-      }
-    } else {
-      dialogVisible.title = '新增示例';
-      formData.id = undefined;
-      metadataList.value = [];
-    }
-    dialogVisible.visible = true;
-  }
-
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: boolean) => {
-      if (valid) {
-        const submitData = { ...formData };
-        if (metadataList.value.length > 0) {
-          const metadataObj: Record<string, string> = {};
-          metadataList.value.forEach((item) => {
-            if (item.key.trim()) {
-              metadataObj[item.key.trim()] = item.value;
-            }
-          });
-          submitData.i = Object.keys(metadataObj).length > 0 ? metadataObj : undefined;
-        } else {
-          submitData.i = undefined;
-        }
-        const id = formData.id;
-        try {
-          if (id) {
-            await DemoAPI.updateDemo(id, { id, ...submitData });
-          } else {
-            await DemoAPI.createDemo(submitData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-        } catch (error: unknown) {
-          console.error(error);
-        }
+const contentConfig = reactive<IContentConfig<DemoPageQuery>>({
+  permPrefix: "module_example:demo",
+  hideColumnFilter: false,
+  initialFetch: false,
+  cols: contentCols as IContentConfig["cols"],
+  toolbar: [],
+  defaultToolbar: ["import", "export", "refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await DemoAPI.getDemoList(
+      normalizeDemoQuery(params as unknown as Record<string, unknown>)
+    );
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: (ids) =>
+    DemoAPI.deleteDemo(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n) && n > 0)
+    ),
+  importTemplate: () => DemoAPI.downloadTemplateDemo(),
+  importAction: (file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return DemoAPI.importDemo(fd).then((res) => {
+      if (res.data.code !== ResultEnum.SUCCESS) {
+        return Promise.reject(new Error(res.data.msg));
       }
     });
-  }
+  },
+  exportsAction: async (params: DemoPageQuery) => {
+    const query: Record<string, unknown> = { ...params };
+    if (typeof query.status === "string") {
+      query.status = query.status === "true";
+    }
+    return fetchAllPages<DemoTable>({
+      pageSize: 9999,
+      initialQuery: query,
+      fetchPage: async (q) => {
+        const res = await DemoAPI.getDemoList(
+          normalizeDemoQuery(q as unknown as Record<string, unknown>)
+        );
+        return {
+          total: res.data?.data?.total ?? 0,
+          list: res.data?.data?.items ?? [],
+        };
+      },
+    });
+  },
+});
 
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() ?? [];
-    const ids = rows.map((r: { id?: number }) => r.id).filter(Boolean) as number[];
-    if (!ids.length) return;
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        try {
-          await DemoAPI.batchDemo({ ids, status });
-          refreshList();
-        } catch (error: unknown) {
-          console.error(error);
+const detailFormData = ref<DemoTable>({});
+
+const formData = reactive<DemoForm>({
+  id: undefined,
+  name: "",
+  status: "0",
+  description: undefined,
+  a: undefined,
+  b: undefined,
+  c: undefined,
+  d: true,
+  e: undefined,
+  f: undefined,
+  g: undefined,
+  h: undefined,
+  i: undefined,
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const rules = reactive({
+  name: [{ required: true, message: "请输入名称", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+});
+
+const dataFormRef = ref();
+
+const metadataList = ref<{ key: string; value: string }[]>([]);
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+const initialFormData: DemoForm = {
+  id: undefined,
+  name: "",
+  status: "0",
+  description: undefined,
+  a: undefined,
+  b: undefined,
+  c: undefined,
+  d: true,
+  e: undefined,
+  f: undefined,
+  g: undefined,
+  h: undefined,
+  i: undefined,
+};
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
+  }
+  Object.assign(formData, initialFormData);
+  metadataList.value = [];
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  resetForm();
+}
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await DemoAPI.getDemoDetail(id);
+    if (type === "detail") {
+      dialogVisible.title = "详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改";
+      Object.assign(formData, response.data.data);
+      if (formData.i && typeof formData.i === "object") {
+        metadataList.value = Object.entries(formData.i).map(([key, value]) => ({
+          key,
+          value: String(value),
+        }));
+      } else {
+        metadataList.value = [];
+      }
+    }
+  } else {
+    dialogVisible.title = "新增示例";
+    formData.id = undefined;
+    metadataList.value = [];
+  }
+  dialogVisible.visible = true;
+}
+
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      const submitData = { ...formData };
+      if (metadataList.value.length > 0) {
+        const metadataObj: Record<string, string> = {};
+        metadataList.value.forEach((item) => {
+          if (item.key.trim()) {
+            metadataObj[item.key.trim()] = item.value;
+          }
+        });
+        submitData.i = Object.keys(metadataObj).length > 0 ? metadataObj : undefined;
+      } else {
+        submitData.i = undefined;
+      }
+      const id = formData.id;
+      try {
+        if (id) {
+          await DemoAPI.updateDemo(id, { id, ...submitData });
+        } else {
+          await DemoAPI.createDemo(submitData);
         }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
-  }
-
-  onMounted(() => {
-    refreshList();
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+      } catch (error: unknown) {
+        console.error(error);
+      }
+    }
   });
+}
+
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() ?? [];
+  const ids = rows.map((r: { id?: number }) => r.id).filter(Boolean) as number[];
+  if (!ids.length) return;
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await DemoAPI.batchDemo({ ids, status });
+        refreshList();
+      } catch (error: unknown) {
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
+
+onMounted(() => {
+  refreshList();
+});
 </script>
 
 <style lang="scss" scoped></style>

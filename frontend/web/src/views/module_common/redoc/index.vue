@@ -6,16 +6,16 @@
 </template>
 
 <script lang="ts" setup>
-  defineOptions({
-    name: 'Redoc',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Redoc",
+  inheritAttrs: false,
+});
 
-  const url = ref(import.meta.env.VITE_APP_BASE_API + '/redoc');
+const url = ref(import.meta.env.VITE_APP_BASE_API + "/redoc");
 
-  onBeforeUnmount(() => {
-    window.onresize = null;
-  });
+onBeforeUnmount(() => {
+  window.onresize = null;
+});
 </script>
 
 <style lang="scss" scoped></style>

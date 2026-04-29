@@ -1,13 +1,13 @@
 /**
  * NProgress 进度条配置
  */
-import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 
 // 进度条
 NProgress.configure({
   // 动画方式
-  easing: 'ease',
+  easing: "ease",
   // 递增进度条的速度
   speed: 500,
   // 是否显示加载ico

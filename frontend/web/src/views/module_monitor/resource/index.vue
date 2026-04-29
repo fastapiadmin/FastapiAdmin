@@ -259,351 +259,351 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'ResourceMonitor',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "ResourceMonitor",
+  inheritAttrs: false,
+});
 
-  import { ref, reactive } from 'vue';
-  import { ElMessage, ElMessageBox } from 'element-plus';
-  import { Folder, Document, UploadFilled, QuestionFilled } from '@element-plus/icons-vue';
-  import {
-    ResourceAPI,
-    type ResourceItem,
-    type ResourcePageQuery,
-  } from '@/api/module_monitor/resource';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
+import { ref, reactive } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { Folder, Document, UploadFilled, QuestionFilled } from "@element-plus/icons-vue";
+import {
+  ResourceAPI,
+  type ResourceItem,
+  type ResourcePageQuery,
+} from "@/api/module_monitor/resource";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
 
-  const selectedItems = ref<ResourceItem[]>([]);
-  const breadcrumbList = ref([{ name: '资源根目录', path: '/' }]);
-  const showHiddenFiles = ref(false);
+const selectedItems = ref<ResourceItem[]>([]);
+const breadcrumbList = ref([{ name: "资源根目录", path: "/" }]);
+const showHiddenFiles = ref(false);
 
-  const currentPath = ref('/');
+const currentPath = ref("/");
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_monitor:resource',
-    colon: true,
-    isExpandable: false,
-    showNumber: 3,
-    form: { labelWidth: 'auto' },
-    searchButtonPerm: 'module_monitor:resource:query',
-    resetButtonPerm: 'module_monitor:resource:query',
-    formItems: [
-      {
-        prop: 'name',
-        label: '关键词',
-        type: 'input',
-        attrs: { placeholder: '请输入文件名或目录名', clearable: true, style: { width: '200px' } },
-      },
-    ],
-  });
-
-  const contentConfig = reactive<IContentConfig<ResourcePageQuery>>({
-    permPrefix: 'module_monitor:resource',
-    cols: [],
-    hideColumnFilter: true,
-    toolbar: [],
-    defaultToolbar: ['refresh'],
-    pk: 'file_url',
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_monitor:resource",
+  colon: true,
+  isExpandable: false,
+  showNumber: 3,
+  form: { labelWidth: "auto" },
+  searchButtonPerm: "module_monitor:resource:query",
+  resetButtonPerm: "module_monitor:resource:query",
+  formItems: [
+    {
+      prop: "name",
+      label: "关键词",
+      type: "input",
+      attrs: { placeholder: "请输入文件名或目录名", clearable: true, style: { width: "200px" } },
     },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const merged: ResourcePageQuery = {
-        ...(params as ResourcePageQuery),
-        include_hidden: showHiddenFiles.value,
-      };
-      if (currentPath.value && currentPath.value !== '/') {
-        merged.path = currentPath.value;
-      }
-      const res = await ResourceAPI.listResource(merged);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    },
-  });
+  ],
+});
 
-  const uploadDialogVisible = ref(false);
-  const createDirDialogVisible = ref(false);
-  const renameDialogVisible = ref(false);
-  const uploading = ref(false);
+const contentConfig = reactive<IContentConfig<ResourcePageQuery>>({
+  permPrefix: "module_monitor:resource",
+  cols: [],
+  hideColumnFilter: true,
+  toolbar: [],
+  defaultToolbar: ["refresh"],
+  pk: "file_url",
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const merged: ResourcePageQuery = {
+      ...(params as ResourcePageQuery),
+      include_hidden: showHiddenFiles.value,
+    };
+    if (currentPath.value && currentPath.value !== "/") {
+      merged.path = currentPath.value;
+    }
+    const res = await ResourceAPI.listResource(merged);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+});
 
-  const uploadRef = ref();
-  const uploadFileList = ref<any[]>([]);
+const uploadDialogVisible = ref(false);
+const createDirDialogVisible = ref(false);
+const renameDialogVisible = ref(false);
+const uploading = ref(false);
 
-  const createDirForm = reactive({
-    dir_name: '',
-  });
+const uploadRef = ref();
+const uploadFileList = ref<any[]>([]);
 
-  const renameForm = reactive({
-    new_name: '',
-    old_path: '',
-  });
+const createDirForm = reactive({
+  dir_name: "",
+});
 
-  function handleBreadcrumbClick(item: { path: string }) {
-    currentPath.value = item.path;
+const renameForm = reactive({
+  new_name: "",
+  old_path: "",
+});
+
+function handleBreadcrumbClick(item: { path: string }) {
+  currentPath.value = item.path;
+  updateBreadcrumb();
+  refreshList();
+}
+
+function updateBreadcrumb() {
+  if (currentPath.value === "/") {
+    breadcrumbList.value = [{ name: "资源根目录", path: "/" }];
+    return;
+  }
+
+  const parts = currentPath.value.split("/").filter((part) => part !== "");
+
+  breadcrumbList.value = [
+    { name: "资源根目录", path: "/" },
+    ...parts.map((part, index) => ({
+      name: part,
+      path: parts.slice(0, index + 1).join("/"),
+    })),
+  ];
+}
+
+function handleFileNameClick(row: ResourceItem) {
+  if (row.is_dir) {
+    if (currentPath.value === "/") {
+      currentPath.value = row.name;
+    } else {
+      currentPath.value = currentPath.value + "/" + row.name;
+    }
     updateBreadcrumb();
     refreshList();
+  } else {
+    handleFilePreview(row);
+  }
+}
+
+function handleFilePreview(file: ResourceItem) {
+  let previewUrl = file.file_url;
+
+  if (previewUrl && !previewUrl.startsWith("http")) {
+    previewUrl = `${window.location.origin}${previewUrl}`;
   }
 
-  function updateBreadcrumb() {
-    if (currentPath.value === '/') {
-      breadcrumbList.value = [{ name: '资源根目录', path: '/' }];
-      return;
-    }
+  window.open(previewUrl, "_blank");
+}
 
-    const parts = currentPath.value.split('/').filter((part) => part !== '');
+function handleSelectionChange(selection: ResourceItem[]) {
+  selectedItems.value = selection;
+}
 
-    breadcrumbList.value = [
-      { name: '资源根目录', path: '/' },
-      ...parts.map((part, index) => ({
-        name: part,
-        path: parts.slice(0, index + 1).join('/'),
-      })),
-    ];
+function handleUpload() {
+  uploadDialogVisible.value = true;
+  uploadFileList.value = [];
+}
+
+function handleUploadChange(_file: unknown, fileList: unknown[]) {
+  uploadFileList.value = fileList as any[];
+}
+
+async function handleUploadConfirm() {
+  if (uploadFileList.value.length === 0) {
+    ElMessage.warning("请选择要上传的文件");
+    return;
   }
 
-  function handleFileNameClick(row: ResourceItem) {
-    if (row.is_dir) {
-      if (currentPath.value === '/') {
-        currentPath.value = row.name;
-      } else {
-        currentPath.value = currentPath.value + '/' + row.name;
-      }
-      updateBreadcrumb();
-      refreshList();
-    } else {
-      handleFilePreview(row);
-    }
-  }
+  try {
+    uploading.value = true;
+    const formData = new FormData();
+    uploadFileList.value.forEach((file: { raw?: Blob }) => {
+      const raw = file.raw;
+      if (raw) formData.append("file", raw);
+    });
 
-  function handleFilePreview(file: ResourceItem) {
-    let previewUrl = file.file_url;
+    const targetPath = currentPath.value === "/" ? "" : currentPath.value;
+    formData.append("target_path", targetPath);
 
-    if (previewUrl && !previewUrl.startsWith('http')) {
-      previewUrl = `${window.location.origin}${previewUrl}`;
-    }
-
-    window.open(previewUrl, '_blank');
-  }
-
-  function handleSelectionChange(selection: ResourceItem[]) {
-    selectedItems.value = selection;
-  }
-
-  function handleUpload() {
-    uploadDialogVisible.value = true;
-    uploadFileList.value = [];
-  }
-
-  function handleUploadChange(_file: unknown, fileList: unknown[]) {
-    uploadFileList.value = fileList as any[];
-  }
-
-  async function handleUploadConfirm() {
-    if (uploadFileList.value.length === 0) {
-      ElMessage.warning('请选择要上传的文件');
-      return;
-    }
-
-    try {
-      uploading.value = true;
-      const formData = new FormData();
-      uploadFileList.value.forEach((file: { raw?: Blob }) => {
-        const raw = file.raw;
-        if (raw) formData.append('file', raw);
-      });
-
-      const targetPath = currentPath.value === '/' ? '' : currentPath.value;
-      formData.append('target_path', targetPath);
-
-      await ResourceAPI.uploadFile(formData);
-      uploadDialogVisible.value = false;
-      refreshList();
-    } catch (error) {
-      console.error('Upload error:', error);
-    } finally {
-      uploading.value = false;
-    }
-  }
-
-  function handleUploadClose() {
+    await ResourceAPI.uploadFile(formData);
     uploadDialogVisible.value = false;
-    uploadFileList.value = [];
-  }
-
-  function handleCreateDir() {
-    createDirForm.dir_name = '';
-    createDirDialogVisible.value = true;
-  }
-
-  async function handleCreateDirConfirm() {
-    if (!createDirForm.dir_name.trim()) {
-      ElMessage.warning('请输入文件夹名称');
-      return;
-    }
-
-    try {
-      const parentPath = currentPath.value === '/' ? '' : currentPath.value;
-      await ResourceAPI.createDirectory({
-        parent_path: parentPath,
-        dir_name: createDirForm.dir_name.trim(),
-      });
-      createDirDialogVisible.value = false;
-      refreshList();
-    } catch (error) {
-      console.error('Create directory error:', error);
-    }
-  }
-
-  function onShowHiddenChange() {
     refreshList();
+  } catch (error) {
+    console.error("Upload error:", error);
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function handleUploadClose() {
+  uploadDialogVisible.value = false;
+  uploadFileList.value = [];
+}
+
+function handleCreateDir() {
+  createDirForm.dir_name = "";
+  createDirDialogVisible.value = true;
+}
+
+async function handleCreateDirConfirm() {
+  if (!createDirForm.dir_name.trim()) {
+    ElMessage.warning("请输入文件夹名称");
+    return;
   }
 
-  async function handleDownload(item: ResourceItem) {
-    try {
-      const response = await ResourceAPI.downloadFile(item.file_url);
-      const blob = response.data;
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = item.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download error:', error);
+  try {
+    const parentPath = currentPath.value === "/" ? "" : currentPath.value;
+    await ResourceAPI.createDirectory({
+      parent_path: parentPath,
+      dir_name: createDirForm.dir_name.trim(),
+    });
+    createDirDialogVisible.value = false;
+    refreshList();
+  } catch (error) {
+    console.error("Create directory error:", error);
+  }
+}
+
+function onShowHiddenChange() {
+  refreshList();
+}
+
+async function handleDownload(item: ResourceItem) {
+  try {
+    const response = await ResourceAPI.downloadFile(item.file_url);
+    const blob = response.data;
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = item.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Download error:", error);
+  }
+}
+
+function handleRename(item: ResourceItem) {
+  renameForm.old_path = item.file_url;
+  renameForm.new_name = item.name;
+  renameDialogVisible.value = true;
+}
+
+async function handleRenameConfirm() {
+  if (!renameForm.new_name.trim()) {
+    ElMessage.warning("请输入新名称");
+    return;
+  }
+
+  try {
+    await ResourceAPI.renameResource({
+      old_path: renameForm.old_path,
+      new_name: renameForm.new_name.trim(),
+    });
+    renameDialogVisible.value = false;
+    refreshList();
+  } catch (error) {
+    console.error("Rename error:", error);
+  }
+}
+
+async function handleDelete(item: ResourceItem) {
+  try {
+    await ElMessageBox.confirm(`确定要删除 ${item.name} 吗？`, "确认删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    await ResourceAPI.deleteResource([item.file_url]);
+    refreshList();
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("Delete error:", error);
     }
   }
+}
 
-  function handleRename(item: ResourceItem) {
-    renameForm.old_path = item.file_url;
-    renameForm.new_name = item.name;
-    renameDialogVisible.value = true;
+async function handleBatchDelete() {
+  if (selectedItems.value.length === 0) {
+    ElMessage.warning("请选择要删除的文件");
+    return;
   }
 
-  async function handleRenameConfirm() {
-    if (!renameForm.new_name.trim()) {
-      ElMessage.warning('请输入新名称');
-      return;
-    }
-
-    try {
-      await ResourceAPI.renameResource({
-        old_path: renameForm.old_path,
-        new_name: renameForm.new_name.trim(),
-      });
-      renameDialogVisible.value = false;
-      refreshList();
-    } catch (error) {
-      console.error('Rename error:', error);
-    }
-  }
-
-  async function handleDelete(item: ResourceItem) {
-    try {
-      await ElMessageBox.confirm(`确定要删除 ${item.name} 吗？`, '确认删除', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      });
-
-      await ResourceAPI.deleteResource([item.file_url]);
-      refreshList();
-    } catch (error) {
-      if (error !== 'cancel') {
-        console.error('Delete error:', error);
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedItems.value.length} 个文件吗？`,
+      "确认删除",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       }
+    );
+
+    const paths = selectedItems.value.map((item) => item.file_url);
+
+    await ResourceAPI.deleteResource(paths);
+    refreshList();
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("Batch delete error:", error);
     }
   }
+}
 
-  async function handleBatchDelete() {
-    if (selectedItems.value.length === 0) {
-      ElMessage.warning('请选择要删除的文件');
-      return;
-    }
+function formatFileSize(size?: number | null) {
+  if (!size || size === null) return "-";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let unitIndex = 0;
+  let fileSize = size;
 
-    try {
-      await ElMessageBox.confirm(
-        `确定要删除选中的 ${selectedItems.value.length} 个文件吗？`,
-        '确认删除',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }
-      );
-
-      const paths = selectedItems.value.map((item) => item.file_url);
-
-      await ResourceAPI.deleteResource(paths);
-      refreshList();
-    } catch (error) {
-      if (error !== 'cancel') {
-        console.error('Batch delete error:', error);
-      }
-    }
+  while (fileSize >= 1024 && unitIndex < units.length - 1) {
+    fileSize /= 1024;
+    unitIndex++;
   }
 
-  function formatFileSize(size?: number | null) {
-    if (!size || size === null) return '-';
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let unitIndex = 0;
-    let fileSize = size;
-
-    while (fileSize >= 1024 && unitIndex < units.length - 1) {
-      fileSize /= 1024;
-      unitIndex++;
-    }
-
-    return `${fileSize.toFixed(1)} ${units[unitIndex]}`;
-  }
+  return `${fileSize.toFixed(1)} ${units[unitIndex]}`;
+}
 </script>
 
 <style lang="scss" scoped>
-  .card-header {
+.card-header {
+  display: flex;
+  align-items: center;
+}
+
+.data-table__content {
+  .file-name {
     display: flex;
+    gap: 8px;
     align-items: center;
-  }
 
-  .data-table__content {
-    .file-name {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-
-      .file-name-clickable {
-        color: var(--el-color-primary);
-        cursor: pointer;
-
-        &:hover {
-          color: var(--el-color-primary-light-3);
-          text-decoration: underline;
-        }
-      }
-    }
-  }
-
-  :deep(.el-breadcrumb__item) {
-    &.is-link {
+    .file-name-clickable {
       color: var(--el-color-primary);
       cursor: pointer;
 
       &:hover {
         color: var(--el-color-primary-light-3);
+        text-decoration: underline;
       }
     }
   }
+}
+
+:deep(.el-breadcrumb__item) {
+  &.is-link {
+    color: var(--el-color-primary);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--el-color-primary-light-3);
+    }
+  }
+}
 </style>

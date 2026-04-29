@@ -14,8 +14,8 @@ export async function fetchAllPages<T>(options: {
   fetchPage: (query: Record<string, unknown>) => Promise<{ total: number; list: T[] }>;
 }): Promise<T[]> {
   const pageSize = options.pageSize ?? 1000;
-  const pageNoKey = options.pageNoKey ?? 'page_no';
-  const pageSizeKey = options.pageSizeKey ?? 'page_size';
+  const pageNoKey = options.pageNoKey ?? "page_no";
+  const pageSizeKey = options.pageSizeKey ?? "page_size";
   const query = { ...options.initialQuery };
   query[pageNoKey] = 1;
   query[pageSizeKey] = pageSize;

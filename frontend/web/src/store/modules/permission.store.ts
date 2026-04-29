@@ -1,10 +1,12 @@
-import type { RouteRecordRaw } from 'vue-router';
-import router, { constantRoutes } from '@/router';
-import { store, useUserStore } from '@/store';
-import { MenuTable } from '@/api/module_system/menu';
+import type { RouteRecordRaw } from "vue-router";
+import router, { constantRoutes } from "@/router";
+import { store, useUserStore } from "@/store";
+import { MenuTable } from "@/api/module_system/menu";
+import { defineStore } from "pinia";
+import { Component, ref } from "vue";
 
-const modules = import.meta.glob('../../views/**/**.vue');
-const Layout = () => import('@/layouts/index.vue');
+const modules = import.meta.glob("../../views/**/**.vue");
+const Layout = () => import("@/layouts/index.vue");
 
 export interface Meta {
   /** 【目录】只有一个子路由是否始终显示 */
@@ -47,12 +49,12 @@ export interface RouteVO {
  */
 function normalizeMenuNestedPaths(items: MenuTable[], parentAbsolutePath?: string): MenuTable[] {
   return items.map((node) => {
-    const raw = (node.route_path ?? '').trim();
+    const raw = (node.route_path ?? "").trim();
     let routePath: string | null | undefined = node.route_path;
     if (parentAbsolutePath && raw && raw === parentAbsolutePath) {
-      routePath = '';
+      routePath = "";
     }
-    const canonical = raw.startsWith('/') ? raw : parentAbsolutePath;
+    const canonical = raw.startsWith("/") ? raw : parentAbsolutePath;
     const children = node.children?.length
       ? normalizeMenuNestedPaths(node.children, canonical)
       : undefined;
@@ -86,7 +88,7 @@ export const generator = (routers: MenuTable[]): RouteVO[] => {
   });
 };
 
-export const usePermissionStore = defineStore('permission', () => {
+export const usePermissionStore = defineStore("permission", () => {
   // 存储所有路由，包括静态路由和动态路由
   const routes = ref<RouteRecordRaw[]>([]);
   // 混合模式左侧菜单路由
@@ -201,8 +203,8 @@ const transformRoutes = (routes: RouteVO[], isTopLevel: boolean = true): RouteRe
       // 叶子路由，使用实际组件
       normalizedRoute.component = normalizedRoute.component
         ? modules[`../../views/${normalizedRoute.component}.vue`] ||
-          modules['../../views/error/404.vue']
-        : modules['../../views/error/404.vue'];
+          modules["../../views/error/404.vue"]
+        : modules["../../views/error/404.vue"];
     }
 
     return normalizedRoute;

@@ -1,5 +1,5 @@
-import { Storage } from './storage';
-import { AUTH_KEYS } from '@/constants';
+import { Storage } from "./storage";
+import { AUTH_KEYS } from "@/constants";
 
 /**
  * 身份验证工具类
@@ -26,8 +26,8 @@ export class Auth {
     const isRememberMe = Storage.get<boolean>(AUTH_KEYS.REMEMBER_ME, false);
     // 根据"记住我"状态决定从哪个存储位置获取token
     return isRememberMe
-      ? Storage.get(AUTH_KEYS.ACCESS_TOKEN, '')
-      : Storage.sessionGet(AUTH_KEYS.ACCESS_TOKEN, '');
+      ? Storage.get(AUTH_KEYS.ACCESS_TOKEN, "")
+      : Storage.sessionGet(AUTH_KEYS.ACCESS_TOKEN, "");
   }
 
   /**
@@ -37,8 +37,8 @@ export class Auth {
   static getRefreshToken(): string {
     const isRememberMe = Storage.get<boolean>(AUTH_KEYS.REMEMBER_ME, false);
     return isRememberMe
-      ? Storage.get(AUTH_KEYS.REFRESH_TOKEN, '')
-      : Storage.sessionGet(AUTH_KEYS.REFRESH_TOKEN, '');
+      ? Storage.get(AUTH_KEYS.REFRESH_TOKEN, "")
+      : Storage.sessionGet(AUTH_KEYS.REFRESH_TOKEN, "");
   }
 
   /**

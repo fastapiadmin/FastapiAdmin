@@ -100,7 +100,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === '0' ? '启用' : '停用' }}
+                  {{ scope.row.status === "0" ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -276,306 +276,306 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'Dict',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Dict",
+  inheritAttrs: false,
+});
 
-  import DictAPI, { DictTable, DictForm, DictPageQuery } from '@/api/module_system/dict';
-  import { useDictStore } from '@/store';
-  import DataDrawer from '@/views/module_system/dict/components/DataDrawer.vue';
-  import ExportModal from '@/components/CURD/ExportModal.vue';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import type { ISearchConfig, IContentConfig } from '@/components/CURD/types';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import { computed, ref, reactive, unref } from 'vue';
-  import { fetchAllPages } from '@/utils/fetchAllPages';
+import DictAPI, { DictTable, DictForm, DictPageQuery } from "@/api/module_system/dict";
+import { useDictStore } from "@/store";
+import DataDrawer from "@/views/module_system/dict/components/DataDrawer.vue";
+import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import type { ISearchConfig, IContentConfig } from "@/components/CURD/types";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import { computed, ref, reactive, unref } from "vue";
+import { fetchAllPages } from "@/utils/fetchAllPages";
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:dict_type',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'dict_name',
-        label: '字典名称',
-        type: 'input',
-        attrs: { placeholder: '请输入字典名称', clearable: true },
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:dict_type",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "dict_name",
+      label: "字典名称",
+      type: "input",
+      attrs: { placeholder: "请输入字典名称", clearable: true },
+    },
+    {
+      prop: "dict_type",
+      label: "字典类型",
+      type: "input",
+      attrs: { placeholder: "请输入字典类型", clearable: true },
+    },
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      attrs: {
+        type: "datetimerange",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        format: "YYYY-MM-DD HH:mm:ss",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        style: { width: "340px" },
       },
-      {
-        prop: 'dict_type',
-        label: '字典类型',
-        type: 'input',
-        attrs: { placeholder: '请输入字典类型', clearable: true },
-      },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: '0' },
-          { label: '停用', value: '1' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '167.5px' } },
-      },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        attrs: {
-          type: 'datetimerange',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          format: 'YYYY-MM-DD HH:mm:ss',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          style: { width: '340px' },
-        },
-      },
-    ],
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'dict_name', label: '字典名称', show: true },
-    { prop: 'dict_type', label: '字典类型', show: true },
-    { prop: 'status', label: '状态', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  const dictStore = useDictStore();
-
-  const contentConfig = reactive<IContentConfig<DictPageQuery>>({
-    permPrefix: 'module_system:dict_type',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: false,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
     },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await DictAPI.listDictType(params as DictPageQuery);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    },
-    deleteAction: async (ids) => {
-      await DictAPI.deleteDictType(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      dictStore.clearDictData();
-      const dictTypes = Object.keys(dictStore.dictData);
-      if (dictTypes.length > 0) {
-        await dictStore.getDict(dictTypes);
-      }
-    },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
+  ],
+});
 
-  const detailFormData = ref<DictTable>({});
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "dict_name", label: "字典名称", show: true },
+  { prop: "dict_type", label: "字典类型", show: true },
+  { prop: "status", label: "状态", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
 
-  const formData = reactive<DictForm>({
-    id: undefined,
-    dict_name: '',
-    dict_type: '',
-    status: '0',
-    description: undefined,
-  });
+const dictStore = useDictStore();
 
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const rules = reactive({
-    dict_name: [{ required: true, message: '请输入字典名称', trigger: 'blur' }],
-    dict_type: [{ required: true, message: '请选择字典类型', trigger: 'blur' }],
-    status: [{ required: true, message: '请选择字典状态', trigger: 'blur' }],
-  });
-
-  const initialFormData: DictForm = {
-    id: undefined,
-    dict_name: '',
-    dict_type: '',
-    status: '0',
-    description: undefined,
-  };
-
-  const exportsDialogVisible = ref(false);
-
-  const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
-
-  const exportPageData = computed(() => {
-    const pd = contentRef.value?.pageData;
-    return (unref(pd) ?? []) as DictTable[];
-  });
-
-  const exportSelectionData = computed(
-    () => (contentRef.value?.getSelectionData() ?? []) as DictTable[]
-  );
-
-  const exportColumns = [
-    { prop: 'dict_name', label: '字典名称' },
-    { prop: 'dict_type', label: '字典类型' },
-    { prop: 'status', label: '状态' },
-    { prop: 'description', label: '描述' },
-    { prop: 'created_time', label: '创建时间' },
-    { prop: 'updated_time', label: '更新时间' },
-  ];
-
-  const curdContentConfig = {
-    permPrefix: 'module_system:dict_type',
-    cols: exportColumns as any,
-    exportsAction: async (params: any) => {
-      const query: Record<string, unknown> = { ...params };
-      if (typeof query.status === 'string') query.status = query.status === 'true';
-      return fetchAllPages({
-        initialQuery: query,
-        fetchPage: async (q) => {
-          const res = await DictAPI.listDictType(q as unknown as DictPageQuery);
-          return {
-            total: res.data?.data?.total ?? 0,
-            list: res.data?.data?.items ?? [],
-          };
-        },
-      });
-    },
-  } as unknown as IContentConfig;
-
-  function handleOpenExportsModal() {
-    exportsDialogVisible.value = true;
-  }
-
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
-  }
-
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
+const contentConfig = reactive<IContentConfig<DictPageQuery>>({
+  permPrefix: "module_system:dict_type",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: false,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await DictAPI.listDictType(params as DictPageQuery);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: async (ids) => {
+    await DictAPI.deleteDictType(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    dictStore.clearDictData();
+    const dictTypes = Object.keys(dictStore.dictData);
+    if (dictTypes.length > 0) {
+      await dictStore.getDict(dictTypes);
     }
-    Object.assign(formData, initialFormData);
-  }
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
 
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    await resetForm();
-  }
+const detailFormData = ref<DictTable>({});
 
-  async function handleOpenDialog(type: 'create' | 'update' | 'detail', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await DictAPI.detailDictType(id);
-      if (type === 'detail') {
-        dialogVisible.title = '字典详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改字典';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增字典';
-      formData.id = undefined;
-    }
-    dialogVisible.visible = true;
-  }
+const formData = reactive<DictForm>({
+  id: undefined,
+  dict_name: "",
+  dict_type: "",
+  status: "0",
+  description: undefined,
+});
 
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: any) => {
-      if (valid) {
-        const id = formData.id;
-        try {
-          if (id) {
-            await DictAPI.updateDictType(id, { id, ...formData });
-          } else {
-            await DictAPI.createDictType(formData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-          dictStore.clearDictData();
-          if (formData.dict_type) {
-            await dictStore.getDict([formData.dict_type]);
-          }
-        } catch (error: any) {
-          console.error(error);
-        }
-      }
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const rules = reactive({
+  dict_name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
+  dict_type: [{ required: true, message: "请选择字典类型", trigger: "blur" }],
+  status: [{ required: true, message: "请选择字典状态", trigger: "blur" }],
+});
+
+const initialFormData: DictForm = {
+  id: undefined,
+  dict_name: "",
+  dict_type: "",
+  status: "0",
+  description: undefined,
+};
+
+const exportsDialogVisible = ref(false);
+
+const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+
+const exportPageData = computed(() => {
+  const pd = contentRef.value?.pageData;
+  return (unref(pd) ?? []) as DictTable[];
+});
+
+const exportSelectionData = computed(
+  () => (contentRef.value?.getSelectionData() ?? []) as DictTable[]
+);
+
+const exportColumns = [
+  { prop: "dict_name", label: "字典名称" },
+  { prop: "dict_type", label: "字典类型" },
+  { prop: "status", label: "状态" },
+  { prop: "description", label: "描述" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
+];
+
+const curdContentConfig = {
+  permPrefix: "module_system:dict_type",
+  cols: exportColumns as any,
+  exportsAction: async (params: any) => {
+    const query: Record<string, unknown> = { ...params };
+    if (typeof query.status === "string") query.status = query.status === "true";
+    return fetchAllPages({
+      initialQuery: query,
+      fetchPage: async (q) => {
+        const res = await DictAPI.listDictType(q as unknown as DictPageQuery);
+        return {
+          total: res.data?.data?.total ?? 0,
+          list: res.data?.data?.items ?? [],
+        };
+      },
     });
-  }
+  },
+} as unknown as IContentConfig;
 
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() as DictTable[] | undefined;
-    const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
-    if (!ids.length) {
-      ElMessage.warning('请先选择要操作的数据');
-      return;
+function handleOpenExportsModal() {
+  exportsDialogVisible.value = true;
+}
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
+  }
+  Object.assign(formData, initialFormData);
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await DictAPI.detailDictType(id);
+    if (type === "detail") {
+      dialogVisible.title = "字典详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改字典";
+      Object.assign(formData, response.data.data);
     }
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        try {
-          await DictAPI.batchDictType({ ids, status });
-          refreshList();
-          dictStore.clearDictData();
-          const dictTypes = Object.keys(dictStore.dictData);
-          if (dictTypes.length > 0) {
-            await dictStore.getDict(dictTypes);
-          }
-        } catch (error: any) {
-          console.error(error);
+  } else {
+    dialogVisible.title = "新增字典";
+    formData.id = undefined;
+  }
+  dialogVisible.visible = true;
+}
+
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: any) => {
+    if (valid) {
+      const id = formData.id;
+      try {
+        if (id) {
+          await DictAPI.updateDictType(id, { id, ...formData });
+        } else {
+          await DictAPI.createDictType(formData);
         }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
-  }
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+        dictStore.clearDictData();
+        if (formData.dict_type) {
+          await dictStore.getDict([formData.dict_type]);
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    }
+  });
+}
 
-  const drawerVisible = ref(false);
-  const currentDictType = ref('');
-  const currentDictLabel = ref('');
-  const currentDictTypeId = ref(1);
-
-  function handleDictDataDrawer(dictType: DictTable) {
-    currentDictType.value = dictType.dict_type || '';
-    currentDictLabel.value = dictType.dict_name || '';
-    currentDictTypeId.value = dictType.id || 0;
-    drawerVisible.value = true;
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() as DictTable[] | undefined;
+  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+  if (!ids.length) {
+    ElMessage.warning("请先选择要操作的数据");
+    return;
   }
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await DictAPI.batchDictType({ ids, status });
+        refreshList();
+        dictStore.clearDictData();
+        const dictTypes = Object.keys(dictStore.dictData);
+        if (dictTypes.length > 0) {
+          await dictStore.getDict(dictTypes);
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
+
+const drawerVisible = ref(false);
+const currentDictType = ref("");
+const currentDictLabel = ref("");
+const currentDictTypeId = ref(1);
+
+function handleDictDataDrawer(dictType: DictTable) {
+  currentDictType.value = dictType.dict_type || "";
+  currentDictLabel.value = dictType.dict_name || "";
+  currentDictTypeId.value = dictType.id || 0;
+  drawerVisible.value = true;
+}
 </script>

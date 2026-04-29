@@ -1,7 +1,8 @@
-import { store } from '@/store';
-import DictAPI, { DictDataTable } from '@/api/module_system/dict';
+import { store } from "@/store";
+import DictAPI, { DictDataTable } from "@/api/module_system/dict";
+import { defineStore } from "pinia";
 
-export const useDictStore = defineStore('dict', {
+export const useDictStore = defineStore("dict", {
   state: () => ({
     dictData: {} as Record<string, DictDataTable[]>,
     isLoaded: false,
@@ -46,7 +47,7 @@ export const useDictStore = defineStore('dict', {
           {} as Record<string, DictDataTable[]>
         );
       } catch (error) {
-        console.error('获取字典数据失败', error);
+        console.error("获取字典数据失败", error);
         return {};
       }
     },

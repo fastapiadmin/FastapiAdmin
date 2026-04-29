@@ -1,78 +1,51 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/menu';
+const API_PATH = "/system/menu";
 
 const MenuAPI = {
-  /**
-   * 获取菜单树
-   * @param query 查询参数
-   * @returns 菜单树
-   */
   listMenu(query?: MenuPageQuery) {
     return request<ApiResponse<MenuTable[]>>({
       url: `${API_PATH}/tree`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取菜单详情
-   * @param query 菜单ID
-   * @returns 菜单详情
-   */
   detailMenu(query: number) {
     return request<ApiResponse<MenuTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建菜单
-   * @param body 菜单信息
-   */
   createMenu(body: MenuForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新菜单
-   * @param id 菜单ID
-   * @param body 菜单信息
-   */
   updateMenu(id: number, body: MenuForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除菜单
-   * @param body 菜单ID列表
-   */
   deleteMenu(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 批量设置菜单状态
-   * @param body 批量操作参数
-   */
   batchMenu(body: BatchType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },

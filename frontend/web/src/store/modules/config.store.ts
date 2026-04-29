@@ -1,5 +1,6 @@
-import { store } from '@/store';
-import ParamsAPI, { ConfigTable } from '@/api/module_system/params';
+import { store } from "@/store";
+import ParamsAPI, { ConfigTable } from "@/api/module_system/params";
+import { defineStore } from "pinia";
 
 interface ConfigState {
   // 网站信息
@@ -25,7 +26,7 @@ interface ConfigState {
   ip_white_list: ConfigTable;
 }
 
-export const useConfigStore = defineStore('config', {
+export const useConfigStore = defineStore("config", {
   state: () => ({
     configData: {} as ConfigState,
     isConfigLoaded: false,

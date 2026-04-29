@@ -221,264 +221,264 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, inject, onUnmounted, ref, watch } from 'vue';
-  import type { FormInstance, FormRules } from 'element-plus';
-  import { QuestionFilled } from '@element-plus/icons-vue';
-  import type { GenTableSchema } from '@/api/module_generator/gencode';
-  import { GENCODE_BASIC_FORM_KEY } from '../gencodeInjectionKeys';
+import { computed, inject, onUnmounted, ref, watch } from "vue";
+import type { FormInstance, FormRules } from "element-plus";
+import { QuestionFilled } from "@element-plus/icons-vue";
+import type { GenTableSchema } from "@/api/module_generator/gencode";
+import { GENCODE_BASIC_FORM_KEY } from "../gencodeInjectionKeys";
 
-  defineOptions({ name: 'GenBasicStep' });
+defineOptions({ name: "GenBasicStep" });
 
-  const props = defineProps<{
-    info: GenTableSchema;
-    rules: FormRules;
-    menuOptions: OptionType[];
-  }>();
+const props = defineProps<{
+  info: GenTableSchema;
+  rules: FormRules;
+  menuOptions: OptionType[];
+}>();
 
-  function findOptionByValue(options: OptionType[], value: number | string): any | null {
-    for (const opt of options) {
-      if (String(opt.value) === String(value)) return opt as any;
-      if (opt.children?.length) {
-        const hit = findOptionByValue(opt.children, value);
-        if (hit) return hit;
-      }
+function findOptionByValue(options: OptionType[], value: number | string): any | null {
+  for (const opt of options) {
+    if (String(opt.value) === String(value)) return opt as any;
+    if (opt.children?.length) {
+      const hit = findOptionByValue(opt.children, value);
+      if (hit) return hit;
     }
-    return null;
   }
+  return null;
+}
 
-  function inferPackageNameFromParentMenu(): string | null {
-    const pid = props.info.parent_menu_id;
-    if (pid == null) return null;
-    const node = findOptionByValue(props.menuOptions || [], pid);
-    const routePath = (node?.route_path ?? '').toString().trim();
-    if (!routePath) return null;
-    const seg = routePath.replace(/^\/+/, '').split('/', 1)[0]?.trim();
-    if (!seg) return null;
-    return seg.startsWith('module_') ? seg : `module_${seg}`;
-  }
+function inferPackageNameFromParentMenu(): string | null {
+  const pid = props.info.parent_menu_id;
+  if (pid == null) return null;
+  const node = findOptionByValue(props.menuOptions || [], pid);
+  const routePath = (node?.route_path ?? "").toString().trim();
+  if (!routePath) return null;
+  const seg = routePath.replace(/^\/+/, "").split("/", 1)[0]?.trim();
+  if (!seg) return null;
+  return seg.startsWith("module_") ? seg : `module_${seg}`;
+}
 
-  const effectivePackageName = computed(() => {
-    return inferPackageNameFromParentMenu() || (props.info.package_name || '').trim();
-  });
+const effectivePackageName = computed(() => {
+  return inferPackageNameFromParentMenu() || (props.info.package_name || "").trim();
+});
 
-  const permissionPreview = computed(() => {
-    const pkg = effectivePackageName.value;
-    const mod = (props.info.module_name || '').trim();
-    if (!pkg || !mod) return '<module_xxx>:<module>:<操作>';
-    // 与后端 permission_prefix + 模板一致；第三段为操作类型，示例用 query
-    return `${pkg}:${mod}:query`;
-  });
+const permissionPreview = computed(() => {
+  const pkg = effectivePackageName.value;
+  const mod = (props.info.module_name || "").trim();
+  if (!pkg || !mod) return "<module_xxx>:<module>:<操作>";
+  // 与后端 permission_prefix + 模板一致；第三段为操作类型，示例用 query
+  return `${pkg}:${mod}:query`;
+});
 
-  const backendModuleDirPreview = computed(() => {
-    const pkg = effectivePackageName.value;
-    const mod = (props.info.module_name || '').trim();
-    if (!pkg || !mod) return 'backend/app/plugin/<module_xxx>/<module>/';
-    return `backend/app/plugin/${pkg}/${mod}/`;
-  });
+const backendModuleDirPreview = computed(() => {
+  const pkg = effectivePackageName.value;
+  const mod = (props.info.module_name || "").trim();
+  if (!pkg || !mod) return "backend/app/plugin/<module_xxx>/<module>/";
+  return `backend/app/plugin/${pkg}/${mod}/`;
+});
 
-  const frontendViewDirPreview = computed(() => {
-    const pkg = effectivePackageName.value;
-    const mod = (props.info.module_name || '').trim();
-    if (!pkg || !mod) return 'frontend/src/views/<module_xxx>/<module>/';
-    return `frontend/src/views/${pkg}/${mod}/`;
-  });
+const frontendViewDirPreview = computed(() => {
+  const pkg = effectivePackageName.value;
+  const mod = (props.info.module_name || "").trim();
+  if (!pkg || !mod) return "frontend/src/views/<module_xxx>/<module>/";
+  return `frontend/src/views/${pkg}/${mod}/`;
+});
 
-  const frontendApiFilePreview = computed(() => {
-    const pkg = effectivePackageName.value;
-    const mod = (props.info.module_name || '').trim();
-    if (!pkg || !mod) return 'frontend/src/api/<module_xxx>/<module>.ts';
-    return `frontend/src/api/${pkg}/${mod}.ts`;
-  });
+const frontendApiFilePreview = computed(() => {
+  const pkg = effectivePackageName.value;
+  const mod = (props.info.module_name || "").trim();
+  if (!pkg || !mod) return "frontend/src/api/<module_xxx>/<module>.ts";
+  return `frontend/src/api/${pkg}/${mod}.ts`;
+});
 
-  const emit = defineEmits<{
-    'clear-master-sub': [];
-    'master-sub-blur': [];
-  }>();
+const emit = defineEmits<{
+  "clear-master-sub": [];
+  "master-sub-blur": [];
+}>();
 
-  const formRef = ref<FormInstance>();
-  const injected = inject(GENCODE_BASIC_FORM_KEY, undefined);
+const formRef = ref<FormInstance>();
+const injected = inject(GENCODE_BASIC_FORM_KEY, undefined);
 
-  /** 表名 → 合法目录片段（小写、下划线），用于无模块名时推导包名 */
-  function slugFromTableName(table: string): string {
-    let s = table.trim().toLowerCase();
-    if (!s) return '';
-    if (s.startsWith('gen_')) s = s.slice(4);
-    else if (s.startsWith('tb_')) s = s.slice(3);
-    s = s
-      .replace(/[^a-z0-9_]/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
-    return s || 'table';
-  }
+/** 表名 → 合法目录片段（小写、下划线），用于无模块名时推导包名 */
+function slugFromTableName(table: string): string {
+  let s = table.trim().toLowerCase();
+  if (!s) return "";
+  if (s.startsWith("gen_")) s = s.slice(4);
+  else if (s.startsWith("tb_")) s = s.slice(3);
+  s = s
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+  return s || "table";
+}
 
-  watch(
-    () => [props.info.parent_menu_id, props.info.module_name, props.info.table_name] as const,
-    () => {
-      if (props.info.parent_menu_id != null) return;
-      const current = (props.info.package_name || '').trim();
-      if (current && current !== 'gencode' && current !== 'module_gencode') return;
-      const mod = (props.info.module_name || '').trim();
-      const tn = (props.info.table_name || '').trim();
-      const slug = tn ? slugFromTableName(tn) : '';
-      const next = mod
-        ? mod.startsWith('module_')
-          ? mod
-          : `module_${mod}`
-        : slug
-          ? `module_${slug}`
-          : '';
-      if (next) props.info.package_name = next;
-    },
-    { immediate: true }
-  );
+watch(
+  () => [props.info.parent_menu_id, props.info.module_name, props.info.table_name] as const,
+  () => {
+    if (props.info.parent_menu_id != null) return;
+    const current = (props.info.package_name || "").trim();
+    if (current && current !== "gencode" && current !== "module_gencode") return;
+    const mod = (props.info.module_name || "").trim();
+    const tn = (props.info.table_name || "").trim();
+    const slug = tn ? slugFromTableName(tn) : "";
+    const next = mod
+      ? mod.startsWith("module_")
+        ? mod
+        : `module_${mod}`
+      : slug
+        ? `module_${slug}`
+        : "";
+    if (next) props.info.package_name = next;
+  },
+  { immediate: true }
+);
 
-  watch(
-    formRef,
-    (v) => {
-      if (injected) injected.value = v;
-    },
-    { immediate: true }
-  );
+watch(
+  formRef,
+  (v) => {
+    if (injected) injected.value = v;
+  },
+  { immediate: true }
+);
 
-  onUnmounted(() => {
-    if (injected) injected.value = undefined;
-  });
+onUnmounted(() => {
+  if (injected) injected.value = undefined;
+});
 </script>
 
 <style scoped lang="scss">
-  .gen-basic-step {
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
-  }
+.gen-basic-step {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
 
-  .gen-basic-step :deep(.el-col) {
-    min-width: 0;
-  }
+.gen-basic-step :deep(.el-col) {
+  min-width: 0;
+}
 
-  .gen-basic-step :deep(.el-form-item__content) {
-    min-width: 0;
-  }
+.gen-basic-step :deep(.el-form-item__content) {
+  min-width: 0;
+}
 
-  .gen-basic-step :deep(.el-input-group) {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
+.gen-basic-step :deep(.el-input-group) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
 
-  .gen-package-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    width: 100%;
-    min-width: 0;
-  }
+.gen-package-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
 
-  .gen-package-row__input {
-    flex: 1;
-    min-width: 0;
-  }
+.gen-package-row__input {
+  flex: 1;
+  min-width: 0;
+}
 
-  .master-sub-card {
-    border: 1px solid var(--el-border-color-lighter);
-  }
+.master-sub-card {
+  border: 1px solid var(--el-border-color-lighter);
+}
 
-  .master-sub-card :deep(.el-card__header) {
-    padding: 8px 10px;
-  }
+.master-sub-card :deep(.el-card__header) {
+  padding: 8px 10px;
+}
 
-  .master-sub-card :deep(.el-card__body) {
-    padding: 10px;
-  }
+.master-sub-card :deep(.el-card__body) {
+  padding: 10px;
+}
 
-  .gen-form-card {
-    overflow-x: hidden;
-    border: 1px solid var(--el-border-color-lighter);
-  }
+.gen-form-card {
+  overflow-x: hidden;
+  border: 1px solid var(--el-border-color-lighter);
+}
 
-  .gen-form-card :deep(.el-card__body) {
-    overflow-x: hidden;
-  }
+.gen-form-card :deep(.el-card__body) {
+  overflow-x: hidden;
+}
 
-  .gen-form-card__header {
-    display: flex;
-    gap: 12px;
-    align-items: baseline;
-    justify-content: space-between;
-  }
+.gen-form-card__header {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+}
 
-  .gen-form-card__hint {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    white-space: nowrap;
-  }
+.gen-form-card__hint {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
 
-  .gen-echo-card {
-    border: 1px solid var(--el-border-color-lighter);
-  }
+.gen-echo-card {
+  border: 1px solid var(--el-border-color-lighter);
+}
 
-  .gen-echo-card__title {
-    padding: 6px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    background: var(--el-fill-color-light);
-    border-bottom: 1px solid var(--el-border-color-lighter);
-  }
+.gen-echo-card__title {
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--el-fill-color-light);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
 
-  .gen-echo-card :deep(.el-card__body) {
-    padding: 6px 8px;
-  }
+.gen-echo-card :deep(.el-card__body) {
+  padding: 6px 8px;
+}
 
-  .gen-echo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
-    padding: 6px 8px;
-  }
+.gen-echo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 6px 8px;
+}
 
-  .gen-echo-item {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    min-width: 0;
-  }
+.gen-echo-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
 
-  .gen-echo-item__k {
-    flex: 0 0 auto;
-    margin-bottom: 0;
-    font-size: 11px;
-    color: var(--el-text-color-secondary);
-    white-space: nowrap;
-  }
+.gen-echo-item__k {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
 
-  .gen-echo-item__k--with-tip {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-  }
+.gen-echo-item__k--with-tip {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
 
-  .gen-echo-item__tip {
-    font-size: 12px;
-    color: var(--el-text-color-placeholder);
-    cursor: help;
-  }
+.gen-echo-item__tip {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  cursor: help;
+}
 
-  .gen-echo-item__v {
-    display: block;
-    flex: 1;
-    min-width: 0;
-    padding: 1px 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 11px;
-    white-space: nowrap;
-    background: var(--el-fill-color);
-    border-radius: 3px;
-  }
+.gen-echo-item__v {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  padding: 1px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  white-space: nowrap;
+  background: var(--el-fill-color);
+  border-radius: 3px;
+}
 
-  .gen-echo-warn {
-    padding: 0 8px 6px;
-    font-size: 11px;
-    color: var(--el-color-warning);
-  }
+.gen-echo-warn {
+  padding: 0 8px 6px;
+  font-size: 11px;
+  color: var(--el-color-warning);
+}
 </style>

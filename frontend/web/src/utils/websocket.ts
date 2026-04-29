@@ -10,7 +10,7 @@
  * @author fastapiadmin
  */
 
-import { Auth } from '@/utils/auth';
+import { Auth } from "@/utils/auth";
 
 /**
  * WebSocket 服务实例约定接口
@@ -51,20 +51,20 @@ export function getWebSocketInstance(key: string) {
  */
 export function setupWebSocket() {
   if (isInitialized) {
-    console.warn('[WebSocket] 已初始化，跳过重复初始化');
+    console.warn("[WebSocket] 已初始化，跳过重复初始化");
     return;
   }
 
   if (!Auth.getAccessToken()) {
-    console.warn('[WebSocket] 未登录，跳过 WebSocket 初始化');
+    console.warn("[WebSocket] 未登录，跳过 WebSocket 初始化");
     return;
   }
 
   try {
     isInitialized = true;
-    console.log('[WebSocket] 初始化成功');
+    console.log("[WebSocket] 初始化成功");
   } catch (error) {
-    console.error('[WebSocket] 初始化失败:', error);
+    console.error("[WebSocket] 初始化失败:", error);
   }
 }
 
@@ -72,7 +72,7 @@ export function setupWebSocket() {
  * 清理所有 WebSocket 连接
  */
 export function cleanupWebSocket() {
-  console.log('[WebSocket] 开始清理连接...');
+  console.log("[WebSocket] 开始清理连接...");
 
   websocketInstances.forEach((instance, key) => {
     try {
@@ -91,7 +91,7 @@ export function cleanupWebSocket() {
 
   websocketInstances.clear();
   isInitialized = false;
-  console.log('[WebSocket] 清理完成');
+  console.log("[WebSocket] 清理完成");
 }
 
 /**
@@ -102,8 +102,8 @@ export function reinitializeWebSocket() {
   setupWebSocket();
 }
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", () => {
     cleanupWebSocket();
   });
 }

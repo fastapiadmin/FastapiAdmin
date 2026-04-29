@@ -1,6 +1,6 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/application/portal';
+const API_PATH = "/application/portal";
 
 export const ApplicationAPI = {
   /**
@@ -10,7 +10,7 @@ export const ApplicationAPI = {
   detailApp(id: number) {
     return request<ApiResponse<ApplicationInfo>>({
       url: `${API_PATH}/detail/${id}`,
-      method: 'get',
+      method: "get",
     });
   },
 
@@ -19,9 +19,9 @@ export const ApplicationAPI = {
    * @param query 查询参数
    */
   listApp(query: ApplicationPageQuery) {
-    return request<PageResult<ApplicationInfo[]>>({
+    return request<ApiResponse<PageResult<ApplicationInfo[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
@@ -31,9 +31,9 @@ export const ApplicationAPI = {
    * @param body 应用信息
    */
   createApp(body: ApplicationForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
@@ -44,9 +44,9 @@ export const ApplicationAPI = {
    * @param body 应用信息
    */
   updateApp(id: number, body: ApplicationForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
@@ -56,9 +56,9 @@ export const ApplicationAPI = {
    * @param body 应用ID数组
    */
   deleteApp(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
@@ -68,9 +68,9 @@ export const ApplicationAPI = {
    * @param body 批量操作参数
    */
   batchApp(body: BatchType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },

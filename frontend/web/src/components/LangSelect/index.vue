@@ -18,33 +18,33 @@
 </template>
 
 <script setup lang="ts">
-  import { useAppStore } from '@/store/modules/app.store';
-  import { LanguageEnum } from '@/enums/settings/locale.enum';
+import { useAppStore } from "@/store/modules/app.store";
+import { LanguageEnum } from "@/enums/settings/locale.enum";
 
-  defineProps({
-    size: {
-      type: String,
-      required: false,
-    },
-  });
+defineProps({
+  size: {
+    type: String,
+    required: false,
+  },
+});
 
-  const langOptions = [
-    { label: '中文', value: LanguageEnum.ZH_CN },
-    { label: 'English', value: LanguageEnum.EN },
-  ];
+const langOptions = [
+  { label: "中文", value: LanguageEnum.ZH_CN },
+  { label: "English", value: LanguageEnum.EN },
+];
 
-  const appStore = useAppStore();
-  const { locale, t } = useI18n();
+const appStore = useAppStore();
+const { locale, t } = useI18n();
 
-  /**
-   * 处理语言切换
-   *
-   * @param lang  语言（zh-cn、en）
-   */
-  function handleLanguageChange(lang: string) {
-    locale.value = lang;
-    appStore.changeLanguage(lang);
+/**
+ * 处理语言切换
+ *
+ * @param lang  语言（zh-cn、en）
+ */
+function handleLanguageChange(lang: string) {
+  locale.value = lang;
+  appStore.changeLanguage(lang);
 
-    ElMessage.success(t('langSelect.message.success'));
-  }
+  ElMessage.success(t("langSelect.message.success"));
+}
 </script>

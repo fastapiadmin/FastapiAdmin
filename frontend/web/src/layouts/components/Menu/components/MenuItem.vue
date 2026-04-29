@@ -56,139 +56,167 @@
 </template>
 
 <script setup lang="ts">
-  import MenuItemContent from './MenuItemContent.vue';
+import MenuItemContent from "./MenuItemContent.vue";
 
-  defineOptions({
-    name: 'MenuItem',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "MenuItem",
+  inheritAttrs: false,
+});
 
-  import path from 'path-browserify';
-  import { RouteRecordRaw } from 'vue-router';
-  import { useRouter } from 'vue-router';
+import path from "path-browserify";
+import { RouteRecordRaw } from "vue-router";
+import { useRouter } from "vue-router";
 
-  import { isExternal } from '@/utils';
+import { isExternal } from "@/utils";
+import { PropType, ref } from "vue";
 
-  const router = useRouter();
+const router = useRouter();
 
-  const props = defineProps({
-    /**
-     * 当前路由对象
-     */
-    item: {
-      type: Object as PropType<RouteRecordRaw>,
-      required: true,
-    },
-
-    /**
-     * 父级完整路径
-     */
-    basePath: {
-      type: String,
-      required: true,
-    },
-
-    /**
-     * 是否为嵌套路由
-     */
-    isNest: {
-      type: Boolean,
-      default: false,
-    },
-  });
-
-  // 可见的唯一子节点
-  const onlyOneChild = ref();
+const props = defineProps({
+  /**
+   * 当前路由对象
+   */
+  item: {
+    type: Object as PropType<RouteRecordRaw>,
+    required: true,
+  },
 
   /**
-   * 检查是否仅有一个可见子节点
-   *
-   * @param children 子路由数组
-   * @param parent 父级路由
-   * @returns 是否仅有一个可见子节点
+   * 父级完整路径
    */
-  function hasOneShowingChild(children: RouteRecordRaw[] = [], parent: RouteRecordRaw) {
-    // 过滤出可见子节点
-    const showingChildren = children.filter((route: RouteRecordRaw) => {
-      if (!route.meta?.hidden) {
-        onlyOneChild.value = route;
-        return true;
-      }
-      return false;
-    });
+  basePath: {
+    type: String,
+    required: true,
+  },
 
-    // 仅有一个节点
-    if (showingChildren.length === 1) {
-      return true;
-    }
+  /**
+   * 是否为嵌套路由
+   */
+  isNest: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-    // 无子节点时
-    if (showingChildren.length === 0) {
-      // 父节点设置为唯一显示节点，并标记为无子节点
-      onlyOneChild.value = { ...parent, path: '', noShowingChildren: true };
+// 可见的唯一子节点
+const onlyOneChild = ref();
+
+/**
+ * 检查是否仅有一个可见子节点
+ *
+ * @param children 子路由数组
+ * @param parent 父级路由
+ * @returns 是否仅有一个可见子节点
+ */
+function hasOneShowingChild(children: RouteRecordRaw[] = [], parent: RouteRecordRaw) {
+  // 过滤出可见子节点
+  const showingChildren = children.filter((route: RouteRecordRaw) => {
+    if (!route.meta?.hidden) {
+      onlyOneChild.value = route;
       return true;
     }
     return false;
+  });
+
+  // 仅有一个节点
+  if (showingChildren.length === 1) {
+    return true;
   }
 
-  /**
-   * 获取完整路径，适配外部链接
-   *
-   * @param routePath 路由路径
-   * @returns 绝对路径
-   */
-  function resolvePath(routePath: string) {
-    if (isExternal(routePath)) return routePath;
-    if (isExternal(props.basePath)) return props.basePath;
+  // 无子节点时
+  if (showingChildren.length === 0) {
+    // 父节点设置为唯一显示节点，并标记为无子节点
+    onlyOneChild.value = { ...parent, path: "", noShowingChildren: true };
+    return true;
+  }
+  return false;
+}
 
-    const base = props.basePath && props.basePath !== '' ? props.basePath : '/';
-    return path.resolve(base, routePath);
+/**
+ * 获取完整路径，适配外部链接
+ *
+ * @param routePath 路由路径
+ * @returns 绝对路径
+ */
+function resolvePath(routePath: string) {
+  if (isExternal(routePath)) return routePath;
+  if (isExternal(props.basePath)) return props.basePath;
+
+  const base = props.basePath && props.basePath !== "" ? props.basePath : "/";
+  return path.resolve(base, routePath);
+}
+
+/** 与 BasicMenu.default-active（route.path）对齐 */
+function normalizeMenuPath(p: string): string {
+  if (!p) return "";
+  if (/^https?:\/\//i.test(p) || p.startsWith("//")) return p;
+  const s = p.trim();
+  if (s === "/") return "/";
+  return s.replace(/\/+$/, "") || "/";
+}
+
+function hasVisibleChildren(node: RouteRecordRaw): boolean {
+  return !!node.children?.some((c) => !c.meta?.hidden);
+}
+
+/**
+ * el-menu 的 index 必须与 default-active 字符串完全一致。
+ * - 目录（有可见子节点）：只用菜单树 path.resolve 结果，禁止 router.resolve(name)（常变成父级 /task，导致兄弟目录误亮）。
+ * - 叶子：用 router.resolve(name).path，与当前页 route.path 同源，避免纯拼路径与路由表不一致。
+ */
+function menuItemIndex(item: RouteRecordRaw, resolvedFromTree: string): string {
+  const treePath = normalizeMenuPath(resolvedFromTree);
+
+  if (hasVisibleChildren(item)) {
+    if (treePath) return treePath;
+    if (item.name != null && item.name !== "") return String(item.name);
+    return "";
   }
 
-  /** 与 BasicMenu.default-active（route.path）对齐 */
-  function normalizeMenuPath(p: string): string {
-    if (!p) return '';
-    if (/^https?:\/\//i.test(p) || p.startsWith('//')) return p;
-    const s = p.trim();
-    if (s === '/') return '/';
-    return s.replace(/\/+$/, '') || '/';
-  }
-
-  function hasVisibleChildren(node: RouteRecordRaw): boolean {
-    return !!node.children?.some((c) => !c.meta?.hidden);
-  }
-
-  /**
-   * el-menu 的 index 必须与 default-active 字符串完全一致。
-   * - 目录（有可见子节点）：只用菜单树 path.resolve 结果，禁止 router.resolve(name)（常变成父级 /task，导致兄弟目录误亮）。
-   * - 叶子：用 router.resolve(name).path，与当前页 route.path 同源，避免纯拼路径与路由表不一致。
-   */
-  function menuItemIndex(item: RouteRecordRaw, resolvedFromTree: string): string {
-    const treePath = normalizeMenuPath(resolvedFromTree);
-
-    if (hasVisibleChildren(item)) {
-      if (treePath) return treePath;
-      if (item.name != null && item.name !== '') return String(item.name);
-      return '';
+  if (item.name) {
+    try {
+      return normalizeMenuPath(router.resolve({ name: item.name as string }).path);
+    } catch {
+      /* fallthrough */
     }
-
-    if (item.name) {
-      try {
-        return normalizeMenuPath(router.resolve({ name: item.name as string }).path);
-      } catch {
-        /* fallthrough */
-      }
-    }
-    return treePath;
   }
+  return treePath;
+}
 </script>
 
 <style lang="scss">
-  .hideSidebar {
-    .submenu-title-noDropdown {
-      position: relative;
+.hideSidebar {
+  .submenu-title-noDropdown {
+    position: relative;
 
-      & > span {
+    & > span {
+      display: inline-block;
+      visibility: hidden;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+  }
+
+  .el-sub-menu {
+    overflow: hidden;
+
+    & > .el-sub-menu__title {
+      .sub-el-icon {
+        margin-left: 19px;
+      }
+
+      .el-sub-menu__icon-arrow {
+        display: none;
+      }
+    }
+  }
+
+  .el-menu--collapse {
+    width: $sidebar-width-collapsed;
+
+    .el-sub-menu {
+      & > .el-sub-menu__title > span {
         display: inline-block;
         visibility: hidden;
         width: 0;
@@ -196,72 +224,45 @@
         overflow: hidden;
       }
     }
+  }
+}
 
-    .el-sub-menu {
-      overflow: hidden;
+// 父菜单激活状态样式 - 当子菜单激活时，父菜单显示激活状态
+.el-sub-menu {
+  .menu-title-wrapper {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    line-height: 1;
+  }
 
-      & > .el-sub-menu__title {
-        .sub-el-icon {
-          margin-left: 19px;
-        }
+  // 子项激活时 Element Plus 会给父级 el-sub-menu 加 .is-active
+  &.is-active > .el-sub-menu__title {
+    color: var(--el-color-primary) !important;
 
-        .el-sub-menu__icon-arrow {
-          display: none;
-        }
-      }
-    }
-
-    .el-menu--collapse {
-      width: $sidebar-width-collapsed;
-
-      .el-sub-menu {
-        & > .el-sub-menu__title > span {
-          display: inline-block;
-          visibility: hidden;
-          width: 0;
-          height: 0;
-          overflow: hidden;
-        }
-      }
+    .menu-icon {
+      color: var(--el-color-primary) !important;
     }
   }
 
-  // 父菜单激活状态样式 - 当子菜单激活时，父菜单显示激活状态
-  .el-sub-menu {
-    .menu-title-wrapper {
-      display: inline-flex;
-      align-items: center;
-      height: 100%;
-      line-height: 1;
-    }
-
-    // 子项激活时 Element Plus 会给父级 el-sub-menu 加 .is-active
+  html.dark & {
     &.is-active > .el-sub-menu__title {
-      color: var(--el-color-primary) !important;
+      color: var(--el-color-primary-light-3) !important;
 
       .menu-icon {
-        color: var(--el-color-primary) !important;
-      }
-    }
-
-    html.dark & {
-      &.is-active > .el-sub-menu__title {
         color: var(--el-color-primary-light-3) !important;
-
-        .menu-icon {
-          color: var(--el-color-primary-light-3) !important;
-        }
-      }
-    }
-
-    html.sidebar-color-blue & {
-      &.is-active > .el-sub-menu__title {
-        color: var(--el-color-primary-light-3) !important;
-
-        .menu-icon {
-          color: var(--el-color-primary-light-3) !important;
-        }
       }
     }
   }
+
+  html.sidebar-color-blue & {
+    &.is-active > .el-sub-menu__title {
+      color: var(--el-color-primary-light-3) !important;
+
+      .menu-icon {
+        color: var(--el-color-primary-light-3) !important;
+      }
+    }
+  }
+}
 </style>

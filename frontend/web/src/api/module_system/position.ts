@@ -1,93 +1,61 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/system/position';
+const API_PATH = "/system/position";
 
 const PositionAPI = {
-  /**
-   * 获取岗位列表
-   * @param query 查询参数
-   * @returns 岗位列表
-   */
   listPosition(query?: PositionPageQuery) {
-    return request<PageResult<PositionTable[]>>({
+    return request<ApiResponse<PageResult<PositionTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 获取岗位详情
-   * @param query 岗位ID
-   * @returns 岗位详情
-   */
   detailPosition(query: number) {
     return request<ApiResponse<PositionTable>>({
       url: `${API_PATH}/detail/${query}`,
-      method: 'get',
+      method: "get",
     });
   },
 
-  /**
-   * 创建岗位
-   * @param body 岗位信息
-   */
   createPosition(body: PositionForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/create`,
-      method: 'post',
+      method: "post",
       data: body,
     });
   },
 
-  /**
-   * 更新岗位
-   * @param id 岗位ID
-   * @param body 岗位信息
-   */
   updatePosition(id: number, body: PositionForm) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
-      method: 'put',
+      method: "put",
       data: body,
     });
   },
 
-  /**
-   * 删除岗位
-   * @param body 岗位ID列表
-   */
   deletePosition(body: number[]) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 批量设置岗位状态
-   * @param body 批量操作参数
-   */
   batchPosition(body: BatchType) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
-      method: 'patch',
+      method: "patch",
       data: body,
     });
   },
 
-  /**
-   * 导出岗位
-   * @param body 查询参数
-   * @returns 导出的岗位文件
-   */
   exportPosition(body: PositionPageQuery) {
-    return request<ApiResponse<Blob>>({
+    return request<Blob>({
       url: `${API_PATH}/export`,
-      method: 'post',
+      method: "post",
       data: body,
-      responseType: 'blob',
+      responseType: "blob",
     });
   },
 };

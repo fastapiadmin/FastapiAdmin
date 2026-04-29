@@ -330,264 +330,264 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'Home',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Home",
+  inheritAttrs: false,
+});
 
-  import { dayjs } from 'element-plus';
-  import { useUserStore } from '@/store/modules/user.store';
-  import { formatGrowthRate } from '@/utils';
-  import { useTransition } from '@vueuse/core';
-  import { Connection, Failed, UserFilled } from '@element-plus/icons-vue';
-  import { greetings } from '@/utils/common';
+import { dayjs } from "element-plus";
+import { useUserStore } from "@/store/modules/user.store";
+import { formatGrowthRate } from "@/utils";
+import { useTransition } from "@vueuse/core";
+import { Connection, Failed, UserFilled } from "@element-plus/icons-vue";
+import { greetings } from "@/utils/common";
 
-  const timefix = greetings();
-  const welcome = '祝你开心每一天！';
+const timefix = greetings();
+const welcome = "祝你开心每一天！";
 
-  interface VersionItem {
-    id: string;
-    title: string; // 版本标题（如：v2.4.0）
-    date: string; // 发布时间
-    content: string; // 版本描述
-    link: string; // 详情链接
-    tag?: string; // 版本标签（可选）
+interface VersionItem {
+  id: string;
+  title: string; // 版本标题（如：v2.4.0）
+  date: string; // 发布时间
+  content: string; // 版本描述
+  link: string; // 详情链接
+  tag?: string; // 版本标签（可选）
+}
+
+const userStore = useUserStore();
+
+// 当前通知公告列表
+const vesionList = ref<VersionItem[]>([
+  {
+    id: "1",
+    title: "v3.2.1",
+    date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    content: "优化性能，修复若干小bug。",
+    link: "https://gitee.com/fastapiadmin/FastapiAdmin/releases",
+    tag: "更新",
+  },
+  {
+    id: "2",
+    title: "v3.2.0",
+    date: dayjs().subtract(1, "day").format("YYYY-MM-DD HH:mm:ss"),
+    content: "新增用户行为分析功能。",
+    link: "https://gitee.com/fastapiadmin/FastapiAdmin/releases",
+    tag: "新功能",
+  },
+  {
+    id: "3",
+    title: "v3.1.0",
+    date: dayjs().subtract(3, "day").format("YYYY-MM-DD HH:mm:ss"),
+    content: "优化权限管理系统。",
+    link: "https://gitee.com/fastapiadmin/FastapiAdmin/releases",
+    tag: "优化",
+  },
+]);
+
+// 访客统计数据加载状态
+const visitStatsLoading = ref(true);
+// 访客统计数据
+const visitStatsData = ref({
+  todayUvCount: 0,
+  uvGrowthRate: 0,
+  totalUvCount: 0,
+  todayPvCount: 0,
+  pvGrowthRate: 0,
+  totalPvCount: 0,
+});
+
+// 数字过渡动画
+const transitionUvCount = useTransition(
+  computed(() => visitStatsData.value.todayUvCount),
+  {
+    duration: 1000,
+    transition: [0.25, 0.1, 0.25, 1.0], // CSS cubic-bezier
   }
+);
 
-  const userStore = useUserStore();
+const transitionTotalUvCount = useTransition(
+  computed(() => visitStatsData.value.totalUvCount),
+  {
+    duration: 1200,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
 
-  // 当前通知公告列表
-  const vesionList = ref<VersionItem[]>([
-    {
-      id: '1',
-      title: 'v3.2.1',
-      date: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-      content: '优化性能，修复若干小bug。',
-      link: 'https://gitee.com/fastapiadmin/FastapiAdmin/releases',
-      tag: '更新',
+const transitionPvCount = useTransition(
+  computed(() => visitStatsData.value.todayPvCount),
+  {
+    duration: 1000,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+const transitionTotalPvCount = useTransition(
+  computed(() => visitStatsData.value.totalPvCount),
+  {
+    duration: 1200,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+// 访问趋势日期范围（单位：天）
+const visitTrendDateRange = ref(7);
+// 访问趋势图表配置
+const visitTrendChartOptions = ref();
+
+/**
+ * 更新访问趋势图表的配置项
+ *
+ * @param data - 访问趋势数据
+ */
+const updateVisitTrendChartOptions = () => {
+  visitTrendChartOptions.value = {
+    tooltip: {
+      trigger: "axis",
     },
-    {
-      id: '2',
-      title: 'v3.2.0',
-      date: dayjs().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss'),
-      content: '新增用户行为分析功能。',
-      link: 'https://gitee.com/fastapiadmin/FastapiAdmin/releases',
-      tag: '新功能',
+    legend: {
+      data: ["浏览量(PV)", "访客数(UV)"],
+      bottom: 0,
     },
-    {
-      id: '3',
-      title: 'v3.1.0',
-      date: dayjs().subtract(3, 'day').format('YYYY-MM-DD HH:mm:ss'),
-      content: '优化权限管理系统。',
-      link: 'https://gitee.com/fastapiadmin/FastapiAdmin/releases',
-      tag: '优化',
+    grid: {
+      left: "1%",
+      right: "5%",
+      bottom: "10%",
+      containLabel: true,
     },
-  ]);
-
-  // 访客统计数据加载状态
-  const visitStatsLoading = ref(true);
-  // 访客统计数据
-  const visitStatsData = ref({
-    todayUvCount: 0,
-    uvGrowthRate: 0,
-    totalUvCount: 0,
-    todayPvCount: 0,
-    pvGrowthRate: 0,
-    totalPvCount: 0,
-  });
-
-  // 数字过渡动画
-  const transitionUvCount = useTransition(
-    computed(() => visitStatsData.value.todayUvCount),
-    {
-      duration: 1000,
-      transition: [0.25, 0.1, 0.25, 1.0], // CSS cubic-bezier
-    }
-  );
-
-  const transitionTotalUvCount = useTransition(
-    computed(() => visitStatsData.value.totalUvCount),
-    {
-      duration: 1200,
-      transition: [0.25, 0.1, 0.25, 1.0],
-    }
-  );
-
-  const transitionPvCount = useTransition(
-    computed(() => visitStatsData.value.todayPvCount),
-    {
-      duration: 1000,
-      transition: [0.25, 0.1, 0.25, 1.0],
-    }
-  );
-
-  const transitionTotalPvCount = useTransition(
-    computed(() => visitStatsData.value.totalPvCount),
-    {
-      duration: 1200,
-      transition: [0.25, 0.1, 0.25, 1.0],
-    }
-  );
-
-  // 访问趋势日期范围（单位：天）
-  const visitTrendDateRange = ref(7);
-  // 访问趋势图表配置
-  const visitTrendChartOptions = ref();
-
-  /**
-   * 更新访问趋势图表的配置项
-   *
-   * @param data - 访问趋势数据
-   */
-  const updateVisitTrendChartOptions = () => {
-    visitTrendChartOptions.value = {
-      tooltip: {
-        trigger: 'axis',
+    xAxis: {
+      type: "category",
+      data: Array.from({ length: visitTrendDateRange.value }, (_, index) =>
+        dayjs()
+          .subtract(visitTrendDateRange.value - index - 1, "day")
+          .format("YYYY-MM-DD")
+      ),
+    },
+    yAxis: {
+      type: "value",
+      splitLine: {
+        show: true,
+        lineStyle: {
+          type: "dashed",
+        },
       },
-      legend: {
-        data: ['浏览量(PV)', '访客数(UV)'],
-        bottom: 0,
-      },
-      grid: {
-        left: '1%',
-        right: '5%',
-        bottom: '10%',
-        containLabel: true,
-      },
-      xAxis: {
-        type: 'category',
-        data: Array.from({ length: visitTrendDateRange.value }, (_, index) =>
-          dayjs()
-            .subtract(visitTrendDateRange.value - index - 1, 'day')
-            .format('YYYY-MM-DD')
+    },
+    series: [
+      {
+        name: "浏览量(PV)",
+        type: "line",
+        data: Array.from(
+          { length: visitTrendDateRange.value },
+          () => Math.floor(Math.random() * 500) + 100
         ),
-      },
-      yAxis: {
-        type: 'value',
-        splitLine: {
-          show: true,
-          lineStyle: {
-            type: 'dashed',
-          },
+        areaStyle: {
+          color: "rgba(64, 158, 255, 0.1)",
+        },
+        smooth: true,
+        itemStyle: {
+          color: "#4080FF",
+        },
+        lineStyle: {
+          color: "#4080FF",
         },
       },
-      series: [
-        {
-          name: '浏览量(PV)',
-          type: 'line',
-          data: Array.from(
-            { length: visitTrendDateRange.value },
-            () => Math.floor(Math.random() * 500) + 100
-          ),
-          areaStyle: {
-            color: 'rgba(64, 158, 255, 0.1)',
-          },
-          smooth: true,
-          itemStyle: {
-            color: '#4080FF',
-          },
-          lineStyle: {
-            color: '#4080FF',
-          },
+      {
+        name: "访客数(UV)",
+        type: "line",
+        data: Array.from(
+          { length: visitTrendDateRange.value },
+          () => Math.floor(Math.random() * 200) + 50
+        ),
+        areaStyle: {
+          color: "rgba(103, 194, 58, 0.1)",
         },
-        {
-          name: '访客数(UV)',
-          type: 'line',
-          data: Array.from(
-            { length: visitTrendDateRange.value },
-            () => Math.floor(Math.random() * 200) + 50
-          ),
-          areaStyle: {
-            color: 'rgba(103, 194, 58, 0.1)',
-          },
-          smooth: true,
-          itemStyle: {
-            color: '#67C23A',
-          },
-          lineStyle: {
-            color: '#67C23A',
-          },
+        smooth: true,
+        itemStyle: {
+          color: "#67C23A",
         },
-      ],
-    };
+        lineStyle: {
+          color: "#67C23A",
+        },
+      },
+    ],
   };
+};
 
-  /**
-   * 根据增长率计算对应的 CSS 类名
-   *
-   * @param growthRate - 增长率数值
-   */
-  const computeGrowthRateClass = (growthRate?: number): string => {
-    if (!growthRate) {
-      return 'text-[--el-color-info]';
-    }
-    if (growthRate > 0) {
-      return 'text-[--el-color-danger]';
-    } else if (growthRate < 0) {
-      return 'text-[--el-color-success]';
-    } else {
-      return 'text-[--el-color-info]';
-    }
-  };
+/**
+ * 根据增长率计算对应的 CSS 类名
+ *
+ * @param growthRate - 增长率数值
+ */
+const computeGrowthRateClass = (growthRate?: number): string => {
+  if (!growthRate) {
+    return "text-[--el-color-info]";
+  }
+  if (growthRate > 0) {
+    return "text-[--el-color-danger]";
+  } else if (growthRate < 0) {
+    return "text-[--el-color-success]";
+  } else {
+    return "text-[--el-color-info]";
+  }
+};
 
-  // 监听访问趋势日期范围的变化，重新获取趋势数据
-  watch(
-    () => visitTrendDateRange.value,
-    () => {
-      updateVisitTrendChartOptions();
-    },
-    { immediate: true }
-  );
-
-  // 组件挂载后加载访客统计数据和通知公告数据
-  onMounted(() => {
-    visitStatsLoading.value = false;
-    visitStatsData.value = {
-      todayUvCount: Math.floor(Math.random() * 200) + 50,
-      uvGrowthRate: parseFloat((Math.random() * 20 - 10).toFixed(2)),
-      totalUvCount: Math.floor(Math.random() * 5000) + 1000,
-      todayPvCount: Math.floor(Math.random() * 500) + 100,
-      pvGrowthRate: parseFloat((Math.random() * 20 - 10).toFixed(2)),
-      totalPvCount: Math.floor(Math.random() * 20000) + 5000,
-    };
+// 监听访问趋势日期范围的变化，重新获取趋势数据
+watch(
+  () => visitTrendDateRange.value,
+  () => {
     updateVisitTrendChartOptions();
-  });
+  },
+  { immediate: true }
+);
+
+// 组件挂载后加载访客统计数据和通知公告数据
+onMounted(() => {
+  visitStatsLoading.value = false;
+  visitStatsData.value = {
+    todayUvCount: Math.floor(Math.random() * 200) + 50,
+    uvGrowthRate: parseFloat((Math.random() * 20 - 10).toFixed(2)),
+    totalUvCount: Math.floor(Math.random() * 5000) + 1000,
+    todayPvCount: Math.floor(Math.random() * 500) + 100,
+    pvGrowthRate: parseFloat((Math.random() * 20 - 10).toFixed(2)),
+    totalPvCount: Math.floor(Math.random() * 20000) + 5000,
+  };
+  updateVisitTrendChartOptions();
+});
 </script>
 
 <style lang="scss" scoped>
-  .dashboard-container {
-    position: relative;
-    padding: 16px;
+.dashboard-container {
+  position: relative;
+  padding: 16px;
 
-    .github-corner {
-      position: absolute;
-      top: 0;
-      right: 0;
-      z-index: 1;
-      border: 0;
+  .github-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    border: 0;
+  }
+
+  .version-item {
+    padding: 16px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &.latest-item {
+      background: var(--el-color-primary-light-9);
+      border: 1px solid var(--el-color-primary-light-5);
     }
 
-    .version-item {
-      padding: 16px;
-      background: var(--el-fill-color-lighter);
-      border-radius: 8px;
-      transition: all 0.2s;
+    &:hover {
+      transform: translateX(5px);
+    }
 
-      &.latest-item {
-        background: var(--el-color-primary-light-9);
-        border: 1px solid var(--el-color-primary-light-5);
-      }
-
-      &:hover {
-        transform: translateX(5px);
-      }
-
-      .version-content {
-        margin-bottom: 12px;
-        font-size: 13px;
-        line-height: 1.5;
-        color: var(--el-text-color-secondary);
-      }
+    .version-content {
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--el-text-color-secondary);
     }
   }
+}
 </style>

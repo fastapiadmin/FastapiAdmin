@@ -45,7 +45,7 @@
                     <el-icon>
                       <Refresh />
                     </el-icon>
-                    {{ t('navbar.refresh') }}
+                    {{ t("navbar.refresh") }}
                   </el-dropdown-item>
 
                   <el-dropdown-item
@@ -55,21 +55,21 @@
                     <el-icon>
                       <Close />
                     </el-icon>
-                    {{ t('navbar.close') }}
+                    {{ t("navbar.close") }}
                   </el-dropdown-item>
 
                   <el-dropdown-item :disabled="isFirstView(tag)" @click="closeLeftTags(tag)">
                     <el-icon>
                       <Back />
                     </el-icon>
-                    {{ t('navbar.closeLeft') }}
+                    {{ t("navbar.closeLeft") }}
                   </el-dropdown-item>
 
                   <el-dropdown-item :disabled="isLastView(tag)" @click="closeRightTags(tag)">
                     <el-icon>
                       <Right />
                     </el-icon>
-                    {{ t('navbar.closeRight') }}
+                    {{ t("navbar.closeRight") }}
                   </el-dropdown-item>
 
                   <el-dropdown-item
@@ -79,14 +79,14 @@
                     <el-icon>
                       <Remove />
                     </el-icon>
-                    {{ t('navbar.closeOther') }}
+                    {{ t("navbar.closeOther") }}
                   </el-dropdown-item>
 
                   <el-dropdown-item :disabled="visitedViews.length <= 1" @click="closeAllTags(tag)">
                     <el-icon>
                       <Minus />
                     </el-icon>
-                    {{ t('navbar.closeAll') }}
+                    {{ t("navbar.closeAll") }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -127,14 +127,14 @@
             <el-icon>
               <Refresh />
             </el-icon>
-            {{ t('navbar.refresh') }}
+            {{ t("navbar.refresh") }}
           </el-dropdown-item>
 
           <el-dropdown-item v-if="!selectedTag?.affix" @click="handleAction('close')">
             <el-icon>
               <Close />
             </el-icon>
-            {{ t('navbar.close') }}
+            {{ t("navbar.close") }}
           </el-dropdown-item>
 
           <el-dropdown-item
@@ -144,7 +144,7 @@
             <el-icon>
               <Back />
             </el-icon>
-            {{ t('navbar.closeLeft') }}
+            {{ t("navbar.closeLeft") }}
           </el-dropdown-item>
 
           <el-dropdown-item
@@ -154,7 +154,7 @@
             <el-icon>
               <Right />
             </el-icon>
-            {{ t('navbar.closeRight') }}
+            {{ t("navbar.closeRight") }}
           </el-dropdown-item>
 
           <el-dropdown-item
@@ -164,14 +164,14 @@
             <el-icon>
               <Remove />
             </el-icon>
-            {{ t('navbar.closeOther') }}
+            {{ t("navbar.closeOther") }}
           </el-dropdown-item>
 
           <el-dropdown-item @click="handleAction('closeAll')">
             <el-icon>
               <Minus />
             </el-icon>
-            {{ t('navbar.closeAll') }}
+            {{ t("navbar.closeAll") }}
           </el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -180,780 +180,780 @@
 </template>
 
 <script setup lang="ts">
-  import { useRoute, useRouter, type RouteRecordRaw } from 'vue-router';
-  import { resolve } from 'path-browserify';
-  import { translateRouteTitle } from '@/utils/i18n';
-  import { refreshAppCaches, usePermissionStore, useTagsViewStore } from '@/store';
-  import { VueDraggable } from 'vue-draggable-plus';
-  import { quickStartManager } from '@/utils/quickStartManager';
-  import { ElMessage } from 'element-plus';
+import { useRoute, useRouter, type RouteRecordRaw } from "vue-router";
+import { resolve } from "path-browserify";
+import { translateRouteTitle } from "@/utils/i18n";
+import { refreshAppCaches, usePermissionStore, useTagsViewStore } from "@/store";
+import { VueDraggable } from "vue-draggable-plus";
+import { quickStartManager } from "@/utils/quickStartManager";
+import { ElMessage } from "element-plus";
+import { useI18n } from "vue-i18n";
+import { storeToRefs } from "pinia";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
-  const { t } = useI18n();
+const { t } = useI18n();
 
-  const router = useRouter();
-  const route = useRoute();
+const router = useRouter();
+const route = useRoute();
 
-  // 状态管理
-  const permissionStore = usePermissionStore();
-  const tagsViewStore = useTagsViewStore();
+// 状态管理
+const permissionStore = usePermissionStore();
+const tagsViewStore = useTagsViewStore();
 
-  const { visitedViews } = storeToRefs(tagsViewStore);
+const { visitedViews } = storeToRefs(tagsViewStore);
 
-  // 简单的标签显示逻辑
-  const displayedViews = computed(() => {
-    return visitedViews.value;
+// 简单的标签显示逻辑
+const displayedViews = computed(() => {
+  return visitedViews.value;
+});
+
+// 当前选中的标签
+const selectedTag = ref<TagView | null>(null);
+
+// 滚动条引用
+const scrollbarRef = ref();
+
+// 标签切换来源跟踪
+const tagSwitchSource = ref<"menu" | "tab" | null>(null);
+
+/** 收藏列表变更时递增，使星标与 localStorage 同步（否则取消收藏后 UI 不更新） */
+const quickLinksRevision = ref(0);
+
+const onQuickLinksChanged = () => {
+  quickLinksRevision.value++;
+};
+
+// 路由映射缓存，提升查找性能
+const routePathMap = new Map<string, TagView>();
+
+// 更新路由映射缓存
+const updateRoutePathMap = () => {
+  routePathMap.clear();
+  visitedViews.value.forEach((tag) => {
+    routePathMap.set(tag.path, tag);
   });
+};
 
-  // 当前选中的标签
-  const selectedTag = ref<TagView | null>(null);
+// 判断是否为第一个标签
+const isFirstView = (tag?: TagView) => {
+  if (tag) {
+    // 传入特定标签时使用传入的标签
+    return tag.path === "/" || tag.fullPath === visitedViews.value[1]?.fullPath;
+  } else {
+    // 未传入标签时使用当前激活标签（向后兼容）
+    const currentTag = routePathMap.get(route.path);
+    if (!currentTag) return false;
+    return currentTag.path === "/" || currentTag.fullPath === visitedViews.value[1]?.fullPath;
+  }
+};
 
-  // 滚动条引用
-  const scrollbarRef = ref();
+// 判断是否为最后一个标签
+const isLastView = (tag?: TagView) => {
+  if (tag) {
+    // 传入特定标签时使用传入的标签
+    return tag.fullPath === visitedViews.value[visitedViews.value.length - 1]?.fullPath;
+  } else {
+    // 未传入标签时使用当前激活标签（向后兼容）
+    const currentTag = routePathMap.get(route.path);
+    if (!currentTag) return false;
+    return currentTag.fullPath === visitedViews.value[visitedViews.value.length - 1]?.fullPath;
+  }
+};
 
-  // 标签切换来源跟踪
-  const tagSwitchSource = ref<'menu' | 'tab' | null>(null);
+/**
+ * 递归提取固定标签
+ */
+const extractAffixTags = (routes: RouteRecordRaw[], basePath = "/"): TagView[] => {
+  const affixTags: TagView[] = [];
 
-  /** 收藏列表变更时递增，使星标与 localStorage 同步（否则取消收藏后 UI 不更新） */
-  const quickLinksRevision = ref(0);
+  const traverse = (routeList: RouteRecordRaw[], currentBasePath: string) => {
+    routeList.forEach((route) => {
+      const fullPath = resolve(currentBasePath, route.path);
 
-  const onQuickLinksChanged = () => {
-    quickLinksRevision.value++;
-  };
+      // 如果是固定标签，添加到列表
+      if (route.meta?.affix) {
+        affixTags.push({
+          path: fullPath,
+          fullPath,
+          name: String(route.name || ""),
+          title: route.meta.title || "no-name",
+          affix: true,
+          keepAlive: route.meta.keepAlive || false,
+        });
+      }
 
-  // 路由映射缓存，提升查找性能
-  const routePathMap = new Map<string, TagView>();
-
-  // 更新路由映射缓存
-  const updateRoutePathMap = () => {
-    routePathMap.clear();
-    visitedViews.value.forEach((tag) => {
-      routePathMap.set(tag.path, tag);
-    });
-  };
-
-  // 判断是否为第一个标签
-  const isFirstView = (tag?: TagView) => {
-    if (tag) {
-      // 传入特定标签时使用传入的标签
-      return tag.path === '/' || tag.fullPath === visitedViews.value[1]?.fullPath;
-    } else {
-      // 未传入标签时使用当前激活标签（向后兼容）
-      const currentTag = routePathMap.get(route.path);
-      if (!currentTag) return false;
-      return currentTag.path === '/' || currentTag.fullPath === visitedViews.value[1]?.fullPath;
-    }
-  };
-
-  // 判断是否为最后一个标签
-  const isLastView = (tag?: TagView) => {
-    if (tag) {
-      // 传入特定标签时使用传入的标签
-      return tag.fullPath === visitedViews.value[visitedViews.value.length - 1]?.fullPath;
-    } else {
-      // 未传入标签时使用当前激活标签（向后兼容）
-      const currentTag = routePathMap.get(route.path);
-      if (!currentTag) return false;
-      return currentTag.fullPath === visitedViews.value[visitedViews.value.length - 1]?.fullPath;
-    }
-  };
-
-  /**
-   * 递归提取固定标签
-   */
-  const extractAffixTags = (routes: RouteRecordRaw[], basePath = '/'): TagView[] => {
-    const affixTags: TagView[] = [];
-
-    const traverse = (routeList: RouteRecordRaw[], currentBasePath: string) => {
-      routeList.forEach((route) => {
-        const fullPath = resolve(currentBasePath, route.path);
-
-        // 如果是固定标签，添加到列表
-        if (route.meta?.affix) {
-          affixTags.push({
-            path: fullPath,
-            fullPath,
-            name: String(route.name || ''),
-            title: route.meta.title || 'no-name',
-            affix: true,
-            keepAlive: route.meta.keepAlive || false,
-          });
-        }
-
-        // 递归处理子路由
-        if (route.children?.length) {
-          traverse(route.children, fullPath);
-        }
-      });
-    };
-
-    traverse(routes, basePath);
-    return affixTags;
-  };
-
-  /**
-   * 初始化固定标签
-   */
-  const initAffixTags = () => {
-    const affixTags = extractAffixTags(permissionStore.routes);
-
-    affixTags.forEach((tag) => {
-      if (tag.name) {
-        tagsViewStore.addVisitedView(tag);
+      // 递归处理子路由
+      if (route.children?.length) {
+        traverse(route.children, fullPath);
       }
     });
   };
 
-  /**
-   * 添加当前路由标签
-   */
-  const addCurrentTag = () => {
-    if (!route.meta?.title) return;
+  traverse(routes, basePath);
+  return affixTags;
+};
 
-    // 检查标签是否已存在
-    const existingTag = visitedViews.value.find((tag) => tag.path === route.path);
+/**
+ * 初始化固定标签
+ */
+const initAffixTags = () => {
+  const affixTags = extractAffixTags(permissionStore.routes);
 
-    if (existingTag) {
-      // 如果标签已存在，根据来源决定是否移动位置
-      if (!existingTag.affix) {
-        if (tagSwitchSource.value === 'menu') {
-          // 通过菜单点击：移动到最新位置
-          const index = visitedViews.value.findIndex((tag) => tag.path === route.path);
-          if (index !== -1) {
-            const tag = visitedViews.value.splice(index, 1)[0];
-            visitedViews.value.push(tag);
-          }
+  affixTags.forEach((tag) => {
+    if (tag.name) {
+      tagsViewStore.addVisitedView(tag);
+    }
+  });
+};
+
+/**
+ * 添加当前路由标签
+ */
+const addCurrentTag = () => {
+  if (!route.meta?.title) return;
+
+  // 检查标签是否已存在
+  const existingTag = visitedViews.value.find((tag) => tag.path === route.path);
+
+  if (existingTag) {
+    // 如果标签已存在，根据来源决定是否移动位置
+    if (!existingTag.affix) {
+      if (tagSwitchSource.value === "menu") {
+        // 通过菜单点击：移动到最新位置
+        const index = visitedViews.value.findIndex((tag) => tag.path === route.path);
+        if (index !== -1) {
+          const tag = visitedViews.value.splice(index, 1)[0];
+          visitedViews.value.push(tag);
         }
-        // 通过标签容器点击：不移动位置，只激活
       }
-    } else {
-      // 添加新标签
-      tagsViewStore.addView({
+      // 通过标签容器点击：不移动位置，只激活
+    }
+  } else {
+    // 添加新标签
+    tagsViewStore.addView({
+      name: route.name as string,
+      title: route.meta.title,
+      path: route.path,
+      fullPath: route.fullPath,
+      icon: (route as any).icon || route.meta?.icon,
+      affix: route.meta.affix || false,
+      keepAlive: route.meta.keepAlive || false,
+      query: route.query,
+    });
+  }
+
+  // 根据来源决定是否滚动
+  if (tagSwitchSource.value === "menu") {
+    // 通过菜单点击：滚动到最新标签
+    nextTick(() => {
+      autoScrollToLatestTag();
+    });
+  }
+  // 通过标签容器点击：不滚动，保持当前位置
+
+  // 重置来源状态
+  tagSwitchSource.value = null;
+};
+
+/**
+ * 更新当前标签
+ */
+const updateCurrentTag = () => {
+  nextTick(() => {
+    const currentTag = routePathMap.get(route.path);
+
+    if (currentTag && currentTag.fullPath !== route.fullPath) {
+      tagsViewStore.updateVisitedView({
         name: route.name as string,
-        title: route.meta.title,
+        title: route.meta?.title || "",
         path: route.path,
         fullPath: route.fullPath,
         icon: (route as any).icon || route.meta?.icon,
-        affix: route.meta.affix || false,
-        keepAlive: route.meta.keepAlive || false,
+        affix: route.meta?.affix || false,
+        keepAlive: route.meta?.keepAlive || false,
         query: route.query,
       });
     }
+  });
+};
 
-    // 根据来源决定是否滚动
-    if (tagSwitchSource.value === 'menu') {
-      // 通过菜单点击：滚动到最新标签
-      nextTick(() => {
-        autoScrollToLatestTag();
-      });
+/**
+ * 处理中键点击
+ */
+const handleMiddleClick = (tag: TagView) => {
+  if (!tag.affix) {
+    closeSelectedTag(tag);
+  }
+};
+
+/**
+ * 处理滚轮事件（优化后）
+ */
+const handleScroll = (event: WheelEvent) => {
+  const scrollWrapper = scrollbarRef.value?.wrapRef;
+  if (!scrollWrapper) return;
+
+  // 检查是否有水平或垂直滚动
+  const hasHorizontalScroll = scrollWrapper.scrollWidth > scrollWrapper.clientWidth;
+  const hasVerticalScroll = scrollWrapper.scrollHeight > scrollWrapper.clientHeight;
+
+  if (!hasHorizontalScroll && !hasVerticalScroll) return;
+
+  const deltaY = event.deltaY || -(event as any).wheelDelta || 0;
+  const deltaX = event.deltaX || 0;
+
+  // 计算新的滚动位置
+  const newScrollLeft = Math.max(
+    0,
+    Math.min(
+      scrollWrapper.scrollWidth - scrollWrapper.clientWidth,
+      scrollWrapper.scrollLeft + deltaX
+    )
+  );
+  const newScrollTop = Math.max(
+    0,
+    Math.min(
+      scrollWrapper.scrollHeight - scrollWrapper.clientHeight,
+      scrollWrapper.scrollTop + deltaY
+    )
+  );
+
+  scrollbarRef.value.setScrollLeft(newScrollLeft);
+  scrollbarRef.value.setScrollTop(newScrollTop); // 新增垂直滚动支持
+};
+
+/**
+ * 刷新标签
+ */
+const refreshSelectedTag = (tag: TagView | null) => {
+  if (!tag) return;
+  // 总是使用当前路由对应的标签
+  // const currentTag = routePathMap.value.get(route.path);
+  // if (!currentTag) return;
+
+  tagsViewStore.delCachedView(tag);
+  nextTick(() => {
+    router.replace("/redirect" + tag.fullPath);
+  });
+};
+
+/**
+ * 关闭标签
+ */
+const closeSelectedTag = (tag: TagView | null) => {
+  // 如果传入了具体的标签，使用传入的标签；否则使用当前路由对应的标签
+  const targetTag = tag || routePathMap.get(route.path);
+  if (!targetTag) return;
+
+  tagsViewStore.delView(targetTag).then((result: any) => {
+    if (tagsViewStore.isActive(targetTag)) {
+      tagsViewStore.toLastView(result.visitedViews, targetTag);
     }
-    // 通过标签容器点击：不滚动，保持当前位置
-
-    // 重置来源状态
-    tagSwitchSource.value = null;
-  };
-
-  /**
-   * 更新当前标签
-   */
-  const updateCurrentTag = () => {
+    // 关闭标签后重置滚动状态，以便下次可以重新判断是否需要滚动
     nextTick(() => {
-      const currentTag = routePathMap.get(route.path);
-
-      if (currentTag && currentTag.fullPath !== route.fullPath) {
-        tagsViewStore.updateVisitedView({
-          name: route.name as string,
-          title: route.meta?.title || '',
-          path: route.path,
-          fullPath: route.fullPath,
-          icon: (route as any).icon || route.meta?.icon,
-          affix: route.meta?.affix || false,
-          keepAlive: route.meta?.keepAlive || false,
-          query: route.query,
-        });
-      }
+      resetScrollState();
     });
-  };
+  });
+};
 
-  /**
-   * 处理中键点击
-   */
-  const handleMiddleClick = (tag: TagView) => {
-    if (!tag.affix) {
-      closeSelectedTag(tag);
+/**
+ * 关闭左侧标签
+ */
+const closeLeftTags = (tag?: TagView) => {
+  const targetTag = tag || selectedTag.value || routePathMap.get(route.path);
+  if (!targetTag) return;
+
+  tagsViewStore.delLeftViews(targetTag).then((result: any) => {
+    const hasCurrentRoute = result.visitedViews.some((item: TagView) => item.path === route.path);
+
+    if (!hasCurrentRoute) {
+      tagsViewStore.toLastView(result.visitedViews);
     }
-  };
-
-  /**
-   * 处理滚轮事件（优化后）
-   */
-  const handleScroll = (event: WheelEvent) => {
-    const scrollWrapper = scrollbarRef.value?.wrapRef;
-    if (!scrollWrapper) return;
-
-    // 检查是否有水平或垂直滚动
-    const hasHorizontalScroll = scrollWrapper.scrollWidth > scrollWrapper.clientWidth;
-    const hasVerticalScroll = scrollWrapper.scrollHeight > scrollWrapper.clientHeight;
-
-    if (!hasHorizontalScroll && !hasVerticalScroll) return;
-
-    const deltaY = event.deltaY || -(event as any).wheelDelta || 0;
-    const deltaX = event.deltaX || 0;
-
-    // 计算新的滚动位置
-    const newScrollLeft = Math.max(
-      0,
-      Math.min(
-        scrollWrapper.scrollWidth - scrollWrapper.clientWidth,
-        scrollWrapper.scrollLeft + deltaX
-      )
-    );
-    const newScrollTop = Math.max(
-      0,
-      Math.min(
-        scrollWrapper.scrollHeight - scrollWrapper.clientHeight,
-        scrollWrapper.scrollTop + deltaY
-      )
-    );
-
-    scrollbarRef.value.setScrollLeft(newScrollLeft);
-    scrollbarRef.value.setScrollTop(newScrollTop); // 新增垂直滚动支持
-  };
-
-  /**
-   * 刷新标签
-   */
-  const refreshSelectedTag = (tag: TagView | null) => {
-    if (!tag) return;
-    // 总是使用当前路由对应的标签
-    // const currentTag = routePathMap.value.get(route.path);
-    // if (!currentTag) return;
-
-    tagsViewStore.delCachedView(tag);
+    // 关闭标签后重置滚动状态
     nextTick(() => {
-      router.replace('/redirect' + tag.fullPath);
+      resetScrollState();
     });
-  };
+  });
+};
 
-  /**
-   * 关闭标签
-   */
-  const closeSelectedTag = (tag: TagView | null) => {
-    // 如果传入了具体的标签，使用传入的标签；否则使用当前路由对应的标签
-    const targetTag = tag || routePathMap.get(route.path);
-    if (!targetTag) return;
+/**
+ * 关闭右侧标签
+ */
+const closeRightTags = (tag?: TagView) => {
+  const targetTag = tag || selectedTag.value || routePathMap.get(route.path);
+  if (!targetTag) return;
 
-    tagsViewStore.delView(targetTag).then((result: any) => {
-      if (tagsViewStore.isActive(targetTag)) {
-        tagsViewStore.toLastView(result.visitedViews, targetTag);
-      }
-      // 关闭标签后重置滚动状态，以便下次可以重新判断是否需要滚动
-      nextTick(() => {
-        resetScrollState();
-      });
+  tagsViewStore.delRightViews(targetTag).then((result: any) => {
+    const hasCurrentRoute = result.visitedViews.some((item: TagView) => item.path === route.path);
+
+    if (!hasCurrentRoute) {
+      tagsViewStore.toLastView(result.visitedViews);
+    }
+    // 关闭标签后重置滚动状态
+    nextTick(() => {
+      resetScrollState();
     });
-  };
+  });
+};
 
-  /**
-   * 关闭左侧标签
-   */
-  const closeLeftTags = (tag?: TagView) => {
-    const targetTag = tag || selectedTag.value || routePathMap.get(route.path);
-    if (!targetTag) return;
+/**
+ * 关闭其他标签
+ */
+const closeOtherTags = (tag?: TagView) => {
+  const targetTag = tag || selectedTag.value || routePathMap.get(route.path);
+  if (!targetTag) return;
 
-    tagsViewStore.delLeftViews(targetTag).then((result: any) => {
-      const hasCurrentRoute = result.visitedViews.some((item: TagView) => item.path === route.path);
-
-      if (!hasCurrentRoute) {
-        tagsViewStore.toLastView(result.visitedViews);
-      }
-      // 关闭标签后重置滚动状态
-      nextTick(() => {
-        resetScrollState();
-      });
+  router.push(targetTag);
+  tagsViewStore.delOtherViews(targetTag).then(() => {
+    updateCurrentTag();
+    // 关闭标签后重置滚动状态
+    nextTick(() => {
+      resetScrollState();
     });
-  };
+  });
+};
 
-  /**
-   * 关闭右侧标签
-   */
-  const closeRightTags = (tag?: TagView) => {
-    const targetTag = tag || selectedTag.value || routePathMap.get(route.path);
-    if (!targetTag) return;
-
-    tagsViewStore.delRightViews(targetTag).then((result: any) => {
-      const hasCurrentRoute = result.visitedViews.some((item: TagView) => item.path === route.path);
-
-      if (!hasCurrentRoute) {
-        tagsViewStore.toLastView(result.visitedViews);
-      }
-      // 关闭标签后重置滚动状态
-      nextTick(() => {
-        resetScrollState();
-      });
+/**
+ * 关闭所有标签
+ */
+const closeAllTags = (tag?: TagView) => {
+  tagsViewStore.delAllViews().then((result: any) => {
+    tagsViewStore.toLastView(result.visitedViews, tag || undefined);
+    // 关闭所有标签后重置滚动状态
+    nextTick(() => {
+      resetScrollState();
     });
-  };
+  });
+};
 
-  /**
-   * 关闭其他标签
-   */
-  const closeOtherTags = (tag?: TagView) => {
-    const targetTag = tag || selectedTag.value || routePathMap.get(route.path);
-    if (!targetTag) return;
+/**
+ * 统一处理标签操作
+ */
+const handleAction = async (action: string) => {
+  // 总是使用当前路由对应的标签
+  const currentTag = routePathMap.get(route.path);
+  if (!currentTag) return;
 
-    router.push(targetTag);
-    tagsViewStore.delOtherViews(targetTag).then(() => {
-      updateCurrentTag();
-      // 关闭标签后重置滚动状态
-      nextTick(() => {
-        resetScrollState();
-      });
-    });
-  };
-
-  /**
-   * 关闭所有标签
-   */
-  const closeAllTags = (tag?: TagView) => {
-    tagsViewStore.delAllViews().then((result: any) => {
-      tagsViewStore.toLastView(result.visitedViews, tag || undefined);
-      // 关闭所有标签后重置滚动状态
-      nextTick(() => {
-        resetScrollState();
-      });
-    });
-  };
-
-  /**
-   * 统一处理标签操作
-   */
-  const handleAction = async (action: string) => {
-    // 总是使用当前路由对应的标签
-    const currentTag = routePathMap.get(route.path);
-    if (!currentTag) return;
-
-    switch (action) {
-      case 'refresh':
+  switch (action) {
+    case "refresh":
+      refreshSelectedTag(currentTag);
+      break;
+    case "close":
+      closeSelectedTag(currentTag);
+      break;
+    case "closeRight":
+      closeRightTags();
+      break;
+    case "closeLeft":
+      closeLeftTags();
+      break;
+    case "closeOther":
+      closeOtherTags();
+      break;
+    case "closeAll":
+      closeAllTags(currentTag);
+      break;
+    case "refreshCache":
+      try {
+        // 1) 刷新服务端缓存（用户/权限/配置/公告/按需字典）并重建路由
+        await refreshAppCaches();
+        // 2) 软刷新当前页面，重新加载组件
         refreshSelectedTag(currentTag);
-        break;
-      case 'close':
-        closeSelectedTag(currentTag);
-        break;
-      case 'closeRight':
-        closeRightTags();
-        break;
-      case 'closeLeft':
-        closeLeftTags();
-        break;
-      case 'closeOther':
-        closeOtherTags();
-        break;
-      case 'closeAll':
-        closeAllTags(currentTag);
-        break;
-      case 'refreshCache':
-        try {
-          // 1) 刷新服务端缓存（用户/权限/配置/公告/按需字典）并重建路由
-          await refreshAppCaches();
-          // 2) 软刷新当前页面，重新加载组件
-          refreshSelectedTag(currentTag);
-          // 3) 提示成功
-          ElMessage.success(t('navbar.refreshCache') + '完成');
-        } catch (error) {
-          console.error('刷新缓存失败:', error);
-          ElMessage.error('刷新失败');
-        }
-        break;
-      default:
-        console.warn(`Unknown action: ${action}`);
-    }
-  };
-
-  /**
-   * 右键菜单显示状态变化处理函数
-   */
-  const onContextMenuVisibleChange = (visible: boolean, tag?: TagView) => {
-    if (visible) {
-      // 设置当前右键点击的标签
-      selectedTag.value = tag || routePathMap.get(route.path) || null;
-    } else {
-      // 关闭菜单时清空选择
-      selectedTag.value = null;
-    }
-  };
-
-  /**
-   * 切换快速开始收藏状态
-   */
-  const toggleQuickStart = (tag: TagView) => {
-    try {
-      const href = tag.fullPath || tag.path;
-      const isExists = quickStartManager.isLinkExists(href);
-
-      if (isExists) {
-        const links = quickStartManager.getQuickLinks();
-        const targetLink = links.find((link) => link.href === href);
-        if (targetLink?.id) {
-          quickStartManager.removeQuickLink(targetLink.id);
-        } else if (href) {
-          quickStartManager.removeQuickLinkByHref(href);
-        }
-        ElMessage.success(`已取消收藏：${tag.title}`);
-      } else {
-        const quickLink = quickStartManager.createQuickLinkFromRoute(tag);
-        if (quickStartManager.addQuickLink(quickLink)) {
-          ElMessage.success(`已收藏：${tag.title}`);
-        }
+        // 3) 提示成功
+        ElMessage.success(t("navbar.refreshCache") + "完成");
+      } catch (error) {
+        console.error("刷新缓存失败:", error);
+        ElMessage.error("刷新失败");
       }
-    } catch (error) {
-      console.error('Failed to toggle quick start:', error);
-      ElMessage.error('操作失败');
+      break;
+    default:
+      console.warn(`Unknown action: ${action}`);
+  }
+};
+
+/**
+ * 右键菜单显示状态变化处理函数
+ */
+const onContextMenuVisibleChange = (visible: boolean, tag?: TagView) => {
+  if (visible) {
+    // 设置当前右键点击的标签
+    selectedTag.value = tag || routePathMap.get(route.path) || null;
+  } else {
+    // 关闭菜单时清空选择
+    selectedTag.value = null;
+  }
+};
+
+/**
+ * 切换快速开始收藏状态
+ */
+const toggleQuickStart = (tag: TagView) => {
+  try {
+    const href = tag.fullPath || tag.path;
+    const isExists = quickStartManager.isLinkExists(href);
+
+    if (isExists) {
+      const links = quickStartManager.getQuickLinks();
+      const targetLink = links.find((link) => link.href === href);
+      if (targetLink?.id) {
+        quickStartManager.removeQuickLink(targetLink.id);
+      } else if (href) {
+        quickStartManager.removeQuickLinkByHref(href);
+      }
+      ElMessage.success(`已取消收藏：${tag.title}`);
+    } else {
+      const quickLink = quickStartManager.createQuickLinkFromRoute(tag);
+      if (quickStartManager.addQuickLink(quickLink)) {
+        ElMessage.success(`已收藏：${tag.title}`);
+      }
     }
-  };
+  } catch (error) {
+    console.error("Failed to toggle quick start:", error);
+    ElMessage.error("操作失败");
+  }
+};
 
-  /**
-   * 检查快速链接是否已存在（依赖 quickLinksRevision，以便收藏增删后星标立即刷新）
-   */
-  const isQuickLinkExists = (tag: TagView): boolean => {
-    void quickLinksRevision.value;
-    return quickStartManager.isLinkExists(tag.fullPath || tag.path);
-  };
+/**
+ * 检查快速链接是否已存在（依赖 quickLinksRevision，以便收藏增删后星标立即刷新）
+ */
+const isQuickLinkExists = (tag: TagView): boolean => {
+  void quickLinksRevision.value;
+  return quickStartManager.isLinkExists(tag.fullPath || tag.path);
+};
 
-  /**
-   * 向左滚动标签页
-   */
-  const scrollLeft = () => {
-    const scrollWrapper = scrollbarRef.value?.wrapRef;
-    if (!scrollWrapper) return;
+/**
+ * 向左滚动标签页
+ */
+const scrollLeft = () => {
+  const scrollWrapper = scrollbarRef.value?.wrapRef;
+  if (!scrollWrapper) return;
 
-    const newScrollLeft = Math.max(0, scrollWrapper.scrollLeft - 200);
-    scrollbarRef.value.setScrollLeft(newScrollLeft);
-  };
+  const newScrollLeft = Math.max(0, scrollWrapper.scrollLeft - 200);
+  scrollbarRef.value.setScrollLeft(newScrollLeft);
+};
 
-  /**
-   * 向右滚动标签页
-   */
-  const scrollRight = () => {
-    const scrollWrapper = scrollbarRef.value?.wrapRef;
-    if (!scrollWrapper) return;
+/**
+ * 向右滚动标签页
+ */
+const scrollRight = () => {
+  const scrollWrapper = scrollbarRef.value?.wrapRef;
+  if (!scrollWrapper) return;
 
-    const maxScrollLeft = scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
-    const newScrollLeft = Math.min(maxScrollLeft, scrollWrapper.scrollLeft + 200);
-    scrollbarRef.value.setScrollLeft(newScrollLeft);
+  const maxScrollLeft = scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
+  const newScrollLeft = Math.min(maxScrollLeft, scrollWrapper.scrollLeft + 200);
+  scrollbarRef.value.setScrollLeft(newScrollLeft);
 
-    // 如果滚动到最右边，重置滚动状态以允许下次自动滚动
-    if (newScrollLeft >= maxScrollLeft - 1) {
-      scrollState.value.hasScrolledToLatest = false;
+  // 如果滚动到最右边，重置滚动状态以允许下次自动滚动
+  if (newScrollLeft >= maxScrollLeft - 1) {
+    scrollState.value.hasScrolledToLatest = false;
+  }
+};
+
+/**
+ * 重置滚动状态
+ */
+const resetScrollState = () => {
+  scrollState.value.hasScrolledToLatest = false;
+  scrollState.value.isContainerFull = false;
+};
+
+// 滚动状态跟踪
+const scrollState = ref({
+  hasScrolledToLatest: false, // 是否已经滚动到最新标签
+  isContainerFull: false, // 容器是否已满
+});
+
+/**
+ * 自动滚动到最新标签或确保当前激活标签可见
+ */
+const autoScrollToLatestTag = () => {
+  const scrollWrapper = scrollbarRef.value?.wrapRef;
+  if (!scrollWrapper) return;
+
+  // 获取容器宽度和内容宽度
+  const containerWidth = scrollWrapper.clientWidth;
+  const contentWidth = scrollWrapper.scrollWidth;
+
+  // 判断容器是否已满（内容宽度是否超过容器宽度）
+  const isContainerFull = contentWidth > containerWidth;
+
+  // 查找当前激活的标签元素
+  const activeTagElement = document.querySelector(".tags-item.active");
+
+  if (activeTagElement) {
+    // 将Element类型断言为HTMLElement类型以访问offsetWidth属性
+    const activeHtmlElement = activeTagElement as HTMLElement;
+    // 计算激活标签的位置信息
+    const activeTagRect = activeHtmlElement.getBoundingClientRect();
+    const containerRect = scrollWrapper.getBoundingClientRect();
+
+    // 计算标签相对于容器的位置
+    const tagLeft = activeTagRect.left - containerRect.left + scrollWrapper.scrollLeft;
+    const tagRight = tagLeft + activeHtmlElement.offsetWidth;
+
+    // 检查标签是否完全在可见区域内
+    if (
+      tagLeft < scrollWrapper.scrollLeft ||
+      tagRight > scrollWrapper.scrollLeft + containerWidth
+    ) {
+      // 如果标签不在可见区域内，滚动到使标签居中的位置
+      const targetScrollLeft = tagLeft - (containerWidth - activeHtmlElement.offsetWidth) / 2;
+      const maxScrollLeft = contentWidth - containerWidth;
+      const minScrollLeft = 0;
+      const clampedScrollLeft = Math.max(minScrollLeft, Math.min(maxScrollLeft, targetScrollLeft));
+
+      scrollbarRef.value.setScrollLeft(clampedScrollLeft);
+      scrollState.value.hasScrolledToLatest = true;
+      scrollState.value.isContainerFull = isContainerFull;
+      return;
     }
-  };
+  }
 
-  /**
-   * 重置滚动状态
-   */
-  const resetScrollState = () => {
+  // 如果没有找到激活标签或激活标签已经在可见区域内，则使用原来的逻辑
+  if (isContainerFull && !scrollState.value.hasScrolledToLatest) {
+    // 计算需要滚动到的位置，确保最新标签在右侧可见
+    const maxScrollLeft = contentWidth - containerWidth;
+    scrollbarRef.value.setScrollLeft(maxScrollLeft);
+    scrollState.value.hasScrolledToLatest = true;
+    scrollState.value.isContainerFull = true;
+  } else if (!isContainerFull) {
+    // 如果内容宽度不超过容器宽度，滚动到最左边
+    scrollbarRef.value.setScrollLeft(0);
+    // 重置滚动状态
     scrollState.value.hasScrolledToLatest = false;
     scrollState.value.isContainerFull = false;
-  };
+  }
+};
 
-  // 滚动状态跟踪
-  const scrollState = ref({
-    hasScrolledToLatest: false, // 是否已经滚动到最新标签
-    isContainerFull: false, // 容器是否已满
-  });
-
-  /**
-   * 自动滚动到最新标签或确保当前激活标签可见
-   */
-  const autoScrollToLatestTag = () => {
-    const scrollWrapper = scrollbarRef.value?.wrapRef;
-    if (!scrollWrapper) return;
-
-    // 获取容器宽度和内容宽度
-    const containerWidth = scrollWrapper.clientWidth;
-    const contentWidth = scrollWrapper.scrollWidth;
-
-    // 判断容器是否已满（内容宽度是否超过容器宽度）
-    const isContainerFull = contentWidth > containerWidth;
-
-    // 查找当前激活的标签元素
-    const activeTagElement = document.querySelector('.tags-item.active');
-
-    if (activeTagElement) {
-      // 将Element类型断言为HTMLElement类型以访问offsetWidth属性
-      const activeHtmlElement = activeTagElement as HTMLElement;
-      // 计算激活标签的位置信息
-      const activeTagRect = activeHtmlElement.getBoundingClientRect();
-      const containerRect = scrollWrapper.getBoundingClientRect();
-
-      // 计算标签相对于容器的位置
-      const tagLeft = activeTagRect.left - containerRect.left + scrollWrapper.scrollLeft;
-      const tagRight = tagLeft + activeHtmlElement.offsetWidth;
-
-      // 检查标签是否完全在可见区域内
-      if (
-        tagLeft < scrollWrapper.scrollLeft ||
-        tagRight > scrollWrapper.scrollLeft + containerWidth
-      ) {
-        // 如果标签不在可见区域内，滚动到使标签居中的位置
-        const targetScrollLeft = tagLeft - (containerWidth - activeHtmlElement.offsetWidth) / 2;
-        const maxScrollLeft = contentWidth - containerWidth;
-        const minScrollLeft = 0;
-        const clampedScrollLeft = Math.max(
-          minScrollLeft,
-          Math.min(maxScrollLeft, targetScrollLeft)
-        );
-
-        scrollbarRef.value.setScrollLeft(clampedScrollLeft);
-        scrollState.value.hasScrolledToLatest = true;
-        scrollState.value.isContainerFull = isContainerFull;
-        return;
-      }
+// 监听路由变化
+watch(
+  route,
+  () => {
+    // 如果没有设置来源，则默认为菜单点击
+    if (tagSwitchSource.value === null) {
+      tagSwitchSource.value = "menu";
     }
+    addCurrentTag();
+    updateCurrentTag();
+    updateRoutePathMap();
+  },
+  { immediate: true }
+);
 
-    // 如果没有找到激活标签或激活标签已经在可见区域内，则使用原来的逻辑
-    if (isContainerFull && !scrollState.value.hasScrolledToLatest) {
-      // 计算需要滚动到的位置，确保最新标签在右侧可见
-      const maxScrollLeft = contentWidth - containerWidth;
-      scrollbarRef.value.setScrollLeft(maxScrollLeft);
-      scrollState.value.hasScrolledToLatest = true;
-      scrollState.value.isContainerFull = true;
-    } else if (!isContainerFull) {
-      // 如果内容宽度不超过容器宽度，滚动到最左边
-      scrollbarRef.value.setScrollLeft(0);
-      // 重置滚动状态
-      scrollState.value.hasScrolledToLatest = false;
-      scrollState.value.isContainerFull = false;
-    }
-  };
+// 监听容器大小变化
+let resizeObserver: ResizeObserver | null = null;
 
-  // 监听路由变化
-  watch(
-    route,
-    () => {
-      // 如果没有设置来源，则默认为菜单点击
-      if (tagSwitchSource.value === null) {
-        tagSwitchSource.value = 'menu';
-      }
-      addCurrentTag();
-      updateCurrentTag();
-      updateRoutePathMap();
-    },
-    { immediate: true }
-  );
+// 监听标签数量变化，自动滚动到最新标签（新标签添加时）
+watch(
+  () => visitedViews.value.length,
+  () => {
+    // 更新路由映射缓存
+    updateRoutePathMap();
 
-  // 监听容器大小变化
-  let resizeObserver: ResizeObserver | null = null;
-
-  // 监听标签数量变化，自动滚动到最新标签（新标签添加时）
-  watch(
-    () => visitedViews.value.length,
-    () => {
-      // 更新路由映射缓存
-      updateRoutePathMap();
-
-      // 只有在通过菜单添加新标签时才滚动
-      if (tagSwitchSource.value === 'menu') {
-        nextTick(() => {
-          autoScrollToLatestTag();
-        });
-      }
-    }
-  );
-
-  // 监听当前路由变化，确保路由切换时自动滚动到当前标签
-  watch(
-    () => route.path,
-    () => {
+    // 只有在通过菜单添加新标签时才滚动
+    if (tagSwitchSource.value === "menu") {
       nextTick(() => {
         autoScrollToLatestTag();
       });
     }
-  );
+  }
+);
 
-  // 初始化
-  onMounted(() => {
-    initAffixTags();
+// 监听当前路由变化，确保路由切换时自动滚动到当前标签
+watch(
+  () => route.path,
+  () => {
+    nextTick(() => {
+      autoScrollToLatestTag();
+    });
+  }
+);
 
-    quickStartManager.addListener(onQuickLinksChanged);
+// 初始化
+onMounted(() => {
+  initAffixTags();
 
-    // 初始化路由映射缓存
-    updateRoutePathMap();
+  quickStartManager.addListener(onQuickLinksChanged);
 
-    // 监听容器大小变化
-    const tagsContainer = document.querySelector('.tags-container');
-    if (tagsContainer && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(() => {
-        // 强制重新计算 displayedViews
-        nextTick(() => {
-          autoScrollToLatestTag();
-        });
+  // 初始化路由映射缓存
+  updateRoutePathMap();
+
+  // 监听容器大小变化
+  const tagsContainer = document.querySelector(".tags-container");
+  if (tagsContainer && window.ResizeObserver) {
+    resizeObserver = new ResizeObserver(() => {
+      // 强制重新计算 displayedViews
+      nextTick(() => {
+        autoScrollToLatestTag();
       });
-      resizeObserver.observe(tagsContainer);
-    }
-  });
+    });
+    resizeObserver.observe(tagsContainer);
+  }
+});
 
-  // 清理
-  onUnmounted(() => {
-    quickStartManager.removeListener(onQuickLinksChanged);
-    if (resizeObserver) {
-      resizeObserver.disconnect();
-    }
-  });
+// 清理
+onUnmounted(() => {
+  quickStartManager.removeListener(onQuickLinksChanged);
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
+});
 </script>
 
 <style lang="scss" scoped>
-  .tags-container {
+.tags-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: $tags-view-height;
+  background-color: var(--el-bg-color-overlay);
+  border-top: 1px solid var(--el-border-color-light);
+  border-bottom: 1px solid var(--el-border-color-light);
+  // box-shadow: var(--el-box-shadow-light);
+
+  .btn {
     display: flex;
     align-items: center;
-    width: 100%;
+    justify-content: center;
+    width: $tags-view-height;
     height: $tags-view-height;
-    background-color: var(--el-bg-color-overlay);
-    border-top: 1px solid var(--el-border-color-light);
-    border-bottom: 1px solid var(--el-border-color-light);
-    // box-shadow: var(--el-box-shadow-light);
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    border: none;
+    // border: 1px solid var(--el-border-color-light);
 
-    .btn {
-      display: flex;
+    &:hover {
+      color: var(--el-color-primary);
+    }
+  }
+
+  .scroll-wrapper {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .scroll-container {
+    white-space: nowrap;
+  }
+
+  .tags-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 9px;
+    margin-left: 6px;
+    font-size: 12px;
+    line-height: 1;
+    vertical-align: middle;
+    color: var(--el-text-color-regular);
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 6px;
+
+    &:first-of-type {
+      margin-left: 5px;
+    }
+    &:last-of-type {
+      margin-right: 5px;
+    }
+
+    &:hover:not(.active) {
+      background-color: var(--el-fill-color);
+      border-color: var(--el-border-color);
+    }
+
+    :deep(.el-dropdown) {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      line-height: 1;
+    }
+
+    .tag-main {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .tag-bookmark-btn {
+      display: inline-flex;
+      flex-shrink: 0;
       align-items: center;
       justify-content: center;
-      width: $tags-view-height;
-      height: $tags-view-height;
-      color: var(--el-text-color-regular);
+      padding: 0;
+      margin: 0;
+      line-height: 1;
+      color: var(--el-text-color-placeholder);
       cursor: pointer;
+      outline: none;
+      background: transparent;
       border: none;
-      // border: 1px solid var(--el-border-color-light);
+      border-radius: 4px;
 
       &:hover {
         color: var(--el-color-primary);
       }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 2px var(--el-color-primary-light-7);
+      }
+
+      &.is-bookmarked {
+        color: var(--el-color-primary);
+      }
     }
 
-    .scroll-wrapper {
-      flex: 1;
-      overflow: hidden;
+    .tag-text {
+      min-width: 0;
+      line-height: 1.25;
     }
 
-    .scroll-container {
-      white-space: nowrap;
-    }
-
-    .tags-item {
-      position: relative;
+    .tag-close-btn {
       display: inline-flex;
       align-items: center;
-      height: 26px;
-      padding: 0 9px;
-      margin-left: 6px;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 5px;
       font-size: 12px;
-      line-height: 1;
-      vertical-align: middle;
-      color: var(--el-text-color-regular);
-      background: var(--el-fill-color-light);
-      border: 1px solid var(--el-border-color-lighter);
-      border-radius: 6px;
+      font-weight: bold;
+      color: var(--el-text-color-secondary);
+      cursor: pointer;
+      border-radius: 50%;
 
-      &:first-of-type {
-        margin-left: 5px;
+      &:hover {
+        color: var(--el-color-danger);
+        background-color: var(--el-fill-color-light);
       }
-      &:last-of-type {
-        margin-right: 5px;
-      }
+    }
 
-      &:hover:not(.active) {
-        background-color: var(--el-fill-color);
-        border-color: var(--el-border-color);
-      }
+    &.active {
+      color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+      border-color: var(--el-color-primary-light-7);
 
-      :deep(.el-dropdown) {
-        display: inline-flex;
-        align-items: center;
-        max-width: 100%;
-        line-height: 1;
+      .tag-text {
+        font-weight: 500;
+        color: var(--el-color-primary);
       }
 
-      .tag-main {
-        display: inline-flex;
-        gap: 4px;
-        align-items: center;
-        min-width: 0;
-      }
-
-      .tag-bookmark-btn {
-        display: inline-flex;
-        flex-shrink: 0;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        margin: 0;
-        line-height: 1;
-        color: var(--el-text-color-placeholder);
-        cursor: pointer;
-        outline: none;
-        background: transparent;
-        border: none;
-        border-radius: 4px;
+      .tag-bookmark-btn:not(.is-bookmarked) {
+        color: var(--el-text-color-secondary);
 
         &:hover {
           color: var(--el-color-primary);
         }
-
-        &:focus-visible {
-          box-shadow: 0 0 0 2px var(--el-color-primary-light-7);
-        }
-
-        &.is-bookmarked {
-          color: var(--el-color-primary);
-        }
-      }
-
-      .tag-text {
-        min-width: 0;
-        line-height: 1.25;
       }
 
       .tag-close-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        margin-left: 5px;
-        font-size: 12px;
-        font-weight: bold;
-        color: var(--el-text-color-secondary);
-        cursor: pointer;
-        border-radius: 50%;
-
+        color: var(--el-color-primary);
         &:hover {
           color: var(--el-color-danger);
-          background-color: var(--el-fill-color-light);
-        }
-      }
-
-      &.active {
-        color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-        border-color: var(--el-color-primary-light-7);
-
-        .tag-text {
-          font-weight: 500;
-          color: var(--el-color-primary);
-        }
-
-        .tag-bookmark-btn:not(.is-bookmarked) {
-          color: var(--el-text-color-secondary);
-
-          &:hover {
-            color: var(--el-color-primary);
-          }
-        }
-
-        .tag-close-btn {
-          color: var(--el-color-primary);
-          &:hover {
-            color: var(--el-color-danger);
-          }
         }
       }
     }
   }
+}
 </style>

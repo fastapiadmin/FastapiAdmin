@@ -169,290 +169,290 @@
 </template>
 
 <script setup lang="ts">
-  import 'codemirror/mode/sql/sql.js';
-  import 'codemirror/theme/dracula.css';
-  import { ref, watch, nextTick, computed } from 'vue';
-  import Codemirror from 'codemirror-editor-vue3';
-  import type { EditorConfiguration } from 'codemirror';
-  import type { CmComponentRef } from 'codemirror-editor-vue3';
-  import { ElMessage } from 'element-plus';
-  import { ArrowDown, CopyDocument } from '@element-plus/icons-vue';
-  import { useClipboard } from '@vueuse/core';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import { useSettingsStore } from '@/store';
-  import { ThemeMode } from '@/enums/settings/theme.enum';
-  import { buildSqlFromVisual } from '../utils/buildCreateTableSql';
-  import type { SqlDialect, VisualBuildState } from '../utils/buildCreateTableSql';
-  import {
-    applySubColumns,
-    mergeGenTableLinkIntoVisual,
-    visualPresetMasterSub,
-    visualPresetSingle,
-    type GenTableCreateLink,
-  } from '../utils/createTableVisualPresets';
-  import {
-    getExampleFromPresetMasterSub,
-    getExampleFromPresetSingle,
-  } from '../utils/createTableSqlExamples';
+import "codemirror/mode/sql/sql.js";
+import "codemirror/theme/dracula.css";
+import { ref, watch, nextTick, computed } from "vue";
+import Codemirror from "codemirror-editor-vue3";
+import type { EditorConfiguration } from "codemirror";
+import type { CmComponentRef } from "codemirror-editor-vue3";
+import { ElMessage } from "element-plus";
+import { ArrowDown, CopyDocument } from "@element-plus/icons-vue";
+import { useClipboard } from "@vueuse/core";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import { useSettingsStore } from "@/store";
+import { ThemeMode } from "@/enums/settings/theme.enum";
+import { buildSqlFromVisual } from "../utils/buildCreateTableSql";
+import type { SqlDialect, VisualBuildState } from "../utils/buildCreateTableSql";
+import {
+  applySubColumns,
+  mergeGenTableLinkIntoVisual,
+  visualPresetMasterSub,
+  visualPresetSingle,
+  type GenTableCreateLink,
+} from "../utils/createTableVisualPresets";
+import {
+  getExampleFromPresetMasterSub,
+  getExampleFromPresetSingle,
+} from "../utils/createTableSqlExamples";
 
-  defineOptions({ name: 'CreateTableDialog' });
+defineOptions({ name: "CreateTableDialog" });
 
-  const visible = defineModel<boolean>({ default: false });
+const visible = defineModel<boolean>({ default: false });
 
-  export interface CreateTableSubmitMeta {
-    fromVisual: boolean;
-    visualSnapshot?: VisualBuildState;
-  }
+export interface CreateTableSubmitMeta {
+  fromVisual: boolean;
+  visualSnapshot?: VisualBuildState;
+}
 
-  const props = withDefaults(
-    defineProps<{
-      loading?: boolean;
-      /** 代码生成抽屉第三步打开时传入，用于预填「表结构」主/子表名 */
-      linkFromGen?: GenTableCreateLink | null;
-    }>(),
-    { loading: false, linkFromGen: null }
-  );
+const props = withDefaults(
+  defineProps<{
+    loading?: boolean;
+    /** 代码生成抽屉第三步打开时传入，用于预填「表结构」主/子表名 */
+    linkFromGen?: GenTableCreateLink | null;
+  }>(),
+  { loading: false, linkFromGen: null }
+);
 
-  const emit = defineEmits<{
-    submit: [sql: string, meta?: CreateTableSubmitMeta];
-  }>();
+const emit = defineEmits<{
+  submit: [sql: string, meta?: CreateTableSubmitMeta];
+}>();
 
-  const { copy } = useClipboard();
-  const settingsStore = useSettingsStore();
+const { copy } = useClipboard();
+const settingsStore = useSettingsStore();
 
-  const editMode = ref<'sql' | 'visual'>('visual');
-  const sqlText = ref('');
-  const sqlRef = ref<CmComponentRef>();
-  const visual = ref<VisualBuildState>(visualPresetSingle('mysql'));
-  const visualPreviewSql = ref('');
+const editMode = ref<"sql" | "visual">("visual");
+const sqlText = ref("");
+const sqlRef = ref<CmComponentRef>();
+const visual = ref<VisualBuildState>(visualPresetSingle("mysql"));
+const visualPreviewSql = ref("");
 
-  /** 单表 / 主子表：与「模板按钮」等价，用语义化文案降低理解成本 */
-  const templateKind = computed({
-    get: (): 'single' | 'masterSub' => (visual.value.subEnabled ? 'masterSub' : 'single'),
-    set: (v: string) => {
-      if (v === 'single' || v === 'masterSub') applyVisualPreset(v);
-    },
-  });
+/** 单表 / 主子表：与「模板按钮」等价，用语义化文案降低理解成本 */
+const templateKind = computed({
+  get: (): "single" | "masterSub" => (visual.value.subEnabled ? "masterSub" : "single"),
+  set: (v: string) => {
+    if (v === "single" || v === "masterSub") applyVisualPreset(v);
+  },
+});
 
-  const codeTheme = ref(settingsStore.theme === ThemeMode.DARK ? 'dracula' : 'default');
+const codeTheme = ref(settingsStore.theme === ThemeMode.DARK ? "dracula" : "default");
 
-  const sqlOptions: EditorConfiguration = {
-    mode: 'text/x-sql',
-    lineNumbers: true,
-    smartIndent: true,
-    indentUnit: 2,
-    tabSize: 2,
-    readOnly: false,
-    theme: codeTheme.value,
-    lineWrapping: true,
-    autofocus: false,
-  };
+const sqlOptions: EditorConfiguration = {
+  mode: "text/x-sql",
+  lineNumbers: true,
+  smartIndent: true,
+  indentUnit: 2,
+  tabSize: 2,
+  readOnly: false,
+  theme: codeTheme.value,
+  lineWrapping: true,
+  autofocus: false,
+};
 
-  watch(
-    () => settingsStore.theme,
-    (t) => {
-      const newTheme = t === ThemeMode.DARK ? 'dracula' : 'default';
-      codeTheme.value = newTheme;
-      sqlOptions.theme = newTheme;
-      if (sqlRef.value?.cminstance) {
-        sqlRef.value.cminstance.setOption('theme', newTheme);
-      }
+watch(
+  () => settingsStore.theme,
+  (t) => {
+    const newTheme = t === ThemeMode.DARK ? "dracula" : "default";
+    codeTheme.value = newTheme;
+    sqlOptions.theme = newTheme;
+    if (sqlRef.value?.cminstance) {
+      sqlRef.value.cminstance.setOption("theme", newTheme);
     }
-  );
-
-  function onDialogOpened() {
-    dialectWatchSkip = true;
-    editMode.value = 'visual';
-    sqlText.value = '';
-    visual.value = visualPresetSingle('mysql');
-    visualPreviewSql.value = '';
-    void nextTick(() => {
-      dialectWatchSkip = false;
-      applyLinkFromGenIfAny();
-    });
   }
+);
 
-  /** 第三步已填主表/子表时：切到表结构模式并带入名称，减少重复输入 */
-  function applyLinkFromGenIfAny() {
-    const link = props.linkFromGen;
-    if (!link) return;
-    const touched =
-      (link.table_name || '').trim() ||
-      (link.table_comment || '').trim() ||
-      ((link.sub_table_name || '').trim() && (link.sub_table_fk_name || '').trim());
-    if (!touched) return;
-    visual.value = mergeGenTableLinkIntoVisual(link, visual.value.dialect);
-    editMode.value = 'visual';
+function onDialogOpened() {
+  dialectWatchSkip = true;
+  editMode.value = "visual";
+  sqlText.value = "";
+  visual.value = visualPresetSingle("mysql");
+  visualPreviewSql.value = "";
+  void nextTick(() => {
+    dialectWatchSkip = false;
+    applyLinkFromGenIfAny();
+  });
+}
+
+/** 第三步已填主表/子表时：切到表结构模式并带入名称，减少重复输入 */
+function applyLinkFromGenIfAny() {
+  const link = props.linkFromGen;
+  if (!link) return;
+  const touched =
+    (link.table_name || "").trim() ||
+    (link.table_comment || "").trim() ||
+    ((link.sub_table_name || "").trim() && (link.sub_table_fk_name || "").trim());
+  if (!touched) return;
+  visual.value = mergeGenTableLinkIntoVisual(link, visual.value.dialect);
+  editMode.value = "visual";
+  visualPreviewSql.value = buildSqlFromVisual(applySubColumns(visual.value));
+  ElMessage.info({
+    message: "已带入代码生成里的表名，检查无误后点「创建表」即可",
+    duration: 2800,
+  });
+}
+
+watch(
+  visual,
+  () => {
+    if (editMode.value !== "visual" || !visible.value) return;
     visualPreviewSql.value = buildSqlFromVisual(applySubColumns(visual.value));
-    ElMessage.info({
-      message: '已带入代码生成里的表名，检查无误后点「创建表」即可',
-      duration: 2800,
-    });
-  }
+  },
+  { deep: true }
+);
 
-  watch(
-    visual,
-    () => {
-      if (editMode.value !== 'visual' || !visible.value) return;
-      visualPreviewSql.value = buildSqlFromVisual(applySubColumns(visual.value));
-    },
-    { deep: true }
-  );
-
-  watch(editMode, (m) => {
-    if (m === 'sql') {
-      sqlText.value = buildSqlFromVisual(applySubColumns(visual.value));
-      void nextTick(() => sqlRef.value?.cminstance?.refresh());
-    } else {
-      visualPreviewSql.value = buildSqlFromVisual(applySubColumns(visual.value));
-    }
-  });
-
-  let dialectWatchSkip = false;
-  watch(
-    () => visual.value.dialect,
-    (_d, prev) => {
-      if (dialectWatchSkip) return;
-      if (prev === undefined) return;
-      const d = visual.value.dialect;
-      visual.value = visual.value.subEnabled
-        ? applySubColumns(visualPresetMasterSub(d))
-        : visualPresetSingle(d);
-    }
-  );
-
-  function applyVisualPreset(kind: 'single' | 'masterSub') {
-    const d = visual.value.dialect;
-    visual.value =
-      kind === 'single' ? visualPresetSingle(d) : applySubColumns(visualPresetMasterSub(d));
-  }
-
-  function syncVisualToSql() {
-    if (!validateVisual()) return;
+watch(editMode, (m) => {
+  if (m === "sql") {
     sqlText.value = buildSqlFromVisual(applySubColumns(visual.value));
-    editMode.value = 'sql';
-    void nextTick(() => {
-      sqlRef.value?.cminstance?.refresh();
-    });
-    ElMessage.success('已切换到「写 SQL」，可继续改');
+    void nextTick(() => sqlRef.value?.cminstance?.refresh());
+  } else {
+    visualPreviewSql.value = buildSqlFromVisual(applySubColumns(visual.value));
   }
+});
 
-  function onSqlPresetCommand(cmd: string) {
-    switch (cmd) {
-      case 'single-mysql':
-        loadPresetSql('single', 'mysql');
-        break;
-      case 'single-postgres':
-        loadPresetSql('single', 'postgres');
-        break;
-      case 'master-mysql':
-        loadPresetSql('masterSub', 'mysql');
-        break;
-      case 'master-postgres':
-        loadPresetSql('masterSub', 'postgres');
-        break;
-      default:
-        break;
-    }
+let dialectWatchSkip = false;
+watch(
+  () => visual.value.dialect,
+  (_d, prev) => {
+    if (dialectWatchSkip) return;
+    if (prev === undefined) return;
+    const d = visual.value.dialect;
+    visual.value = visual.value.subEnabled
+      ? applySubColumns(visualPresetMasterSub(d))
+      : visualPresetSingle(d);
   }
+);
 
-  /** 表结构模式提交前校验，避免无效请求 */
-  function validateVisual(): boolean {
-    const v = applySubColumns(visual.value);
-    if (!(v.mainTableName || '').trim()) {
-      ElMessage.warning('请填写主表表名');
+function applyVisualPreset(kind: "single" | "masterSub") {
+  const d = visual.value.dialect;
+  visual.value =
+    kind === "single" ? visualPresetSingle(d) : applySubColumns(visualPresetMasterSub(d));
+}
+
+function syncVisualToSql() {
+  if (!validateVisual()) return;
+  sqlText.value = buildSqlFromVisual(applySubColumns(visual.value));
+  editMode.value = "sql";
+  void nextTick(() => {
+    sqlRef.value?.cminstance?.refresh();
+  });
+  ElMessage.success("已切换到「写 SQL」，可继续改");
+}
+
+function onSqlPresetCommand(cmd: string) {
+  switch (cmd) {
+    case "single-mysql":
+      loadPresetSql("single", "mysql");
+      break;
+    case "single-postgres":
+      loadPresetSql("single", "postgres");
+      break;
+    case "master-mysql":
+      loadPresetSql("masterSub", "mysql");
+      break;
+    case "master-postgres":
+      loadPresetSql("masterSub", "postgres");
+      break;
+    default:
+      break;
+  }
+}
+
+/** 表结构模式提交前校验，避免无效请求 */
+function validateVisual(): boolean {
+  const v = applySubColumns(visual.value);
+  if (!(v.mainTableName || "").trim()) {
+    ElMessage.warning("请填写主表表名");
+    return false;
+  }
+  if (v.subEnabled) {
+    if (!(v.subTableName || "").trim()) {
+      ElMessage.warning("请填写子表表名");
       return false;
     }
-    if (v.subEnabled) {
-      if (!(v.subTableName || '').trim()) {
-        ElMessage.warning('请填写子表表名');
-        return false;
-      }
-      if (!(v.fkColumn || '').trim()) {
-        ElMessage.warning('请填写子表上的外键列名');
-        return false;
-      }
-      if (!(v.fkRefColumn || '').trim()) {
-        ElMessage.warning('请填写主表上被引用的列名（一般为 id）');
-        return false;
-      }
+    if (!(v.fkColumn || "").trim()) {
+      ElMessage.warning("请填写子表上的外键列名");
+      return false;
     }
-    return true;
-  }
-
-  function loadPresetSql(kind: 'single' | 'masterSub', dialect: SqlDialect) {
-    sqlText.value =
-      kind === 'single'
-        ? getExampleFromPresetSingle(dialect)
-        : getExampleFromPresetMasterSub(dialect);
-  }
-
-  function copySql() {
-    if (!sqlText.value) {
-      ElMessage.warning('没有可复制的内容');
-      return;
-    }
-    copy(sqlText.value);
-    ElMessage.success('已复制');
-  }
-
-  function handleConfirm() {
-    if (editMode.value === 'visual' && !validateVisual()) return;
-    const sql =
-      editMode.value === 'sql'
-        ? sqlText.value.trim()
-        : buildSqlFromVisual(applySubColumns(visual.value)).trim();
-    if (!sql) {
-      ElMessage.error('请填写表名或 SQL');
-      return;
-    }
-    if (editMode.value === 'visual') {
-      emit('submit', sql, {
-        fromVisual: true,
-        visualSnapshot: applySubColumns(visual.value),
-      });
-    } else {
-      emit('submit', sql);
+    if (!(v.fkRefColumn || "").trim()) {
+      ElMessage.warning("请填写主表上被引用的列名（一般为 id）");
+      return false;
     }
   }
+  return true;
+}
 
-  function handleCancel() {
-    visible.value = false;
+function loadPresetSql(kind: "single" | "masterSub", dialect: SqlDialect) {
+  sqlText.value =
+    kind === "single"
+      ? getExampleFromPresetSingle(dialect)
+      : getExampleFromPresetMasterSub(dialect);
+}
+
+function copySql() {
+  if (!sqlText.value) {
+    ElMessage.warning("没有可复制的内容");
+    return;
   }
+  copy(sqlText.value);
+  ElMessage.success("已复制");
+}
+
+function handleConfirm() {
+  if (editMode.value === "visual" && !validateVisual()) return;
+  const sql =
+    editMode.value === "sql"
+      ? sqlText.value.trim()
+      : buildSqlFromVisual(applySubColumns(visual.value)).trim();
+  if (!sql) {
+    ElMessage.error("请填写表名或 SQL");
+    return;
+  }
+  if (editMode.value === "visual") {
+    emit("submit", sql, {
+      fromVisual: true,
+      visualSnapshot: applySubColumns(visual.value),
+    });
+  } else {
+    emit("submit", sql);
+  }
+}
+
+function handleCancel() {
+  visible.value = false;
+}
 </script>
 
 <style scoped lang="scss">
-  .sql-pane {
-    position: relative;
-  }
+.sql-pane {
+  position: relative;
+}
 
-  .visual-pane :deep(.el-textarea__inner) {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  }
+.visual-pane :deep(.el-textarea__inner) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
 
-  .visual-sql-preview {
-    margin-top: 10px;
-  }
+.visual-sql-preview {
+  margin-top: 10px;
+}
 
-  /* 表结构：描述列表表格化，标签列对齐、内容区可伸缩 */
-  .visual-structure {
-    .visual-desc {
-      :deep(.el-descriptions__label) {
-        width: 108px;
-        vertical-align: middle;
-      }
+/* 表结构：描述列表表格化，标签列对齐、内容区可伸缩 */
+.visual-structure {
+  .visual-desc {
+    :deep(.el-descriptions__label) {
+      width: 108px;
+      vertical-align: middle;
+    }
 
-      :deep(.el-descriptions__cell) {
-        vertical-align: middle;
-      }
+    :deep(.el-descriptions__cell) {
+      vertical-align: middle;
+    }
 
-      :deep(.el-descriptions__content) {
-        min-width: 0;
-      }
+    :deep(.el-descriptions__content) {
+      min-width: 0;
+    }
 
-      :deep(.el-descriptions__title) {
-        margin-bottom: 8px;
-      }
+    :deep(.el-descriptions__title) {
+      margin-bottom: 8px;
     }
   }
+}
 </style>

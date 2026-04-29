@@ -1,7 +1,7 @@
-import { useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { onMounted, onBeforeUnmount, nextTick } from 'vue';
-import AiChatAPI from '@/api/module_ai/chat';
+import { useRoute } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { onMounted, onBeforeUnmount, nextTick } from "vue";
+import AiChatAPI from "@/api/module_ai/chat";
 
 /**
  * AI 操作处理器（简化版）
@@ -65,7 +65,7 @@ export function useAiAction(options: UseAiActionOptions = {}) {
     };
 
     if (!fnCall?.name) {
-      ElMessage.warning('未识别的 AI 操作');
+      ElMessage.warning("未识别的 AI 操作");
       return;
     }
 
@@ -78,7 +78,7 @@ export function useAiAction(options: UseAiActionOptions = {}) {
 
     try {
       // 判断处理器类型（函数 or 配置对象）
-      const isSimpleFunction = typeof handler === 'function';
+      const isSimpleFunction = typeof handler === "function";
 
       if (isSimpleFunction) {
         // 简单函数形式：直接执行
@@ -90,14 +90,14 @@ export function useAiAction(options: UseAiActionOptions = {}) {
         // 1. 确认阶段（默认需要确认）
         if (config.needConfirm !== false) {
           const confirmMsg =
-            typeof config.confirmMessage === 'function'
+            typeof config.confirmMessage === "function"
               ? config.confirmMessage(fnCall.arguments)
-              : config.confirmMessage || '确认执行此操作吗？';
+              : config.confirmMessage || "确认执行此操作吗？";
 
-          await ElMessageBox.confirm(confirmMsg, 'AI 助手操作确认', {
-            confirmButtonText: '确认执行',
-            cancelButtonText: '取消',
-            type: 'warning',
+          await ElMessageBox.confirm(confirmMsg, "AI 助手操作确认", {
+            confirmButtonText: "确认执行",
+            cancelButtonText: "取消",
+            type: "warning",
             dangerouslyUseHTMLString: true,
           });
         }
@@ -115,9 +115,9 @@ export function useAiAction(options: UseAiActionOptions = {}) {
 
         // 3. 成功反馈
         const successMsg =
-          typeof config.successMessage === 'function'
+          typeof config.successMessage === "function"
             ? config.successMessage(fnCall.arguments)
-            : config.successMessage || '操作执行成功';
+            : config.successMessage || "操作执行成功";
         ElMessage.success(successMsg);
       }
 
@@ -127,13 +127,13 @@ export function useAiAction(options: UseAiActionOptions = {}) {
       }
     } catch (error: any) {
       // 处理取消操作
-      if (error === 'cancel') {
-        ElMessage.info('已取消操作');
+      if (error === "cancel") {
+        ElMessage.info("已取消操作");
         return;
       }
 
-      console.error('AI 操作执行失败:', error);
-      ElMessage.error(error.message || '操作执行失败');
+      console.error("AI 操作执行失败:", error);
+      ElMessage.error(error.message || "操作执行失败");
     }
   }
 
@@ -145,24 +145,24 @@ export function useAiAction(options: UseAiActionOptions = {}) {
     args: any,
     options: {
       originalCommand?: string;
-      confirmMode?: 'auto' | 'manual';
+      confirmMode?: "auto" | "manual";
       needConfirm?: boolean;
       confirmMessage?: string;
     } = {}
   ) {
-    const { originalCommand = '', needConfirm = false, confirmMessage } = options;
+    const { originalCommand = "", needConfirm = false, confirmMessage } = options;
 
     // 如果需要确认，先显示确认对话框
     if (needConfirm && confirmMessage) {
       try {
-        await ElMessageBox.confirm(confirmMessage, 'AI 助手操作确认', {
-          confirmButtonText: '确认执行',
-          cancelButtonText: '取消',
-          type: 'warning',
+        await ElMessageBox.confirm(confirmMessage, "AI 助手操作确认", {
+          confirmButtonText: "确认执行",
+          cancelButtonText: "取消",
+          type: "warning",
           dangerouslyUseHTMLString: true,
         });
       } catch {
-        ElMessage.info('已取消操作');
+        ElMessage.info("已取消操作");
         return;
       }
     }
@@ -172,9 +172,9 @@ export function useAiAction(options: UseAiActionOptions = {}) {
         message: originalCommand,
       });
 
-      ElMessage.success('操作执行成功');
+      ElMessage.success("操作执行成功");
     } catch (error: any) {
-      if (error !== 'cancel') {
+      if (error !== "cancel") {
         throw error;
       }
     }
@@ -215,7 +215,7 @@ export function useAiAction(options: UseAiActionOptions = {}) {
       if (isUnmounted) return;
 
       // 1. 处理自动搜索
-      if (autoSearch === 'true' && keywords) {
+      if (autoSearch === "true" && keywords) {
         handleAutoSearch(keywords);
       }
 
@@ -225,8 +225,8 @@ export function useAiAction(options: UseAiActionOptions = {}) {
           const aiAction = JSON.parse(decodeURIComponent(aiActionParam));
           await executeAiAction(aiAction);
         } catch (error) {
-          console.error('解析 AI 操作失败:', error);
-          ElMessage.error('AI 操作参数解析失败');
+          console.error("解析 AI 操作失败:", error);
+          ElMessage.error("AI 操作参数解析失败");
         }
       }
     });

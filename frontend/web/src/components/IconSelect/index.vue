@@ -82,129 +82,127 @@
 </template>
 
 <script setup lang="ts">
-  import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
-  const props = defineProps({
-    modelValue: {
-      type: String,
-      default: '',
-    },
-    width: {
-      type: String,
-      default: '500px',
-    },
-  });
-
-  const emit = defineEmits(['update:modelValue']);
-
-  const iconSelectRef = ref();
-  const popoverContentRef = ref();
-  const popoverVisible = ref(false);
-  const activeTab = ref('svg');
-
-  const svgIcons = ref<string[]>([]);
-  const elementIcons = ref<string[]>(Object.keys(ElementPlusIconsVue));
-  const selectedIcon = defineModel('modelValue', {
+const props = defineProps({
+  modelValue: {
     type: String,
-    required: true,
-    default: '',
-  });
+    default: "",
+  },
+  width: {
+    type: String,
+    default: "500px",
+  },
+});
 
-  const filterText = ref('');
-  const filteredSvgIcons = ref<string[]>([]);
-  const filteredElementIcons = ref<string[]>(elementIcons.value);
-  const isElementIcon = computed(() => {
-    return selectedIcon.value && selectedIcon.value.startsWith('el-icon');
-  });
+const emit = defineEmits(["update:modelValue"]);
 
-  function loadIcons() {
-    const icons = import.meta.glob('../../assets/icons/*.svg');
-    for (const path in icons) {
-      const iconName = path.replace(/.*\/(.*)\.svg$/, '$1');
-      svgIcons.value.push(iconName);
-    }
-    filteredSvgIcons.value = svgIcons.value;
+const iconSelectRef = ref();
+const popoverContentRef = ref();
+const popoverVisible = ref(false);
+const activeTab = ref("svg");
+
+const svgIcons = ref<string[]>([]);
+const elementIcons = ref<string[]>(Object.keys(ElementPlusIconsVue));
+const selectedIcon = defineModel("modelValue", {
+  type: String,
+  required: true,
+  default: "",
+});
+
+const filterText = ref("");
+const filteredSvgIcons = ref<string[]>([]);
+const filteredElementIcons = ref<string[]>(elementIcons.value);
+const isElementIcon = computed(() => {
+  return selectedIcon.value && selectedIcon.value.startsWith("el-icon");
+});
+
+function loadIcons() {
+  const icons = import.meta.glob("../../assets/icons/*.svg");
+  for (const path in icons) {
+    const iconName = path.replace(/.*\/(.*)\.svg$/, "$1");
+    svgIcons.value.push(iconName);
   }
+  filteredSvgIcons.value = svgIcons.value;
+}
 
-  function handleTabClick(tabPane: any) {
-    activeTab.value = tabPane.props.name;
-    filterIcons();
+function handleTabClick(tabPane: any) {
+  activeTab.value = tabPane.props.name;
+  filterIcons();
+}
+
+function filterIcons() {
+  if (activeTab.value === "svg") {
+    filteredSvgIcons.value = filterText.value
+      ? svgIcons.value.filter((icon) => icon.toLowerCase().includes(filterText.value.toLowerCase()))
+      : svgIcons.value;
+  } else {
+    filteredElementIcons.value = filterText.value
+      ? elementIcons.value.filter((icon) =>
+          icon.toLowerCase().includes(filterText.value.toLowerCase())
+        )
+      : elementIcons.value;
   }
+}
 
-  function filterIcons() {
-    if (activeTab.value === 'svg') {
-      filteredSvgIcons.value = filterText.value
-        ? svgIcons.value.filter((icon) =>
-            icon.toLowerCase().includes(filterText.value.toLowerCase())
-          )
-        : svgIcons.value;
+function selectIcon(icon: string) {
+  const iconName = activeTab.value === "element" ? "el-icon-" + icon : icon;
+  emit("update:modelValue", iconName);
+  popoverVisible.value = false;
+}
+
+function togglePopover() {
+  popoverVisible.value = !popoverVisible.value;
+}
+
+onClickOutside(iconSelectRef, () => (popoverVisible.value = false), {
+  ignore: [popoverContentRef],
+});
+
+/**
+ * 清空已选图标
+ */
+function clearSelectedIcon() {
+  selectedIcon.value = "";
+}
+
+onMounted(() => {
+  loadIcons();
+  if (selectedIcon.value) {
+    if (elementIcons.value.includes(selectedIcon.value.replace("el-icon-", ""))) {
+      activeTab.value = "element";
     } else {
-      filteredElementIcons.value = filterText.value
-        ? elementIcons.value.filter((icon) =>
-            icon.toLowerCase().includes(filterText.value.toLowerCase())
-          )
-        : elementIcons.value;
+      activeTab.value = "svg";
     }
   }
-
-  function selectIcon(icon: string) {
-    const iconName = activeTab.value === 'element' ? 'el-icon-' + icon : icon;
-    emit('update:modelValue', iconName);
-    popoverVisible.value = false;
-  }
-
-  function togglePopover() {
-    popoverVisible.value = !popoverVisible.value;
-  }
-
-  onClickOutside(iconSelectRef, () => (popoverVisible.value = false), {
-    ignore: [popoverContentRef],
-  });
-
-  /**
-   * 清空已选图标
-   */
-  function clearSelectedIcon() {
-    selectedIcon.value = '';
-  }
-
-  onMounted(() => {
-    loadIcons();
-    if (selectedIcon.value) {
-      if (elementIcons.value.includes(selectedIcon.value.replace('el-icon-', ''))) {
-        activeTab.value = 'element';
-      } else {
-        activeTab.value = 'svg';
-      }
-    }
-  });
+});
 </script>
 
 <style scoped lang="scss">
-  .reference :deep(.el-input__wrapper),
-  .reference :deep(.el-input__inner) {
-    cursor: pointer;
-  }
+.reference :deep(.el-input__wrapper),
+.reference :deep(.el-input__inner) {
+  cursor: pointer;
+}
 
-  .icon-grid {
-    display: flex;
-    flex-wrap: wrap;
-  }
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
 
-  .icon-grid-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    margin: 4px;
-    cursor: pointer;
-    border: 1px solid var(--el-border-color);
-    border-radius: 4px;
-    transition: all 0.3s;
-  }
+.icon-grid-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin: 4px;
+  cursor: pointer;
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  transition: all 0.3s;
+}
 
-  .icon-grid-item:hover {
-    border-color: var(--el-color-primary);
-    transform: scale(1.2);
-  }
+.icon-grid-item:hover {
+  border-color: var(--el-color-primary);
+  transform: scale(1.2);
+}
 </style>

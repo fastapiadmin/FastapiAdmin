@@ -1,39 +1,31 @@
-import request from '@/utils/http';
+import request from "@/utils/request";
 
-const API_PATH = '/monitor/online';
+const API_PATH = "/monitor/online";
 
 const OnlineAPI = {
-  /**
-   * 查询所有在线用户列表
-   * @returns 所有在线用户列表
-   */
+  // 查询在线用户列表
   listOnline(query: OnlineUserPageQuery) {
-    return request<PageResult<OnlineUserTable[]>>({
+    return request<ApiResponse<PageResult<OnlineUserTable[]>>>({
       url: `${API_PATH}/list`,
-      method: 'get',
+      method: "get",
       params: query,
     });
   },
 
-  /**
-   * 强退用户
-   * @param body 用户会话ID列表
-   */
+  // 强退用户
   deleteOnline(body: string) {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/delete`,
-      method: 'delete',
+      method: "delete",
       data: body,
     });
   },
 
-  /**
-   * 强退所有在线用户
-   */
+  // 强退用户
   clearOnline() {
-    return request({
+    return request<ApiResponse>({
       url: `${API_PATH}/clear`,
-      method: 'delete',
+      method: "delete",
     });
   },
 };

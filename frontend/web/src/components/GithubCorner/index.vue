@@ -30,34 +30,34 @@
 </template>
 
 <style scoped>
-  .github-corner:hover .octo-arm {
+.github-corner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  20%,
+  60% {
+    transform: rotate(-25deg);
+  }
+
+  40%,
+  80% {
+    transform: rotate(10deg);
+  }
+}
+
+@media (width <= 500px) {
+  .github-corner .octo-arm {
     animation: octocat-wave 560ms ease-in-out;
   }
 
-  @keyframes octocat-wave {
-    0%,
-    100% {
-      transform: rotate(0);
-    }
-
-    20%,
-    60% {
-      transform: rotate(-25deg);
-    }
-
-    40%,
-    80% {
-      transform: rotate(10deg);
-    }
+  .github-corner:hover .octo-arm {
+    animation: none;
   }
-
-  @media (width <= 500px) {
-    .github-corner .octo-arm {
-      animation: octocat-wave 560ms ease-in-out;
-    }
-
-    .github-corner:hover .octo-arm {
-      animation: none;
-    }
-  }
+}
 </style>

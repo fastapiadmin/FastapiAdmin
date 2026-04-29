@@ -1,4 +1,4 @@
-import { ThemeMode } from '@/enums';
+import { ThemeMode } from "@/enums";
 
 // 辅助函数：将十六进制颜色转换为 RGB
 function hexToRgb(hex: string): [number, number, number] {
@@ -54,7 +54,7 @@ export function generateThemeColors(primary: string, theme: ThemeMode) {
   }
 
   // 生成深色变体
-  colors['primary-dark-2'] =
+  colors["primary-dark-2"] =
     theme === ThemeMode.LIGHT ? `${getLightColor(primary, 0.2)}` : `${getDarkColor(primary, 0.3)}`;
 
   return colors;
@@ -70,7 +70,7 @@ export function applyTheme(colors: Record<string, string>) {
   // 确保主题色立即生效，强制重新渲染
   requestAnimationFrame(() => {
     // 触发样式重新计算
-    el.style.setProperty('--theme-update-trigger', Date.now().toString());
+    el.style.setProperty("--theme-update-trigger", Date.now().toString());
   });
 }
 
@@ -94,8 +94,8 @@ export function toggleDarkMode(isDark: boolean) {
  */
 export function toggleSidebarColor(isBuleSidebar: boolean) {
   if (isBuleSidebar) {
-    document.documentElement.classList.add('sidebar-color-blue');
+    document.documentElement.classList.add("sidebar-color-blue");
   } else {
-    document.documentElement.classList.remove('sidebar-color-blue');
+    document.documentElement.classList.remove("sidebar-color-blue");
   }
 }

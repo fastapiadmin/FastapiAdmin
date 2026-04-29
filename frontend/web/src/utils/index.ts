@@ -5,7 +5,7 @@
  * @returns {boolean}
  */
 export function hasClass(ele: HTMLElement, cls: string) {
-  return !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+  return !!ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
 }
 
 /**
@@ -14,7 +14,7 @@ export function hasClass(ele: HTMLElement, cls: string) {
  * @param {string} cls
  */
 export function addClass(ele: HTMLElement, cls: string) {
-  if (!hasClass(ele, cls)) ele.className += ' ' + cls;
+  if (!hasClass(ele, cls)) ele.className += " " + cls;
 }
 
 /**
@@ -24,8 +24,8 @@ export function addClass(ele: HTMLElement, cls: string) {
  */
 export function removeClass(ele: HTMLElement, cls: string) {
   if (hasClass(ele, cls)) {
-    const reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-    ele.className = ele.className.replace(reg, ' ');
+    const reg = new RegExp("(\\s|^)" + cls + "(\\s|$)");
+    ele.className = ele.className.replace(reg, " ");
   }
 }
 
@@ -48,13 +48,13 @@ export function isExternal(path: string) {
  */
 export function formatGrowthRate(growthRate: number) {
   if (growthRate === 0) {
-    return '-';
+    return "-";
   }
 
   const formattedRate = Math.abs(growthRate * 100)
     .toFixed(2)
-    .replace(/\.?0+$/, '');
-  return formattedRate + '%';
+    .replace(/\.?0+$/, "");
+  return formattedRate + "%";
 }
 
 //表单生成相关
@@ -64,14 +64,14 @@ export function isNumberStr(str: string): boolean {
 }
 
 export function titleCase(str: string): string {
-  return str.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
+  return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
     return str.toUpperCase();
   });
 }
 
 export function makeMap(str: string, expectsLowerCase?: boolean) {
   const map = Object.create(null);
-  const list = str.split(',');
+  const list = str.split(",");
   for (let i = 0; i < list.length; i++) {
     map[list[i]] = true;
   }
@@ -80,76 +80,41 @@ export function makeMap(str: string, expectsLowerCase?: boolean) {
 
 export const beautifierConf = {
   html: {
-    indent_size: '2',
-    indent_char: ' ',
-    max_preserve_newlines: '-1',
+    indent_size: "2",
+    indent_char: " ",
+    max_preserve_newlines: "-1",
     preserve_newlines: false,
     keep_array_indentation: false,
     break_chained_methods: false,
-    indent_scripts: 'separate',
-    brace_style: 'end-expand',
+    indent_scripts: "separate",
+    brace_style: "end-expand",
     space_before_conditional: true,
     unescape_strings: false,
     jslint_happy: false,
     end_with_newline: true,
-    wrap_line_length: '110',
+    wrap_line_length: "110",
     indent_inner_html: true,
     comma_first: false,
     e4x: true,
     indent_empty_lines: true,
   },
   js: {
-    indent_size: '2',
-    indent_char: ' ',
-    max_preserve_newlines: '-1',
+    indent_size: "2",
+    indent_char: " ",
+    max_preserve_newlines: "-1",
     preserve_newlines: false,
     keep_array_indentation: false,
     break_chained_methods: false,
-    indent_scripts: 'normal',
-    brace_style: 'end-expand',
+    indent_scripts: "normal",
+    brace_style: "end-expand",
     space_before_conditional: true,
     unescape_strings: false,
     jslint_happy: true,
     end_with_newline: true,
-    wrap_line_length: '110',
+    wrap_line_length: "110",
     indent_inner_html: true,
     comma_first: false,
     e4x: true,
     indent_empty_lines: true,
   },
 };
-
-/**
- * Utils 工具函数统一导出
- * 提供向后兼容性和便捷导入
- *
- * @module utils/index
- * @author Fastapi Admin Team
- */
-
-// UI 相关
-export * from './ui';
-
-// 路由相关
-export * from './router';
-
-// 路由导航相关
-export * from './navigation';
-
-// 系统管理相关
-export * from './sys';
-
-// 常量定义相关
-export * from './constants';
-
-// 存储相关
-export * from './storage';
-
-// HTTP 相关
-export * from './http';
-
-// 表单相关
-export * from './form';
-
-// socket 相关
-export * from './socket';

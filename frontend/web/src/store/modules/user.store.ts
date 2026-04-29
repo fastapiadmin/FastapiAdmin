@@ -1,12 +1,15 @@
-import { store, useTagsViewStore, usePermissionStoreHook, useDictStoreHook } from '@/store';
+import { store, useTagsViewStore, usePermissionStoreHook, useDictStoreHook } from "@/store";
 
-import AuthAPI, { type LoginFormData } from '@/api/module_system/auth';
-import UserAPI, { type UserInfo } from '@/api/module_system/user';
-import type { MenuTable } from '@/api/module_system/menu';
-import { Auth } from '@/utils/auth';
-import { ResultEnum } from '@/enums';
+import AuthAPI, { type LoginFormData } from "@/api/module_system/auth";
+import UserAPI, { type UserInfo } from "@/api/module_system/user";
+import type { MenuTable } from "@/api/module_system/menu";
+import { Auth } from "@/utils/auth";
+import { ResultEnum } from "@/enums";
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { ElNotification } from "element-plus";
 
-export const useUserStore = defineStore('user', {
+export const useUserStore = defineStore("user", {
   state: () => ({
     basicInfo: {} as UserInfo,
     routeList: [] as MenuTable[],
@@ -100,9 +103,9 @@ export const useUserStore = defineStore('user', {
       const response = await AuthAPI.login(LoginFormData);
       if (response.data.code === ResultEnum.SUCCESS) {
         ElNotification({
-          title: '通知',
+          title: "通知",
           message: response.data.msg,
-          type: 'success',
+          type: "success",
         });
       }
       this.rememberMe = LoginFormData.remember;
@@ -118,9 +121,9 @@ export const useUserStore = defineStore('user', {
       const response = await AuthAPI.logout({ token: Auth.getAccessToken() });
       if (response.data.code === ResultEnum.SUCCESS) {
         ElNotification({
-          title: '通知',
+          title: "通知",
           message: response.data.msg,
-          type: 'success',
+          type: "success",
         });
       }
       this.resetAllState();
@@ -147,7 +150,7 @@ export const useUserStore = defineStore('user', {
       const refreshToken = Auth.getRefreshToken();
 
       if (!refreshToken) {
-        return Promise.reject(new Error('没有有效的刷新令牌'));
+        return Promise.reject(new Error("没有有效的刷新令牌"));
       }
 
       return new Promise<void>((resolve, reject) => {

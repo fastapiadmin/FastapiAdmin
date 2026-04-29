@@ -82,7 +82,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === '0' ? '启用' : '停用' }}
+                  {{ scope.row.status === "0" ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -96,7 +96,7 @@
                 <el-tag :type="scope.row.notice_type === '1' ? 'primary' : 'warning'">
                   {{
                     (scope.row.notice_type
-                      ? (dictStore.getDictLabel('sys_notice_type', scope.row.notice_type) as any)
+                      ? (dictStore.getDictLabel("sys_notice_type", scope.row.notice_type) as any)
                       : undefined
                     )?.dict_label || scope.row.notice_type
                   }}
@@ -213,7 +213,7 @@
             <el-tag :type="detailFormData.notice_type === '1' ? 'primary' : 'warning'">
               {{
                 (detailFormData.notice_type
-                  ? (dictStore.getDictLabel('sys_notice_type', detailFormData.notice_type) as any)
+                  ? (dictStore.getDictLabel("sys_notice_type", detailFormData.notice_type) as any)
                   : undefined
                 )?.dict_label || detailFormData.notice_type
               }}
@@ -221,7 +221,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
             <el-tag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-              {{ detailFormData.status === '0' ? '启用' : '停用' }}
+              {{ detailFormData.status === "0" ? "启用" : "停用" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="描述" :span="2">
@@ -316,322 +316,322 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, computed, markRaw, nextTick, onMounted, unref } from 'vue';
-  import { fetchAllPages } from '@/utils/fetchAllPages';
-  import { useDictStore, useNoticeStore } from '@/store/index';
-  import UserTableSelect from '@/views/module_system/user/components/UserTableSelect.vue';
-  import ExportModal from '@/components/CURD/ExportModal.vue';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import type { IContentConfig, ISearchConfig } from '@/components/CURD/types';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import NoticeAPI, { NoticeTable, NoticeForm, NoticePageQuery } from '@/api/module_system/notice';
+import { ref, reactive, computed, markRaw, nextTick, onMounted, unref } from "vue";
+import { fetchAllPages } from "@/utils/fetchAllPages";
+import { useDictStore, useNoticeStore } from "@/store/index";
+import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
+import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import NoticeAPI, { NoticeTable, NoticeForm, NoticePageQuery } from "@/api/module_system/notice";
 
-  const dictStore = useDictStore();
-  defineOptions({
-    name: 'Notice',
-    inheritAttrs: false,
-  });
+const dictStore = useDictStore();
+defineOptions({
+  name: "Notice",
+  inheritAttrs: false,
+});
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
-  const submitLoading = ref(false);
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
+const submitLoading = ref(false);
 
-  function triggerUserSearch() {
-    nextTick(() => refreshList());
-  }
+function triggerUserSearch() {
+  nextTick(() => refreshList());
+}
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:notice',
-    colon: true,
-    isExpandable: true,
-    showNumber: 3,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'notice_title',
-        label: '标题',
-        type: 'input',
-        attrs: { placeholder: '请输入标题', clearable: true },
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:notice",
+  colon: true,
+  isExpandable: true,
+  showNumber: 3,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "notice_title",
+      label: "标题",
+      type: "input",
+      attrs: { placeholder: "请输入标题", clearable: true },
+    },
+    {
+      prop: "notice_type",
+      label: "类型",
+      type: "select",
+      options: [] as { label: string; value: string }[],
+      attrs: { placeholder: "请选择类型", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
+    },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      initialValue: [],
+      attrs: {
+        type: "datetimerange",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        style: { width: "340px" },
       },
-      {
-        prop: 'notice_type',
-        label: '类型',
-        type: 'select',
-        options: [] as { label: string; value: string }[],
-        attrs: { placeholder: '请选择类型', clearable: true, style: { width: '167.5px' } },
+    },
+    {
+      prop: "created_id",
+      label: "创建人",
+      type: "user-table-select",
+      initialValue: null,
+      events: {
+        "confirm-click": triggerUserSearch,
+        "clear-click": triggerUserSearch,
       },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: '0' },
-          { label: '停用', value: '1' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '167.5px' } },
+    },
+  ],
+  customComponents: {
+    "user-table-select": markRaw(UserTableSelect),
+  },
+});
+
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "notice_title", label: "标题", show: true },
+  { prop: "notice_type", label: "类型", show: true },
+  { prop: "notice_content", label: "内容", show: true },
+  { prop: "status", label: "状态", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_id", label: "更新人", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "created_id", label: "创建人", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
+
+const noticeStore = useNoticeStore();
+
+const contentConfig = reactive<IContentConfig<NoticePageQuery>>({
+  permPrefix: "module_system:notice",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: false,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: {
+    pageSize: 10,
+    pageSizes: [10, 20, 30, 50],
+  },
+  request: { page_no: "page_no", page_size: "page_size" },
+  indexAction: async (params) => {
+    const res = await NoticeAPI.listNotice(params as NoticePageQuery);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
+  },
+  deleteAction: async (ids) => {
+    await NoticeAPI.deleteNotice(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    await noticeStore.getNotice();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+const exportsDialogVisible = ref(false);
+
+const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+
+const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as NoticeTable[]);
+
+const exportSelectionData = computed(
+  () => (contentRef.value?.getSelectionData() ?? []) as NoticeTable[]
+);
+
+const exportColumns = [
+  { prop: "notice_title", label: "标题" },
+  { prop: "status", label: "状态" },
+  { prop: "notice_type", label: "类型" },
+  { prop: "notice_content", label: "内容" },
+  { prop: "description", label: "描述" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
+];
+
+const curdContentConfig = {
+  permPrefix: "module_system:notice",
+  cols: exportColumns as any,
+  exportsAction: async (params: any) => {
+    const query: Record<string, unknown> = { ...params };
+    if (typeof query.status === "string") query.status = query.status === "true";
+    return fetchAllPages({
+      initialQuery: query,
+      fetchPage: async (q) => {
+        const res = await NoticeAPI.listNotice(q as unknown as NoticePageQuery);
+        return {
+          total: res.data?.data?.total ?? 0,
+          list: res.data?.data?.items ?? [],
+        };
       },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        initialValue: [],
-        attrs: {
-          type: 'datetimerange',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          style: { width: '340px' },
-        },
-      },
-      {
-        prop: 'created_id',
-        label: '创建人',
-        type: 'user-table-select',
-        initialValue: null,
-        events: {
-          'confirm-click': triggerUserSearch,
-          'clear-click': triggerUserSearch,
-        },
-      },
-    ],
-    customComponents: {
-      'user-table-select': markRaw(UserTableSelect),
-    },
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'notice_title', label: '标题', show: true },
-    { prop: 'notice_type', label: '类型', show: true },
-    { prop: 'notice_content', label: '内容', show: true },
-    { prop: 'status', label: '状态', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_id', label: '更新人', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'created_id', label: '创建人', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  const noticeStore = useNoticeStore();
-
-  const contentConfig = reactive<IContentConfig<NoticePageQuery>>({
-    permPrefix: 'module_system:notice',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: false,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: {
-      pageSize: 10,
-      pageSizes: [10, 20, 30, 50],
-    },
-    request: { page_no: 'page_no', page_size: 'page_size' },
-    indexAction: async (params) => {
-      const res = await NoticeAPI.listNotice(params as NoticePageQuery);
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    },
-    deleteAction: async (ids) => {
-      await NoticeAPI.deleteNotice(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      await noticeStore.getNotice();
-    },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
-
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
-  }
-
-  const exportsDialogVisible = ref(false);
-
-  const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
-
-  const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as NoticeTable[]);
-
-  const exportSelectionData = computed(
-    () => (contentRef.value?.getSelectionData() ?? []) as NoticeTable[]
-  );
-
-  const exportColumns = [
-    { prop: 'notice_title', label: '标题' },
-    { prop: 'status', label: '状态' },
-    { prop: 'notice_type', label: '类型' },
-    { prop: 'notice_content', label: '内容' },
-    { prop: 'description', label: '描述' },
-    { prop: 'created_time', label: '创建时间' },
-    { prop: 'updated_time', label: '更新时间' },
-  ];
-
-  const curdContentConfig = {
-    permPrefix: 'module_system:notice',
-    cols: exportColumns as any,
-    exportsAction: async (params: any) => {
-      const query: Record<string, unknown> = { ...params };
-      if (typeof query.status === 'string') query.status = query.status === 'true';
-      return fetchAllPages({
-        initialQuery: query,
-        fetchPage: async (q) => {
-          const res = await NoticeAPI.listNotice(q as unknown as NoticePageQuery);
-          return {
-            total: res.data?.data?.total ?? 0,
-            list: res.data?.data?.items ?? [],
-          };
-        },
-      });
-    },
-  } as unknown as IContentConfig;
-
-  function handleOpenExportsModal() {
-    exportsDialogVisible.value = true;
-  }
-
-  const detailFormData = ref<NoticeTable>({});
-
-  const formData = reactive<NoticeForm>({
-    id: undefined,
-    notice_title: '',
-    notice_type: '',
-    notice_content: '',
-    status: '0',
-    description: undefined,
-  });
-
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const rules = reactive({
-    notice_title: [{ required: true, message: '请输入公告通知标题', trigger: 'blur' }],
-    notice_type: [{ required: true, message: '请选择公告通知类型', trigger: 'blur' }],
-    notice_content: [{ required: true, message: '请输入公告通知内容', trigger: 'blur' }],
-    status: [{ required: true, message: '请选择公告通知状态', trigger: 'blur' }],
-  });
-
-  const initialFormData: NoticeForm = {
-    id: undefined,
-    notice_title: '',
-    notice_type: '',
-    notice_content: '',
-    status: '0',
-    description: undefined,
-  };
-
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
-    }
-    Object.assign(formData, initialFormData);
-  }
-
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    await resetForm();
-  }
-
-  async function handleOpenDialog(type: 'create' | 'update' | 'detail', id?: number) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await NoticeAPI.detailNotice(id);
-      if (type === 'detail') {
-        dialogVisible.title = '公告通知详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改公告通知';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增公告通知';
-      formData.id = undefined;
-    }
-    dialogVisible.visible = true;
-  }
-
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: any) => {
-      if (valid) {
-        submitLoading.value = true;
-        const id = formData.id;
-        try {
-          if (id) {
-            await NoticeAPI.updateNotice(id, { id, ...formData });
-          } else {
-            await NoticeAPI.createNotice(formData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-          await noticeStore.getNotice();
-        } catch (error: any) {
-          console.error(error);
-        } finally {
-          submitLoading.value = false;
-        }
-      }
     });
-  }
+  },
+} as unknown as IContentConfig;
 
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() as NoticeTable[] | undefined;
-    const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
-    if (!ids.length) {
-      ElMessage.warning('请先选择要操作的数据');
-      return;
+function handleOpenExportsModal() {
+  exportsDialogVisible.value = true;
+}
+
+const detailFormData = ref<NoticeTable>({});
+
+const formData = reactive<NoticeForm>({
+  id: undefined,
+  notice_title: "",
+  notice_type: "",
+  notice_content: "",
+  status: "0",
+  description: undefined,
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const rules = reactive({
+  notice_title: [{ required: true, message: "请输入公告通知标题", trigger: "blur" }],
+  notice_type: [{ required: true, message: "请选择公告通知类型", trigger: "blur" }],
+  notice_content: [{ required: true, message: "请输入公告通知内容", trigger: "blur" }],
+  status: [{ required: true, message: "请选择公告通知状态", trigger: "blur" }],
+});
+
+const initialFormData: NoticeForm = {
+  id: undefined,
+  notice_title: "",
+  notice_type: "",
+  notice_content: "",
+  status: "0",
+  description: undefined,
+};
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
+  }
+  Object.assign(formData, initialFormData);
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await NoticeAPI.detailNotice(id);
+    if (type === "detail") {
+      dialogVisible.title = "公告通知详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改公告通知";
+      Object.assign(formData, response.data.data);
     }
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        try {
-          await NoticeAPI.batchNotice({ ids, status });
-          refreshList();
-        } catch (error: any) {
-          console.error(error);
-        }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
+  } else {
+    dialogVisible.title = "新增公告通知";
+    formData.id = undefined;
   }
+  dialogVisible.visible = true;
+}
 
-  onMounted(async () => {
-    await dictStore.getDict(['sys_notice_type']);
-    const typeItem = searchConfig.formItems?.find((i) => i.prop === 'notice_type');
-    if (typeItem && typeItem.type === 'select') {
-      typeItem.options = dictStore.getDictArray('sys_notice_type').map((item) => ({
-        label: item.dict_label,
-        value: item.dict_value,
-      }));
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: any) => {
+    if (valid) {
+      submitLoading.value = true;
+      const id = formData.id;
+      try {
+        if (id) {
+          await NoticeAPI.updateNotice(id, { id, ...formData });
+        } else {
+          await NoticeAPI.createNotice(formData);
+        }
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+        await noticeStore.getNotice();
+      } catch (error: any) {
+        console.error(error);
+      } finally {
+        submitLoading.value = false;
+      }
     }
   });
+}
+
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() as NoticeTable[] | undefined;
+  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+  if (!ids.length) {
+    ElMessage.warning("请先选择要操作的数据");
+    return;
+  }
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await NoticeAPI.batchNotice({ ids, status });
+        refreshList();
+      } catch (error: any) {
+        console.error(error);
+      }
+    })
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
+
+onMounted(async () => {
+  await dictStore.getDict(["sys_notice_type"]);
+  const typeItem = searchConfig.formItems?.find((i) => i.prop === "notice_type");
+  if (typeItem && typeItem.type === "select") {
+    typeItem.options = dictStore.getDictArray("sys_notice_type").map((item) => ({
+      label: item.dict_label,
+      value: item.dict_value,
+    }));
+  }
+});
 </script>
 
 <style lang="scss" scoped></style>

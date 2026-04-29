@@ -1,18 +1,18 @@
-import type { App } from 'vue';
+import type { App } from "vue";
 
-import { initDirectives } from '@/directives';
-import { initRouter } from '@/router';
-import { initStore } from '@/store';
-import { initElIcons } from './icons';
-import { initPermission } from './permission';
-import { initI18n } from './i18n';
-import { initCodeMirror } from './codemirror';
-import { initElementPlus } from './elementPlus';
+import { setupDirective } from "@/directives";
+import { initI18n } from "@/locales";
+import { initRouter } from "@/router";
+import { initStore } from "@/store";
+import { initElIcons } from "./icons";
+import { initPermission } from "./permission";
+import { InstallCodeMirror } from "codemirror-editor-vue3";
+import ElementPlus from "element-plus";
 
 export default {
   install(app: App<Element>) {
     // 自定义指令(directive)
-    initDirectives(app);
+    setupDirective(app);
     // 路由(router)
     initRouter(app);
     // 状态管理(store)
@@ -24,15 +24,8 @@ export default {
     // 路由守卫
     initPermission(app);
     // 注册 CodeMirror
-    initCodeMirror(app);
+    app.use(InstallCodeMirror);
     // 注册 ElementPlus
-    initElementPlus(app);
+    app.use(ElementPlus);
   },
 };
-
-/**
- * 插件统一导出
- * 集中管理第三方库的封装和配置
- */
-
-export * from './echarts';

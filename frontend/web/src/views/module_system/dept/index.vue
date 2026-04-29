@@ -75,7 +75,7 @@
             >
               <template #default="scope">
                 <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status ? '启用' : '停用' }}
+                  {{ scope.row.status ? "启用" : "停用" }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -184,7 +184,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
             <el-tag :type="detailFormData.status ? 'success' : 'danger'">
-              {{ detailFormData.status ? '启用' : '停用' }}
+              {{ detailFormData.status ? "启用" : "停用" }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="排序" :span="2">
@@ -272,250 +272,250 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'Dept',
-    inheritAttrs: false,
-  });
+defineOptions({
+  name: "Dept",
+  inheritAttrs: false,
+});
 
-  import DeptAPI, { DeptTable, DeptForm, DeptPageQuery } from '@/api/module_system/dept';
-  import CrudToolbarLeft from '@/components/CURD/CrudToolbarLeft.vue';
-  import CrudToolbarRight from '@/components/CURD/CrudToolbarRight.vue';
-  import PageSearch from '@/components/CURD/PageSearch.vue';
-  import PageContent from '@/components/CURD/PageContent.vue';
-  import EnhancedDialog from '@/components/CURD/EnhancedDialog.vue';
-  import type { ISearchConfig, IContentConfig } from '@/components/CURD/types';
-  import { useCrudList } from '@/components/CURD/useCrudList';
-  import { useUserStore } from '@/store';
-  import { formatTree } from '@/utils/common';
-  import { ref, reactive } from 'vue';
+import DeptAPI, { DeptTable, DeptForm, DeptPageQuery } from "@/api/module_system/dept";
+import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
+import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
+import PageSearch from "@/components/CURD/PageSearch.vue";
+import PageContent from "@/components/CURD/PageContent.vue";
+import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import type { ISearchConfig, IContentConfig } from "@/components/CURD/types";
+import { useCrudList } from "@/components/CURD/useCrudList";
+import { useUserStore } from "@/store";
+import { formatTree } from "@/utils/common";
+import { ref, reactive } from "vue";
 
-  const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-  const dataFormRef = ref();
+const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const dataFormRef = ref();
 
-  const searchConfig = reactive<ISearchConfig>({
-    permPrefix: 'module_system:dept',
-    colon: true,
-    isExpandable: true,
-    showNumber: 2,
-    form: { labelWidth: 'auto' },
-    formItems: [
-      {
-        prop: 'name',
-        label: '部门名称',
-        type: 'input',
-        attrs: { placeholder: '请输入部门名称', clearable: true },
-      },
-      {
-        prop: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { label: '启用', value: '0' },
-          { label: '停用', value: '1' },
-        ],
-        attrs: { placeholder: '请选择状态', clearable: true, style: { width: '167.5px' } },
-      },
-      {
-        prop: 'created_time',
-        label: '创建时间',
-        type: 'date-picker',
-        attrs: {
-          type: 'datetimerange',
-          rangeSeparator: '至',
-          startPlaceholder: '开始日期',
-          endPlaceholder: '结束日期',
-          format: 'YYYY-MM-DD HH:mm:ss',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
-          style: { width: '340px' },
-        },
-      },
-    ],
-  });
-
-  const contentCols = reactive<
-    Array<{
-      prop?: string;
-      label?: string;
-      show?: boolean;
-    }>
-  >([
-    { prop: 'selection', label: '选择框', show: true },
-    { prop: 'index', label: '序号', show: true },
-    { prop: 'name', label: '部门名称', show: true },
-    { prop: 'code', label: '部门编码', show: true },
-    { prop: 'order', label: '排序', show: true },
-    { prop: 'status', label: '状态', show: true },
-    { prop: 'description', label: '描述', show: true },
-    { prop: 'created_time', label: '创建时间', show: true },
-    { prop: 'updated_time', label: '更新时间', show: true },
-    { prop: 'operation', label: '操作', show: true },
-  ]);
-
-  const contentConfig = reactive<IContentConfig<DeptPageQuery>>({
-    permPrefix: 'module_system:dept',
-    pk: 'id',
-    cols: contentCols as IContentConfig['cols'],
-    hideColumnFilter: false,
-    toolbar: [],
-    defaultToolbar: ['refresh', 'filter'],
-    pagination: false,
-    indexAction: async (params) => {
-      const res = await DeptAPI.listDept(params as DeptPageQuery);
-      const tree = res.data.data || [];
-      deptOptions.value = formatTree(tree);
-      return tree;
+const searchConfig = reactive<ISearchConfig>({
+  permPrefix: "module_system:dept",
+  colon: true,
+  isExpandable: true,
+  showNumber: 2,
+  form: { labelWidth: "auto" },
+  formItems: [
+    {
+      prop: "name",
+      label: "部门名称",
+      type: "input",
+      attrs: { placeholder: "请输入部门名称", clearable: true },
     },
-    deleteAction: async (ids) => {
-      await DeptAPI.deleteDept(
-        ids
-          .split(',')
-          .map((s) => Number(s.trim()))
-          .filter((n) => !Number.isNaN(n))
-      );
-      const userStore = useUserStore();
-      await userStore.getUserInfo();
+    {
+      prop: "status",
+      label: "状态",
+      type: "select",
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
     },
-    deleteConfirm: {
-      title: '警告',
-      message: '确认删除该项数据?',
-      type: 'warning',
-    },
-  });
-
-  const deptOptions = ref<OptionType[]>([]);
-
-  const detailFormData = ref<DeptTable>({ code: '' });
-
-  const formData = reactive<DeptForm>({
-    id: undefined,
-    name: undefined,
-    code: '',
-    order: 1,
-    parent_id: undefined,
-    status: '0',
-    description: undefined,
-  });
-
-  const dialogVisible = reactive({
-    title: '',
-    visible: false,
-    type: 'create' as 'create' | 'update' | 'detail',
-  });
-
-  const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
-
-  const rules = reactive({
-    name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
-    code: [
-      { required: true, message: '请输入部门编码', trigger: 'blur' },
-      {
-        pattern: CODE_PATTERN,
-        message: '字母开头，2-16位字母/数字/下划线',
-        trigger: 'blur',
+    {
+      prop: "created_time",
+      label: "创建时间",
+      type: "date-picker",
+      attrs: {
+        type: "datetimerange",
+        rangeSeparator: "至",
+        startPlaceholder: "开始日期",
+        endPlaceholder: "结束日期",
+        format: "YYYY-MM-DD HH:mm:ss",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        style: { width: "340px" },
       },
-    ],
-    order: [{ required: true, message: '请输入排序', trigger: 'blur' }],
-    status: [{ required: true, message: '请选择状态', trigger: 'blur' }],
-  });
+    },
+  ],
+});
 
-  const initialFormData: DeptForm = {
-    id: undefined,
-    name: undefined,
-    code: '',
-    order: 1,
-    parent_id: undefined,
-    status: '0',
-    description: undefined,
-  };
+const contentCols = reactive<
+  Array<{
+    prop?: string;
+    label?: string;
+    show?: boolean;
+  }>
+>([
+  { prop: "selection", label: "选择框", show: true },
+  { prop: "index", label: "序号", show: true },
+  { prop: "name", label: "部门名称", show: true },
+  { prop: "code", label: "部门编码", show: true },
+  { prop: "order", label: "排序", show: true },
+  { prop: "status", label: "状态", show: true },
+  { prop: "description", label: "描述", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "operation", label: "操作", show: true },
+]);
 
-  function handleRowDelete(id: number) {
-    contentRef.value?.handleDelete(id);
+const contentConfig = reactive<IContentConfig<DeptPageQuery>>({
+  permPrefix: "module_system:dept",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: false,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: false,
+  indexAction: async (params) => {
+    const res = await DeptAPI.listDept(params as DeptPageQuery);
+    const tree = res.data.data || [];
+    deptOptions.value = formatTree(tree);
+    return tree;
+  },
+  deleteAction: async (ids) => {
+    await DeptAPI.deleteDept(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    const userStore = useUserStore();
+    await userStore.getUserInfo();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
+
+const deptOptions = ref<OptionType[]>([]);
+
+const detailFormData = ref<DeptTable>({ code: "" });
+
+const formData = reactive<DeptForm>({
+  id: undefined,
+  name: undefined,
+  code: "",
+  order: 1,
+  parent_id: undefined,
+  status: "0",
+  description: undefined,
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
+});
+
+const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
+
+const rules = reactive({
+  name: [{ required: true, message: "请输入部门名称", trigger: "blur" }],
+  code: [
+    { required: true, message: "请输入部门编码", trigger: "blur" },
+    {
+      pattern: CODE_PATTERN,
+      message: "字母开头，2-16位字母/数字/下划线",
+      trigger: "blur",
+    },
+  ],
+  order: [{ required: true, message: "请输入排序", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+});
+
+const initialFormData: DeptForm = {
+  id: undefined,
+  name: undefined,
+  code: "",
+  order: 1,
+  parent_id: undefined,
+  status: "0",
+  description: undefined,
+};
+
+function handleRowDelete(id: number) {
+  contentRef.value?.handleDelete(id);
+}
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
   }
+  Object.assign(formData, initialFormData);
+}
 
-  async function resetForm() {
-    if (dataFormRef.value) {
-      dataFormRef.value.resetFields();
-      dataFormRef.value.clearValidate();
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
+async function handleOpenDialog(
+  type: "create" | "update" | "detail",
+  id?: number,
+  parentId?: number
+) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await DeptAPI.detailDept(id);
+    if (type === "detail") {
+      dialogVisible.title = "部门详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改部门";
+      Object.assign(formData, response.data.data);
     }
-    Object.assign(formData, initialFormData);
-  }
-
-  async function handleCloseDialog() {
-    dialogVisible.visible = false;
-    await resetForm();
-  }
-
-  async function handleOpenDialog(
-    type: 'create' | 'update' | 'detail',
-    id?: number,
-    parentId?: number
-  ) {
-    dialogVisible.type = type;
-    if (id) {
-      const response = await DeptAPI.detailDept(id);
-      if (type === 'detail') {
-        dialogVisible.title = '部门详情';
-        Object.assign(detailFormData.value, response.data.data);
-      } else if (type === 'update') {
-        dialogVisible.title = '修改部门';
-        Object.assign(formData, response.data.data);
-      }
-    } else {
-      dialogVisible.title = '新增部门';
-      formData.id = undefined;
-      if (parentId) {
-        formData.parent_id = parentId;
-      }
+  } else {
+    dialogVisible.title = "新增部门";
+    formData.id = undefined;
+    if (parentId) {
+      formData.parent_id = parentId;
     }
-    dialogVisible.visible = true;
   }
+  dialogVisible.visible = true;
+}
 
-  async function handleSubmit() {
-    dataFormRef.value.validate(async (valid: boolean) => {
-      if (valid) {
-        const id = formData.id;
-        try {
-          if (id) {
-            await DeptAPI.updateDept(id, { id, ...formData });
-          } else {
-            await DeptAPI.createDept(formData);
-          }
-          dialogVisible.visible = false;
-          await resetForm();
-          refreshList();
-          const userStore = useUserStore();
-          await userStore.getUserInfo();
-        } catch (error: unknown) {
-          console.error(error);
+async function handleSubmit() {
+  dataFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      const id = formData.id;
+      try {
+        if (id) {
+          await DeptAPI.updateDept(id, { id, ...formData });
+        } else {
+          await DeptAPI.createDept(formData);
         }
+        dialogVisible.visible = false;
+        await resetForm();
+        refreshList();
+        const userStore = useUserStore();
+        await userStore.getUserInfo();
+      } catch (error: unknown) {
+        console.error(error);
       }
-    });
-  }
-
-  async function handleMoreClick(status: string) {
-    const rows = contentRef.value?.getSelectionData() as DeptTable[] | undefined;
-    const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
-    if (!ids.length) {
-      ElMessage.warning('请先选择要操作的数据');
-      return;
     }
-    ElMessageBox.confirm(`确认${status === '0' ? '启用' : '停用'}该项数据?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
+  });
+}
+
+async function handleMoreClick(status: string) {
+  const rows = contentRef.value?.getSelectionData() as DeptTable[] | undefined;
+  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+  if (!ids.length) {
+    ElMessage.warning("请先选择要操作的数据");
+    return;
+  }
+  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        await DeptAPI.batchDept({ ids, status });
+        refreshList();
+        const userStore = useUserStore();
+        await userStore.getUserInfo();
+      } catch (error: unknown) {
+        console.error(error);
+      }
     })
-      .then(async () => {
-        try {
-          await DeptAPI.batchDept({ ids, status });
-          refreshList();
-          const userStore = useUserStore();
-          await userStore.getUserInfo();
-        } catch (error: unknown) {
-          console.error(error);
-        }
-      })
-      .catch(() => {
-        ElMessageBox.close();
-      });
-  }
+    .catch(() => {
+      ElMessageBox.close();
+    });
+}
 </script>

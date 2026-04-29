@@ -1,8 +1,8 @@
-import type { IObject, IComponentType, ISearchComponent } from './types';
-import { markRaw } from 'vue';
-import InputTag from '@/components/InputTag/index.vue';
-import IconSelect from '@/components/IconSelect/index.vue';
-import DatePicker from '@/components/DatePicker/index.vue';
+import type { IObject, IComponentType, ISearchComponent } from "./types";
+import { markRaw } from "vue";
+import InputTag from "@/components/InputTag/index.vue";
+import IconSelect from "@/components/IconSelect/index.vue";
+import DatePicker from "@/components/DatePicker/index.vue";
 
 /**
  * 获取提示属性
@@ -10,7 +10,7 @@ import DatePicker from '@/components/DatePicker/index.vue';
  * @returns 提示属性对象
  */
 export const getTooltipProps = (tips: string | IObject) => {
-  return typeof tips === 'string' ? { content: tips } : tips;
+  return typeof tips === "string" ? { content: tips } : tips;
 };
 
 /**
@@ -18,37 +18,37 @@ export const getTooltipProps = (tips: string | IObject) => {
  */
 export const modalComponentMap = new Map<IComponentType, any>([
   // @ts-ignore
-  ['input', markRaw(ElInput)],
+  ["input", markRaw(ElInput)],
   // @ts-ignore
-  ['select', markRaw(ElSelect)],
+  ["select", markRaw(ElSelect)],
   // @ts-ignore
-  ['switch', markRaw(ElSwitch)],
+  ["switch", markRaw(ElSwitch)],
   // @ts-ignore
-  ['cascader', markRaw(ElCascader)],
+  ["cascader", markRaw(ElCascader)],
   // @ts-ignore
-  ['input-number', markRaw(ElInputNumber)],
+  ["input-number", markRaw(ElInputNumber)],
   // @ts-ignore
-  ['input-tag', markRaw(InputTag)],
+  ["input-tag", markRaw(InputTag)],
   // @ts-ignore
-  ['time-picker', markRaw(ElTimePicker)],
+  ["time-picker", markRaw(ElTimePicker)],
   // @ts-ignore
-  ['time-select', markRaw(ElTimeSelect)],
+  ["time-select", markRaw(ElTimeSelect)],
   // @ts-ignore
-  ['date-picker', markRaw(ElDatePicker)],
+  ["date-picker", markRaw(ElDatePicker)],
   // @ts-ignore
-  ['tree-select', markRaw(ElTreeSelect)],
+  ["tree-select", markRaw(ElTreeSelect)],
   // @ts-ignore
-  ['custom-tag', markRaw(InputTag)],
+  ["custom-tag", markRaw(InputTag)],
   // @ts-ignore
-  ['text', markRaw(ElText)],
+  ["text", markRaw(ElText)],
   // @ts-ignore
-  ['radio', markRaw(ElRadioGroup)],
+  ["radio", markRaw(ElRadioGroup)],
   // @ts-ignore
-  ['checkbox', markRaw(ElCheckboxGroup)],
+  ["checkbox", markRaw(ElCheckboxGroup)],
   // @ts-ignore
-  ['icon-select', markRaw(IconSelect)],
+  ["icon-select", markRaw(IconSelect)],
   // @ts-ignore
-  ['custom', ''],
+  ["custom", ""],
 ]);
 
 /**
@@ -56,25 +56,25 @@ export const modalComponentMap = new Map<IComponentType, any>([
  */
 export const searchComponentMap = new Map<ISearchComponent, any>([
   // @ts-ignore
-  ['input', markRaw(ElInput)],
+  ["input", markRaw(ElInput)],
   // @ts-ignore
-  ['select', markRaw(ElSelect)],
+  ["select", markRaw(ElSelect)],
   // @ts-ignore
-  ['cascader', markRaw(ElCascader)],
+  ["cascader", markRaw(ElCascader)],
   // @ts-ignore
-  ['input-number', markRaw(ElInputNumber)],
+  ["input-number", markRaw(ElInputNumber)],
   // @ts-ignore
-  ['date-picker', markRaw(DatePicker)],
+  ["date-picker", markRaw(DatePicker)],
   // @ts-ignore
-  ['time-picker', markRaw(ElTimePicker)],
+  ["time-picker", markRaw(ElTimePicker)],
   // @ts-ignore
-  ['time-select', markRaw(ElTimeSelect)],
+  ["time-select", markRaw(ElTimeSelect)],
   // @ts-ignore
-  ['tree-select', markRaw(ElTreeSelect)],
+  ["tree-select", markRaw(ElTreeSelect)],
   // @ts-ignore
-  ['input-tag', markRaw(ElInputTag)],
+  ["input-tag", markRaw(ElInputTag)],
   // @ts-ignore
-  ['custom-tag', markRaw(InputTag)],
+  ["custom-tag", markRaw(InputTag)],
 ]);
 
 /**
@@ -82,9 +82,9 @@ export const searchComponentMap = new Map<ISearchComponent, any>([
  */
 export const childrenMap = new Map<IComponentType, any>([
   // @ts-ignore
-  ['select', markRaw(ElOption)],
+  ["select", markRaw(ElOption)],
   // @ts-ignore
-  ['radio', markRaw(ElRadio)],
+  ["radio", markRaw(ElRadio)],
   // @ts-ignore
-  ['checkbox', markRaw(ElCheckbox)],
+  ["checkbox", markRaw(ElCheckbox)],
 ]);
