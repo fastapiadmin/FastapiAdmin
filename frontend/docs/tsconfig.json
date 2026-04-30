@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "baseUrl": ".",
+    "module": "ESNext",
+    "paths": {
+      "@/*": ["./*"],
+      "~/*": ["docs/.vitepress/theme/*"]
+    },
+    "types": ["node", "vitepress/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Node.js specific options */
+    "composite": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "docs/.vitepress/**/*",
+    "**/*.vue",
+    "**/*.ts",
+    "**/*.mts",
+    "**/*.tsx",
+    "**/*.md",
+    "env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "docs/.vitepress/dist",
+    "docs/.vitepress/cache"
+  ]
+}
