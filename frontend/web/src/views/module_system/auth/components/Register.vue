@@ -4,7 +4,11 @@
     <el-form ref="formRef" :model="model" :rules="rules" size="large" label-suffix=":">
       <!-- 账号 -->
       <el-form-item prop="username">
-        <el-input v-model.trim="model.username" :placeholder="t('login.username')" clearable>
+        <el-input
+          v-model.trim="model.username"
+          :placeholder="t('login.placeholder.username')"
+          clearable
+        >
           <template #prefix>
             <el-icon><User /></el-icon>
           </template>
@@ -16,7 +20,7 @@
         <el-form-item prop="password">
           <el-input
             v-model.trim="model.password"
-            :placeholder="t('login.password')"
+            :placeholder="t('login.placeholder.password')"
             type="password"
             show-password
             clearable
@@ -72,7 +76,9 @@
     </el-form>
     <div flex-center gap-10px>
       <el-text size="default">{{ t("login.haveAccount") }}</el-text>
-      <el-link type="primary" underline="never" @click="toLogin">{{ t("login.login") }}</el-link>
+      <el-link type="primary" underline="never" @click="toLogin">
+        {{ t("login.backLoginBtnText") }}
+      </el-link>
     </div>
   </div>
 </template>
