@@ -105,7 +105,7 @@
     "selectKeydown": "Select",
     "exitKeydown": "Close"
   },
-  "setting": {
+  "settings": {
     "menuType": {
       "title": "Menu Layout",
       "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
@@ -169,6 +169,7 @@
       "resetFailed": "Reset failed, please refresh the page and try again"
     },
     "project": "Project Settings",
+    "themeSetting": "Theme Settings",
     "themeColor": "Theme Color",
     "customColor": "Custom Color",
     "showTagsView": "Show Tags View",
@@ -196,7 +197,17 @@
     "showGuide": "Show Guide",
     "showSettings": "Show Settings",
     "interface": "Interface",
-    "navigation": "Navigation"
+    "navigation": "Navigation",
+    "copySuccess": "Copy Success",
+    "resetSuccess": "Reset Success",
+    "none": "None",
+    "fade": "Fade",
+    "fade-slide": "Fade Slide",
+    "fade-scale": "Fade Scale",
+    "slide-left-right": "Slide Left Right",
+    "zoom-in-out": "Zoom In Out",
+    "slide-up-down": "Slide Up Down",
+    "bounce": "Bounce"
   },
   "notice": {
     "title": "Notice",
@@ -238,6 +249,7 @@
     "rememberPwd": "Remember password",
     "forgetPwd": "Forgot password",
     "btnText": "Login",
+    "backLoginBtnText": "Back to Login",
     "noAccount": "No account yet?",
     "register": "Register",
     "success": {
@@ -296,6 +308,9 @@
     "selectUser": "Select a user",
     "reg": "Register"
   },
+  "loginForm": {
+    "remember": "Remember me"
+  },
   "forgetPassword": {
     "title": "Forgot password?",
     "subTitle": "Enter your email to reset your password",
@@ -329,7 +344,9 @@
     "placeholder": "Please enter lock screen password",
     "message": "Password error",
     "backToLogin": "Back to login",
-    "entrySystem": "Enter system"
+    "entrySystem": "Enter system",
+    "lockScreen": "Lock screen",
+    "required": "Please enter password"
   },
   "lockScreen": {
     "pwdError": "Password error",

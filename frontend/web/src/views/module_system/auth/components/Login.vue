@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3 text-center m-0 mb-20px>{{ t("login.login") }}</h3>
+    <h3 text-center m-0 mb-20px>{{ t("login.title") }}</h3>
 
     <el-tabs v-model="activeTab" class="login-tabs">
       <!-- 账号登录 -->
@@ -16,7 +16,7 @@
           <el-form-item prop="username">
             <el-input
               v-model.trim="loginForm.username"
-              :placeholder="t('login.username')"
+              :placeholder="t('login.placeholder.username')"
               clearable
             >
               <template #prefix>
@@ -30,7 +30,7 @@
             <el-form-item prop="password">
               <el-input
                 v-model.trim="loginForm.password"
-                :placeholder="t('login.password')"
+                :placeholder="t('login.placeholder.password')"
                 type="password"
                 show-password
                 clearable
@@ -77,16 +77,16 @@
           </el-form-item>
 
           <div class="flex-x-between w-full">
-            <el-checkbox v-model="loginForm.remember">{{ t("login.rememberMe") }}</el-checkbox>
+            <el-checkbox v-model="loginForm.remember">{{ t("login.rememberPwd") }}</el-checkbox>
             <el-link type="primary" underline="never" @click="toOtherForm('resetPwd')">
-              {{ t("login.forgetPassword") }}
+              {{ t("login.forgetPwd") }}
             </el-link>
           </div>
 
           <!-- 登录按钮 -->
           <el-form-item>
             <el-button :loading="loading" type="primary" class="w-full" @click="handleLoginSubmit">
-              {{ t("login.login") }}
+              {{ t("login.btnText") }}
             </el-button>
           </el-form-item>
         </el-form>

@@ -9,7 +9,7 @@
     <div class="settings-content">
       <!-- 主题设置 -->
       <section class="config-section">
-        <el-divider>{{ t("settings.theme") }}</el-divider>
+        <el-divider>{{ t("settings.themeSetting") }}</el-divider>
 
         <div class="flex-center">
           <el-switch
@@ -200,7 +200,6 @@
 
     <!-- 操作按钮区域 - 固定到底部 -->
     <div class="action-footer">
-      <div class="action-divider"></div>
       <div class="action-card">
         <div class="action-buttons">
           <el-tooltip
@@ -215,7 +214,7 @@
               class="action-btn"
               @click="handleCopySettings"
             >
-              {{ copyLoading ? "复制中..." : t("settings.copyConfig") }}
+              {{ copyLoading ? "复制中..." : t("settings.actions.copyConfig") }}
             </el-button>
           </el-tooltip>
           <el-tooltip content="重置将恢复所有设置为默认值" placement="top">
@@ -227,7 +226,7 @@
               class="action-btn"
               @click="handleResetSettings"
             >
-              {{ resetLoading ? "重置中..." : t("settings.resetConfig") }}
+              {{ resetLoading ? "重置中..." : t("settings.actions.resetConfig") }}
             </el-button>
           </el-tooltip>
         </div>
@@ -464,22 +463,14 @@ const handleCloseDrawer = () => {
 /* 底部操作区域样式 */
 .action-footer {
   flex-shrink: 0;
-  padding: 0;
-  background: var(--el-bg-color);
+  padding: 16px 20px;
   border-top: 1px solid var(--el-border-color-light);
 
-  .action-divider {
-    display: none; /* 移除重复的分割线 */
-  }
-
   .action-card {
-    padding: 16px 20px;
     margin: 0;
-    background: var(--el-fill-color-extra-light);
     border: none;
     border-radius: 0;
 
-    /* 底部操作区域样式 */
     .action-buttons {
       display: flex;
 
@@ -487,12 +478,6 @@ const handleCloseDrawer = () => {
         flex: 1;
         font-size: 14px;
         border-radius: 8px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          transform: translateY(-2px);
-        }
       }
     }
   }
@@ -807,7 +792,6 @@ const handleCloseDrawer = () => {
 /* 深色模式适配 */
 .dark {
   .action-footer {
-    background: var(--el-bg-color);
     border-top-color: var(--el-border-color);
   }
 

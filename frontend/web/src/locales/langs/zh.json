@@ -105,7 +105,7 @@
     "selectKeydown": "选择",
     "exitKeydown": "关闭"
   },
-  "setting": {
+  "settings": {
     "menuType": {
       "title": "菜单布局",
       "list": ["垂直", "水平", "混合", "双列"]
@@ -169,6 +169,7 @@
       "resetFailed": "重置失败，请刷新页面后重试"
     },
     "project": "项目配置",
+    "themeSetting": "主题设置",
     "themeColor": "主题颜色",
     "themeColorTip": "主题颜色",
     "customColor": "自定义颜色",
@@ -199,7 +200,17 @@
     "showGuide": "启动引导",
     "showSettings": "显示设置",
     "interface": "界面设置",
-    "navigation": "导航主题"
+    "navigation": "导航主题",
+    "copySuccess": "复制成功",
+    "resetSuccess": "重置成功",
+    "none": "无动画",
+    "fade": "淡入淡出",
+    "fade-slide": "平滑切换",
+    "fade-scale": "缩放切换",
+    "slide-left-right": "左右滑动",
+    "zoom-in-out": "缩放进出",
+    "slide-up-down": "上下滑动",
+    "bounce": "弹性效果"
   },
   "notice": {
     "title": "通知",
@@ -241,6 +252,7 @@
     "rememberPwd": "记住密码",
     "forgetPwd": "忘记密码",
     "btnText": "登录",
+    "backLoginBtnText": "返回登录",
     "noAccount": "还没有账号？",
     "register": "注册",
     "success": {
@@ -299,6 +311,9 @@
     "selectUser": "请选择用户",
     "reg": "注 册"
   },
+  "loginForm": {
+    "remember": "记住我"
+  },
   "forgetPassword": {
     "title": "忘记密码？",
     "subTitle": "输入您的电子邮件来重置您的密码",
@@ -332,7 +347,9 @@
     "placeholder": "请输入锁屏密码",
     "message": "密码错误",
     "backToLogin": "返回登录",
-    "entrySystem": "进入系统"
+    "entrySystem": "进入系统",
+    "lockScreen": "锁定屏幕",
+    "required": "请输入密码"
   },
   "lockScreen": {
     "pwdError": "密码错误",
