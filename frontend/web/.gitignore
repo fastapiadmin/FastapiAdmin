@@ -18,5 +18,5 @@ pnpm-lock.yaml
 package-lock.json
 .stylelintcache
 .eslintcache
-docs/.vitepress/cache
-docs/dist
+
+# docs and app directories are at frontend root, managed by frontend/.gitignore
