@@ -257,6 +257,10 @@ def menu_request_validator(data: Any) -> Any:
     if data.type == 2 and not data.component_path:
         raise CustomException(code=RET.ERROR.code, msg="组件路径不能为空")
 
+    c = getattr(data, "client", None) or "pc"
+    if c not in ("pc", "app"):
+        raise CustomException(code=RET.ERROR.code, msg="终端 client 仅允许 pc 或 app")
+
     return data
 
 

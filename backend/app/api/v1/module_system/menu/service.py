@@ -51,6 +51,20 @@ class MenuService:
             raise CustomException(msg="菜单或链接类型下不允许新增子菜单")
 
     @classmethod
+    async def _validate_parent_child_client(
+        cls, auth: AuthSchema, parent_id: int | None, client: str
+    ) -> None:
+        """子菜单终端须与父菜单一致。"""
+        if parent_id is None:
+            return
+        parent = await MenuCRUD(auth).get_by_id_crud(id=parent_id)
+        if not parent:
+            return
+        p_client = getattr(parent, "client", None) or "pc"
+        if p_client != client:
+            raise CustomException(msg="子菜单终端须与父菜单一致（均为 pc 或均为 app）")
+
+    @classmethod
     async def get_menu_detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """
         获取菜单详情。
@@ -119,6 +133,7 @@ class MenuService:
             raise CustomException(msg="创建失败，该菜单已存在")
 
         await cls._validate_parent_child_type(auth, data.parent_id, data.type)
+        await cls._validate_parent_child_client(auth, data.parent_id, data.client)
 
         new_menu = await MenuCRUD(auth).create(data=data)
         new_menu_dict = MenuOutSchema.model_validate(new_menu).model_dump()
@@ -141,6 +156,7 @@ class MenuService:
         if not menu:
             raise CustomException(msg="更新失败，该菜单不存在")
         await cls._validate_parent_child_type(auth, data.parent_id, data.type)
+        await cls._validate_parent_child_client(auth, data.parent_id, data.client)
         search: dict[str, Any] = {"title": data.title}
         if data.parent_id is not None:
             search["parent_id"] = data.parent_id

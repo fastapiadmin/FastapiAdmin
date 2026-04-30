@@ -5,3 +5,9 @@ export enum MenuTypeEnum {
   BUTTON = 3, // 按钮
   EXTLINK = 4, // 外链
 }
+
+/** 菜单终端（与后端 sys_menu.client 一致） */
+export enum MenuClientEnum {
+  PC = "pc",
+  APP = "app",
+}

@@ -8,6 +8,15 @@
       @reset-click="handleResetClick"
     />
 
+    <el-tabs
+      v-model="menuClientTab"
+      class="menu-client-tabs px-1 mb-2"
+      @tab-change="handleMenuClientTabChange"
+    >
+      <el-tab-pane label="PC 桌面菜单管理" name="pc" />
+      <el-tab-pane label="APP 移动端菜单管理" name="app" />
+    </el-tabs>
+
     <PageContent ref="contentRef" :content-config="contentConfig">
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
         <CrudToolbarLeft
@@ -68,6 +77,13 @@
                 <el-tag v-if="scope.row.type === MenuTypeEnum.MENU" type="success">菜单</el-tag>
                 <el-tag v-if="scope.row.type === MenuTypeEnum.BUTTON" type="danger">按钮</el-tag>
                 <el-tag v-if="scope.row.type === MenuTypeEnum.EXTLINK" type="info">外链</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="终端" prop="client" min-width="88" align="center">
+              <template #default="scope">
+                <el-tag v-if="scope.row.client === MenuClientEnum.PC" type="primary">PC</el-tag>
+                <el-tag v-else-if="scope.row.client === MenuClientEnum.APP" type="success">APP</el-tag>
+                <el-tag v-else type="info">{{ scope.row.client || "—" }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="排序" prop="order" min-width="80" />
@@ -219,6 +235,11 @@
             <el-tag v-if="detailFormData.type === MenuTypeEnum.BUTTON" type="danger">按钮</el-tag>
             <el-tag v-if="detailFormData.type === MenuTypeEnum.EXTLINK" type="info">外链</el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="终端" :span="2">
+            <el-tag v-if="detailFormData.client === MenuClientEnum.PC" type="primary">PC</el-tag>
+            <el-tag v-else-if="detailFormData.client === MenuClientEnum.APP" type="success">APP</el-tag>
+            <el-tag v-else type="info">{{ detailFormData.client || "—" }}</el-tag>
+          </el-descriptions-item>
           <el-descriptions-item label="图标" :span="2">
             <template #default>
               <template v-if="detailFormData.icon && detailFormData.icon.startsWith('el-icon')">
@@ -365,6 +386,16 @@
                 外链
               </el-radio>
             </el-radio-group>
+          </el-form-item>
+
+          <el-form-item label="终端" prop="client">
+            <el-radio-group v-model="formData.client" :disabled="createParentLocked">
+              <el-radio :value="MenuClientEnum.PC">PC 桌面</el-radio>
+              <el-radio :value="MenuClientEnum.APP">APP 移动</el-radio>
+            </el-radio-group>
+            <el-text v-if="createParentLocked" type="info" size="small" class="block mt-1">
+              子级终端与父菜单一致
+            </el-text>
           </el-form-item>
 
           <el-form-item v-if="formData.type == MenuTypeEnum.EXTLINK" label="外链地址" prop="path">
@@ -631,7 +662,7 @@ import { useUserStore } from "@/store/modules/user.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 
 import MenuAPI, { MenuPageQuery, MenuForm, MenuTable } from "@/api/module_system/menu";
-import { MenuTypeEnum } from "@/enums/system/menu.enum";
+import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@/utils/common";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
 import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
@@ -645,6 +676,15 @@ const appStore = useAppStore();
 const userStore = useUserStore();
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+
+/** 菜单管理：PC / APP 分栏（与接口 menu_client 一致） */
+const menuClientTab = ref<"pc" | "app">("pc");
+
+function handleMenuClientTabChange(name: string | number) {
+  menuClientTab.value = name === "app" ? "app" : "pc";
+  refreshList();
+}
+
 const dataFormRef = ref();
 const submitLoading = ref(false);
 
@@ -714,6 +754,7 @@ const formData = reactive<MenuForm>({
   affix: false,
   status: "0",
   description: undefined,
+  client: MenuClientEnum.PC,
 });
 
 // 弹窗状态
@@ -762,14 +803,129 @@ function findMenuNodeById(
   return null;
 }
 
-/** 新增/编辑表单项：当前父级下允许的菜单类型 */
-const allowedMenuTypeValues = computed((): MenuTypeEnum[] => {
-  if (dialogVisible.type === "detail") {
-    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.BUTTON, MenuTypeEnum.EXTLINK];
+const contentConfig = reactive<IContentConfig<MenuPageQuery>>({
+  permPrefix: "module_system:menu",
+  pk: "id",
+  cols: contentCols as IContentConfig["cols"],
+  hideColumnFilter: true,
+  toolbar: [],
+  defaultToolbar: ["refresh", "filter"],
+  pagination: false,
+  indexAction: async (params) => {
+    const res = await MenuAPI.listMenu({
+      ...(params as MenuPageQuery),
+      menu_client: menuClientTab.value,
+    });
+    const tree = res.data.data || [];
+    fullMenuTree.value = tree;
+    menuOptions.value = formatTree(filterMenuTypes(tree));
+    return tree;
+  },
+  deleteAction: async (ids) => {
+    await MenuAPI.deleteMenu(
+      ids
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !Number.isNaN(n))
+    );
+    await userStore.getUserInfo();
+  },
+  deleteConfirm: {
+    title: "警告",
+    message: "确认删除该项数据?",
+    type: "warning",
+  },
+});
+
+  function handleRowDelete(id: number) {
+    contentRef.value?.handleDelete(id);
   }
-  const pid = formData.parent_id;
-  if (pid == null || pid === undefined) {
-    return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
+
+// 表单验证规则
+const rules = reactive({
+  name: [
+    { required: true, message: "请输入菜单名称", trigger: "blur" },
+    { min: 2, max: 50, message: "长度 2 到 50 个字符", trigger: "blur" },
+  ],
+  parent_id: [{ required: true, message: "请选择父级菜单", trigger: "blur" }],
+  type: [{ required: true, message: "请选择菜单类型", trigger: "blur" }],
+  order: [{ required: true, message: "请输入排序", trigger: "blur" }],
+  permission: [{ required: true, message: "请输入权限标识", trigger: "blur" }],
+  route_name: [{ required: true, message: "请输入路由名称", trigger: "blur" }],
+  route_path: [
+    { required: true, message: "请输入路由路径", trigger: "blur" },
+    {
+      validator: (rule: any, value: string, callback: any) => {
+        if (value && !value.startsWith("/")) {
+          callback(new Error("目录和菜单路由必须以/开头"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur",
+    },
+  ],
+  component_path: [{ required: true, message: "请输入组件路径", trigger: "blur" }],
+  title: [
+    { required: true, message: "请输入菜单标题", trigger: "blur" },
+    { min: 2, max: 50, message: "长度 2 到 50 个字符", trigger: "blur" },
+  ],
+  keep_alive: [{ required: true, message: "请选择是否缓存", trigger: "change" }],
+  hidden: [{ required: true, message: "请选择是否隐藏", trigger: "change" }],
+  always_show: [{ required: true, message: "请选择始终显示", trigger: "change" }],
+  status: [{ required: true, message: "请选择状态", trigger: "change" }],
+  client: [{ required: true, message: "请选择终端", trigger: "change" }],
+  redirect: [
+    {
+      validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
+        if (formData.type === MenuTypeEnum.CATALOG) {
+          if (value === undefined || value === null || String(value).trim() === "") {
+            callback(new Error("目录类型必须填写重定向地址"));
+            return;
+          }
+        }
+        callback();
+      },
+      trigger: "blur",
+    },
+  ],
+});
+
+  // 选择表格的行菜单ID
+  const selectedMenuId = ref<number | undefined>();
+
+// 定义初始表单数据常量
+const initialFormData: MenuForm = {
+  id: undefined,
+  name: undefined,
+  type: MenuTypeEnum.MENU,
+  icon: undefined,
+  order: 1,
+  permission: "",
+  route_name: "",
+  route_path: "",
+  component_path: "",
+  redirect: "",
+  parent_id: undefined,
+  keep_alive: false,
+  hidden: false,
+  always_show: false,
+  title: "",
+  params: [] as { key: string; value: string }[],
+  affix: false,
+  status: "0",
+  description: undefined,
+  client: MenuClientEnum.PC,
+};
+
+  // 重置表单
+  async function resetForm() {
+    if (dataFormRef.value) {
+      dataFormRef.value.resetFields();
+      dataFormRef.value.clearValidate();
+    }
+    // 完全重置 formData 为初始状态
+    Object.assign(formData, initialFormData);
   }
   const parentNode = findMenuNodeById(pid);
   if (!parentNode?.type) {
@@ -778,10 +934,64 @@ const allowedMenuTypeValues = computed((): MenuTypeEnum[] => {
   return typesAllowedUnderParent(parentNode.type as MenuTypeEnum);
 });
 
-watch(
-  () => [formData.parent_id, dialogVisible.visible, dialogVisible.type],
-  () => {
-    if (!dialogVisible.visible || dialogVisible.type === "detail") return;
+  // 关闭弹窗
+  async function handleCloseDialog() {
+    dialogVisible.visible = false;
+    createParentLocked.value = false;
+    resetForm();
+  }
+
+//打开弹窗
+async function handleOpenDialog(
+  type: "create" | "update" | "detail",
+  id?: number,
+  parentRow?: MenuTable
+) {
+  dialogVisible.type = type;
+  createParentLocked.value = false;
+  if (id) {
+    const response = await MenuAPI.detailMenu(id);
+    if (type === "detail") {
+      dialogVisible.title = "菜单详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改菜单";
+      Object.assign(formData, response.data.data);
+    }
+  } else {
+    dialogVisible.title = "新增菜单";
+    Object.assign(formData, initialFormData);
+    if (parentRow?.id != null) {
+      formData.parent_id = parentRow.id;
+      formData.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
+      if (parentRow.type === MenuTypeEnum.MENU) {
+        createParentLocked.value = true;
+        formData.type = MenuTypeEnum.BUTTON;
+      } else if (parentRow.type === MenuTypeEnum.CATALOG) {
+        formData.type = MenuTypeEnum.MENU;
+      }
+    } else {
+      formData.client = menuClientTab.value;
+    }
+  }
+  dialogVisible.visible = true;
+}
+
+  // 菜单类型切换
+  function handleMenuTypeChange() {
+    if (formData.type === MenuTypeEnum.MENU) {
+      formData.component_path = '';
+    }
+    nextTick(() => {
+      dataFormRef.value?.clearValidate('redirect');
+      if (formData.type === MenuTypeEnum.CATALOG) {
+        dataFormRef.value?.validateField('redirect').catch(() => {});
+      }
+    });
+  }
+
+  // 提交表单
+  async function handleSubmit() {
     const allowed = allowedMenuTypeValues.value;
     if (!allowed.length) return;
     const t = formData.type as MenuTypeEnum;

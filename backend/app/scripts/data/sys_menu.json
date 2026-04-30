@@ -35,9 +35,11 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "系统管理",
@@ -94,7 +96,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改菜单",
@@ -113,7 +116,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除菜单",
@@ -132,7 +136,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改菜单状态",
@@ -151,7 +156,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情菜单",
@@ -170,7 +176,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询菜单",
@@ -189,9 +196,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "部门管理",
@@ -229,7 +238,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改部门",
@@ -248,7 +258,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除部门",
@@ -267,7 +278,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改部门状态",
@@ -286,7 +298,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情部门",
@@ -305,7 +318,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询部门",
@@ -324,9 +338,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "岗位管理",
@@ -364,7 +380,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改岗位",
@@ -383,7 +400,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除岗位",
@@ -402,7 +420,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改岗位状态",
@@ -421,7 +440,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "岗位导出",
@@ -440,7 +460,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情岗位",
@@ -459,7 +480,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询岗位",
@@ -478,9 +500,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "角色管理",
@@ -518,7 +542,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改角色",
@@ -537,7 +562,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除角色",
@@ -556,7 +582,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改角色状态",
@@ -575,7 +602,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "角色导出",
@@ -594,7 +622,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情角色",
@@ -613,7 +642,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询角色",
@@ -632,7 +662,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "分配权限",
@@ -651,9 +682,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "用户管理",
@@ -691,7 +724,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改用户",
@@ -710,7 +744,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除用户",
@@ -729,7 +764,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改用户状态",
@@ -748,7 +784,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出用户",
@@ -767,7 +804,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导入用户",
@@ -786,7 +824,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "下载用户导入模板",
@@ -805,7 +844,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情用户",
@@ -824,7 +864,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询用户",
@@ -843,9 +884,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "日志管理",
@@ -883,7 +926,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "日志导出",
@@ -902,7 +946,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "日志详情",
@@ -921,7 +966,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询日志",
@@ -940,9 +986,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "公告管理",
@@ -980,7 +1028,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告修改",
@@ -999,7 +1048,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告删除",
@@ -1018,7 +1068,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告导出",
@@ -1037,7 +1088,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告批量修改状态",
@@ -1056,7 +1108,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告详情",
@@ -1075,7 +1128,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询公告",
@@ -1094,9 +1148,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "参数管理",
@@ -1134,7 +1190,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改参数",
@@ -1153,7 +1210,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除参数",
@@ -1172,7 +1230,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出参数",
@@ -1191,7 +1250,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "参数上传",
@@ -1210,7 +1270,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "参数详情",
@@ -1229,7 +1290,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询参数",
@@ -1248,9 +1310,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "字典管理",
@@ -1288,7 +1352,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改字典类型",
@@ -1307,7 +1372,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除字典类型",
@@ -1326,7 +1392,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出字典类型",
@@ -1345,7 +1412,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改字典状态",
@@ -1364,7 +1432,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "字典数据查询",
@@ -1383,7 +1452,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "创建字典数据",
@@ -1402,7 +1472,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改字典数据",
@@ -1421,7 +1492,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除字典数据",
@@ -1440,7 +1512,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出字典数据",
@@ -1459,7 +1532,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改字典数据状态",
@@ -1478,7 +1552,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情字典类型",
@@ -1497,7 +1572,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询字典类型",
@@ -1516,7 +1592,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情字典数据",
@@ -1535,9 +1612,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "租户管理",
@@ -1575,7 +1654,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改租户",
@@ -1594,7 +1674,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除租户",
@@ -1613,7 +1694,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改租户状态",
@@ -1632,7 +1714,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "租户详情",
@@ -1651,7 +1734,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询租户",
@@ -1670,11 +1754,14 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "监控管理",
@@ -1731,9 +1818,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "服务器监控",
@@ -1752,7 +1841,8 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       },
       {
         "name": "缓存监控",
@@ -1790,9 +1880,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "文件管理",
@@ -1830,7 +1922,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件下载",
@@ -1849,7 +1942,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件删除",
@@ -1868,7 +1962,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件移动",
@@ -1887,7 +1982,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件复制",
@@ -1906,7 +2002,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件重命名",
@@ -1925,7 +2022,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "创建目录",
@@ -1944,7 +2042,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出文件列表",
@@ -1963,11 +2062,14 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "接口管理",
@@ -2005,7 +2107,8 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       },
       {
         "name": "Redoc文档",
@@ -2024,7 +2127,8 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       },
       {
         "name": "LangJin文档",
@@ -2043,9 +2147,11 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "代码管理",
@@ -2102,7 +2208,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询代码生成业务表列表"
+            "description": "查询代码生成业务表列表",
+            "client": "pc"
           },
           {
             "name": "创建表结构",
@@ -2121,7 +2228,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "创建表结构"
+            "description": "创建表结构",
+            "client": "pc"
           },
           {
             "name": "编辑业务表信息",
@@ -2140,7 +2248,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "编辑业务表信息"
+            "description": "编辑业务表信息",
+            "client": "pc"
           },
           {
             "name": "删除业务表信息",
@@ -2159,7 +2268,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "删除业务表信息"
+            "description": "删除业务表信息",
+            "client": "pc"
           },
           {
             "name": "导入表结构",
@@ -2178,7 +2288,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "导入表结构"
+            "description": "导入表结构",
+            "client": "pc"
           },
           {
             "name": "批量生成代码",
@@ -2197,7 +2308,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "批量生成代码"
+            "description": "批量生成代码",
+            "client": "pc"
           },
           {
             "name": "生成代码到指定路径",
@@ -2216,7 +2328,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "生成代码到指定路径"
+            "description": "生成代码到指定路径",
+            "client": "pc"
           },
           {
             "name": "查询数据库表列表",
@@ -2235,7 +2348,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询数据库表列表"
+            "description": "查询数据库表列表",
+            "client": "pc"
           },
           {
             "name": "同步数据库",
@@ -2254,11 +2368,14 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "同步数据库"
+            "description": "同步数据库",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "应用管理",
@@ -2315,7 +2432,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改插件",
@@ -2334,7 +2452,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除插件",
@@ -2353,7 +2472,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改插件状态",
@@ -2372,7 +2492,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情插件",
@@ -2391,7 +2512,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询插件",
@@ -2410,11 +2532,14 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询插件"
+            "description": "查询插件",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "AI管理",
@@ -2471,7 +2596,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "AI对话"
+            "description": "AI对话",
+            "client": "pc"
           },
           {
             "name": "查询会话",
@@ -2490,7 +2616,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询会话"
+            "description": "查询会话",
+            "client": "pc"
           },
           {
             "name": "会话详情",
@@ -2509,7 +2636,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "会话详情"
+            "description": "会话详情",
+            "client": "pc"
           },
           {
             "name": "创建会话",
@@ -2528,7 +2656,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "创建会话"
+            "description": "创建会话",
+            "client": "pc"
           },
           {
             "name": "更新会话",
@@ -2547,7 +2676,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "更新会话"
+            "description": "更新会话",
+            "client": "pc"
           },
           {
             "name": "删除会话",
@@ -2566,9 +2696,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "删除会话"
+            "description": "删除会话",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "会话记忆",
@@ -2606,7 +2738,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询会话记忆"
+            "description": "查询会话记忆",
+            "client": "pc"
           },
           {
             "name": "会话记忆详情",
@@ -2625,7 +2758,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "会话记忆详情"
+            "description": "会话记忆详情",
+            "client": "pc"
           },
           {
             "name": "删除会话记忆",
@@ -2644,11 +2778,14 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "删除会话记忆"
+            "description": "删除会话记忆",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "任务管理",
@@ -2724,7 +2861,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询调度器"
+                "description": "查询调度器",
+                "client": "pc"
               },
               {
                 "name": "控制调度器",
@@ -2743,7 +2881,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "控制调度器"
+                "description": "控制调度器",
+                "client": "pc"
               },
               {
                 "name": "操作任务",
@@ -2762,7 +2901,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "操作任务"
+                "description": "操作任务",
+                "client": "pc"
               },
               {
                 "name": "删除执行日志",
@@ -2781,7 +2921,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除执行日志"
+                "description": "删除执行日志",
+                "client": "pc"
               },
               {
                 "name": "详情执行日志",
@@ -2800,9 +2941,11 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情执行日志"
+                "description": "详情执行日志",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           },
           {
             "name": "节点管理",
@@ -2840,7 +2983,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "创建节点"
+                "description": "创建节点",
+                "client": "pc"
               },
               {
                 "name": "调试节点",
@@ -2859,7 +3003,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "调试节点"
+                "description": "调试节点",
+                "client": "pc"
               },
               {
                 "name": "修改节点",
@@ -2878,7 +3023,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "修改节点"
+                "description": "修改节点",
+                "client": "pc"
               },
               {
                 "name": "删除节点",
@@ -2897,7 +3043,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除节点"
+                "description": "删除节点",
+                "client": "pc"
               },
               {
                 "name": "详情节点",
@@ -2916,7 +3063,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情节点"
+                "description": "详情节点",
+                "client": "pc"
               },
               {
                 "name": "查询节点",
@@ -2935,11 +3083,14 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询节点"
+                "description": "查询节点",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "工作流",
@@ -2996,7 +3147,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "创建流程"
+                "description": "创建流程",
+                "client": "pc"
               },
               {
                 "name": "执行流程",
@@ -3015,7 +3167,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "执行流程"
+                "description": "执行流程",
+                "client": "pc"
               },
               {
                 "name": "修改流程",
@@ -3034,7 +3187,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "修改流程"
+                "description": "修改流程",
+                "client": "pc"
               },
               {
                 "name": "删除流程",
@@ -3053,7 +3207,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除流程"
+                "description": "删除流程",
+                "client": "pc"
               },
               {
                 "name": "详情流程",
@@ -3072,7 +3227,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情流程"
+                "description": "详情流程",
+                "client": "pc"
               },
               {
                 "name": "查询流程",
@@ -3091,9 +3247,11 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询流程"
+                "description": "查询流程",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           },
           {
             "name": "编排节点类型",
@@ -3131,7 +3289,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "创建编排节点类型"
+                "description": "创建编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "修改编排节点类型",
@@ -3150,7 +3309,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "修改编排节点类型"
+                "description": "修改编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "删除编排节点类型",
@@ -3169,7 +3329,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除编排节点类型"
+                "description": "删除编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "详情编排节点类型",
@@ -3188,7 +3349,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情编排节点类型"
+                "description": "详情编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "查询编排节点类型",
@@ -3207,13 +3369,17 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询编排节点类型"
+                "description": "查询编排节点类型",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "案例管理",
@@ -3270,7 +3436,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "更新示例",
@@ -3289,7 +3456,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除示例",
@@ -3308,7 +3476,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改示例状态",
@@ -3327,7 +3496,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出示例",
@@ -3346,7 +3516,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导入示例",
@@ -3365,7 +3536,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "下载导入示例模版",
@@ -3384,7 +3556,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情示例",
@@ -3403,7 +3576,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询示例",
@@ -3422,9 +3596,11 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "二级目录",
@@ -3481,7 +3657,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "更新示例01",
@@ -3500,7 +3677,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "删除示例01",
@@ -3519,7 +3697,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "批量修改示例01状态",
@@ -3538,7 +3717,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "导出示例01",
@@ -3557,7 +3737,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "导入示例01",
@@ -3576,7 +3757,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "下载导入示例01模版",
@@ -3595,7 +3777,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "详情示例01",
@@ -3614,7 +3797,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "查询示例01",
@@ -3633,12 +3817,121 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
+  },
+  {
+    "name": "首页",
+    "type": 1,
+    "icon": "homepage",
+    "order": 90,
+    "permission": "",
+    "route_name": "AppHome",
+    "route_path": "/app/home",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "首页",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/home",
+    "description": "APP 移动端-首页",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "同事",
+    "type": 1,
+    "icon": "visitor",
+    "order": 91,
+    "permission": "",
+    "route_name": "AppColleague",
+    "route_path": "/app/colleague",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "同事",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/colleague",
+    "description": "APP 移动端-同事",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "打卡",
+    "type": 1,
+    "icon": "time",
+    "order": 92,
+    "permission": "",
+    "route_name": "AppAttendance",
+    "route_path": "/app/attendance",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "打卡",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/attendance",
+    "description": "APP 移动端-打卡",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "消息",
+    "type": 1,
+    "icon": "message",
+    "order": 93,
+    "permission": "",
+    "route_name": "AppMessage",
+    "route_path": "/app/message",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "消息",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/message",
+    "description": "APP 移动端-消息",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "我的",
+    "type": 1,
+    "icon": "user",
+    "order": 94,
+    "permission": "",
+    "route_name": "AppMine",
+    "route_path": "/app/mine",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "我的",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/mine",
+    "description": "APP 移动端-我的",
+    "children": [],
+    "client": "app"
   }
 ]
