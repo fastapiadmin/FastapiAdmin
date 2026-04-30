@@ -68,6 +68,13 @@ class MenuModel(ModelMixin):
         nullable=False,
         comment="是否固定标签页(True:是 False:否)",
     )
+    client: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="pc",
+        server_default="pc",
+        comment="终端(pc:管理端桌面 app:移动端)",
+    )
 
     # 树形结构
     parent_id: Mapped[int | None] = mapped_column(

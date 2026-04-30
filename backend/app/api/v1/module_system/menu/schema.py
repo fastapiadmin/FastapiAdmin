@@ -32,6 +32,10 @@ class MenuCreateSchema(BaseModel):
     parent_id: int | None = Field(default=None, ge=1, description="父菜单ID")
     status: str = Field(default="0", description="是否启用(0:启用 1:禁用)")
     description: str | None = Field(default=None, max_length=255, description="描述")
+    client: Literal["pc", "app"] = Field(
+        default="pc",
+        description="终端(pc:管理端桌面 app:移动端)",
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -53,6 +57,9 @@ class MenuCreateSchema(BaseModel):
                     values[k] = (
                         values[k].strip() or None if values[k].strip() == "" else values[k].strip()
                     )
+            if "client" in values and isinstance(values["client"], str):
+                cv = values["client"].strip()
+                values["client"] = cv if cv in ("pc", "app") else "pc"
             # 父ID转整型
             if "parent_id" in values and isinstance(values["parent_id"], str):
                 try:
@@ -124,6 +131,10 @@ class MenuQueryParam:
         ),
         created_id: int | None = Query(None, description="创建人"),
         updated_id: int | None = Query(None, description="更新人"),
+        menu_client: Literal["pc", "app"] | None = Query(
+            None,
+            description="管理端 Tab：pc=桌面端菜单 app=移动端菜单；不传则不过滤终端",
+        ),
     ) -> None:
         # 模糊查询字段
         self.name = (QueueEnum.like.value, name)
@@ -151,3 +162,6 @@ class MenuQueryParam:
             self.created_id = (QueueEnum.eq.value, created_id)
         if updated_id:
             self.updated_id = (QueueEnum.eq.value, updated_id)
+
+        if menu_client in ("pc", "app"):
+            self.client = (QueueEnum.eq.value, menu_client)

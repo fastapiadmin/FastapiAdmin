@@ -11,6 +11,8 @@ export interface Meta {
   alwaysShow?: boolean;
   /** 是否隐藏(true-是 false-否) */
   hidden?: boolean;
+  /** 菜单终端（后端 sys_menu.client，PC 动态路由仅下发 pc） */
+  client?: string;
   /** ICON */
   icon?: string;
   /** 【菜单】是否开启页面缓存 */
@@ -71,6 +73,7 @@ export const generator = (routers: MenuTable[]): RouteVO[] => {
       meta: {
         title: item.title,
         icon: item.icon || undefined,
+        client: item.client,
         keepAlive: item.keep_alive,
         hidden: item.hidden,
         order: item.order,

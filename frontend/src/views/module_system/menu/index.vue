@@ -8,6 +8,15 @@
       @reset-click="handleResetClick"
     />
 
+    <el-tabs
+      v-model="menuClientTab"
+      class="menu-client-tabs px-1 mb-2"
+      @tab-change="handleMenuClientTabChange"
+    >
+      <el-tab-pane label="PC 桌面菜单管理" name="pc" />
+      <el-tab-pane label="APP 移动端菜单管理" name="app" />
+    </el-tabs>
+
     <PageContent ref="contentRef" :content-config="contentConfig">
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
         <CrudToolbarLeft
@@ -68,6 +77,13 @@
                 <el-tag v-if="scope.row.type === MenuTypeEnum.MENU" type="success">菜单</el-tag>
                 <el-tag v-if="scope.row.type === MenuTypeEnum.BUTTON" type="danger">按钮</el-tag>
                 <el-tag v-if="scope.row.type === MenuTypeEnum.EXTLINK" type="info">外链</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="终端" prop="client" min-width="88" align="center">
+              <template #default="scope">
+                <el-tag v-if="scope.row.client === MenuClientEnum.PC" type="primary">PC</el-tag>
+                <el-tag v-else-if="scope.row.client === MenuClientEnum.APP" type="success">APP</el-tag>
+                <el-tag v-else type="info">{{ scope.row.client || "—" }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="排序" prop="order" min-width="80" />
@@ -219,6 +235,11 @@
             <el-tag v-if="detailFormData.type === MenuTypeEnum.BUTTON" type="danger">按钮</el-tag>
             <el-tag v-if="detailFormData.type === MenuTypeEnum.EXTLINK" type="info">外链</el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="终端" :span="2">
+            <el-tag v-if="detailFormData.client === MenuClientEnum.PC" type="primary">PC</el-tag>
+            <el-tag v-else-if="detailFormData.client === MenuClientEnum.APP" type="success">APP</el-tag>
+            <el-tag v-else type="info">{{ detailFormData.client || "—" }}</el-tag>
+          </el-descriptions-item>
           <el-descriptions-item label="图标" :span="2">
             <template #default>
               <template v-if="detailFormData.icon && detailFormData.icon.startsWith('el-icon')">
@@ -365,6 +386,16 @@
                 外链
               </el-radio>
             </el-radio-group>
+          </el-form-item>
+
+          <el-form-item label="终端" prop="client">
+            <el-radio-group v-model="formData.client" :disabled="createParentLocked">
+              <el-radio :value="MenuClientEnum.PC">PC 桌面</el-radio>
+              <el-radio :value="MenuClientEnum.APP">APP 移动</el-radio>
+            </el-radio-group>
+            <el-text v-if="createParentLocked" type="info" size="small" class="block mt-1">
+              子级终端与父菜单一致
+            </el-text>
           </el-form-item>
 
           <el-form-item v-if="formData.type == MenuTypeEnum.EXTLINK" label="外链地址" prop="path">
@@ -631,7 +662,7 @@ import { useUserStore } from "@/store/modules/user.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 
 import MenuAPI, { MenuPageQuery, MenuForm, MenuTable } from "@/api/module_system/menu";
-import { MenuTypeEnum } from "@/enums/system/menu.enum";
+import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@/utils/common";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
 import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
@@ -645,6 +676,15 @@ const appStore = useAppStore();
 const userStore = useUserStore();
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+
+/** 菜单管理：PC / APP 分栏（与接口 menu_client 一致） */
+const menuClientTab = ref<"pc" | "app">("pc");
+
+function handleMenuClientTabChange(name: string | number) {
+  menuClientTab.value = name === "app" ? "app" : "pc";
+  refreshList();
+}
+
 const dataFormRef = ref();
 const submitLoading = ref(false);
 
@@ -714,6 +754,7 @@ const formData = reactive<MenuForm>({
   affix: false,
   status: "0",
   description: undefined,
+  client: MenuClientEnum.PC,
 });
 
 // 弹窗状态
@@ -810,7 +851,10 @@ const contentConfig = reactive<IContentConfig<MenuPageQuery>>({
   defaultToolbar: ["refresh", "filter"],
   pagination: false,
   indexAction: async (params) => {
-    const res = await MenuAPI.listMenu(params as MenuPageQuery);
+    const res = await MenuAPI.listMenu({
+      ...(params as MenuPageQuery),
+      menu_client: menuClientTab.value,
+    });
     const tree = res.data.data || [];
     fullMenuTree.value = tree;
     menuOptions.value = formatTree(filterMenuTypes(tree));
@@ -869,6 +913,7 @@ const rules = reactive({
   hidden: [{ required: true, message: "请选择是否隐藏", trigger: "change" }],
   always_show: [{ required: true, message: "请选择始终显示", trigger: "change" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
+  client: [{ required: true, message: "请选择终端", trigger: "change" }],
   redirect: [
     {
       validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
@@ -909,6 +954,7 @@ const initialFormData: MenuForm = {
   affix: false,
   status: "0",
   description: undefined,
+  client: MenuClientEnum.PC,
 };
 
 // 重置表单
@@ -955,12 +1001,15 @@ async function handleOpenDialog(
     Object.assign(formData, initialFormData);
     if (parentRow?.id != null) {
       formData.parent_id = parentRow.id;
+      formData.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
       if (parentRow.type === MenuTypeEnum.MENU) {
         createParentLocked.value = true;
         formData.type = MenuTypeEnum.BUTTON;
       } else if (parentRow.type === MenuTypeEnum.CATALOG) {
         formData.type = MenuTypeEnum.MENU;
       }
+    } else {
+      formData.client = menuClientTab.value;
     }
   }
   dialogVisible.visible = true;
