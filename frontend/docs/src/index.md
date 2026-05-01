@@ -3,6 +3,7 @@
 layout: home
 editLink: true
 lastUpdated: true
+# sidebar: false
 
 hero:
   name: "FastApiAdmin"
@@ -18,11 +19,11 @@ hero:
       text: 快速开始
       link: /start
     - theme: alt
-      text: 在线演示
+      text: 在线预览
       link: https://service.fastapiadmin.com/web
       target: _blank
     - theme: alt
-      text: 小程序演示
+      text: 小程序预览
       link: https://service.fastapiadmin.com/app
       target: _blank
 
@@ -58,3 +59,4 @@ features:
   - icon: 📖
     title: 完善的文档
     details: 提供详尽的中文开发文档和使用指南，降低学习成本，加速项目落地。
+---

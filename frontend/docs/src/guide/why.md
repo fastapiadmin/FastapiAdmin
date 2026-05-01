@@ -54,7 +54,7 @@ graph TB
 - 提交新功能建议
 - 报告bug
 
-请查看我们的[贡献指南](/about/)了解详情。
+请查看我们的[贡献指南](/about/contributing)了解详情。
 
 ## 💪团队我们有
 ### ⚓项目的"定海神针"
@@ -74,7 +74,7 @@ graph TB
   - [FastApp 移动端](https://github.com/fastapiadmin/FastApp.git)
   - [FastDocs 官网文档](https://github.com/fastapiadmin/FastDocs.git)
 - **Gitee**：[https://gitee.com/fastapiadmin/FastapiAdmin](https://gitee.com/fastapiadmin/FastapiAdmin)
-- [联系 or 加入我们](/about/)
+- [联系 or 加入我们](/about/about)
 
 🙌 **无论你是否喜欢这个项目，都希望你能够给个 ⭐ Star 支持！小小的种子蕴含着大大的能量，终有一天星星之火，可以燎原。**
 

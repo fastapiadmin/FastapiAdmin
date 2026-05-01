@@ -2,9 +2,8 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
     base: '/',
-    srcDir: '.',
-    outDir: '../dist',
-    // lang: 'zh-CN',
+    srcDir: 'src',
+    outDir: './dist',
     title: 'FastApiAdmin',
     description: '⚡️ 现代、开源、全栈融合的中后台快速开发平台',
     ignoreDeadLinks: [
@@ -64,25 +63,17 @@ export default defineConfig({
                     {
                         text: '指南',
                         items: [
-                            { text: '项目概述', link: '/overview/' },
-                            { text: '快速开始', link: '/start/' },
-                            { text: '为什么选择FastapiAdmin?', link: '/why/' }
-                        ]
-                    },
-                    {
-                        text: '开发指南',
-                        items: [
-                            { text: '前端开发', link: '/frontend/' },
-                            { text: '后端开发', link: '/backend/' },
-                            { text: '移动端开发', link: '/miniprogram/' },
-                            { text: '开发规范', link: '/guidelines/' }
-                        ]
-                    },
-                    {
-                        text: '部署与API',
-                        items: [
-                            { text: '部署指南', link: '/deployment/' },
-                            { text: 'API文档说明', link: '/api-docs/' },
+                            { text: '项目概述', link: '/guide/overview' },
+                            { text: '快速开始', link: '/guide/start' },
+                            { text: '为什么选择FastapiAdmin?', link: '/guide/why' },
+                            { text: '前端开发', link: '/guide/frontend' },
+                            { text: '后端开发', link: '/guide/backend' },
+                            { text: '移动端开发', link: '/guide/miniprogram' },
+                            { text: '开发规范', link: '/guide/guidelines' },
+                            { text: '示例', link: '/guide/examples' },
+                            { text: '自定义开发', link: '/guide/custom-development' },
+                            { text: '部署指南', link: '/guide/deployment' },
+                            { text: 'API文档说明', link: '/guide/api-docs' }
                         ]
                     },
                     {
@@ -93,46 +84,37 @@ export default defineConfig({
                             { text: 'V1.0.0', link: 'https://github.com/fastapiadmin/FastapiAdmin/tree/v1.0.0', target: '_blank' }
                         ]
                     },
-                    { text: '他们在使用', link: '/users/' },
-                    { text: '赞助', link: '/sponsor/' },
-                    { text: '贡献指南', link: '/contributing/' },
-                    { text: '关于我们', link: '/about/' },
+                    { text: '他们在使用', link: '/about/users' },
+                    { text: '赞助', link: '/about/sponsor' },
+                    { text: '贡献指南', link: '/about/contributing' },
+                    { text: '关于我们', link: '/about/about' },
                 ],
                 sidebar: [
                     {
-                        text: '简介',
+                        text: '指南',
                         collapsed: false,
                         items: [
-                            { text: '项目概述', link: '/overview/' },
-                            { text: '快速开始', link: '/start/' },
-                            { text: '为什么选择FastapiAdmin?', link: '/why/' }
-                        ]
-                    },
-                    {
-                        text: '开发指南',
-                        collapsed: false,
-                        items: [
-                            { text: '前端开发', link: '/frontend/' },
-                            { text: '后端开发', link: '/backend/' },
-                            { text: '移动端开发', link: '/miniprogram/' },
-                            { text: '开发规范', link: '/guidelines/' }
-                        ]
-                    },
-                    {
-                        text: '部署与API',
-                        collapsed: false,
-                        items: [
-                            { text: '部署指南', link: '/deployment/' },
-                            { text: 'API文档说明', link: '/api-docs/' }
+                            { text: '项目概述', link: '/guide/overview' },
+                            { text: '快速开始', link: '/guide/start' },
+                            { text: '为什么选择FastapiAdmin?', link: '/guide/why' },
+                            { text: '前端开发', link: '/guide/frontend' },
+                            { text: '后端开发', link: '/guide/backend' },
+                            { text: '移动端开发', link: '/guide/miniprogram' },
+                            { text: '开发规范', link: '/guide/guidelines' },
+                            { text: '示例', link: '/guide/examples' },
+                            { text: '自定义开发', link: '/guide/custom-development' },
+                            { text: '部署指南', link: '/guide/deployment' },
+                            { text: 'API文档说明', link: '/guide/api-docs' }
                         ]
                     },
                     {
                         text: '关于',
                         items: [
-                            { text: '他们在使用', link: '/users/' },
-                            { text: '赞助', link: '/sponsor/' },
-                            { text: '贡献指南', link: '/contributing/' },
-                            { text: '关于我们', link: '/about/' },
+                            { text: '他们在使用', link: '/about/users' },
+                            { text: '所有用户', link: '/about/users-all' },
+                            { text: '赞助', link: '/about/sponsor' },
+                            { text: '贡献指南', link: '/about/contributing' },
+                            { text: '关于我们', link: '/about/about' },
                         ]
                     }
                 ],
@@ -170,25 +152,17 @@ export default defineConfig({
                     {
                         text: 'Guide',
                         items: [
-                            { text: 'Overview', link: '/en/overview/' },
-                            { text: 'Quick Start', link: '/en/start/' },
-                            { text: 'Why FastapiAdmin?', link: '/en/why/' }
-                        ]
-                    },
-                    {
-                        text: 'Development',
-                        items: [
-                            { text: 'Frontend', link: '/en/frontend/' },
-                            { text: 'Backend', link: '/en/backend/' },
-                            { text: 'Mini Program', link: '/en/miniprogram/' },
-                            { text: 'Guidelines', link: '/en/guidelines/' }
-                        ]
-                    },
-                    {
-                        text: 'Deployment & API',
-                        items: [
-                            { text: 'Deployment', link: '/en/deployment/' },
-                            { text: 'API Docs', link: '/en/api-docs/' },
+                            { text: 'Overview', link: '/en/guide/overview' },
+                            { text: 'Quick Start', link: '/en/guide/start' },
+                            { text: 'Why FastapiAdmin?', link: '/en/guide/why' },
+                            { text: 'Frontend', link: '/en/guide/frontend' },
+                            { text: 'Backend', link: '/en/guide/backend' },
+                            { text: 'Mini Program', link: '/en/guide/miniprogram' },
+                            { text: 'Guidelines', link: '/en/guide/guidelines' },
+                            { text: 'Examples', link: '/en/guide/examples' },
+                            { text: 'Custom Development', link: '/en/guide/custom-development' },
+                            { text: 'Deployment', link: '/en/guide/deployment' },
+                            { text: 'API Docs', link: '/en/guide/api-docs' }
                         ]
                     },
                     {
@@ -199,46 +173,37 @@ export default defineConfig({
                             { text: 'V1.0.0', link: 'https://github.com/fastapiadmin/FastapiAdmin/tree/v1.0.0', target: '_blank' }
                         ]
                     },
-                    { text: 'Who is Using', link: '/en/users/' },
-                    { text: 'Sponsor', link: '/en/sponsor/' },
-                    { text: 'Contributing Guide', link: '/en/contributing/' },
-                    { text: 'About Us', link: '/en/about/' },
+                    { text: 'Who is Using', link: '/en/about/users' },
+                    { text: 'Sponsor', link: '/en/about/sponsor' },
+                    { text: 'Contributing Guide', link: '/en/about/contributing' },
+                    { text: 'About Us', link: '/en/about/about' },
                 ],
                 sidebar: [
                     {
-                        text: 'Introduction',
+                        text: 'Guide',
                         collapsed: false,
                         items: [
-                            { text: 'Overview', link: '/en/overview/' },
-                            { text: 'Quick Start', link: '/en/start/' },
-                            { text: 'Why FastapiAdmin?', link: '/en/why/' }
-                        ]
-                    },
-                    {
-                        text: 'Development',
-                        collapsed: false,
-                        items: [
-                            { text: 'Frontend', link: '/en/frontend/' },
-                            { text: 'Backend', link: '/en/backend/' },
-                            { text: 'Mini Program', link: '/en/miniprogram/' },
-                            { text: 'Guidelines', link: '/en/guidelines/' }
-                        ]
-                    },
-                    {
-                        text: 'Deployment & API',
-                        collapsed: false,
-                        items: [
-                            { text: 'Deployment', link: '/en/deployment/' },
-                            { text: 'API Docs', link: '/en/api-docs/' }
+                            { text: 'Overview', link: '/en/guide/overview' },
+                            { text: 'Quick Start', link: '/en/guide/start' },
+                            { text: 'Why FastapiAdmin?', link: '/en/guide/why' },
+                            { text: 'Frontend', link: '/en/guide/frontend' },
+                            { text: 'Backend', link: '/en/guide/backend' },
+                            { text: 'Mini Program', link: '/en/guide/miniprogram' },
+                            { text: 'Guidelines', link: '/en/guide/guidelines' },
+                            { text: 'Examples', link: '/en/guide/examples' },
+                            { text: 'Custom Development', link: '/en/guide/custom-development' },
+                            { text: 'Deployment', link: '/en/guide/deployment' },
+                            { text: 'API Docs', link: '/en/guide/api-docs' }
                         ]
                     },
                     {
                         text: 'About',
                         items: [
-                            { text: 'Who is Using', link: '/en/users/' },
-                            { text: 'Sponsor', link: '/en/sponsor/' },
-                            { text: 'Contributing Guide', link: '/en/contributing/' },
-                            { text: 'About Us', link: '/en/about/' },
+                            { text: 'Who is Using', link: '/en/about/users' },
+                            { text: 'All Users', link: '/en/about/users-all' },
+                            { text: 'Sponsor', link: '/en/about/sponsor' },
+                            { text: 'Contributing Guide', link: '/en/about/contributing' },
+                            { text: 'About Us', link: '/en/about/about' },
                         ]
                     }
                 ],

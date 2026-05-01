@@ -11,7 +11,7 @@ Thank you for your interest in FastapiAdmin! We warmly welcome community contrib
 
 Before contributing, please take a moment to:
 
-- Read the [Development Guidelines](/en/guidelines/) to understand code style and commit conventions
+- Read the [Development Guidelines](/en/guide/guidelines) to understand code style and commit conventions
 - Search [GitHub Issues](https://github.com/fastapiadmin/FastapiAdmin/issues) to make sure your bug or feature request hasn't already been reported
 - For significant changes, consider opening an Issue first to discuss your approach before writing code
 
@@ -56,7 +56,7 @@ git checkout -b docs/your-doc-description
 
 ### Step 4: Make Changes and Commit
 
-After completing your changes, commit them following the project's [Git commit conventions](/en/guidelines/#git-commit-conventions):
+After completing your changes, commit them following the project's [Git commit conventions](/en/guide/guidelines#git-commit-conventions):
 
 ```bash
 git add .
@@ -155,7 +155,7 @@ The PR page will update automatically — no need to create a new PR.
 
 Your PR needs to meet the following requirements before it can be merged:
 
-- Code follows the project's [Development Guidelines](/en/guidelines/)
+- Code follows the project's [Development Guidelines](/en/guide/guidelines)
 - All automated checks pass (lint, type check, etc.)
 - At least one maintainer Approval
 - No unresolved review comments
@@ -177,6 +177,6 @@ If you run into any issues during the contribution process, feel free to reach o
 
 - Comment on the relevant Issue
 - Send an email to [948080782@qq.com](mailto:948080782@qq.com)
-- Join the WeChat group (see [About Us](/en/about/))
+- Join the WeChat group (see [About Us](/en/about/about))
 
 Thank you again for contributing — we look forward to your PR! 🎉

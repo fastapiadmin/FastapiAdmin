@@ -186,7 +186,7 @@ A: FastapiAdmin supports multiple deployment methods:
 - Manual deployment
 - Cloud service deployment
 
-Detailed deployment steps can be found in the [Deployment Guide](/en/deployment/).
+Detailed deployment steps can be found in the [Deployment Guide](/en/guide/deployment).
 
 #### Q: What are the server requirements for FastapiAdmin?
 

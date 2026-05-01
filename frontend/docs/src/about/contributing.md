@@ -11,7 +11,7 @@ title: 贡献指南
 
 在开始贡献之前，请先阅读以下内容：
 
-- 查阅 [开发规范](/guidelines/)，了解代码风格和提交规范
+- 查阅 [开发规范](/guide/guidelines)，了解代码风格和提交规范
 - 在 [GitHub Issues](https://github.com/fastapiadmin/FastapiAdmin/issues) 或 [Gitee Issues](https://gitee.com/fastapiadmin/FastapiAdmin/issues) 中搜索，确认你的问题或功能需求尚未被提出
 - 对于较大的功能改动，建议先开 Issue 讨论方案，再动手开发
 
@@ -56,7 +56,7 @@ git checkout -b docs/your-doc-description
 
 ### 第四步：开发与提交
 
-完成代码修改后，按照项目的 [Git 提交规范](/guidelines/#git-提交规范) 提交代码：
+完成代码修改后，按照项目的 [Git 提交规范](/guide/guidelines#git-提交规范) 提交代码：
 
 ```bash
 git add .
@@ -155,7 +155,7 @@ PR 页面会自动更新，无需重新创建。
 
 你的 PR 需要满足以下条件才会被合并：
 
-- 代码符合项目 [开发规范](/guidelines/)
+- 代码符合项目 [开发规范](/guide/guidelines)
 - 通过所有自动化检查（lint、type check 等）
 - 至少获得一位维护者的 Approve
 - 没有未解决的 Review 意见
@@ -177,6 +177,6 @@ PR 页面会自动更新，无需重新创建。
 
 - 在相关 Issue 下留言
 - 发送邮件至 [948080782@qq.com](mailto:948080782@qq.com)
-- 加入微信交流群（见 [关于我们](/about/)）
+- 加入微信交流群（见 [关于我们](/about/about)）
 
 再次感谢你的贡献，期待你的 PR！🎉
