@@ -1,0 +1,251 @@
+.layout-sidebar {
+  display: flex;
+  height: 100vh;
+  user-select: none;
+  scrollbar-width: none;
+  border-right: 1px solid var(--art-card-border);
+
+  &.no-border {
+    border-right: none !important;
+  }
+
+  // 自定义滚动条宽度
+  :deep(.el-scrollbar__bar.is-vertical) {
+    width: 4px;
+  }
+
+  :deep(.el-scrollbar__thumb) {
+    right: -2px;
+    background-color: #ccc;
+    border-radius: 2px;
+  }
+
+  .dual-menu-left {
+    position: relative;
+    width: 80px;
+    height: 100%;
+    border-right: 1px solid var(--art-card-border) !important;
+    transition: width 0.25s;
+
+    .logo {
+      margin: auto;
+      margin-top: 12px;
+      margin-bottom: 3px;
+      cursor: pointer;
+    }
+
+    ul {
+      li {
+        > div {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          margin: 8px;
+          overflow: hidden;
+          text-align: center;
+          cursor: pointer;
+          border-radius: 5px;
+
+          .art-svg-icon {
+            display: block;
+            margin: 0 auto;
+            font-size: 20px;
+          }
+
+          span {
+            display: -webkit-box;
+            width: 100%;
+            overflow: hidden;
+            font-size: 12px;
+            text-overflow: ellipsis;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+            -webkit-box-orient: vertical;
+          }
+
+          &.is-active {
+            background: var(--el-color-primary-light-9);
+
+            .art-svg-icon,
+            span {
+              color: var(--theme-color) !important;
+            }
+          }
+        }
+      }
+    }
+
+    .switch-btn {
+      position: absolute;
+      right: 0;
+      bottom: 15px;
+      left: 0;
+      margin: auto;
+    }
+  }
+
+  .menu-left {
+    position: relative;
+    box-sizing: border-box;
+    height: 100vh;
+
+    @media only screen and (width <= 640px) {
+      height: 100dvh;
+    }
+
+    .el-menu {
+      height: 100%;
+    }
+
+    &:hover {
+      .dual-menu-collapse-btn {
+        opacity: 1 !important;
+      }
+    }
+
+    .dual-menu-collapse-btn {
+      position: absolute;
+      top: 50%;
+      right: -11px;
+      z-index: 10;
+      width: 11px;
+      height: 50px;
+      cursor: pointer;
+      background-color: var(--default-box-color);
+      border: 1px solid var(--art-card-border);
+      border-radius: 0 15px 15px 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+      transform: translateY(-50%);
+
+      &:hover {
+        .art-svg-icon {
+          color: var(--art-gray-800) !important;
+        }
+      }
+
+      .art-svg-icon {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -4px;
+        margin: auto;
+        transition: all 0.3s;
+      }
+    }
+  }
+
+  .header {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 60px;
+    overflow: hidden;
+    line-height: 60px;
+    cursor: pointer;
+
+    .logo {
+      margin-left: 22px;
+    }
+
+    p {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 58px;
+      box-sizing: border-box;
+      margin-left: 10px;
+      font-size: 18px;
+
+      &.is-dual-menu-name {
+        left: 25px;
+        margin: auto;
+      }
+    }
+  }
+
+  .el-menu {
+    box-sizing: border-box;
+    // 防止菜单内的滚动影响整个页面滚动
+    overscroll-behavior: contain;
+    border-right: 0;
+    scrollbar-width: none;
+    -ms-scroll-chaining: contain;
+
+    &::-webkit-scrollbar {
+      width: 0 !important;
+    }
+  }
+
+  .menu-model {
+    display: none;
+  }
+}
+
+@media only screen and (width <= 800px) {
+  .layout-sidebar {
+    width: 0;
+
+    .header {
+      height: 50px;
+      line-height: 50px;
+    }
+
+    .el-menu {
+      height: calc(100vh - 60px);
+    }
+
+    .el-menu--collapse {
+      width: 0;
+    }
+
+    // 折叠状态下的header样式
+    .menu-left-close .header {
+      .logo {
+        display: none;
+      }
+
+      p {
+        left: 16px;
+        font-size: 0;
+        opacity: 0 !important;
+      }
+    }
+
+    .menu-model {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      display: block;
+      width: 100%;
+      height: 100vh;
+      background: rgba($color: #000, $alpha: 50%);
+      transition: opacity 0.2s ease-in-out;
+    }
+  }
+}
+
+@media only screen and (width <= 640px) {
+  .layout-sidebar {
+    border-right: 0 !important;
+  }
+}
+
+.dark {
+  .layout-sidebar {
+    border-right: 1px solid rgb(255 255 255 / 13%);
+
+    :deep(.el-scrollbar__thumb) {
+      background-color: #777;
+    }
+
+    .dual-menu-left {
+      border-right: 1px solid rgb(255 255 255 / 9%) !important;
+    }
+  }
+}
