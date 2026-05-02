@@ -10,7 +10,10 @@
     />
     <div class="ml-1">
       <h3 class="mt-5 text-lg font-medium">用户概述</h3>
-      <p class="mt-1 text-sm">比上周 <span class="text-success font-medium">+23%</span></p>
+      <p class="mt-1 text-sm">
+        比上周
+        <span class="text-success font-medium">+23%</span>
+      </p>
       <p class="mt-1 text-sm">我们为您创建了多个选项，可将它们组合在一起并定制为像素完美的页面</p>
     </div>
     <div class="flex-b mt-2">
@@ -23,25 +26,25 @@
 </template>
 
 <script setup lang="ts">
-  interface UserStatItem {
-    name: string
-    num: string
-  }
+interface UserStatItem {
+  name: string;
+  num: string;
+}
 
-  // 最近9个月
-  const xAxisLabels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月']
+// 最近9个月
+const xAxisLabels = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月"];
 
-  // 每月活跃用户数
-  const chartData = [160, 100, 150, 80, 190, 100, 175, 120, 160]
+// 每月活跃用户数
+const chartData = [160, 100, 150, 80, 190, 100, 175, 120, 160];
 
-  /**
-   * 用户统计数据列表
-   * 包含总用户量、总访问量、日访问量和周同比等关键指标
-   */
-  const list: UserStatItem[] = [
-    { name: '总用户量', num: '32k' },
-    { name: '总访问量', num: '128k' },
-    { name: '日访问量', num: '1.2k' },
-    { name: '周同比', num: '+5%' }
-  ]
+/**
+ * 用户统计数据列表
+ * 包含总用户量、总访问量、日访问量和周同比等关键指标
+ */
+const list: UserStatItem[] = [
+  { name: "总用户量", num: "32k" },
+  { name: "总访问量", num: "128k" },
+  { name: "日访问量", num: "1.2k" },
+  { name: "周同比", num: "+5%" },
+];
 </script>

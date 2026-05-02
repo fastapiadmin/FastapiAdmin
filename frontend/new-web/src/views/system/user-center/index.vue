@@ -97,7 +97,7 @@
 
             <div class="flex-c justify-end [&_.el-button]:!w-27.5">
               <ElButton type="primary" class="w-22.5" v-ripple @click="edit">
-                {{ isEdit ? '保存' : '编辑' }}
+                {{ isEdit ? "保存" : "编辑" }}
               </ElButton>
             </div>
           </ElForm>
@@ -136,7 +136,7 @@
 
             <div class="flex-c justify-end [&_.el-button]:!w-27.5">
               <ElButton type="primary" class="w-22.5" v-ripple @click="editPwd">
-                {{ isEditPwd ? '保存' : '编辑' }}
+                {{ isEditPwd ? "保存" : "编辑" }}
               </ElButton>
             </div>
           </ElForm>
@@ -147,101 +147,101 @@
 </template>
 
 <script setup lang="ts">
-  import { useUserStore } from '@/store/modules/user'
-  import type { FormInstance, FormRules } from 'element-plus'
+import { useUserStore } from "@/store/modules/user.store";
+import type { FormInstance, FormRules } from "element-plus";
 
-  defineOptions({ name: 'UserCenter' })
+defineOptions({ name: "UserCenter" });
 
-  const userStore = useUserStore()
-  const userInfo = computed(() => userStore.getUserInfo)
+const userStore = useUserStore();
+const userInfo = computed(() => userStore.getUserInfo);
 
-  const isEdit = ref(false)
-  const isEditPwd = ref(false)
-  const date = ref('')
-  const ruleFormRef = ref<FormInstance>()
+const isEdit = ref(false);
+const isEditPwd = ref(false);
+const date = ref("");
+const ruleFormRef = ref<FormInstance>();
 
-  /**
-   * 用户信息表单
-   */
-  const form = reactive({
-    realName: 'John Snow',
-    nikeName: '皮卡丘',
-    email: '59301283@mall.com',
-    mobile: '18888888888',
-    address: '广东省深圳市宝安区西乡街道101栋201',
-    sex: '2',
-    des: 'Art Design Pro 是一款兼具设计美学与高效开发的后台系统.'
-  })
+/**
+ * 用户信息表单
+ */
+const form = reactive({
+  realName: "John Snow",
+  nikeName: "皮卡丘",
+  email: "59301283@mall.com",
+  mobile: "18888888888",
+  address: "广东省深圳市宝安区西乡街道101栋201",
+  sex: "2",
+  des: "Art Design Pro 是一款兼具设计美学与高效开发的后台系统.",
+});
 
-  /**
-   * 密码修改表单
-   */
-  const pwdForm = reactive({
-    password: '123456',
-    newPassword: '123456',
-    confirmPassword: '123456'
-  })
+/**
+ * 密码修改表单
+ */
+const pwdForm = reactive({
+  password: "123456",
+  newPassword: "123456",
+  confirmPassword: "123456",
+});
 
-  /**
-   * 表单验证规则
-   */
-  const rules = reactive<FormRules>({
-    realName: [
-      { required: true, message: '请输入姓名', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-    ],
-    nikeName: [
-      { required: true, message: '请输入昵称', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-    ],
-    email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
-    mobile: [{ required: true, message: '请输入手机号码', trigger: 'blur' }],
-    address: [{ required: true, message: '请输入地址', trigger: 'blur' }],
-    sex: [{ required: true, message: '请选择性别', trigger: 'blur' }]
-  })
+/**
+ * 表单验证规则
+ */
+const rules = reactive<FormRules>({
+  realName: [
+    { required: true, message: "请输入姓名", trigger: "blur" },
+    { min: 2, max: 50, message: "长度在 2 到 50 个字符", trigger: "blur" },
+  ],
+  nikeName: [
+    { required: true, message: "请输入昵称", trigger: "blur" },
+    { min: 2, max: 50, message: "长度在 2 到 50 个字符", trigger: "blur" },
+  ],
+  email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
+  mobile: [{ required: true, message: "请输入手机号码", trigger: "blur" }],
+  address: [{ required: true, message: "请输入地址", trigger: "blur" }],
+  sex: [{ required: true, message: "请选择性别", trigger: "blur" }],
+});
 
-  /**
-   * 性别选项
-   */
-  const options = [
-    { value: '1', label: '男' },
-    { value: '2', label: '女' }
-  ]
+/**
+ * 性别选项
+ */
+const options = [
+  { value: "1", label: "男" },
+  { value: "2", label: "女" },
+];
 
-  /**
-   * 用户标签列表
-   */
-  const lableList: Array<string> = ['专注设计', '很有想法', '辣~', '大长腿', '川妹子', '海纳百川']
+/**
+ * 用户标签列表
+ */
+const lableList: Array<string> = ["专注设计", "很有想法", "辣~", "大长腿", "川妹子", "海纳百川"];
 
-  onMounted(() => {
-    getDate()
-  })
+onMounted(() => {
+  getDate();
+});
 
-  /**
-   * 根据当前时间获取问候语
-   */
-  const getDate = () => {
-    const h = new Date().getHours()
+/**
+ * 根据当前时间获取问候语
+ */
+const getDate = () => {
+  const h = new Date().getHours();
 
-    if (h >= 6 && h < 9) date.value = '早上好'
-    else if (h >= 9 && h < 11) date.value = '上午好'
-    else if (h >= 11 && h < 13) date.value = '中午好'
-    else if (h >= 13 && h < 18) date.value = '下午好'
-    else if (h >= 18 && h < 24) date.value = '晚上好'
-    else date.value = '很晚了，早点睡'
-  }
+  if (h >= 6 && h < 9) date.value = "早上好";
+  else if (h >= 9 && h < 11) date.value = "上午好";
+  else if (h >= 11 && h < 13) date.value = "中午好";
+  else if (h >= 13 && h < 18) date.value = "下午好";
+  else if (h >= 18 && h < 24) date.value = "晚上好";
+  else date.value = "很晚了，早点睡";
+};
 
-  /**
-   * 切换用户信息编辑状态
-   */
-  const edit = () => {
-    isEdit.value = !isEdit.value
-  }
+/**
+ * 切换用户信息编辑状态
+ */
+const edit = () => {
+  isEdit.value = !isEdit.value;
+};
 
-  /**
-   * 切换密码编辑状态
-   */
-  const editPwd = () => {
-    isEditPwd.value = !isEditPwd.value
-  }
+/**
+ * 切换密码编辑状态
+ */
+const editPwd = () => {
+  isEditPwd.value = !isEditPwd.value;
+};
 </script>

@@ -211,35 +211,35 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'WidgetsWangEditor' })
+defineOptions({ name: "WidgetsWangEditor" });
 
-  const fullEditorRef = ref()
-  const simpleEditorRef = ref()
-  const fullActiveTab = ref('preview')
-  const simpleActiveTab = ref('preview')
-  const activeCollapse = ref(['basic'])
+const fullEditorRef = ref();
+const simpleEditorRef = ref();
+const fullActiveTab = ref("preview");
+const simpleActiveTab = ref("preview");
+const activeCollapse = ref(["basic"]);
 
-  /**
-   * 简化工具栏配置
-   * 只包含基础的编辑功能
-   */
-  const simpleToolbarKeys = [
-    'bold',
-    'italic',
-    'underline',
-    '|',
-    'bulletedList',
-    'numberedList',
-    '|',
-    'insertLink',
-    'insertImage',
-    '|',
-    'undo',
-    'redo'
-  ]
+/**
+ * 简化工具栏配置
+ * 只包含基础的编辑功能
+ */
+const simpleToolbarKeys = [
+  "bold",
+  "italic",
+  "underline",
+  "|",
+  "bulletedList",
+  "numberedList",
+  "|",
+  "insertLink",
+  "insertImage",
+  "|",
+  "undo",
+  "redo",
+];
 
-  // 完整编辑器内容
-  const fullEditorHtml = ref(`<h1>🎨 完整工具栏编辑器示例</h1>
+// 完整编辑器内容
+const fullEditorHtml = ref(`<h1>🎨 完整工具栏编辑器示例</h1>
 <p>这个编辑器包含所有功能，您可以体验丰富的格式编辑功能。</p>
 
 <h2>✨ 文本样式</h2>
@@ -288,10 +288,10 @@ function createEditor() {
   });
 }</code></pre>
 
-<p>🔗 <a href="https://www.wangeditor.com/" target="_blank">访问官网了解更多</a></p>`)
+<p>🔗 <a href="https://www.wangeditor.com/" target="_blank">访问官网了解更多</a></p>`);
 
-  // 简化编辑器内容
-  const simpleEditorHtml = ref(`<h1>✨ 简化工具栏编辑器示例</h1>
+// 简化编辑器内容
+const simpleEditorHtml = ref(`<h1>✨ 简化工具栏编辑器示例</h1>
 <p>这个编辑器只包含基础的编辑功能，界面更加简洁。</p>
 
 <h2>基础文本格式</h2>
@@ -313,30 +313,30 @@ function createEditor() {
 <h2>链接和图片</h2>
 <p>支持插入 <a href="https://www.wangeditor.com/" target="_blank">链接</a> 和图片。</p>
 
-<p>简化版编辑器专注于基础功能，适合简单的内容编辑需求。</p>`)
+<p>简化版编辑器专注于基础功能，适合简单的内容编辑需求。</p>`);
 
-  /**
-   * 清空完整编辑器内容
-   */
-  const clearFullEditor = () => {
-    fullEditorRef.value?.clear()
-    ElMessage.success('完整编辑器已清空')
-  }
+/**
+ * 清空完整编辑器内容
+ */
+const clearFullEditor = () => {
+  fullEditorRef.value?.clear();
+  ElMessage.success("完整编辑器已清空");
+};
 
-  /**
-   * 获取完整编辑器内容
-   */
-  const getFullEditorContent = () => {
-    const content = fullEditorRef.value?.getHtml()
-    console.log('完整编辑器内容:', content)
-    ElMessage.success('完整编辑器内容已输出到控制台')
-  }
+/**
+ * 获取完整编辑器内容
+ */
+const getFullEditorContent = () => {
+  const content = fullEditorRef.value?.getHtml();
+  console.log("完整编辑器内容:", content);
+  ElMessage.success("完整编辑器内容已输出到控制台");
+};
 
-  /**
-   * 设置完整编辑器演示内容
-   */
-  const setFullEditorDemo = () => {
-    const demoContent = `<h2>🎉 完整编辑器演示内容</h2>
+/**
+ * 设置完整编辑器演示内容
+ */
+const setFullEditorDemo = () => {
+  const demoContent = `<h2>🎉 完整编辑器演示内容</h2>
 <p>这是通过方法设置的演示内容，展示完整编辑器的强大功能。</p>
 <ul>
   <li>支持丰富的文本格式</li>
@@ -347,34 +347,34 @@ function createEditor() {
   <tr><th>特性</th><th>状态</th></tr>
   <tr><td>完整工具栏</td><td>✅ 已启用</td></tr>
   <tr><td>高级功能</td><td>✅ 已启用</td></tr>
-</table>`
+</table>`;
 
-    fullEditorRef.value?.setHtml(demoContent)
-    ElMessage.success('已设置完整编辑器演示内容')
-  }
+  fullEditorRef.value?.setHtml(demoContent);
+  ElMessage.success("已设置完整编辑器演示内容");
+};
 
-  /**
-   * 清空简化编辑器内容
-   */
-  const clearSimpleEditor = () => {
-    simpleEditorRef.value?.clear()
-    ElMessage.success('简化编辑器已清空')
-  }
+/**
+ * 清空简化编辑器内容
+ */
+const clearSimpleEditor = () => {
+  simpleEditorRef.value?.clear();
+  ElMessage.success("简化编辑器已清空");
+};
 
-  /**
-   * 获取简化编辑器内容
-   */
-  const getSimpleEditorContent = () => {
-    const content = simpleEditorRef.value?.getHtml()
-    console.log('简化编辑器内容:', content)
-    ElMessage.success('简化编辑器内容已输出到控制台')
-  }
+/**
+ * 获取简化编辑器内容
+ */
+const getSimpleEditorContent = () => {
+  const content = simpleEditorRef.value?.getHtml();
+  console.log("简化编辑器内容:", content);
+  ElMessage.success("简化编辑器内容已输出到控制台");
+};
 
-  /**
-   * 设置简化编辑器演示内容
-   */
-  const setSimpleEditorDemo = () => {
-    const demoContent = `<h2>⚡ 简化编辑器演示内容</h2>
+/**
+ * 设置简化编辑器演示内容
+ */
+const setSimpleEditorDemo = () => {
+  const demoContent = `<h2>⚡ 简化编辑器演示内容</h2>
 <p>这是通过方法设置的演示内容，展示简化编辑器的核心功能。</p>
 <ul>
   <li><strong>基础格式</strong>：加粗、斜体、下划线</li>
@@ -386,152 +386,152 @@ function createEditor() {
   <li>功能专注实用</li>
   <li>适合快速编辑</li>
 </ol>
-<p>🔗 <a href="https://example.com" target="_blank">这是一个链接示例</a></p>`
+<p>🔗 <a href="https://example.com" target="_blank">这是一个链接示例</a></p>`;
 
-    simpleEditorRef.value?.setHtml(demoContent)
-    ElMessage.success('已设置简化编辑器演示内容')
-  }
+  simpleEditorRef.value?.setHtml(demoContent);
+  ElMessage.success("已设置简化编辑器演示内容");
+};
 </script>
 
 <style lang="scss" scoped>
-  .page-content {
-    padding: 20px;
-  }
+.page-content {
+  padding: 20px;
+}
 
-  .editor-card {
-    margin-bottom: 24px;
+.editor-card {
+  margin-bottom: 24px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-card {
+  margin-bottom: 24px;
+}
+
+.preview-card h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  color: var(--el-text-color-primary);
+}
+
+.content-preview {
+  min-height: 200px;
+  max-height: 300px;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+}
+
+.content-preview :deep(h1),
+.content-preview :deep(h2),
+.content-preview :deep(h3) {
+  margin: 16px 0 8px;
+}
+
+.content-preview :deep(p) {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.content-preview :deep(table) {
+  margin: 16px 0;
+}
+
+.content-preview :deep(table th),
+.content-preview :deep(table td) {
+  padding: 8px 12px;
+}
+
+.content-preview :deep(pre) {
+  padding: 12px;
+  margin: 16px 0;
+  overflow-x: auto;
+  background-color: var(--el-fill-color-light);
+  border-radius: 4px;
+}
+
+.content-preview :deep(blockquote) {
+  padding-left: 16px;
+  margin: 16px 0;
+  color: var(--el-text-color-regular);
+  border-left: 4px solid var(--el-color-primary);
+}
+
+.usage-card :deep(.el-collapse-item__content) {
+  padding-bottom: 16px;
+}
+
+.usage-card pre {
+  padding: 16px;
+  margin: 0;
+  overflow-x: auto;
+  background-color: var(--el-fill-color-light);
+  border-radius: 6px;
+}
+
+.usage-card pre code {
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.toolbar-explanation h4 {
+  margin: 0 0 16px;
+  color: var(--el-text-color-primary);
+}
+
+.toolbar-explanation h5 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--el-text-color-regular);
+}
+
+.toolbar-explanation ul {
+  padding-left: 20px;
+  margin: 8px 0 16px;
+}
+
+.toolbar-explanation ul li {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
+
+.toolbar-explanation .note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--el-text-color-placeholder);
+}
+
+@media (width <= 768px) {
+  .page-content {
+    padding: 12px;
   }
 
   .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch !important;
   }
 
   .header-buttons {
-    display: flex;
-    gap: 8px;
+    justify-content: center;
   }
 
-  .preview-card {
-    margin-bottom: 24px;
+  .preview-card :deep(.el-col) {
+    margin-bottom: 16px;
   }
-
-  .preview-card h3 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    color: var(--el-text-color-primary);
-  }
-
-  .content-preview {
-    min-height: 200px;
-    max-height: 300px;
-    padding: 16px;
-    overflow-y: auto;
-    background-color: var(--el-bg-color);
-    border: 1px solid var(--el-border-color);
-    border-radius: 6px;
-  }
-
-  .content-preview :deep(h1),
-  .content-preview :deep(h2),
-  .content-preview :deep(h3) {
-    margin: 16px 0 8px;
-  }
-
-  .content-preview :deep(p) {
-    margin: 8px 0;
-    line-height: 1.6;
-  }
-
-  .content-preview :deep(table) {
-    margin: 16px 0;
-  }
-
-  .content-preview :deep(table th),
-  .content-preview :deep(table td) {
-    padding: 8px 12px;
-  }
-
-  .content-preview :deep(pre) {
-    padding: 12px;
-    margin: 16px 0;
-    overflow-x: auto;
-    background-color: var(--el-fill-color-light);
-    border-radius: 4px;
-  }
-
-  .content-preview :deep(blockquote) {
-    padding-left: 16px;
-    margin: 16px 0;
-    color: var(--el-text-color-regular);
-    border-left: 4px solid var(--el-color-primary);
-  }
-
-  .usage-card :deep(.el-collapse-item__content) {
-    padding-bottom: 16px;
-  }
-
-  .usage-card pre {
-    padding: 16px;
-    margin: 0;
-    overflow-x: auto;
-    background-color: var(--el-fill-color-light);
-    border-radius: 6px;
-  }
-
-  .usage-card pre code {
-    font-family: Consolas, Monaco, 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .toolbar-explanation h4 {
-    margin: 0 0 16px;
-    color: var(--el-text-color-primary);
-  }
-
-  .toolbar-explanation h5 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-  }
-
-  .toolbar-explanation ul {
-    padding-left: 20px;
-    margin: 8px 0 16px;
-  }
-
-  .toolbar-explanation ul li {
-    margin: 4px 0;
-    font-size: 13px;
-    color: var(--el-text-color-regular);
-  }
-
-  .toolbar-explanation .note {
-    margin: 8px 0 0;
-    font-size: 12px;
-    font-style: italic;
-    color: var(--el-text-color-placeholder);
-  }
-
-  @media (width <= 768px) {
-    .page-content {
-      padding: 12px;
-    }
-
-    .card-header {
-      flex-direction: column;
-      gap: 12px;
-      align-items: stretch !important;
-    }
-
-    .header-buttons {
-      justify-content: center;
-    }
-
-    .preview-card :deep(.el-col) {
-      margin-bottom: 16px;
-    }
-  }
+}
 </style>

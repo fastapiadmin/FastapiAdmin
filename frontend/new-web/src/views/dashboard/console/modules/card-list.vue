@@ -24,51 +24,51 @@
 </template>
 
 <script setup lang="ts">
-  interface CardDataItem {
-    des: string
-    icon: string
-    startVal: number
-    duration: number
-    num: number
-    change: string
-  }
+interface CardDataItem {
+  des: string;
+  icon: string;
+  startVal: number;
+  duration: number;
+  num: number;
+  change: string;
+}
 
-  /**
-   * 卡片统计数据列表
-   * 展示总访问次数、在线访客数、点击量和新用户等核心数据指标
-   */
-  const dataList = reactive<CardDataItem[]>([
-    {
-      des: '总访问次数',
-      icon: 'ri:pie-chart-line',
-      startVal: 0,
-      duration: 1000,
-      num: 9120,
-      change: '+20%'
-    },
-    {
-      des: '在线访客数',
-      icon: 'ri:group-line',
-      startVal: 0,
-      duration: 1000,
-      num: 182,
-      change: '+10%'
-    },
-    {
-      des: '点击量',
-      icon: 'ri:fire-line',
-      startVal: 0,
-      duration: 1000,
-      num: 9520,
-      change: '-12%'
-    },
-    {
-      des: '新用户',
-      icon: 'ri:progress-2-line',
-      startVal: 0,
-      duration: 1000,
-      num: 156,
-      change: '+30%'
-    }
-  ])
+/**
+ * 卡片统计数据列表
+ * 展示总访问次数、在线访客数、点击量和新用户等核心数据指标
+ */
+const dataList = reactive<CardDataItem[]>([
+  {
+    des: "总访问次数",
+    icon: "ri:pie-chart-line",
+    startVal: 0,
+    duration: 1000,
+    num: 9120,
+    change: "+20%",
+  },
+  {
+    des: "在线访客数",
+    icon: "ri:group-line",
+    startVal: 0,
+    duration: 1000,
+    num: 182,
+    change: "+10%",
+  },
+  {
+    des: "点击量",
+    icon: "ri:fire-line",
+    startVal: 0,
+    duration: 1000,
+    num: 9520,
+    change: "-12%",
+  },
+  {
+    des: "新用户",
+    icon: "ri:progress-2-line",
+    startVal: 0,
+    duration: 1000,
+    num: 156,
+    change: "+30%",
+  },
+]);
 </script>

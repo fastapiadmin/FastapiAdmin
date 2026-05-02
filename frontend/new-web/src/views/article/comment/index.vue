@@ -73,60 +73,60 @@
 </template>
 
 <script setup lang="ts">
-  import { commentList } from '@/mock/temp/commentList'
+import { commentList } from "@/mock/temp/commentList";
 
-  defineOptions({ name: 'ArticleComment' })
+defineOptions({ name: "ArticleComment" });
 
-  interface CommentItem {
-    id: number
-    date: string
-    content: string
-    collection: number
-    comment: number
-    userName: string
-    color?: string
-  }
+interface CommentItem {
+  id: number;
+  date: string;
+  content: string;
+  collection: number;
+  comment: number;
+  userName: string;
+  color?: string;
+}
 
-  const COLOR_LIST = ['#D8F8FF', '#FDDFD9', '#FCE6F0', '#D3F8F0', '#FFEABC', '#F5E1FF', '#E1E6FE']
+const COLOR_LIST = ["#D8F8FF", "#FDDFD9", "#FCE6F0", "#D3F8F0", "#FFEABC", "#F5E1FF", "#E1E6FE"];
 
-  const showDrawer = ref(false)
-  const clickItem = ref<CommentItem>({
-    id: 1,
-    date: '2024-9-3',
-    content: '加油！学好Node 自己写个小Demo',
-    collection: 5,
-    comment: 8,
-    userName: '匿名',
-    color: COLOR_LIST[0]
-  })
+const showDrawer = ref(false);
+const clickItem = ref<CommentItem>({
+  id: 1,
+  date: "2024-9-3",
+  content: "加油！学好Node 自己写个小Demo",
+  collection: 5,
+  comment: 8,
+  userName: "匿名",
+  color: COLOR_LIST[0],
+});
 
-  /**
-   * 为评论列表分配随机颜色
-   */
-  const commentsWithColors = computed(() => {
-    let lastColorIndex = -1
+/**
+ * 为评论列表分配随机颜色
+ */
+const commentsWithColors = computed(() => {
+  let lastColorIndex = -1;
 
-    return commentList.map((item) => {
-      let newIndex: number
+  return commentList.map((item) => {
+    let newIndex: number;
 
-      do {
-        newIndex = Math.floor(Math.random() * COLOR_LIST.length)
-      } while (newIndex === lastColorIndex && COLOR_LIST.length > 1)
+    do {
+      newIndex = Math.floor(Math.random() * COLOR_LIST.length);
+    } while (newIndex === lastColorIndex && COLOR_LIST.length > 1);
 
-      lastColorIndex = newIndex
+    lastColorIndex = newIndex;
 
-      return {
-        ...item,
-        color: COLOR_LIST[newIndex]
-      }
-    })
-  })
+    return {
+      ...item,
+      color: COLOR_LIST[newIndex],
+    };
+  });
+});
 
-  /**
-   * 打开评论详情抽屉
-   */
-  const openDrawer = (item: CommentItem) => {
-    showDrawer.value = true
-    clickItem.value = item
-  }
+/**
+ * 打开评论详情抽屉
+ */
+const openDrawer = (item: CommentItem) => {
+  showDrawer.value = true;
+  clickItem.value = item;
+};
 </script>

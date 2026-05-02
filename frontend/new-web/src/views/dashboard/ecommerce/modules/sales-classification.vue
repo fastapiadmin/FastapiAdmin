@@ -11,7 +11,7 @@
       :data="[
         { value: 30, name: '电子产品' },
         { value: 55, name: '服装鞋包' },
-        { value: 36, name: '家居用品' }
+        { value: 36, name: '家居用品' },
       ]"
       :color="['#4C87F3', '#EDF2FF', '#8BD8FC']"
       :radius="['70%', '80%']"

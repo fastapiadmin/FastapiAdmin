@@ -20,7 +20,7 @@
             text: '开始探索',
             color: 'var(--art-success)',
             textColor: '#fff',
-            radius: '6px'
+            radius: '6px',
           }"
           @buttonClick="handleBannerClick"
         />
@@ -39,10 +39,10 @@
             show: true,
             text: '立即参与',
             color: '#FF5A89',
-            textColor: '#fff'
+            textColor: '#fff',
           }"
           :imageConfig="{
-            src: icon3
+            src: icon3,
           }"
         />
       </ElCol>
@@ -50,7 +50,7 @@
         <ArtBasicBanner
           boxStyle="!bg-[#70B1FF]"
           :imageConfig="{
-            src: icon5
+            src: icon5,
           }"
         >
           <template #title>
@@ -59,15 +59,15 @@
 
           <template #subtitle>
             <div style="margin-top: 12px">
-              <p style="position: relative; z-index: 10; font-style: italic"
-                >灵活配置，强大扩展，支持自定义插槽内容</p
-              >
+              <p style="position: relative; z-index: 10; font-style: italic">
+                灵活配置，强大扩展，支持自定义插槽内容
+              </p>
             </div>
           </template>
 
           <template #button>
             <div style="margin-top: 12px">
-              <ElButton type="primary" color="#04A1FF"> 查看文档 </ElButton>
+              <ElButton type="primary" color="#04A1FF">查看文档</ElButton>
             </div>
           </template>
         </ArtBasicBanner>
@@ -101,7 +101,7 @@
             show: true,
             text: '查看详情',
             color: 'var(--art-warning)',
-            textColor: '#fff'
+            textColor: '#fff',
           }"
         />
       </ElCol>
@@ -114,7 +114,7 @@
             show: true,
             text: '下载报告',
             color: 'var(--art-error)',
-            textColor: '#fff'
+            textColor: '#fff',
           }"
         />
       </ElCol>
@@ -127,13 +127,13 @@
             show: true,
             text: '立即更新',
             color: 'var(--theme-color)',
-            textColor: '#fff'
+            textColor: '#fff',
           }"
           :cancelButton="{
             show: true,
             text: '稍后提醒',
             color: '#eee',
-            textColor: '#333'
+            textColor: '#333',
           }"
           @click="handleConfirm"
           @cancel="handleCancel"
@@ -144,74 +144,74 @@
 </template>
 
 <script setup lang="ts">
-  import icon2 from '@imgs/3d/icon2.webp'
-  import icon3 from '@imgs/3d/icon3.webp'
-  import icon4 from '@imgs/3d/icon4.webp'
-  import icon5 from '@imgs/3d/icon7.webp'
+import icon2 from "@imgs/3d/icon2.webp";
+import icon3 from "@imgs/3d/icon3.webp";
+import icon4 from "@imgs/3d/icon4.webp";
+import icon5 from "@imgs/3d/icon7.webp";
 
-  defineOptions({ name: 'TemplateBanners' })
+defineOptions({ name: "TemplateBanners" });
 
-  /**
-   * 处理横幅点击事件
-   */
-  const handleBannerClick = () => {
-    console.log('banner clicked')
-  }
+/**
+ * 处理横幅点击事件
+ */
+const handleBannerClick = () => {
+  console.log("banner clicked");
+};
 
-  /**
-   * 处理确认按钮点击事件
-   */
-  const handleConfirm = () => {
-    console.log('confirm clicked')
-  }
+/**
+ * 处理确认按钮点击事件
+ */
+const handleConfirm = () => {
+  console.log("confirm clicked");
+};
 
-  /**
-   * 处理取消按钮点击事件
-   */
-  const handleCancel = () => {
-    console.log('cancel clicked')
-  }
+/**
+ * 处理取消按钮点击事件
+ */
+const handleCancel = () => {
+  console.log("cancel clicked");
+};
 
-  /**
-   * 预设横幅配置
-   * 提供常用的横幅样式配置，可直接通过 v-bind 使用
-   */
-  const PresetBanners = {
-    marketing: {
-      title: '限时优惠活动',
-      subtitle: '精选商品 48 小时闪购，最高享受 7 折优惠，数量有限！',
-      titleColor: 'var(--art-gray-900)',
-      subtitleColor: 'var(--art-gray-900)',
-      boxStyle: '!bg-success/15',
-      meteorConfig: { enabled: true, count: 15 },
-      buttonConfig: {
-        show: true,
-        text: '立即抢购',
-        color: 'var(--art-success)',
-        textColor: '#fff'
-      }
+/**
+ * 预设横幅配置
+ * 提供常用的横幅样式配置，可直接通过 v-bind 使用
+ */
+const PresetBanners = {
+  marketing: {
+    title: "限时优惠活动",
+    subtitle: "精选商品 48 小时闪购，最高享受 7 折优惠，数量有限！",
+    titleColor: "var(--art-gray-900)",
+    subtitleColor: "var(--art-gray-900)",
+    boxStyle: "!bg-success/15",
+    meteorConfig: { enabled: true, count: 15 },
+    buttonConfig: {
+      show: true,
+      text: "立即抢购",
+      color: "var(--art-success)",
+      textColor: "#fff",
     },
-    info: {
-      title: '服务到期提醒',
-      subtitle: '您的高级服务将在 7 天后到期，请及时续费以继续享受完整功能。',
-      titleColor: 'var(--art-gray-900)',
-      subtitleColor: 'var(--art-gray-900)',
-      boxStyle: '!bg-theme/15',
-      meteorConfig: { enabled: true, count: 15 },
-      buttonConfig: {
-        show: true,
-        text: '立即续费',
-        color: 'var(--art-secondary)',
-        textColor: '#fff'
-      }
-    }
-  } as const
+  },
+  info: {
+    title: "服务到期提醒",
+    subtitle: "您的高级服务将在 7 天后到期，请及时续费以继续享受完整功能。",
+    titleColor: "var(--art-gray-900)",
+    subtitleColor: "var(--art-gray-900)",
+    boxStyle: "!bg-theme/15",
+    meteorConfig: { enabled: true, count: 15 },
+    buttonConfig: {
+      show: true,
+      text: "立即续费",
+      color: "var(--art-secondary)",
+      textColor: "#fff",
+    },
+  },
+} as const;
 </script>
 
 <style scoped>
-  @reference '@styles/core/tailwind.css';
+@reference '@styles/core/tailwind.css';
 
-  .page-title {
-    @apply my-5 text-xl font-medium first:mt-0;
-  }
+.page-title {
+  @apply my-5 text-xl font-medium first:mt-0;
+}
 </style>

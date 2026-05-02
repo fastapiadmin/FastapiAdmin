@@ -22,23 +22,23 @@
 </template>
 
 <script setup lang="ts">
-  import AppConfig from '@/config'
-  import { WEB_LINKS } from '@/utils/constants'
+import AppConfig from "@/config";
+import { WEB_LINKS } from "@/utils/constants";
 
-  const systemName = AppConfig.systemInfo.name
+const systemName = AppConfig.systemInfo.name;
 
-  const linkList = [
-    { label: '项目官网', url: WEB_LINKS.DOCS },
-    { label: '文档', url: WEB_LINKS.INTRODUCE },
-    { label: 'Github', url: WEB_LINKS.GITHUB_HOME },
-    { label: '哔哩哔哩', url: WEB_LINKS.BILIBILI }
-  ]
+const linkList = [
+  { label: "项目官网", url: WEB_LINKS.DOCS },
+  { label: "文档", url: WEB_LINKS.INTRODUCE },
+  { label: "Github", url: WEB_LINKS.GITHUB_HOME },
+  { label: "哔哩哔哩", url: WEB_LINKS.BILIBILI },
+];
 
-  /**
-   * 在新标签页中打开指定 URL
-   * @param url 要打开的网页地址
-   */
-  const goPage = (url: string): void => {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+/**
+ * 在新标签页中打开指定 URL
+ * @param url 要打开的网页地址
+ */
+const goPage = (url: string): void => {
+  window.open(url, "_blank", "noopener,noreferrer");
+};
 </script>

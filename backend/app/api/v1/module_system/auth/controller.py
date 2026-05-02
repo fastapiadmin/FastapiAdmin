@@ -1,13 +1,17 @@
+import json
+import secrets
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Path, Query, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ErrorResponse, SuccessResponse
 from app.config.setting import settings
 from app.core.dependencies import db_getter, get_current_user, redis_getter
+from app.core.exceptions import CustomException
+from app.core.redis_crud import RedisCURD
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 from app.core.security import CustomOAuth2PasswordRequestForm
@@ -19,6 +23,15 @@ from .schema import (
     JWTOutSchema,
     LogoutPayloadSchema,
     RefreshTokenPayloadSchema,
+)
+from .oauth_service import (
+    STATE_PREFIX,
+    build_authorize_url,
+    complete_oauth_login,
+    oauth_service_error_redirect,
+    oauth_service_frontend_redirect_from_token,
+    save_oauth_state,
+    _callback_url,
 )
 from .service import AutoLoginService, CaptchaService, LoginService
 
@@ -236,3 +249,100 @@ async def auto_login_controller(
     )
     log.info("用户免登录成功")
     return SuccessResponse(data=login_token.model_dump(), msg="登录成功")
+
+
+@AuthRouter.get(
+    "/oauth/{provider}/login",
+    summary="第三方OAuth跳转",
+    description="浏览器重定向到微信/GitHub/Gitee/QQ 授权页；redirect_uri 为授权完成后回到前端的登录页地址（如 http://localhost:5173/login）。",
+)
+async def oauth_login_redirect_controller(
+    request: Request,
+    redis: Annotated[Redis, Depends(redis_getter)],
+    provider: Annotated[str, Path(description="wechat | qq | github | gitee")],
+    redirect_uri: Annotated[
+        str | None,
+        Query(description="OAuth 完成后浏览器回到的前端登录页完整 URL"),
+    ] = None,
+) -> RedirectResponse:
+    allowed = {"wechat", "qq", "github", "gitee"}
+    fe = redirect_uri or settings.OAUTH_FRONTEND_FALLBACK
+    if provider not in allowed:
+        return RedirectResponse(
+            url=oauth_service_error_redirect(fe, "不支持的 OAuth 渠道"),
+            status_code=302,
+        )
+    if not redirect_uri:
+        return RedirectResponse(
+            url=oauth_service_error_redirect(fe, "缺少 redirect_uri 参数"),
+            status_code=302,
+        )
+    try:
+        state = secrets.token_urlsafe(32)
+        await save_oauth_state(
+            redis=redis,
+            state=state,
+            provider=provider,
+            frontend_redirect=redirect_uri,
+        )
+        cb = _callback_url(request, provider)
+        url = build_authorize_url(provider=provider, callback_url=cb, state=state)
+        return RedirectResponse(url=url, status_code=302)
+    except CustomException as e:
+        return RedirectResponse(
+            url=oauth_service_error_redirect(redirect_uri, e.msg),
+            status_code=302,
+        )
+
+
+@AuthRouter.get(
+    "/oauth/{provider}/callback",
+    summary="第三方OAuth回调",
+    include_in_schema=False,
+)
+async def oauth_callback_controller(
+    request: Request,
+    redis: Annotated[Redis, Depends(redis_getter)],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    provider: Annotated[str, Path()],
+    code: Annotated[str | None, Query()] = None,
+    state: Annotated[str | None, Query()] = None,
+) -> RedirectResponse:
+    fe_fallback = settings.OAUTH_FRONTEND_FALLBACK
+
+    async def resolve_frontend() -> str:
+        if not state:
+            return fe_fallback
+        raw = await RedisCURD(redis).get(f"{STATE_PREFIX}{state}")
+        if not raw:
+            return fe_fallback
+        if isinstance(raw, bytes):
+            raw = raw.decode("utf-8")
+        try:
+            payload = json.loads(raw)
+            return str(payload.get("frontend_redirect") or fe_fallback).strip() or fe_fallback
+        except json.JSONDecodeError:
+            return fe_fallback
+
+    if provider not in {"wechat", "qq", "github", "gitee"}:
+        url = oauth_service_error_redirect(await resolve_frontend(), "不支持的 OAuth 渠道")
+        return RedirectResponse(url=url, status_code=302)
+    if not code or not state:
+        url = oauth_service_error_redirect(
+            await resolve_frontend(), "授权被取消或参数不完整"
+        )
+        return RedirectResponse(url=url, status_code=302)
+    try:
+        token, fe = await complete_oauth_login(
+            request=request,
+            redis=redis,
+            db=db,
+            provider=provider,
+            code=code,
+            state=state,
+        )
+        success_url = oauth_service_frontend_redirect_from_token(fe, token)
+        return RedirectResponse(url=success_url, status_code=302)
+    except CustomException as e:
+        fe = await resolve_frontend()
+        return RedirectResponse(url=oauth_service_error_redirect(fe, e.msg), status_code=302)

@@ -31,22 +31,22 @@
  * - createResponsiveSpanCalculator: 创建 span 计算器（柯里化）
  *
  * @module utils/form/responsive
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
 /**
  * 响应式断点类型
  */
-export type ResponsiveBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type ResponsiveBreakpoint = "xs" | "sm" | "md" | "lg" | "xl";
 
 /**
  * 断点配置映射
  */
 interface BreakpointConfig {
   /** 最小 span 阈值 */
-  threshold: number
+  threshold: number;
   /** 降级后的 span 值 */
-  fallback: number
+  fallback: number;
 }
 
 /**
@@ -57,8 +57,8 @@ const BREAKPOINT_CONFIG: Record<ResponsiveBreakpoint, BreakpointConfig | null> =
   sm: { threshold: 12, fallback: 12 }, // 平板：小于 12 时使用半宽
   md: { threshold: 8, fallback: 8 }, // 中等屏幕：小于 8 时使用三分之一宽
   lg: null, // 大屏幕：直接使用设置的 span
-  xl: null // 超大屏幕：直接使用设置的 span
-}
+  xl: null, // 超大屏幕：直接使用设置的 span
+};
 
 /**
  * 计算响应式列宽
@@ -87,16 +87,16 @@ export function calculateResponsiveSpan(
   defaultSpan: number,
   breakpoint: ResponsiveBreakpoint
 ): number {
-  const finalSpan = itemSpan ?? defaultSpan
-  const config = BREAKPOINT_CONFIG[breakpoint]
+  const finalSpan = itemSpan ?? defaultSpan;
+  const config = BREAKPOINT_CONFIG[breakpoint];
 
   // 如果没有配置（lg/xl），直接返回原始 span
   if (!config) {
-    return finalSpan
+    return finalSpan;
   }
 
   // 如果 span 小于阈值，使用降级值
-  return finalSpan >= config.threshold ? finalSpan : config.fallback
+  return finalSpan >= config.threshold ? finalSpan : config.fallback;
 }
 
 /**
@@ -117,6 +117,6 @@ export function calculateResponsiveSpan(
  */
 export function createResponsiveSpanCalculator(defaultSpan: number) {
   return (itemSpan: number | undefined, breakpoint: ResponsiveBreakpoint): number => {
-    return calculateResponsiveSpan(itemSpan, defaultSpan, breakpoint)
-  }
+    return calculateResponsiveSpan(itemSpan, defaultSpan, breakpoint);
+  };
 }

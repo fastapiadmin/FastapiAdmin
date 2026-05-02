@@ -10,14 +10,14 @@
 </template>
 
 <script lang="ts" setup>
-  defineOptions({ name: 'ArtIconButton' })
+defineOptions({ name: "ArtIconButton" });
 
-  interface Props {
-    /** 图标名称 */
-    icon: string
-    /** 圆角按钮 */
-    circle?: boolean
-  }
+interface Props {
+  /** 图标名称 */
+  icon: string;
+  /** 圆角按钮 */
+  circle?: boolean;
+}
 
-  withDefaults(defineProps<Props>(), {})
+withDefaults(defineProps<Props>(), {});
 </script>

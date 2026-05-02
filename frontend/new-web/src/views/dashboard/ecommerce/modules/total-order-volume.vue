@@ -11,7 +11,7 @@
       :data="[
         { value: 30, name: '已完成' },
         { value: 25, name: '处理中' },
-        { value: 45, name: '待发货' }
+        { value: 45, name: '待发货' },
       ]"
       :color="['#4C87F3', '#93F1B4', '#8BD8FC']"
       :radius="['56%', '76%']"

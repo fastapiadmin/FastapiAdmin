@@ -3,9 +3,9 @@
     <div class="text-2xl font-medium mt-5 max-sm:text-2xl max-sm:mt-3">图标</div>
     <div class="text-g-800">
       v.3.0 版本图标库升级为 iconify，可在
-      <a href="https://icones.js.org/" target="_blank" class="text-theme hover:underline"
-        >Iconify</a
-      >
+      <a href="https://icones.js.org/" target="_blank" class="text-theme hover:underline">
+        Iconify
+      </a>
       中查找，支持多种图标库，如 Remix Icon, Solar, Tabler Icons 等。
     </div>
     <div class="text-g-800">
@@ -14,11 +14,14 @@
         href="https://icones.js.org/collection/ri"
         target="_blank"
         class="text-theme hover:underline"
-        >Iconify</a
       >
-      或<a href="https://remixicon.com/" target="_blank" class="text-theme hover:underline">
-        Remix Icon 官网 </a
-      >搜索使用。
+        Iconify
+      </a>
+      或
+      <a href="https://remixicon.com/" target="_blank" class="text-theme hover:underline">
+        Remix Icon 官网
+      </a>
+      搜索使用。
     </div>
 
     <!-- Iconify 图标 -->
@@ -104,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import ArtSvgIcon from "@/components/core/base/art-svg-icon/index.vue";
 
-  defineOptions({ name: 'IconPage' })
+defineOptions({ name: "IconPage" });
 </script>

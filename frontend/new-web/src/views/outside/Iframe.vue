@@ -11,32 +11,32 @@
 </template>
 
 <script setup lang="ts">
-  import { IframeRouteManager } from '@/router/core'
+import { IframeRouteManager } from "@/router/core";
 
-  defineOptions({ name: 'IframeView' })
+defineOptions({ name: "IframeView" });
 
-  const route = useRoute()
-  const isLoading = ref(true)
-  const iframeUrl = ref('')
-  const iframeRef = ref<HTMLIFrameElement | null>(null)
+const route = useRoute();
+const isLoading = ref(true);
+const iframeUrl = ref("");
+const iframeRef = ref<HTMLIFrameElement | null>(null);
 
-  /**
-   * 初始化 iframe URL
-   * 从路由配置中获取对应的外部链接地址
-   */
-  onMounted(() => {
-    const iframeRoute = IframeRouteManager.getInstance().findByPath(route.path)
+/**
+ * 初始化 iframe URL
+ * 从路由配置中获取对应的外部链接地址
+ */
+onMounted(() => {
+  const iframeRoute = IframeRouteManager.getInstance().findByPath(route.path);
 
-    if (iframeRoute?.meta) {
-      iframeUrl.value = iframeRoute.meta.link || ''
-    }
-  })
-
-  /**
-   * 处理 iframe 加载完成事件
-   * 隐藏加载状态
-   */
-  const handleIframeLoad = (): void => {
-    isLoading.value = false
+  if (iframeRoute?.meta) {
+    iframeUrl.value = iframeRoute.meta.link || "";
   }
+});
+
+/**
+ * 处理 iframe 加载完成事件
+ * 隐藏加载状态
+ */
+const handleIframeLoad = (): void => {
+  isLoading.value = false;
+};
 </script>

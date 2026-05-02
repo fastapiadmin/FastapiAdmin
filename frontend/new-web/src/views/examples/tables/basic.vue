@@ -12,52 +12,51 @@
         :pagination="pagination"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
-      >
-      </ArtTable>
+      ></ArtTable>
     </ElCard>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetUserList } from '@/api/system-manage'
+import { useTable } from "@/hooks/core/useTable";
+import { fetchGetUserList } from "@/api/system-manage";
 
-  defineOptions({ name: 'UserMixedUsageExample' })
+defineOptions({ name: "UserMixedUsageExample" });
 
-  const { data, columns, loading, pagination, handleSizeChange, handleCurrentChange } = useTable({
-    core: {
-      apiFn: fetchGetUserList,
-      apiParams: {
-        current: 1,
-        size: 20,
-        userName: '',
-        userPhone: '',
-        userEmail: ''
+const { data, columns, loading, pagination, handleSizeChange, handleCurrentChange } = useTable({
+  core: {
+    apiFn: fetchGetUserList,
+    apiParams: {
+      current: 1,
+      size: 20,
+      userName: "",
+      userPhone: "",
+      userEmail: "",
+    },
+    columnsFactory: () => [
+      {
+        prop: "id",
+        label: "ID",
       },
-      columnsFactory: () => [
-        {
-          prop: 'id',
-          label: 'ID'
-        },
-        {
-          prop: 'nickName',
-          label: '昵称'
-        },
-        {
-          prop: 'userGender',
-          label: '性别',
-          sortable: true,
-          formatter: (row) => row.userGender || '未知'
-        },
-        {
-          prop: 'userPhone',
-          label: '手机号'
-        },
-        {
-          prop: 'userEmail',
-          label: '邮箱'
-        }
-      ]
-    }
-  })
+      {
+        prop: "nickName",
+        label: "昵称",
+      },
+      {
+        prop: "userGender",
+        label: "性别",
+        sortable: true,
+        formatter: (row) => row.userGender || "未知",
+      },
+      {
+        prop: "userPhone",
+        label: "手机号",
+      },
+      {
+        prop: "userEmail",
+        label: "邮箱",
+      },
+    ],
+  },
+});
 </script>

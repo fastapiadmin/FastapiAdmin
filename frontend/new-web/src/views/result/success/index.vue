@@ -17,5 +17,5 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'ResultSuccess' })
+defineOptions({ name: "ResultSuccess" });
 </script>

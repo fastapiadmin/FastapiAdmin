@@ -17,10 +17,10 @@
  * - 防止用户访问无权限的页面
  *
  * @module router/core/RoutePermissionValidator
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import type { AppRouteRecord } from '@/types/router'
+import type { AppRouteRecord } from "@/types/router";
 
 /**
  * 路由权限验证器
@@ -34,11 +34,11 @@ export class RoutePermissionValidator {
    */
   static hasPermission(targetPath: string, menuList: AppRouteRecord[]): boolean {
     // 根路径始终允许访问
-    if (targetPath === '/') {
-      return true
+    if (targetPath === "/") {
+      return true;
     }
 
-    return this.matchRoute(targetPath, menuList)
+    return this.matchRoute(targetPath, menuList);
   }
 
   /**
@@ -52,25 +52,25 @@ export class RoutePermissionValidator {
     pathSet: Set<string> = new Set()
   ): Set<string> {
     if (!Array.isArray(menuList) || menuList.length === 0) {
-      return pathSet
+      return pathSet;
     }
 
     for (const menuItem of menuList) {
       if (!menuItem.path) {
-        continue
+        continue;
       }
 
       // 标准化路径并添加到集合
-      const menuPath = menuItem.path.startsWith('/') ? menuItem.path : `/${menuItem.path}`
-      pathSet.add(menuPath)
+      const menuPath = menuItem.path.startsWith("/") ? menuItem.path : `/${menuItem.path}`;
+      pathSet.add(menuPath);
 
       // 递归处理子菜单
       if (menuItem.children?.length) {
-        this.buildMenuPathSet(menuItem.children, pathSet)
+        this.buildMenuPathSet(menuItem.children, pathSet);
       }
     }
 
-    return pathSet
+    return pathSet;
   }
 
   /**
@@ -84,10 +84,10 @@ export class RoutePermissionValidator {
     // 遍历路径集合，检查是否有前缀匹配
     for (const menuPath of pathSet) {
       if (targetPath.startsWith(`${menuPath}/`)) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
 
   /**
@@ -95,46 +95,46 @@ export class RoutePermissionValidator {
    */
   static matchRoute(targetPath: string, routes: AppRouteRecord[]): boolean {
     if (!Array.isArray(routes) || routes.length === 0) {
-      return false
+      return false;
     }
 
     for (const route of routes) {
       if (!route.path) {
-        continue
+        continue;
       }
 
-      const routePath = route.path.startsWith('/') ? route.path : `/${route.path}`
+      const routePath = route.path.startsWith("/") ? route.path : `/${route.path}`;
 
       if (
         routePath === targetPath ||
         this.isDynamicRouteMatch(targetPath, routePath) ||
         targetPath.startsWith(`${routePath}/`)
       ) {
-        return true
+        return true;
       }
 
       if (route.children?.length && this.matchRoute(targetPath, route.children)) {
-        return true
+        return true;
       }
     }
 
-    return false
+    return false;
   }
 
   /**
    * 检查目标路径是否匹配动态参数路由，如 /demo/123 匹配 /demo/:id
    */
   static isDynamicRouteMatch(targetPath: string, routePath: string): boolean {
-    if (!routePath.includes(':')) {
-      return false
+    if (!routePath.includes(":")) {
+      return false;
     }
 
     const pattern = routePath
-      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      .replace(/:([^/]+)/g, '[^/]+')
-      .replace(/\\\*/g, '.*')
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/:([^/]+)/g, "[^/]+")
+      .replace(/\\\*/g, ".*");
 
-    return new RegExp(`^${pattern}$`).test(targetPath)
+    return new RegExp(`^${pattern}$`).test(targetPath);
   }
 
   /**
@@ -148,14 +148,14 @@ export class RoutePermissionValidator {
   static validatePath(
     targetPath: string,
     menuList: AppRouteRecord[],
-    homePath: string = '/'
+    homePath: string = "/"
   ): { path: string; hasPermission: boolean } {
-    const hasPermission = this.hasPermission(targetPath, menuList)
+    const hasPermission = this.hasPermission(targetPath, menuList);
 
     if (hasPermission) {
-      return { path: targetPath, hasPermission: true }
+      return { path: targetPath, hasPermission: true };
     }
 
-    return { path: homePath, hasPermission: false }
+    return { path: homePath, hasPermission: false };
   }
 }

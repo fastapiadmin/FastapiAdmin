@@ -35,7 +35,7 @@
         :font="{
           fontSize: 20,
           fontFamily: 'Arial',
-          color: 'rgba(255, 0, 0, 0.3)'
+          color: 'rgba(255, 0, 0, 0.3)',
         }"
         :rotate="-22"
         :gap="[100, 100]"
@@ -48,28 +48,28 @@
       :type="settingStore.watermarkVisible ? 'danger' : 'primary'"
       @click="handleWatermarkVisible"
     >
-      {{ settingStore.watermarkVisible ? '隐藏全局水印' : '显示全局水印' }}
+      {{ settingStore.watermarkVisible ? "隐藏全局水印" : "显示全局水印" }}
     </ElButton>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { useSettingStore } from '@/store/modules/setting'
+import { useSettingsStore } from "@/store/modules/setting.store";
 
-  defineOptions({ name: 'Watermark' })
+defineOptions({ name: "Watermark" });
 
-  const settingStore = useSettingStore()
+const settingStore = useSettingsStore();
 
-  /**
-   * 水印图片 URL
-   */
-  const watermarkImage = ref('https://element-plus.org/images/element-plus-logo.svg')
+/**
+ * 水印图片 URL
+ */
+const watermarkImage = ref("https://element-plus.org/images/element-plus-logo.svg");
 
-  /**
-   * 切换全局水印显示状态
-   */
-  const handleWatermarkVisible = () => {
-    useSettingStore().setWatermarkVisible(!settingStore.watermarkVisible)
-    ElMessage.success(settingStore.watermarkVisible ? '已显示全局水印' : '已隐藏全局水印')
-  }
+/**
+ * 切换全局水印显示状态
+ */
+const handleWatermarkVisible = () => {
+  useSettingsStore().setWatermarkVisible(!settingStore.watermarkVisible);
+  ElMessage.success(settingStore.watermarkVisible ? "已显示全局水印" : "已隐藏全局水印");
+};
 </script>

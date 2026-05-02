@@ -24,35 +24,35 @@
  * 例如：sys-v1.0.0-user, sys-v1.0.0-setting
  *
  * @module utils/storage/storage-config
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 export class StorageConfig {
   /** 当前应用版本 */
-  static readonly CURRENT_VERSION = __APP_VERSION__
+  static readonly CURRENT_VERSION = __APP_VERSION__;
 
   /** 存储键前缀 */
-  static readonly STORAGE_PREFIX = 'sys-v'
+  static readonly STORAGE_PREFIX = "sys-v";
 
   /** 版本键名 */
-  static readonly VERSION_KEY = 'sys-version'
+  static readonly VERSION_KEY = "sys-version";
 
   /** 主题键名（index.html中使用了，如果修改，需要同步修改） */
-  static readonly THEME_KEY = 'sys-theme'
+  static readonly THEME_KEY = "sys-theme";
 
   /** 上次登录用户ID键名（用于判断是否为同一用户登录） */
-  static readonly LAST_USER_ID_KEY = 'sys-last-user-id'
+  static readonly LAST_USER_ID_KEY = "sys-last-user-id";
 
   /** 响应式布局切换时暂存桌面端菜单类型 */
-  static readonly RESPONSIVE_MENU_TYPE_KEY = 'sys-responsive-menu-type'
+  static readonly RESPONSIVE_MENU_TYPE_KEY = "sys-responsive-menu-type";
 
   /** 跳过升级检查的版本 */
-  static readonly SKIP_UPGRADE_VERSION = '1.0.0'
+  static readonly SKIP_UPGRADE_VERSION = "1.0.0";
 
   /** 升级处理延迟时间（毫秒） */
-  static readonly UPGRADE_DELAY = 1000
+  static readonly UPGRADE_DELAY = 1000;
 
   /** 登出延迟时间（毫秒） */
-  static readonly LOGOUT_DELAY = 1000
+  static readonly LOGOUT_DELAY = 1000;
 
   /**
    * 生成版本化的存储键名
@@ -60,7 +60,7 @@ export class StorageConfig {
    * @param version 版本号，默认使用当前版本
    */
   static generateStorageKey(storeId: string, version: string = this.CURRENT_VERSION): string {
-    return `${this.STORAGE_PREFIX}${version}-${storeId}`
+    return `${this.STORAGE_PREFIX}${version}-${storeId}`;
   }
 
   /**
@@ -68,7 +68,7 @@ export class StorageConfig {
    * @param version 版本号，默认使用当前版本
    */
   static generateLegacyKey(version: string = this.CURRENT_VERSION): string {
-    return `${this.STORAGE_PREFIX}${version}`
+    return `${this.STORAGE_PREFIX}${version}`;
   }
 
   /**
@@ -76,50 +76,50 @@ export class StorageConfig {
    * @param storeId 存储ID
    */
   static createKeyPattern(storeId: string): RegExp {
-    return new RegExp(`^${this.STORAGE_PREFIX}[^-]+-${storeId}$`)
+    return new RegExp(`^${this.STORAGE_PREFIX}[^-]+-${storeId}$`);
   }
 
   /**
    * 创建当前版本存储键匹配的正则表达式
    */
   static createCurrentVersionPattern(): RegExp {
-    return new RegExp(`^${this.STORAGE_PREFIX}${this.CURRENT_VERSION}-`)
+    return new RegExp(`^${this.STORAGE_PREFIX}${this.CURRENT_VERSION}-`);
   }
 
   /**
    * 创建任意版本存储键匹配的正则表达式
    */
   static createVersionPattern(): RegExp {
-    return new RegExp(`^${this.STORAGE_PREFIX}`)
+    return new RegExp(`^${this.STORAGE_PREFIX}`);
   }
 
   /**
    * 检查是否为当前版本的键
    */
   static isCurrentVersionKey(key: string): boolean {
-    return key.startsWith(`${this.STORAGE_PREFIX}${this.CURRENT_VERSION}`)
+    return key.startsWith(`${this.STORAGE_PREFIX}${this.CURRENT_VERSION}`);
   }
 
   /**
    * 检查是否为版本化的键
    */
   static isVersionedKey(key: string): boolean {
-    return key.startsWith(this.STORAGE_PREFIX)
+    return key.startsWith(this.STORAGE_PREFIX);
   }
 
   /**
    * 从存储键中提取版本号
    */
   static extractVersionFromKey(key: string): string | null {
-    const match = key.match(new RegExp(`^${this.STORAGE_PREFIX}([^-]+)`))
-    return match ? match[1] : null
+    const match = key.match(new RegExp(`^${this.STORAGE_PREFIX}([^-]+)`));
+    return match ? match[1] : null;
   }
 
   /**
    * 从存储键中提取存储ID
    */
   static extractStoreIdFromKey(key: string): string | null {
-    const match = key.match(new RegExp(`^${this.STORAGE_PREFIX}[^-]+-(.+)$`))
-    return match ? match[1] : null
+    const match = key.match(new RegExp(`^${this.STORAGE_PREFIX}[^-]+-(.+)$`));
+    return match ? match[1] : null;
   }
 }

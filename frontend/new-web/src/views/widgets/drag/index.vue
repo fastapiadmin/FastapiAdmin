@@ -63,7 +63,7 @@
             <ElTableColumn label="姓名" prop="name" />
             <ElTableColumn label="角色" prop="role" />
             <ElTableColumn label="操作" width="100">
-              <ElButton size="default" class="handle"> 移动 </ElButton>
+              <ElButton size="default" class="handle">移动</ElButton>
             </ElTableColumn>
           </ArtTable>
         </VueDraggable>
@@ -73,36 +73,36 @@
 </template>
 
 <script setup lang="ts">
-  import { VueDraggable } from 'vue-draggable-plus'
+import { VueDraggable } from "vue-draggable-plus";
 
-  defineOptions({ name: 'TemplateDrag' })
+defineOptions({ name: "TemplateDrag" });
 
-  /**
-   * 用户列表数据
-   * 用于演示拖拽排序功能
-   */
-  const userList = ref([
-    { name: '孙悟空', role: '斗战胜佛' },
-    { name: '猪八戒', role: '净坛使者' },
-    { name: '沙僧', role: '金身罗汉' },
-    { name: '唐僧', role: '旃檀功德佛' }
-  ])
+/**
+ * 用户列表数据
+ * 用于演示拖拽排序功能
+ */
+const userList = ref([
+  { name: "孙悟空", role: "斗战胜佛" },
+  { name: "猪八戒", role: "净坛使者" },
+  { name: "沙僧", role: "金身罗汉" },
+  { name: "唐僧", role: "旃檀功德佛" },
+]);
 </script>
 
 <style scoped>
-  .fade-move,
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
-  }
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
 
-  .fade-enter-from,
-  .fade-leave-to {
-    opacity: 0;
-    transform: scaleY(0.01) translate(30px, 0);
-  }
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scaleY(0.01) translate(30px, 0);
+}
 
-  .fade-leave-active {
-    position: absolute;
-  }
+.fade-leave-active {
+  position: absolute;
+}
 </style>

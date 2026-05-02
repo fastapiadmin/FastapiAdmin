@@ -14,19 +14,19 @@
 </template>
 
 <script setup lang="ts">
-  import lockImg from '@imgs/lock/bg_dark.webp'
+import lockImg from "@imgs/lock/bg_dark.webp";
 
-  defineOptions({ name: 'WidgetsVideo' })
+defineOptions({ name: "WidgetsVideo" });
 
-  /**
-   * 视频源 URL
-   */
-  const videoUrl = ref(
-    '//lf3-static.bytednsdoc.com/obj/eden-cn/nupenuvpxnuvo/xgplayer_doc/xgplayer-demo.mp4'
-  )
+/**
+ * 视频源 URL
+ */
+const videoUrl = ref(
+  "//lf3-static.bytednsdoc.com/obj/eden-cn/nupenuvpxnuvo/xgplayer_doc/xgplayer-demo.mp4"
+);
 
-  /**
-   * 视频封面图片 URL
-   */
-  const posterUrl = ref(lockImg)
+/**
+ * 视频封面图片 URL
+ */
+const posterUrl = ref(lockImg);
 </script>

@@ -114,7 +114,7 @@
           <ArtHBarChart
             :data="[
               { name: '系列1', data: [10, 20, 30] },
-              { name: '系列2', data: [15, 25, 35] }
+              { name: '系列2', data: [15, 25, 35] },
             ]"
             :xAxisData="['类目1', '类目2', '类目3']"
             :showLegend="true"
@@ -130,7 +130,7 @@
           <ArtHBarChart
             :data="[
               { name: '系列1', data: [10, 20, 30] },
-              { name: '系列2', data: [15, 25, 35] }
+              { name: '系列2', data: [15, 25, 35] },
             ]"
             :xAxisData="['类目1', '类目2', '类目3']"
             :showLegend="true"
@@ -149,7 +149,7 @@
             :data="[
               { value: 35, name: '分类A' },
               { value: 28, name: '分类B' },
-              { value: 42, name: '分类C' }
+              { value: 42, name: '分类C' },
             ]"
             :radius="['54%', '70%']"
             legendPosition="bottom"
@@ -169,7 +169,7 @@
               { value: 42, name: '分类C' },
               { value: 32, name: '分类D' },
               { value: 26, name: '分类E' },
-              { value: 37, name: '分类F' }
+              { value: 37, name: '分类F' },
             ]"
             :radius="['54%', '70%']"
             :borderRadius="0"
@@ -188,7 +188,7 @@
             :data="[
               { value: 30, name: '分类A' },
               { value: 25, name: '分类B' },
-              { value: 45, name: '分类C' }
+              { value: 45, name: '分类C' },
             ]"
             :radius="['0%', '70%']"
             :showLegend="true"
@@ -214,7 +214,7 @@
               { value: [9, 8] },
               { value: [10, 6] },
               { value: [11, 7] },
-              { value: [12, 8] }
+              { value: [12, 8] },
             ]"
           />
         </div>
@@ -231,17 +231,17 @@
               { name: '管理', max: 100 },
               { name: '技术', max: 100 },
               { name: '客服', max: 100 },
-              { name: '开发', max: 100 }
+              { name: '开发', max: 100 },
             ]"
             :data="[
               {
                 name: '预算分配',
-                value: [80, 70, 90, 85, 75]
+                value: [80, 70, 90, 85, 75],
               },
               {
                 name: '实际开销',
-                value: [70, 75, 85, 80, 70]
-              }
+                value: [70, 75, 85, 80, 70],
+              },
             ]"
           />
         </div>
@@ -255,7 +255,7 @@
             :data="[
               { time: '2024-01-01', open: 20, close: 23, high: 25, low: 18 },
               { time: '2024-01-02', open: 23, close: 21, high: 24, low: 20 },
-              { time: '2024-01-03', open: 21, close: 25, high: 26, low: 21 }
+              { time: '2024-01-03', open: 21, close: 25, high: 26, low: 21 },
             ]"
             :showDataZoom="false"
             :dataZoomStart="0"
@@ -279,7 +279,7 @@
               '35-44岁',
               '45-54岁',
               '55-64岁',
-              '65岁以上'
+              '65岁以上',
             ]"
             positiveName="男性年龄分布"
             negativeName="女性年龄分布"
@@ -291,65 +291,65 @@
 </template>
 
 <script setup lang="ts">
-  import type { LineDataItem } from '@/types/component/chart'
+import type { LineDataItem } from "@/types/component/chart";
 
-  defineOptions({ name: 'TemplateCharts' })
+defineOptions({ name: "TemplateCharts" });
 
-  /**
-   * 多组数据折线图示例数据
-   */
-  const multiLineData: LineDataItem[] = [
-    {
-      name: '销售额',
-      data: [120, 132, 101, 134, 90, 130],
-      areaStyle: {
-        startOpacity: 0.1,
-        endOpacity: 0
-      }
+/**
+ * 多组数据折线图示例数据
+ */
+const multiLineData: LineDataItem[] = [
+  {
+    name: "销售额",
+    data: [120, 132, 101, 134, 90, 130],
+    areaStyle: {
+      startOpacity: 0.1,
+      endOpacity: 0,
     },
-    {
-      name: '利润',
-      data: [80, 92, 71, 94, 60, 80],
-      areaStyle: {
-        startOpacity: 0.1,
-        endOpacity: 0
-      }
-    }
-  ]
+  },
+  {
+    name: "利润",
+    data: [80, 92, 71, 94, 60, 80],
+    areaStyle: {
+      startOpacity: 0.1,
+      endOpacity: 0,
+    },
+  },
+];
 
-  /**
-   * 单数据柱状图示例数据
-   */
-  const singleBarData = ref([120, 200, 150, 80, 70, 110, 130])
-  const xAxisData = ref(['周一', '周二', '周三', '周四', '周五', '周六', '周日'])
+/**
+ * 单数据柱状图示例数据
+ */
+const singleBarData = ref([120, 200, 150, 80, 70, 110, 130]);
+const xAxisData = ref(["周一", "周二", "周三", "周四", "周五", "周六", "周日"]);
 
-  /**
-   * 多数据柱状图示例数据
-   */
-  const multiBarData = ref([
-    { name: '销售额', data: [120, 200, 150, 80, 70, 110, 130] },
-    { name: '利润', data: [20, 50, 30, 15, 10, 25, 35] }
-  ])
+/**
+ * 多数据柱状图示例数据
+ */
+const multiBarData = ref([
+  { name: "销售额", data: [120, 200, 150, 80, 70, 110, 130] },
+  { name: "利润", data: [20, 50, 30, 15, 10, 25, 35] },
+]);
 
-  /**
-   * 堆叠柱状图示例数据
-   */
-  const stackBarData = ref([
-    { name: 'Q1', data: [20, 25, 30, 35, 40], stack: 'total' },
-    { name: 'Q2', data: [30, 35, 40, 45, 50], stack: 'total' }
-  ])
+/**
+ * 堆叠柱状图示例数据
+ */
+const stackBarData = ref([
+  { name: "Q1", data: [20, 25, 30, 35, 40], stack: "total" },
+  { name: "Q2", data: [30, 35, 40, 45, 50], stack: "total" },
+]);
 
-  const stackXAxisData = ref(['产品A', '产品B', '产品C', '产品D', '产品E'])
+const stackXAxisData = ref(["产品A", "产品B", "产品C", "产品D", "产品E"]);
 </script>
 
 <style scoped>
-  @reference '@styles/core/tailwind.css';
+@reference '@styles/core/tailwind.css';
 
-  .page-title {
-    @apply my-5 text-xl font-medium first:mt-0;
-  }
+.page-title {
+  @apply my-5 text-xl font-medium first:mt-0;
+}
 
-  .art-card {
-    @apply p-5;
-  }
+.art-card {
+  @apply p-5;
+}
 </style>

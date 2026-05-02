@@ -1,52 +1,100 @@
-/**
- * Pinia Store 配置模块
- *
- * 提供全局状态管理的初始化和配置
- *
- * ## 主要功能
- *
- * - Pinia Store 实例创建
- * - 持久化插件配置（pinia-plugin-persistedstate）
- * - 版本化存储键管理
- * - 自动数据迁移（跨版本）
- * - LocalStorage 序列化配置
- * - Store 初始化函数
- *
- * ## 持久化策略
- *
- * - 使用 StorageKeyManager 生成版本化的存储键
- * - 格式：sys-v{version}-{storeId}
- * - 自动迁移旧版本数据到当前版本
- * - 使用 localStorage 作为存储介质
- *
- * @module store/index
- * @author Art Design Pro Team
- */
-import type { App } from 'vue'
-import { createPinia } from 'pinia'
-import { createPersistedState } from 'pinia-plugin-persistedstate'
-import { StorageKeyManager } from '@/utils/storage/storage-key-manager'
+import type { App } from "vue";
+import { createPinia } from "pinia";
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+import type { RouteRecordRaw } from "vue-router";
 
-export const store = createPinia()
+import { router } from "@/router";
+import { useUserStore } from "./modules/user.store";
+import { usePermissionStore } from "./modules/permission.store";
+import { useDictStore } from "./modules/dict.store";
+import { useNoticeStore } from "./modules/notice.store";
+import { useConfigStore } from "./modules/config.store";
+import { useTagsViewStore } from "./modules/tags-view.store";
 
-// 创建存储键管理器实例
-const storageKeyManager = new StorageKeyManager()
+const store = createPinia();
 
-// 配置持久化插件
-store.use(
-  createPersistedState({
-    key: (storeId: string) => storageKeyManager.getStorageKey(storeId),
-    storage: localStorage,
-    serializer: {
-      serialize: JSON.stringify,
-      deserialize: JSON.parse
-    }
-  })
-)
+store.use(piniaPluginPersistedstate);
 
-/**
- * 初始化 Store
- */
-export function initStore(app: App<Element>): void {
-  app.use(store)
+export function initStore(app: App<Element>) {
+  app.use(store);
+}
+
+export * from "./modules/app.store";
+export * from "./modules/config.store";
+export * from "./modules/dict.store";
+export * from "./modules/lock.store";
+export * from "./modules/menu.store";
+export * from "./modules/notice.store";
+export * from "./modules/permission.store";
+export * from "./modules/setting.store";
+export * from "./modules/table.store";
+export * from "./modules/tags-view.store";
+export * from "./modules/user.store";
+export * from "./modules/worktab.store";
+
+export { store };
+export {
+  useUserStore,
+  usePermissionStore,
+  useDictStore,
+  useNoticeStore,
+  useConfigStore,
+  useTagsViewStore,
+};
+
+export interface RefreshCacheOptions {
+  dictTypes?: string[];
+  refreshUser?: boolean;
+  refreshRoutes?: boolean;
+  refreshConfig?: boolean;
+  refreshNotice?: boolean;
+  clearTags?: boolean;
+  clearDictBefore?: boolean;
+}
+
+export async function refreshAppCaches(opts: RefreshCacheOptions = {}) {
+  const {
+    dictTypes,
+    refreshUser = true,
+    refreshRoutes = true,
+    refreshConfig = true,
+    refreshNotice = true,
+    clearTags = false,
+    clearDictBefore = false,
+  } = opts;
+
+  const userStore = useUserStore(store);
+  const permStore = usePermissionStore(store);
+  const dictStore = useDictStore(store);
+  const noticeStore = useNoticeStore(store);
+  const configStore = useConfigStore(store);
+  const tagsViewStore = useTagsViewStore(store);
+
+  const tasks: Promise<any>[] = [];
+
+  if (refreshUser) {
+    tasks.push(userStore.getUserInfo());
+  }
+  if (refreshConfig) {
+    tasks.push(configStore.getConfig(true));
+  }
+  if (refreshNotice) {
+    tasks.push(noticeStore.getNotice());
+  }
+  if (dictTypes && dictTypes.length > 0) {
+    if (clearDictBefore) dictStore.clearDictData();
+    tasks.push(dictStore.getDict(dictTypes));
+  }
+
+  await Promise.allSettled(tasks);
+
+  if (refreshRoutes) {
+    permStore.resetRouter();
+    const dynamicRoutes = await permStore.generateRoutes();
+    dynamicRoutes.forEach((route: RouteRecordRaw) => router.addRoute(route));
+  }
+
+  if (clearTags) {
+    await tagsViewStore.delAllViews();
+  }
 }

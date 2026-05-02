@@ -19,22 +19,22 @@
 </template>
 
 <script setup lang="ts">
-  import { useCommon } from '@/hooks/core/useCommon'
+import { useCommon } from "@/hooks/core/useCommon";
 
-  defineOptions({ name: 'ArtBackToTop' })
+defineOptions({ name: "ArtBackToTop" });
 
-  const { scrollToTop } = useCommon()
+const { scrollToTop } = useCommon();
 
-  const showButton = ref(false)
-  const scrollThreshold = 300
+const showButton = ref(false);
+const scrollThreshold = 300;
 
-  onMounted(() => {
-    const scrollContainer = document.getElementById('app-main')
-    if (scrollContainer) {
-      const { y } = useScroll(scrollContainer)
-      watch(y, (newY: number) => {
-        showButton.value = newY > scrollThreshold
-      })
-    }
-  })
+onMounted(() => {
+  const scrollContainer = document.getElementById("app-main");
+  if (scrollContainer) {
+    const { y } = useScroll(scrollContainer);
+    watch(y, (newY: number) => {
+      showButton.value = newY > scrollThreshold;
+    });
+  }
+});
 </script>

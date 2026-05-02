@@ -11,7 +11,7 @@
  * - 菜单宽度枚举（收起宽度）
  *
  * @module enums/appEnum
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
 /**
@@ -19,13 +19,13 @@
  */
 export enum MenuTypeEnum {
   /** 左侧菜单 */
-  LEFT = 'left',
+  LEFT = "left",
   /** 顶部菜单 */
-  TOP = 'top',
+  TOP = "top",
   /** 顶部+左侧菜单 */
-  TOP_LEFT = 'top-left',
+  TOP_LEFT = "top-left",
   /** 双栏菜单 */
-  DUAL_MENU = 'dual-menu'
+  DUAL_MENU = "dual-menu",
 }
 
 /**
@@ -33,11 +33,11 @@ export enum MenuTypeEnum {
  */
 export enum SystemThemeEnum {
   /** 暗色主题 */
-  DARK = 'dark',
+  DARK = "dark",
   /** 亮色主题 */
-  LIGHT = 'light',
+  LIGHT = "light",
   /** 自动主题（跟随系统） */
-  AUTO = 'auto'
+  AUTO = "auto",
 }
 
 /**
@@ -45,11 +45,11 @@ export enum SystemThemeEnum {
  */
 export enum MenuThemeEnum {
   /** 暗色主题 */
-  DARK = 'dark',
+  DARK = "dark",
   /** 亮色主题 */
-  LIGHT = 'light',
+  LIGHT = "light",
   /** 设计主题 */
-  DESIGN = 'design'
+  DESIGN = "design",
 }
 
 /**
@@ -57,7 +57,7 @@ export enum MenuThemeEnum {
  */
 export enum MenuWidth {
   /** 收起宽度 */
-  CLOSE = '64px'
+  CLOSE = "64px",
 }
 
 /**
@@ -65,9 +65,9 @@ export enum MenuWidth {
  */
 export enum LanguageEnum {
   /** 中文 */
-  ZH = 'zh',
+  ZH = "zh",
   /** 英文 */
-  EN = 'en'
+  EN = "en",
 }
 
 /**
@@ -75,7 +75,7 @@ export enum LanguageEnum {
  */
 export enum ContainerWidthEnum {
   /** 全屏宽度 */
-  FULL = '100%',
+  FULL = "100%",
   /** 固定宽度 */
-  BOXED = '1200px'
+  BOXED = "1200px",
 }

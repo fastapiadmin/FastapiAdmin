@@ -24,5 +24,5 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'ResultFail' })
+defineOptions({ name: "ResultFail" });
 </script>

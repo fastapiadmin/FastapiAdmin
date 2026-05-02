@@ -28,135 +28,138 @@
  * ```
  *
  * @module useTheme
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import { useSettingStore } from '@/store/modules/setting'
-import { SystemThemeEnum } from '@/enums/appEnum'
-import AppConfig from '@/config'
-import { SystemThemeTypes } from '@/types/store'
-import { getDarkColor, getLightColor, setElementThemeColor } from '@/utils/ui'
-import { usePreferredDark } from '@vueuse/core'
-import { watch } from 'vue'
+import { useSettingsStore } from "@/store/modules/setting.store";
+import { SystemThemeEnum } from "@/enums/appEnum";
+import AppConfig from "@/config";
+import { SystemThemeTypes } from "@/types/store";
+import { getDarkColor, getLightColor, setElementThemeColor } from "@/utils/ui";
+import { usePreferredDark } from "@vueuse/core";
+import { watch } from "vue";
 
 export function useTheme() {
-  const settingStore = useSettingStore()
+  const settingStore = useSettingsStore();
 
   // 禁用过渡效果
   const disableTransitions = () => {
-    const style = document.createElement('style')
-    style.setAttribute('id', 'disable-transitions')
-    style.textContent = '* { transition: none !important; }'
-    document.head.appendChild(style)
-  }
+    const style = document.createElement("style");
+    style.setAttribute("id", "disable-transitions");
+    style.textContent = "* { transition: none !important; }";
+    document.head.appendChild(style);
+  };
 
   // 启用过渡效果
   const enableTransitions = () => {
-    const style = document.getElementById('disable-transitions')
+    const style = document.getElementById("disable-transitions");
     if (style) {
-      style.remove()
+      style.remove();
     }
-  }
+  };
 
   // 设置系统主题
   const setSystemTheme = (theme: SystemThemeEnum, themeMode?: SystemThemeEnum) => {
     // 临时禁用过渡效果
-    disableTransitions()
+    disableTransitions();
 
-    const el = document.getElementsByTagName('html')[0]
-    const isDark = theme === SystemThemeEnum.DARK
+    const el = document.getElementsByTagName("html")[0];
+    const isDark = theme === SystemThemeEnum.DARK;
 
     if (!themeMode) {
-      themeMode = theme
+      themeMode = theme;
     }
 
-    const currentTheme = AppConfig.systemThemeStyles[theme as keyof SystemThemeTypes]
+    const currentTheme = AppConfig.systemThemeStyles[theme as keyof SystemThemeTypes];
 
     if (currentTheme) {
-      el.setAttribute('class', currentTheme.className)
+      el.setAttribute("class", currentTheme.className);
     }
 
     // 设置按钮颜色加深或变浅
-    const primary = settingStore.systemThemeColor
+    const primary = settingStore.systemThemeColor;
 
     for (let i = 1; i <= 9; i++) {
       document.documentElement.style.setProperty(
         `--el-color-primary-light-${i}`,
         isDark ? `${getDarkColor(primary, i / 10)}` : `${getLightColor(primary, i / 10)}`
-      )
+      );
     }
 
     // 更新store中的主题设置
-    settingStore.setGlopTheme(theme, themeMode)
+    settingStore.setGlopTheme(theme, themeMode);
 
     // 使用 requestAnimationFrame 确保在下一帧恢复过渡效果
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        enableTransitions()
-      })
-    })
-  }
+        enableTransitions();
+      });
+    });
+  };
 
   // 使用 VueUse 的 usePreferredDark 检测系统主题偏好
-  const prefersDark = usePreferredDark()
+  const prefersDark = usePreferredDark();
 
   // 自动设置系统主题
   const setSystemAutoTheme = () => {
-    const theme = prefersDark.value ? SystemThemeEnum.DARK : SystemThemeEnum.LIGHT
-    setSystemTheme(theme, SystemThemeEnum.AUTO)
-  }
+    const theme = prefersDark.value ? SystemThemeEnum.DARK : SystemThemeEnum.LIGHT;
+    setSystemTheme(theme, SystemThemeEnum.AUTO);
+  };
 
   // 切换主题
   const switchThemeStyles = (theme: SystemThemeEnum) => {
     if (theme === SystemThemeEnum.AUTO) {
-      setSystemAutoTheme()
+      setSystemAutoTheme();
     } else {
-      setSystemTheme(theme)
+      setSystemTheme(theme);
     }
-  }
+  };
 
   return {
     setSystemTheme,
     setSystemAutoTheme,
     switchThemeStyles,
-    prefersDark
-  }
+    prefersDark,
+  };
 }
 
 /**
  * 初始化主题系统
  */
 export function initializeTheme() {
-  const settingStore = useSettingStore()
-  const prefersDark = usePreferredDark()
+  const settingStore = useSettingsStore();
+  const prefersDark = usePreferredDark();
 
   // 根据系统偏好应用主题
   const applyThemeByMode = () => {
-    const el = document.getElementsByTagName('html')[0]
-    let actualTheme = settingStore.systemThemeType
+    const el = document.getElementsByTagName("html")[0];
+    let actualTheme = settingStore.systemThemeType;
 
     // 如果是 AUTO 模式，检测系统偏好
     if (settingStore.systemThemeMode === SystemThemeEnum.AUTO) {
-      actualTheme = prefersDark.value ? SystemThemeEnum.DARK : SystemThemeEnum.LIGHT
+      actualTheme = prefersDark.value ? SystemThemeEnum.DARK : SystemThemeEnum.LIGHT;
       // 更新实际应用的主题类型
-      settingStore.systemThemeType = actualTheme
+      settingStore.systemThemeType = actualTheme;
     }
 
     // 设置主题 class
-    const currentTheme = AppConfig.systemThemeStyles[actualTheme as keyof SystemThemeTypes]
+    const currentTheme = AppConfig.systemThemeStyles[actualTheme as keyof SystemThemeTypes];
     if (currentTheme) {
-      el.setAttribute('class', currentTheme.className)
+      el.setAttribute("class", currentTheme.className);
     }
 
     // 设置主题颜色
-    setElementThemeColor(settingStore.systemThemeColor)
+    setElementThemeColor(settingStore.systemThemeColor);
 
     // 设置圆角
-    document.documentElement.style.setProperty('--custom-radius', `${settingStore.customRadius}rem`)
-  }
+    document.documentElement.style.setProperty(
+      "--custom-radius",
+      `${settingStore.customRadius}rem`
+    );
+  };
 
   // 应用主题
-  applyThemeByMode()
+  applyThemeByMode();
 
   // 如果是 AUTO 模式，监听系统主题变化（使用 VueUse 的响应式特性）
   if (settingStore.systemThemeMode === SystemThemeEnum.AUTO) {
@@ -165,10 +168,10 @@ export function initializeTheme() {
       () => {
         // 只有在 AUTO 模式下才响应系统主题变化
         if (settingStore.systemThemeMode === SystemThemeEnum.AUTO) {
-          applyThemeByMode()
+          applyThemeByMode();
         }
       },
       { immediate: false }
-    )
+    );
   }
 }

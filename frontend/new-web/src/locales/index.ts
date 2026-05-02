@@ -18,40 +18,40 @@
  * - en: English
  *
  * @module locales
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import { createI18n } from 'vue-i18n'
-import type { I18n, I18nOptions } from 'vue-i18n'
-import { LanguageEnum } from '@/enums/appEnum'
-import { getSystemStorage } from '@/utils/storage'
-import { StorageKeyManager } from '@/utils/storage/storage-key-manager'
+import { createI18n } from "vue-i18n";
+import type { I18n, I18nOptions } from "vue-i18n";
+import { LanguageEnum } from "@/enums/appEnum";
+import { getSystemStorage } from "@/utils/storage";
+import { StorageKeyManager } from "@/utils/storage/storage-key-manager";
 
 // 同步导入语言文件
-import enMessages from './langs/en.json'
-import zhMessages from './langs/zh.json'
+import enMessages from "./langs/en.json";
+import zhMessages from "./langs/zh.json";
 
 /**
  * 存储键管理器实例
  */
-const storageKeyManager = new StorageKeyManager()
+const storageKeyManager = new StorageKeyManager();
 
 /**
  * 语言消息对象
  */
 const messages = {
   [LanguageEnum.EN]: enMessages,
-  [LanguageEnum.ZH]: zhMessages
-}
+  [LanguageEnum.ZH]: zhMessages,
+};
 
 /**
  * 语言选项列表
  * 用于语言切换下拉框
  */
 export const languageOptions = [
-  { value: LanguageEnum.ZH, label: '简体中文' },
-  { value: LanguageEnum.EN, label: 'English' }
-]
+  { value: LanguageEnum.ZH, label: "简体中文" },
+  { value: LanguageEnum.EN, label: "English" },
+];
 
 /**
  * 从存储中获取语言设置
@@ -60,36 +60,36 @@ export const languageOptions = [
 const getDefaultLanguage = (): LanguageEnum => {
   // 尝试从版本化的存储中获取语言设置
   try {
-    const storageKey = storageKeyManager.getStorageKey('user')
-    const userStore = localStorage.getItem(storageKey)
+    const storageKey = storageKeyManager.getStorageKey("user");
+    const userStore = localStorage.getItem(storageKey);
 
     if (userStore) {
-      const { language } = JSON.parse(userStore)
+      const { language } = JSON.parse(userStore);
       if (language && Object.values(LanguageEnum).includes(language)) {
-        return language
+        return language;
       }
     }
   } catch (error) {
-    console.warn('[i18n] 从版本化存储获取语言设置失败:', error)
+    console.warn("[i18n] 从版本化存储获取语言设置失败:", error);
   }
 
   // 尝试从系统存储中获取语言设置
   try {
-    const sys = getSystemStorage()
+    const sys = getSystemStorage();
     if (sys) {
-      const { user } = JSON.parse(sys)
+      const { user } = JSON.parse(sys);
       if (user?.language && Object.values(LanguageEnum).includes(user.language)) {
-        return user.language
+        return user.language;
       }
     }
   } catch (error) {
-    console.warn('[i18n] 从系统存储获取语言设置失败:', error)
+    console.warn("[i18n] 从系统存储获取语言设置失败:", error);
   }
 
   // 返回默认语言
-  console.debug('[i18n] 使用默认语言:', LanguageEnum.ZH)
-  return LanguageEnum.ZH
-}
+  console.debug("[i18n] 使用默认语言:", LanguageEnum.ZH);
+  return LanguageEnum.ZH;
+};
 
 /**
  * i18n 配置选项
@@ -99,25 +99,25 @@ const i18nOptions: I18nOptions = {
   legacy: false,
   globalInjection: true,
   fallbackLocale: LanguageEnum.ZH,
-  messages
-}
+  messages,
+};
 
 /**
  * i18n 实例
  */
-const i18n: I18n = createI18n(i18nOptions)
+const i18n: I18n = createI18n(i18nOptions);
 
 /**
  * 翻译函数类型
  */
 interface Translation {
-  (key: string): string
+  (key: string): string;
 }
 
 /**
  * 全局翻译函数
  * 可在任何地方使用，无需导入 useI18n
  */
-export const $t = i18n.global.t as Translation
+export const $t = i18n.global.t as Translation;
 
-export default i18n
+export default i18n;

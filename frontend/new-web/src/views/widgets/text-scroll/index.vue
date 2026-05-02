@@ -39,13 +39,13 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'WidgetsTextScroll' })
+defineOptions({ name: "WidgetsTextScroll" });
 
-  /**
-   * 处理关闭事件
-   */
-  const handleClose = () => {
-    console.log('文本滚动组件已关闭')
-    ElMessage.info('已关闭')
-  }
+/**
+ * 处理关闭事件
+ */
+const handleClose = () => {
+  console.log("文本滚动组件已关闭");
+  ElMessage.info("已关闭");
+};
 </script>

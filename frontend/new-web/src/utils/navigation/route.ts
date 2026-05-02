@@ -19,14 +19,14 @@
  * - iframe 页面特殊处理
  *
  * @module utils/navigation/route
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import { AppRouteRecord } from '@/types'
+import { AppRouteRecord } from "@/types";
 
 // 检查是否为 iframe 路由
 export function isIframe(url: string): boolean {
-  return url.startsWith('/outside/iframe/')
+  return url.startsWith("/outside/iframe/");
 }
 
 /**
@@ -35,15 +35,15 @@ export function isIframe(url: string): boolean {
  */
 export const isNavigableMenuItem = (menuItem: AppRouteRecord): boolean => {
   if (!menuItem.path || !menuItem.path.trim()) {
-    return false
+    return false;
   }
 
   if (!menuItem.meta?.isHide) {
-    return true
+    return true;
   }
 
-  return menuItem.meta?.isFullPage === true
-}
+  return menuItem.meta?.isFullPage === true;
+};
 
 /**
  * 标准化路径格式
@@ -51,8 +51,8 @@ export const isNavigableMenuItem = (menuItem: AppRouteRecord): boolean => {
  * @returns 标准化后的路径
  */
 const normalizePath = (path: string): string => {
-  return path.startsWith('/') ? path : `/${path}`
-}
+  return path.startsWith("/") ? path : `/${path}`;
+};
 
 /**
  * 递归获取菜单的第一个有效路径
@@ -61,25 +61,25 @@ const normalizePath = (path: string): string => {
  */
 export const getFirstMenuPath = (menuList: AppRouteRecord[]): string => {
   if (!Array.isArray(menuList) || menuList.length === 0) {
-    return ''
+    return "";
   }
 
   for (const menuItem of menuList) {
     if (!isNavigableMenuItem(menuItem)) {
-      continue
+      continue;
     }
 
     // 如果有子菜单，优先查找子菜单
     if (menuItem.children?.length) {
-      const childPath = getFirstMenuPath(menuItem.children)
+      const childPath = getFirstMenuPath(menuItem.children);
       if (childPath) {
-        return childPath
+        return childPath;
       }
     }
 
     // 返回当前菜单项的标准化路径
-    return normalizePath(menuItem.path!)
+    return normalizePath(menuItem.path!);
   }
 
-  return ''
-}
+  return "";
+};

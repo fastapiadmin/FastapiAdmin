@@ -22,7 +22,7 @@
         <ElCard class="h-full border-0" :body-style="{ padding: '20px' }">
           <div class="text-center">
             <ElTag :type="connectionTagType" size="large" class="mb-2">
-              {{ wsClient?.connectionStatusText || '未连接' }}
+              {{ wsClient?.connectionStatusText || "未连接" }}
             </ElTag>
             <div class="text-sm font-medium text-gray-900">连接状态</div>
             <div class="text-xs text-gray-500">当前WebSocket连接状态</div>
@@ -48,7 +48,7 @@
             <div class="flex items-center justify-between">
               <span class="text-base font-bold">连接配置</span>
               <ElTag :type="connectionTagType" size="large">
-                {{ wsClient?.connectionStatusText || '未连接' }}
+                {{ wsClient?.connectionStatusText || "未连接" }}
               </ElTag>
             </div>
           </template>
@@ -71,7 +71,7 @@
                   :loading="isConnecting"
                   :disabled="isConnected"
                 >
-                  {{ isConnecting ? '连接中...' : '连接' }}
+                  {{ isConnecting ? "连接中..." : "连接" }}
                 </ElButton>
                 <ElButton type="danger" @click="handleDisconnect" :disabled="!isConnected">
                   断开连接
@@ -137,7 +137,7 @@
             <div v-for="(message, index) in messageList" :key="index" class="message-item">
               <div class="message-header">
                 <ElTag size="small" :type="message.type === 'received' ? 'success' : 'info'">
-                  {{ message.type === 'received' ? '接收' : '发送' }}
+                  {{ message.type === "received" ? "接收" : "发送" }}
                 </ElTag>
                 <span class="message-time">{{ message.time }}</span>
               </div>
@@ -182,318 +182,318 @@
 </template>
 
 <script setup lang="ts">
-  import WebSocketClient from '@/utils/socket'
-  import { ElMessage } from 'element-plus'
+import WebSocketClient from "@/utils/socket";
+import { ElMessage } from "element-plus";
 
-  defineOptions({ name: 'WidgetsSocketChat' })
+defineOptions({ name: "WidgetsSocketChat" });
 
-  // WebSocket客户端实例
-  const wsClient = ref<WebSocketClient | null>(null)
+// WebSocket客户端实例
+const wsClient = ref<WebSocketClient | null>(null);
 
-  // 连接状态
-  const isConnecting = ref(false)
-  const isConnected = ref(false)
-  const reconnectCount = ref(0)
-  const messageCount = ref(0)
+// 连接状态
+const isConnecting = ref(false);
+const isConnected = ref(false);
+const reconnectCount = ref(0);
+const messageCount = ref(0);
 
-  // 用于清理 watch 的函数
-  let stopWatchConnection: (() => void) | null = null
-  let stopWatchStatus: (() => void) | null = null
+// 用于清理 watch 的函数
+let stopWatchConnection: (() => void) | null = null;
+let stopWatchStatus: (() => void) | null = null;
 
-  // 表单数据
-  const connectForm = ref({
-    url: 'ws://localhost:8080/ws',
-    autoReconnect: true,
-    heartbeat: true
-  })
+// 表单数据
+const connectForm = ref({
+  url: "ws://localhost:8080/ws",
+  autoReconnect: true,
+  heartbeat: true,
+});
 
-  const messageForm = ref({
-    type: 'text',
-    content: ''
-  })
+const messageForm = ref({
+  type: "text",
+  content: "",
+});
 
-  // 消息和日志列表
-  const messageList = ref<
-    Array<{
-      type: 'sent' | 'received'
-      content: string
-      time: string
-    }>
-  >([])
+// 消息和日志列表
+const messageList = ref<
+  Array<{
+    type: "sent" | "received";
+    content: string;
+    time: string;
+  }>
+>([]);
 
-  const logList = ref<
-    Array<{
-      type: 'info' | 'success' | 'warning' | 'error'
-      message: string
-      time: string
-    }>
-  >([])
+const logList = ref<
+  Array<{
+    type: "info" | "success" | "warning" | "error";
+    message: string;
+    time: string;
+  }>
+>([]);
 
-  // 计算属性
-  const connectionTagType = computed(() => {
-    if (isConnecting.value) return 'warning'
-    if (isConnected.value) return 'success'
-    return 'danger'
-  })
+// 计算属性
+const connectionTagType = computed(() => {
+  if (isConnecting.value) return "warning";
+  if (isConnected.value) return "success";
+  return "danger";
+});
 
-  /**
-   * 添加日志
-   */
-  const addLog = (type: 'info' | 'success' | 'warning' | 'error', message: string) => {
-    logList.value.unshift({
-      type,
-      message,
-      time: new Date().toLocaleTimeString()
-    })
+/**
+ * 添加日志
+ */
+const addLog = (type: "info" | "success" | "warning" | "error", message: string) => {
+  logList.value.unshift({
+    type,
+    message,
+    time: new Date().toLocaleTimeString(),
+  });
 
-    // 限制日志数量
-    if (logList.value.length > 100) {
-      logList.value = logList.value.slice(0, 100)
-    }
+  // 限制日志数量
+  if (logList.value.length > 100) {
+    logList.value = logList.value.slice(0, 100);
+  }
+};
+
+/**
+ * 添加消息记录
+ */
+const addMessage = (type: "sent" | "received", content: string) => {
+  messageList.value.unshift({
+    type,
+    content,
+    time: new Date().toLocaleTimeString(),
+  });
+
+  // 限制消息数量
+  if (messageList.value.length > 50) {
+    messageList.value = messageList.value.slice(0, 50);
+  }
+};
+
+/**
+ * 处理WebSocket消息
+ */
+const handleSocketMessage = (event: MessageEvent) => {
+  messageCount.value++;
+  addMessage("received", event.data);
+  addLog("success", `收到消息: ${event.data}`);
+};
+
+/**
+ * 连接WebSocket
+ */
+const handleConnect = () => {
+  if (isConnecting.value || isConnected.value) {
+    return;
   }
 
-  /**
-   * 添加消息记录
-   */
-  const addMessage = (type: 'sent' | 'received', content: string) => {
-    messageList.value.unshift({
-      type,
-      content,
-      time: new Date().toLocaleTimeString()
-    })
-
-    // 限制消息数量
-    if (messageList.value.length > 50) {
-      messageList.value = messageList.value.slice(0, 50)
-    }
+  // 清理之前的 watch
+  if (stopWatchConnection) {
+    stopWatchConnection();
+    stopWatchConnection = null;
+  }
+  if (stopWatchStatus) {
+    stopWatchStatus();
+    stopWatchStatus = null;
   }
 
-  /**
-   * 处理WebSocket消息
-   */
-  const handleSocketMessage = (event: MessageEvent) => {
-    messageCount.value++
-    addMessage('received', event.data)
-    addLog('success', `收到消息: ${event.data}`)
-  }
+  isConnecting.value = true;
+  addLog("info", `开始连接到 ${connectForm.value.url}`);
 
-  /**
-   * 连接WebSocket
-   */
-  const handleConnect = () => {
-    if (isConnecting.value || isConnected.value) {
-      return
-    }
+  try {
+    wsClient.value = WebSocketClient.getInstance({
+      url: connectForm.value.url,
+      messageHandler: handleSocketMessage,
+      reconnectInterval: connectForm.value.autoReconnect ? 5000 : 0,
+      heartbeatInterval: connectForm.value.heartbeat ? 10000 : 0,
+      maxReconnectAttempts: 5,
+    });
 
-    // 清理之前的 watch
-    if (stopWatchConnection) {
-      stopWatchConnection()
-      stopWatchConnection = null
-    }
-    if (stopWatchStatus) {
-      stopWatchStatus()
-      stopWatchStatus = null
-    }
+    wsClient.value.init();
 
-    isConnecting.value = true
-    addLog('info', `开始连接到 ${connectForm.value.url}`)
+    // 监听连接状态变化
+    stopWatchConnection = watch(
+      () => wsClient.value?.isWebSocketConnected,
+      (connected) => {
+        isConnected.value = connected || false;
+        isConnecting.value = false;
 
-    try {
-      wsClient.value = WebSocketClient.getInstance({
-        url: connectForm.value.url,
-        messageHandler: handleSocketMessage,
-        reconnectInterval: connectForm.value.autoReconnect ? 5000 : 0,
-        heartbeatInterval: connectForm.value.heartbeat ? 10000 : 0,
-        maxReconnectAttempts: 5
-      })
-
-      wsClient.value.init()
-
-      // 监听连接状态变化
-      stopWatchConnection = watch(
-        () => wsClient.value?.isWebSocketConnected,
-        (connected) => {
-          isConnected.value = connected || false
-          isConnecting.value = false
-
-          if (connected) {
-            addLog('success', 'WebSocket连接成功')
-            reconnectCount.value = 0
-          }
-        },
-        { immediate: true }
-      )
-
-      // 监听连接状态文本变化
-      stopWatchStatus = watch(
-        () => wsClient.value?.connectionStatusText,
-        (status) => {
-          if (status && status.includes('重连中')) {
-            reconnectCount.value++
-            addLog('warning', `自动重连中 (第${reconnectCount.value}次)`)
-          }
+        if (connected) {
+          addLog("success", "WebSocket连接成功");
+          reconnectCount.value = 0;
         }
-      )
-    } catch (error) {
-      isConnecting.value = false
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      addLog('error', `连接失败: ${errorMessage}`)
-      ElMessage.error('连接失败，请检查服务器地址')
-    }
-  }
+      },
+      { immediate: true }
+    );
 
-  /**
-   * 断开连接
-   */
-  const handleDisconnect = () => {
-    if (wsClient.value) {
-      wsClient.value.close()
-      addLog('info', '手动断开WebSocket连接')
-    }
-
-    // 清理 watch
-    if (stopWatchConnection) {
-      stopWatchConnection()
-      stopWatchConnection = null
-    }
-    if (stopWatchStatus) {
-      stopWatchStatus()
-      stopWatchStatus = null
-    }
-
-    isConnected.value = false
-    isConnecting.value = false
-  }
-
-  /**
-   * 重新连接
-   */
-  const handleReconnect = () => {
-    handleDisconnect()
-    setTimeout(() => {
-      handleConnect()
-    }, 1000)
-  }
-
-  /**
-   * 发送消息
-   */
-  const handleSendMessage = () => {
-    if (!isConnected.value || !wsClient.value) {
-      ElMessage.warning('请先建立WebSocket连接')
-      return
-    }
-
-    let message = messageForm.value.content
-
-    // 根据消息类型处理内容
-    switch (messageForm.value.type) {
-      case 'json':
-        try {
-          // 验证是否为有效JSON
-          JSON.parse(message)
-        } catch {
-          ElMessage.error('请输入有效的JSON格式数据')
-          return
+    // 监听连接状态文本变化
+    stopWatchStatus = watch(
+      () => wsClient.value?.connectionStatusText,
+      (status) => {
+        if (status && status.includes("重连中")) {
+          reconnectCount.value++;
+          addLog("warning", `自动重连中 (第${reconnectCount.value}次)`);
         }
-        break
-      case 'ping':
-        message = 'ping'
-        break
-    }
-
-    try {
-      wsClient.value.send(message)
-      addMessage('sent', message)
-      addLog('info', `发送消息: ${message}`)
-      ElMessage.success('消息发送成功')
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      addLog('error', `发送失败: ${errorMessage}`)
-      ElMessage.error('发送消息失败')
-    }
-  }
-
-  /**
-   * 清空消息表单
-   */
-  const clearMessageForm = () => {
-    messageForm.value.content = ''
-  }
-
-  /**
-   * 清空消息记录
-   */
-  const clearMessages = () => {
-    messageList.value = []
-  }
-
-  /**
-   * 清空日志
-   */
-  const clearLogs = () => {
-    logList.value = []
-  }
-
-  /**
-   * 页面卸载时清理连接
-   */
-  onUnmounted(() => {
-    handleDisconnect()
-  })
-
-  /**
-   * 监听页面可见性变化，页面隐藏时断开连接
-   */
-  onMounted(() => {
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && isConnected.value) {
-        addLog('info', '页面隐藏，保持连接')
       }
-    })
-  })
+    );
+  } catch (error) {
+    isConnecting.value = false;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    addLog("error", `连接失败: ${errorMessage}`);
+    ElMessage.error("连接失败，请检查服务器地址");
+  }
+};
+
+/**
+ * 断开连接
+ */
+const handleDisconnect = () => {
+  if (wsClient.value) {
+    wsClient.value.close();
+    addLog("info", "手动断开WebSocket连接");
+  }
+
+  // 清理 watch
+  if (stopWatchConnection) {
+    stopWatchConnection();
+    stopWatchConnection = null;
+  }
+  if (stopWatchStatus) {
+    stopWatchStatus();
+    stopWatchStatus = null;
+  }
+
+  isConnected.value = false;
+  isConnecting.value = false;
+};
+
+/**
+ * 重新连接
+ */
+const handleReconnect = () => {
+  handleDisconnect();
+  setTimeout(() => {
+    handleConnect();
+  }, 1000);
+};
+
+/**
+ * 发送消息
+ */
+const handleSendMessage = () => {
+  if (!isConnected.value || !wsClient.value) {
+    ElMessage.warning("请先建立WebSocket连接");
+    return;
+  }
+
+  let message = messageForm.value.content;
+
+  // 根据消息类型处理内容
+  switch (messageForm.value.type) {
+    case "json":
+      try {
+        // 验证是否为有效JSON
+        JSON.parse(message);
+      } catch {
+        ElMessage.error("请输入有效的JSON格式数据");
+        return;
+      }
+      break;
+    case "ping":
+      message = "ping";
+      break;
+  }
+
+  try {
+    wsClient.value.send(message);
+    addMessage("sent", message);
+    addLog("info", `发送消息: ${message}`);
+    ElMessage.success("消息发送成功");
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    addLog("error", `发送失败: ${errorMessage}`);
+    ElMessage.error("发送消息失败");
+  }
+};
+
+/**
+ * 清空消息表单
+ */
+const clearMessageForm = () => {
+  messageForm.value.content = "";
+};
+
+/**
+ * 清空消息记录
+ */
+const clearMessages = () => {
+  messageList.value = [];
+};
+
+/**
+ * 清空日志
+ */
+const clearLogs = () => {
+  logList.value = [];
+};
+
+/**
+ * 页面卸载时清理连接
+ */
+onUnmounted(() => {
+  handleDisconnect();
+});
+
+/**
+ * 监听页面可见性变化，页面隐藏时断开连接
+ */
+onMounted(() => {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && isConnected.value) {
+      addLog("info", "页面隐藏，保持连接");
+    }
+  });
+});
 </script>
 
 <style scoped>
-  @reference '@styles/core/tailwind.css';
+@reference '@styles/core/tailwind.css';
 
-  .message-container {
-    @apply max-h-96 overflow-y-auto space-y-3;
-  }
+.message-container {
+  @apply max-h-96 overflow-y-auto space-y-3;
+}
 
-  .message-item {
-    @apply p-3 rounded-lg border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700;
-  }
+.message-item {
+  @apply p-3 rounded-lg border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700;
+}
 
-  .message-header {
-    @apply flex items-center justify-between mb-2;
-  }
+.message-header {
+  @apply flex items-center justify-between mb-2;
+}
 
-  .message-time {
-    @apply text-xs text-gray-500;
-  }
+.message-time {
+  @apply text-xs text-gray-500;
+}
 
-  .message-content {
-    @apply text-sm text-gray-800 dark:text-gray-200 break-words font-mono bg-gray-50 dark:bg-gray-900 p-2 rounded;
-  }
+.message-content {
+  @apply text-sm text-gray-800 dark:text-gray-200 break-words font-mono bg-gray-50 dark:bg-gray-900 p-2 rounded;
+}
 
-  .log-container {
-    @apply max-h-64 overflow-y-auto;
-  }
+.log-container {
+  @apply max-h-64 overflow-y-auto;
+}
 
-  /* 滚动条样式 */
-  .message-container::-webkit-scrollbar,
-  .log-container::-webkit-scrollbar {
-    @apply w-4;
-  }
+/* 滚动条样式 */
+.message-container::-webkit-scrollbar,
+.log-container::-webkit-scrollbar {
+  @apply w-4;
+}
 
-  .message-container::-webkit-scrollbar-track,
-  .log-container::-webkit-scrollbar-track {
-    @apply bg-gray-100 rounded;
-  }
+.message-container::-webkit-scrollbar-track,
+.log-container::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
 
-  .message-container::-webkit-scrollbar-thumb,
-  .log-container::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded hover:bg-gray-400;
-  }
+.message-container::-webkit-scrollbar-thumb,
+.log-container::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded hover:bg-gray-400;
+}
 </style>

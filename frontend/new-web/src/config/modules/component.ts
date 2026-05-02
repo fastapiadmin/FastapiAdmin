@@ -12,79 +12,79 @@
  * - 配置查询 - 提供工具函数快速查询组件配置
  *
  * @module config/component
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from "vue";
 
 /**
  * 全局组件配置列表
  */
 export const globalComponentsConfig: GlobalComponentConfig[] = [
   {
-    name: '设置面板',
-    key: 'settings-panel',
+    name: "设置面板",
+    key: "settings-panel",
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-settings-panel/index.vue')
+      () => import("@/components/core/layouts/art-settings-panel/index.vue")
     ),
-    enabled: true
+    enabled: true,
   },
   {
-    name: '全局搜索',
-    key: 'global-search',
+    name: "全局搜索",
+    key: "global-search",
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-global-search/index.vue')
+      () => import("@/components/core/layouts/art-global-search/index.vue")
     ),
-    enabled: true
+    enabled: true,
   },
   {
-    name: '锁屏',
-    key: 'screen-lock',
+    name: "锁屏",
+    key: "screen-lock",
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-screen-lock/index.vue')
+      () => import("@/components/core/layouts/art-screen-lock/index.vue")
     ),
-    enabled: true
+    enabled: true,
   },
   {
-    name: '聊天窗口',
-    key: 'chat-window',
+    name: "聊天窗口",
+    key: "chat-window",
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-chat-window/index.vue')
+      () => import("@/components/core/layouts/art-chat-window/index.vue")
     ),
-    enabled: true
+    enabled: true,
   },
   {
-    name: '礼花效果',
-    key: 'fireworks-effect',
+    name: "礼花效果",
+    key: "fireworks-effect",
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-fireworks-effect/index.vue')
+      () => import("@/components/core/layouts/art-fireworks-effect/index.vue")
     ),
-    enabled: true
+    enabled: true,
   },
   {
-    name: '水印效果',
-    key: 'watermark',
+    name: "水印效果",
+    key: "watermark",
     component: defineAsyncComponent(
-      () => import('@/components/core/others/art-watermark/index.vue')
+      () => import("@/components/core/others/art-watermark/index.vue")
     ),
-    enabled: true
-  }
-]
+    enabled: true,
+  },
+];
 
 /**
  * 全局组件配置接口
  */
 export interface GlobalComponentConfig {
   /** 组件名称 */
-  name: string
+  name: string;
   /** 组件标识 */
-  key: string
+  key: string;
   /** 组件 */
-  component: any
+  component: any;
   /** 是否启用 */
-  enabled?: boolean
+  enabled?: boolean;
   /** 组件描述 */
-  description?: string
+  description?: string;
 }
 
 /**
@@ -92,8 +92,8 @@ export interface GlobalComponentConfig {
  * @returns 已启用的组件配置列表
  */
 export const getEnabledGlobalComponents = () => {
-  return globalComponentsConfig.filter((config) => config.enabled !== false)
-}
+  return globalComponentsConfig.filter((config) => config.enabled !== false);
+};
 
 /**
  * 根据 key 获取组件配置
@@ -101,5 +101,5 @@ export const getEnabledGlobalComponents = () => {
  * @returns 组件配置对象
  */
 export const getGlobalComponentByKey = (key: string) => {
-  return globalComponentsConfig.find((config) => config.key === key)
-}
+  return globalComponentsConfig.find((config) => config.key === key);
+};

@@ -2,7 +2,8 @@
  * useAppMode - 应用模式管理
  *
  * 提供应用访问模式的判断和管理功能，支持前端和后端两种权限控制模式。
- * 根据环境变量 VITE_ACCESS_MODE 自动识别当前运行模式。
+ * 根据环境变量 VITE_ACCESS_MODE 自动识别当前运行模式：
+ * frontend | backend | mixed（后端菜单 + 前端 asyncRoutes 合并展示）
  *
  * ## 主要功能
  *
@@ -12,34 +13,27 @@
  * 4. 响应式状态 - 提供响应式的模式判断，方便在组件中使用
  *
  * @module useAppMode
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import { computed } from 'vue'
+import { computed } from "vue";
 
 export function useAppMode() {
-  // 获取访问模式配置
-  const accessMode = import.meta.env.VITE_ACCESS_MODE
+  const accessMode = (import.meta.env.VITE_ACCESS_MODE || "").trim();
 
-  /**
-   * 是否为前端控制模式
-   * 前端模式：权限由前端路由配置控制
-   */
-  const isFrontendMode = computed(() => accessMode === 'frontend')
-  /**
-   * 是否为后端控制模式
-   * 后端模式：权限由后端接口返回的菜单数据控制
-   */
-  const isBackendMode = computed(() => accessMode === 'backend')
+  /** 仅前端 asyncRoutes */
+  const isFrontendMode = computed(() => accessMode === "frontend");
+  /** 仅后端菜单接口 */
+  const isBackendMode = computed(() => accessMode === "backend");
+  /** 后端菜单与前端路由模块合并（同名路由以前端模块注册顺序中后端为先，见 MenuProcessor） */
+  const isMixedMenuMode = computed(() => accessMode === "mixed");
 
-  /**
-   * 当前应用模式
-   */
-  const currentMode = computed(() => accessMode)
+  const currentMode = computed(() => accessMode);
 
   return {
     isFrontendMode,
     isBackendMode,
-    currentMode
-  }
+    isMixedMenuMode,
+    currentMode,
+  };
 }

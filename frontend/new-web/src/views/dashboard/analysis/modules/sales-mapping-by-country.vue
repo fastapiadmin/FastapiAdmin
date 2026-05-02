@@ -10,7 +10,7 @@
       :data="[
         { value: 30, name: '北京' },
         { value: 25, name: '上海' },
-        { value: 45, name: '广州' }
+        { value: 45, name: '广州' },
       ]"
       :color="['#4C87F3', '#93F1B4', '#8BD8FC']"
       :radius="['46%', '60%']"

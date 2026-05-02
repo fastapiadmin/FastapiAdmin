@@ -1,12 +1,12 @@
 <template>
   <div class="page-content mb-5">
     <div class="mb-15 text-center">
-      <h1 class="my-4 text-2xl font-semibold leading-tight"
-        >基于 VueUse useTransition 的 Count-To 组件</h1
-      >
-      <p class="m-0 text-base leading-relaxed text-g-700"
-        >高性能数字滚动动画组件，支持完整的动画控制和事件监听</p
-      >
+      <h1 class="my-4 text-2xl font-semibold leading-tight">
+        基于 VueUse useTransition 的 Count-To 组件
+      </h1>
+      <p class="m-0 text-base leading-relaxed text-g-700">
+        高性能数字滚动动画组件，支持完整的动画控制和事件监听
+      </p>
     </div>
 
     <!-- 基础用法 -->
@@ -74,95 +74,95 @@
 </template>
 
 <script setup lang="ts">
-  import ArtCountTo from '@/components/core/text-effect/art-count-to/index.vue'
+import ArtCountTo from "@/components/core/text-effect/art-count-to/index.vue";
 
-  defineOptions({ name: 'TemplateCountTo' })
+defineOptions({ name: "TemplateCountTo" });
 
-  const controlTarget = ref(0)
-  const countToRef = ref()
-  const easingTarget = ref(0)
+const controlTarget = ref(0);
+const countToRef = ref();
+const easingTarget = ref(0);
 
-  /**
-   * 缓动动画类型配置
-   */
-  const easingTypes = [
-    { name: 'Linear', type: 'linear' },
-    { name: 'Ease Out Cubic', type: 'easeOutCubic' },
-    { name: 'Ease Out Expo', type: 'easeOutExpo' },
-    { name: 'Ease Out Sine', type: 'easeOutSine' },
-    { name: 'Ease In Out', type: 'easeInOutCubic' },
-    { name: 'Ease In Quad', type: 'easeInQuad' }
-  ] as const
+/**
+ * 缓动动画类型配置
+ */
+const easingTypes = [
+  { name: "Linear", type: "linear" },
+  { name: "Ease Out Cubic", type: "easeOutCubic" },
+  { name: "Ease Out Expo", type: "easeOutExpo" },
+  { name: "Ease Out Sine", type: "easeOutSine" },
+  { name: "Ease In Out", type: "easeInOutCubic" },
+  { name: "Ease In Quad", type: "easeInQuad" },
+] as const;
 
-  /**
-   * 开始计数动画
-   */
-  const startCount = () => {
-    const newTarget = 5000
-    controlTarget.value = newTarget
-    countToRef.value?.start(newTarget)
-  }
+/**
+ * 开始计数动画
+ */
+const startCount = () => {
+  const newTarget = 5000;
+  controlTarget.value = newTarget;
+  countToRef.value?.start(newTarget);
+};
 
-  /**
-   * 暂停计数动画
-   */
-  const pauseCount = () => {
-    countToRef.value?.pause()
-  }
+/**
+ * 暂停计数动画
+ */
+const pauseCount = () => {
+  countToRef.value?.pause();
+};
 
-  /**
-   * 重置计数动画
-   */
-  const resetCount = () => {
-    countToRef.value?.reset()
-    controlTarget.value = 0
-  }
+/**
+ * 重置计数动画
+ */
+const resetCount = () => {
+  countToRef.value?.reset();
+  controlTarget.value = 0;
+};
 
-  /**
-   * 触发缓动效果演示
-   * 在 0 和 1000 之间切换
-   */
-  const triggerEasing = () => {
-    easingTarget.value = easingTarget.value === 0 ? 1000 : 0
-  }
+/**
+ * 触发缓动效果演示
+ * 在 0 和 1000 之间切换
+ */
+const triggerEasing = () => {
+  easingTarget.value = easingTarget.value === 0 ? 1000 : 0;
+};
 
-  /**
-   * 动画开始回调
-   * @param value 目标值
-   */
-  const handleAnimationStarted = (value: number) => {
-    console.log('动画开始，目标值:', value)
-  }
+/**
+ * 动画开始回调
+ * @param value 目标值
+ */
+const handleAnimationStarted = (value: number) => {
+  console.log("动画开始，目标值:", value);
+};
 
-  /**
-   * 动画完成回调
-   * @param value 最终值
-   */
-  const handleAnimationFinished = (value: number) => {
-    console.log('动画完成，最终值:', value)
-  }
+/**
+ * 动画完成回调
+ * @param value 最终值
+ */
+const handleAnimationFinished = (value: number) => {
+  console.log("动画完成，最终值:", value);
+};
 
-  /**
-   * 动画暂停回调
-   * @param value 当前值
-   */
-  const handleAnimationPaused = (value: number) => {
-    console.log('动画暂停，当前值:', value)
-  }
+/**
+ * 动画暂停回调
+ * @param value 当前值
+ */
+const handleAnimationPaused = (value: number) => {
+  console.log("动画暂停，当前值:", value);
+};
 
-  /**
-   * 动画重置回调
-   */
-  const handleAnimationReset = () => {
-    console.log('动画已重置')
-  }
+/**
+ * 动画重置回调
+ */
+const handleAnimationReset = () => {
+  console.log("动画已重置");
+};
 </script>
 
 <style scoped>
-  @reference '@styles/core/tailwind.css';
+@reference '@styles/core/tailwind.css';
 
-  .count {
-    @apply p-5 
+.count {
+  @apply p-5 
     mb-5 
     text-2xl 
     font-semibold 
@@ -171,5 +171,5 @@
     rounded-lg 
     tabular-nums
     border border-g-300/60;
-  }
+}
 </style>

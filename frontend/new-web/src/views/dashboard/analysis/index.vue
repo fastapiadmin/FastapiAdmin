@@ -37,14 +37,14 @@
 </template>
 
 <script setup lang="ts">
-  import TodaySales from './modules/today-sales.vue'
-  import VisitorInsights from './modules/visitor-insights.vue'
-  import TotalRevenue from './modules/total-revenue.vue'
-  import CustomerSatisfaction from './modules/customer-satisfaction.vue'
-  import TargetVsReality from './modules/target-vs-reality.vue'
-  import TopProducts from './modules/top-products.vue'
-  import SalesMappingByCountry from './modules/sales-mapping-by-country.vue'
-  import VolumeServiceLevel from './modules/volume-service-level.vue'
+import TodaySales from "./modules/today-sales.vue";
+import VisitorInsights from "./modules/visitor-insights.vue";
+import TotalRevenue from "./modules/total-revenue.vue";
+import CustomerSatisfaction from "./modules/customer-satisfaction.vue";
+import TargetVsReality from "./modules/target-vs-reality.vue";
+import TopProducts from "./modules/top-products.vue";
+import SalesMappingByCountry from "./modules/sales-mapping-by-country.vue";
+import VolumeServiceLevel from "./modules/volume-service-level.vue";
 
-  defineOptions({ name: 'Analysis' })
+defineOptions({ name: "Analysis" });
 </script>

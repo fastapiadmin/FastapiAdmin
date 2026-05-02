@@ -70,99 +70,99 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'SafeguardServer' })
+defineOptions({ name: "SafeguardServer" });
 
-  interface ServerInfo {
-    name: string
-    ip: string
-    cup: number
-    memory: number
-    swap: number
-    disk: number
+interface ServerInfo {
+  name: string;
+  ip: string;
+  cup: number;
+  memory: number;
+  swap: number;
+  disk: number;
+}
+
+const UPDATE_INTERVAL = 3000; // 更新间隔时间（毫秒）
+
+/**
+ * 服务器列表数据
+ * 包含各服务器的基本信息和资源使用情况
+ */
+const serverList = reactive<ServerInfo[]>([
+  {
+    name: "开发服务器",
+    ip: "192.168.1.100",
+    cup: 85,
+    memory: 65,
+    swap: 45,
+    disk: 92,
+  },
+  {
+    name: "测试服务器",
+    ip: "192.168.1.101",
+    cup: 32,
+    memory: 78,
+    swap: 90,
+    disk: 45,
+  },
+  {
+    name: "预发布服务器",
+    ip: "192.168.1.102",
+    cup: 95,
+    memory: 42,
+    swap: 67,
+    disk: 88,
+  },
+  {
+    name: "线上服务器",
+    ip: "192.168.1.103",
+    cup: 58,
+    memory: 93,
+    swap: 25,
+    disk: 73,
+  },
+]);
+
+/**
+ * 生成指定范围内的随机整数
+ * @param min 最小值（默认 0）
+ * @param max 最大值（默认 100）
+ * @returns 随机整数
+ */
+const generateRandomValue = (min = 0, max = 100): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+/**
+ * 更新所有服务器的资源使用数据
+ * 模拟服务器资源使用情况的实时变化
+ */
+const updateServerData = (): void => {
+  serverList.forEach((server) => {
+    server.cup = generateRandomValue();
+    server.memory = generateRandomValue();
+    server.swap = generateRandomValue();
+    server.disk = generateRandomValue();
+  });
+};
+
+let timer: number | null = null;
+
+/**
+ * 组件挂载时启动定时器
+ * 每隔指定时间自动更新服务器数据
+ */
+onMounted(() => {
+  timer = window.setInterval(updateServerData, UPDATE_INTERVAL);
+});
+
+/**
+ * 组件卸载时清理定时器
+ * 防止内存泄漏
+ */
+onUnmounted(() => {
+  if (timer !== null) {
+    window.clearInterval(timer);
+    timer = null;
   }
-
-  const UPDATE_INTERVAL = 3000 // 更新间隔时间（毫秒）
-
-  /**
-   * 服务器列表数据
-   * 包含各服务器的基本信息和资源使用情况
-   */
-  const serverList = reactive<ServerInfo[]>([
-    {
-      name: '开发服务器',
-      ip: '192.168.1.100',
-      cup: 85,
-      memory: 65,
-      swap: 45,
-      disk: 92
-    },
-    {
-      name: '测试服务器',
-      ip: '192.168.1.101',
-      cup: 32,
-      memory: 78,
-      swap: 90,
-      disk: 45
-    },
-    {
-      name: '预发布服务器',
-      ip: '192.168.1.102',
-      cup: 95,
-      memory: 42,
-      swap: 67,
-      disk: 88
-    },
-    {
-      name: '线上服务器',
-      ip: '192.168.1.103',
-      cup: 58,
-      memory: 93,
-      swap: 25,
-      disk: 73
-    }
-  ])
-
-  /**
-   * 生成指定范围内的随机整数
-   * @param min 最小值（默认 0）
-   * @param max 最大值（默认 100）
-   * @returns 随机整数
-   */
-  const generateRandomValue = (min = 0, max = 100): number => {
-    return Math.floor(Math.random() * (max - min + 1)) + min
-  }
-
-  /**
-   * 更新所有服务器的资源使用数据
-   * 模拟服务器资源使用情况的实时变化
-   */
-  const updateServerData = (): void => {
-    serverList.forEach((server) => {
-      server.cup = generateRandomValue()
-      server.memory = generateRandomValue()
-      server.swap = generateRandomValue()
-      server.disk = generateRandomValue()
-    })
-  }
-
-  let timer: number | null = null
-
-  /**
-   * 组件挂载时启动定时器
-   * 每隔指定时间自动更新服务器数据
-   */
-  onMounted(() => {
-    timer = window.setInterval(updateServerData, UPDATE_INTERVAL)
-  })
-
-  /**
-   * 组件卸载时清理定时器
-   * 防止内存泄漏
-   */
-  onUnmounted(() => {
-    if (timer !== null) {
-      window.clearInterval(timer)
-      timer = null
-    }
-  })
+});
 </script>

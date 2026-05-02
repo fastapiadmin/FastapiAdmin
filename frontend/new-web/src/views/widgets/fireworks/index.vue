@@ -2,21 +2,21 @@
   <div class="page-content">
     <div class="mb-5">
       <ElSpace wrap>
-        <ElButton :disabled="isLaunching" v-ripple @click="handleSingleLaunch"
-          >✨ 放个小礼花</ElButton
-        >
-        <ElButton :disabled="isLaunching" v-ripple @click="handleImageLaunch(bp)"
-          >🎉 打开幸运红包</ElButton
-        >
-        <ElButton :disabled="isLaunching" v-ripple @click="handleMultipleLaunch('')"
-          >🎆 璀璨烟火秀</ElButton
-        >
-        <ElButton :disabled="isLaunching" v-ripple @click="handleImageLaunch(sd)"
-          >❄️ 飘点小雪花</ElButton
-        >
-        <ElButton :disabled="isLaunching" v-ripple @click="handleMultipleLaunch(sd)"
-          >❄️ 浪漫暴风雪</ElButton
-        >
+        <ElButton :disabled="isLaunching" v-ripple @click="handleSingleLaunch">
+          ✨ 放个小礼花
+        </ElButton>
+        <ElButton :disabled="isLaunching" v-ripple @click="handleImageLaunch(bp)">
+          🎉 打开幸运红包
+        </ElButton>
+        <ElButton :disabled="isLaunching" v-ripple @click="handleMultipleLaunch('')">
+          🎆 璀璨烟火秀
+        </ElButton>
+        <ElButton :disabled="isLaunching" v-ripple @click="handleImageLaunch(sd)">
+          ❄️ 飘点小雪花
+        </ElButton>
+        <ElButton :disabled="isLaunching" v-ripple @click="handleMultipleLaunch(sd)">
+          ❄️ 浪漫暴风雪
+        </ElButton>
       </ElSpace>
     </div>
 
@@ -45,72 +45,72 @@
 </template>
 
 <script setup lang="ts">
-  import { mittBus } from '@/utils/sys'
-  import bp from '@imgs/ceremony/hb.png'
-  import sd from '@imgs/ceremony/sd.png'
+import { mittBus } from "@/utils/sys";
+import bp from "@imgs/ceremony/hb.png";
+import sd from "@imgs/ceremony/sd.png";
 
-  defineOptions({ name: 'WidgetsFireworks' })
+defineOptions({ name: "WidgetsFireworks" });
 
-  const timerRef = ref<ReturnType<typeof setInterval> | null>(null)
-  const isLaunching = ref(false)
+const timerRef = ref<ReturnType<typeof setInterval> | null>(null);
+const isLaunching = ref(false);
 
-  /**
-   * 触发连续礼花效果
-   * @param count 发射次数
-   * @param src 图片资源路径
-   */
-  const triggerFireworks = (count: number, src: string) => {
-    // 清除之前的定时器
-    if (timerRef.value) {
-      clearInterval(timerRef.value)
-      timerRef.value = null
+/**
+ * 触发连续礼花效果
+ * @param count 发射次数
+ * @param src 图片资源路径
+ */
+const triggerFireworks = (count: number, src: string) => {
+  // 清除之前的定时器
+  if (timerRef.value) {
+    clearInterval(timerRef.value);
+    timerRef.value = null;
+  }
+
+  isLaunching.value = true;
+
+  let fired = 0;
+  timerRef.value = setInterval(() => {
+    mittBus.emit("triggerFireworks", src);
+    fired++;
+
+    if (fired >= count) {
+      clearInterval(timerRef.value!);
+      timerRef.value = null;
+      isLaunching.value = false;
     }
+  }, 1000);
+};
 
-    isLaunching.value = true
+/**
+ * 发射单个礼花
+ */
+const handleSingleLaunch = () => {
+  mittBus.emit("triggerFireworks");
+};
 
-    let fired = 0
-    timerRef.value = setInterval(() => {
-      mittBus.emit('triggerFireworks', src)
-      fired++
+/**
+ * 发射多个礼花
+ * @param src 图片资源路径
+ */
+const handleMultipleLaunch = (src: string) => {
+  triggerFireworks(10, src);
+};
 
-      if (fired >= count) {
-        clearInterval(timerRef.value!)
-        timerRef.value = null
-        isLaunching.value = false
-      }
-    }, 1000)
+/**
+ * 发射带图片的礼花
+ * @param src 图片资源路径
+ */
+const handleImageLaunch = (src: string) => {
+  mittBus.emit("triggerFireworks", src);
+};
+
+/**
+ * 组件卸载时清理定时器
+ */
+onUnmounted(() => {
+  if (timerRef.value) {
+    clearInterval(timerRef.value);
+    timerRef.value = null;
   }
-
-  /**
-   * 发射单个礼花
-   */
-  const handleSingleLaunch = () => {
-    mittBus.emit('triggerFireworks')
-  }
-
-  /**
-   * 发射多个礼花
-   * @param src 图片资源路径
-   */
-  const handleMultipleLaunch = (src: string) => {
-    triggerFireworks(10, src)
-  }
-
-  /**
-   * 发射带图片的礼花
-   * @param src 图片资源路径
-   */
-  const handleImageLaunch = (src: string) => {
-    mittBus.emit('triggerFireworks', src)
-  }
-
-  /**
-   * 组件卸载时清理定时器
-   */
-  onUnmounted(() => {
-    if (timerRef.value) {
-      clearInterval(timerRef.value)
-      timerRef.value = null
-    }
-  })
+});
 </script>

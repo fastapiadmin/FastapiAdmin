@@ -12,16 +12,16 @@
  * - 智能判断跳转目标类型（外部链接/内部路由）
  *
  * @module utils/navigation/jump
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
-import { AppRouteRecord } from '@/types/router'
-import { router } from '@/router'
-import { isNavigableMenuItem } from './route'
+import { AppRouteRecord } from "@/types/router";
+import { router } from "@/router";
+import { isNavigableMenuItem } from "./route";
 
 // 打开外部链接
 export const openExternalLink = (link: string) => {
-  window.open(link, '_blank')
-}
+  window.open(link, "_blank");
+};
 
 /**
  * 菜单跳转
@@ -31,38 +31,38 @@ export const openExternalLink = (link: string) => {
  */
 export const handleMenuJump = (item: AppRouteRecord, jumpToFirst: boolean = false) => {
   // 处理外部链接
-  const { link, isIframe } = item.meta
+  const { link, isIframe } = item.meta;
   if (link && !isIframe) {
-    return openExternalLink(link)
+    return openExternalLink(link);
   }
 
   // 如果不需要跳转到第一个子菜单，或者没有子菜单，直接跳转当前路径
   if (!jumpToFirst || !item.children?.length) {
-    return router.push(item.path)
+    return router.push(item.path);
   }
 
   // 递归查找第一个可导航的叶子节点菜单
   const findFirstLeafMenu = (items: AppRouteRecord[]): AppRouteRecord | undefined => {
     for (const child of items) {
       if (isNavigableMenuItem(child)) {
-        return child.children?.length ? findFirstLeafMenu(child.children) || child : child
+        return child.children?.length ? findFirstLeafMenu(child.children) || child : child;
       }
     }
-    return undefined
-  }
+    return undefined;
+  };
 
-  const firstChild = findFirstLeafMenu(item.children)
+  const firstChild = findFirstLeafMenu(item.children);
 
   // 如果子菜单都不可见，则回退到父级页面自身。
   if (!firstChild) {
-    return router.push(item.path)
+    return router.push(item.path);
   }
 
   // 如果第一个子菜单是外部链接则打开新窗口
   if (firstChild.meta?.link) {
-    return openExternalLink(firstChild.meta.link)
+    return openExternalLink(firstChild.meta.link);
   }
 
   // 跳转到子菜单路径
-  router.push(firstChild.path)
-}
+  router.push(firstChild.path);
+};

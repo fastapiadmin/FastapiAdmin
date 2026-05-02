@@ -24,72 +24,77 @@
  * - 减少重复类型定义
  *
  * @module types/common/index
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-// 导出响应类型
-export * from './response'
-
 // 状态类型
-export type Status = 0 | 1 // 0: 禁用, 1: 启用
+export type Status = 0 | 1; // 0: 禁用, 1: 启用
 
 // 性别类型
-export type Gender = 'male' | 'female' | 'unknown'
+export type Gender = "male" | "female" | "unknown";
 
 // 排序方向
-export type SortOrder = 'ascending' | 'descending'
+export type SortOrder = "ascending" | "descending";
 
 // 操作类型
-export type ActionType = 'create' | 'update' | 'delete' | 'view'
+export type ActionType =
+  | "create"
+  | "update"
+  | "delete"
+  | "view"
+  | "export"
+  | "import"
+  | "patch"
+  | "download";
 
 // 可选的记录类型
-export type Recordable<T = any> = Record<string, T>
+export type Recordable<T = any> = Record<string, T>;
 
 // 键值对类型
 export type KeyValue<T = any> = {
-  key: string
-  value: T
-  label?: string
-}
+  key: string;
+  value: T;
+  label?: string;
+};
 
 // 时间范围类型
 export interface TimeRange {
-  startTime: string
-  endTime: string
+  startTime: string;
+  endTime: string;
 }
 
 // 文件类型
 export interface FileInfo {
-  name: string
-  url: string
-  size: number
-  type: string
-  lastModified?: number
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+  lastModified?: number;
 }
 
 // 坐标类型
 export interface Position {
-  x: number
-  y: number
+  x: number;
+  y: number;
 }
 
 // 尺寸类型
 export interface Size {
-  width: number
-  height: number
+  width: number;
+  height: number;
 }
 
 // 响应式断点类型
-export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
 
 // 主题类型
-export type ThemeMode = 'light' | 'dark' | 'auto'
+export type ThemeMode = "light" | "dark" | "auto";
 
 // 语言类型
-export type Language = 'zh-CN' | 'en-US'
+export type Language = "zh-CN" | "en-US";
 
 // 环境类型
-export type Environment = 'development' | 'production' | 'test'
+export type Environment = "development" | "production" | "test";
 
 // 弹窗类型
-export type DialogType = 'add' | 'edit'
+export type DialogType = "add" | "edit";

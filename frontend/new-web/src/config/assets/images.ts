@@ -11,19 +11,19 @@
  * - menuStyles: 菜单风格预览图（设计/暗色/亮色）
  *
  * @module config/assets/images
- * @author Art Design Pro Team
+ * @author FastapiAdmin Team
  */
 
-import lightTheme from '@imgs/settings/theme_styles/light.png'
-import darkTheme from '@imgs/settings/theme_styles/dark.png'
-import systemTheme from '@imgs/settings/theme_styles/system.png'
-import verticalLayout from '@imgs/settings/menu_layouts/vertical.png'
-import horizontalLayout from '@imgs/settings/menu_layouts/horizontal.png'
-import mixedLayout from '@imgs/settings/menu_layouts/mixed.png'
-import dualColumnLayout from '@imgs/settings/menu_layouts/dual_column.png'
-import designStyle from '@imgs/settings/menu_styles/design.png'
-import darkStyle from '@imgs/settings/menu_styles/dark.png'
-import lightStyle from '@imgs/settings/menu_styles/light.png'
+import lightTheme from "@imgs/settings/theme_styles/light.png";
+import darkTheme from "@imgs/settings/theme_styles/dark.png";
+import systemTheme from "@imgs/settings/theme_styles/system.png";
+import verticalLayout from "@imgs/settings/menu_layouts/vertical.png";
+import horizontalLayout from "@imgs/settings/menu_layouts/horizontal.png";
+import mixedLayout from "@imgs/settings/menu_layouts/mixed.png";
+import dualColumnLayout from "@imgs/settings/menu_layouts/dual_column.png";
+import designStyle from "@imgs/settings/menu_styles/design.png";
+import darkStyle from "@imgs/settings/menu_styles/dark.png";
+import lightStyle from "@imgs/settings/menu_styles/light.png";
 
 /**
  * 配置中心图片资源对象
@@ -36,7 +36,7 @@ export const configImages = {
     /** 暗色主题 */
     dark: darkTheme,
     /** 自动主题（跟随系统） */
-    system: systemTheme
+    system: systemTheme,
   },
   /** 菜单布局预览图 */
   menuLayouts: {
@@ -47,7 +47,7 @@ export const configImages = {
     /** 混合菜单 */
     mixed: mixedLayout,
     /** 双栏菜单 */
-    dualColumn: dualColumnLayout
+    dualColumn: dualColumnLayout,
   },
   /** 菜单风格预览图 */
   menuStyles: {
@@ -56,6 +56,6 @@ export const configImages = {
     /** 暗色风格 */
     dark: darkStyle,
     /** 亮色风格 */
-    light: lightStyle
-  }
-}
+    light: lightStyle,
+  },
+};

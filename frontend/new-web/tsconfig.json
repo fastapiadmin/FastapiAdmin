@@ -2,15 +2,8 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
-    "strict": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
+    "moduleResolution": "bundler",
     "lib": ["esnext", "dom"],
-    "types": ["vite/client", "node", "element-plus/global"],
-    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -21,8 +14,19 @@
       "@stores/*": ["src/store/*"],
       "@plugins/*": ["src/plugins/*"],
       "@styles/*": ["src/assets/styles/*"]
-    }
+    },
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "useDefineForClassFields": true,
+    "allowJs": true,
+    "types": ["node", "vite/client", "element-plus/global"]
   },
-  "include": ["src/**/*", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["src/types/**/*.d.ts", "src/**/*.ts", "src/**/*.vue", "vite.config.ts"],
   "exclude": ["node_modules", "dist", "**/*.js"]
 }

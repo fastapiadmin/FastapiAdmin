@@ -55,141 +55,141 @@
 </template>
 
 <script setup lang="ts">
-  import product1 from '@/assets/images/3d/icon1.webp'
-  import product2 from '@/assets/images/3d/icon2.webp'
-  import product3 from '@/assets/images/3d/icon3.webp'
-  import product4 from '@/assets/images/3d/icon4.webp'
-  import product5 from '@/assets/images/3d/icon5.webp'
-  import product6 from '@/assets/images/3d/icon6.webp'
+import product1 from "@/assets/images/3d/icon1.webp";
+import product2 from "@/assets/images/3d/icon2.webp";
+import product3 from "@/assets/images/3d/icon3.webp";
+import product4 from "@/assets/images/3d/icon4.webp";
+import product5 from "@/assets/images/3d/icon5.webp";
+import product6 from "@/assets/images/3d/icon6.webp";
 
-  interface ProductItem {
-    name: string
-    category: string
-    price: number
-    stock: number
-    sales: number
-    percentage: number
-    pro: number
-    color: string
-    image: string
-  }
+interface ProductItem {
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  sales: number;
+  percentage: number;
+  pro: number;
+  color: string;
+  image: string;
+}
 
-  const ANIMATION_DELAY = 100
-  const STOCK_THRESHOLD = {
-    LOW: 20,
-    MEDIUM: 50
-  } as const
+const ANIMATION_DELAY = 100;
+const STOCK_THRESHOLD = {
+  LOW: 20,
+  MEDIUM: 50,
+} as const;
 
-  /**
-   * 热销产品表格数据
-   * 包含产品信息、库存、销量和销售趋势
-   */
-  const tableData = reactive<ProductItem[]>([
-    {
-      name: '智能手表 Pro',
-      category: '电子设备',
-      price: 1299,
-      stock: 156,
-      sales: 423,
-      percentage: 75,
-      pro: 0,
-      color: 'var(--art-primary)',
-      image: product1
-    },
-    {
-      name: '无线蓝牙耳机',
-      category: '音频设备',
-      price: 499,
-      stock: 89,
-      sales: 652,
-      percentage: 85,
-      pro: 0,
-      color: 'var(--art-success)',
-      image: product2
-    },
-    {
-      name: '机械键盘',
-      category: '电脑配件',
-      price: 399,
-      stock: 12,
-      sales: 238,
-      percentage: 45,
-      pro: 0,
-      color: 'var(--art-warning)',
-      image: product3
-    },
-    {
-      name: '超薄笔记本电脑',
-      category: '电子设备',
-      price: 5999,
-      stock: 0,
-      sales: 126,
-      percentage: 30,
-      pro: 0,
-      color: 'var(--art-error)',
-      image: product4
-    },
-    {
-      name: '智能音箱',
-      category: '智能家居',
-      price: 799,
-      stock: 45,
-      sales: 321,
-      percentage: 60,
-      pro: 0,
-      color: 'var(--art-info)',
-      image: product5
-    },
-    {
-      name: '游戏手柄',
-      category: '游戏配件',
-      price: 299,
-      stock: 78,
-      sales: 489,
-      percentage: 70,
-      pro: 0,
-      color: 'var(--art-secondary)',
-      image: product6
-    }
-  ])
+/**
+ * 热销产品表格数据
+ * 包含产品信息、库存、销量和销售趋势
+ */
+const tableData = reactive<ProductItem[]>([
+  {
+    name: "智能手表 Pro",
+    category: "电子设备",
+    price: 1299,
+    stock: 156,
+    sales: 423,
+    percentage: 75,
+    pro: 0,
+    color: "var(--art-primary)",
+    image: product1,
+  },
+  {
+    name: "无线蓝牙耳机",
+    category: "音频设备",
+    price: 499,
+    stock: 89,
+    sales: 652,
+    percentage: 85,
+    pro: 0,
+    color: "var(--art-success)",
+    image: product2,
+  },
+  {
+    name: "机械键盘",
+    category: "电脑配件",
+    price: 399,
+    stock: 12,
+    sales: 238,
+    percentage: 45,
+    pro: 0,
+    color: "var(--art-warning)",
+    image: product3,
+  },
+  {
+    name: "超薄笔记本电脑",
+    category: "电子设备",
+    price: 5999,
+    stock: 0,
+    sales: 126,
+    percentage: 30,
+    pro: 0,
+    color: "var(--art-error)",
+    image: product4,
+  },
+  {
+    name: "智能音箱",
+    category: "智能家居",
+    price: 799,
+    stock: 45,
+    sales: 321,
+    percentage: 60,
+    pro: 0,
+    color: "var(--art-info)",
+    image: product5,
+  },
+  {
+    name: "游戏手柄",
+    category: "游戏配件",
+    price: 299,
+    stock: 78,
+    sales: 489,
+    percentage: 70,
+    pro: 0,
+    color: "var(--art-secondary)",
+    image: product6,
+  },
+]);
 
-  /**
-   * 根据库存数量获取状态文本
-   * @param stock 库存数量
-   * @returns 库存状态文本
-   */
-  const getStockStatus = (stock: number): string => {
-    if (stock === 0) return '缺货'
-    if (stock < STOCK_THRESHOLD.LOW) return '低库存'
-    if (stock < STOCK_THRESHOLD.MEDIUM) return '适中'
-    return '充足'
-  }
+/**
+ * 根据库存数量获取状态文本
+ * @param stock 库存数量
+ * @returns 库存状态文本
+ */
+const getStockStatus = (stock: number): string => {
+  if (stock === 0) return "缺货";
+  if (stock < STOCK_THRESHOLD.LOW) return "低库存";
+  if (stock < STOCK_THRESHOLD.MEDIUM) return "适中";
+  return "充足";
+};
 
-  /**
-   * 根据库存数量获取状态样式类名
-   * @param stock 库存数量
-   * @returns CSS 类名
-   */
-  const getStockClass = (stock: number): string => {
-    if (stock === 0) return 'text-danger bg-danger/12'
-    if (stock < STOCK_THRESHOLD.LOW) return 'text-warning bg-warning/12'
-    if (stock < STOCK_THRESHOLD.MEDIUM) return 'text-info bg-info/12'
-    return 'text-success bg-success/12'
-  }
+/**
+ * 根据库存数量获取状态样式类名
+ * @param stock 库存数量
+ * @returns CSS 类名
+ */
+const getStockClass = (stock: number): string => {
+  if (stock === 0) return "text-danger bg-danger/12";
+  if (stock < STOCK_THRESHOLD.LOW) return "text-warning bg-warning/12";
+  if (stock < STOCK_THRESHOLD.MEDIUM) return "text-info bg-info/12";
+  return "text-success bg-success/12";
+};
 
-  /**
-   * 添加进度条动画效果
-   * 延迟后将进度值从 0 更新到目标百分比，触发动画
-   */
-  const addAnimation = (): void => {
-    setTimeout(() => {
-      tableData.forEach((item) => {
-        item.pro = item.percentage
-      })
-    }, ANIMATION_DELAY)
-  }
+/**
+ * 添加进度条动画效果
+ * 延迟后将进度值从 0 更新到目标百分比，触发动画
+ */
+const addAnimation = (): void => {
+  setTimeout(() => {
+    tableData.forEach((item) => {
+      item.pro = item.percentage;
+    });
+  }, ANIMATION_DELAY);
+};
 
-  onMounted(() => {
-    addAnimation()
-  })
+onMounted(() => {
+  addAnimation();
+});
 </script>

@@ -29,8 +29,9 @@
                 <span
                   class="font-medium"
                   :class="[item.change.indexOf('+') === -1 ? 'text-danger' : 'text-success']"
-                  >{{ item.change }}</span
                 >
+                  {{ item.change }}
+                </span>
               </small>
             </div>
           </div>
@@ -41,46 +42,46 @@
 </template>
 
 <script setup lang="ts">
-  interface SalesDataItem {
-    label: string
-    value: number
-    change: string
-    icon: string
-    class: string
-  }
+interface SalesDataItem {
+  label: string;
+  value: number;
+  change: string;
+  icon: string;
+  class: string;
+}
 
-  /**
-   * 今日销售数据统计
-   * 包含销售额、订单量、产品销量和新客户数等关键指标
-   */
-  const salesData = ref<SalesDataItem[]>([
-    {
-      label: '总销售额',
-      value: 999,
-      change: '+10%',
-      icon: 'ri:bar-chart-box-ai-line',
-      class: 'bg-theme'
-    },
-    {
-      label: '总订单量',
-      value: 300,
-      change: '+15%',
-      icon: 'ri:bar-chart-grouped-line',
-      class: 'bg-warning'
-    },
-    {
-      label: '产品销售量',
-      value: 56,
-      change: '-5%',
-      icon: 'ri:bar-chart-2-line',
-      class: 'bg-error'
-    },
-    {
-      label: '新客户数',
-      value: 68,
-      change: '+8%',
-      icon: 'ri:user-add-line',
-      class: 'bg-success'
-    }
-  ])
+/**
+ * 今日销售数据统计
+ * 包含销售额、订单量、产品销量和新客户数等关键指标
+ */
+const salesData = ref<SalesDataItem[]>([
+  {
+    label: "总销售额",
+    value: 999,
+    change: "+10%",
+    icon: "ri:bar-chart-box-ai-line",
+    class: "bg-theme",
+  },
+  {
+    label: "总订单量",
+    value: 300,
+    change: "+15%",
+    icon: "ri:bar-chart-grouped-line",
+    class: "bg-warning",
+  },
+  {
+    label: "产品销售量",
+    value: 56,
+    change: "-5%",
+    icon: "ri:bar-chart-2-line",
+    class: "bg-error",
+  },
+  {
+    label: "新客户数",
+    value: 68,
+    change: "+8%",
+    icon: "ri:user-add-line",
+    class: "bg-success",
+  },
+]);
 </script>

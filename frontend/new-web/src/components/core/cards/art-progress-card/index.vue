@@ -27,60 +27,60 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'ArtProgressCard' })
+defineOptions({ name: "ArtProgressCard" });
 
-  interface Props {
-    /** 进度百分比 */
-    percentage: number
-    /** 标题 */
-    title: string
-    /** 颜色 */
-    color?: string
-    /** 图标 */
-    icon?: string
-    /** 图标样式 */
-    iconStyle?: string
-    /** 进度条宽度 */
-    strokeWidth?: number
-  }
+interface Props {
+  /** 进度百分比 */
+  percentage: number;
+  /** 标题 */
+  title: string;
+  /** 颜色 */
+  color?: string;
+  /** 图标 */
+  icon?: string;
+  /** 图标样式 */
+  iconStyle?: string;
+  /** 进度条宽度 */
+  strokeWidth?: number;
+}
 
-  const props = withDefaults(defineProps<Props>(), {
-    strokeWidth: 5,
-    color: '#67C23A'
-  })
+const props = withDefaults(defineProps<Props>(), {
+  strokeWidth: 5,
+  color: "#67C23A",
+});
 
-  const animationDuration = 500
-  const currentPercentage = ref(0)
+const animationDuration = 500;
+const currentPercentage = ref(0);
 
-  const animateProgress = () => {
-    const startTime = Date.now()
-    const startValue = currentPercentage.value
-    const endValue = props.percentage
+const animateProgress = () => {
+  const startTime = Date.now();
+  const startValue = currentPercentage.value;
+  const endValue = props.percentage;
 
-    const animate = () => {
-      const currentTime = Date.now()
-      const elapsed = currentTime - startTime
-      const progress = Math.min(elapsed / animationDuration, 1)
+  const animate = () => {
+    const currentTime = Date.now();
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / animationDuration, 1);
 
-      currentPercentage.value = startValue + (endValue - startValue) * progress
+    currentPercentage.value = startValue + (endValue - startValue) * progress;
 
-      if (progress < 1) {
-        requestAnimationFrame(animate)
-      }
+    if (progress < 1) {
+      requestAnimationFrame(animate);
     }
+  };
 
-    requestAnimationFrame(animate)
+  requestAnimationFrame(animate);
+};
+
+onMounted(() => {
+  animateProgress();
+});
+
+// 当 percentage 属性变化时重新执行动画
+watch(
+  () => props.percentage,
+  () => {
+    animateProgress();
   }
-
-  onMounted(() => {
-    animateProgress()
-  })
-
-  // 当 percentage 属性变化时重新执行动画
-  watch(
-    () => props.percentage,
-    () => {
-      animateProgress()
-    }
-  )
+);
 </script>

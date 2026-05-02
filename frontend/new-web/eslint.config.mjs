@@ -1,73 +1,81 @@
-// 从 URL 和路径模块中导入必要的功能
+// ESLint 配置文件
 import fs from 'fs'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 
-// 从 ESLint 插件中导入推荐配置
 import pluginJs from '@eslint/js'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import pluginVue from 'eslint-plugin-vue'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-// 使用 import.meta.url 获取当前模块的路径
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// 读取 .auto-import.json 文件的内容，并将其解析为 JSON 对象
 const autoImportConfig = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, '.auto-import.json'), 'utf-8')
 )
 
-export default [
-  // 指定文件匹配规则
-  {
-    files: ['**/*.{js,mjs,cjs,ts,tsx,vue}']
-  },
-  // 指定全局变量和环境
-  {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node
-      }
-    }
-  },
-  // 扩展配置
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
-  // 自定义规则
-  {
-    // 针对所有 JavaScript、TypeScript 和 Vue 文件应用以下配置
-    files: ['**/*.{js,mjs,cjs,ts,tsx,vue}'],
+// Element Plus 组件全局配置
+const elementPlusComponents = {
+  ElInput: 'readonly',
+  ElSelect: 'readonly',
+  ElSwitch: 'readonly',
+  ElCascader: 'readonly',
+  ElInputNumber: 'readonly',
+  ElTimePicker: 'readonly',
+  ElTimeSelect: 'readonly',
+  ElDatePicker: 'readonly',
+  ElTreeSelect: 'readonly',
+  ElText: 'readonly',
+  ElRadioGroup: 'readonly',
+  ElCheckboxGroup: 'readonly',
+  ElOption: 'readonly',
+  ElRadio: 'readonly',
+  ElCheckbox: 'readonly',
+  ElInputTag: 'readonly',
+  ElForm: 'readonly',
+  ElFormItem: 'readonly',
+  ElTable: 'readonly',
+  ElTableColumn: 'readonly',
+  ElButton: 'readonly',
+  ElDialog: 'readonly',
+  ElPagination: 'readonly',
+  ElMessage: 'readonly',
+  ElMessageBox: 'readonly',
+  ElNotification: 'readonly',
+  ElTree: 'readonly',
+  ElDropdown: 'readonly',
+  ElDropdownMenu: 'readonly',
+  ElDropdownItem: 'readonly',
+  ElAvatar: 'readonly',
+  ElBadge: 'readonly',
+  ElCard: 'readonly',
+  ElCol: 'readonly',
+  ElRow: 'readonly',
+  ElContainer: 'readonly',
+  ElHeader: 'readonly',
+  ElAside: 'readonly',
+  ElMain: 'readonly',
+  ElFooter: 'readonly',
+  ElLink: 'readonly',
+  ElDivider: 'readonly',
+  ElImage: 'readonly',
+  ElProgress: 'readonly',
+  ElSkeleton: 'readonly',
+  ElSlider: 'readonly',
+  ElSwitch: 'readonly',
+  ElTag: 'readonly',
+  ElTooltip: 'readonly',
+  ElPopover: 'readonly',
+  ElPopconfirm: 'readonly',
+  ElDrawer: 'readonly',
+  ElAlert: 'readonly',
+  ElLoading: 'readonly',
+}
 
-    languageOptions: {
-      globals: {
-        // 合并从 autoImportConfig 中读取的全局变量配置
-        ...autoImportConfig.globals,
-        // TypeScript 全局命名空间
-        Api: 'readonly'
-      }
-    },
-    rules: {
-      quotes: ['error', 'single'], // 使用单引号
-      semi: ['error', 'never'], // 语句末尾不加分号
-      'no-var': 'error', // 要求使用 let 或 const 而不是 var
-      '@typescript-eslint/no-explicit-any': 'off', // 禁用 any 检查
-      'vue/multi-word-component-names': 'off', // 禁用对 Vue 组件名称的多词要求检查
-      'no-multiple-empty-lines': ['warn', { max: 1 }], // 不允许多个空行
-      'no-unexpected-multiline': 'error' // 禁止空余的多行
-    }
-  },
-  // vue 规则
-  {
-    files: ['**/*.vue'],
-    languageOptions: {
-      parserOptions: { parser: tseslint.parser }
-    }
-  },
-  // 忽略文件
+export default [
+  // 忽略文件配置
   {
     ignores: [
       'node_modules',
@@ -75,9 +83,114 @@ export default [
       'public',
       '.vscode/**',
       'src/assets/**',
-      'src/utils/console.ts'
-    ]
+      'src/utils/console.ts',
+      '**/*.min.*',
+      '**/auto-imports.d.ts',
+      '**/components.d.ts',
+      '**/types/**/*.d.ts',
+    ],
   },
+
+  // 基础配置
+  {
+    files: ['**/*.{js,mjs,cjs,ts,tsx,vue}'],
+  },
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2022,
+      },
+    },
+  },
+  pluginJs.configs.recommended,
+  ...tseslint.configs.recommended,
+  ...pluginVue.configs['flat/essential'],
+
+  // 全局配置
+  {
+    files: ['**/*.{js,mjs,cjs,ts,tsx,vue}'],
+
+    languageOptions: {
+      globals: {
+        ...autoImportConfig.globals,
+        Api: 'readonly',
+        ...elementPlusComponents,
+        // 全局类型定义
+        PageQuery: 'readonly',
+        PageResult: 'readonly',
+        UserListItem: 'readonly',
+        UserSearchParams: 'readonly',
+        RoleListItem: 'readonly',
+        RoleSearchParams: 'readonly',
+        OptionType: 'readonly',
+        ApiResponse: 'readonly',
+        ExcelResult: 'readonly',
+        CommonType: 'readonly',
+        updatorType: 'readonly',
+        creatorType: 'readonly',
+        TagView: 'readonly',
+        AppSettings: 'readonly',
+        __APP_INFO__: 'readonly',
+        UploadFilePath: 'readonly',
+      },
+    },
+    rules: {
+      // 代码风格
+      quotes: ['error', 'single'],
+      semi: ['error', 'never'],
+      'no-var': 'error',
+      'prefer-const': 'error',
+      'object-shorthand': 'error',
+
+      // 最佳实践
+      'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+      'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+      'eqeqeq': 'off',
+      'no-multi-spaces': 'error',
+      'no-multiple-empty-lines': ['warn', { max: 1 }],
+      'no-unexpected-multiline': 'error',
+
+      // TypeScript 规则
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
+
+      // Vue 规则
+      'vue/multi-word-component-names': 'off',
+      'vue/no-v-html': 'off',
+      'vue/require-default-prop': 'off',
+      'vue/require-explicit-emits': 'error',
+      'vue/no-unused-vars': 'error',
+      'vue/no-mutating-props': 'off',
+      'vue/valid-v-for': 'warn',
+      'vue/no-template-shadow': 'warn',
+      'vue/return-in-computed-property': 'warn',
+      'vue/block-order': ['error', { order: ['template', 'script', 'style'] }],
+      'vue/html-self-closing': [
+        'error',
+        {
+          html: { void: 'always', normal: 'never', component: 'always' },
+          svg: 'always',
+          math: 'always',
+        },
+      ],
+      'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+    },
+  },
+
+  // Vue 文件特定配置
+  {
+    files: ['**/*.vue'],
+    languageOptions: {
+      parserOptions: { parser: tseslint.parser },
+    },
+  },
+
   // prettier 配置
-  eslintPluginPrettierRecommended
+  eslintPluginPrettierRecommended,
 ]

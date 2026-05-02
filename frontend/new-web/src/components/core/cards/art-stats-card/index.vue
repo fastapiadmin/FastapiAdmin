@@ -23,8 +23,9 @@
         class="mt-1 text-sm text-g-500 opacity-90"
         :style="{ color: textColor }"
         v-if="description"
-        >{{ description }}</p
       >
+        {{ description }}
+      </p>
     </div>
     <div v-if="showArrow">
       <ArtSvgIcon icon="ri:arrow-right-s-line" class="text-xl text-g-500" />
@@ -33,35 +34,35 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({ name: 'ArtStatsCard' })
+defineOptions({ name: "ArtStatsCard" });
 
-  interface StatsCardProps {
-    /** 盒子样式 */
-    boxStyle?: string
-    /** 图标 */
-    icon?: string
-    /** 图标样式 */
-    iconStyle?: string
-    /** 标题 */
-    title?: string
-    /** 数值 */
-    count?: number
-    /** 小数位 */
-    decimals?: number
-    /** 分隔符 */
-    separator?: string
-    /** 描述 */
-    description: string
-    /** 文本颜色 */
-    textColor?: string
-    /** 是否显示箭头 */
-    showArrow?: boolean
-  }
+interface StatsCardProps {
+  /** 盒子样式 */
+  boxStyle?: string;
+  /** 图标 */
+  icon?: string;
+  /** 图标样式 */
+  iconStyle?: string;
+  /** 标题 */
+  title?: string;
+  /** 数值 */
+  count?: number;
+  /** 小数位 */
+  decimals?: number;
+  /** 分隔符 */
+  separator?: string;
+  /** 描述 */
+  description: string;
+  /** 文本颜色 */
+  textColor?: string;
+  /** 是否显示箭头 */
+  showArrow?: boolean;
+}
 
-  withDefaults(defineProps<StatsCardProps>(), {
-    iconSize: 30,
-    iconBgRadius: 50,
-    decimals: 0,
-    separator: ','
-  })
+withDefaults(defineProps<StatsCardProps>(), {
+  iconSize: 30,
+  iconBgRadius: 50,
+  decimals: 0,
+  separator: ",",
+});
 </script>

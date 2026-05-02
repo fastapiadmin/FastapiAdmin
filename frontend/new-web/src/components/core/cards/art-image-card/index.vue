@@ -48,42 +48,42 @@
 </template>
 
 <script setup lang="ts">
-  import { Picture, View, ChatLineRound } from '@element-plus/icons-vue'
+import { Picture, View, ChatLineRound } from "@element-plus/icons-vue";
 
-  defineOptions({ name: 'ArtImageCard' })
+defineOptions({ name: "ArtImageCard" });
 
-  interface Props {
-    /** 图片地址 */
-    imageUrl: string
-    /** 标题 */
-    title: string
-    /** 分类 */
-    category?: string
-    /** 阅读时间 */
-    readTime?: string
-    /** 浏览量 */
-    views?: number
-    /** 评论数 */
-    comments?: number
-    /** 日期 */
-    date?: string
-  }
+interface Props {
+  /** 图片地址 */
+  imageUrl: string;
+  /** 标题 */
+  title: string;
+  /** 分类 */
+  category?: string;
+  /** 阅读时间 */
+  readTime?: string;
+  /** 浏览量 */
+  views?: number;
+  /** 评论数 */
+  comments?: number;
+  /** 日期 */
+  date?: string;
+}
 
-  const props = withDefaults(defineProps<Props>(), {
-    imageUrl: '',
-    title: '',
-    category: '',
-    readTime: '',
-    views: 0,
-    comments: 0,
-    date: ''
-  })
+const props = withDefaults(defineProps<Props>(), {
+  imageUrl: "",
+  title: "",
+  category: "",
+  readTime: "",
+  views: 0,
+  comments: 0,
+  date: "",
+});
 
-  const emit = defineEmits<{
-    (e: 'click', card: Props): void
-  }>()
+const emit = defineEmits<{
+  (e: "click", card: Props): void;
+}>();
 
-  const handleClick = () => {
-    emit('click', props)
-  }
+const handleClick = () => {
+  emit("click", props);
+};
 </script>

@@ -198,253 +198,253 @@
 </template>
 
 <script setup lang="ts">
-  import cover1 from '@imgs/cover/img1.webp'
-  import cover2 from '@imgs/cover/img2.webp'
-  import cover3 from '@imgs/cover/img3.webp'
-  import cover4 from '@imgs/cover/img4.webp'
+import cover1 from "@imgs/cover/img1.webp";
+import cover2 from "@imgs/cover/img2.webp";
+import cover3 from "@imgs/cover/img3.webp";
+import cover4 from "@imgs/cover/img4.webp";
 
-  defineOptions({ name: 'TemplateCards' })
+defineOptions({ name: "TemplateCards" });
 
-  /**
-   * 统计卡片数据配置
-   */
-  const statsCards = [
-    {
-      id: 1,
-      title: '销售产品',
-      count: 1235,
-      description: '鞋子、牛仔裤、派对服装、手表',
-      icon: 'ri:bar-chart-box-line',
-      boxStyle: '!bg-theme/10',
-      customIconStyle: '!text-theme !text-3xl',
-      iconStyle: 'bg-info',
-      textColor: 'var(--theme-color)',
-      showArrow: false
-    },
-    {
-      id: 2,
-      title: '活跃用户',
-      count: 5000,
-      description: '日活跃用户超过5,000+',
-      icon: 'ri:account-box-2-line',
-      boxStyle: '!bg-warning/10',
-      customIconStyle: '!text-warning !text-3xl',
-      iconStyle: 'bg-warning',
-      textColor: 'var(--art-warning)',
-      showArrow: false
-    },
-    {
-      id: 3,
-      title: '总收入',
-      count: 35000,
-      description: '月收入超过¥350,000+',
-      icon: 'ri:money-cny-box-line',
-      boxStyle: '!bg-secondary/10',
-      customIconStyle: '!text-secondary !text-3xl',
-      iconStyle: 'bg-secondary',
-      textColor: 'var(--art-secondary)',
-      showArrow: false
-    },
-    {
-      id: 4,
-      title: '客户评价',
-      count: 4800,
-      description: '平均评分4.8/5',
-      icon: 'ri:message-3-line',
-      boxStyle: '!bg-error/10',
-      customIconStyle: '!text-error !text-3xl',
-      iconStyle: 'bg-error',
-      textColor: 'var(--art-error)',
-      showArrow: false
-    }
-  ]
+/**
+ * 统计卡片数据配置
+ */
+const statsCards = [
+  {
+    id: 1,
+    title: "销售产品",
+    count: 1235,
+    description: "鞋子、牛仔裤、派对服装、手表",
+    icon: "ri:bar-chart-box-line",
+    boxStyle: "!bg-theme/10",
+    customIconStyle: "!text-theme !text-3xl",
+    iconStyle: "bg-info",
+    textColor: "var(--theme-color)",
+    showArrow: false,
+  },
+  {
+    id: 2,
+    title: "活跃用户",
+    count: 5000,
+    description: "日活跃用户超过5,000+",
+    icon: "ri:account-box-2-line",
+    boxStyle: "!bg-warning/10",
+    customIconStyle: "!text-warning !text-3xl",
+    iconStyle: "bg-warning",
+    textColor: "var(--art-warning)",
+    showArrow: false,
+  },
+  {
+    id: 3,
+    title: "总收入",
+    count: 35000,
+    description: "月收入超过¥350,000+",
+    icon: "ri:money-cny-box-line",
+    boxStyle: "!bg-secondary/10",
+    customIconStyle: "!text-secondary !text-3xl",
+    iconStyle: "bg-secondary",
+    textColor: "var(--art-secondary)",
+    showArrow: false,
+  },
+  {
+    id: 4,
+    title: "客户评价",
+    count: 4800,
+    description: "平均评分4.8/5",
+    icon: "ri:message-3-line",
+    boxStyle: "!bg-error/10",
+    customIconStyle: "!text-error !text-3xl",
+    iconStyle: "bg-error",
+    textColor: "var(--art-error)",
+    showArrow: false,
+  },
+];
 
-  const progressCards = [
-    {
-      id: 1,
-      title: '完成进度',
-      percentage: 75,
-      color: 'var(--art-success)',
-      icon: 'ri:arrow-up-circle-line',
-      iconStyle: 'bg-success/12 text-success'
-    },
-    {
-      id: 2,
-      title: '项目进度',
-      percentage: 65,
-      color: 'var(--theme-color)',
-      icon: 'ri:twitch-line',
-      iconStyle: 'bg-theme/12 text-theme'
-    },
-    {
-      id: 3,
-      title: '学习进度',
-      percentage: 45,
-      color: 'var(--art-error)',
-      icon: 'ri:game-line',
-      iconStyle: '!bg-error/12 text-error'
-    },
-    {
-      id: 4,
-      title: '任务进度',
-      percentage: 90,
-      color: 'var(--art-secondary)',
-      icon: 'ri:flag-2-line',
-      iconStyle: 'bg-secondary/12 text-secondary'
-    }
-  ]
+const progressCards = [
+  {
+    id: 1,
+    title: "完成进度",
+    percentage: 75,
+    color: "var(--art-success)",
+    icon: "ri:arrow-up-circle-line",
+    iconStyle: "bg-success/12 text-success",
+  },
+  {
+    id: 2,
+    title: "项目进度",
+    percentage: 65,
+    color: "var(--theme-color)",
+    icon: "ri:twitch-line",
+    iconStyle: "bg-theme/12 text-theme",
+  },
+  {
+    id: 3,
+    title: "学习进度",
+    percentage: 45,
+    color: "var(--art-error)",
+    icon: "ri:game-line",
+    iconStyle: "!bg-error/12 text-error",
+  },
+  {
+    id: 4,
+    title: "任务进度",
+    percentage: 90,
+    color: "var(--art-secondary)",
+    icon: "ri:flag-2-line",
+    iconStyle: "bg-secondary/12 text-secondary",
+  },
+];
 
-  const imageCards = [
-    {
-      id: 1,
-      imageUrl: cover1,
-      title: 'AI技术在医疗领域的创新应用与发展前景',
-      category: '社交',
-      readTime: '2分钟',
-      views: 9125,
-      comments: 3,
-      date: '12月19日 周一'
-    },
-    {
-      id: 2,
-      imageUrl: cover2,
-      title: '大数据分析助力企业决策的实践案例',
-      category: '技术',
-      readTime: '3分钟',
-      views: 7234,
-      comments: 5,
-      date: '12月20日 周二'
-    },
-    {
-      id: 3,
-      imageUrl: cover3,
-      title: '区块链技术在供应链管理中的应用',
-      category: '科技',
-      readTime: '4分钟',
-      views: 5678,
-      comments: 8,
-      date: '12月21日 周三'
-    },
-    {
-      id: 4,
-      imageUrl: cover4,
-      title: '云计算技术发展趋势与未来展望',
-      category: '云技术',
-      readTime: '5分钟',
-      views: 4321,
-      comments: 6,
-      date: '12月22日 周四'
-    }
-  ]
+const imageCards = [
+  {
+    id: 1,
+    imageUrl: cover1,
+    title: "AI技术在医疗领域的创新应用与发展前景",
+    category: "社交",
+    readTime: "2分钟",
+    views: 9125,
+    comments: 3,
+    date: "12月19日 周一",
+  },
+  {
+    id: 2,
+    imageUrl: cover2,
+    title: "大数据分析助力企业决策的实践案例",
+    category: "技术",
+    readTime: "3分钟",
+    views: 7234,
+    comments: 5,
+    date: "12月20日 周二",
+  },
+  {
+    id: 3,
+    imageUrl: cover3,
+    title: "区块链技术在供应链管理中的应用",
+    category: "科技",
+    readTime: "4分钟",
+    views: 5678,
+    comments: 8,
+    date: "12月21日 周三",
+  },
+  {
+    id: 4,
+    imageUrl: cover4,
+    title: "云计算技术发展趋势与未来展望",
+    category: "云技术",
+    readTime: "5分钟",
+    views: 4321,
+    comments: 6,
+    date: "12月22日 周四",
+  },
+];
 
-  const dataList = [
-    {
-      title: '新加坡之行',
-      status: '进行中',
-      time: '5分钟',
-      class: 'bg-theme/12 text-theme',
-      icon: 'ri:camera-4-line'
-    },
-    {
-      title: '归档数据',
-      status: '进行中',
-      time: '10分钟',
-      class: 'bg-secondary/12 text-secondary',
-      icon: 'ri:bar-chart-box-line'
-    },
-    {
-      title: '客户会议',
-      status: '待处理',
-      time: '15分钟',
-      class: 'bg-warning/12 text-warning',
-      icon: 'ri:user-3-line'
-    },
-    {
-      title: '筛选任务团队',
-      status: '进行中',
-      time: '20分钟',
-      class: 'bg-error/12 text-error',
-      icon: 'ri:account-circle-line'
-    },
-    {
-      title: '发送信封给小王',
-      status: '已完成',
-      time: '20分钟',
-      class: 'bg-success/12 text-success',
-      icon: 'ri:message-3-line'
-    }
-  ]
+const dataList = [
+  {
+    title: "新加坡之行",
+    status: "进行中",
+    time: "5分钟",
+    class: "bg-theme/12 text-theme",
+    icon: "ri:camera-4-line",
+  },
+  {
+    title: "归档数据",
+    status: "进行中",
+    time: "10分钟",
+    class: "bg-secondary/12 text-secondary",
+    icon: "ri:bar-chart-box-line",
+  },
+  {
+    title: "客户会议",
+    status: "待处理",
+    time: "15分钟",
+    class: "bg-warning/12 text-warning",
+    icon: "ri:user-3-line",
+  },
+  {
+    title: "筛选任务团队",
+    status: "进行中",
+    time: "20分钟",
+    class: "bg-error/12 text-error",
+    icon: "ri:account-circle-line",
+  },
+  {
+    title: "发送信封给小王",
+    status: "已完成",
+    time: "20分钟",
+    class: "bg-success/12 text-success",
+    icon: "ri:message-3-line",
+  },
+];
 
-  const timelineData = [
-    {
-      time: '上午 09:30',
-      status: 'rgb(73, 190, 255)',
-      content: '收到 John Doe 支付的 385.90 美元'
-    },
-    {
-      time: '上午 10:00',
-      status: 'rgb(54, 158, 255)',
-      content: '新销售记录',
-      code: 'ML-3467'
-    },
-    {
-      time: '上午 12:00',
-      status: 'rgb(103, 232, 207)',
-      content: '向 Michael 支付了 64.95 美元'
-    },
-    {
-      time: '下午 14:30',
-      status: 'rgb(255, 193, 7)',
-      content: '系统维护通知',
-      code: 'MT-2023'
-    },
-    {
-      time: '下午 15:45',
-      status: 'rgb(255, 105, 105)',
-      content: '紧急订单取消提醒',
-      code: 'OR-9876'
-    },
-    {
-      time: '下午 17:00',
-      status: 'rgb(103, 232, 207)',
-      content: '完成每日销售报表'
-    }
-  ]
+const timelineData = [
+  {
+    time: "上午 09:30",
+    status: "rgb(73, 190, 255)",
+    content: "收到 John Doe 支付的 385.90 美元",
+  },
+  {
+    time: "上午 10:00",
+    status: "rgb(54, 158, 255)",
+    content: "新销售记录",
+    code: "ML-3467",
+  },
+  {
+    time: "上午 12:00",
+    status: "rgb(103, 232, 207)",
+    content: "向 Michael 支付了 64.95 美元",
+  },
+  {
+    time: "下午 14:30",
+    status: "rgb(255, 193, 7)",
+    content: "系统维护通知",
+    code: "MT-2023",
+  },
+  {
+    time: "下午 15:45",
+    status: "rgb(255, 105, 105)",
+    content: "紧急订单取消提醒",
+    code: "OR-9876",
+  },
+  {
+    time: "下午 17:00",
+    status: "rgb(103, 232, 207)",
+    content: "完成每日销售报表",
+  },
+];
 
-  /**
-   * 处理查看更多按钮点击
-   */
-  const handleMore = () => {
-    ElMessage.info('查看更多')
-  }
+/**
+ * 处理查看更多按钮点击
+ */
+const handleMore = () => {
+  ElMessage.info("查看更多");
+};
 
-  /**
-   * 图片卡片类型定义
-   */
-  interface ImageCard {
-    id: number
-    imageUrl: string
-    title: string
-    category: string
-    readTime: string
-    views: number
-    comments: number
-    date: string
-  }
+/**
+ * 图片卡片类型定义
+ */
+interface ImageCard {
+  id: number;
+  imageUrl: string;
+  title: string;
+  category: string;
+  readTime: string;
+  views: number;
+  comments: number;
+  date: string;
+}
 
-  /**
-   * 处理图片卡片点击事件
-   * @param card 卡片数据
-   */
-  const handleImageCardClick = (card: ImageCard) => {
-    console.log('点击卡片:', card)
-  }
+/**
+ * 处理图片卡片点击事件
+ * @param card 卡片数据
+ */
+const handleImageCardClick = (card: ImageCard) => {
+  console.log("点击卡片:", card);
+};
 </script>
 
 <style scoped>
-  @reference '@styles/core/tailwind.css';
+@reference '@styles/core/tailwind.css';
 
-  .page-title {
-    @apply my-5 text-xl font-medium first:mt-0;
-  }
+.page-title {
+  @apply my-5 text-xl font-medium first:mt-0;
+}
 </style>

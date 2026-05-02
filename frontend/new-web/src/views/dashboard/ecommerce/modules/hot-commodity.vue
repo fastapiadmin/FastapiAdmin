@@ -32,43 +32,43 @@
 </template>
 
 <script setup lang="ts">
-  interface WeeklyItem {
-    icon: string
-    title: string
-    subtitle: string
-    value: string
-    iconBgClass: string
-    valueBgClass: string
-  }
+interface WeeklyItem {
+  icon: string;
+  title: string;
+  subtitle: string;
+  value: string;
+  iconBgClass: string;
+  valueBgClass: string;
+}
 
-  /**
-   * 本周热销商品列表
-   * 展示销量排名前三的商品信息
-   */
-  const weeklyList: WeeklyItem[] = [
-    {
-      icon: 'ri:money-cny-circle-line',
-      title: '智能手表Pro',
-      subtitle: '电子产品',
-      value: '1,286件',
-      iconBgClass: 'bg-theme/12 text-theme',
-      valueBgClass: 'bg-theme/12 text-theme'
-    },
-    {
-      icon: 'ri:money-cny-circle-line',
-      title: '时尚连衣裙',
-      subtitle: '女装服饰',
-      value: '892件',
-      iconBgClass: 'bg-success/12 text-success',
-      valueBgClass: 'bg-success/12 text-success'
-    },
-    {
-      icon: 'ri:money-cny-circle-line',
-      title: '厨房小家电',
-      subtitle: '家居用品',
-      value: '756件',
-      iconBgClass: 'bg-error/12 text-error',
-      valueBgClass: 'bg-error/12 text-error'
-    }
-  ]
+/**
+ * 本周热销商品列表
+ * 展示销量排名前三的商品信息
+ */
+const weeklyList: WeeklyItem[] = [
+  {
+    icon: "ri:money-cny-circle-line",
+    title: "智能手表Pro",
+    subtitle: "电子产品",
+    value: "1,286件",
+    iconBgClass: "bg-theme/12 text-theme",
+    valueBgClass: "bg-theme/12 text-theme",
+  },
+  {
+    icon: "ri:money-cny-circle-line",
+    title: "时尚连衣裙",
+    subtitle: "女装服饰",
+    value: "892件",
+    iconBgClass: "bg-success/12 text-success",
+    valueBgClass: "bg-success/12 text-success",
+  },
+  {
+    icon: "ri:money-cny-circle-line",
+    title: "厨房小家电",
+    subtitle: "家居用品",
+    value: "756件",
+    iconBgClass: "bg-error/12 text-error",
+    valueBgClass: "bg-error/12 text-error",
+  },
+];
 </script>
