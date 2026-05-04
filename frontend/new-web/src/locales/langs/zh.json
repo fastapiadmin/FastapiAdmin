@@ -20,8 +20,11 @@
     },
     "user": {
       "userCenter": "个人中心",
+      "paramConfig": "配置中心",
       "docs": "使用文档",
       "github": "Github",
+      "gitee": "Gitee",
+      "tour": "功能引导",
       "lockScreen": "锁定屏幕",
       "logout": "退出登录"
     },
@@ -138,9 +141,17 @@
         "fastEnter": "显示快速入口",
         "breadcrumb": "显示全局面包屑导航",
         "language": "显示多语言选择",
+        "menuSearch": "显示全局菜单搜索",
+        "fullscreenTool": "显示全屏切换",
+        "layoutSize": "显示组件尺寸切换",
+        "notificationTool": "显示通知入口",
         "progressBar": "显示顶部进度条",
         "weakMode": "色弱模式",
         "watermark": "全局水印",
+        "appLogo": "显示应用 Logo 与系统标题",
+        "loginGuide": "登录后开启新手引导",
+        "grayMode": "灰色模式",
+        "aiAssistant": "启用 AI 助手入口",
         "menuWidth": "菜单宽度",
         "tabStyle": "标签页风格",
         "pageTransition": "页面切换动画",
@@ -205,6 +216,10 @@
         "progressBar": "显示顶部进度条",
         "weakMode": "色弱模式",
         "watermark": "全局水印",
+        "appLogo": "显示应用 Logo 与系统标题",
+        "loginGuide": "登录后开启新手引导",
+        "grayMode": "灰色模式",
+        "aiAssistant": "启用 AI 助手入口",
         "menuWidth": "菜单宽度",
         "tabStyle": "标签页风格",
         "pageTransition": "页面切换动画",
@@ -284,10 +299,21 @@
     "viewAll": "查看全部"
   },
   "worktab": {
+    "scrollLeft": "向左滚动标签",
+    "scrollRight": "向右滚动标签",
+    "menuMore": "标签选项",
+    "bookmarkAdd": "加入工作台收藏",
+    "bookmarkRemove": "取消工作台收藏",
+    "bookmarkAdded": "已加入收藏",
+    "bookmarkRemoved": "已取消收藏",
+    "bookmarkFail": "收藏操作失败",
+    "refreshCacheDone": "已刷新缓存并重新加载当前页",
+    "refreshCacheFail": "刷新缓存失败",
     "btn": {
       "refresh": "刷新",
       "fixed": "固定",
       "unfixed": "取消固定",
+      "closeCurrent": "关闭当前",
       "closeLeft": "关闭左侧",
       "closeRight": "关闭右侧",
       "closeOther": "关闭其他",
@@ -476,6 +502,7 @@
   },
   "exceptionPage": {
     "gohome": "返回首页",
+    "401": "抱歉，您没有权限访问此页面。",
     "403": "抱歉，您无权访问该页面",
     "404": "抱歉，您访问的页面不存在",
     "500": "抱歉，服务器出错了",
@@ -497,15 +524,14 @@
     "outside": {
       "title": "内嵌页面"
     },
-    "workbench": {
-      "title": "工作台"
+    "home": {
+      "title": "首页"
     },
-    "portal": {
-      "title": "数据门户"
+    "workplace": {
+      "title": "工作台"
     },
     "dashboard": {
       "title": "仪表盘",
-      "demoTitle": "模版仪表盘",
       "console": "控制台",
       "analysis": "分析页",
       "ecommerce": "电子商务"
@@ -523,8 +549,7 @@
       "qrcode": "二维码",
       "drag": "拖拽",
       "textScroll": "文字滚动",
-      "fireworks": "礼花",
-      "elementUI": "组件总览"
+      "fireworks": "礼花"
     },
     "template": {
       "title": "模板中心",

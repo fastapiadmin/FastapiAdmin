@@ -1,14 +1,14 @@
 <!-- 租户管理 -->
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
+    <CrudContent ref="contentRef" :content-config="contentConfig">
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
         <CrudToolbarLeft
           :remove-ids="removeIds"
@@ -18,7 +18,7 @@
           @delete="onToolbar('delete')"
         />
         <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
+          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
         </div>
       </template>
 
@@ -158,7 +158,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <EnhancedDialog
       v-model="dialogVisible.visible"
@@ -286,12 +286,12 @@ import TenantAPI, {
   TenantTable,
 } from "@/api/module_system/tenant";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import { CrudToolbarActions } from "@/components/Crud";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import { useCrudList } from "@/components/Crud/useCrudList";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
 
 defineOptions({
   name: "Tenant",

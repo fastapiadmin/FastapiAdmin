@@ -1,7 +1,7 @@
 <!-- 菜单管理 -->
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
@@ -17,7 +17,7 @@
       <el-tab-pane label="APP 移动端菜单管理" name="app" />
     </el-tabs>
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
+    <CrudContent ref="contentRef" :content-config="contentConfig">
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
         <CrudToolbarLeft
           :remove-ids="removeIds"
@@ -29,7 +29,7 @@
           @more="handleMoreClick"
         />
         <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
+          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
         </div>
       </template>
 
@@ -54,13 +54,8 @@
             <el-table-column label="菜单名称" prop="name" min-width="240" />
             <el-table-column label="图标" prop="icon" min-width="80" align="center">
               <template #default="scope">
-                <template v-if="scope.row.icon && scope.row.icon.startsWith('el-icon')">
-                  <el-icon style="vertical-align: -0.15em">
-                    <component :is="scope.row.icon.replace('el-icon-', '')" />
-                  </el-icon>
-                </template>
-                <template v-else-if="scope.row.icon">
-                  <div :class="`i-svg:${scope.row.icon}`" />
+                <template v-if="scope.row.icon">
+                  <MenuRouteIcon :icon="scope.row.icon" style="vertical-align: -0.15em" />
                 </template>
               </template>
             </el-table-column>
@@ -214,7 +209,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <EnhancedDrawer
       v-model="dialogVisible.visible"
@@ -246,13 +241,8 @@
           </el-descriptions-item>
           <el-descriptions-item label="图标" :span="2">
             <template #default>
-              <template v-if="detailFormData.icon && detailFormData.icon.startsWith('el-icon')">
-                <el-icon style="vertical-align: -0.15em">
-                  <component :is="detailFormData.icon.replace('el-icon-', '')" />
-                </el-icon>
-              </template>
-              <template v-else-if="detailFormData.icon">
-                <div :class="`i-svg:${detailFormData.icon}`" />
+              <template v-if="detailFormData.icon">
+                <MenuRouteIcon :icon="detailFormData.icon" style="vertical-align: -0.15em" />
               </template>
             </template>
           </el-descriptions-item>
@@ -661,6 +651,7 @@ defineOptions({
 });
 
 import { ref, reactive, computed, nextTick } from "vue";
+import { CirclePlusFilled, DeleteFilled, QuestionFilled } from "@element-plus/icons-vue";
 import { useAppStore } from "@/store/modules/app.store";
 import { useUserStore } from "@/store/modules/user.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
@@ -668,13 +659,14 @@ import { DeviceEnum } from "@/enums/settings/device.enum";
 import MenuAPI, { MenuPageQuery, MenuForm, MenuTable } from "@/api/module_system/menu";
 import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@/utils/common";
+import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { ISearchConfig, IContentConfig } from "@/components/CURD/types";
+import { CrudToolbarActions } from "@/components/Crud";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
+import { useCrudList } from "@/components/Crud/useCrudList";
+import type { ISearchConfig, IContentConfig } from "@/components/Crud/types";
 
 const appStore = useAppStore();
 const userStore = useUserStore();

@@ -135,7 +135,8 @@ export default ({ mode }: { mode: string }) => {
       Components({
         dts: "src/types/import/components.d.ts",
         resolvers: [ElementPlusResolver({ importStyle: "sass" })],
-        dirs: ["src/components", "src/**/components"],
+        /** art-* 布局组件以 src/layouts 为唯一源码目录（与 src/layouts/index.vue 一致），避免与旧路径重复 */
+        dirs: ["src/layouts", "src/components", "src/**/components"],
       }),
       ElementPlus({
         useSource: true,

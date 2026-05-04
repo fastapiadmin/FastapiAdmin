@@ -12,6 +12,6 @@ defineOptions({ name: "TemplateMap" });
  * 减少初始加载体积
  */
 const ArtMapChart = defineAsyncComponent(
-  () => import("@/components/core/charts/art-map-chart/index.vue")
+  () => import("@/components/Core/charts/art-map-chart/index.vue")
 );
 </script>

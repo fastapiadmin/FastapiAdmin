@@ -178,7 +178,7 @@ import type { CmComponentRef } from "codemirror-editor-vue3";
 import { ElMessage } from "element-plus";
 import { ArrowDown, CopyDocument } from "@element-plus/icons-vue";
 import { useClipboard } from "@vueuse/core";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
 import { useSettingsStore } from "@/store";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { buildSqlFromVisual } from "../utils/buildCreateTableSql";

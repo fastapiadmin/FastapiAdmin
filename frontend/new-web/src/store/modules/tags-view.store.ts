@@ -261,7 +261,13 @@ export const useTagsViewStore = defineStore(
       } else {
         // now the default is to redirect to the home page if there is no tags-view,
         // you can adjust it according to your needs.
-        if (view?.name === "Dashboard" || view?.name === "DashboardDemo") {
+        const vn = view?.name != null ? String(view.name) : "";
+        if (
+          vn === "Home" ||
+          vn === "Workplace" ||
+          vn === "Dashboard" ||
+          vn.startsWith("Dashboard")
+        ) {
           // to reload home page
           router.replace("/redirect" + view.fullPath);
         } else {

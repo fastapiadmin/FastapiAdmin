@@ -103,7 +103,7 @@
 import { ref, computed } from "vue";
 import type { FormInstance, TableInstance } from "element-plus";
 import type { DBTableSchema, GenTablePageQuery } from "@/api/module_generator/gencode";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
 
 defineOptions({ name: "ImportDbTableDialog" });
 

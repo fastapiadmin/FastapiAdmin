@@ -1,9 +1,8 @@
 <template>
   <div @click="openSearchModal">
-    <!-- <div class="i-svg:search" /> -->
     <div class="command-palette-trigger" role="button" tabindex="0" aria-label="打开搜索面板">
       <div class="command-palette-trigger__left">
-        <div class="i-svg:search" />
+        <ArtSvgIcon :icon="resolveIconForArtSvgIcon('search')" />
         <span class="command-palette-trigger__text">搜索菜单</span>
       </div>
       <kbd class="command-palette-trigger__kbd">Ctrl K</kbd>
@@ -108,10 +107,10 @@
             <div class="arrow-box">
               <div class="arrow-up-down">
                 <div class="key-btn">
-                  <div class="i-svg:up" />
+                  <ArtSvgIcon :icon="resolveIconForArtSvgIcon('up')" />
                 </div>
                 <div class="key-btn ml-1">
-                  <div class="i-svg:down" />
+                  <ArtSvgIcon :icon="resolveIconForArtSvgIcon('down')" />
                 </div>
               </div>
               <span class="key-text">切换</span>
@@ -128,7 +127,10 @@
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
 import { router } from "@/router";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
 import { usePermissionStore } from "@/store";
 import { isExternal } from "@/utils";
 import { RouteRecordRaw, LocationQueryRaw } from "vue-router";
@@ -362,7 +364,7 @@ function loadRoutes(routes: RouteRecordRaw[], parentPath = "") {
   align-items: center;
 }
 
-.command-palette-trigger__left :deep([class^="i-svg:"]) {
+.command-palette-trigger__left :deep(.art-svg-icon) {
   color: var(--el-text-color-secondary) !important;
 }
 

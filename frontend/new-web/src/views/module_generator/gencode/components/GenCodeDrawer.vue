@@ -104,7 +104,7 @@ import { Close, Right, FolderOpened, Back, Download, Finished } from "@element-p
 import type { EditorConfiguration } from "codemirror";
 import type { GenTableSchema } from "@/api/module_generator/gencode";
 import type { DictTable } from "@/api/module_system/dict";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
 import type { TreeNode } from "../types";
 import GenBasicStep from "./GenBasicStep.vue";
 import GenColumnsStep from "./GenColumnsStep.vue";

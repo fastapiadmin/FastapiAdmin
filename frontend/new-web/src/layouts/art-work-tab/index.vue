@@ -1,75 +1,145 @@
-<!-- 标签页 -->
+<!-- 标签页：tab-card 胶囊；tab-default / tab-google 共用 Chrome 顶栏标签（非胶囊） -->
 <template>
   <div
     v-if="showWorkTab"
-    class="box-border flex-b w-full px-5 mb-3 select-none max-sm:px-[15px]"
+    class="worktab-tags-shell box-border w-full select-none"
     :class="[
       tabStyle === 'tab-card' ? 'py-1 border-b border-[var(--art-card-border)]' : '',
-      tabStyle === 'tab-google' ? 'pt-1 pb-0 border-b border-[var(--art-card-border)]' : '',
+      chromeTabStrip ? 'worktab-tags-shell--google' : '',
     ]"
   >
-    <div class="w-full overflow-hidden" ref="scrollRef">
-      <ul
-        class="float-left whitespace-nowrap !bg-transparent flex"
-        :class="[tabStyle === 'tab-google' ? 'pl-1' : '']"
-        ref="tabsRef"
-        :style="{
-          transform: `translateX(${scrollState.translateX}px)`,
-          transition: `${scrollState.transition}`,
-        }"
+    <div
+      class="worktab-tags-bar flex items-stretch gap-0 w-full min-h-8"
+      :class="chromeTabStrip ? 'worktab-tags-bar--google' : ''"
+    >
+      <button
+        v-if="tabOverflow"
+        type="button"
+        class="worktab-bar-btn worktab-bar-cell worktab-bar-cell--sep-r"
+        :title="t('worktab.scrollLeft')"
+        @click="scrollTabs(SCROLL_STEP)"
       >
-        <li
-          class="art-card-xs inline-flex flex-cc h-8 mr-1.5 text-xs c-p hover:text-theme group"
-          :class="[
-            item.path === activeTab ? 'activ-tab !text-theme' : 'text-g-600 dark:text-g-800',
-            tabStyle === 'tab-google' ? 'google-tab relative !h-8 !leading-8 !border-none' : '',
-          ]"
-          :style="{
-            padding: item.fixedTab ? '0 10px' : '0 8px 0 12px',
-            borderRadius:
-              tabStyle === 'tab-google'
-                ? 'calc(var(--custom-radius) / 2.5 + 4px) !important'
-                : 'calc(var(--custom-radius) / 2.5 + 2px) !important',
-          }"
-          v-for="(item, index) in list"
-          :key="item.path"
-          :ref="item.path"
-          :id="`scroll-li-${index}`"
-          @click="clickTab(item)"
-          @contextmenu.prevent="(e: MouseEvent) => showMenu(e, item.path)"
-        >
-          <ArtSvgIcon
-            v-show="item.icon"
-            :icon="item.icon"
-            class="text-base mr-1 group-hover:text-theme"
-            :class="item.path === activeTab ? 'text-theme' : 'text-g-600'"
-          />
-          {{ item.customTitle || formatMenuTitle(item.title) }}
-          <span
-            v-if="list.length > 1 && !item.fixedTab"
-            class="inline-flex flex-cc relative ml-0.5 p-1 rounded-full tad-200 hover:bg-g-200"
-            @click.stop="closeWorktab('current', item.path)"
-          >
-            <ArtSvgIcon icon="ri:close-large-fill" class="text-[10px] text-g-600" />
-          </span>
-          <div
-            v-if="tabStyle === 'tab-google'"
-            class="line absolute top-0 bottom-0 left-0 w-px h-4 my-auto bg-g-400 transition-opacity duration-150"
-          />
-        </li>
-      </ul>
-    </div>
+        <ArtSvgIcon icon="ri:arrow-left-double-line" class="text-lg text-current" />
+      </button>
 
-    <div class="flex">
       <div
-        class="flex-cc art-card-xs relative top-0 size-8 leading-8 text-center c-p tad-200 hover:!bg-hover-color"
-        :style="{
-          borderRadius: 'calc(var(--custom-radius) / 2.5 + 0px)',
-          marginTop: tabStyle === 'tab-google' ? '-2px' : '',
-        }"
-        @click="(e: MouseEvent) => showMenu(e, activeTab)"
+        class="worktab-scroll-wrap flex flex-1 min-w-0 items-center overflow-hidden"
+        ref="scrollRef"
       >
-        <ArtSvgIcon icon="iconamoon:arrow-down-2-thin" class="text-2xl text-g-700" />
+        <ul
+          class="float-left whitespace-nowrap !bg-transparent flex"
+          :class="[chromeTabStrip ? 'pl-1' : '']"
+          ref="tabsRef"
+          :style="{
+            transform: `translateX(${scrollState.translateX}px)`,
+            transition: `${scrollState.transition}`,
+          }"
+        >
+          <li
+            class="worktab-tab art-card-xs inline-flex flex-cc h-8 mr-1.5 text-xs c-p hover:text-theme group"
+            :class="[
+              item.path === activeTab
+                ? chromeTabStrip
+                  ? 'activ-tab'
+                  : 'activ-tab !text-theme'
+                : chromeTabStrip
+                  ? ''
+                  : 'text-g-600 dark:text-g-800',
+              isCardTabs ? 'worktab-tab--card' : '',
+              chromeTabStrip ? 'google-tab relative !h-8 !leading-8 !border-none' : '',
+            ]"
+            :style="
+              chromeTabStrip
+                ? {
+                    padding: item.fixedTab ? '0 10px' : '0 8px 0 12px',
+                    borderRadius: '6px 6px 0 0',
+                  }
+                : {
+                    padding: item.fixedTab ? '0 12px' : '0 10px 0 14px',
+                  }
+            "
+            v-for="(item, index) in list"
+            :key="item.path"
+            :ref="item.path"
+            :id="`scroll-li-${index}`"
+            @click="clickTab(item)"
+            @click.middle.prevent="onMiddleClickClose(item)"
+            @contextmenu.prevent="(e: MouseEvent) => showMenu(e, item.path)"
+          >
+            <button
+              type="button"
+              class="worktab-star focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--el-color-primary)] focus-visible:ring-offset-1 rounded"
+              :class="{ 'worktab-star--on': isQuickLinkBookmarked(item) }"
+              :title="
+                isQuickLinkBookmarked(item) ? t('worktab.bookmarkRemove') : t('worktab.bookmarkAdd')
+              "
+              @click.prevent.stop="toggleQuickBookmark(item)"
+            >
+              <ArtSvgIcon
+                :icon="isQuickLinkBookmarked(item) ? 'ri:star-fill' : 'ri:star-line'"
+                class="text-sm"
+              />
+            </button>
+            <ArtSvgIcon
+              v-show="item.icon"
+              :icon="item.icon"
+              class="text-base mr-1 shrink-0 group-hover:text-theme"
+              :class="[
+                item.path === activeTab ? 'text-theme' : '',
+                chromeTabStrip ? 'google-tab-route-icon' : 'text-g-600',
+              ]"
+            />
+            {{ item.customTitle || formatMenuTitle(item.title) }}
+            <ArtSvgIcon
+              v-if="chromeTabStrip && item.fixedTab"
+              icon="ri:pushpin-2-fill"
+              class="worktab-pin shrink-0 text-sm ml-0.5 opacity-75"
+            />
+            <span
+              v-if="list.length > 1 && !item.fixedTab"
+              class="worktab-close inline-flex flex-cc relative ml-0.5 rounded-full p-1 tad-200"
+              @click.stop="closeWorktab('current', item.path)"
+            >
+              <ArtSvgIcon icon="ri:close-large-fill" class="text-[10px]" />
+            </span>
+            <div
+              v-if="chromeTabStrip && showGoogleTabDivider(index)"
+              class="worktab-google-divider"
+              aria-hidden="true"
+            />
+          </li>
+        </ul>
+      </div>
+
+      <!-- 竖线分格：用 scoped CSS 画线；divide-x 会被 .worktab-bar-btn { border:none } 盖掉 -->
+      <div class="worktab-toolbar-end flex shrink-0 items-stretch" aria-label="tab-toolbar-actions">
+        <button
+          v-if="tabOverflow"
+          type="button"
+          class="worktab-bar-btn worktab-bar-cell"
+          :title="t('worktab.scrollRight')"
+          @click="scrollTabs(-SCROLL_STEP)"
+        >
+          <ArtSvgIcon icon="ri:arrow-right-double-line" class="text-lg text-current" />
+        </button>
+
+        <button
+          type="button"
+          class="worktab-bar-btn worktab-bar-cell"
+          :title="t('navbar.refreshCache')"
+          @click="handleRefreshCache"
+        >
+          <ArtSvgIcon icon="ri:loop-right-line" class="text-base text-current" />
+        </button>
+
+        <button
+          type="button"
+          class="worktab-bar-btn worktab-bar-cell"
+          :title="t('worktab.menuMore')"
+          @click="(e: MouseEvent) => showMenu(e, activeTab)"
+        >
+          <ArtSvgIcon icon="ri:apps-2-line" class="text-base text-current" />
+        </button>
       </div>
     </div>
 
@@ -89,12 +159,15 @@ import { LocationQueryRaw, useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 
+import { ElMessage } from "element-plus";
+import { refreshAppCaches } from "@/store";
 import { useWorktabStore } from "@/store/modules/worktab.store";
 import { useUserStore } from "@/store/modules/user.store";
 import { formatMenuTitle } from "@/utils/navigation/router";
 import { useSettingsStore } from "@/store/modules/setting.store";
-import { MenuItemType } from "../../others/art-menu-right/index.vue";
+import { MenuItemType } from "@/components/Core/others/art-menu-right/index.vue";
 import { useCommon } from "@/hooks/core/useCommon";
+import { quickStartManager } from "@/utils/common/quickStartManager";
 import { WorkTab } from "@/types";
 
 defineOptions({ name: "ArtWorkTab" });
@@ -122,6 +195,12 @@ const { currentRoute } = router;
 const settingStore = useSettingsStore();
 const { tabStyle, showWorkTab } = storeToRefs(settingStore);
 
+/** tab-default / tab-google：Chrome 顶栏标签（tab-card 单独走胶囊） */
+const chromeTabStrip = computed(
+  () => tabStyle.value === "tab-google" || tabStyle.value === "tab-default"
+);
+const isCardTabs = computed(() => tabStyle.value === "tab-card");
+
 // DOM 引用
 const scrollRef = ref<HTMLElement | null>(null);
 const tabsRef = ref<HTMLElement | null>(null);
@@ -139,6 +218,36 @@ const touchState = ref<TouchState>({
 });
 
 const clickedPath = ref("");
+
+/** 标签总宽度超过可视区时才显示左右滚动按钮（与常见控制台一致） */
+const tabOverflow = ref(false);
+
+function measureTabOverflow(): void {
+  requestAnimationFrame(() => {
+    const wrap = scrollRef.value;
+    const tabs = tabsRef.value;
+    if (!wrap || !tabs) {
+      tabOverflow.value = false;
+      return;
+    }
+    tabOverflow.value = tabs.scrollWidth > wrap.clientWidth + 1;
+  });
+}
+
+let tabOverflowResizeObserver: ResizeObserver | null = null;
+
+function setupTabOverflowObserver(): void {
+  teardownTabOverflowObserver();
+  if (typeof ResizeObserver === "undefined") return;
+  tabOverflowResizeObserver = new ResizeObserver(() => measureTabOverflow());
+  if (scrollRef.value) tabOverflowResizeObserver.observe(scrollRef.value);
+  if (tabsRef.value) tabOverflowResizeObserver.observe(tabsRef.value);
+}
+
+function teardownTabOverflowObserver(): void {
+  tabOverflowResizeObserver?.disconnect();
+  tabOverflowResizeObserver = null;
+}
 
 // 计算属性
 const list = computed(() => store.opened);
@@ -192,6 +301,12 @@ const useContextMenu = () => {
         icon: "ri:pushpin-2-line",
         disabled: false,
         showLine: true,
+      },
+      {
+        key: "current",
+        label: t("worktab.btn.closeCurrent"),
+        icon: "ri:close-line",
+        disabled: !!currentTab?.fixedTab,
       },
       {
         key: "left",
@@ -448,22 +563,130 @@ const { setupEventListeners, cleanupEventListeners, adjustPositionAfterClose } =
 const { clickTab, closeWorktab, showMenu, handleSelect } =
   useTabOperations(adjustPositionAfterClose);
 
+/** 与旧版 TagsView 一致的横向滚动步长 */
+const SCROLL_STEP = 200;
+
+/**
+ * Chrome 条竖线：固定区右侧必显；其余仅在「两侧都未选中」时显示（与 Vben 类控制台一致，避免贴激活标签显得碎）
+ */
+function showGoogleTabDivider(index: number): boolean {
+  const tabs = list.value;
+  if (index <= 0 || index >= tabs.length) return false;
+  const prev = tabs[index - 1];
+  const cur = tabs[index];
+  if (prev.fixedTab && !cur.fixedTab) return true;
+  if (prev.path === activeTab.value || cur.path === activeTab.value) return false;
+  return true;
+}
+
+function scrollTabs(delta: number): void {
+  if (!scrollRef.value || !tabsRef.value) return;
+  const xMin = scrollRef.value.offsetWidth - tabsRef.value.offsetWidth;
+  const xMax = 0;
+  scrollState.value.translateX = Math.min(
+    Math.max(scrollState.value.translateX + delta, xMin),
+    xMax
+  );
+  setTransition();
+}
+
+const quickLinksRevision = ref(0);
+function onQuickLinksChanged(): void {
+  quickLinksRevision.value++;
+}
+
+function bookmarkHref(item: WorkTab): string {
+  const q = item.query as LocationQueryRaw | undefined;
+  if (!q || !Object.keys(q).length) return item.path;
+  const sp = new URLSearchParams();
+  Object.entries(q).forEach(([k, v]) => {
+    if (v === null || v === undefined) return;
+    if (Array.isArray(v)) v.forEach((x) => sp.append(k, String(x)));
+    else sp.set(k, String(v));
+  });
+  const s = sp.toString();
+  return s ? `${item.path}?${s}` : item.path;
+}
+
+function isQuickLinkBookmarked(item: WorkTab): boolean {
+  void quickLinksRevision.value;
+  return quickStartManager.isLinkExists(bookmarkHref(item));
+}
+
+function toggleQuickBookmark(item: WorkTab): void {
+  const href = bookmarkHref(item);
+  const title = item.customTitle || formatMenuTitle(item.title);
+  try {
+    if (quickStartManager.isLinkExists(href)) {
+      quickStartManager.removeQuickLinkByHref(href);
+      ElMessage.success(t("worktab.bookmarkRemoved"));
+    } else {
+      const link = quickStartManager.createQuickLinkFromRoute(
+        { ...item, title, fullPath: href, path: item.path },
+        title
+      );
+      link.href = href;
+      if (quickStartManager.addQuickLink(link)) {
+        ElMessage.success(t("worktab.bookmarkAdded"));
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error(t("worktab.bookmarkFail"));
+  }
+}
+
+function onMiddleClickClose(item: WorkTab): void {
+  if (!item.fixedTab && list.value.length > 1) {
+    closeWorktab("current", item.path);
+  }
+}
+
+async function handleRefreshCache(): Promise<void> {
+  try {
+    await refreshAppCaches();
+    useCommon().refresh();
+    ElMessage.success(t("worktab.refreshCacheDone"));
+  } catch (e) {
+    console.error(e);
+    ElMessage.error(t("worktab.refreshCacheFail"));
+  }
+}
+
 // 生命周期
 onMounted(() => {
   setupEventListeners();
+  quickStartManager.addListener(onQuickLinksChanged);
   autoPositionTab();
+  nextTick(() => {
+    measureTabOverflow();
+    setupTabOverflowObserver();
+  });
+  window.addEventListener("resize", measureTabOverflow);
 });
 
 onUnmounted(() => {
   cleanupEventListeners();
+  quickStartManager.removeListener(onQuickLinksChanged);
+  teardownTabOverflowObserver();
+  window.removeEventListener("resize", measureTabOverflow);
 });
 
 // 监听器
+watch(tabOverflow, (overflow) => {
+  if (!overflow) {
+    scrollState.value.translateX = 0;
+  }
+});
+
+watch(list, () => nextTick(measureTabOverflow), { deep: true });
+
 watch(
   () => currentRoute.value,
   () => {
     setTransition();
     autoPositionTab();
+    nextTick(measureTabOverflow);
   }
 );
 
@@ -473,72 +696,286 @@ watch(
     scrollState.value.translateX = 0;
     nextTick(() => {
       autoPositionTab();
+      measureTabOverflow();
     });
   }
 );
 </script>
 
 <style scoped>
-.google-tab.activ-tab {
+/* 工具条：底边与内容区分界；顶边由顶部栏 border-b 承担，避免与标签条顶边双线 */
+.worktab-tags-bar {
+  background: var(--el-fill-color-blank);
+  border-top: 1px solid var(--el-border-color-lighter);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.worktab-tags-shell--google .worktab-tags-bar--google {
+  border-top: none;
+}
+
+.worktab-toolbar-end {
+  align-self: stretch;
+  border-left: 1px solid var(--el-border-color-lighter);
+}
+
+.dark .worktab-toolbar-end {
+  border-left-color: rgb(255 255 255 / 12%);
+}
+
+/* 覆盖上面的 border:none，否则竖线不显示 */
+.worktab-tags-bar .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell {
+  border-left: 1px solid var(--el-border-color-lighter);
+}
+
+.dark .worktab-tags-bar .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell {
+  border-left-color: rgb(255 255 255 / 12%);
+}
+
+/*
+ * 工具区：单格无四边描边；悬停 / 按下仅在当前格矩形内铺底
+ */
+.worktab-tags-bar .worktab-bar-btn {
+  padding: 0;
+  margin: 0;
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.worktab-tags-bar .worktab-bar-cell {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0 0.5rem;
+}
+
+.worktab-tags-bar .worktab-bar-cell--sep-r {
+  border-right: 1px solid var(--el-border-color-lighter);
+}
+
+.worktab-tags-bar .worktab-bar-btn:hover {
+  color: var(--el-color-primary);
+  background-color: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-fill-color-blank));
+}
+
+.worktab-tags-bar .worktab-bar-btn:active {
+  background-color: color-mix(in srgb, var(--el-color-primary) 16%, var(--el-fill-color-blank));
+}
+
+.worktab-tags-bar .worktab-bar-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color-primary) 45%, transparent);
+}
+
+.dark .worktab-tags-bar .worktab-bar-btn {
+  color: rgb(255 255 255 / 72%);
+}
+
+.dark .worktab-tags-bar .worktab-bar-cell--sep-r {
+  border-right-color: rgb(255 255 255 / 12%);
+}
+
+.dark .worktab-tags-bar .worktab-bar-btn:hover {
+  color: var(--el-color-primary);
+  background-color: rgb(255 255 255 / 8%);
+}
+
+.dark .worktab-tags-bar .worktab-bar-btn:active {
+  background-color: rgb(255 255 255 / 12%);
+}
+
+.dark .worktab-tags-bar .worktab-bar-btn:focus-visible {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color-primary) 55%, transparent);
+}
+
+/* tab-card：胶囊 + 轻阴影（仅 .worktab-tab--card；Chrome 由 .google-tab 负责） */
+.worktab-tab.worktab-tab--card {
+  gap: 6px;
+  background: color-mix(
+    in srgb,
+    var(--el-bg-color) 94%,
+    var(--el-text-color-regular) 6%
+  ) !important;
+  border: 1px solid color-mix(in srgb, var(--art-card-border) 80%, transparent) !important;
+  border-radius: 9999px !important;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 5%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    transform 0.15s ease;
+}
+
+.dark .worktab-tab.worktab-tab--card {
+  background: color-mix(
+    in srgb,
+    var(--el-bg-color-overlay) 92%,
+    var(--el-text-color-regular) 8%
+  ) !important;
+  border-color: color-mix(in srgb, var(--art-card-border) 55%, transparent) !important;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 35%);
+}
+
+.worktab-tab.worktab-tab--card:hover {
+  border-color: var(--el-border-color) !important;
+  transform: translateY(-0.5px);
+}
+
+.worktab-tab.worktab-tab--card.activ-tab {
+  background: color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color)) !important;
+  border-color: color-mix(in srgb, var(--el-color-primary) 50%, transparent) !important;
+  box-shadow:
+    0 2px 14px color-mix(in srgb, var(--el-color-primary) 20%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--el-color-primary) 28%, transparent);
+}
+
+.worktab-star {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  margin: 0 2px 0 0;
+  color: var(--el-text-color-placeholder);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  opacity: 0.45;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.group:hover .worktab-star,
+.worktab-star:hover {
+  opacity: 1;
+}
+
+.worktab-star:hover {
+  color: var(--el-color-primary);
+  transform: scale(1.06);
+}
+
+.worktab-star--on {
+  color: var(--el-color-primary);
+  opacity: 1;
+}
+
+.worktab-close {
+  color: var(--el-text-color-secondary);
+  opacity: 0.28;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.group:hover .worktab-close,
+.worktab-close:hover {
+  opacity: 1;
+}
+
+.worktab-close:hover {
+  color: var(--el-color-danger);
+  background-color: color-mix(in srgb, var(--el-color-danger) 12%, transparent) !important;
+}
+
+/*
+ * Google Chrome 标签：激活块（底部外凸弧线）+ 固定区竖线；轨底与全局工具条同色，不单独铺色
+ */
+.worktab-tags-shell--google {
+  --worktab-google-active-bg: var(--el-fill-color-light);
+  --worktab-google-tab-muted: var(--el-text-color-regular);
+}
+
+.dark .worktab-tags-shell--google {
+  --worktab-google-active-bg: color-mix(in srgb, rgb(255 255 255) 15%, var(--el-bg-color) 85%);
+}
+
+.worktab-tags-shell--google .google-tab:not(.activ-tab) {
+  color: var(--worktab-google-tab-muted) !important;
+  background: transparent !important;
+}
+
+.worktab-tags-shell--google .google-tab:not(.activ-tab):hover {
+  box-sizing: border-box;
+  color: var(--el-text-color-primary) !important;
+  background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent) !important;
+  border-bottom: none !important;
+  border-radius: 6px 6px 0 0 !important;
+}
+
+.worktab-tags-shell--google .google-tab-route-icon:not(.text-theme) {
+  color: color-mix(in srgb, var(--worktab-google-tab-muted) 92%, transparent);
+}
+
+.worktab-tags-shell--google .google-tab.activ-tab {
   color: var(--theme-color) !important;
-  background-color: var(--el-color-primary-light-9) !important;
+  background-color: var(--worktab-google-active-bg) !important;
   border-bottom: 0 !important;
   border-bottom-right-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
 }
 
-.google-tab.activ-tab::before,
-.google-tab.activ-tab::after {
+.worktab-tags-shell--google .google-tab.activ-tab::before,
+.worktab-tags-shell--google .google-tab.activ-tab::after {
+  box-shadow: 0 0 0 30px var(--worktab-google-active-bg);
+}
+
+.worktab-google-divider {
   position: absolute;
-  bottom: 0;
-  width: 20px;
-  height: 20px;
-  content: "";
-  border-radius: 50%;
-  box-shadow: 0 0 0 30px var(--el-color-primary-light-9);
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 14px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--el-border-color) 72%, transparent);
+  transform: translateY(-50%);
+  transition: opacity 0.15s ease;
 }
 
-.google-tab.activ-tab::before {
-  left: -20px;
-  clip-path: inset(50% -10px 0 50%);
+.dark .worktab-tags-shell--google .worktab-google-divider {
+  background: rgb(255 255 255 / 14%);
 }
 
-.google-tab.activ-tab::after {
-  right: -20px;
-  clip-path: inset(50% 50% 0 -10px);
-}
-
-.dark .google-tab.activ-tab {
-  color: var(--art-gray-800) !important;
-  background-color: var(--art-hover-color) !important;
-}
-
-.dark .google-tab.activ-tab::before,
-.dark .google-tab.activ-tab::after {
-  box-shadow: 0 0 0 30px var(--art-hover-color);
-}
-
-.google-tab:not(.activ-tab):hover {
-  box-sizing: border-box;
-  color: var(--art-gray-600) !important;
-  background-color: var(--art-gray-200) !important;
-  border-bottom: 1px solid var(--default-box-color) !important;
-  border-radius: calc(var(--custom-radius) / 2.5 + 4px) !important;
-}
-
-.dark .google-tab:not(.activ-tab):hover {
-  background-color: var(--art-hover-color) !important;
-}
-
-.google-tab:hover .line,
-.google-tab.activ-tab .line,
-.google-tab:first-child .line {
+/* 悬停当前标签：隐藏与本标签相邻的两条竖线（自身左缘 + 下一标签左缘） */
+.worktab-tags-shell--google .google-tab:hover .worktab-google-divider {
   opacity: 0;
 }
 
-.google-tab:hover + .google-tab .line,
-.google-tab.activ-tab + .google-tab .line {
+.worktab-tags-shell--google .google-tab:hover + .google-tab .worktab-google-divider {
   opacity: 0;
+}
+
+/* 当前选中标签：与悬停一致，不展示左右相邻竖线 */
+.worktab-tags-shell--google .google-tab.activ-tab .worktab-google-divider {
+  opacity: 0;
+}
+
+.worktab-tags-shell--google .google-tab.activ-tab + .google-tab .worktab-google-divider {
+  opacity: 0;
+}
+
+.worktab-tags-shell--google .worktab-pin {
+  color: color-mix(in srgb, var(--el-text-color-secondary) 88%, transparent);
+}
+
+.dark .worktab-tags-shell--google .worktab-pin {
+  color: rgb(255 255 255 / 42%);
 }
 
 .google-tab::before,
@@ -560,11 +997,6 @@ watch(
 .google-tab::after {
   right: -20px;
   clip-path: inset(50% 50% 0 -10px);
-}
-
-.google-tab i:hover {
-  color: var(--art-gray-700);
-  background: var(--art-gray-300);
 }
 
 @media only screen and (width <= 768px) {

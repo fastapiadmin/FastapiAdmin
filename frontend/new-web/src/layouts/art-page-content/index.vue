@@ -1,6 +1,11 @@
 <!-- 布局内容 -->
 <template>
-  <div class="layout-content" :class="{ 'overflow-auto': isFullPage }" :style="containerStyle">
+  <div
+    id="app-scroll-main"
+    class="layout-content"
+    :class="{ 'overflow-auto': isFullPage }"
+    :style="containerStyle"
+  >
     <div id="app-content-header">
       <!-- 节日滚动 -->
       <ArtFestivalTextScroll v-if="!isFullPage" />
@@ -45,11 +50,25 @@
         class="fixed top-0 left-0 z-[2000] w-screen h-screen pointer-events-none bg-box"
       />
     </Teleport>
+
+    <!-- 返回顶部：宽屏 #app-scroll-main；窄屏文档滚动 target 置空 -->
+    <ElBacktop
+      v-if="!isFullPage"
+      :key="backtopTargetKey"
+      :target="backtopScrollTarget"
+      :right="28"
+      :bottom="28"
+      class="z-[90]"
+    >
+      <ArtSvgIcon icon="ri:arrow-up-circle-line" class="text-2xl text-g-600" />
+    </ElBacktop>
   </div>
 </template>
 <script setup lang="ts">
 import type { CSSProperties } from "vue";
+import { useMediaQuery } from "@vueuse/core";
 import { useRoute } from "vue-router";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import { useAutoLayoutHeight } from "@/hooks/core/useLayoutHeight";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { useWorktabStore } from "@/store/modules/worktab.store";
@@ -57,7 +76,11 @@ import { useWorktabStore } from "@/store/modules/worktab.store";
 defineOptions({ name: "ArtPageContent" });
 
 const route = useRoute();
-const { containerMinHeight } = useAutoLayoutHeight();
+const isNarrowViewport = useMediaQuery("(max-width: 800px)");
+const backtopScrollTarget = computed(() => (isNarrowViewport.value ? "" : "#app-scroll-main"));
+const backtopTargetKey = computed(() => (isNarrowViewport.value ? "win" : "main"));
+
+useAutoLayoutHeight();
 const { pageTransition, containerWidth, refresh } = storeToRefs(useSettingsStore());
 const { keepAliveExclude } = storeToRefs(useWorktabStore());
 
@@ -108,13 +131,19 @@ const containerStyle = computed(
         }
       : {
           maxWidth: containerWidth.value,
+          flex: "1",
+          minHeight: "0",
+          display: "flex",
+          flexDirection: "column",
         }
 );
 
+/** 常规布局下由 `.layout-content` 承担纵向滚动，路由视图填满剩余高度 */
 const contentStyle = computed(
-  (): CSSProperties => ({
-    minHeight: containerMinHeight.value,
-  })
+  (): CSSProperties =>
+    isFullPage.value
+      ? { flex: "1", minHeight: "0", display: "flex", flexDirection: "column" }
+      : { flex: "1", minHeight: "0" }
 );
 
 const reload = () => {

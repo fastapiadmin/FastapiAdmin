@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig" @add-click="handleCreate">
+    <CrudContent ref="contentRef" :content-config="contentConfig" @add-click="handleCreate">
       <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
         <div class="data-table__content">
           <el-table
@@ -101,7 +101,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <WorkflowDesignDrawer
       v-model:visible="createVisible"
@@ -119,10 +119,10 @@ defineOptions({
 
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
+import { useCrudList } from "@/components/Crud/useCrudList";
 import OperationColumn from "@/components/OperationColumn/index.vue";
 import WorkflowDefinitionAPI, {
   type WorkflowTable,

@@ -1,4 +1,5 @@
 import type { AppRouteRecord } from "@/types/router";
+import { dashboardRoutes } from "@/router/modules/dashboard";
 
 function normalizeMenuPath(path?: string): string {
   if (!path || !path.trim()) return "";
@@ -15,47 +16,62 @@ function collectPathsAndNames(items: AppRouteRecord[], paths: Set<string>, names
   }
 }
 
-/**
- * 与 `staticRoutes` 里挂在 Layout 下的壳子页一致（路由已在 vue-router 注册，仅补侧边栏入口）。
- * meta.shellRoute 表示无动态 component 字段，由 SidebarSubmenu 放行可点击。
- */
-const STATIC_SHELL_MENU_ENTRIES: AppRouteRecord[] = [
-  {
-    path: "/workbench",
-    name: "Workbench",
-    meta: {
-      title: "menus.workbench.title",
-      icon: "ri:layout-grid-line",
-      affix: true,
-      keepAlive: true,
-      shellRoute: true,
-    },
-  },
-  {
-    path: "/portal",
-    name: "PortalHome",
-    meta: {
-      title: "menus.portal.title",
-      icon: "ri:presentation-line",
-      keepAlive: true,
-      shellRoute: true,
-    },
-  },
-];
+function dashboardRoutesToShellMenu(route: AppRouteRecord, parentAbs = ""): AppRouteRecord {
+  const raw = route.path?.trim() ?? "";
+  const fullPath =
+    raw.startsWith("/") && raw !== "/"
+      ? raw
+      : parentAbs
+        ? `${parentAbs.replace(/\/$/, "")}/${raw.replace(/^\/+/, "")}`
+        : `/${raw.replace(/^\/+/, "")}`;
+  const meta = { ...route.meta, shellRoute: true as const };
+  const children = route.children?.map((c) => dashboardRoutesToShellMenu(c, fullPath));
+  return {
+    ...route,
+    path: fullPath,
+    meta,
+    children,
+    component: undefined,
+    redirect: undefined,
+  };
+}
 
-/**
- * 将静态壳层菜单合并进后端菜单树（避免动态菜单里缺少工作台 / 数据门户入口）。
- */
+const HOME_SHELL: AppRouteRecord = {
+  path: "/home",
+  name: "Home",
+  meta: {
+    title: "menus.home.title",
+    icon: "ri:presentation-line",
+    keepAlive: true,
+    shellRoute: true,
+  },
+};
+
 export function mergeShellRoutesIntoMenu(menuList: AppRouteRecord[]): AppRouteRecord[] {
   const paths = new Set<string>();
   const names = new Set<string>();
   collectPathsAndNames(menuList, paths, names);
 
-  const additions = STATIC_SHELL_MENU_ENTRIES.filter((shell) => {
-    const p = normalizeMenuPath(shell.path as string);
-    const n = shell.name ? String(shell.name) : "";
-    return p && !paths.has(p) && (!n || !names.has(n));
-  });
+  const additions: AppRouteRecord[] = [];
+
+  const tryPush = (item: AppRouteRecord) => {
+    const p = normalizeMenuPath(item.path as string);
+    const n = item.name ? String(item.name) : "";
+    if (p && !paths.has(p) && (!n || !names.has(n))) {
+      additions.push(item);
+      if (p) paths.add(p);
+      if (n) names.add(n);
+      if (item.children?.length) {
+        collectPathsAndNames(item.children, paths, names);
+      }
+    }
+  };
+
+  tryPush(HOME_SHELL);
+
+  if (!paths.has("/dashboard")) {
+    tryPush(dashboardRoutesToShellMenu(structuredClone(dashboardRoutes)));
+  }
 
   if (additions.length === 0) return menuList;
   return [...additions, ...menuList];

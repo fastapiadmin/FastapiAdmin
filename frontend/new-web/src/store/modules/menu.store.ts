@@ -112,6 +112,8 @@ export const useMenuStore = defineStore(
     };
   },
   {
-    persist: true,
+    persist: {
+      pick: ["homePath", "menuWidth"],
+    },
   }
 );

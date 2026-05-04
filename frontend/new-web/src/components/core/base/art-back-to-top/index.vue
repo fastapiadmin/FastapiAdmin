@@ -29,7 +29,8 @@ const showButton = ref(false);
 const scrollThreshold = 300;
 
 onMounted(() => {
-  const scrollContainer = document.getElementById("app-main");
+  const scrollContainer =
+    document.getElementById("app-scroll-main") ?? document.getElementById("app-main");
   if (scrollContainer) {
     const { y } = useScroll(scrollContainer);
     watch(y, (newY: number) => {

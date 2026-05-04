@@ -37,12 +37,16 @@ export function useCommon() {
     settingStore.reload();
   };
 
+  /** 主内容区滚动容器（顶栏、标签页固定，仅此处纵向滚动） */
+  const getMainScrollEl = (): HTMLElement | null =>
+    document.getElementById("app-scroll-main") ?? document.getElementById("app-main");
+
   /**
    * 滚动到页面顶部
    * 查找主内容区域并将其滚动位置重置为顶部
    */
   const scrollToTop = () => {
-    const scrollContainer = document.getElementById("app-main");
+    const scrollContainer = getMainScrollEl();
     if (scrollContainer) {
       scrollContainer.scrollTop = 0;
     }
@@ -53,7 +57,7 @@ export function useCommon() {
    * 使用 smooth 行为实现平滑滚动效果
    */
   const smoothScrollToTop = () => {
-    const scrollContainer = document.getElementById("app-main");
+    const scrollContainer = getMainScrollEl();
     if (scrollContainer) {
       scrollContainer.scrollTo({
         top: 0,
@@ -68,7 +72,7 @@ export function useCommon() {
    * @param smooth 是否使用平滑滚动
    */
   const scrollTo = (top: number, smooth: boolean = false) => {
-    const scrollContainer = document.getElementById("app-main");
+    const scrollContainer = getMainScrollEl();
     if (scrollContainer) {
       scrollContainer.scrollTo({
         top,

@@ -20,8 +20,11 @@
     },
     "user": {
       "userCenter": "User center",
+      "paramConfig": "Config center",
       "docs": "Document",
       "github": "Github",
+      "gitee": "Gitee",
+      "tour": "Guided tour",
       "lockScreen": "Lock screen",
       "logout": "Log out"
     },
@@ -138,9 +141,17 @@
         "fastEnter": "Show fast enter",
         "breadcrumb": "Show crumb navigation",
         "language": "Show multilingual selection",
+        "menuSearch": "Show global menu search",
+        "fullscreenTool": "Show fullscreen toggle",
+        "layoutSize": "Show component size selector",
+        "notificationTool": "Show notification entry",
         "progressBar": "Show top progress bar",
         "weakMode": "Color Weakness Mode",
         "watermark": "Global watermark",
+        "appLogo": "Show app logo & system title",
+        "loginGuide": "Show onboarding guide after login",
+        "grayMode": "Grayscale mode",
+        "aiAssistant": "Enable AI assistant entry",
         "menuWidth": "Menu width",
         "tabStyle": "Tab style",
         "pageTransition": "Page animation",
@@ -205,6 +216,10 @@
         "progressBar": "Show top progress bar",
         "weakMode": "Color Weakness Mode",
         "watermark": "Global watermark",
+        "appLogo": "Show app logo & system title",
+        "loginGuide": "Show onboarding guide after login",
+        "grayMode": "Grayscale mode",
+        "aiAssistant": "Enable AI assistant entry",
         "menuWidth": "Menu width",
         "tabStyle": "Tab style",
         "pageTransition": "Page animation",
@@ -284,10 +299,21 @@
     "viewAll": "View all"
   },
   "worktab": {
+    "scrollLeft": "Scroll tabs left",
+    "scrollRight": "Scroll tabs right",
+    "menuMore": "Tab menu",
+    "bookmarkAdd": "Add to workplace favorites",
+    "bookmarkRemove": "Remove from favorites",
+    "bookmarkAdded": "Added to favorites",
+    "bookmarkRemoved": "Removed from favorites",
+    "bookmarkFail": "Favorite action failed",
+    "refreshCacheDone": "Cache refreshed and page reloaded",
+    "refreshCacheFail": "Failed to refresh cache",
     "btn": {
       "refresh": "Refresh",
       "fixed": "Fixed",
       "unfixed": "Unfixed",
+      "closeCurrent": "Close current",
       "closeLeft": "Close left",
       "closeRight": "Close right",
       "closeOther": "Close other",
@@ -476,6 +502,7 @@
   },
   "exceptionPage": {
     "gohome": "Go Home",
+    "401": "Sorry, you don't have permission to access this page.",
     "403": "Sorry, you do not have permission to access this page",
     "404": "Sorry, the page you are trying to access does not exist",
     "500": "Sorry, there was an error on the server",
@@ -497,15 +524,14 @@
     "outside": {
       "title": "Outside"
     },
-    "workbench": {
-      "title": "Workbench"
+    "home": {
+      "title": "Home"
     },
-    "portal": {
-      "title": "Data Portal"
+    "workplace": {
+      "title": "Workbench"
     },
     "dashboard": {
       "title": "Dashboard",
-      "demoTitle": "Template dashboard",
       "console": "Console",
       "analysis": "Analysis",
       "ecommerce": "Ecommerce"
@@ -523,8 +549,7 @@
       "qrcode": "QR Code",
       "drag": "Drag",
       "textScroll": "Text Scroll",
-      "fireworks": "Fireworks",
-      "elementUI": "Component Overview"
+      "fireworks": "Fireworks"
     },
     "template": {
       "title": "Template Center",

@@ -53,7 +53,7 @@
           :title="$t('login.panelAlign.label')"
         >
           <ArtSvgIcon
-            icon="ri:layout-grid-line"
+            :icon="panelAlignTriggerIcon"
             class="text-xl text-g-800 transition-colors duration-300"
           />
         </div>
@@ -131,7 +131,7 @@ defineOptions({ name: "AuthTopBar" });
 
 const DEFAULT_APP_VERSION = "2.0.0";
 
-defineProps<{
+const props = defineProps<{
   /** 登录区表单水平对齐；未传入时不展示布局切换 */
   panelAlign?: LoginPanelAlign | null;
 }>();
@@ -146,9 +146,15 @@ const layoutAlignOptions: {
   labelKey: string;
 }[] = [
   { value: "left", icon: "ri:layout-left-2-line", labelKey: "login.panelAlign.left" },
-  { value: "center", icon: "ri:layout-grid-line", labelKey: "login.panelAlign.center" },
+  { value: "center", icon: "ri:layout-column-line", labelKey: "login.panelAlign.center" },
   { value: "right", icon: "ri:layout-right-2-line", labelKey: "login.panelAlign.right" },
 ];
+
+/** 与当前选中项同一套 icon，避免触发器与菜单不一致 */
+const panelAlignTriggerIcon = computed(() => {
+  const opt = layoutAlignOptions.find((o) => o.value === props.panelAlign);
+  return opt?.icon ?? "ri:layout-column-line";
+});
 
 function onPanelAlign(cmd: string) {
   if (cmd === "left" || cmd === "center" || cmd === "right") {

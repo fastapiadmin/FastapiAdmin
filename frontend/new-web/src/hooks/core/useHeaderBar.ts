@@ -31,9 +31,18 @@ export function useHeaderBar() {
   // 获取顶部栏配置
   const headerBarConfigRef = computed<HeaderBarFeatureConfig>(() => headerBarConfig);
 
-  // 从store中获取相关状态
-  const { showMenuButton, showFastEnter, showRefreshButton, showCrumbs, showLanguage } =
-    storeToRefs(settingStore);
+  // 从 store 获取相关状态（含旧版持久化开关：菜单搜索、全屏、字号、通知等）
+  const {
+    showMenuButton,
+    showFastEnter,
+    showRefreshButton,
+    showCrumbs,
+    showLanguage,
+    showMenuSearch,
+    showFullscreen,
+    showSizeSelect,
+    showNotification,
+  } = storeToRefs(settingStore);
 
   /**
    * 检查特定功能是否启用
@@ -73,19 +82,17 @@ export function useHeaderBar() {
     return isFeatureEnabled("breadcrumb") && showCrumbs.value;
   });
 
-  // 检查全局搜索是否显示
+  // 全局搜索：新版 ArtGlobalSearch 体验更好，显示条件 = 配置开启 ∧ 旧版「菜单搜索」开关
   const shouldShowGlobalSearch = computed(() => {
-    return isFeatureEnabled("globalSearch");
+    return isFeatureEnabled("globalSearch") && showMenuSearch.value;
   });
 
-  // 检查全屏按钮是否显示
   const shouldShowFullscreen = computed(() => {
-    return isFeatureEnabled("fullscreen");
+    return isFeatureEnabled("fullscreen") && showFullscreen.value;
   });
 
-  // 检查通知中心是否显示
   const shouldShowNotification = computed(() => {
-    return isFeatureEnabled("notification");
+    return isFeatureEnabled("notification") && showNotification.value;
   });
 
   // 检查聊天功能是否显示
@@ -93,9 +100,14 @@ export function useHeaderBar() {
     return isFeatureEnabled("chat");
   });
 
-  // 检查语言切换是否显示
+  /** 语言：以新版设置里的 showLanguage 为准（优于旧版单独的 showLangSelect 双开关，避免两处含义重叠） */
   const shouldShowLanguage = computed(() => {
     return isFeatureEnabled("language") && showLanguage.value;
+  });
+
+  /** 布局组件尺寸（旧版顶栏独立入口） */
+  const shouldShowSizeSelect = computed(() => {
+    return isFeatureEnabled("sizeSelect") && showSizeSelect.value;
   });
 
   // 检查设置面板是否显示
@@ -182,6 +194,7 @@ export function useHeaderBar() {
     shouldShowNotification, // 是否显示通知中心
     shouldShowChat, // 是否显示聊天功能
     shouldShowLanguage, // 是否显示语言切换
+    shouldShowSizeSelect, // 是否显示组件尺寸切换
     shouldShowSettings, // 是否显示设置面板
     shouldShowThemeToggle, // 是否显示主题切换
 

@@ -51,10 +51,10 @@
 </template>
 
 <script setup lang="ts">
-import { ButtonMoreItem } from "@/components/core/forms/art-button-more/index.vue";
+import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import { fetchGetRoleList } from "@/api/system-manage";
-import ArtButtonMore from "@/components/core/forms/art-button-more/index.vue";
+import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import RoleSearch from "./modules/role-search.vue";
 import RoleEditDialog from "./modules/role-edit-dialog.vue";
 import RolePermissionDialog from "./modules/role-permission-dialog.vue";

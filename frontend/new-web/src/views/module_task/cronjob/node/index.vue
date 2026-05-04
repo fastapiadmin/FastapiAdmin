@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent
+    <CrudContent
       ref="contentRef"
       :content-config="contentConfig"
       @add-click="handleOpenDialog('create')"
@@ -77,7 +77,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <EnhancedDialog
       v-model="dialogVisible.visible"
@@ -348,11 +348,11 @@ import NodeAPI, {
   TriggerType,
 } from "@/api/module_task/cronjob/node";
 import { useDictStore } from "@/store/index";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
+import { useCrudList } from "@/components/Crud/useCrudList";
 import { nextTick, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { vue3CronPlus } from "vue3-cron-plus";

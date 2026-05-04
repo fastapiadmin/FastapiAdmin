@@ -126,8 +126,13 @@ const closeMenu = (): void => {
  * 判断菜单项本身是否可以作为可点击页面保留在菜单中
  */
 const isNavigableRoute = (item: AppRouteRecord): boolean => {
+  if (item.meta?.isHide) {
+    return false;
+  }
+  if (item.meta?.shellRoute && item.path?.trim()) {
+    return true;
+  }
   return !!(
-    !item.meta.isHide &&
     ((item.path && item.path.trim()) || item.meta.link || item.meta.isIframe === true) &&
     (item.component || item.meta.link || item.meta.isIframe === true)
   );

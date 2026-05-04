@@ -1,16 +1,16 @@
 <!-- 系统配置 -->
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
+    <CrudContent ref="contentRef" :content-config="contentConfig">
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <!-- 与 PageContent 默认工具栏一致：flex 换行，避免 el-row/el-col 与外层 flex 挤压右侧按钮 -->
+        <!-- 与 CrudContent 默认工具栏一致：flex 换行，避免 el-row/el-col 与外层 flex 挤压右侧按钮 -->
         <CrudToolbarLeft
           :remove-ids="removeIds"
           :perm-create="['module_system:param:create']"
@@ -19,7 +19,7 @@
           @delete="onToolbar('delete')"
         />
         <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
+          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
             <template #prepend>
               <el-tooltip content="导出">
                 <el-button
@@ -31,7 +31,7 @@
                 />
               </el-tooltip>
             </template>
-          </CrudToolbarRight>
+          </CrudToolbarActions>
         </div>
       </template>
 
@@ -169,7 +169,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <EnhancedDialog
       v-model="dialogVisible.visible"
@@ -263,7 +263,7 @@
       </template>
     </EnhancedDialog>
 
-    <ExportModal
+    <CrudExportModal
       v-model="exportsDialogVisible"
       :content-config="curdContentConfig"
       :query-params="exportQueryParams"
@@ -278,14 +278,14 @@ import { ref, reactive, computed, unref } from "vue";
 import { fetchAllPages } from "@/utils/fetchAllPages";
 import ParamsAPI, { ConfigTable, ConfigForm, ConfigPageQuery } from "@/api/module_system/params";
 import { useConfigStore } from "@/store";
-import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudExportModal from "@/components/CURD/CrudExportModal.vue";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { IContentConfig, ISearchConfig, IObject } from "@/components/CURD/types";
+import { CrudToolbarActions } from "@/components/Crud";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import { useCrudList } from "@/components/Crud/useCrudList";
+import type { IContentConfig, ISearchConfig, IObject } from "@/components/Crud/types";
 
 defineOptions({
   name: "Params",

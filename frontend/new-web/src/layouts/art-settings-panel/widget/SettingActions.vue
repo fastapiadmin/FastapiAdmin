@@ -79,6 +79,10 @@ const CONFIG_ITEMS: ConfigItem[] = [
   { comment: "是否显示设置引导", key: "showSettingGuide" },
   { comment: "是否显示节日文本", key: "showFestivalText" },
   { comment: "是否显示水印", key: "watermarkVisible" },
+  { comment: "是否显示应用 Logo 与系统标题", key: "showAppLogo" },
+  { comment: "登录后是否开启新手引导", key: "showGuide" },
+  { comment: "灰色模式", key: "grayMode" },
+  { comment: "是否启用 AI 助手", key: "userEnableAi" },
   { comment: "是否自动关闭", key: "autoClose" },
   { comment: "是否唯一展开", key: "uniqueOpened" },
   { comment: "是否色弱模式", key: "colorWeak" },
@@ -201,6 +205,10 @@ const handleResetConfig = async () => {
     settingStore.setWorkTab(config.showWorkTab);
     settingStore.setShowFestivalText(config.showFestivalText);
     settingStore.setWatermarkVisible(config.watermarkVisible);
+    settingStore.updateSetting("showAppLogo", config.showAppLogo);
+    settingStore.updateSetting("showGuide", config.showGuide);
+    settingStore.updateSetting("grayMode", config.grayMode);
+    settingStore.updateSetting("userEnableAi", config.aiEnabled);
 
     // 功能设置
     toggleIfDifferent(settingStore.autoClose, config.autoClose, () => settingStore.setAutoClose());

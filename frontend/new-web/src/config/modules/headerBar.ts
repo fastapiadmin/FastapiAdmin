@@ -58,6 +58,10 @@ export const headerBarConfig: HeaderBarFeatureConfig = {
     enabled: true,
     description: "主题切换功能（明暗主题）",
   },
+  sizeSelect: {
+    enabled: true,
+    description: "Element Plus 组件尺寸（默认/大/小）",
+  },
 };
 
 export default headerBarConfig;

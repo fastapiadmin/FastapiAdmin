@@ -33,9 +33,7 @@ function getBreadcrumb() {
   let matched = currentRoute.matched.filter((item) => item.meta && item.meta.title);
   const first = matched[0];
   if (!isDashboard(first)) {
-    matched = [{ path: "/workbench", meta: { title: "menus.workbench.title" } } as any].concat(
-      matched
-    );
+    matched = [{ path: "/home", meta: { title: "menus.home.title" } } as any].concat(matched);
   }
   breadcrumbs.value = matched.filter((item) => {
     return item.meta && item.meta.title && item.meta.breadcrumb !== false;
@@ -48,7 +46,7 @@ function isDashboard(route: RouteLocationMatched) {
     return false;
   }
   const n = name.toString().trim().toLowerCase();
-  return n === "dashboard" || n === "dashboarddemo";
+  return n === "home" || n === "workplace" || n === "dashboard" || n.startsWith("dashboard");
 }
 
 function handleLink(item: any) {

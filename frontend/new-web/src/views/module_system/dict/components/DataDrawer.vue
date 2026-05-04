@@ -7,14 +7,14 @@
     :size="drawerSize"
   >
     <div class="drawer-content">
-      <PageSearch
+      <CrudSearch
         ref="searchRef"
         :search-config="searchConfig"
         @query-click="handleQueryClick"
         @reset-click="handleResetClick"
       />
 
-      <PageContent ref="contentRef" :content-config="contentConfig">
+      <CrudContent ref="contentRef" :content-config="contentConfig">
         <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
           <CrudToolbarLeft
             :remove-ids="removeIds"
@@ -26,7 +26,7 @@
             @more="handleMoreClick"
           />
           <div class="data-table__toolbar--right">
-            <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
+            <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
               <template #prepend>
                 <el-tooltip content="导出">
                   <el-button
@@ -38,7 +38,7 @@
                   />
                 </el-tooltip>
               </template>
-            </CrudToolbarRight>
+            </CrudToolbarActions>
           </div>
         </template>
 
@@ -206,7 +206,7 @@
             </el-table>
           </div>
         </template>
-      </PageContent>
+      </CrudContent>
 
       <EnhancedDialog
         v-model="dialogVisible.visible"
@@ -389,7 +389,7 @@
         </template>
       </EnhancedDialog>
 
-      <ExportModal
+      <CrudExportModal
         v-model="exportsDialogVisible"
         :content-config="curdContentConfig"
         :query-params="exportQueryParams"
@@ -405,15 +405,15 @@ import DictAPI, { DictDataTable, DictDataForm, DictDataPageQuery } from "@/api/m
 import { useDictStore } from "@/store";
 import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
-import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudExportModal from "@/components/CURD/CrudExportModal.vue";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
-import type { ISearchConfig, IContentConfig, IObject } from "@/components/CURD/types";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import { CrudToolbarActions } from "@/components/Crud";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
+import type { ISearchConfig, IContentConfig, IObject } from "@/components/Crud/types";
+import { useCrudList } from "@/components/Crud/useCrudList";
 import { computed, ref, reactive, unref } from "vue";
 import { fetchAllPages } from "@/utils/fetchAllPages";
 

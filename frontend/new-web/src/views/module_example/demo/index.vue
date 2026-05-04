@@ -1,20 +1,22 @@
-<!-- 演示示例：PageSearch + PageContent CRUD 封装 -->
+<!-- 演示示例：CrudLayout + CrudSearch + CrudContent（配置驱动列表 + 自定义工具栏） -->
 <template>
-  <div class="app-container">
-    <PageSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
-    />
+  <CrudLayout>
+    <template #search>
+      <CrudSearch
+        ref="searchRef"
+        :search-config="searchConfig"
+        @query-click="handleQueryClick"
+        @reset-click="handleResetClick"
+      />
+    </template>
 
-    <PageContent
+    <CrudContent
       ref="contentRef"
       :content-config="contentConfig"
       @add-click="handleOpenDialog('create')"
     >
-      <!-- 与 PageContent 默认结构一致：不再套一层 data-table__toolbar（外层已由组件提供） -->
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
+      <!-- Art 栈：右侧刷新/列设置等为 ArtTableHeader 内置；导入导出放在左侧插槽与示例一致 -->
+      <template #toolbar="{ onToolbar, removeIds }">
         <CrudToolbarLeft
           :remove-ids="removeIds"
           :perm-create="['module_example:demo:create']"
@@ -24,217 +26,82 @@
           @delete="onToolbar('delete')"
           @more="handleMoreClick"
         />
-        <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
-        </div>
+        <el-button
+          v-hasPerm="['module_example:demo:import']"
+          type="info"
+          @click="onToolbar('import')"
+        >
+          <template #icon>
+            <Upload />
+          </template>
+          导入
+        </el-button>
+        <el-button
+          v-hasPerm="['module_example:demo:export']"
+          type="warning"
+          @click="onToolbar('export')"
+        >
+          <template #icon>
+            <Download />
+          </template>
+          导出
+        </el-button>
       </template>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'name')?.show"
-              label="名称"
-              prop="name"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'uuid')?.show"
-              label="UUID"
-              prop="uuid"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'status')?.show"
-              label="状态"
-              prop="status"
-              min-width="120"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag :type="scope.row.status ? 'success' : 'info'">
-                  {{ scope.row.status ? "启用" : "停用" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'a')?.show"
-              label="整数"
-              prop="a"
-              min-width="100"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'b')?.show"
-              label="大整数"
-              prop="b"
-              min-width="120"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'c')?.show"
-              label="浮点数"
-              prop="c"
-              min-width="100"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'd')?.show"
-              label="布尔值"
-              prop="d"
-              min-width="100"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag :type="scope.row.d ? 'success' : 'danger'">
-                  {{ scope.row.d ? "是" : "否" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'e')?.show"
-              label="日期"
-              prop="e"
-              min-width="120"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'f')?.show"
-              label="时间"
-              prop="f"
-              min-width="120"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'g')?.show"
-              label="日期时间"
-              prop="g"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'h')?.show"
-              label="长文本"
-              prop="h"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'description')?.show"
-              label="描述"
-              prop="description"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              label="创建时间"
-              prop="created_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_time')?.show"
-              label="更新时间"
-              prop="updated_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_id')?.show"
-              label="创建人"
-              prop="created_id"
-              min-width="120"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag>{{ scope.row.created_by?.name }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_id')?.show"
-              label="更新人"
-              prop="updated_id"
-              min-width="120"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag>{{ scope.row.updated_by?.name }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="200"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_example:demo:detail']"
-                  type="info"
-                  size="small"
-                  link
-                  icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
-                >
-                  详情
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_example:demo:update']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_example:demo:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleRowDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
+      <!-- 自定义列（templet: custom） -->
+      <template #status="{ row }">
+        <el-tag :type="row.status ? 'success' : 'info'">
+          {{ row.status ? "启用" : "停用" }}
+        </el-tag>
       </template>
-    </PageContent>
+      <template #d="{ row }">
+        <el-tag :type="row.d ? 'success' : 'danger'">
+          {{ row.d ? "是" : "否" }}
+        </el-tag>
+      </template>
+      <template #created_id="{ row }">
+        <el-tag>{{ row.created_by?.name }}</el-tag>
+      </template>
+      <template #updated_id="{ row }">
+        <el-tag>{{ row.updated_by?.name }}</el-tag>
+      </template>
+      <template #i="{ row }">
+        <JsonPretty v-if="row.i != null" :value="row.i" height="120px" />
+        <span v-else class="text-g-500">—</span>
+      </template>
+      <template #operation="{ row }">
+        <el-button
+          v-hasPerm="['module_example:demo:detail']"
+          type="info"
+          size="small"
+          link
+          :icon="View"
+          @click="handleOpenDialog('detail', row.id)"
+        >
+          详情
+        </el-button>
+        <el-button
+          v-hasPerm="['module_example:demo:update']"
+          type="primary"
+          size="small"
+          link
+          :icon="Edit"
+          @click="handleOpenDialog('update', row.id)"
+        >
+          编辑
+        </el-button>
+        <el-button
+          v-hasPerm="['module_example:demo:delete']"
+          type="danger"
+          size="small"
+          link
+          :icon="Delete"
+          @click="handleRowDelete(row.id)"
+        >
+          删除
+        </el-button>
+      </template>
+    </CrudContent>
 
     <EnhancedDialog
       v-model="dialogVisible.visible"
@@ -421,7 +288,7 @@
         </div>
       </template>
     </EnhancedDialog>
-  </div>
+  </CrudLayout>
 </template>
 
 <script setup lang="ts">
@@ -431,18 +298,21 @@ defineOptions({
 });
 
 import { ref, reactive, onMounted, markRaw, nextTick } from "vue";
+import { Delete, Download, Edit, Upload, View } from "@element-plus/icons-vue";
 import { fetchAllPages } from "@/utils/fetchAllPages";
 import { ElMessageBox } from "element-plus";
 import { ResultEnum } from "@/enums/api/result.enum";
 import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_example/demo";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import {
+  CrudLayout,
+  CrudToolbarLeft,
+  CrudContent,
+  CrudSearch,
+  useCrudList,
+} from "@/components/Crud";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
 import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud";
 import JsonPretty from "@/components/JsonPretty/index.vue";
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
@@ -454,9 +324,13 @@ function triggerUserSearch() {
 const searchConfig = reactive<ISearchConfig>({
   permPrefix: "module_example:demo",
   colon: true,
+  /** 与 examples/forms/search-bar 一致：ArtSearchBar + art-card-xs */
+  searchVariant: "art",
   isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
+  showNumber: 3,
+  artSearchSpan: 6,
+  /** 与 ArtSearchBar 默认一致；勿用 labelWidth:auto 否则标签区忽宽忽窄 */
+  form: { labelWidth: "70px", labelPosition: "right" },
   formItems: [
     {
       prop: "name",
@@ -472,7 +346,7 @@ const searchConfig = reactive<ISearchConfig>({
         { label: "启用", value: "0" },
         { label: "停用", value: "1" },
       ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "170px" } },
+      attrs: { placeholder: "请选择状态", clearable: true },
     },
     {
       prop: "created_id",
@@ -526,33 +400,87 @@ const searchConfig = reactive<ISearchConfig>({
   },
 });
 
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "name", label: "名称", show: true },
-  { prop: "uuid", label: "UUID", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "a", label: "整数", show: true },
-  { prop: "b", label: "大整数", show: true },
-  { prop: "c", label: "浮点数", show: true },
-  { prop: "d", label: "布尔值", show: true },
-  { prop: "e", label: "日期", show: true },
-  { prop: "f", label: "时间", show: true },
-  { prop: "g", label: "日期时间", show: true },
-  { prop: "h", label: "长文本", show: true },
-  { prop: "i", label: "元数据", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人", show: true },
-  { prop: "updated_id", label: "更新人", show: true },
-  { prop: "operation", label: "操作", show: true },
+const contentCols = reactive<IContentConfig["cols"]>([
+  { type: "selection", label: "选择框", width: 55, align: "center", show: true },
+  { type: "index", label: "序号", width: 60, fixed: true, show: true },
+  { prop: "name", label: "名称", minWidth: 140, show: true, "show-overflow-tooltip": true },
+  { prop: "uuid", label: "UUID", minWidth: 180, show: true, "show-overflow-tooltip": true },
+  {
+    prop: "status",
+    label: "状态",
+    minWidth: 120,
+    show: true,
+    templet: "custom",
+    slotName: "status",
+    "show-overflow-tooltip": true,
+  },
+  { prop: "a", label: "整数", minWidth: 100, show: true, "show-overflow-tooltip": true },
+  { prop: "b", label: "大整数", minWidth: 120, show: true, "show-overflow-tooltip": true },
+  { prop: "c", label: "浮点数", minWidth: 100, show: true, "show-overflow-tooltip": true },
+  {
+    prop: "d",
+    label: "布尔值",
+    minWidth: 100,
+    show: true,
+    templet: "custom",
+    slotName: "d",
+    "show-overflow-tooltip": true,
+  },
+  { prop: "e", label: "日期", minWidth: 120, show: true, "show-overflow-tooltip": true },
+  { prop: "f", label: "时间", minWidth: 120, show: true, "show-overflow-tooltip": true },
+  { prop: "g", label: "日期时间", minWidth: 180, show: true, "show-overflow-tooltip": true },
+  { prop: "h", label: "长文本", minWidth: 140, show: true, "show-overflow-tooltip": true },
+  {
+    prop: "i",
+    label: "元数据",
+    minWidth: 160,
+    show: true,
+    templet: "custom",
+    slotName: "i",
+  },
+  { prop: "description", label: "描述", minWidth: 140, show: true, "show-overflow-tooltip": true },
+  {
+    prop: "created_time",
+    label: "创建时间",
+    minWidth: 180,
+    show: true,
+    "show-overflow-tooltip": true,
+  },
+  {
+    prop: "updated_time",
+    label: "更新时间",
+    minWidth: 180,
+    show: true,
+    "show-overflow-tooltip": true,
+  },
+  {
+    prop: "created_id",
+    label: "创建人",
+    minWidth: 120,
+    show: true,
+    templet: "custom",
+    slotName: "created_id",
+    "show-overflow-tooltip": true,
+  },
+  {
+    prop: "updated_id",
+    label: "更新人",
+    minWidth: 120,
+    show: true,
+    templet: "custom",
+    slotName: "updated_id",
+    "show-overflow-tooltip": true,
+  },
+  {
+    prop: "operation",
+    label: "操作",
+    fixed: "right",
+    align: "center",
+    minWidth: 200,
+    show: true,
+    templet: "custom",
+    slotName: "operation",
+  },
 ]);
 
 function normalizeDemoQuery(params: Record<string, unknown>) {
@@ -564,11 +492,18 @@ function normalizeDemoQuery(params: Record<string, unknown>) {
 
 const contentConfig = reactive<IContentConfig<DemoPageQuery>>({
   permPrefix: "module_example:demo",
-  hideColumnFilter: false,
+  /** 与 examples/tables 高级示例一致：ArtTableHeader + ArtTable + 内嵌分页 */
+  tableVariant: "art",
+  hideColumnFilter: true,
   initialFetch: false,
-  cols: contentCols as IContentConfig["cols"],
+  cols: contentCols,
   toolbar: [],
-  defaultToolbar: ["import", "export", "refresh", "filter"],
+  table: {
+    border: true,
+    stripe: true,
+    fit: true,
+    style: { width: "100%" },
+  },
   pagination: {
     pageSize: 10,
     pageSizes: [10, 20, 30, 50],
@@ -612,9 +547,10 @@ const contentConfig = reactive<IContentConfig<DemoPageQuery>>({
         const res = await DemoAPI.getDemoList(
           normalizeDemoQuery(q as unknown as Record<string, unknown>)
         );
+        const items = (res.data?.data?.items ?? []) as DemoTable[];
         return {
           total: res.data?.data?.total ?? 0,
-          list: res.data?.data?.items ?? [],
+          list: items,
         };
       },
     });

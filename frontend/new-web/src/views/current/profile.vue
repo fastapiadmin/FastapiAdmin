@@ -294,7 +294,7 @@ import { Camera } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import { nextTick } from "vue";
-import { redirectToLogin } from "@/utils/authRedirect";
+import { redirectToLogin } from "@/utils/auth";
 
 const { t } = useI18n();
 const userStore = useUserStore();

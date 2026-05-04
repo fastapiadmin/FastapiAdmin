@@ -75,8 +75,13 @@ const filteredChildren = computed(() => {
 
 // 父菜单如果本身就是页面，则即使没有可见子菜单也应该保留为菜单项。
 const isNavigableRoute = computed(() => {
+  if (props.item.meta?.isHide) {
+    return false;
+  }
+  if (props.item.meta?.shellRoute && props.item.path?.trim()) {
+    return true;
+  }
   return !!(
-    !props.item.meta.isHide &&
     ((props.item.path && props.item.path.trim()) ||
       props.item.meta.link ||
       props.item.meta.isIframe === true) &&

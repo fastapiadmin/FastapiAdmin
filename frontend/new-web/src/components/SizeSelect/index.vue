@@ -1,8 +1,13 @@
-<!-- 布局大小 -->
+<!-- 布局大小（触发器与顶栏 ArtIconButton 一致，避免与其它图标尺寸/悬停不一致） -->
 <template>
   <el-tooltip :content="t('sizeSelect.tooltip')" effect="dark" placement="bottom">
     <el-dropdown trigger="click" @command="handleSizeChange">
-      <div class="i-svg:size" />
+      <span class="inline-flex outline-none leading-none">
+        <ArtIconButton
+          :icon="resolveIconForArtSvgIcon('size')"
+          class="size-select-btn text-[19px]"
+        />
+      </span>
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item
@@ -20,8 +25,11 @@
 </template>
 
 <script setup lang="ts">
+import ArtIconButton from "@/components/Core/widget/art-icon-button/index.vue";
 import { ComponentSize } from "@/enums/settings/layout.enum";
 import { useAppStore } from "@/store/modules/app.store";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { computed } from "vue";
 
 const { t } = useI18n();
 const sizeOptions = computed(() => {

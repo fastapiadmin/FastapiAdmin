@@ -234,7 +234,7 @@ function isLoginRoute(to: RouteLocationNormalized): boolean {
 
 /**
  * 无需登录即可访问的路径（登录页由 isLoginRoute 处理，此处为错误页、重定向等）。
- * 勿将挂载 Layout 的业务路由（`/`, `/workbench`, `/portal`, `/profile`…）列入此处。
+ * 勿将挂载 Layout 的业务路由（如 `/home`、`/dashboard/*`、`/profile`）列入此处。
  */
 function isAnonymousPublicPath(path: string): boolean {
   if (path.startsWith("/redirect")) return true;
@@ -242,7 +242,7 @@ function isAnonymousPublicPath(path: string): boolean {
   return allow.has(path);
 }
 
-/** 将父级绝对路径与相对子 path 拼成完整路径（用于识别如 `/` + `workbench` → `/workbench`） */
+/** 将父级绝对路径与相对子 path 拼成完整路径（用于识别如 `/` + `home` → `/home`） */
 function resolveStaticChildFullPath(parentFullPath: string, segment: string): string {
   const seg = segment.replace(/^\/+/, "");
   if (!parentFullPath || parentFullPath === "/") {

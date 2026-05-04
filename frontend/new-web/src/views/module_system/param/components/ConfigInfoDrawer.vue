@@ -288,7 +288,7 @@ import ParamsAPI, { type ConfigTable } from "@/api/module_system/params";
 import { useConfigStore } from "@/store";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
 import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
 import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";

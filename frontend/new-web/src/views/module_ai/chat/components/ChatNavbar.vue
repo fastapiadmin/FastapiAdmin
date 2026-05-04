@@ -2,8 +2,16 @@
   <div class="chat-navbar">
     <div class="navbar-left">
       <button class="collapse-btn" @click="toggleSidebar">
-        <div v-if="!props.isSidebarCollapsed" class="i-svg:layout_leftbar_close_line w-6 h-6" />
-        <div v-else class="i-svg:layout_leftbar_open_line w-6 h-6" />
+        <ArtSvgIcon
+          v-if="!props.isSidebarCollapsed"
+          :icon="resolveIconForArtSvgIcon('layout_leftbar_close_line')"
+          class="size-6"
+        />
+        <ArtSvgIcon
+          v-else
+          :icon="resolveIconForArtSvgIcon('layout_leftbar_open_line')"
+          class="size-6"
+        />
       </button>
     </div>
     <div class="navbar-right">
@@ -30,6 +38,8 @@
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
 import { computed } from "vue";
 import { Connection, Loading, Warning, Delete, Setting } from "@element-plus/icons-vue";
 

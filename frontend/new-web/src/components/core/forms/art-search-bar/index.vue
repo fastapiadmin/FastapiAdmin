@@ -73,6 +73,9 @@
           <div class="action-buttons-wrapper" :style="actionButtonsStyle">
             <div class="form-buttons">
               <ElButton v-if="showReset" class="reset-button" @click="handleReset" v-ripple>
+                <template #icon>
+                  <Refresh />
+                </template>
                 {{ t("table.searchBar.reset") }}
               </ElButton>
               <ElButton
@@ -83,6 +86,9 @@
                 v-ripple
                 :disabled="disabledSearch"
               >
+                <template #icon>
+                  <Search />
+                </template>
                 {{ t("table.searchBar.search") }}
               </ElButton>
             </div>
@@ -103,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowUpBold, ArrowDownBold } from "@element-plus/icons-vue";
+import { ArrowUpBold, ArrowDownBold, Refresh, Search } from "@element-plus/icons-vue";
 import { useWindowSize } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import { toRaw, type Component } from "vue";

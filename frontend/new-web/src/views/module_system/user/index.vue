@@ -7,14 +7,14 @@
       </el-col>
 
       <el-col :span="20" class="right-col">
-        <PageSearch
+        <CrudSearch
           ref="searchRef"
           :search-config="searchConfig"
           @query-click="handleQueryClick"
           @reset-click="handleResetClick"
         />
 
-        <PageContent ref="contentRef" class="flex-1 min-h-0" :content-config="contentConfig">
+        <CrudContent ref="contentRef" class="flex-1 min-h-0" :content-config="contentConfig">
           <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
             <CrudToolbarLeft
               :remove-ids="removeIds"
@@ -27,7 +27,7 @@
               @more="handleMoreClick"
             />
             <div class="data-table__toolbar--right">
-              <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
+              <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
                 <template #prepend>
                   <el-tooltip content="导入">
                     <el-button
@@ -48,7 +48,7 @@
                     />
                   </el-tooltip>
                 </template>
-              </CrudToolbarRight>
+              </CrudToolbarActions>
             </div>
           </template>
 
@@ -156,7 +156,7 @@
               </el-table>
             </div>
           </template>
-        </PageContent>
+        </CrudContent>
       </el-col>
     </el-row>
 
@@ -365,14 +365,14 @@
       </template>
     </EnhancedDrawer>
 
-    <ImportModal
+    <CrudImportModal
       v-model="importDialogVisible"
       :content-config="curdContentConfig"
       :loading="uploadLoading"
       @upload="handleUpload"
     />
 
-    <ExportModal
+    <CrudExportModal
       v-model="exportsDialogVisible"
       :content-config="curdContentConfig"
       :query-params="exportQueryParams"
@@ -405,21 +405,21 @@ import RoleAPI from "@/api/module_system/role";
 import DeptTree from "./components/DeptTree.vue";
 import UserTableSelect from "./components/UserTableSelect.vue";
 import { useUserStore } from "@/store";
-import ImportModal from "@/components/CURD/ImportModal.vue";
-import ExportModal from "@/components/CURD/ExportModal.vue";
+import CrudImportModal from "@/components/CURD/CrudImportModal.vue";
+import CrudExportModal from "@/components/CURD/CrudExportModal.vue";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import { CrudToolbarActions } from "@/components/Crud";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
 import { ref, reactive, computed, markRaw, nextTick, unref } from "vue";
 import { fetchAllPages } from "@/utils/fetchAllPages";
 
 const appStore = useAppStore();
 
-const searchRef = ref<InstanceType<typeof PageSearch>>();
-const contentRef = ref<InstanceType<typeof PageContent>>();
+const searchRef = ref<InstanceType<typeof CrudSearch>>();
+const contentRef = ref<InstanceType<typeof CrudContent>>();
 const dataFormRef = ref();
 const submitLoading = ref(false);
 const uploadLoading = ref(false);

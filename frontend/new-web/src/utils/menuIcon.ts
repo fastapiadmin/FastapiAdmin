@@ -4,7 +4,7 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 /**
  * 菜单 / IconSelect 共用的图标存值约定（与 `components/IconSelect` 一致）：
  * - Element Plus：`el-icon-{组件名}`，或与 `@element-plus/icons-vue` 导出键一致的裸名（如 `PieChart`，兼容旧库手写）
- * - 自定义 SVG：`assets/icons/*.svg` 的文件名（小写/短横线等），且不与 EP 导出键冲突时走 `i-svg:`
+ * - 历史自定义 SVG 文件名：原 `assets/icons` + `i-svg:` 展示，现由 `menuIconRemix.resolveIconForArtSvgIcon` 映射为 Iconify（默认 Remix `ri:`）
  * - Iconify：`collection:name`（含冒号，如 `ri:home-line`）
  */
 
@@ -23,8 +23,8 @@ function kebabSnakeBodyToPascalKey(body: string): string {
 }
 
 /**
- * 解析为 Element Plus 图标组件；否则 null（再走 Iconify / i-svg）。
- * 对齐旧版 `layouts/old/components/Menu/components/MenuItemContent.vue`（el-icon / i-svg 二选一）
+ * 解析为 Element Plus 图标组件；否则 null（再走 Iconify / Remix 映射）。
+ * 对齐旧版 `layouts/old/components/Menu/components/MenuItemContent.vue`（el-icon / 自定义文件名）
  * 及 `MenuSearch` 里对 `el-icon-*` 主体的 Pascal 推导。
  */
 export function resolveElementPlusIconComponent(icon?: string | null): Component | null {

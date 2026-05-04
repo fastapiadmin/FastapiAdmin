@@ -21,5 +21,5 @@ export function initRouter(app: App<Element>): void {
   app.use(router);
 }
 
-// 主页路径；配置后 Logo「回首页」优先到此（静态工作台）
-export const HOME_PAGE_PATH = "/workbench";
+// 主页路径；须与 `staticRoutes` 中首页子路由一致（当前为 `/home`）
+export const HOME_PAGE_PATH = "/home";

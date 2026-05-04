@@ -18,150 +18,188 @@
       </div>
     </div>
 
-    <!-- 锁屏弹窗 -->
+    <!-- 设置锁屏密码弹窗（与旧版 LockDialog.vue 一致；锁密码仍写入 userStore + 加密） -->
     <div v-if="!isLock">
-      <ElDialog v-model="visible" :width="370" :show-close="false" @open="handleDialogOpen">
-        <div class="flex-c flex-col">
-          <img class="w-16 h-16 rounded-full" src="@imgs/user/avatar.webp" alt="用户头像" />
-          <div class="mt-7.5 mb-3.5 text-base font-medium">{{ userInfo.username }}</div>
-          <ElForm
-            ref="formRef"
-            :model="formData"
-            :rules="rules"
-            class="w-[90%]"
-            @submit.prevent="handleLock"
-          >
-            <ElFormItem prop="password">
-              <ElInput
-                v-model="formData.password"
-                type="password"
-                :placeholder="$t('lockScreen.lock.inputPlaceholder')"
-                :show-password="true"
-                autocomplete="new-password"
-                ref="lockInputRef"
-                class="w-full mt-9"
-                @keyup.enter="handleLock"
-              >
-                <template #suffix>
-                  <ElIcon class="c-p" @click="handleLock">
-                    <Lock />
-                  </ElIcon>
-                </template>
-              </ElInput>
-            </ElFormItem>
-            <ElButton type="primary" class="w-full mt-0.5" @click="handleLock" v-ripple>
-              {{ $t("lockScreen.lock.btnText") }}
-            </ElButton>
-          </ElForm>
+      <EnhancedDialog
+        v-model="visible"
+        width="500px"
+        max-height="170px"
+        :title="t('lock.lockScreen')"
+        class="v-lock-dialog"
+        @opened="handleDialogOpen"
+      >
+        <div class="lock-dialog-content">
+          <img v-if="userAvatar" :src="userAvatar" alt="" class="lock-dialog-avatar object-cover" />
+          <img v-else class="lock-dialog-avatar" src="@imgs/user/avatar.webp" alt="" />
+          <span class="lock-dialog-name">{{ displayName }}</span>
         </div>
-      </ElDialog>
+        <ElForm ref="formRef" :model="formData" :rules="rules" @submit.prevent="handleLock">
+          <ElFormItem :label="t('lockScreen.lockPassword')" prop="password">
+            <ElInput
+              ref="lockInputRef"
+              v-model="formData.password"
+              type="password"
+              show-password
+              clearable
+              autocomplete="new-password"
+              :placeholder="t('lock.placeholder')"
+              @keydown.enter="handleLock"
+            />
+          </ElFormItem>
+        </ElForm>
+        <template #footer>
+          <ElButton type="primary" @click="handleLock">{{ t("navbar.lock") }}</ElButton>
+        </template>
+      </EnhancedDialog>
     </div>
 
-    <!-- 解锁界面 -->
-    <div v-else class="unlock-content">
-      <div class="flex-c flex-col w-80">
-        <img class="w-16 h-16 mt-5 rounded-full" src="@imgs/user/avatar.webp" alt="用户头像" />
-        <div class="mt-3 mb-3.5 text-base font-medium">
-          {{ userInfo.username }}
-        </div>
-        <ElForm
-          ref="unlockFormRef"
-          :model="unlockForm"
-          :rules="rules"
-          class="w-full !px-2.5"
-          @submit.prevent="handleUnlock"
-        >
-          <ElFormItem prop="password">
-            <ElInput
-              v-model="unlockForm.password"
-              type="password"
-              :placeholder="$t('lockScreen.unlock.inputPlaceholder')"
-              :show-password="true"
-              autocomplete="new-password"
-              ref="unlockInputRef"
-              class="mt-5"
-            >
-              <template #suffix>
-                <ElIcon class="c-p" @click="handleUnlock">
-                  <Unlock />
-                </ElIcon>
-              </template>
-            </ElInput>
-          </ElFormItem>
+    <!-- 解锁全屏（旧版 LockPage 样式） -->
+    <div v-else class="lockpage">
+      <div v-show="showClock" class="unlock-container" @click="showUnlockForm">
+        <el-icon><Lock /></el-icon>
+        <span>{{ t("lock.unlock") }}</span>
+      </div>
 
-          <ElButton type="primary" class="w-full mt-2" @click="handleUnlock" v-ripple>
-            {{ $t("lockScreen.unlock.btnText") }}
-          </ElButton>
-          <div class="w-full text-center">
-            <ElButton
-              text
-              class="mt-2.5 !text-g-600 hover:!text-theme hover:!bg-transparent"
-              @click="toLogin"
-            >
-              {{ $t("lockScreen.unlock.backBtnText") }}
-            </ElButton>
+      <div class="time-container w-screen h-screen">
+        <div class="hour-container mr-5 md:mr-20 w-2/5 h-2/5 md:h-4/5">
+          <span>{{ hour }}</span>
+          <span v-show="showClock" class="meridiem absolute left-5 top-5 text-md xl:text-xl">
+            {{ meridiem }}
+          </span>
+        </div>
+        <div class="minute-container w-2/5 h-2/5 md:h-4/5">
+          <span>{{ minute }}</span>
+        </div>
+      </div>
+
+      <transition name="fade-slide">
+        <div v-show="!showClock" class="entry-wrapper">
+          <div class="entry-content">
+            <div class="avatar-container">
+              <img v-if="userAvatar" :src="userAvatar" alt="" class="avatar object-cover" />
+              <img v-else class="avatar" src="@imgs/user/avatar.webp" alt="" />
+              <span class="username">{{ displayName }}</span>
+            </div>
+            <ElInput
+              ref="passwordInputRef"
+              v-model="unlockPwd"
+              :placeholder="t('lock.placeholder')"
+              class="password-input"
+              show-password
+              clearable
+              @keydown.enter="submitUnlock"
+            />
+            <span v-if="unlockErrMsg" class="error-message">
+              {{ t("lock.message") }}
+            </span>
+            <div class="button-group">
+              <el-button
+                type="primary"
+                size="small"
+                class="back-button"
+                link
+                :disabled="unlockLoading"
+                @click="showClockView"
+              >
+                {{ t("common.back") }}
+              </el-button>
+              <el-button
+                type="primary"
+                size="small"
+                class="login-button"
+                link
+                :disabled="unlockLoading"
+                @click="goLogin"
+              >
+                {{ t("lock.backToLogin") }}
+              </el-button>
+              <el-button
+                type="primary"
+                class="entry-button"
+                size="small"
+                link
+                :disabled="unlockLoading"
+                @click="submitUnlock"
+              >
+                {{ t("lock.entrySystem") }}
+              </el-button>
+            </div>
           </div>
-        </ElForm>
+        </div>
+      </transition>
+
+      <div class="date-container">
+        <div v-show="!showClock" class="time-display">
+          {{ hour }}:{{ minute }}
+          <span class="meridiem-display">{{ meridiem }}</span>
+        </div>
+        <div class="full-date">{{ year }}/{{ month }}/{{ day }} {{ week }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Lock, Unlock } from "@element-plus/icons-vue";
+import { Lock } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
+import { ElInput } from "element-plus";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
 import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
 import CryptoJS from "crypto-js";
 import { useUserStore } from "@/store/modules/user.store";
 import { mittBus } from "@/utils/sys";
+import { useNow } from "@/utils/common/dateUtil";
 
-// 国际化
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
-// 环境变量
 const ENCRYPT_KEY = import.meta.env.VITE_LOCK_ENCRYPT_KEY;
 
-// Store
 const userStore = useUserStore();
 const { info: userInfo, lockPassword, isLock } = storeToRefs(userStore);
 
-// 响应式数据
+const { hour, month, minute, meridiem, year, day, week } = useNow(true);
+
+const displayName = computed(
+  () =>
+    (userInfo.value as { name?: string; username?: string })?.name ||
+    (userInfo.value as { username?: string })?.username ||
+    "—"
+);
+
+const userAvatar = computed(() => {
+  const a = (userInfo.value as { avatar?: string })?.avatar?.trim();
+  return a || "";
+});
+
 const visible = ref<boolean>(false);
 const lockInputRef = ref<any>(null);
-const unlockInputRef = ref<any>(null);
+const passwordInputRef = ref<InstanceType<typeof ElInput>>();
 const showDevToolsWarning = ref<boolean>(false);
 
-// 表单相关
+/** true：大号时钟；false：密码表单（与旧版 LockPage showDate 一致） */
+const showClock = ref(true);
+const unlockPwd = ref("");
+const unlockErrMsg = ref(false);
+const unlockLoading = ref(false);
+
 const formRef = ref<FormInstance>();
-const unlockFormRef = ref<FormInstance>();
 
 const formData = reactive({
   password: "",
 });
 
-const unlockForm = reactive({
-  password: "",
-});
-
-// 表单验证规则
 const rules = computed<FormRules>(() => ({
-  password: [
-    {
-      required: true,
-      message: t("lockScreen.lock.inputPlaceholder"),
-      trigger: "blur",
-    },
-  ],
+  password: [{ required: true, message: t("lock.required"), trigger: "blur" }],
 }));
 
-// 检测是否为移动设备
 const isMobile = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
-// 添加禁用控制台的函数
 const disableDevTools = () => {
-  // 禁用右键菜单
   const handleContextMenu = (e: Event) => {
     if (isLock.value) {
       e.preventDefault();
@@ -171,18 +209,15 @@ const disableDevTools = () => {
   };
   document.addEventListener("contextmenu", handleContextMenu, true);
 
-  // 禁用开发者工具相关快捷键
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!isLock.value) return;
 
-    // 禁用 F12
     if (e.key === "F12") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+Shift+I/J/C/K (开发者工具)
     if (e.ctrlKey && e.shiftKey) {
       const key = e.key.toLowerCase();
       if (["i", "j", "c", "k"].includes(key)) {
@@ -192,70 +227,60 @@ const disableDevTools = () => {
       }
     }
 
-    // 禁用 Ctrl+U (查看源代码)
     if (e.ctrlKey && e.key.toLowerCase() === "u") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+S (保存页面)
     if (e.ctrlKey && e.key.toLowerCase() === "s") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+A (全选)
     if (e.ctrlKey && e.key.toLowerCase() === "a") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+P (打印)
     if (e.ctrlKey && e.key.toLowerCase() === "p") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+F (查找)
     if (e.ctrlKey && e.key.toLowerCase() === "f") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Alt+Tab (切换窗口)
     if (e.altKey && e.key === "Tab") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+Tab (切换标签页)
     if (e.ctrlKey && e.key === "Tab") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+W (关闭标签页)
     if (e.ctrlKey && e.key.toLowerCase() === "w") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+R 和 F5 (刷新页面)
     if ((e.ctrlKey && e.key.toLowerCase() === "r") || e.key === "F5") {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
 
-    // 禁用 Ctrl+Shift+R (强制刷新)
     if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "r") {
       e.preventDefault();
       e.stopPropagation();
@@ -264,7 +289,6 @@ const disableDevTools = () => {
   };
   document.addEventListener("keydown", handleKeyDown, true);
 
-  // 禁用选择文本
   const handleSelectStart = (e: Event) => {
     if (isLock.value) {
       e.preventDefault();
@@ -273,7 +297,6 @@ const disableDevTools = () => {
   };
   document.addEventListener("selectstart", handleSelectStart, true);
 
-  // 禁用拖拽
   const handleDragStart = (e: Event) => {
     if (isLock.value) {
       e.preventDefault();
@@ -282,7 +305,6 @@ const disableDevTools = () => {
   };
   document.addEventListener("dragstart", handleDragStart, true);
 
-  // 监听开发者工具打开状态（仅在桌面端启用）
   const devtools = { open: false };
   const threshold = 160;
   let devToolsInterval: ReturnType<typeof setInterval> | null = null;
@@ -303,12 +325,10 @@ const disableDevTools = () => {
     }
   };
 
-  // 仅在桌面端启用开发者工具检测
   if (!isMobile()) {
     devToolsInterval = setInterval(checkDevTools, 500);
   }
 
-  // 返回清理函数
   return () => {
     document.removeEventListener("contextmenu", handleContextMenu, true);
     document.removeEventListener("keydown", handleKeyDown, true);
@@ -320,7 +340,6 @@ const disableDevTools = () => {
   };
 };
 
-// 工具函数
 const verifyPassword = (inputPassword: string, storedPassword: string): boolean => {
   try {
     const decryptedPassword = CryptoJS.AES.decrypt(storedPassword, ENCRYPT_KEY).toString(
@@ -333,11 +352,12 @@ const verifyPassword = (inputPassword: string, storedPassword: string): boolean 
   }
 };
 
-// 事件处理函数
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.altKey && event.key.toLowerCase() === "¬") {
     event.preventDefault();
-    visible.value = true;
+    if (!isLock.value) {
+      visible.value = true;
+    }
   }
 };
 
@@ -357,91 +377,107 @@ const handleLock = async () => {
       userStore.setLockPassword(encryptedPassword);
       visible.value = false;
       formData.password = "";
+      showClock.value = true;
+      unlockPwd.value = "";
+      unlockErrMsg.value = false;
     } else {
       console.error("表单验证失败:", fields);
     }
   });
 };
 
-const handleUnlock = async () => {
-  if (!unlockFormRef.value) return;
+function showUnlockForm() {
+  showClock.value = false;
+  unlockErrMsg.value = false;
+  requestAnimationFrame(() => {
+    passwordInputRef.value?.focus?.();
+  });
+}
 
-  await unlockFormRef.value.validate((valid, fields) => {
-    if (valid) {
-      const isValid = verifyPassword(unlockForm.password, lockPassword.value);
+function showClockView() {
+  showClock.value = true;
+  unlockPwd.value = "";
+  unlockErrMsg.value = false;
+}
 
-      if (isValid) {
-        try {
-          userStore.setLockStatus(false);
-          userStore.setLockPassword("");
-          unlockForm.password = "";
-          visible.value = false;
-          showDevToolsWarning.value = false;
-        } catch (error) {
-          console.error("更新store失败:", error);
-        }
-      } else {
-        // 触发抖动动画
-        const inputElement = unlockInputRef.value?.$el;
-        if (inputElement) {
-          inputElement.classList.add("shake-animation");
-          setTimeout(() => {
-            inputElement.classList.remove("shake-animation");
-          }, 300);
-        }
-        ElMessage.error(t("lockScreen.pwdError"));
-        unlockForm.password = "";
+async function submitUnlock() {
+  if (!unlockPwd.value) {
+    return;
+  }
+  unlockLoading.value = true;
+  try {
+    const isValid = verifyPassword(unlockPwd.value, lockPassword.value);
+    if (isValid) {
+      userStore.setLockStatus(false);
+      userStore.setLockPassword("");
+      unlockPwd.value = "";
+      unlockErrMsg.value = false;
+      visible.value = false;
+      showDevToolsWarning.value = false;
+      showClock.value = true;
+    } else {
+      unlockErrMsg.value = true;
+      ElMessage.error(t("lockScreen.pwdError"));
+      const root = passwordInputRef.value?.$el as HTMLElement | undefined;
+      const inputWrap = root?.querySelector?.(".el-input__wrapper") as HTMLElement | undefined;
+      const shakeTarget = inputWrap ?? root;
+      if (shakeTarget) {
+        shakeTarget.classList.add("shake-animation");
+        setTimeout(() => {
+          shakeTarget.classList.remove("shake-animation");
+        }, 300);
       }
-    } else {
-      console.error("表单验证失败:", fields);
+      unlockPwd.value = "";
     }
-  });
-};
+  } finally {
+    unlockLoading.value = false;
+  }
+}
 
-const toLogin = () => {
-  userStore.logout();
-};
+async function goLogin() {
+  await userStore.logout({ navigate: false }).catch(() => {});
+  const redirect = route.path !== "/login" && route.name !== "Login" ? route.fullPath : undefined;
+  await router.replace({
+    name: "Login",
+    ...(redirect ? { query: { redirect } } : {}),
+  });
+}
 
 const openLockScreen = () => {
-  visible.value = true;
+  if (!isLock.value) {
+    visible.value = true;
+  }
 };
 
-// 监听锁屏状态变化
 watch(isLock, (newValue) => {
   if (newValue) {
     document.body.style.overflow = "hidden";
-    setTimeout(() => {
-      unlockInputRef.value?.input?.focus();
-    }, 100);
+    showClock.value = true;
+    unlockPwd.value = "";
+    unlockErrMsg.value = false;
   } else {
     document.body.style.overflow = "auto";
     showDevToolsWarning.value = false;
   }
 });
 
-// 存储清理函数
 let cleanupDevTools: (() => void) | null = null;
 
-// 生命周期钩子
 onMounted(() => {
   mittBus.on("openLockScreen", openLockScreen);
   document.addEventListener("keydown", handleKeydown);
 
   if (isLock.value) {
-    visible.value = true;
-    setTimeout(() => {
-      unlockInputRef.value?.input?.focus();
-    }, 100);
+    document.body.style.overflow = "hidden";
   }
 
-  // 初始化禁用开发者工具功能
   cleanupDevTools = disableDevTools();
 });
 
 onUnmounted(() => {
+  mittBus.off("openLockScreen", openLockScreen);
   document.removeEventListener("keydown", handleKeydown);
   document.body.style.overflow = "auto";
-  // 清理禁用开发者工具的事件监听器
   if (cleanupDevTools) {
     cleanupDevTools();
     cleanupDevTools = null;
@@ -450,28 +486,225 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.layout-lock-screen :deep(.el-dialog) {
-  border-radius: 10px;
+.v-lock-dialog {
+  @media (width <=767px) {
+    max-width: calc(100vw - 16px);
+  }
+
+  .lock-dialog {
+    &-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    &-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+    }
+
+    &-name {
+      margin: 10px 0;
+      font-size: 14px;
+      color: var(--top-header-text-color);
+    }
+  }
 }
 
-.unlock-content {
+.lockpage {
   position: fixed;
   inset: 0;
-  z-index: 2500;
+  top: 0;
+  left: 0;
+  z-index: 3000;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  background-color: #fff;
-  background-image: url("@imgs/lock/bg_light.webp");
-  background-size: cover;
-  transition: transform 0.3s ease-in-out;
+  width: 100%;
+  height: 100%;
+  color: var(--el-color-white);
+  background-color: rgb(0 0 0 / 90%);
+  backdrop-filter: blur(8px);
+
+  .unlock-container {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 4rem;
+    padding: 0.5rem 1rem;
+    padding-top: 1.25rem;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 12px;
+    transform: translateX(-50%);
+
+    @media (width >= 640px) {
+      font-size: 0.875rem;
+    }
+
+    @media (width >= 1280px) {
+      font-size: 1.25rem;
+    }
+  }
+
+  .time-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .hour-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      font-size: 220px;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+      background-color: var(--el-bg-color-overlay);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .minute-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      font-size: 220px;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+      background-color: var(--el-bg-color-overlay);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  .meridiem {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    font-size: 1.25rem;
+  }
+
+  .entry-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(0 0 0 / 50%);
+    backdrop-filter: blur(8px);
+  }
+
+  .entry-content {
+    width: 260px;
+    color: var(--el-text-color-regular);
+    text-align: center;
+  }
+
+  .avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+  }
+
+  .username {
+    margin: 0.625rem 0;
+    font-size: 0.875rem;
+    color: var(--el-text-color-primary);
+  }
+
+  .password-input {
+    margin-top: 1rem;
+  }
+
+  .error-message {
+    display: inline-block;
+    margin-top: 0.625rem;
+    font-size: 0.875rem;
+    color: var(--el-color-danger);
+  }
+
+  .button-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+
+    .back-button,
+    .login-button,
+    .entry-button {
+      min-width: auto;
+      padding: 0;
+    }
+
+    .login-button {
+      flex: 1;
+      text-align: center;
+    }
+  }
+
+  .date-container {
+    position: absolute;
+    bottom: 1.25rem;
+    width: 100%;
+    color: inherit;
+    text-align: center;
+
+    @media (width >= 1280px) {
+      font-size: 1.25rem;
+    }
+
+    @media (width >= 1536px) {
+      font-size: 1.875rem;
+    }
+  }
+
+  .time-display {
+    margin-bottom: 1rem;
+    font-size: 3rem;
+
+    .meridiem-display {
+      font-size: 1.875rem;
+    }
+  }
+
+  .full-date {
+    font-size: 1.5rem;
+  }
 }
 
-.dark {
-  .unlock-content {
-    background-image: url("@imgs/lock/bg_dark.webp");
-  }
+.fade-slide-leave-active,
+.fade-slide-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(60px);
 }
 
 @keyframes fade-in {

@@ -1,13 +1,13 @@
 <template>
   <div class="app-container job-page">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
+    <CrudContent ref="contentRef" :content-config="contentConfig">
       <template #header>
         <div class="card-header">
           <div class="status-content">
@@ -231,7 +231,7 @@
           </el-row>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <EnhancedDialog v-model="consoleVisible" title="调度器控制台" width="900px">
       <div class="terminal-wrapper">
@@ -246,13 +246,13 @@
 
     <EnhancedDrawer v-model="executionLogDrawerVisible" title="执行记录" direction="rtl" size="80%">
       <div class="execution-log-drawer">
-        <PageSearch
+        <CrudSearch
           ref="logSearchRef"
           :search-config="logSearchConfig"
           @query-click="handleLogQueryClick"
           @reset-click="handleLogResetClick"
         />
-        <PageContent ref="logContentRef" :content-config="logContentConfig">
+        <CrudContent ref="logContentRef" :content-config="logContentConfig">
           <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
             <div class="data-table__content">
               <el-table
@@ -344,7 +344,7 @@
               </el-table>
             </div>
           </template>
-        </PageContent>
+        </CrudContent>
       </div>
     </EnhancedDrawer>
 
@@ -369,15 +369,15 @@ import JobAPI, {
   JobLogPageQuery,
   JobLogTable,
 } from "@/api/module_task/cronjob/job";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
-import type { ISearchConfig, IContentConfig, IObject } from "@/components/CURD/types";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
+import type { ISearchConfig, IContentConfig, IObject } from "@/components/Crud/types";
 import { ref, reactive, nextTick } from "vue";
 import { Terminal, TerminalApi } from "vue-web-terminal";
 import JsonPretty from "@/components/JsonPretty/index.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import { useCrudList } from "@/components/Crud/useCrudList";
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
 const refreshMain = refreshList;
@@ -435,7 +435,7 @@ const contentConfig = reactive<IContentConfig>({
     const name = typeof p.name === "string" ? p.name.trim() : "";
     if (name) jobs = jobs.filter((job) => job.name.includes(name));
     if (p.status) jobs = jobs.filter((job) => job.status === p.status);
-    // pagination 为 false 时 PageContent 将整段返回值赋给 pageData，必须为列表数组
+    // pagination 为 false 时 CrudContent 将整段返回值赋给 pageData，必须为列表数组
     return jobs;
   },
 });
@@ -444,8 +444,8 @@ const consoleVisible = ref(false);
 
 const executionLogDrawerVisible = ref(false);
 const currentLogJobId = ref<string | undefined>(undefined);
-const logSearchRef = ref<InstanceType<typeof PageSearch>>();
-const logContentRef = ref<InstanceType<typeof PageContent>>();
+const logSearchRef = ref<InstanceType<typeof CrudSearch>>();
+const logContentRef = ref<InstanceType<typeof CrudContent>>();
 const jobStateVisible = ref(false);
 const jobStateData = ref<any>(null);
 

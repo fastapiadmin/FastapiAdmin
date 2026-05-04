@@ -1,14 +1,14 @@
 <!-- 我的应用管理 -->
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" class="flex-1 min-h-0" :content-config="contentConfig">
+    <CrudContent ref="contentRef" class="flex-1 min-h-0" :content-config="contentConfig">
       <template #header>
         <div class="card-header">
           <span class="market-title">应用市场</span>
@@ -85,7 +85,7 @@
           </div>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <!-- 应用创建/编辑抽屉 -->
     <EnhancedDrawer
@@ -158,12 +158,12 @@ import ApplicationAPI, {
   type ApplicationPageQuery,
 } from "@/api/module_application/portal";
 import { formatToDateTime } from "@/utils/dateUtil";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
 import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
+import { useCrudList } from "@/components/Crud/useCrudList";
 import { computed, markRaw, nextTick, reactive, ref } from "vue";
 
 const appStore = useAppStore();
@@ -375,7 +375,7 @@ async function handleSubmit() {
 </script>
 
 <style lang="scss" scoped>
-/* 高度交给外层 flex：app-container + PageContent(flex-1 min-h-0)，勿再用 100vh 计算，否则会超出 app-main、底部 padding 不显 */
+/* 高度交给外层 flex：app-container + CrudContent(flex-1 min-h-0)，勿再用 100vh 计算，否则会超出 app-main、底部 padding 不显 */
 .card-header {
   display: flex;
   align-items: center;

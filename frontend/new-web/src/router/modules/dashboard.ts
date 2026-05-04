@@ -1,23 +1,31 @@
 import { RoutesAlias } from "@/router/routesAlias";
-import { AppRouteRecord } from "@/types/router";
+import type { AppRouteRecord } from "@/types/router";
 
-/**
- * 模版仪表盘（演示 console / analysis / ecommerce）
- * 与后端 sys_menu 的「仪表盘」区分：独立 name / path，混合模式下才不会被去重掉
- */
+/** 前端仪表盘（`/dashboard`）；与后端同 path/name 时 mergeAppRouteRecords 保留后端 */
 export const dashboardRoutes: AppRouteRecord = {
-  name: "DashboardDemo",
-  path: "/dashboard-demo",
+  name: "Dashboard",
+  path: "/dashboard",
   component: RoutesAlias.Layout,
-  redirect: "/dashboard-demo/console",
+  redirect: "/dashboard/workplace",
   meta: {
-    title: "menus.dashboard.demoTitle",
+    title: "menus.dashboard.title",
     icon: "ri:pie-chart-line",
+    alwaysShow: true,
   },
   children: [
     {
+      path: "workplace",
+      name: "DashboardWorkplace",
+      component: "/dashboard/workplace",
+      meta: {
+        title: "menus.workplace.title",
+        icon: "ri:layout-grid-line",
+        keepAlive: true,
+      },
+    },
+    {
       path: "console",
-      name: "DashboardDemoConsole",
+      name: "DashboardConsole",
       component: "/dashboard/console",
       meta: {
         title: "menus.dashboard.console",
@@ -28,7 +36,7 @@ export const dashboardRoutes: AppRouteRecord = {
     },
     {
       path: "analysis",
-      name: "DashboardDemoAnalysis",
+      name: "DashboardAnalysis",
       component: "/dashboard/analysis",
       meta: {
         title: "menus.dashboard.analysis",
@@ -38,7 +46,7 @@ export const dashboardRoutes: AppRouteRecord = {
     },
     {
       path: "ecommerce",
-      name: "DashboardDemoEcommerce",
+      name: "DashboardEcommerce",
       component: "/dashboard/ecommerce",
       meta: {
         title: "menus.dashboard.ecommerce",

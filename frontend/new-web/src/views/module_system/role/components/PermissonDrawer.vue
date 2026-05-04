@@ -152,7 +152,7 @@
 import { computed, ref, watch, onMounted } from "vue";
 import { QuestionFilled, Switch as SwitchIcon } from "@element-plus/icons-vue";
 import type { TreeInstance } from "element-plus";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
 import { listToTree, formatTree } from "@/utils/common";
 import RoleAPI, {
   permissionDataType,

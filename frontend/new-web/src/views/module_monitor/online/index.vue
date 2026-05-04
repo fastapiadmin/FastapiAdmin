@@ -1,14 +1,14 @@
 <!-- 在线用户 -->
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
+    <CrudContent ref="contentRef" :content-config="contentConfig">
       <!-- eslint-disable-next-line vue/no-unused-vars -- 与 demo 同源解构，本页无批删逻辑 -->
       <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
         <CrudToolbarLeft>
@@ -22,7 +22,7 @@
           </el-button>
         </CrudToolbarLeft>
         <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
+          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
         </div>
       </template>
 
@@ -151,7 +151,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
   </div>
 </template>
 
@@ -164,11 +164,11 @@ defineOptions({
 import OnlineAPI, { type OnlineUserPageQuery } from "@/api/module_monitor/online";
 import { reactive } from "vue";
 import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { ISearchConfig, IContentConfig } from "@/components/CURD/types";
+import { CrudToolbarActions } from "@/components/Crud";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import { useCrudList } from "@/components/Crud/useCrudList";
+import type { ISearchConfig, IContentConfig } from "@/components/Crud/types";
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
 

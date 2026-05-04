@@ -11,7 +11,7 @@
       class="dual-menu-left"
       :style="{ width: dualMenuShowText ? '80px' : '64px', background: getMenuTheme.background }"
     >
-      <ArtLogo class="logo" @click="navigateToHome" />
+      <ArtLogo v-if="showAppLogo" class="logo" :src="sidebarLogoSrc" @click="navigateToHome" />
 
       <ElScrollbar style="height: calc(100% - 135px)">
         <ul>
@@ -66,15 +66,16 @@
       :class="`menu-left-${getMenuTheme.theme} menu-left-${!menuOpen ? 'close' : 'open'}`"
       :style="{ background: getMenuTheme.background }"
     >
-      <!-- Logo、系统名称 -->
+      <!-- Logo、系统名称（开关同时控制 Logo 与标题） -->
       <div
+        v-if="showAppLogo"
         class="header"
         @click="navigateToHome"
         :style="{
           background: getMenuTheme.background,
         }"
       >
-        <ArtLogo v-if="!isDualMenu" class="logo" />
+        <ArtLogo v-if="!isDualMenu" class="logo" :src="sidebarLogoSrc" />
 
         <p
           :class="{ 'is-dual-menu-name': isDualMenu }"
@@ -83,7 +84,7 @@
             opacity: !menuOpen ? 0 : 1,
           }"
         >
-          {{ AppConfig.systemInfo.name }}
+          {{ sidebarTitle }}
         </p>
       </div>
       <ElScrollbar :style="scrollbarStyle">
@@ -130,6 +131,7 @@
 
 <script setup lang="ts">
 import AppConfig from "@/config";
+import { useConfigStore } from "@/store/modules/config.store";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { MenuTypeEnum, MenuWidth } from "@/enums/appEnum";
 import { useMenuStore } from "@/store/modules/menu.store";
@@ -148,9 +150,29 @@ const MENU_CLOSE_WIDTH = MenuWidth.CLOSE;
 const route = useRoute();
 const router = useRouter();
 const settingStore = useSettingsStore();
+const configStore = useConfigStore();
 
-const { getMenuOpenWidth, menuType, uniqueOpened, dualMenuShowText, menuOpen, getMenuTheme } =
-  storeToRefs(settingStore);
+/** 与旧版 layouts/old/components/AppLogo 一致：参数 sys_web_logo / sys_web_title */
+const sidebarLogoSrc = computed(() => {
+  const raw = configStore.configData.sys_web_logo?.config_value;
+  return typeof raw === "string" && raw.trim() ? raw.trim() : undefined;
+});
+
+const sidebarTitle = computed(() => {
+  const raw = configStore.configData.sys_web_title?.config_value;
+  if (typeof raw === "string" && raw.trim()) return raw.trim();
+  return AppConfig.systemInfo.name;
+});
+
+const {
+  getMenuOpenWidth,
+  menuType,
+  uniqueOpened,
+  dualMenuShowText,
+  menuOpen,
+  getMenuTheme,
+  showAppLogo,
+} = storeToRefs(settingStore);
 
 // 组件内部状态
 const defaultOpenedMenus = ref<string[]>([]);
@@ -206,11 +228,15 @@ const menuList = computed(() => {
   const currentTopPath = `/${route.path.split("/")[1]}`;
   let currentMenu = allMenus.find((menu) => menu.path === currentTopPath);
   if (!currentMenu && allMenus.length > 0) {
-    // 静态工作台（如 /workbench）不在动态菜单树下，仍对齐首个可展开的顶级模块（通常为仪表盘）
     currentMenu =
       allMenus.find((menu) => !menu.meta?.isHide && menu.children?.length) ?? allMenus[0];
   }
-  return currentMenu?.children ?? [];
+  const sub = currentMenu?.children ?? [];
+  // 顶部+左侧 / 双列：顶级为叶子（如 /home）时右侧展示自身
+  if (sub.length === 0 && currentMenu?.path && !currentMenu.meta?.isHide) {
+    return [currentMenu];
+  }
+  return sub;
 });
 
 // 双列菜单收起时的滚动条样式

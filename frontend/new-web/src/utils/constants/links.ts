@@ -12,6 +12,9 @@ export const WEB_LINKS = {
   // 项目 Github 主页
   GITHUB: "https://github.com/Daymychen/art-design-pro",
 
+  /** 备用镜像 / 国内仓库（与旧版顶栏一致时可指向业务 Gitee） */
+  GITEE: "https://gitee.com/fastapiadmin/FastapiAdmin",
+
   // 个人博客
   BLOG: "https://www.artd.pro",
 

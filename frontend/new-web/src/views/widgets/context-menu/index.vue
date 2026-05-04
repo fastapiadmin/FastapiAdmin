@@ -18,8 +18,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick } from "vue";
-import ArtMenuRight from "@/components/core/others/art-menu-right/index.vue";
-import type { MenuItemType } from "@/components/core/others/art-menu-right/index.vue";
+import ArtMenuRight from "@/components/Core/others/art-menu-right/index.vue";
+import type { MenuItemType } from "@/components/Core/others/art-menu-right/index.vue";
 
 defineOptions({ name: "TemplateContextMenu" });
 

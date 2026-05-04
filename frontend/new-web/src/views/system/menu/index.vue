@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { formatMenuTitle } from "@/utils/navigation/router";
-import ArtButtonTable from "@/components/core/forms/art-button-table/index.vue";
+import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
 import { useTableColumns } from "@/hooks/core/useTableColumns";
 import type { AppRouteRecord } from "@/types/router";
 import MenuDialog from "./modules/menu-dialog.vue";

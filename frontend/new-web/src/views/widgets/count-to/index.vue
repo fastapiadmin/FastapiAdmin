@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import ArtCountTo from "@/components/core/text-effect/art-count-to/index.vue";
+import ArtCountTo from "@/components/Core/text-effect/art-count-to/index.vue";
 
 defineOptions({ name: "TemplateCountTo" });
 

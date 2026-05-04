@@ -1,6 +1,6 @@
 <!-- 水平菜单 -->
 <template>
-  <div class="flex-1 overflow-hidden">
+  <div id="app-menu-top" class="flex-1 overflow-hidden">
     <ElMenu
       :ellipsis="true"
       mode="horizontal"

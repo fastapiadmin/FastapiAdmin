@@ -81,6 +81,15 @@ export function useSettingsHandlers() {
     // 显示语言切换
     language: createToggleHandler(() => settingStore.setLanguage()),
 
+    /** 桌面工具栏（与旧版持久化项对齐，走 updateSetting） */
+    menuSearch: () => settingStore.updateSetting("showMenuSearch", !settingStore.showMenuSearch),
+    fullscreenTool: () =>
+      settingStore.updateSetting("showFullscreen", !settingStore.showFullscreen),
+    layoutSizeTool: () =>
+      settingStore.updateSetting("showSizeSelect", !settingStore.showSizeSelect),
+    notificationTool: () =>
+      settingStore.updateSetting("showNotification", !settingStore.showNotification),
+
     // 显示进度条
     nprogress: createToggleHandler(() => settingStore.setNprogress()),
 
@@ -96,6 +105,12 @@ export function useSettingsHandlers() {
     watermark: createToggleHandler(() =>
       settingStore.setWatermarkVisible(!settingStore.watermarkVisible)
     ),
+
+    /** 与旧版 Settings 对齐：持久化项走 updateSetting */
+    appLogo: () => settingStore.updateSetting("showAppLogo", !settingStore.showAppLogo),
+    loginGuide: () => settingStore.updateSetting("showGuide", !settingStore.showGuide),
+    grayMode: () => settingStore.updateSetting("grayMode", !settingStore.grayMode),
+    aiAssistant: () => settingStore.updateSetting("userEnableAi", !settingStore.userEnableAi),
 
     // 菜单展开宽度
     menuOpenWidth: createValueHandler<number>((width: number) =>

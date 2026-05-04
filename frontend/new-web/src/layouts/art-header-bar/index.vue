@@ -3,26 +3,30 @@
   <div
     class="w-full bg-[var(--default-bg-color)]"
     :class="[
-      tabStyle === 'tab-card' || tabStyle === 'tab-google' ? 'mb-5 max-sm:mb-3 !bg-box' : '',
+      tabStyle === 'tab-card' || tabStyle === 'tab-google' || tabStyle === 'tab-default'
+        ? 'max-sm:mb-3 !bg-box'
+        : '',
     ]"
   >
     <div
       class="relative box-border flex-b h-15 leading-15 select-none"
       :class="[
-        tabStyle === 'tab-card' || tabStyle === 'tab-google'
+        tabStyle === 'tab-card' || tabStyle === 'tab-google' || tabStyle === 'tab-default'
           ? 'border-b border-[var(--art-card-border)]'
           : '',
       ]"
     >
       <div class="flex-c flex-1 min-w-0 leading-15" style="display: flex">
-        <!-- 系统信息  -->
-        <div class="flex-c c-p" @click="toHome" v-if="isTopMenu">
-          <ArtLogo class="pl-4.5" />
-          <p v-if="width >= 1400" class="my-0 mx-2 ml-2 text-lg">{{ AppConfig.systemInfo.name }}</p>
+        <!-- 系统信息：Logo + 标题一并受「显示应用 Logo」控制 -->
+        <div class="flex-c c-p" @click="toHome" v-if="isTopMenu && showAppLogo">
+          <ArtLogo class="pl-4.5" :src="headerLogoSrc" />
+          <p v-if="width >= 1400" class="my-0 mx-2 ml-2 text-lg">{{ headerSystemName }}</p>
         </div>
 
         <ArtLogo
+          v-if="showAppLogo"
           class="!hidden pl-3.5 overflow-hidden align-[-0.15em] fill-current"
+          :src="headerLogoSrc"
           @click="toHome"
         />
 
@@ -60,11 +64,11 @@
         <ArtMixedMenu v-if="isTopLeftMenu" :list="menuList" />
       </div>
 
-      <div class="flex-c gap-2.5">
+      <div id="app-header-toolbar" class="flex-c gap-2.5">
         <!-- 搜索 -->
         <div
           v-if="shouldShowGlobalSearch"
-          class="flex-cb w-40 h-9 px-2.5 c-p border border-g-400 rounded-custom-sm max-md:!hidden"
+          class="flex-cb w-40 h-9 px-2.5 c-p border border-g-400 rounded-custom-sm max-md:!hidden tad-300 hover:-translate-y-0.5 hover:shadow-md"
           @click="openSearchDialog"
         >
           <div class="flex-c">
@@ -86,6 +90,11 @@
           class="max-md:!hidden"
           @click="toggleFullScreen"
         />
+
+        <!-- 组件尺寸 default/large/small（沿用旧版持久化开关 showSizeSelect） -->
+        <div v-if="shouldShowSizeSelect" class="flex-cc ml-1 max-md:!hidden">
+          <SizeSelect />
+        </div>
 
         <!-- 国际化按钮 -->
         <ElDropdown
@@ -178,12 +187,14 @@ import { useSettingsStore } from "@/store/modules/setting.store";
 import { useUserStore } from "@/store/modules/user.store";
 import { useMenuStore } from "@/store/modules/menu.store";
 import AppConfig from "@/config";
+import { useConfigStore } from "@/store/modules/config.store";
 import { languageOptions } from "@/locales";
 import { mittBus } from "@/utils/sys";
 import { themeAnimation } from "@/utils/ui/animation";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useHeaderBar } from "@/hooks/core/useHeaderBar";
 import ArtUserMenu from "./widget/ArtUserMenu.vue";
+import SizeSelect from "@/components/SizeSelect/index.vue";
 
 defineOptions({ name: "ArtHeaderBar" });
 
@@ -197,6 +208,19 @@ const { width } = useWindowSize();
 const settingStore = useSettingsStore();
 const userStore = useUserStore();
 const menuStore = useMenuStore();
+const configStore = useConfigStore();
+
+/** 与侧栏一致：参数配置 sys_web_logo / sys_web_title */
+const headerLogoSrc = computed(() => {
+  const raw = configStore.configData.sys_web_logo?.config_value;
+  return typeof raw === "string" && raw.trim() ? raw.trim() : undefined;
+});
+
+const headerSystemName = computed(() => {
+  const raw = configStore.configData.sys_web_title?.config_value;
+  if (typeof raw === "string" && raw.trim()) return raw.trim();
+  return AppConfig.systemInfo.name;
+});
 
 // 顶部栏功能配置
 const {
@@ -211,10 +235,11 @@ const {
   shouldShowLanguage,
   shouldShowSettings,
   shouldShowThemeToggle,
+  shouldShowSizeSelect,
   fastEnterMinWidth: headerBarFastEnterMinWidth,
 } = useHeaderBar();
 
-const { menuOpen, systemThemeColor, showSettingGuide, menuType, isDark, tabStyle } =
+const { menuOpen, systemThemeColor, showSettingGuide, menuType, isDark, tabStyle, showAppLogo } =
   storeToRefs(settingStore);
 
 const { language } = storeToRefs(userStore);
@@ -451,6 +476,10 @@ const openChat = (): void => {
 }
 
 .full-screen-btn:hover :deep(.art-svg-icon) {
+  animation: expand 0.6s forwards;
+}
+
+:deep(.size-select-btn:hover .art-svg-icon) {
   animation: expand 0.6s forwards;
 }
 

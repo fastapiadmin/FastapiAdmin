@@ -17,7 +17,7 @@ const fastEnterConfig: FastEnterConfig = {
       iconColor: "#377dff",
       enabled: true,
       order: 1,
-      routeName: "DashboardDemoConsole",
+      routeName: "DashboardConsole",
     },
     {
       name: "分析页",
@@ -26,7 +26,7 @@ const fastEnterConfig: FastEnterConfig = {
       iconColor: "#ff3b30",
       enabled: true,
       order: 2,
-      routeName: "DashboardDemoAnalysis",
+      routeName: "DashboardAnalysis",
     },
     {
       name: "礼花效果",

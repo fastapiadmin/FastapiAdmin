@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import ArtSvgIcon from "@/components/core/base/art-svg-icon/index.vue";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 
 defineOptions({ name: "IconPage" });
 </script>

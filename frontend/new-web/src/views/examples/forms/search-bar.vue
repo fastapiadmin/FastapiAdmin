@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { ElInput } from "element-plus";
-import { SearchFormItem } from "@/components/core/forms/art-search-bar/index.vue";
+import { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 
 interface Emits {
   (e: "update:modelValue", value: Record<string, any>): void;

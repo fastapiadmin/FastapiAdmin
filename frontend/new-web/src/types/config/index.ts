@@ -208,4 +208,6 @@ export interface HeaderBarFeatureConfig {
   settings: FeatureConfigItem;
   /** 主题切换 */
   themeToggle: FeatureConfigItem;
+  /** 组件尺寸（default / large / small） */
+  sizeSelect: FeatureConfigItem;
 }

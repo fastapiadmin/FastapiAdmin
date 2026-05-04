@@ -12,14 +12,14 @@
     </el-col>
     <template v-else>
       <el-col :span="24" class="mb-2">
-        <div class="flex-y-center gap-3">
-          <span class="text-sm color-#909399">预览范围</span>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-[#909399]">预览范围</span>
           <el-radio-group v-model="previewScope" size="small">
             <el-radio-button value="all">全部</el-radio-button>
             <el-radio-button value="frontend">前端</el-radio-button>
             <el-radio-button value="backend">后端</el-radio-button>
           </el-radio-group>
-          <span class="ml-3 text-sm color-#909399">类型</span>
+          <span class="ml-3 text-sm text-[#909399]">类型</span>
           <el-checkbox-group v-model="previewTypes" size="small">
             <el-checkbox-button v-for="t in previewTypeOptions" :key="t" :value="t">
               {{ t }}
@@ -36,7 +36,10 @@
             @node-click="onTreeNodeClick"
           >
             <template #default="{ data }">
-              <div :class="`i-svg:${getFileTreeNodeIcon(data.label)}`" />
+              <ArtSvgIcon
+                :icon="resolveIconForArtSvgIcon(getFileTreeNodeIcon(data.label))"
+                class="inline shrink-0 text-base"
+              />
               <span class="ml-1" :title="data.full_path || data.label">
                 {{ data.label }}
               </span>
@@ -79,6 +82,8 @@ import { computed, inject, onUnmounted, ref, watch } from "vue";
 import Codemirror from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
 import { CopyDocument } from "@element-plus/icons-vue";
 import { GENCODE_CM_KEY } from "../gencodeInjectionKeys";
 import type { TreeNode } from "../types";

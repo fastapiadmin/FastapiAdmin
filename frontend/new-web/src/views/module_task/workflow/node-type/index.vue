@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <PageSearch
+    <CrudSearch
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
       @reset-click="handleResetClick"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig" @add-click="openDialog()">
+    <CrudContent ref="contentRef" :content-config="contentConfig" @add-click="openDialog()">
       <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
         <div class="data-table__content">
           <el-table
@@ -75,7 +75,7 @@
           </el-table>
         </div>
       </template>
-    </PageContent>
+    </CrudContent>
 
     <EnhancedDialog
       v-model="dialogVisible"
@@ -141,11 +141,11 @@ defineOptions({
 
 import { onMounted, reactive, ref } from "vue";
 import { ElMessage, type FormInstance, type FormRules } from "element-plus";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
-import { useCrudList } from "@/components/CURD/useCrudList";
+import CrudSearch from "@/components/CURD/CrudSearch.vue";
+import CrudContent from "@/components/CURD/CrudContent.vue";
+import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
+import { useCrudList } from "@/components/Crud/useCrudList";
 import OperationColumn from "@/components/OperationColumn/index.vue";
 import WorkflowNodeTypeAPI, {
   type WorkflowNodeTypeForm,

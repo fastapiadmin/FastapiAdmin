@@ -12,7 +12,7 @@
       @contextmenu.prevent="fabCollapsed = true"
       @click="handleOpen"
     >
-      <div class="i-svg:ai ai-icon" />
+      <ArtSvgIcon :icon="resolveIconForArtSvgIcon('ai')" class="ai-icon" />
     </el-button>
 
     <!-- 收缩态：贴边小标签，避免遮挡表单控件 -->
@@ -36,7 +36,7 @@
     >
       <template #header>
         <div class="dialog-header">
-          <div class="i-svg:ai header-icon" />
+          <ArtSvgIcon :icon="resolveIconForArtSvgIcon('ai')" class="header-icon" />
           <span class="title">AI 智能助手</span>
         </div>
       </template>
@@ -119,6 +119,8 @@
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
 import { nextTick, onBeforeUnmount, onMounted, watch, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";

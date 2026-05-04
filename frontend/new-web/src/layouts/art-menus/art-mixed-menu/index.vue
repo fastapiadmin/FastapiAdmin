@@ -1,6 +1,6 @@
 <!-- 混合菜单 -->
 <template>
-  <div class="relative box-border flex-c w-full overflow-hidden">
+  <div id="app-menu-top-left" class="relative box-border flex-c w-full overflow-hidden">
     <!-- 左侧滚动按钮 -->
     <div v-show="showLeftArrow" class="button-arrow" @click="scroll('left')">
       <ElIcon>

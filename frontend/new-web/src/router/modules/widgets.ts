@@ -130,17 +130,5 @@ export const widgetsRoutes: AppRouteRecord = {
         showTextBadge: "Hot",
       },
     },
-    {
-      path: "/outside/iframe/elementui",
-      name: "ElementUI",
-      component: "",
-      meta: {
-        title: "menus.widgets.elementUI",
-        icon: "ri:apps-2-line",
-        keepAlive: false,
-        link: "https://element-plus.org/zh-CN/component/overview.html",
-        isIframe: true,
-      },
-    },
   ],
 };

@@ -1,7 +1,7 @@
 import type { AppRouteRecordRaw } from "@/utils/navigation/router";
 
 /**
- * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/components/core/layouts/*`）。
+ * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。
  * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
  */
 export const Layout = () => import("@/layouts/index.vue");
@@ -17,12 +17,6 @@ export const Layout = () => import("@/layouts/index.vue");
  * 2、静态路由不管是否登录都可以访问
  */
 export const staticRoutes: AppRouteRecordRaw[] = [
-  {
-    path: "/welcome",
-    name: "WelcomeStatic",
-    component: () => import("@views/dashboard/console/index.vue"),
-    meta: { title: "menus.dashboard.title" },
-  },
   {
     path: "/redirect",
     meta: { hidden: true },
@@ -44,53 +38,42 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     path: "/401",
     name: "401",
     meta: { hidden: true, title: "401" },
-    component: () => import("@/views/error/401.vue"),
+    component: () => import("@/views/exception/401/index.vue"),
+  },
+  {
+    path: "/403",
+    name: "403",
+    component: () => import("@views/exception/403/index.vue"),
+    meta: { hidden: true, title: "403" },
   },
   {
     path: "/404",
     name: "404",
     meta: { hidden: true, title: "404" },
-    component: () => import("@/views/error/404.vue"),
+    component: () => import("@/views/exception/404/index.vue"),
   },
   {
     path: "/500",
     name: "500",
     meta: { hidden: true, title: "500" },
-    component: () => import("@/views/error/500.vue"),
+    component: () => import("@/views/exception/500/index.vue"),
   },
   {
     path: "/",
     name: "/",
-    redirect: "/workbench",
+    redirect: "/home",
     component: Layout,
     children: [
-      /** 业务工作台（自建 workplace.vue） */
+      /** 首页；壳层菜单见 mergeShellMenus */
       {
-        path: "workbench",
-        name: "Workbench",
-        component: () => import("@/views/dashboard/workplace.vue"),
-        meta: {
-          title: "menus.workbench.title",
-          icon: "ri:layout-grid-line",
-          affix: true,
-          keepAlive: true,
-        },
-      },
-      /** 数据门户（自建 index.vue，与模版 /dashboard/* 子页区分） */
-      {
-        path: "portal",
-        name: "PortalHome",
+        path: "home",
+        name: "Home",
         component: () => import("@/views/dashboard/index.vue"),
         meta: {
-          title: "menus.portal.title",
+          title: "menus.home.title",
           icon: "ri:presentation-line",
           keepAlive: true,
         },
-      },
-      /** 旧链接 /#/home 兼容，进入工作台 */
-      {
-        path: "home",
-        redirect: "/workbench",
       },
       {
         path: "profile",
@@ -99,12 +82,6 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         component: () => import("@/views/current/profile.vue"),
       },
     ],
-  },
-  {
-    path: "/403",
-    name: "Exception403",
-    component: () => import("@views/exception/403/index.vue"),
-    meta: { title: "403", isHideTab: true },
   },
   {
     path: "/outside",
@@ -123,8 +100,8 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   // 通配 404 必须置于静态路由最后
   {
     path: "/:pathMatch(.*)*",
-    name: "Exception404",
+    name: "404",
     component: () => import("@views/exception/404/index.vue"),
-    meta: { title: "404", isHideTab: true },
+    meta: { hidden: true, title: "404" },
   },
 ];

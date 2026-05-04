@@ -11,8 +11,10 @@
                 <el-icon v-if="elementIconComp">
                   <component :is="elementIconComp" />
                 </el-icon>
-                <ArtSvgIcon v-else-if="isIconifyStoredIcon(selectedIcon)" :icon="selectedIcon" />
-                <div v-else-if="selectedIcon" :class="`i-svg:${selectedIcon}`" />
+                <ArtSvgIcon
+                  v-else-if="selectedIcon"
+                  :icon="resolveIconForArtSvgIcon(selectedIcon)"
+                />
               </template>
               <template #suffix>
                 <!-- 清空按钮 -->
@@ -52,7 +54,7 @@
                   @click="selectIcon(icon)"
                 >
                   <el-tooltip :content="icon" placement="bottom" effect="light">
-                    <div :class="`i-svg:${icon}`" />
+                    <ArtSvgIcon :icon="resolveIconForArtSvgIcon(icon)" />
                   </el-tooltip>
                 </li>
               </ul>
@@ -82,8 +84,9 @@
 
 <script setup lang="ts">
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-import ArtSvgIcon from "@/components/core/base/art-svg-icon/index.vue";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import { isIconifyStoredIcon, resolveElementPlusIconComponent } from "@/utils/menuIcon";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
 
 const props = defineProps({
   modelValue: {

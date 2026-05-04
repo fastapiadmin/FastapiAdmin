@@ -2,10 +2,10 @@
 <template>
   <el-dropdown trigger="click">
     <el-badge v-if="noticeList.length > 0" :value="noticeList.length" :max="99">
-      <div class="i-svg:bell" />
+      <ArtSvgIcon :icon="resolveIconForArtSvgIcon('bell')" />
     </el-badge>
 
-    <div v-else class="i-svg:bell" />
+    <ArtSvgIcon v-else :icon="resolveIconForArtSvgIcon('bell')" />
 
     <template #dropdown>
       <div class="p-5">
@@ -85,7 +85,9 @@
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
 import { ArrowRight, Timer, User } from "@element-plus/icons-vue";
 import { router } from "@/router";
 import { useNoticeStore } from "@/store";
