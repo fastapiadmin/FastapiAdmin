@@ -384,6 +384,7 @@
       },
       "password": {
         "required": "请输入密码",
+        "currentRequired": "请输入当前密码",
         "min": "密码不能少于6位",
         "confirm": "请再次确认密码",
         "inconformity": "两次密码输入不一致"
@@ -534,10 +535,15 @@
       "title": "仪表盘",
       "console": "控制台",
       "analysis": "分析页",
-      "ecommerce": "电子商务"
+      "ecommerce": "电子商务",
+      "map": "地图",
+      "pricing": "定价"
     },
     "widgets": {
       "title": "组件中心",
+      "cards": "卡片",
+      "banners": "横幅",
+      "charts": "图表",
       "icon": "图标",
       "imageCrop": "图像裁剪",
       "excel": "Excel 导入导出",
@@ -549,17 +555,8 @@
       "qrcode": "二维码",
       "drag": "拖拽",
       "textScroll": "文字滚动",
-      "fireworks": "礼花"
-    },
-    "template": {
-      "title": "模板中心",
-      "chat": "聊天",
-      "cards": "卡片",
-      "banners": "横幅",
-      "charts": "图表",
-      "map": "地图",
-      "calendar": "日历",
-      "pricing": "定价"
+      "fireworks": "礼花",
+      "changeLog": "更新日志"
     },
     "article": {
       "title": "文章管理",
@@ -596,7 +593,7 @@
       }
     },
     "system": {
-      "title": "系统管理",
+      "title": "模板系统",
       "user": "用户管理",
       "role": "角色管理",
       "userCenter": "个人中心",

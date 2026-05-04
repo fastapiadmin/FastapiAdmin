@@ -6,6 +6,7 @@
     </div>
 
     <div class="flex-c md:justify-end max-md:mt-3 max-sm:!hidden">
+      <!-- 搜索显示 -->
       <div
         v-if="showSearchBar != null"
         class="button"
@@ -14,6 +15,8 @@
       >
         <ArtSvgIcon icon="ri:search-line" :class="showSearchBar ? 'text-white' : 'text-g-700'" />
       </div>
+
+      <!-- 刷新 -->
       <div
         v-if="shouldShow('refresh')"
         class="button"
@@ -26,6 +29,7 @@
         />
       </div>
 
+      <!-- 表格大小 -->
       <ElDropdown v-if="shouldShow('size')" @command="handleTableSizeChange">
         <div class="button">
           <ArtSvgIcon icon="ri:arrow-up-down-fill" />
@@ -49,6 +53,7 @@
         </template>
       </ElDropdown>
 
+      <!-- 全屏 -->
       <div v-if="shouldShow('fullscreen')" class="button" @click="toggleFullScreen">
         <ArtSvgIcon :icon="isFullScreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'" />
       </div>

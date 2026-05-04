@@ -10,7 +10,7 @@
       />
     </div>
     <div v-if="error" class="error-banner">
-      <el-alert :title="error" type="error" :closable="true" show-icon @close="handleErrorClose" />
+      <ElAlert :title="error" type="error" :closable="true" show-icon @close="handleErrorClose" />
     </div>
   </div>
 </template>

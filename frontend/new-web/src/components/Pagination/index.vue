@@ -1,8 +1,8 @@
 <!-- 分页组件 -->
 <template>
-  <el-scrollbar>
+  <ElScrollbar>
     <div :class="{ hidden: hidden }" class="pagination">
-      <el-pagination
+      <ElPagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :background="background"
@@ -13,7 +13,7 @@
         @current-change="handleCurrentChange"
       />
     </div>
-  </el-scrollbar>
+  </ElScrollbar>
 </template>
 
 <script setup lang="ts">

@@ -1,5 +1,4 @@
 import type { AppRouteRecord } from "@/types/router";
-import { dashboardRoutes } from "@/router/modules/dashboard";
 
 function normalizeMenuPath(path?: string): string {
   if (!path || !path.trim()) return "";
@@ -15,6 +14,86 @@ function collectPathsAndNames(items: AppRouteRecord[], paths: Set<string>, names
     if (r.children?.length) collectPathsAndNames(r.children, paths, names);
   }
 }
+
+/** 静态路由 /home 不在后端菜单树中，补侧栏入口 */
+const HOME_SHELL: AppRouteRecord = {
+  path: "/home",
+  name: "Home",
+  meta: {
+    title: "menus.home.title",
+    icon: "ri:presentation-line",
+    keepAlive: true,
+    shellRoute: true,
+  },
+};
+
+/** 与 `staticRoutes` 根 Layout 下 `/dashboard/*` 一致，仅侧栏用（无 component） */
+const dashboardMenuSource: AppRouteRecord = {
+  name: "Dashboard",
+  path: "/dashboard",
+  meta: {
+    title: "menus.dashboard.title",
+    icon: "ri:pie-chart-line",
+    alwaysShow: true,
+  },
+  children: [
+    {
+      path: "workplace",
+      name: "DashboardWorkplace",
+      meta: {
+        title: "menus.workplace.title",
+        icon: "ri:layout-grid-line",
+        keepAlive: true,
+      },
+    },
+    {
+      path: "console",
+      name: "DashboardConsole",
+      meta: {
+        title: "menus.dashboard.console",
+        icon: "ri:home-smile-2-line",
+        keepAlive: false,
+      },
+    },
+    {
+      path: "analysis",
+      name: "DashboardAnalysis",
+      meta: {
+        title: "menus.dashboard.analysis",
+        icon: "ri:align-item-bottom-line",
+        keepAlive: false,
+      },
+    },
+    {
+      path: "ecommerce",
+      name: "DashboardEcommerce",
+      meta: {
+        title: "menus.dashboard.ecommerce",
+        icon: "ri:bar-chart-box-line",
+        keepAlive: false,
+      },
+    },
+    {
+      path: "map",
+      name: "DashboardMap",
+      meta: {
+        title: "menus.dashboard.map",
+        icon: "ri:map-pin-line",
+        keepAlive: true,
+      },
+    },
+    {
+      path: "pricing",
+      name: "DashboardPricing",
+      meta: {
+        title: "menus.dashboard.pricing",
+        icon: "ri:money-cny-box-line",
+        keepAlive: true,
+        isFullPage: true,
+      },
+    },
+  ],
+};
 
 function dashboardRoutesToShellMenu(route: AppRouteRecord, parentAbs = ""): AppRouteRecord {
   const raw = route.path?.trim() ?? "";
@@ -35,17 +114,6 @@ function dashboardRoutesToShellMenu(route: AppRouteRecord, parentAbs = ""): AppR
     redirect: undefined,
   };
 }
-
-const HOME_SHELL: AppRouteRecord = {
-  path: "/home",
-  name: "Home",
-  meta: {
-    title: "menus.home.title",
-    icon: "ri:presentation-line",
-    keepAlive: true,
-    shellRoute: true,
-  },
-};
 
 export function mergeShellRoutesIntoMenu(menuList: AppRouteRecord[]): AppRouteRecord[] {
   const paths = new Set<string>();
@@ -70,7 +138,7 @@ export function mergeShellRoutesIntoMenu(menuList: AppRouteRecord[]): AppRouteRe
   tryPush(HOME_SHELL);
 
   if (!paths.has("/dashboard")) {
-    tryPush(dashboardRoutesToShellMenu(structuredClone(dashboardRoutes)));
+    tryPush(dashboardRoutesToShellMenu(structuredClone(dashboardMenuSource)));
   }
 
   if (additions.length === 0) return menuList;

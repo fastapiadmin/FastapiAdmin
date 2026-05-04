@@ -1,29 +1,29 @@
 <!-- 部门树 -->
 <template>
-  <el-card shadow="hover">
+  <ElCard shadow="hover">
     <div class="dept-tree-toolbar">
-      <el-input v-model="deptName" placeholder="部门名称" class="dept-tree-search">
+      <ElInput v-model="deptName" placeholder="部门名称" class="dept-tree-search">
         <template #prefix>
-          <el-icon>
+          <ElIcon>
             <Search />
-          </el-icon>
+          </ElIcon>
         </template>
-      </el-input>
-      <el-button
+      </ElInput>
+      <ElButton
         type="primary"
         link
         size="small"
         class="dept-tree-expand-btn"
         @click="toggleTreeExpandAll"
       >
-        <el-icon :size="14">
+        <ElIcon :size="14">
           <Switch />
-        </el-icon>
+        </ElIcon>
         <span>{{ treeExpanded ? "收起" : "展开" }}</span>
-      </el-button>
+      </ElButton>
     </div>
 
-    <el-tree
+    <ElTree
       ref="deptTreeRef"
       class="mt-2"
       node-key="value"
@@ -35,10 +35,10 @@
       @node-click="handleNodeClick"
     >
       <template #empty>
-        <el-empty :image-size="80" description="暂无数据" />
+        <ElEmpty :image-size="80" description="暂无数据" />
       </template>
-    </el-tree>
-  </el-card>
+    </ElTree>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

@@ -2,7 +2,7 @@
   <!-- 悬浮按钮 -->
   <div class="ai-assistant">
     <!-- AI 助手图标按钮 -->
-    <el-button
+    <ElButton
       v-if="!dialogVisible && !fabCollapsed"
       class="ai-fab-button"
       type="primary"
@@ -13,7 +13,7 @@
       @click="handleOpen"
     >
       <ArtSvgIcon :icon="resolveIconForArtSvgIcon('ai')" class="ai-icon" />
-    </el-button>
+    </ElButton>
 
     <!-- 收缩态：贴边小标签，避免遮挡表单控件 -->
     <div
@@ -26,7 +26,7 @@
     </div>
 
     <!-- AI 对话框 -->
-    <el-dialog
+    <ElDialog
       v-model="dialogVisible"
       title="AI 智能助手"
       width="600px"
@@ -43,7 +43,7 @@
 
       <!-- 命令输入 -->
       <div class="command-input">
-        <el-input
+        <ElInput
           v-model="command"
           type="textarea"
           :rows="3"
@@ -56,48 +56,48 @@
       <!-- 快捷命令示例 -->
       <div class="quick-commands">
         <div class="section-title">💡 试试这些命令：</div>
-        <el-tag
+        <ElTag
           v-for="example in examples"
           :key="example"
           class="command-tag"
           @click="command = example"
         >
           {{ example }}
-        </el-tag>
+        </ElTag>
       </div>
 
       <!-- AI 响应结果 -->
       <div v-if="response" class="ai-response">
-        <el-alert :title="response.explanation" type="success" :closable="false" show-icon />
+        <ElAlert :title="response.explanation" type="success" :closable="false" show-icon />
 
         <!-- 将要执行的操作 -->
         <div v-if="response.action" class="action-preview">
           <div class="action-title">🎯 将要执行：</div>
           <div class="action-content">
             <div v-if="response.action.type === 'navigate'">
-              <el-icon><Position /></el-icon>
+              <ElIcon><Position /></ElIcon>
               跳转到：
               <strong>{{ response.action.pageName }}</strong>
               <span v-if="response.action.query" class="query-info">
                 并搜索：
-                <el-tag type="warning" size="small">{{ response.action.query }}</el-tag>
+                <ElTag type="warning" size="small">{{ response.action.query }}</ElTag>
               </span>
             </div>
             <div v-if="response.action.type === 'navigate-and-execute'">
-              <el-icon><Position /></el-icon>
+              <ElIcon><Position /></ElIcon>
               跳转至：
               <strong>{{ response.action.pageName }}</strong>
               <span v-if="response.action.query" class="query-info">
                 并搜索：
-                <el-tag type="warning" size="small">{{ response.action.query }}</el-tag>
+                <ElTag type="warning" size="small">{{ response.action.query }}</ElTag>
               </span>
-              <el-divider direction="vertical" />
-              <el-icon><Tools /></el-icon>
+              <ElDivider direction="vertical" />
+              <ElIcon><Tools /></ElIcon>
               执行：
               <strong>{{ response.action.functionCall.name }}</strong>
             </div>
             <div v-if="response.action.type === 'execute'">
-              <el-icon><Tools /></el-icon>
+              <ElIcon><Tools /></ElIcon>
               执行：
               <strong>{{ response.action.functionName }}</strong>
             </div>
@@ -107,14 +107,14 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleClose">取消</el-button>
-          <el-button type="primary" :loading="loading" @click="handleExecute">
-            <el-icon><MagicStick /></el-icon>
+          <ElButton @click="handleClose">取消</ElButton>
+          <ElButton type="primary" :loading="loading" @click="handleExecute">
+            <ElIcon><MagicStick /></ElIcon>
             执行命令
-          </el-button>
+          </ElButton>
         </div>
       </template>
-    </el-dialog>
+    </ElDialog>
   </div>
 </template>
 

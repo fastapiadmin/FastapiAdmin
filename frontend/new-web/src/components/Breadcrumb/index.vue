@@ -1,6 +1,6 @@
 <template>
-  <el-breadcrumb class="flex-y-center">
-    <el-breadcrumb-item v-for="(item, index) in breadcrumbs" :key="item.path">
+  <ElBreadcrumb class="flex-y-center">
+    <ElBreadcrumbItem v-for="(item, index) in breadcrumbs" :key="item.path">
       <span
         v-if="item.redirect === 'noredirect' || index === breadcrumbs.length - 1"
         class="color-gray-400"
@@ -10,8 +10,8 @@
       <a v-else @click.prevent="handleLink(item)">
         {{ translateRouteTitle(item.meta.title) }}
       </a>
-    </el-breadcrumb-item>
-  </el-breadcrumb>
+    </ElBreadcrumbItem>
+  </ElBreadcrumb>
 </template>
 
 <script setup lang="ts">

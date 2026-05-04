@@ -1,95 +1,65 @@
+<!-- 定时任务节点：Art + useTable -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="nodeSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent
-      ref="contentRef"
-      :content-config="contentConfig"
-      @add-click="handleOpenDialog('create')"
-    >
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column type="selection" align="center" min-width="55" />
-            <el-table-column type="index" fixed label="序号" min-width="60">
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column label="节点名称" prop="name" min-width="140" />
-            <el-table-column label="节点编码" prop="code" min-width="120" />
-            <el-table-column label="存储器" prop="jobstore" min-width="80" />
-            <el-table-column label="执行器" prop="executor" min-width="80" />
-            <el-table-column label="创建时间" prop="created_time" min-width="180" sortable />
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_task:cronjob:node:create']"
+            :perm-delete="['module_task:cronjob:node:delete']"
+            :delete-loading="batchDeleting"
+            @add="handleOpenDialog('create')"
+            @delete="handleBatchDelete"
+          />
+        </template>
+      </ArtTableHeader>
 
-            <OperationColumn :list-data-length="data.length">
-              <template #default="scope">
-                <el-space class="flex">
-                  <el-button
-                    v-hasPerm="['module_task:cronjob:node:execute']"
-                    type="warning"
-                    size="small"
-                    link
-                    icon="VideoPlay"
-                    @click="handleOpenExecuteDialog(scope.row)"
-                  >
-                    调试
-                  </el-button>
-                  <el-button
-                    v-hasPerm="['module_task:cronjob:node:update']"
-                    type="primary"
-                    size="small"
-                    link
-                    icon="edit"
-                    @click="handleOpenDialog('update', scope.row.id)"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    v-hasPerm="['module_task:cronjob:node:delete']"
-                    type="danger"
-                    size="small"
-                    link
-                    icon="delete"
-                    @click="handleRowDelete(scope.row.id)"
-                  >
-                    删除
-                  </el-button>
-                </el-space>
-              </template>
-            </OperationColumn>
-          </el-table>
-        </div>
-      </template>
-    </CrudContent>
+      <ArtTable
+        ref="artTableRef"
+        row-key="id"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
-    <EnhancedDialog
+    <ArtDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="1000px"
       @close="handleCloseDialog"
       @opened="handleDialogOpened"
     >
-      <el-splitter direction="horizontal" style="height: 500px">
-        <el-splitter-panel size="300px" :min="200" :max="400">
-          <el-scrollbar style="height: 100%">
-            <el-form
+      <ElSplitter direction="horizontal" style="height: 500px">
+        <ElSplitterPanel size="300px" :min="200" :max="400">
+          <ElScrollbar style="height: 100%">
+            <ElForm
               ref="dataFormRef"
               :model="formData"
               :rules="rules"
@@ -97,88 +67,88 @@
               label-width="auto"
               style="padding: 0 10px"
             >
-              <el-form-item label="节点名称" prop="name">
-                <el-input v-model="formData.name" placeholder="请输入节点名称" :maxlength="50" />
-              </el-form-item>
-              <el-form-item label="节点编码" prop="code">
-                <el-input v-model="formData.code" placeholder="请输入节点编码" :maxlength="32" />
-              </el-form-item>
-              <el-form-item label="存储器" prop="jobstore">
-                <el-select v-model="formData.jobstore" placeholder="请选择存储器">
-                  <el-option
+              <ElFormItem label="节点名称" prop="name">
+                <ElInput v-model="formData.name" placeholder="请输入节点名称" :maxlength="50" />
+              </ElFormItem>
+              <ElFormItem label="节点编码" prop="code">
+                <ElInput v-model="formData.code" placeholder="请输入节点编码" :maxlength="32" />
+              </ElFormItem>
+              <ElFormItem label="存储器" prop="jobstore">
+                <ElSelect v-model="formData.jobstore" placeholder="请选择存储器">
+                  <ElOption
                     v-for="item in dictStore.getDictArray('sys_job_store')"
                     :key="item.dict_value"
                     :label="item.dict_label"
                     :value="item.dict_value"
                   />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="执行器" prop="executor">
-                <el-select v-model="formData.executor" placeholder="请选择执行器">
-                  <el-option
+                </ElSelect>
+              </ElFormItem>
+              <ElFormItem label="执行器" prop="executor">
+                <ElSelect v-model="formData.executor" placeholder="请选择执行器">
+                  <ElOption
                     v-for="item in dictStore.getDictArray('sys_job_executor')"
                     :key="item.dict_value"
                     :label="item.dict_label"
                     :value="item.dict_value"
                   />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="位置参数" prop="args">
+                </ElSelect>
+              </ElFormItem>
+              <ElFormItem label="位置参数" prop="args">
                 <div class="dynamic-params">
                   <div v-for="(_item, index) in argsList" :key="index" class="param-item">
-                    <el-input v-model="argsList[index]" placeholder="参数值" />
-                    <el-button
+                    <ElInput v-model="argsList[index]" placeholder="参数值" />
+                    <ElButton
                       type="danger"
                       icon="Delete"
                       circle
                       @click="argsList.splice(index, 1)"
                     />
                   </div>
-                  <el-button type="primary" icon="Plus" @click="argsList.push('')">
+                  <ElButton type="primary" icon="Plus" @click="argsList.push('')">
                     添加位置参数
-                  </el-button>
+                  </ElButton>
                 </div>
-              </el-form-item>
-              <el-form-item label="关键字参数" prop="kwargs">
+              </ElFormItem>
+              <ElFormItem label="关键字参数" prop="kwargs">
                 <div class="dynamic-params">
                   <div v-for="(item, index) in kwargsList" :key="index" class="param-item">
-                    <el-input v-model="item.key" placeholder="键" />
-                    <el-input v-model="item.value" placeholder="值" />
-                    <el-button
+                    <ElInput v-model="item.key" placeholder="键" />
+                    <ElInput v-model="item.value" placeholder="值" />
+                    <ElButton
                       type="danger"
                       icon="Delete"
                       circle
                       @click="kwargsList.splice(index, 1)"
                     />
                   </div>
-                  <el-button
+                  <ElButton
                     type="primary"
                     icon="Plus"
                     @click="kwargsList.push({ key: '', value: '' })"
                   >
                     添加关键词参数
-                  </el-button>
+                  </ElButton>
                 </div>
-              </el-form-item>
-              <el-form-item label="合并运行" prop="coalesce">
-                <el-radio-group v-model="formData.coalesce">
-                  <el-radio :value="true">是</el-radio>
-                  <el-radio :value="false">否</el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item label="最大实例数" prop="max_instances">
-                <el-input-number
+              </ElFormItem>
+              <ElFormItem label="合并运行" prop="coalesce">
+                <ElRadioGroup v-model="formData.coalesce">
+                  <ElRadio :value="true">是</ElRadio>
+                  <ElRadio :value="false">否</ElRadio>
+                </ElRadioGroup>
+              </ElFormItem>
+              <ElFormItem label="最大实例数" prop="max_instances">
+                <ElInputNumber
                   v-model="formData.max_instances"
                   controls-position="right"
                   :min="1"
                   :max="10"
                 />
-              </el-form-item>
-            </el-form>
-          </el-scrollbar>
-        </el-splitter-panel>
+              </ElFormItem>
+            </ElForm>
+          </ElScrollbar>
+        </ElSplitterPanel>
 
-        <el-splitter-panel>
+        <ElSplitterPanel>
           <div class="code-editor-container">
             <div class="code-editor-header">
               <span class="code-editor-title">处理器</span>
@@ -193,48 +163,48 @@
               width="100%"
             />
           </div>
-        </el-splitter-panel>
-      </el-splitter>
+        </ElSplitterPanel>
+      </ElSplitter>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">确定</ElButton>
         </div>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
 
-    <EnhancedDialog
+    <ArtDialog
       v-model="executeDialogVisible"
       title="调试节点"
       width="700px"
       @close="handleCloseExecuteDialog"
     >
-      <el-form
+      <ElForm
         ref="executeFormRef"
         :model="executeFormData"
         :rules="executeRules"
         label-suffix=":"
         label-width="auto"
       >
-        <el-form-item label="节点名称">
-          <el-input :value="currentExecuteNode?.name" disabled />
-        </el-form-item>
-        <el-form-item label="执行方式" prop="trigger">
-          <el-radio-group v-model="executeFormData.trigger">
-            <el-radio value="now">立即执行</el-radio>
-            <el-radio value="cron">Cron表达式</el-radio>
-            <el-radio value="interval">时间间隔</el-radio>
-            <el-radio value="date">固定日期</el-radio>
-          </el-radio-group>
-        </el-form-item>
+        <ElFormItem label="节点名称">
+          <ElInput :value="currentExecuteNode?.name" disabled />
+        </ElFormItem>
+        <ElFormItem label="执行方式" prop="trigger">
+          <ElRadioGroup v-model="executeFormData.trigger">
+            <ElRadio value="now">立即执行</ElRadio>
+            <ElRadio value="cron">Cron表达式</ElRadio>
+            <ElRadio value="interval">时间间隔</ElRadio>
+            <ElRadio value="date">固定日期</ElRadio>
+          </ElRadioGroup>
+        </ElFormItem>
 
-        <el-form-item
+        <ElFormItem
           v-if="executeFormData.trigger === 'cron'"
           label="Cron表达式"
           prop="trigger_args"
         >
-          <el-popover
+          <ElPopover
             :visible="openCron"
             width="700px"
             trigger="click"
@@ -243,22 +213,22 @@
             popper-class="node-cron-popover-fix"
           >
             <template #reference>
-              <el-input
+              <ElInput
                 v-model="executeFormData.trigger_args"
                 placeholder="请输入 * * * * * ? *"
                 @click="openCron = true"
               />
             </template>
             <vue3CronPlus i18n="cn" @change="handlechangeCron" @close="openCron = false" />
-          </el-popover>
-        </el-form-item>
+          </ElPopover>
+        </ElFormItem>
 
-        <el-form-item
+        <ElFormItem
           v-else-if="executeFormData.trigger === 'interval'"
           label="间隔时间"
           prop="trigger_args"
         >
-          <el-popover
+          <ElPopover
             :visible="openInterval"
             width="600px"
             trigger="click"
@@ -266,7 +236,7 @@
             placement="auto-end"
           >
             <template #reference>
-              <el-input
+              <ElInput
                 v-model="executeFormData.trigger_args"
                 placeholder="请点击设置间隔时间"
                 @click="openInterval = true"
@@ -277,15 +247,15 @@
               @confirm="handleIntervalConfirm"
               @cancel="openInterval = false"
             />
-          </el-popover>
-        </el-form-item>
+          </ElPopover>
+        </ElFormItem>
 
-        <el-form-item
+        <ElFormItem
           v-else-if="executeFormData.trigger === 'date'"
           label="执行时间"
           prop="trigger_args"
         >
-          <el-date-picker
+          <ElDatePicker
             v-model="executeFormData.trigger_args"
             type="datetime"
             format="YYYY-MM-DD HH:mm:ss"
@@ -293,7 +263,7 @@
             placeholder="请选择执行时间"
             style="width: 100%"
           />
-        </el-form-item>
+        </ElFormItem>
 
         <template
           v-if="
@@ -302,8 +272,8 @@
             executeFormData.trigger !== 'date'
           "
         >
-          <el-form-item label="开始时间" prop="start_date">
-            <el-date-picker
+          <ElFormItem label="开始时间" prop="start_date">
+            <ElDatePicker
               v-model="executeFormData.start_date"
               type="datetime"
               format="YYYY-MM-DD HH:mm:ss"
@@ -311,9 +281,9 @@
               placeholder="请选择开始时间（可选）"
               style="width: 100%"
             />
-          </el-form-item>
-          <el-form-item label="结束时间" prop="end_date">
-            <el-date-picker
+          </ElFormItem>
+          <ElFormItem label="结束时间" prop="end_date">
+            <ElDatePicker
               v-model="executeFormData.end_date"
               type="datetime"
               format="YYYY-MM-DD HH:mm:ss"
@@ -321,17 +291,15 @@
               placeholder="请选择结束时间（可选）"
               style="width: 100%"
             />
-          </el-form-item>
+          </ElFormItem>
         </template>
-      </el-form>
+      </ElForm>
 
       <template #footer>
-        <el-button @click="handleCloseExecuteDialog">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleExecuteNode">
-          确认
-        </el-button>
+        <ElButton @click="handleCloseExecuteDialog">取消</ElButton>
+        <ElButton type="primary" :loading="submitLoading" @click="handleExecuteNode">确认</ElButton>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
   </div>
 </template>
 
@@ -341,23 +309,22 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import NodeAPI, {
-  NodeTable,
-  NodeForm,
-  NodePageQuery,
-  TriggerType,
-} from "@/api/module_task/cronjob/node";
+import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
 import { useDictStore } from "@/store/index";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import { nextTick, onMounted, reactive, ref } from "vue";
-import { ElMessage } from "element-plus";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
+import type { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
+import type { ColumnOption } from "@/types/component";
+import { useTable } from "@/hooks/core/useTable";
+import { h, computed, nextTick, onMounted, reactive, ref } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { vue3CronPlus } from "vue3-cron-plus";
 import "vue3-cron-plus/dist/index.css";
-import OperationColumn from "@/components/OperationColumn/index.vue";
 import IntervalTab from "@/components/IntervalTab/index.vue";
 import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
@@ -365,6 +332,235 @@ import "codemirror/mode/python/python.js";
 import "codemirror/theme/dracula.css";
 
 const dictStore = useDictStore();
+
+const BATCH_DELETE_NODE_MSG =
+  "确认删除选中的节点吗？\n" +
+  "此操作将同时删除节点定义并移除调度器中的相关任务。\n" +
+  "正在运行的任务会被立即移除，待执行任务的日志将被标记为已取消。";
+
+type NodeSearchForm = {
+  name?: string;
+  code?: string;
+};
+
+function buildNodeReplaceParams(u: NodeSearchForm): Record<string, unknown> {
+  return {
+    name: u.name,
+    code: u.code,
+  };
+}
+
+const searchForm = ref<NodeSearchForm>({
+  name: undefined,
+  code: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const nodeSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "节点名称",
+    key: "name",
+    type: "input",
+    placeholder: "请输入节点名称",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "节点编码",
+    key: "code",
+    type: "input",
+    placeholder: "请输入节点编码",
+    clearable: true,
+    span: 6,
+  },
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<NodeTable[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: NodeTable[]) {
+  selectedRows.value = rows;
+}
+
+function buttonMoreClick(item: ButtonMoreItem, row: NodeTable) {
+  switch (item.key) {
+    case "execute":
+      handleOpenExecuteDialog(row);
+      break;
+    case "edit":
+      if (row.id != null) void handleOpenDialog("update", row.id);
+      break;
+    case "delete":
+      void deleteNodeRow(row.id);
+      break;
+  }
+}
+
+function deleteNodeRow(id: number | undefined) {
+  if (id == null) return;
+  ElMessageBox.confirm("确认删除该节点吗？将从调度器移除相关任务。", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await NodeAPI.deleteNode([id]);
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
+}
+
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(BATCH_DELETE_NODE_MSG, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await NodeAPI.deleteNode(ids);
+        ElMessage.success("删除成功");
+        selectedRows.value = [];
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: NodeAPI.listNode,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<NodeTable>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
+      {
+        prop: "name",
+        label: "节点名称",
+        minWidth: 140,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "code",
+        label: "节点编码",
+        minWidth: 120,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "jobstore",
+        label: "存储器",
+        minWidth: 80,
+      },
+      {
+        prop: "executor",
+        label: "执行器",
+        minWidth: 80,
+      },
+      {
+        prop: "created_time",
+        label: "创建时间",
+        minWidth: 180,
+        sortable: true,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 88,
+        fixed: "right",
+        align: "center",
+        formatter: (row: NodeTable) =>
+          h("div", [
+            h(ArtButtonMore, {
+              list: [
+                {
+                  key: "execute",
+                  label: "调试",
+                  icon: "ri:play-circle-line",
+                  auth: "module_task:cronjob:node:execute",
+                },
+                {
+                  key: "edit",
+                  label: "编辑",
+                  icon: "ri:edit-2-line",
+                  auth: "module_task:cronjob:node:update",
+                },
+                {
+                  key: "delete",
+                  label: "删除",
+                  icon: "ri:delete-bin-4-line",
+                  color: "#f56c6c",
+                  auth: "module_task:cronjob:node:delete",
+                },
+              ],
+              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
+            }),
+          ]),
+      },
+    ],
+  },
+});
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 10,
+    total: p.total ?? 0,
+  };
+});
+
+async function handleSearchBarSearch(params: NodeSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildNodeReplaceParams(params));
+  getData();
+}
+
+async function onResetSearch() {
+  searchForm.value = {
+    name: undefined,
+    code: undefined,
+  };
+  await resetSearchParams();
+}
 
 const codeEditorOptions: EditorConfiguration = {
   mode: "python",
@@ -377,70 +573,12 @@ const codeEditorOptions: EditorConfiguration = {
   autofocus: false,
 };
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
 const dataFormRef = ref();
 const executeFormRef = ref();
 const submitLoading = ref(false);
 const openCron = ref(false);
 const openInterval = ref(false);
 const codeEditorRef = ref<CmComponentRef>();
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_task:cronjob:node",
-  colon: true,
-  isExpandable: false,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "name",
-      label: "节点名称",
-      type: "input",
-      attrs: { placeholder: "请输入节点名称", clearable: true },
-    },
-    {
-      prop: "code",
-      label: "节点编码",
-      type: "input",
-      attrs: { placeholder: "请输入节点编码", clearable: true },
-    },
-  ],
-});
-
-const contentConfig = reactive<IContentConfig<NodePageQuery>>({
-  permPrefix: "module_task:cronjob:node",
-  cols: [],
-  hideColumnFilter: true,
-  toolbar: ["add", "delete"],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
-  },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await NodeAPI.listNode(params as NodePageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
-  },
-  deleteAction: (ids) =>
-    NodeAPI.deleteNode(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n) && n > 0)
-    ),
-  deleteConfirm: {
-    title: "警告",
-    message:
-      "确认删除选中的节点吗？\n" +
-      "此操作将同时删除节点定义并移除调度器中的相关任务。\n" +
-      "正在运行的任务会被立即移除，待执行任务的日志将被标记为已取消。",
-    type: "warning",
-  },
-});
 
 const defaultCodeBlock = `def handler(*args, **kwargs):
     """
@@ -540,10 +678,6 @@ const executeRules = reactive({
   trigger_args: [{ required: true, message: "请设置执行参数", trigger: "blur" }],
 });
 
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
-}
-
 const initialFormData: Partial<NodeForm> = {
   id: undefined,
   name: "",
@@ -630,7 +764,11 @@ async function handleSubmit() {
         }
         dialogVisible.visible = false;
         resetForm();
-        refreshList();
+        if (id) {
+          await refreshUpdate();
+        } else {
+          await refreshCreate();
+        }
       } catch (error: any) {
         console.log(error);
       } finally {
@@ -690,7 +828,7 @@ async function handleExecuteNode() {
 
     handleCloseExecuteDialog();
 
-    refreshList();
+    await refreshUpdate();
   } catch (error: any) {
     ElMessage.error({
       message: error.response?.data?.msg || "调试失败",
@@ -705,7 +843,6 @@ async function handleExecuteNode() {
 
 onMounted(async () => {
   await dictStore.getDict(["sys_job_store", "sys_job_executor"]);
-  refreshList();
 });
 </script>
 

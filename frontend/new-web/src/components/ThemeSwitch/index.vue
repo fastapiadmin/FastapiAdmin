@@ -1,24 +1,24 @@
 <template>
-  <el-dropdown trigger="click" @command="handleDarkChange">
-    <el-icon :size="20">
+  <ElDropdown trigger="click" @command="handleDarkChange">
+    <ElIcon :size="20">
       <component :is="settingsStore.theme === ThemeMode.DARK ? Moon : Sunny" />
-    </el-icon>
+    </ElIcon>
     <template #dropdown>
-      <el-dropdown-menu>
-        <el-dropdown-item
+      <ElDropdownMenu>
+        <ElDropdownItem
           v-for="item in theneList"
           :key="item.value"
           :command="item.value"
           :disabled="settingsStore.theme === item.value"
         >
-          <el-icon>
+          <ElIcon>
             <component :is="item.component" />
-          </el-icon>
+          </ElIcon>
           {{ item.label }}
-        </el-dropdown-item>
-      </el-dropdown-menu>
+        </ElDropdownItem>
+      </ElDropdownMenu>
     </template>
-  </el-dropdown>
+  </ElDropdown>
 </template>
 <script setup lang="ts">
 import { useSettingsStore } from "@/store";

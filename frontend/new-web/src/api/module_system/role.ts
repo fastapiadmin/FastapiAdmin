@@ -4,7 +4,7 @@ const API_PATH = "/system/role";
 
 const RoleAPI = {
   listRole(query?: TablePageQuery) {
-    return request<ApiResponse<PageResult<RoleTable[]>>>({
+    return request<ApiResponse<PageResult<RoleTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

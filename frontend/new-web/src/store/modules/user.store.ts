@@ -314,6 +314,8 @@ export const useUserStore = defineStore(
       resetAllState();
       sessionStorage.removeItem("iframeRoutes");
       useMenuStore().setHomePath("");
+      // 与 RouteRegistry 并行：立即清理 permissionStore 中的动态路由标记与实例，避免仅依赖延迟 reset 时侧栏/守卫状态不一致
+      usePermissionStore(store).resetRouter();
       resetRouterState(500);
 
       if (shouldNavigate) {

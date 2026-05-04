@@ -1,184 +1,115 @@
+<!-- 资源管理：Art + useTable -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height resource-monitor-page">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="resourceSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent ref="contentRef" :content-config="contentConfig">
-      <template #header>
-        <div class="card-header">
-          <span>
-            <el-tooltip content="资源文件管理系统: 点击路径可以快速返回上级目录">
-              <QuestionFilled class="w-4 h-4 mx-1" />
-            </el-tooltip>
-            文件列表(当前路径)：
-          </span>
-          <div class="breadcrumb-container">
-            <span class="breadcrumb-label"></span>
-            <el-breadcrumb separator="/">
-              <el-breadcrumb-item
-                v-for="(item, index) in breadcrumbList"
-                :key="index"
-                :class="{ 'is-link': index < breadcrumbList.length - 1 }"
-                @click="handleBreadcrumbClick(item)"
-              >
-                {{ item.name }}
-              </el-breadcrumb-item>
-            </el-breadcrumb>
-          </div>
-        </div>
-      </template>
-
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft :remove-ids="removeIds">
-          <el-row :gutter="10">
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_monitor:resource:upload']"
-                type="success"
-                icon="plus"
-                @click="handleUpload"
-              >
-                上传文件
-              </el-button>
-            </el-col>
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_monitor:resource:create_dir']"
-                type="primary"
-                icon="folder-add"
-                @click="handleCreateDir"
-              >
-                新建文件夹
-              </el-button>
-            </el-col>
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_monitor:resource:delete']"
-                type="danger"
-                icon="delete"
-                :disabled="removeIds.length === 0"
-                @click="handleBatchDelete"
-              >
-                批量删除
-              </el-button>
-            </el-col>
-          </el-row>
-        </CrudToolbarLeft>
-        <div class="data-table__toolbar--right flex flex-wrap items-center gap-3">
-          <el-checkbox
-            v-model="showHiddenFiles"
-            v-hasPerm="['module_monitor:resource:query']"
-            @change="onShowHiddenChange"
-          >
-            显示隐藏文件
-          </el-checkbox>
-          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
-        </div>
-      </template>
-
-      <template #table="{ data, loading: tableLoading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="tableLoading"
-            row-key="file_url"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="
-              (s) => {
-                handleSelectionChange(s as ResourceItem[]);
-                onSelectionChange(s);
-              }
-            "
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column type="selection" min-width="40" align="center" />
-            <el-table-column type="index" fixed label="序号" min-width="50">
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column label="名称" prop="name" min-width="200">
-              <template #default="{ row }">
-                <div class="file-name">
-                  <el-icon class="file-icon">
-                    <Folder v-if="row.is_dir" />
-                    <Document v-else />
-                  </el-icon>
-                  <span class="file-name-clickable" @click="handleFileNameClick(row)">
-                    {{ row.name }}
-                  </span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column label="大小" prop="size" min-width="120" align="center">
-              <template #default="{ row }">
-                <span v-if="!row.is_dir">{{ formatFileSize(row.size) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="修改时间" prop="modified_time" min-width="180" sortable />
-            <el-table-column
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="200"
-              class-name="search-buttons"
+    <ElCard
+      class="flex flex-col flex-1 min-h-0 art-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
+      <div
+        class="resource-breadcrumb mb-3 flex flex-wrap items-center gap-2 border-b border-g-200 pb-3"
+      >
+        <ElTooltip content="资源文件管理系统: 点击路径可以快速返回上级目录">
+          <QuestionFilled class="mx-1 h-4 w-4" />
+        </ElTooltip>
+        <span class="text-sm">文件列表(当前路径)：</span>
+        <div class="breadcrumb-container min-w-0 flex-1">
+          <ElBreadcrumb separator="/">
+            <ElBreadcrumbItem
+              v-for="(item, index) in breadcrumbList"
+              :key="index"
+              :class="{ 'is-link': index < breadcrumbList.length - 1 }"
+              @click="handleBreadcrumbClick(item)"
             >
-              <template #default="{ row }">
-                <el-button
-                  v-if="!row.is_dir"
-                  v-hasPerm="['module_monitor:resource:download']"
-                  type="success"
-                  size="small"
-                  link
-                  icon="download"
-                  @click="handleDownload(row)"
-                >
-                  下载
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_monitor:resource:rename']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleRename(row)"
-                >
-                  重命名
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_monitor:resource:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleDelete(row)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+              {{ item.name }}
+            </ElBreadcrumbItem>
+          </ElBreadcrumb>
         </div>
-      </template>
-    </CrudContent>
+      </div>
 
-    <!-- 上传对话框 -->
-    <EnhancedDialog
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        layout="search,refresh,size,fullscreen"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ElSpace wrap>
+            <ElButton
+              v-hasPerm="['module_monitor:resource:upload']"
+              type="success"
+              plain
+              :icon="Plus"
+              @click="handleUpload"
+            >
+              上传文件
+            </ElButton>
+            <ElButton
+              v-hasPerm="['module_monitor:resource:create_dir']"
+              type="primary"
+              plain
+              :icon="FolderAdd"
+              @click="handleCreateDir"
+            >
+              新建文件夹
+            </ElButton>
+            <ElButton
+              v-hasPerm="['module_monitor:resource:delete']"
+              type="danger"
+              plain
+              :icon="Delete"
+              :disabled="selectedPaths.length === 0"
+              :loading="batchDeleting"
+              @click="handleBatchDelete"
+            >
+              批量删除
+            </ElButton>
+            <ElCheckbox
+              v-model="showHiddenFiles"
+              v-hasPerm="['module_monitor:resource:query']"
+              @change="onShowHiddenChange"
+            >
+              显示隐藏文件
+            </ElCheckbox>
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
+
+      <ArtTable
+        row-key="file_url"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
+
+    <ArtDialog
       v-model="uploadDialogVisible"
       title="上传文件"
       width="500px"
       @close="handleUploadClose"
     >
-      <el-upload
+      <ElUpload
         ref="uploadRef"
         :auto-upload="false"
         :multiple="true"
@@ -186,75 +117,73 @@
         drag
         @change="handleUploadChange"
       >
-        <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+        <ElIcon class="el-icon--upload"><UploadFilled /></ElIcon>
         <div class="el-upload__text">
           将文件拖到此处，或
           <em>点击上传</em>
         </div>
         <template #tip>
-          <div class="el-upload__tip" style="color: red">
+          <div class="el-upload__tip text-error">
             不支持多文件上传，单个文件不超过100MB，多文件上传，取最后一个文件上传
           </div>
         </template>
-      </el-upload>
+      </ElUpload>
       <template #footer>
-        <el-button @click="uploadDialogVisible = false">取消</el-button>
-        <el-button
+        <ElButton @click="uploadDialogVisible = false">取消</ElButton>
+        <ElButton
           v-hasPerm="['module_monitor:resource:upload']"
           type="primary"
           :loading="uploading"
           @click="handleUploadConfirm"
         >
           确定上传
-        </el-button>
+        </ElButton>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
 
-    <!-- 新建文件夹对话框 -->
-    <EnhancedDialog v-model="createDirDialogVisible" title="新建文件夹" width="400px">
-      <el-form :model="createDirForm" label-width="80px">
-        <el-form-item label="文件夹名" required>
-          <el-input
+    <ArtDialog v-model="createDirDialogVisible" title="新建文件夹" width="400px">
+      <ElForm :model="createDirForm" label-width="80px">
+        <ElFormItem label="文件夹名" required>
+          <ElInput
             v-model="createDirForm.dir_name"
             placeholder="请输入文件夹名称"
             @keyup.enter="handleCreateDirConfirm"
           />
-        </el-form-item>
-      </el-form>
+        </ElFormItem>
+      </ElForm>
       <template #footer>
-        <el-button @click="createDirDialogVisible = false">取消</el-button>
-        <el-button
+        <ElButton @click="createDirDialogVisible = false">取消</ElButton>
+        <ElButton
           v-hasPerm="['module_monitor:resource:create_dir']"
           type="primary"
           @click="handleCreateDirConfirm"
         >
           确定
-        </el-button>
+        </ElButton>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
 
-    <!-- 重命名对话框 -->
-    <EnhancedDialog v-model="renameDialogVisible" title="重命名" width="400px">
-      <el-form :model="renameForm" label-width="80px">
-        <el-form-item label="新名称" required>
-          <el-input
+    <ArtDialog v-model="renameDialogVisible" title="重命名" width="400px">
+      <ElForm :model="renameForm" label-width="80px">
+        <ElFormItem label="新名称" required>
+          <ElInput
             v-model="renameForm.new_name"
             placeholder="请输入新名称"
             @keyup.enter="handleRenameConfirm"
           />
-        </el-form-item>
-      </el-form>
+        </ElFormItem>
+      </ElForm>
       <template #footer>
-        <el-button @click="renameDialogVisible = false">取消</el-button>
-        <el-button
+        <ElButton @click="renameDialogVisible = false">取消</ElButton>
+        <ElButton
           v-hasPerm="['module_monitor:resource:rename']"
           type="primary"
           @click="handleRenameConfirm"
         >
           确定
-        </el-button>
+        </ElButton>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
   </div>
 </template>
 
@@ -264,83 +193,95 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ref, reactive } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { Folder, Document, UploadFilled, QuestionFilled } from "@element-plus/icons-vue";
+import { h, ref, reactive, computed } from "vue";
 import {
-  ResourceAPI,
-  type ResourceItem,
-  type ResourcePageQuery,
-} from "@/api/module_monitor/resource";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import { CrudToolbarActions } from "@/components/Crud";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
+  ElMessage,
+  ElMessageBox,
+  ElIcon,
+  ElSpace,
+  ElTooltip,
+  type UploadFile,
+  type UploadFiles,
+  type UploadUserFile,
+} from "element-plus";
+import {
+  Delete,
+  Document,
+  Folder,
+  FolderAdd,
+  Plus,
+  QuestionFilled,
+  UploadFilled,
+} from "@element-plus/icons-vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import { ResourceAPI, type ResourceItem } from "@/api/module_monitor/resource";
+import type { ColumnOption } from "@/types/component";
+import { useAuth } from "@/hooks/core/useAuth";
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const { hasAuth } = useAuth();
 
-const selectedItems = ref<ResourceItem[]>([]);
+type ResourceSearchForm = {
+  name?: string;
+};
+
+function buildResourceReplaceParams(u: ResourceSearchForm): Record<string, unknown> {
+  return {
+    name: u.name,
+  };
+}
+
+function fetchResourceTableList(params: Record<string, unknown>) {
+  return ResourceAPI.listResource({
+    page_no: 1,
+    page_size: 10,
+    ...params,
+  });
+}
+
+const searchForm = ref<ResourceSearchForm>({
+  name: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const resourceSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "关键词",
+    key: "name",
+    type: "input",
+    placeholder: "请输入文件名或目录名",
+    clearable: true,
+    span: 6,
+  },
+]);
+
+const selectedRows = ref<ResourceItem[]>([]);
+const selectedPaths = computed(() => selectedRows.value.map((r) => r.file_url));
+
+function onTableSelectionChange(rows: ResourceItem[]) {
+  selectedRows.value = rows;
+}
+
 const breadcrumbList = ref([{ name: "资源根目录", path: "/" }]);
 const showHiddenFiles = ref(false);
-
 const currentPath = ref("/");
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_monitor:resource",
-  colon: true,
-  isExpandable: false,
-  showNumber: 3,
-  form: { labelWidth: "auto" },
-  searchButtonPerm: "module_monitor:resource:query",
-  resetButtonPerm: "module_monitor:resource:query",
-  formItems: [
-    {
-      prop: "name",
-      label: "关键词",
-      type: "input",
-      attrs: { placeholder: "请输入文件名或目录名", clearable: true, style: { width: "200px" } },
-    },
-  ],
-});
-
-const contentConfig = reactive<IContentConfig<ResourcePageQuery>>({
-  permPrefix: "module_monitor:resource",
-  cols: [],
-  hideColumnFilter: true,
-  toolbar: [],
-  defaultToolbar: ["refresh"],
-  pk: "file_url",
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
-  },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const merged: ResourcePageQuery = {
-      ...(params as ResourcePageQuery),
-      include_hidden: showHiddenFiles.value,
-    };
-    if (currentPath.value && currentPath.value !== "/") {
-      merged.path = currentPath.value;
-    }
-    const res = await ResourceAPI.listResource(merged);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
-  },
-});
 
 const uploadDialogVisible = ref(false);
 const createDirDialogVisible = ref(false);
 const renameDialogVisible = ref(false);
 const uploading = ref(false);
+const batchDeleting = ref(false);
 
 const uploadRef = ref();
-const uploadFileList = ref<any[]>([]);
+const uploadFileList = ref<UploadUserFile[]>([]);
 
 const createDirForm = reactive({
   dir_name: "",
@@ -351,10 +292,18 @@ const renameForm = reactive({
   old_path: "",
 });
 
-function handleBreadcrumbClick(item: { path: string }) {
-  currentPath.value = item.path;
-  updateBreadcrumb();
-  refreshList();
+function formatFileSize(size?: number | null) {
+  if (!size || size === null) return "—";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let unitIndex = 0;
+  let fileSize = size;
+
+  while (fileSize >= 1024 && unitIndex < units.length - 1) {
+    fileSize /= 1024;
+    unitIndex++;
+  }
+
+  return `${fileSize.toFixed(1)} ${units[unitIndex]}`;
 }
 
 function updateBreadcrumb() {
@@ -374,20 +323,6 @@ function updateBreadcrumb() {
   ];
 }
 
-function handleFileNameClick(row: ResourceItem) {
-  if (row.is_dir) {
-    if (currentPath.value === "/") {
-      currentPath.value = row.name;
-    } else {
-      currentPath.value = currentPath.value + "/" + row.name;
-    }
-    updateBreadcrumb();
-    refreshList();
-  } else {
-    handleFilePreview(row);
-  }
-}
-
 function handleFilePreview(file: ResourceItem) {
   let previewUrl = file.file_url;
 
@@ -398,8 +333,158 @@ function handleFilePreview(file: ResourceItem) {
   window.open(previewUrl, "_blank");
 }
 
-function handleSelectionChange(selection: ResourceItem[]) {
-  selectedItems.value = selection;
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+} = useTable({
+  core: {
+    apiFn: fetchResourceTableList,
+    apiParams: {
+      current: 1,
+      size: 20,
+    },
+    columnsFactory: (): ColumnOption<ResourceItem>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
+      {
+        prop: "name",
+        label: "名称",
+        minWidth: 200,
+        formatter: (row: ResourceItem) =>
+          h("div", { class: "file-name flex items-center gap-2" }, [
+            h(ElIcon, { class: "file-icon" }, () => h(row.is_dir ? Folder : Document)),
+            h(
+              "span",
+              {
+                class:
+                  "file-name-clickable cursor-pointer text-theme hover:text-theme/80 hover:underline",
+                onClick: () => handleFileNameClick(row),
+              },
+              row.name
+            ),
+          ]),
+      },
+      {
+        prop: "size",
+        label: "大小",
+        minWidth: 120,
+        align: "center",
+        formatter: (row: ResourceItem) => (row.is_dir ? "" : h("span", formatFileSize(row.size))),
+      },
+      {
+        prop: "modified_time",
+        label: "修改时间",
+        minWidth: 180,
+        sortable: true,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 220,
+        fixed: "right",
+        align: "center",
+        formatter: (row: ResourceItem) =>
+          h(
+            ElSpace,
+            { wrap: true, size: 4 },
+            () =>
+              [
+                !row.is_dir && hasAuth("module_monitor:resource:download")
+                  ? h(ElTooltip, { content: "下载", placement: "top" }, () =>
+                      h("span", { class: "inline-flex" }, [
+                        h(ArtButtonTable, {
+                          type: "view",
+                          icon: "ri:download-line",
+                          onClick: () => void handleDownload(row),
+                        }),
+                      ])
+                    )
+                  : null,
+                hasAuth("module_monitor:resource:rename")
+                  ? h(ElTooltip, { content: "重命名", placement: "top" }, () =>
+                      h("span", { class: "inline-flex" }, [
+                        h(ArtButtonTable, {
+                          type: "edit",
+                          onClick: () => void handleRenameOpen(row),
+                        }),
+                      ])
+                    )
+                  : null,
+                hasAuth("module_monitor:resource:delete")
+                  ? h(ElTooltip, { content: "删除", placement: "top" }, () =>
+                      h("span", { class: "inline-flex" }, [
+                        h(ArtButtonTable, {
+                          type: "delete",
+                          onClick: () => void handleDelete(row),
+                        }),
+                      ])
+                    )
+                  : null,
+              ].filter(Boolean) as ReturnType<typeof h>[]
+          ),
+      },
+    ],
+  },
+});
+
+function handleBreadcrumbClick(item: { path: string }) {
+  currentPath.value = item.path;
+  updateBreadcrumb();
+  void getData();
+}
+
+function handleFileNameClick(row: ResourceItem) {
+  if (row.is_dir) {
+    if (currentPath.value === "/") {
+      currentPath.value = row.name;
+    } else {
+      currentPath.value = `${currentPath.value}/${row.name}`;
+    }
+    updateBreadcrumb();
+    void getData();
+  } else {
+    handleFilePreview(row);
+  }
+}
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
+});
+
+async function handleSearchBarSearch(params: ResourceSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildResourceReplaceParams(params));
+  getData();
+}
+
+async function onResetSearch() {
+  searchForm.value = { name: undefined };
+  await resetSearchParams();
+}
+
+function onShowHiddenChange() {
+  getData();
 }
 
 function handleUpload() {
@@ -407,8 +492,8 @@ function handleUpload() {
   uploadFileList.value = [];
 }
 
-function handleUploadChange(_file: unknown, fileList: unknown[]) {
-  uploadFileList.value = fileList as any[];
+function handleUploadChange(_file: UploadFile, fileList: UploadFiles) {
+  uploadFileList.value = fileList as UploadUserFile[];
 }
 
 async function handleUploadConfirm() {
@@ -420,7 +505,7 @@ async function handleUploadConfirm() {
   try {
     uploading.value = true;
     const formData = new FormData();
-    uploadFileList.value.forEach((file: { raw?: Blob }) => {
+    uploadFileList.value.forEach((file) => {
       const raw = file.raw;
       if (raw) formData.append("file", raw);
     });
@@ -430,7 +515,7 @@ async function handleUploadConfirm() {
 
     await ResourceAPI.uploadFile(formData);
     uploadDialogVisible.value = false;
-    refreshList();
+    await refreshData();
   } catch (error) {
     console.error("Upload error:", error);
   } finally {
@@ -461,14 +546,34 @@ async function handleCreateDirConfirm() {
       dir_name: createDirForm.dir_name.trim(),
     });
     createDirDialogVisible.value = false;
-    refreshList();
+    await refreshData();
   } catch (error) {
     console.error("Create directory error:", error);
   }
 }
 
-function onShowHiddenChange() {
-  refreshList();
+function handleRenameOpen(item: ResourceItem) {
+  renameForm.old_path = item.file_url;
+  renameForm.new_name = item.name;
+  renameDialogVisible.value = true;
+}
+
+async function handleRenameConfirm() {
+  if (!renameForm.new_name.trim()) {
+    ElMessage.warning("请输入新名称");
+    return;
+  }
+
+  try {
+    await ResourceAPI.renameResource({
+      old_path: renameForm.old_path,
+      new_name: renameForm.new_name.trim(),
+    });
+    renameDialogVisible.value = false;
+    await refreshData();
+  } catch (error) {
+    console.error("Rename error:", error);
+  }
 }
 
 async function handleDownload(item: ResourceItem) {
@@ -488,30 +593,6 @@ async function handleDownload(item: ResourceItem) {
   }
 }
 
-function handleRename(item: ResourceItem) {
-  renameForm.old_path = item.file_url;
-  renameForm.new_name = item.name;
-  renameDialogVisible.value = true;
-}
-
-async function handleRenameConfirm() {
-  if (!renameForm.new_name.trim()) {
-    ElMessage.warning("请输入新名称");
-    return;
-  }
-
-  try {
-    await ResourceAPI.renameResource({
-      old_path: renameForm.old_path,
-      new_name: renameForm.new_name.trim(),
-    });
-    renameDialogVisible.value = false;
-    refreshList();
-  } catch (error) {
-    console.error("Rename error:", error);
-  }
-}
-
 async function handleDelete(item: ResourceItem) {
   try {
     await ElMessageBox.confirm(`确定要删除 ${item.name} 吗？`, "确认删除", {
@@ -521,7 +602,8 @@ async function handleDelete(item: ResourceItem) {
     });
 
     await ResourceAPI.deleteResource([item.file_url]);
-    refreshList();
+    selectedRows.value = [];
+    await refreshData();
   } catch (error) {
     if (error !== "cancel") {
       console.error("Delete error:", error);
@@ -530,14 +612,14 @@ async function handleDelete(item: ResourceItem) {
 }
 
 async function handleBatchDelete() {
-  if (selectedItems.value.length === 0) {
+  if (selectedRows.value.length === 0) {
     ElMessage.warning("请选择要删除的文件");
     return;
   }
 
   try {
     await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedItems.value.length} 个文件吗？`,
+      `确定要删除选中的 ${selectedRows.value.length} 个文件吗？`,
       "确认删除",
       {
         confirmButtonText: "确定",
@@ -546,56 +628,22 @@ async function handleBatchDelete() {
       }
     );
 
-    const paths = selectedItems.value.map((item) => item.file_url);
-
+    batchDeleting.value = true;
+    const paths = selectedRows.value.map((item) => item.file_url);
     await ResourceAPI.deleteResource(paths);
-    refreshList();
+    selectedRows.value = [];
+    await refreshData();
   } catch (error) {
     if (error !== "cancel") {
       console.error("Batch delete error:", error);
     }
+  } finally {
+    batchDeleting.value = false;
   }
-}
-
-function formatFileSize(size?: number | null) {
-  if (!size || size === null) return "-";
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let unitIndex = 0;
-  let fileSize = size;
-
-  while (fileSize >= 1024 && unitIndex < units.length - 1) {
-    fileSize /= 1024;
-    unitIndex++;
-  }
-
-  return `${fileSize.toFixed(1)} ${units[unitIndex]}`;
 }
 </script>
 
 <style lang="scss" scoped>
-.card-header {
-  display: flex;
-  align-items: center;
-}
-
-.data-table__content {
-  .file-name {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-
-    .file-name-clickable {
-      color: var(--el-color-primary);
-      cursor: pointer;
-
-      &:hover {
-        color: var(--el-color-primary-light-3);
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
 :deep(.el-breadcrumb__item) {
   &.is-link {
     color: var(--el-color-primary);

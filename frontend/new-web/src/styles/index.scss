@@ -46,6 +46,7 @@
 }
 
 // ==================== 搜索区域样式 ====================
+
 /* 与 art-card-xs 并存时边框由主题 art 卡片统一绘制，避免双层描边 */
 .search-container:not(.art-card-xs) {
   border: 1px solid var(--el-border-color-light);

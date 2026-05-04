@@ -1,462 +1,385 @@
-<!-- 演示示例：CrudSearch + CrudContent CRUD 封装 -->
+<!-- 示例01 CRUD：与 demo 同一套 Art 布局；权限与接口为 module_example:demo01 / Demo01API -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBarWithAudit
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="demo01BusinessSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent
-      ref="contentRef"
-      :content-config="contentConfig"
-      @add-click="handleOpenDialog('create')"
-    >
-      <!-- 与 CrudContent 默认结构一致：不再套一层 data-table__toolbar（外层已由组件提供） -->
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft
-          :remove-ids="removeIds"
-          :perm-create="['module_example:demo01:create']"
-          :perm-delete="['module_example:demo01:delete']"
-          :perm-patch="['module_example:demo01:patch']"
-          @add="handleOpenDialog('create')"
-          @delete="onToolbar('delete')"
-          @more="handleMoreClick"
-        />
-        <div class="data-table__toolbar--right">
-          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
-        </div>
-      </template>
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_example:demo01:create']"
+            :perm-import="['module_example:demo01:import']"
+            :perm-export="['module_example:demo01:export']"
+            :perm-delete="['module_example:demo01:delete']"
+            :perm-patch="['module_example:demo01:patch']"
+            :delete-loading="batchDeleting"
+            @add="openEditDialog('add')"
+            @import="openImportModal"
+            @export="openExportModal"
+            @delete="handleBatchDelete"
+            @more="runBatchStatus"
+          />
+        </template>
+      </ArtTableHeader>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'name')?.show"
-              label="名称"
-              prop="name"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'uuid')?.show"
-              label="UUID"
-              prop="uuid"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'status')?.show"
-              label="状态"
-              prop="status"
-              min-width="120"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === "0" ? "启用" : "停用" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'description')?.show"
-              label="描述"
-              prop="description"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              label="创建时间"
-              prop="created_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_time')?.show"
-              label="更新时间"
-              prop="updated_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_id')?.show"
-              label="创建人"
-              prop="created_id"
-              min-width="120"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag>{{ scope.row.created_by?.name }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_id')?.show"
-              label="更新人"
-              prop="updated_id"
-              min-width="120"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-tag>{{ scope.row.updated_by?.name }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="200"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_example:demo01:detail']"
-                  type="info"
-                  size="small"
-                  link
-                  icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
-                >
-                  详情
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_example:demo01:update']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_example:demo01:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleRowDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </CrudContent>
+      <ArtTable
+        ref="artTableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
-    <EnhancedDialog
+    <ArtDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
-      width="560px"
+      width="768px"
+      dialog-class="crud-embed-dialog"
+      modal-class="crud-embed-dialog"
       @close="handleCloseDialog"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="名称" :span="2">
-            {{ detailFormData.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="UUID" :span="2">
-            {{ detailFormData.uuid }}
-          </el-descriptions-item>
-          <el-descriptions-item label="状态" :span="2">
-            <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
-              {{ detailFormData.status == "0" ? "启用" : "停用" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">
-            {{ detailFormData.description }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.created_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新人" :span="2">
-            {{ detailFormData.updated_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
+          <ElDescriptions :column="2" border>
+            <ElDescriptionsItem label="名称" :span="2">
+              {{ detailFormData.name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="UUID" :span="2">
+              {{ detailFormData.uuid }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="状态" :span="2">
+              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
+                {{ detailFormData.status === "0" ? "正常" : "停用" }}
+              </ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="描述" :span="2">
+              {{ detailFormData.description }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建人" :span="2">
+              {{ detailFormData.created_by?.name ?? "—" }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="更新人" :span="2">
+              {{ detailFormData.updated_by?.name ?? "—" }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="更新时间" :span="2">
+              {{ detailFormData.updated_time }}
+            </ElDescriptionsItem>
+          </ElDescriptions>
+        </ElScrollbar>
       </template>
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="名称" prop="name">
-            <el-input
-              v-model="formData.name"
-              placeholder="请输入名称（2-50 字符，仅字母数字下划线中划线）"
-              :maxlength="50"
-            />
-          </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-radio-group v-model="formData.status">
-              <el-radio value="0">启用</el-radio>
-              <el-radio value="1">停用</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="描述" prop="description">
-            <el-input
-              v-model="formData.description"
-              :rows="4"
-              :maxlength="255"
-              show-word-limit
-              type="textarea"
-              placeholder="请输入描述（可选，最多 255 字）"
-            />
-          </el-form-item>
-        </el-form>
+        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
+          <ElForm
+            ref="dataFormRef"
+            :model="formData"
+            :rules="rules"
+            label-suffix=":"
+            label-width="auto"
+            label-position="right"
+          >
+            <ElFormItem label="名称" prop="name">
+              <ElInput v-model="formData.name" placeholder="请输入名称" clearable />
+            </ElFormItem>
+            <ElFormItem label="状态" prop="status">
+              <ElRadioGroup v-model="formData.status">
+                <ElRadio value="0">正常</ElRadio>
+                <ElRadio value="1">停用</ElRadio>
+              </ElRadioGroup>
+            </ElFormItem>
+            <ElFormItem label="描述" prop="description">
+              <ElInput
+                v-model="formData.description"
+                type="textarea"
+                :rows="4"
+                placeholder="请输入描述"
+              />
+            </ElFormItem>
+          </ElForm>
+        </ElScrollbar>
       </template>
 
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
+        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
             确定
-          </el-button>
-          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
+          </ElButton>
+          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
+
+    <ArtImportDialog
+      v-model="importModalVisible"
+      :content-config="demo01ImportContentConfig"
+      default-template-file-name="demo01_import_template.xlsx"
+      @upload="handleCrudImportUpload"
+    />
+
+    <ArtExportDialog
+      v-model="exportModalVisible"
+      :content-config="demo01ExportContentConfig"
+      :query-params="exportQueryParams"
+      :page-data="data"
+      :selection-data="selectedRows"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { h, computed, ref, reactive } from "vue";
+import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
+import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
+import type { IContentConfig, IObject } from "@/components/Core/modal/types";
+import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
+import ArtSearchBarWithAudit from "@/components/Core/forms/art-search-bar/ArtSearchBarWithAudit.vue";
+import type { AuditSearchFormParams } from "@/components/Core/forms/art-search-bar/auditSearchFormItems";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import type { ColumnOption } from "@/types/component";
+import Demo01API, {
+  type Demo01Form,
+  type Demo01PageQuery,
+  type Demo01Table,
+} from "@/api/module_example/demo01";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { ResultEnum } from "@/enums/api/result.enum";
+
 defineOptions({
-  name: "Demo01",
+  name: "ModuleExampleDemo01",
   inheritAttrs: false,
 });
 
-import { ref, reactive, onMounted, markRaw, nextTick } from "vue";
-import { fetchAllPages } from "@/utils/fetchAllPages";
-import { ElMessageBox } from "element-plus";
-import { ResultEnum } from "@/enums/api/result.enum";
-import Demo01API, { Demo01Table, Demo01Form, Demo01PageQuery } from "@/api/module_example/demo01";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import { CrudToolbarActions } from "@/components/Crud";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
+type Demo01SearchFormParams = {
+  name?: string;
+  description?: string;
+  status?: string;
+} & AuditSearchFormParams;
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-
-function triggerUserSearch() {
-  nextTick(() => refreshList());
-}
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_example:demo01",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "name",
-      label: "名称",
-      type: "input",
-      attrs: { placeholder: "请输入名称", clearable: true },
-    },
-    {
-      prop: "description",
-      label: "描述",
-      type: "input",
-      attrs: { placeholder: "描述模糊查询", clearable: true },
-    },
-    {
-      prop: "status",
-      label: "状态",
-      type: "select",
-      options: [
-        { label: "启用", value: "0" },
-        { label: "停用", value: "1" },
-      ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "170px" } },
-    },
-    {
-      prop: "created_id",
-      label: "创建人",
-      type: "user-table-select",
-      initialValue: null,
-      events: {
-        "confirm-click": triggerUserSearch,
-        "clear-click": triggerUserSearch,
-      },
-    },
-    {
-      prop: "updated_id",
-      label: "更新人",
-      type: "user-table-select",
-      initialValue: null,
-      events: {
-        "confirm-click": triggerUserSearch,
-        "clear-click": triggerUserSearch,
-      },
-    },
-    {
-      prop: "created_time",
-      label: "创建时间",
-      type: "date-picker",
-      initialValue: [],
-      attrs: {
-        type: "datetimerange",
-        valueFormat: "YYYY-MM-DD HH:mm:ss",
-        rangeSeparator: "至",
-        startPlaceholder: "开始",
-        endPlaceholder: "结束",
-      },
-    },
-    {
-      prop: "updated_time",
-      label: "更新时间",
-      type: "date-picker",
-      initialValue: [],
-      attrs: {
-        type: "datetimerange",
-        valueFormat: "YYYY-MM-DD HH:mm:ss",
-        rangeSeparator: "至",
-        startPlaceholder: "开始",
-        endPlaceholder: "结束",
-      },
-    },
-  ],
-  customComponents: {
-    "user-table-select": markRaw(UserTableSelect),
-  },
-});
-
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "name", label: "名称", show: true },
-  { prop: "uuid", label: "UUID", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人", show: true },
-  { prop: "updated_id", label: "更新人", show: true },
-  { prop: "operation", label: "操作", show: true },
-]);
-
-function normalizeDemo01Query(params: Record<string, unknown>) {
+function normalizeDemo01Query(params: Record<string, unknown>): Demo01PageQuery {
   const p = { ...params } as Record<string, unknown>;
   if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
   if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  if (p.description === "" || p.description === null) p.description = undefined;
-  if (p.name === "" || p.name === null) p.name = undefined;
   return p as unknown as Demo01PageQuery;
 }
 
-const contentConfig = reactive<IContentConfig<Demo01PageQuery>>({
-  permPrefix: "module_example:demo01",
-  hideColumnFilter: false,
-  initialFetch: false,
-  cols: contentCols as IContentConfig["cols"],
-  toolbar: [],
-  defaultToolbar: ["import", "export", "refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
+const searchForm = ref<Demo01SearchFormParams>({
+  name: undefined,
+  description: undefined,
+  status: undefined,
+  created_id: undefined,
+  updated_id: undefined,
+  created_time: [],
+  updated_time: [],
+});
+
+const showSearchBar = ref(true);
+
+const searchBarRef = ref<InstanceType<typeof ArtSearchBarWithAudit> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "正常", value: "0" },
+  { label: "停用", value: "1" },
+]);
+
+const demo01BusinessSearchItems = computed(() => [
+  {
+    label: "名称",
+    key: "name",
+    type: "input",
+    placeholder: "请输入名称",
+    clearable: true,
+    span: 6,
   },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await Demo01API.getDemo01List(
-      normalizeDemo01Query(params as unknown as Record<string, unknown>)
-    );
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    placeholder: "请输入描述",
+    clearable: true,
+    span: 6,
   },
-  deleteAction: (ids) =>
-    Demo01API.deleteDemo01(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n) && n > 0)
-    ),
-  importTemplate: () => Demo01API.downloadDemo01Template(),
-  importAction: (file: File) => {
-    const fd = new FormData();
-    fd.append("file", file);
-    return Demo01API.importDemo01(fd).then((res) => {
-      if (res.data.code !== ResultEnum.SUCCESS) {
-        return Promise.reject(new Error(res.data.msg));
-      }
-    });
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: statusOptions.value,
+      clearable: true,
+    },
+    span: 6,
   },
-  exportsAction: async (params: Demo01PageQuery) => {
-    const query: Record<string, unknown> = { ...params };
-    return fetchAllPages<Demo01Table>({
-      pageSize: 9999,
-      initialQuery: query,
-      fetchPage: async (q) => {
-        const res = await Demo01API.getDemo01List(
-          normalizeDemo01Query(q as unknown as Record<string, unknown>)
-        );
-        return {
-          total: res.data?.data?.total ?? 0,
-          list: res.data?.data?.items ?? [],
-        };
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<Demo01Table[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: Demo01Table[]) {
+  selectedRows.value = rows;
+}
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  searchParams,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: Demo01API.getDemo01List,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<Demo01Table>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { prop: "name", label: "名称", minWidth: 120, showOverflowTooltip: true },
+      { prop: "uuid", label: "UUID", minWidth: 168, showOverflowTooltip: true },
+      {
+        prop: "status",
+        label: "状态",
+        width: 88,
+        formatter: (row: Demo01Table) => {
+          const ok = row.status === "0";
+          const cfg = ok
+            ? { type: "success" as const, text: "正常" }
+            : { type: "info" as const, text: "停用" };
+          return h(ElTag, { type: cfg.type }, () => cfg.text);
+        },
       },
-    });
+      { prop: "description", label: "描述", minWidth: 140, showOverflowTooltip: true },
+      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
+      { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "created_by",
+        label: "创建人",
+        minWidth: 100,
+        formatter: (row: Demo01Table) => row.created_by?.name ?? "—",
+      },
+      {
+        prop: "updated_by",
+        label: "更新人",
+        minWidth: 100,
+        formatter: (row: Demo01Table) => row.updated_by?.name ?? "—",
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 120,
+        fixed: "right",
+        formatter: (row: Demo01Table) =>
+          h("div", [
+            h(ArtButtonMore, {
+              list: [
+                { key: "detail", label: "详情", icon: "ri:file-list-3-line" },
+                { key: "edit", label: "编辑", icon: "ri:edit-2-line" },
+                { key: "delete", label: "删除", icon: "ri:delete-bin-4-line", color: "#f56c6c" },
+              ],
+              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
+            }),
+          ]),
+      },
+    ],
   },
 });
 
-const detailFormData = ref<Demo01Table>({});
+const demo01CrudCols = computed(() =>
+  columns.value.map((c: ColumnOption<Demo01Table>) => {
+    const t = (c as { type?: string }).type;
+    return {
+      prop: c.prop,
+      label: c.label,
+      type: t === "selection" ? ("selection" as const) : ("default" as const),
+      show: true,
+    };
+  })
+);
 
-const formData = reactive<Demo01Form>({
-  id: undefined,
-  name: "",
-  status: "0",
-  description: undefined,
+const exportQueryParams = computed(() => {
+  const sp = { ...(searchParams as object) } as Record<string, unknown>;
+  delete sp.current;
+  delete sp.size;
+  return normalizeDemo01Query(sp);
+});
+
+const demo01ImportContentConfig = computed<IContentConfig>(() => ({
+  permPrefix: "module_example:demo01",
+  cols: demo01CrudCols.value,
+  indexAction: async () => ({}) as Demo01Table[],
+  importTemplate: () => Demo01API.downloadDemo01Template(),
+}));
+
+const demo01ExportContentConfig = computed(() => ({
+  permPrefix: "module_example:demo01",
+  cols: demo01CrudCols.value,
+  exportsBlobAction: async (params: IObject) => {
+    const merged = normalizeDemo01Query({
+      ...(exportQueryParams.value as unknown as Record<string, unknown>),
+      ...params,
+    } as Record<string, unknown>);
+    const res = await Demo01API.exportDemo01(merged);
+    return res.data as Blob;
+  },
+}));
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
 });
 
 const dialogVisible = reactive({
@@ -465,43 +388,101 @@ const dialogVisible = reactive({
   type: "create" as "create" | "update" | "detail",
 });
 
+const detailFormData = ref<Demo01Table>({});
+
+const formData = reactive<Demo01Form>({
+  id: undefined,
+  name: "",
+  status: "0",
+  description: "",
+});
+
 const rules = reactive({
-  name: [
-    { required: true, message: "请输入名称", trigger: "blur" },
-    {
-      min: 2,
-      max: 50,
-      message: "名称长度必须在 2-50 个字符之间",
-      trigger: "blur",
-    },
-    {
-      pattern: /^[A-Za-z0-9_-]+$/,
-      message: "名称只能包含字母、数字、下划线和中划线",
-      trigger: "blur",
-    },
-  ],
-  status: [{ required: true, message: "请选择状态", trigger: "change" }],
-  description: [
-    {
-      max: 255,
-      message: "描述长度不能超过 255 个字符",
-      trigger: "blur",
-    },
-  ],
+  name: [{ required: true, message: "请输入名称", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
 const dataFormRef = ref();
 
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
-}
+const importModalVisible = ref(false);
+const exportModalVisible = ref(false);
 
 const initialFormData: Demo01Form = {
   id: undefined,
   name: "",
   status: "0",
-  description: undefined,
+  description: "",
 };
+
+const handleSearch = async (params: Demo01SearchFormParams) => {
+  await searchBarRef.value?.validate();
+  replaceSearchParams({
+    name: params.name,
+    description: params.description,
+    status: params.status,
+    created_id: params.created_id ?? undefined,
+    updated_id: params.updated_id ?? undefined,
+    created_time:
+      Array.isArray(params.created_time) && params.created_time.length === 2
+        ? params.created_time
+        : undefined,
+    updated_time:
+      Array.isArray(params.updated_time) && params.updated_time.length === 2
+        ? params.updated_time
+        : undefined,
+  } as Record<string, unknown>);
+  getData();
+};
+
+const onResetSearch = async () => {
+  searchForm.value = {
+    name: undefined,
+    description: undefined,
+    status: undefined,
+    created_id: undefined,
+    updated_id: undefined,
+    created_time: [],
+    updated_time: [],
+  };
+  await resetSearchParams();
+};
+
+const buttonMoreClick = (item: ButtonMoreItem, row: Demo01Table) => {
+  switch (item.key) {
+    case "detail":
+      openDetailDialog(row);
+      break;
+    case "edit":
+      openEditDialog("edit", row);
+      break;
+    case "delete":
+      deleteDemo01Row(row);
+      break;
+  }
+};
+
+async function openDetailDialog(row: Demo01Table) {
+  if (!row.id) return;
+  const response = await Demo01API.getDemo01Detail(row.id);
+  dialogVisible.type = "detail";
+  dialogVisible.title = "详情";
+  detailFormData.value = response.data.data ?? { ...row };
+  dialogVisible.visible = true;
+}
+
+async function openEditDialog(type: "add" | "edit", row?: Demo01Table) {
+  dialogVisible.type = type === "add" ? "create" : "update";
+  if (type === "add") {
+    dialogVisible.title = "新增示例01";
+    Object.assign(formData, initialFormData);
+    formData.id = undefined;
+  } else if (row?.id) {
+    dialogVisible.title = "修改";
+    const response = await Demo01API.getDemo01Detail(row.id);
+    Object.assign(formData, response.data.data);
+  }
+  dialogVisible.visible = true;
+}
 
 async function resetForm() {
   if (dataFormRef.value) {
@@ -513,77 +494,110 @@ async function resetForm() {
 
 async function handleCloseDialog() {
   dialogVisible.visible = false;
-  resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await Demo01API.getDemo01Detail(id);
-    if (type === "detail") {
-      dialogVisible.title = "详情";
-      Object.assign(detailFormData.value, response.data.data);
-    } else if (type === "update") {
-      dialogVisible.title = "修改";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增示例01";
-    formData.id = undefined;
-  }
-  dialogVisible.visible = true;
+  await resetForm();
 }
 
 async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      const submitData: Demo01Form = {
-        name: formData.name?.trim(),
-        status: formData.status,
-        description: formData.description?.trim() || undefined,
-      };
-      const id = formData.id;
-      try {
-        if (id) {
-          await Demo01API.updateDemo01(id, submitData);
-        } else {
-          await Demo01API.createDemo01(submitData);
-        }
-        dialogVisible.visible = false;
-        await resetForm();
-        refreshList();
-      } catch (error: unknown) {
-        console.error(error);
+    if (!valid) return;
+    const id = formData.id;
+    try {
+      if (id) {
+        await Demo01API.updateDemo01(id, { id, ...formData });
+        await refreshUpdate();
+      } else {
+        await Demo01API.createDemo01(formData);
+        await refreshCreate();
       }
+      dialogVisible.visible = false;
+      await resetForm();
+    } catch (error: unknown) {
+      console.error(error);
     }
   });
 }
 
-async function handleMoreClick(status: string) {
-  const rows = contentRef.value?.getSelectionData() ?? [];
-  const ids = rows.map((r: { id?: number }) => r.id).filter(Boolean) as number[];
-  if (!ids.length) return;
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+const deleteDemo01Row = (row: Demo01Table) => {
+  if (!row.id) return;
+  ElMessageBox.confirm(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`, "删除确认", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await Demo01API.deleteDemo01([row.id!]);
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {
+      ElMessage.info("已取消删除");
+    });
+};
+
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`, "批量删除", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(async () => {
       try {
-        await Demo01API.batchDemo01({ ids, status });
-        refreshList();
-      } catch (error: unknown) {
-        console.error(error);
+        batchDeleting.value = true;
+        await Demo01API.deleteDemo01(ids);
+        ElMessage.success("删除成功");
+        artTableRef.value?.elTableRef?.clearSelection();
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
       }
     })
     .catch(() => {
-      ElMessageBox.close();
+      ElMessage.info("已取消删除");
     });
 }
 
-onMounted(() => {
-  refreshList();
-});
-</script>
+function runBatchStatus(status: string) {
+  const ids = selectedIds.value;
+  if (ids.length === 0) {
+    ElMessage.warning("请先在列表中勾选数据");
+    return;
+  }
+  ElMessageBox.confirm(
+    `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
+    "批量设置",
+    { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+  )
+    .then(async () => {
+      await Demo01API.batchDemo01({ ids, status });
+      ElMessage.success("操作成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshData();
+    })
+    .catch(() => {});
+}
 
-<style lang="scss" scoped></style>
+function openImportModal() {
+  importModalVisible.value = true;
+}
+
+function handleCrudImportUpload(formDataUpload: FormData) {
+  Demo01API.importDemo01(formDataUpload)
+    .then((res) => {
+      if (res.data.code !== ResultEnum.SUCCESS) {
+        ElMessage.error(res.data.msg || "导入失败");
+        return;
+      }
+      ElMessage.success(res.data.msg || "导入成功");
+      importModalVisible.value = false;
+      return refreshData();
+    })
+    .catch(console.error);
+}
+
+function openExportModal() {
+  exportModalVisible.value = true;
+}
+</script>

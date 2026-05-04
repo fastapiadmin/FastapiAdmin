@@ -71,6 +71,11 @@ export interface FestivalConfig {
   isActive?: boolean;
   /** 烟花播放次数（可选，默认为 3 次） */
   count?: number;
+  /**
+   * 为 true 时不放烟花，进入系统后直接显示 `scrollText`（适合长期顶栏公告）
+   * 多条时间重叠时优先使用日期区间更短的那条
+   */
+  skipFireworks?: boolean;
 }
 
 // 系统基础配置

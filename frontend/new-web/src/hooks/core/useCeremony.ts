@@ -46,6 +46,7 @@ import { computed } from "vue";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { mittBus } from "@/utils/sys";
 import { festivalConfigList } from "@/config/modules/festival";
+import { formatToDate } from "@/utils/common/dateUtil";
 
 /**
  * 节日庆祝配置常量
@@ -95,19 +96,32 @@ export function useCeremony() {
     return current >= start && current <= end;
   };
 
+  /** 区间越短越「具体」，重叠时优先展示（如五月条优先于全年公告） */
+  const festivalRangeSpanDays = (item: (typeof festivalConfigList)[number]): number => {
+    if (!item.endDate) return 1;
+    const s = new Date(item.date).getTime();
+    const e = new Date(item.endDate).getTime();
+    return Math.max(1, Math.round((e - s) / 86400000) + 1);
+  };
+
   /**
-   * 获取当前日期对应的节日数据
+   * 获取当前日期对应的节日数据（同日多条命中时取区间最短的一条）
    */
   const currentFestivalData = computed(() => {
     const currentDate = useDateFormat(new Date(), "YYYY-MM-DD").value;
-    return festivalConfigList.find((item) => isDateInRange(currentDate, item.date, item.endDate));
+    const matches = festivalConfigList.filter((item) =>
+      isDateInRange(currentDate, item.date, item.endDate)
+    );
+    if (!matches.length) return undefined;
+    matches.sort((a, b) => festivalRangeSpanDays(a) - festivalRangeSpanDays(b));
+    return matches[0];
   });
 
   /**
-   * 更新节日日期到 store
+   * 标记「今日已完成烟花流程」，用于 store 按自然日防抖（与节日配置的 date 字段无关）
    */
   const updateFestivalDate = () => {
-    settingStore.setFestivalDate(currentFestivalData.value?.date || "");
+    settingStore.setFestivalDate(formatToDate(new Date()));
   };
 
   /**
@@ -151,10 +165,30 @@ export function useCeremony() {
   };
 
   /**
-   * 开启节日庆祝
+   * 顶栏纯文案关闭（仅 skipFireworks）持久化 key
+   */
+  const festivalScrollDismissKey = (cur: (typeof festivalConfigList)[number]): string =>
+    `festival_scroll_dismissed_${cur.date}_${cur.endDate ?? ""}`;
+
+  /**
+   * 开启节日庆祝：skipFireworks 时直接显示滚动条；否则走烟花再出字
    */
   const openFestival = () => {
-    if (!currentFestivalData.value || !isShowFireworks.value) {
+    const cur = currentFestivalData.value;
+    if (!cur) return;
+
+    if (cur.skipFireworks) {
+      if (
+        typeof localStorage !== "undefined" &&
+        localStorage.getItem(festivalScrollDismissKey(cur)) === "1"
+      ) {
+        return;
+      }
+      settingStore.setShowFestivalText(true);
+      return;
+    }
+
+    if (!isShowFireworks.value) {
       return;
     }
 
@@ -171,7 +205,15 @@ export function useCeremony() {
       fireworksInterval = null;
     }
     settingStore.setShowFestivalText(false);
-    updateFestivalDate();
+  };
+
+  /** 关闭顶栏滚动：skipFireworks 时写入 localStorage，下次不再自动展开 */
+  const closeFestivalScroll = () => {
+    const cur = currentFestivalData.value;
+    settingStore.setShowFestivalText(false);
+    if (cur?.skipFireworks && typeof localStorage !== "undefined") {
+      localStorage.setItem(festivalScrollDismissKey(cur), "1");
+    }
   };
 
   return {
@@ -180,5 +222,7 @@ export function useCeremony() {
     holidayFireworksLoaded,
     currentFestivalData,
     isShowFireworks,
+    festivalScrollDismissKey,
+    closeFestivalScroll,
   };
 }

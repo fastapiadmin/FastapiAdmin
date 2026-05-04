@@ -1,22 +1,22 @@
 <!-- 语言切换 -->
 <template>
-  <el-dropdown trigger="click" @command="handleLanguageChange">
+  <ElDropdown trigger="click" @command="handleLanguageChange">
     <div class="navbar-lang-trigger flex-cc">
       <ArtSvgIcon :icon="resolveIconForArtSvgIcon('language')" :class="size" />
     </div>
     <template #dropdown>
-      <el-dropdown-menu>
-        <el-dropdown-item
+      <ElDropdownMenu>
+        <ElDropdownItem
           v-for="item in langOptions"
           :key="item.value"
           :disabled="appStore.language === item.value"
           :command="item.value"
         >
           {{ item.label }}
-        </el-dropdown-item>
-      </el-dropdown-menu>
+        </ElDropdownItem>
+      </ElDropdownMenu>
     </template>
-  </el-dropdown>
+  </ElDropdown>
 </template>
 
 <script setup lang="ts">

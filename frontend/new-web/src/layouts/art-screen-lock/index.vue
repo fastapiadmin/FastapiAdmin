@@ -20,7 +20,7 @@
 
     <!-- 设置锁屏密码弹窗（与旧版 LockDialog.vue 一致；锁密码仍写入 userStore + 加密） -->
     <div v-if="!isLock">
-      <EnhancedDialog
+      <ArtDialog
         v-model="visible"
         width="500px"
         max-height="170px"
@@ -50,13 +50,13 @@
         <template #footer>
           <ElButton type="primary" @click="handleLock">{{ t("navbar.lock") }}</ElButton>
         </template>
-      </EnhancedDialog>
+      </ArtDialog>
     </div>
 
     <!-- 解锁全屏（旧版 LockPage 样式） -->
     <div v-else class="lockpage">
       <div v-show="showClock" class="unlock-container" @click="showUnlockForm">
-        <el-icon><Lock /></el-icon>
+        <ElIcon><Lock /></ElIcon>
         <span>{{ t("lock.unlock") }}</span>
       </div>
 
@@ -93,7 +93,7 @@
               {{ t("lock.message") }}
             </span>
             <div class="button-group">
-              <el-button
+              <ElButton
                 type="primary"
                 size="small"
                 class="back-button"
@@ -102,8 +102,8 @@
                 @click="showClockView"
               >
                 {{ t("common.back") }}
-              </el-button>
-              <el-button
+              </ElButton>
+              <ElButton
                 type="primary"
                 size="small"
                 class="login-button"
@@ -112,8 +112,8 @@
                 @click="goLogin"
               >
                 {{ t("lock.backToLogin") }}
-              </el-button>
-              <el-button
+              </ElButton>
+              <ElButton
                 type="primary"
                 class="entry-button"
                 size="small"
@@ -122,7 +122,7 @@
                 @click="submitUnlock"
               >
                 {{ t("lock.entrySystem") }}
-              </el-button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@
 import { Lock } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElInput } from "element-plus";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import CryptoJS from "crypto-js";

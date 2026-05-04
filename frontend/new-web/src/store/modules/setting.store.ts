@@ -36,7 +36,7 @@ import { MenuThemeType } from "@/types/store";
 import AppConfig from "@/config";
 import { SystemThemeEnum, MenuThemeEnum, MenuTypeEnum, ContainerWidthEnum } from "@/enums/appEnum";
 import { setElementThemeColor } from "@/utils/ui";
-import { useCeremony } from "@/hooks/core/useCeremony";
+import { formatToDate } from "@/utils/common/dateUtil";
 import { StorageConfig } from "@/utils/storage/storage-config";
 import { SETTING_DEFAULT_CONFIG } from "@/config/setting";
 import {
@@ -202,8 +202,10 @@ export const useSettingsStore = defineStore(
       return customRadius.value + "rem" || SETTING_DEFAULT_CONFIG.customRadius + "rem";
     });
 
+    /** festivalDate 存「上次完成烟花播放」的自然日 YYYY-MM-DD，与今天相同则当天不再播 */
     const isShowFireworks = computed((): boolean => {
-      return festivalDate.value === useCeremony().currentFestivalData.value?.date ? false : true;
+      const today = formatToDate(new Date());
+      return festivalDate.value !== today;
     });
 
     // ==============================================

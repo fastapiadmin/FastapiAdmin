@@ -25,7 +25,7 @@ const ParamsAPI = {
   },
 
   listParams(query: ConfigPageQuery) {
-    return request<ApiResponse<PageResult<ConfigTable[]>>>({
+    return request<ApiResponse<PageResult<ConfigTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

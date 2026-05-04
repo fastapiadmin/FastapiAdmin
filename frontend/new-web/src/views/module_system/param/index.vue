@@ -1,415 +1,412 @@
-<!-- 系统配置 -->
+<!-- 系统配置：Art 布局 + useTable，与 notice 页一致 -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="paramSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent ref="contentRef" :content-config="contentConfig">
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <!-- 与 CrudContent 默认工具栏一致：flex 换行，避免 el-row/el-col 与外层 flex 挤压右侧按钮 -->
-        <CrudToolbarLeft
-          :remove-ids="removeIds"
-          :perm-create="['module_system:param:create']"
-          :perm-delete="['module_system:param:delete']"
-          @add="handleOpenDialog('create')"
-          @delete="onToolbar('delete')"
-        />
-        <div class="data-table__toolbar--right">
-          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
-            <template #prepend>
-              <el-tooltip content="导出">
-                <el-button
-                  v-hasPerm="['module_system:param:export']"
-                  type="warning"
-                  icon="download"
-                  circle
-                  @click="handleOpenExportsModal"
-                />
-              </el-tooltip>
-            </template>
-          </CrudToolbarActions>
-        </div>
-      </template>
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_system:param:create']"
+            :perm-export="['module_system:param:export']"
+            :perm-delete="['module_system:param:delete']"
+            :delete-loading="batchDeleting"
+            @add="handleOpenDialog('create')"
+            @export="openExportModal"
+            @delete="handleBatchDelete"
+          />
+        </template>
+      </ArtTableHeader>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            row-key="id"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'config_name')?.show"
-              key="config_name"
-              label="配置名称"
-              prop="config_name"
-              min-width="120"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'config_key')?.show"
-              key="config_key"
-              label="配置键"
-              prop="config_key"
-              min-width="200"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'config_value')?.show"
-              key="config_value"
-              label="配置值"
-              prop="config_value"
-              min-width="200"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'config_type')?.show"
-              key="config_type"
-              label="系统内置"
-              prop="config_type"
-              min-width="100"
-            >
-              <template #default="scope">
-                <el-tag v-if="scope.row.config_type" type="success">是</el-tag>
-                <el-tag v-else type="danger">否</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'description')?.show"
-              key="description"
-              label="描述"
-              prop="description"
-              min-width="120"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              key="created_time"
-              label="创建时间"
-              prop="created_time"
-              min-width="200"
-              sortable
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_time')?.show"
-              key="updated_time"
-              label="更新时间"
-              prop="updated_time"
-              min-width="200"
-              sortable
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="200"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_system:param:detail']"
-                  type="info"
-                  size="small"
-                  link
-                  icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
-                >
-                  详情
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:param:update']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:param:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleRowDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </CrudContent>
+      <ArtTable
+        ref="artTableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
-    <EnhancedDialog
+    <ArtDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
+      width="640px"
+      dialog-class="crud-embed-dialog"
+      modal-class="crud-embed-dialog"
       @close="handleCloseDialog"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <el-descriptions :column="4" border>
-          <el-descriptions-item label="配置名称" :span="2">
-            {{ detailFormData.config_name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="系统内置" :span="2">
-            <el-tag v-if="detailFormData.config_type" type="success">是</el-tag>
-            <el-tag v-else type="danger">否</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="配置键" :span="2">
-            {{ detailFormData.config_key }}
-          </el-descriptions-item>
-          <el-descriptions-item label="配置值" :span="2">
-            {{ detailFormData.config_value }}
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">
-            {{ detailFormData.description }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
+          <ElDescriptions :column="4" border>
+            <ElDescriptionsItem label="配置名称" :span="2">
+              {{ detailFormData.config_name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="系统内置" :span="2">
+              <ElTag v-if="detailFormData.config_type" type="success">是</ElTag>
+              <ElTag v-else type="danger">否</ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="配置键" :span="2">
+              {{ detailFormData.config_key }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="配置值" :span="2">
+              {{ detailFormData.config_value }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="描述" :span="2">
+              {{ detailFormData.description }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="更新时间" :span="2">
+              {{ detailFormData.updated_time }}
+            </ElDescriptionsItem>
+          </ElDescriptions>
+        </ElScrollbar>
       </template>
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="配置名称" prop="config_name">
-            <el-input v-model="formData.config_name" placeholder="请输入配置名称" :maxlength="50" />
-          </el-form-item>
-          <el-form-item label="配置键" prop="config_key">
-            <el-input v-model="formData.config_key" placeholder="请输入配置键" :maxlength="50" />
-          </el-form-item>
-          <el-form-item label="配置值" prop="config_value">
-            <el-input v-model="formData.config_value" placeholder="请输入配置值" :maxlength="100" />
-          </el-form-item>
-          <el-form-item label="系统内置" prop="config_type">
-            <el-radio-group v-model="formData.config_type">
-              <el-radio :value="true">是</el-radio>
-              <el-radio :value="false">否</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="描述" prop="description">
-            <el-input
-              v-model="formData.description"
-              :rows="4"
-              :maxlength="100"
-              show-word-limit
-              type="textarea"
-              placeholder="请输入描述"
-            />
-          </el-form-item>
-        </el-form>
+        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
+          <ElForm
+            ref="dataFormRef"
+            :model="formData"
+            :rules="rules"
+            label-suffix=":"
+            label-width="100px"
+            label-position="right"
+          >
+            <ElFormItem label="配置名称" prop="config_name">
+              <ElInput
+                v-model="formData.config_name"
+                placeholder="请输入配置名称"
+                :maxlength="50"
+              />
+            </ElFormItem>
+            <ElFormItem label="配置键" prop="config_key">
+              <ElInput v-model="formData.config_key" placeholder="请输入配置键" :maxlength="50" />
+            </ElFormItem>
+            <ElFormItem label="配置值" prop="config_value">
+              <ElInput
+                v-model="formData.config_value"
+                placeholder="请输入配置值"
+                :maxlength="100"
+              />
+            </ElFormItem>
+            <ElFormItem label="系统内置" prop="config_type">
+              <ElRadioGroup v-model="formData.config_type">
+                <ElRadio :value="true">是</ElRadio>
+                <ElRadio :value="false">否</ElRadio>
+              </ElRadioGroup>
+            </ElFormItem>
+            <ElFormItem label="描述" prop="description">
+              <ElInput
+                v-model="formData.description"
+                :rows="4"
+                :maxlength="100"
+                show-word-limit
+                type="textarea"
+                placeholder="请输入描述"
+              />
+            </ElFormItem>
+          </ElForm>
+        </ElScrollbar>
       </template>
 
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
+        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton
             v-if="dialogVisible.type !== 'detail'"
-            v-hasPerm="['module_system:param:create']"
             type="primary"
             :loading="submitLoading"
             @click="handleSubmit"
           >
             确定
-          </el-button>
-          <el-button
-            v-else
-            v-hasPerm="['module_system:param:detail']"
-            type="primary"
-            @click="handleCloseDialog"
-          >
-            确定
-          </el-button>
+          </ElButton>
+          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
 
-    <CrudExportModal
-      v-model="exportsDialogVisible"
-      :content-config="curdContentConfig"
+    <ArtExportDialog
+      v-model="exportModalVisible"
+      :content-config="paramExportContentConfig"
       :query-params="exportQueryParams"
-      :page-data="exportPageData"
-      :selection-data="exportSelectionData"
+      :page-data="data"
+      :selection-data="selectedRows"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, unref } from "vue";
-import { fetchAllPages } from "@/utils/fetchAllPages";
-import ParamsAPI, { ConfigTable, ConfigForm, ConfigPageQuery } from "@/api/module_system/params";
+import { h, computed, ref, reactive } from "vue";
+import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
+import type { IObject } from "@/components/Core/modal/types";
+import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import type { ColumnOption } from "@/types/component";
+import ParamsAPI, {
+  type ConfigForm,
+  type ConfigPageQuery,
+  type ConfigTable,
+} from "@/api/module_system/params";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useConfigStore } from "@/store";
-import CrudExportModal from "@/components/CURD/CrudExportModal.vue";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import { CrudToolbarActions } from "@/components/Crud";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import type { IContentConfig, ISearchConfig, IObject } from "@/components/Crud/types";
 
 defineOptions({
   name: "Params",
   inheritAttrs: false,
 });
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-const dataFormRef = ref();
-const submitLoading = ref(false);
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_system:param",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "config_name",
-      label: "配置名称",
-      type: "input",
-      attrs: { placeholder: "请输入配置名称", clearable: true },
-    },
-    {
-      prop: "config_key",
-      label: "配置键名",
-      type: "input",
-      attrs: { placeholder: "请输入配置键名", clearable: true },
-    },
-    {
-      prop: "config_type",
-      label: "系统内置",
-      type: "select",
-      options: [
-        { label: "是", value: "true" },
-        { label: "否", value: "false" },
-      ],
-      attrs: { placeholder: "请选择系统内置", clearable: true, style: { width: "167.5px" } },
-    },
-    {
-      prop: "created_time",
-      label: "创建时间",
-      type: "date-picker",
-      initialValue: [],
-      attrs: {
-        type: "datetimerange",
-        valueFormat: "YYYY-MM-DD HH:mm:ss",
-        rangeSeparator: "至",
-        startPlaceholder: "开始日期",
-        endPlaceholder: "结束日期",
-        style: { width: "340px" },
-      },
-    },
-  ],
-});
-
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "config_name", label: "配置名称", show: true },
-  { prop: "config_key", label: "配置键", show: true },
-  { prop: "config_value", label: "配置值", show: true },
-  { prop: "config_type", label: "系统内置", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "operation", label: "操作", show: true },
-]);
-
 const configStore = useConfigStore();
 
-function normalizeListQuery(params: IObject): ConfigPageQuery {
-  const q = { ...params } as IObject;
-  if (typeof q.config_type === "string") {
-    q.config_type = q.config_type === "true";
-  }
-  return q as unknown as ConfigPageQuery;
+type ParamSearchForm = {
+  config_name?: string;
+  config_key?: string;
+  config_type?: string;
+  created_time?: string[];
+};
+
+function normalizeParamQuery(params: Record<string, unknown>): ConfigPageQuery {
+  const p = { ...params } as Record<string, unknown>;
+  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
+  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
+  if (p.config_type === "true" || p.config_type === true) p.config_type = true;
+  else if (p.config_type === "false" || p.config_type === false) p.config_type = false;
+  return p as unknown as ConfigPageQuery;
 }
 
-const contentConfig = reactive<IContentConfig<ConfigPageQuery>>({
-  permPrefix: "module_system:param",
-  pk: "id",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
+function buildParamReplaceParams(p: ParamSearchForm): Record<string, unknown> {
+  return {
+    config_name: p.config_name,
+    config_key: p.config_key,
+    config_type: p.config_type,
+    created_time:
+      Array.isArray(p.created_time) && p.created_time.length === 2 ? p.created_time : undefined,
+  };
+}
+
+const searchForm = ref<ParamSearchForm>({
+  config_name: undefined,
+  config_key: undefined,
+  config_type: undefined,
+  created_time: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const builtinOptions = ref([
+  { label: "是", value: "true" },
+  { label: "否", value: "false" },
+]);
+
+const paramSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "配置名称",
+    key: "config_name",
+    type: "input",
+    placeholder: "请输入配置名称",
+    clearable: true,
+    span: 6,
   },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await ParamsAPI.listParams(normalizeListQuery(params as IObject));
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
+  {
+    label: "配置键名",
+    key: "config_key",
+    type: "input",
+    placeholder: "请输入配置键名",
+    clearable: true,
+    span: 6,
   },
-  deleteAction: async (ids) => {
-    await ParamsAPI.deleteParams(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n))
-    );
-    configStore.isConfigLoaded = false;
-    await configStore.getConfig();
+  {
+    label: "系统内置",
+    key: "config_type",
+    type: "select",
+    props: {
+      placeholder: "请选择系统内置",
+      options: builtinOptions.value,
+      clearable: true,
+    },
+    span: 6,
   },
-  deleteConfirm: {
-    title: "警告",
-    message: "确认删除该项数据?",
-    type: "warning",
+  {
+    label: "创建时间",
+    key: "created_time",
+    type: "datetimerange",
+    span: 6,
+    props: {
+      type: "datetimerange",
+      rangeSeparator: "至",
+      startPlaceholder: "开始日期",
+      endPlaceholder: "结束日期",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      style: { width: "340px" },
+    },
+  },
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<ConfigTable[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: ConfigTable[]) {
+  selectedRows.value = rows;
+}
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  searchParams,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: ParamsAPI.listParams,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<ConfigTable>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { prop: "config_name", label: "配置名称", minWidth: 120, showOverflowTooltip: true },
+      { prop: "config_key", label: "配置键", minWidth: 200, showOverflowTooltip: true },
+      { prop: "config_value", label: "配置值", minWidth: 200, showOverflowTooltip: true },
+      {
+        prop: "config_type",
+        label: "系统内置",
+        minWidth: 100,
+        formatter: (row: ConfigTable) =>
+          h(ElTag, { type: row.config_type ? "success" : "danger" }, () =>
+            row.config_type ? "是" : "否"
+          ),
+      },
+      { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
+      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
+      { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 120,
+        fixed: "right",
+        formatter: (row: ConfigTable) =>
+          h(ArtButtonMore, {
+            list: [
+              {
+                key: "detail",
+                label: "详情",
+                icon: "ri:file-list-3-line",
+                auth: "module_system:param:detail",
+              },
+              {
+                key: "edit",
+                label: "编辑",
+                icon: "ri:edit-2-line",
+                auth: "module_system:param:update",
+              },
+              {
+                key: "delete",
+                label: "删除",
+                icon: "ri:delete-bin-4-line",
+                color: "#f56c6c",
+                auth: "module_system:param:delete",
+              },
+            ],
+            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
+          }),
+      },
+    ],
   },
 });
 
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
-}
+const paramCrudCols = computed(() =>
+  columns.value.map((c: ColumnOption<ConfigTable>) => {
+    const t = (c as { type?: string }).type;
+    return {
+      prop: c.prop,
+      label: c.label,
+      type: t === "selection" ? ("selection" as const) : ("default" as const),
+      show: true,
+    };
+  })
+);
+
+const exportQueryParams = computed(() => {
+  const sp = { ...(searchParams as object) } as Record<string, unknown>;
+  delete sp.current;
+  delete sp.size;
+  return normalizeParamQuery(sp);
+});
+
+const paramExportContentConfig = computed(() => ({
+  permPrefix: "module_system:param",
+  cols: paramCrudCols.value,
+  exportsBlobAction: async (params: IObject) => {
+    const merged = normalizeParamQuery({
+      ...(exportQueryParams.value as unknown as Record<string, unknown>),
+      ...params,
+    } as Record<string, unknown>);
+    const res = await ParamsAPI.exportParams(merged as ConfigPageQuery);
+    return res.data as Blob;
+  },
+}));
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
+});
 
 const detailFormData = ref<ConfigTable>({} as ConfigTable);
 
@@ -435,6 +432,9 @@ const rules = reactive({
   config_type: [{ required: true, message: "请选择系统配置类型", trigger: "blur" }],
 });
 
+const dataFormRef = ref();
+const submitLoading = ref(false);
+
 const initialFormData: ConfigForm = {
   id: undefined,
   config_name: "",
@@ -444,46 +444,36 @@ const initialFormData: ConfigForm = {
   description: "",
 };
 
-const exportsDialogVisible = ref(false);
+const exportModalVisible = ref(false);
 
-const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+async function handleSearchBarSearch(params: ParamSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildParamReplaceParams(params));
+  getData();
+}
 
-const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as ConfigTable[]);
+function onResetSearch() {
+  searchForm.value = {
+    config_name: undefined,
+    config_key: undefined,
+    config_type: undefined,
+    created_time: undefined,
+  };
+  void resetSearchParams();
+}
 
-const exportSelectionData = computed(
-  () => (contentRef.value?.getSelectionData() ?? []) as ConfigTable[]
-);
-
-const exportColumns = [
-  { prop: "config_name", label: "配置名称" },
-  { prop: "config_key", label: "配置键" },
-  { prop: "config_value", label: "配置值" },
-  { prop: "config_type", label: "系统内置" },
-  { prop: "description", label: "描述" },
-  { prop: "created_time", label: "创建时间" },
-  { prop: "updated_time", label: "更新时间" },
-];
-
-const curdContentConfig = {
-  permPrefix: "module_system:param",
-  cols: exportColumns as any,
-  exportsAction: async (params: any) => {
-    const query = { ...normalizeListQuery(params) } as Record<string, unknown>;
-    return fetchAllPages({
-      initialQuery: query,
-      fetchPage: async (q) => {
-        const res = await ParamsAPI.listParams(q as unknown as ConfigPageQuery);
-        return {
-          total: res.data?.data?.total ?? 0,
-          list: res.data?.data?.items ?? [],
-        };
-      },
-    });
-  },
-} as unknown as IContentConfig;
-
-function handleOpenExportsModal() {
-  exportsDialogVisible.value = true;
+function buttonMoreClick(item: ButtonMoreItem, row: ConfigTable) {
+  switch (item.key) {
+    case "detail":
+      if (row.id != null) void handleOpenDialog("detail", row.id);
+      break;
+    case "edit":
+      if (row.id != null) void handleOpenDialog("update", row.id);
+      break;
+    case "delete":
+      if (row.id != null) deleteParamRow(row.id);
+      break;
+  }
 }
 
 async function resetForm() {
@@ -505,40 +495,98 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     const response = await ParamsAPI.detailParams(id);
     if (type === "detail") {
       dialogVisible.title = "系统配置详情";
-      Object.assign(detailFormData.value, response.data.data);
+      Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改系统配置";
       Object.assign(formData, response.data.data);
     }
   } else {
     dialogVisible.title = "新增系统配置";
+    Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: any) => {
-    if (valid) {
-      submitLoading.value = true;
-      const id = formData.id;
-      try {
-        if (id) {
-          await ParamsAPI.updateParams(id, { id, ...formData });
-        } else {
-          await ParamsAPI.createParams(formData);
-        }
-        dialogVisible.visible = false;
-        await resetForm();
-        refreshList();
-        configStore.isConfigLoaded = false;
-        await configStore.getConfig();
-      } catch (error: any) {
-        console.error(error);
-      } finally {
-        submitLoading.value = false;
+  dataFormRef.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    submitLoading.value = true;
+    const id = formData.id;
+    try {
+      if (id) {
+        await ParamsAPI.updateParams(id, { id, ...formData });
+        await refreshUpdate();
+      } else {
+        await ParamsAPI.createParams(formData);
+        await refreshCreate();
       }
+      dialogVisible.visible = false;
+      await resetForm();
+      configStore.isConfigLoaded = false;
+      await configStore.getConfig();
+    } catch (error: unknown) {
+      console.error(error);
+    } finally {
+      submitLoading.value = false;
     }
   });
 }
+
+function deleteParamRow(id: number) {
+  ElMessageBox.confirm("确认删除该项数据?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await ParamsAPI.deleteParams([id]);
+      configStore.isConfigLoaded = false;
+      await configStore.getConfig();
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
+}
+
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await ParamsAPI.deleteParams(ids);
+        configStore.isConfigLoaded = false;
+        await configStore.getConfig();
+        ElMessage.success("删除成功");
+        artTableRef.value?.elTableRef?.clearSelection();
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+function openExportModal() {
+  exportModalVisible.value = true;
+}
 </script>
+
+<style scoped lang="scss">
+.art-full-height {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.art-table-card {
+  flex: 1;
+}
+</style>

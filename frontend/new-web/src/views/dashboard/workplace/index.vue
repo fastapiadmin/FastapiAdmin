@@ -3,7 +3,7 @@
     <!-- github 角标 -->
     <GithubCorner class="github-corner" />
 
-    <el-card shadow="hover">
+    <ElCard shadow="hover">
       <div class="flex flex-wrap items-center gap-y-3">
         <!-- 左侧问候语区域 -->
         <div class="flex min-w-0 flex-1 items-center">
@@ -14,9 +14,9 @@
               :src="userStore.basicInfo.avatar"
               class="workplace-hero__avatar"
             />
-            <el-icon v-else :size="40" class="text-g-600">
+            <ElIcon v-else :size="40" class="text-g-600">
               <UserFilled />
-            </el-icon>
+            </ElIcon>
           </div>
           <div class="ml-5">
             <div class="mb-[5px] text-[20px] font-bold">
@@ -32,47 +32,47 @@
             <!-- 文档 -->
             <div class="flex flex-col items-center">
               <div class="flex items-center text-sm font-bold text-[#4080ff]">
-                <el-icon class="mr-0.5"><Document /></el-icon>
+                <ElIcon class="mr-0.5"><Document /></ElIcon>
                 文档
               </div>
               <div class="mt-3 whitespace-nowrap">
-                <el-link
+                <ElLink
                   href="https://blog.csdn.net/weixin_46768253/article/details/149569141?spm=1001.2014.3001.5502"
                   target="_blank"
                 >
                   <ArtSvgIcon :icon="resolveIconForArtSvgIcon('csdn')" class="text-lg" />
-                </el-link>
+                </ElLink>
               </div>
             </div>
             <!-- 仓库 -->
             <div class="flex flex-col items-center">
               <div class="flex items-center text-sm font-bold text-[#ff9a2e]">
-                <el-icon class="mr-0.5">
+                <ElIcon class="mr-0.5">
                   <Folder />
-                </el-icon>
+                </ElIcon>
                 仓库
               </div>
               <div class="mt-3 whitespace-nowrap">
-                <el-link href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
+                <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
                   <ArtSvgIcon
                     :icon="resolveIconForArtSvgIcon('gitee')"
                     class="text-lg text-[#F76560]"
                   />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
+                </ElLink>
+                <ElDivider direction="vertical" />
+                <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
                   <ArtSvgIcon
                     :icon="resolveIconForArtSvgIcon('github')"
                     class="text-lg text-[#4080FF]"
                   />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
+                </ElLink>
+                <ElDivider direction="vertical" />
+                <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
                   <ArtSvgIcon
                     :icon="resolveIconForArtSvgIcon('gitcode')"
                     class="text-lg text-[#FF9A2E]"
                   />
-                </el-link>
+                </ElLink>
               </div>
             </div>
           </div>
@@ -82,40 +82,40 @@
         <div class="w-full sm:hidden">
           <div class="flex justify-end space-x-4 overflow-x-auto">
             <!-- 仓库图标 -->
-            <el-link href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
+            <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
               <ArtSvgIcon
                 :icon="resolveIconForArtSvgIcon('gitee')"
                 class="text-lg text-[#F76560]"
               />
-            </el-link>
-            <el-divider direction="vertical" />
-            <el-link href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
+            </ElLink>
+            <ElDivider direction="vertical" />
+            <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
               <ArtSvgIcon
                 :icon="resolveIconForArtSvgIcon('github')"
                 class="text-lg text-[#4080FF]"
               />
-            </el-link>
-            <el-divider direction="vertical" />
-            <el-link href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
+            </ElLink>
+            <ElDivider direction="vertical" />
+            <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
               <ArtSvgIcon
                 :icon="resolveIconForArtSvgIcon('gitcode')"
                 class="text-lg text-[#FF9A2E]"
               />
-            </el-link>
+            </ElLink>
           </div>
         </div>
       </div>
-    </el-card>
+    </ElCard>
 
     <!-- 数据统计 -->
-    <el-row :gutter="16" class="mt-4">
+    <ElRow :gutter="16" class="mt-4">
       <!-- 在线用户数量 -->
-      <el-col :span="8" :xs="24" class="mb-3 sm:mb-0">
-        <el-card shadow="hover" class="h-full flex flex-col">
+      <ElCol :span="8" :xs="24" class="mb-3 sm:mb-0">
+        <ElCard shadow="hover" class="h-full flex flex-col">
           <template #header>
             <div class="flex items-center justify-between">
               <span class="text-g-600">在线用户</span>
-              <el-tag type="danger" size="small">实时</el-tag>
+              <ElTag type="danger" size="small">实时</ElTag>
             </div>
           </template>
 
@@ -123,15 +123,15 @@
             <div class="flex items-center">
               <span class="text-lg transition-all duration-300 hover:scale-110">9999</span>
               <span v-if="true" class="ml-2 text-xs text-success">
-                <el-icon>
+                <ElIcon>
                   <Connection />
-                </el-icon>
+                </ElIcon>
                 已连接
               </span>
               <span v-else class="ml-2 text-xs text-danger">
-                <el-icon>
+                <ElIcon>
                   <Failed />
-                </el-icon>
+                </ElIcon>
                 未连接
               </span>
             </div>
@@ -145,37 +145,37 @@
             <span>更新时间</span>
             <span>2025-07-12 00:00:00</span>
           </div>
-        </el-card>
-      </el-col>
+        </ElCard>
+      </ElCol>
 
       <!-- 访客数(UV) -->
-      <el-col :span="8" :xs="24" class="mb-3 sm:mb-0">
-        <el-skeleton :loading="visitStatsLoading" :rows="5" animated>
+      <ElCol :span="8" :xs="24" class="mb-3 sm:mb-0">
+        <ElSkeleton :loading="visitStatsLoading" :rows="5" animated>
           <template #template>
-            <el-card>
+            <ElCard>
               <template #header>
                 <div>
-                  <el-skeleton-item variant="h3" style="width: 40%" />
-                  <el-skeleton-item variant="rect" style="float: right; width: 1em; height: 1em" />
+                  <ElSkeletonItem variant="h3" style="width: 40%" />
+                  <ElSkeletonItem variant="rect" style="float: right; width: 1em; height: 1em" />
                 </div>
               </template>
 
               <div class="flex items-center justify-between">
-                <el-skeleton-item variant="text" style="width: 30%" />
-                <el-skeleton-item variant="circle" style="width: 2em; height: 2em" />
+                <ElSkeletonItem variant="text" style="width: 30%" />
+                <ElSkeletonItem variant="circle" style="width: 2em; height: 2em" />
               </div>
               <div class="mt-5 flex items-center justify-between">
-                <el-skeleton-item variant="text" style="width: 50%" />
-                <el-skeleton-item variant="text" style="width: 1em" />
+                <ElSkeletonItem variant="text" style="width: 50%" />
+                <ElSkeletonItem variant="text" style="width: 1em" />
               </div>
-            </el-card>
+            </ElCard>
           </template>
           <template v-if="!visitStatsLoading">
-            <el-card shadow="hover" class="h-full flex flex-col">
+            <ElCard shadow="hover" class="h-full flex flex-col">
               <template #header>
                 <div class="flex items-center justify-between">
                   <span class="text-g-600">访客数(UV)</span>
-                  <el-tag type="success" size="small">日</el-tag>
+                  <ElTag type="success" size="small">日</ElTag>
                 </div>
               </template>
 
@@ -189,10 +189,10 @@
                       computeGrowthRateClass(visitStatsData.uvGrowthRate),
                     ]"
                   >
-                    <el-icon>
+                    <ElIcon>
                       <Top v-if="visitStatsData.uvGrowthRate > 0" />
                       <Bottom v-else-if="visitStatsData.uvGrowthRate < 0" />
-                    </el-icon>
+                    </ElIcon>
                     {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
                   </span>
                 </div>
@@ -203,39 +203,39 @@
                 <span>总访客数</span>
                 <span>{{ Math.round(transitionTotalUvCount) }}</span>
               </div>
-            </el-card>
+            </ElCard>
           </template>
-        </el-skeleton>
-      </el-col>
+        </ElSkeleton>
+      </ElCol>
 
       <!-- 浏览量(PV) -->
-      <el-col :span="8" :xs="24">
-        <el-skeleton :loading="visitStatsLoading" :rows="5" animated>
+      <ElCol :span="8" :xs="24">
+        <ElSkeleton :loading="visitStatsLoading" :rows="5" animated>
           <template #template>
-            <el-card>
+            <ElCard>
               <template #header>
                 <div>
-                  <el-skeleton-item variant="h3" style="width: 40%" />
-                  <el-skeleton-item variant="rect" style="float: right; width: 1em; height: 1em" />
+                  <ElSkeletonItem variant="h3" style="width: 40%" />
+                  <ElSkeletonItem variant="rect" style="float: right; width: 1em; height: 1em" />
                 </div>
               </template>
 
               <div class="flex items-center justify-between">
-                <el-skeleton-item variant="text" style="width: 30%" />
-                <el-skeleton-item variant="circle" style="width: 2em; height: 2em" />
+                <ElSkeletonItem variant="text" style="width: 30%" />
+                <ElSkeletonItem variant="circle" style="width: 2em; height: 2em" />
               </div>
               <div class="mt-5 flex items-center justify-between">
-                <el-skeleton-item variant="text" style="width: 50%" />
-                <el-skeleton-item variant="text" style="width: 1em" />
+                <ElSkeletonItem variant="text" style="width: 50%" />
+                <ElSkeletonItem variant="text" style="width: 1em" />
               </div>
-            </el-card>
+            </ElCard>
           </template>
           <template v-if="!visitStatsLoading">
-            <el-card shadow="hover" class="h-full flex flex-col">
+            <ElCard shadow="hover" class="h-full flex flex-col">
               <template #header>
                 <div class="flex items-center justify-between">
                   <span class="text-g-600">浏览量(PV)</span>
-                  <el-tag type="primary" size="small">日</el-tag>
+                  <ElTag type="primary" size="small">日</ElTag>
                 </div>
               </template>
 
@@ -249,10 +249,10 @@
                       computeGrowthRateClass(visitStatsData.pvGrowthRate),
                     ]"
                   >
-                    <el-icon>
+                    <ElIcon>
                       <Top v-if="visitStatsData.pvGrowthRate > 0" />
                       <Bottom v-else-if="visitStatsData.pvGrowthRate < 0" />
-                    </el-icon>
+                    </ElIcon>
                     {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
                   </span>
                 </div>
@@ -263,51 +263,51 @@
                 <span>总浏览量</span>
                 <span>{{ Math.round(transitionTotalPvCount) }}</span>
               </div>
-            </el-card>
+            </ElCard>
           </template>
-        </el-skeleton>
-      </el-col>
-    </el-row>
+        </ElSkeleton>
+      </ElCol>
+    </ElRow>
 
-    <el-row :gutter="16" class="mt-4">
+    <ElRow :gutter="16" class="mt-4">
       <!-- 访问趋势统计图 -->
-      <el-col :xs="24" :span="16">
-        <el-card>
+      <ElCol :xs="24" :span="16">
+        <ElCard>
           <template #header>
             <div class="flex items-center justify-between">
               <span>访问趋势</span>
-              <el-radio-group v-model="visitTrendDateRange" size="small">
-                <el-radio-button :value="7">近7天</el-radio-button>
-                <el-radio-button :value="30">近30天</el-radio-button>
-              </el-radio-group>
+              <ElRadioGroup v-model="visitTrendDateRange" size="small">
+                <ElRadioButton :value="7">近7天</ElRadioButton>
+                <ElRadioButton :value="30">近30天</ElRadioButton>
+              </ElRadioGroup>
             </div>
           </template>
           <ECharts :options="visitTrendChartOptions" height="calc(100vh - 550px)" />
-        </el-card>
-      </el-col>
+        </ElCard>
+      </ElCol>
       <!-- 最新动态 -->
-      <el-col :xs="24" :span="8">
-        <el-card>
+      <ElCol :xs="24" :span="8">
+        <ElCard>
           <template #header>
             <div class="flex items-center justify-between">
               <span class="header-title">最新动态</span>
-              <el-link
+              <ElLink
                 type="primary"
                 underline="never"
                 href="https://gitee.com/fastapiadmin/FastapiAdmin/releases"
                 target="_blank"
               >
                 完整记录
-                <el-icon class="link-icon">
+                <ElIcon class="link-icon">
                   <TopRight />
-                </el-icon>
-              </el-link>
+                </ElIcon>
+              </ElLink>
             </div>
           </template>
 
-          <el-scrollbar height="calc(100vh - 550px)">
-            <el-timeline class="p-3">
-              <el-timeline-item
+          <ElScrollbar height="calc(100vh - 550px)">
+            <ElTimeline class="p-3">
+              <ElTimelineItem
                 v-for="(item, index) in vesionList"
                 :key="index"
                 :timestamp="item.date"
@@ -318,34 +318,34 @@
               >
                 <div class="version-item" :class="{ 'latest-item': index === 0 }">
                   <div class="flex items-center justify-between">
-                    <el-text tag="strong">{{ item.title }}</el-text>
-                    <el-tag v-if="item.tag" :type="index === 0 ? 'success' : 'info'" size="small">
+                    <ElText tag="strong">{{ item.title }}</ElText>
+                    <ElTag v-if="item.tag" :type="index === 0 ? 'success' : 'info'" size="small">
                       {{ item.tag }}
-                    </el-tag>
+                    </ElTag>
                   </div>
 
-                  <el-text class="version-content">{{ item.content }}</el-text>
+                  <ElText class="version-content">{{ item.content }}</ElText>
 
                   <div v-if="item.link">
-                    <el-link
+                    <ElLink
                       :type="index === 0 ? 'primary' : 'info'"
                       :href="item.link"
                       target="_blank"
                       underline="never"
                     >
                       详情
-                      <el-icon class="link-icon">
+                      <ElIcon class="link-icon">
                         <TopRight />
-                      </el-icon>
-                    </el-link>
+                      </ElIcon>
+                    </ElLink>
                   </div>
                 </div>
-              </el-timeline-item>
-            </el-timeline>
-          </el-scrollbar>
-        </el-card>
-      </el-col>
-    </el-row>
+              </ElTimelineItem>
+            </ElTimeline>
+          </ElScrollbar>
+        </ElCard>
+      </ElCol>
+    </ElRow>
   </div>
 </template>
 

@@ -93,7 +93,11 @@ const CONFIG_ITEMS: ConfigItem[] = [
   { comment: "标签页样式", key: "tabStyle" },
   { comment: "自定义圆角", key: "customRadius" },
   { comment: "容器宽度", key: "containerWidth", enumMap: ENUM_MAPS.containerWidth },
-  { comment: "节日日期", key: "festivalDate", forceValue: "" },
+  {
+    comment: "上次完成烟花播放的自然日(YYYY-MM-DD),留空可重新触发",
+    key: "festivalDate",
+    forceValue: "",
+  },
 ];
 
 /**

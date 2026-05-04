@@ -10,7 +10,7 @@ dependencies = [
     "aiosqlite==0.17.0",                        # sqlite 异步操作数据库
     "alembic==1.15.1",                          # 数据库迁移
     "apscheduler==3.11.0",                      # 定时任务
-    "asyncmy==0.2.11",                           # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
+    "asyncmy==0.2.11",                          # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
     "asyncpg==0.30.0",                          # postgresql 异步操作数据库基于 psycopg2：asyncpg 是 psycopg2 的异步版本，psycopg2 是一个 pure-Python PostgreSQL 数据库适配器。性能：asyncpg 通常在性能上优于 psycopg2，特别是在高并发和大数据量的场景下。
     "bcrypt==4.0.1",                            # 密码加密解析,切勿升级，如果升级，请同时升级python版本
     "bleach==6.3.0",                            # 过滤 HTML 标签
@@ -25,7 +25,7 @@ dependencies = [
     "itsdangerous==2.2.0",                      # 用于安全处理各种数据，如密码、密钥等
     "jinja2==3.1.6",                            # 模板引擎
     "loguru==0.7.3",                            # 日志
-    "openai==2.28.0",
+    "openai==2.28.0",                           # OpenAI API 客户端
     "openpyxl==3.1.5",                          # Excel
     "pandas==2.2.3",                            # 数据处理
     "passlib==1.7.4",                           # 密码加密
@@ -44,10 +44,11 @@ dependencies = [
     "tomli>=2.0.1; python_version < '3.11'",    # 解析 plugin.toml（3.11+ 用标准库 tomllib）
     "sqlalchemy==2.0.45",                       # 数据库ORM
     "sqlglot[rs]==27.8.0",                      # sql 解析
-    "typer==0.19.0",                             # 命令行工具
+    "typer==0.19.0",                            # 命令行工具
     "user-agents==2.2.0",                       # 获取用户UA
     "uvicorn==0.30.6",                          # uvicorn web 框架
     "websockets>=15.0.1,<16.0",                 # websocket（prefect>=3.5 需 >=15.0.1；与部署 requirements.txt 一致）
+    "tomli>=2.0.1 ; python_full_version < '3.15'",
 ]
 
 [dependency-groups]

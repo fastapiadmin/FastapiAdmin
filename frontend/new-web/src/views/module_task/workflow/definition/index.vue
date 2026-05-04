@@ -1,112 +1,109 @@
+<!-- 工作流定义：Art + useTable -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="workflowSearchItems"
+      :rules="searchBarRules"
+      :is-expand="true"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent ref="contentRef" :content-config="contentConfig" @add-click="handleCreate">
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column type="selection" align="center" min-width="55" />
-            <el-table-column type="index" fixed label="序号" min-width="60">
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column label="ID" prop="id" min-width="80" />
-            <el-table-column label="名称" prop="name" min-width="160" show-overflow-tooltip />
-            <el-table-column label="编码" prop="code" min-width="120" show-overflow-tooltip />
-            <el-table-column label="状态" prop="status" min-width="100">
-              <template #default="scope">
-                <el-tag :type="getStatusType(scope.row.status) as any">
-                  {{ getStatusText(scope.row.status) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="描述"
-              prop="description"
-              min-width="160"
-              show-overflow-tooltip
-            />
-            <el-table-column label="创建时间" prop="created_time" min-width="180" />
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_task:workflow:definition:create']"
+            :perm-delete="['module_task:workflow:definition:delete']"
+            :delete-loading="batchDeleting"
+            @add="handleCreate"
+            @delete="handleBatchDelete"
+          />
+        </template>
+      </ArtTableHeader>
 
-            <OperationColumn :list-data-length="data.length">
-              <template #default="scope">
-                <el-space class="flex">
-                  <el-button
-                    v-if="scope.row.status === 'draft'"
-                    v-hasPerm="['module_task:workflow:definition:update']"
-                    type="success"
-                    size="small"
-                    link
-                    icon="upload"
-                    @click="handlePublish(scope.row)"
-                  >
-                    发布
-                  </el-button>
-                  <el-dropdown
-                    v-if="scope.row.status === 'published'"
-                    v-hasPerm="['module_task:workflow:definition:execute']"
-                    @command="(e: string) => handleExecute(e, scope.row)"
-                  >
-                    <el-button type="warning" size="small" link icon="video-play">
-                      执行
-                      <el-icon><ArrowDown /></el-icon>
-                    </el-button>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item command="execute">立即执行</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                  <el-button
-                    v-hasPerm="['module_task:workflow:definition:update']"
-                    type="primary"
-                    size="small"
-                    link
-                    icon="edit"
-                    @click="handleEdit(scope.row)"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    v-hasPerm="['module_task:workflow:definition:delete']"
-                    type="danger"
-                    size="small"
-                    link
-                    icon="delete"
-                    @click="handleRowDelete(scope.row.id)"
-                  >
-                    删除
-                  </el-button>
-                </el-space>
+      <ArtTable
+        ref="artTableRef"
+        row-key="id"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      >
+        <template #workflow-operation="{ row }">
+          <ElSpace class="flex">
+            <ElButton
+              v-if="row.status === 'draft'"
+              v-hasPerm="['module_task:workflow:definition:update']"
+              type="success"
+              size="small"
+              link
+              icon="upload"
+              @click="handlePublish(row)"
+            >
+              发布
+            </ElButton>
+            <ElDropdown
+              v-if="row.status === 'published'"
+              v-hasPerm="['module_task:workflow:definition:execute']"
+              @command="(e: string) => handleExecute(e, row)"
+            >
+              <ElButton type="warning" size="small" link icon="video-play">
+                执行
+                <ElIcon><ArrowDown /></ElIcon>
+              </ElButton>
+              <template #dropdown>
+                <ElDropdownMenu>
+                  <ElDropdownItem command="execute">立即执行</ElDropdownItem>
+                </ElDropdownMenu>
               </template>
-            </OperationColumn>
-          </el-table>
-        </div>
-      </template>
-    </CrudContent>
+            </ElDropdown>
+            <ElButton
+              v-hasPerm="['module_task:workflow:definition:update']"
+              type="primary"
+              size="small"
+              link
+              icon="edit"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </ElButton>
+            <ElButton
+              v-hasPerm="['module_task:workflow:definition:delete']"
+              type="danger"
+              size="small"
+              link
+              icon="delete"
+              @click="deleteWorkflowRow(row.id)"
+            >
+              删除
+            </ElButton>
+          </ElSpace>
+        </template>
+      </ArtTable>
+    </ElCard>
 
     <WorkflowDesignDrawer
       v-model:visible="createVisible"
       :workflow="selectedWorkflow"
-      @refresh="refreshList"
+      @refresh="onDrawerRefresh"
     />
   </div>
 </template>
@@ -117,108 +114,255 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ElMessage, ElMessageBox } from "element-plus";
+import WorkflowDefinitionAPI, { type WorkflowTable } from "@/api/module_task/workflow/definition";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import { useTable } from "@/hooks/core/useTable";
+import type { ColumnOption } from "@/types/component";
 import { ArrowDown } from "@element-plus/icons-vue";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import OperationColumn from "@/components/OperationColumn/index.vue";
-import WorkflowDefinitionAPI, {
-  type WorkflowTable,
-  type WorkflowPageQuery,
-} from "@/api/module_task/workflow/definition";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { computed, h, ref } from "vue";
 import WorkflowDesignDrawer from "../components/WorkflowDesignDrawer.vue";
-import { onMounted, reactive, ref } from "vue";
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const BATCH_DELETE_MSG = "确认删除选中的工作流吗？";
 
-const selectedWorkflow = ref<WorkflowTable>();
-const createVisible = ref(false);
+type WorkflowSearchForm = {
+  name?: string;
+  code?: string;
+  status?: string;
+};
 
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_task:workflow:definition",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "name",
-      label: "流程名称",
-      type: "input",
-      attrs: { placeholder: "请输入流程名称", clearable: true },
-    },
-    {
-      prop: "code",
-      label: "流程编码",
-      type: "input",
-      attrs: { placeholder: "请输入流程编码", clearable: true },
-    },
-    {
-      prop: "status",
-      label: "状态",
-      type: "select",
+function buildWorkflowReplaceParams(u: WorkflowSearchForm): Record<string, unknown> {
+  return {
+    name: u.name,
+    code: u.code,
+    status: u.status,
+  };
+}
+
+const searchForm = ref<WorkflowSearchForm>({
+  name: undefined,
+  code: undefined,
+  status: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const workflowSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "流程名称",
+    key: "name",
+    type: "input",
+    placeholder: "请输入流程名称",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "流程编码",
+    key: "code",
+    type: "input",
+    placeholder: "请输入流程编码",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      clearable: true,
       options: [
         { label: "草稿", value: "draft" },
         { label: "已发布", value: "published" },
         { label: "已归档", value: "archived" },
       ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "170px" } },
     },
-  ],
-});
+    span: 6,
+  },
+]);
 
-function normalizeWorkflowQuery(params: Record<string, unknown>): WorkflowPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (p.status === "" || p.status === null) p.status = undefined;
-  return p as unknown as WorkflowPageQuery;
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<WorkflowTable[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: WorkflowTable[]) {
+  selectedRows.value = rows;
 }
 
-const contentConfig = reactive<IContentConfig<WorkflowPageQuery>>({
-  permPrefix: "module_task:workflow:definition",
-  title: "工作流管理",
-  tooltip: "流程编排列表，支持发布与执行",
-  cols: [],
-  hideColumnFilter: true,
-  toolbar: [
-    { name: "add", text: "新增", attrs: { icon: "plus", type: "success" }, perm: "create" },
-    "delete",
-  ],
-  defaultToolbar: ["refresh"],
-  initialFetch: false,
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
-  },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await WorkflowDefinitionAPI.getWorkflowList(
-      normalizeWorkflowQuery(params as unknown as Record<string, unknown>)
-    );
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
-  },
-  deleteAction: (ids) =>
-    WorkflowDefinitionAPI.deleteWorkflow(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n) && n > 0)
-    ),
-  deleteConfirm: {
-    title: "警告",
-    message: "确认删除选中的工作流吗？",
-    type: "warning",
-  },
-});
-
-function handleRowDelete(id?: number) {
+function deleteWorkflowRow(id: number | undefined) {
   if (id == null) return;
-  contentRef.value?.handleDelete(id);
+  ElMessageBox.confirm("确认删除该工作流吗？", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await WorkflowDefinitionAPI.deleteWorkflow([id]);
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
 }
+
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await WorkflowDefinitionAPI.deleteWorkflow(ids);
+        ElMessage.success("删除成功");
+        selectedRows.value = [];
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+function getStatusType(status: string): "success" | "warning" | "info" | "danger" | "primary" {
+  const typeMap: Record<string, "success" | "warning" | "info" | "danger" | "primary"> = {
+    draft: "info",
+    published: "success",
+    archived: "warning",
+  };
+  return typeMap[status] ?? "info";
+}
+
+function getStatusText(status: string) {
+  const textMap: Record<string, string> = {
+    draft: "草稿",
+    published: "已发布",
+    archived: "已归档",
+  };
+  return textMap[status] || status;
+}
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshRemove,
+  refreshUpdate,
+} = useTable({
+  core: {
+    apiFn: WorkflowDefinitionAPI.getWorkflowList,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<WorkflowTable>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
+      {
+        prop: "id",
+        label: "ID",
+        width: 88,
+        align: "center",
+      },
+      {
+        prop: "name",
+        label: "名称",
+        minWidth: 160,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "code",
+        label: "编码",
+        minWidth: 120,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "status",
+        label: "状态",
+        minWidth: 100,
+        align: "center",
+        formatter: (row) =>
+          h(ElTag, { type: getStatusType(row.status ?? "") }, () =>
+            getStatusText(row.status ?? "")
+          ),
+      },
+      {
+        prop: "description",
+        label: "描述",
+        minWidth: 160,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "created_time",
+        label: "创建时间",
+        minWidth: 180,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 260,
+        fixed: "right",
+        align: "center",
+        useSlot: true,
+        slotName: "workflow-operation",
+      },
+    ],
+  },
+});
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 10,
+    total: p.total ?? 0,
+  };
+});
+
+async function handleSearchBarSearch(params: WorkflowSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildWorkflowReplaceParams(params));
+  getData();
+}
+
+async function onResetSearch() {
+  searchForm.value = {
+    name: undefined,
+    code: undefined,
+    status: undefined,
+  };
+  await resetSearchParams();
+}
+
+const selectedWorkflow = ref<WorkflowTable>();
+const createVisible = ref(false);
 
 function handleCreate() {
   selectedWorkflow.value = undefined;
@@ -230,22 +374,8 @@ function handleEdit(record: WorkflowTable) {
   createVisible.value = true;
 }
 
-function getStatusType(status: string) {
-  const typeMap: Record<string, string> = {
-    draft: "info",
-    published: "success",
-    archived: "warning",
-  };
-  return typeMap[status] || "";
-}
-
-function getStatusText(status: string) {
-  const textMap: Record<string, string> = {
-    draft: "草稿",
-    published: "已发布",
-    archived: "已归档",
-  };
-  return textMap[status] || status;
+function onDrawerRefresh() {
+  void refreshUpdate();
 }
 
 function handlePublish(record: WorkflowTable) {
@@ -262,7 +392,7 @@ function handlePublish(record: WorkflowTable) {
         }
         await WorkflowDefinitionAPI.publishWorkflow(record.id, {});
         ElMessage.success("发布成功");
-        refreshList();
+        await refreshUpdate();
       } catch {
         ElMessage.error("发布失败");
       }
@@ -291,17 +421,13 @@ function handleExecute(action: string, record: WorkflowTable) {
           const result = res.data.data;
           ElMessage.success(`工作流执行${result.status === "completed" ? "成功" : "失败"}`);
         }
-        refreshList();
+        await refreshUpdate();
       } catch {
         ElMessage.error("执行失败");
       }
     })
     .catch(() => {});
 }
-
-onMounted(() => {
-  refreshList();
-});
 </script>
 
 <style scoped lang="scss"></style>

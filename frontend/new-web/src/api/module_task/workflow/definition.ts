@@ -5,7 +5,7 @@ const API_PATH = "/task/workflow/definition";
 
 const WorkflowDefinitionAPI = {
   getWorkflowList(query: WorkflowPageQuery) {
-    return request<ApiResponse<PageResult<WorkflowTable[]>>>({
+    return request<ApiResponse<PageResult<WorkflowTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

@@ -4,7 +4,7 @@ const API_PATH = "/example/demo";
 
 const DemoAPI = {
   getDemoList(query: DemoPageQuery) {
-    return request<ApiResponse<PageResult<DemoTable[]>>>({
+    return request<ApiResponse<PageResult<DemoTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

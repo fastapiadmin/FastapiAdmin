@@ -2,7 +2,7 @@
   <div class="sidebar" :class="{ collapsed: isCollapsed }">
     <div class="sidebar-header">
       <div class="logo-section">
-        <el-icon class="logo-icon" :size="28"><ChatDotRound /></el-icon>
+        <ElIcon class="logo-icon" :size="28"><ChatDotRound /></ElIcon>
         <span v-if="!isCollapsed" class="project-name">FA智能助手</span>
       </div>
     </div>
@@ -10,15 +10,15 @@
     <div class="sidebar-content">
       <template v-if="!isCollapsed">
         <div class="new-session-section">
-          <el-button type="primary" class="new-session-btn" @click="handleNewSession">
-            <el-icon class="btn-icon"><Plus /></el-icon>
+          <ElButton type="primary" class="new-session-btn" @click="handleNewSession">
+            <ElIcon class="btn-icon"><Plus /></ElIcon>
             <span>开启新对话</span>
-          </el-button>
+          </ElButton>
         </div>
 
         <div class="history-section">
           <div class="search-section">
-            <el-input
+            <ElInput
               v-model="searchQuery"
               placeholder="搜索会话历史"
               :prefix-icon="Search"
@@ -30,12 +30,12 @@
             <div v-for="group in groupedSessions" :key="group.title" class="history-group">
               <div class="group-title" @click="toggleGroup(group.title)">
                 <span>{{ group.title }}</span>
-                <el-icon
+                <ElIcon
                   class="collapse-icon"
                   :class="{ collapsed: collapsedGroups.has(group.title) }"
                 >
                   <ArrowDown />
-                </el-icon>
+                </ElIcon>
               </div>
               <div v-show="!collapsedGroups.has(group.title)" class="session-list">
                 <div
@@ -45,27 +45,27 @@
                   :class="{ active: currentSessionId === session.id }"
                   @click="handleSelectSession(session)"
                 >
-                  <el-icon class="session-icon"><ChatLineRound /></el-icon>
+                  <ElIcon class="session-icon"><ChatLineRound /></ElIcon>
                   <span class="session-title">
                     {{ session.title || session.session_data?.session_name || "未命名会话" }}
                   </span>
-                  <el-dropdown
+                  <ElDropdown
                     trigger="click"
                     @command="(cmd) => handleSessionCommand(cmd, session)"
                   >
-                    <el-icon class="more-icon" @click.stop><MoreFilled /></el-icon>
+                    <ElIcon class="more-icon" @click.stop><MoreFilled /></ElIcon>
                     <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item command="rename">重命名</el-dropdown-item>
-                        <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
-                      </el-dropdown-menu>
+                      <ElDropdownMenu>
+                        <ElDropdownItem command="rename">重命名</ElDropdownItem>
+                        <ElDropdownItem command="delete" divided>删除</ElDropdownItem>
+                      </ElDropdownMenu>
                     </template>
-                  </el-dropdown>
+                  </ElDropdown>
                 </div>
               </div>
             </div>
             <div v-if="filteredSessions.length === 0" class="empty-state">
-              <el-empty description="暂无会话历史" :image-size="60" />
+              <ElEmpty description="暂无会话历史" :image-size="60" />
             </div>
           </div>
         </div>
@@ -74,37 +74,37 @@
 
     <div class="sidebar-footer">
       <div v-if="!isCollapsed" class="user-info">
-        <el-avatar :size="32" :src="userInfo.avatar">
-          <el-icon><User /></el-icon>
-        </el-avatar>
+        <ElAvatar :size="32" :src="userInfo.avatar">
+          <ElIcon><User /></ElIcon>
+        </ElAvatar>
         <div class="user-details">
           <div class="user-name">{{ userInfo.name }}</div>
           <div class="user-status">在线</div>
         </div>
-        <el-dropdown trigger="click" @command="handleUserCommand">
-          <el-icon class="user-menu-icon"><Setting /></el-icon>
+        <ElDropdown trigger="click" @command="handleUserCommand">
+          <ElIcon class="user-menu-icon"><Setting /></ElIcon>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-              <el-dropdown-item command="settings">设置</el-dropdown-item>
-              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem command="profile">个人中心</ElDropdownItem>
+              <ElDropdownItem command="settings">设置</ElDropdownItem>
+              <ElDropdownItem command="logout" divided>退出登录</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
+        </ElDropdown>
       </div>
       <div v-else class="collapsed-user">
-        <el-dropdown trigger="click" @command="handleUserCommand">
-          <el-avatar :size="32" :src="userInfo.avatar">
-            <el-icon><User /></el-icon>
-          </el-avatar>
+        <ElDropdown trigger="click" @command="handleUserCommand">
+          <ElAvatar :size="32" :src="userInfo.avatar">
+            <ElIcon><User /></ElIcon>
+          </ElAvatar>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-              <el-dropdown-item command="settings">设置</el-dropdown-item>
-              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem command="profile">个人中心</ElDropdownItem>
+              <ElDropdownItem command="settings">设置</ElDropdownItem>
+              <ElDropdownItem command="logout" divided>退出登录</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
+        </ElDropdown>
       </div>
     </div>
   </div>

@@ -8,6 +8,7 @@
  */
 
 import type { AppRouteRecord } from "@/types/router";
+import type { UserInfo } from "@/api/module_system/user";
 import { useUserStore } from "@/store/modules/user.store";
 import { useAppMode } from "@/hooks/core/useAppMode";
 import MenuAPI from "@/api/module_system/menu";
@@ -45,21 +46,39 @@ export class MenuProcessor {
    */
   private async processFrontendMenu(): Promise<AppRouteRecord[]> {
     const userStore = useUserStore();
-    const roles = userStore.info?.roles;
-
     let menuList = [...asyncRoutes];
 
-    // 根据角色过滤菜单（仅当能解析出角色 code 时才过滤；否则勿用空数组误杀全部 meta.roles）
+    // 超管不做前端 meta.roles 过滤，避免与接口未返回 code 或编码不一致时整棵模板路由被误删
+    if (userStore.info?.is_superuser) {
+      return this.filterEmptyMenus(menuList);
+    }
+
+    const roles = userStore.info?.roles;
+
+    // 根据角色过滤菜单（仅当能解析出角色标识时才过滤；否则勿用空数组误杀全部 meta.roles）
     if (roles && roles.length > 0) {
-      const roleCodes = roles
-        .map((role) => (role as any).code)
-        .filter((code): code is string => !!code);
+      const roleCodes = this.extractRoleCodesFromUserRoles(roles);
       if (roleCodes.length > 0) {
         menuList = this.filterMenuByRoles(menuList, roleCodes);
       }
     }
 
     return this.filterEmptyMenus(menuList);
+  }
+
+  /**
+   * 从用户信息中的角色解析与路由 meta.roles 对齐的标识（code，以及形如 R_XXX 的 name）
+   */
+  private extractRoleCodesFromUserRoles(roles: NonNullable<UserInfo["roles"]>): string[] {
+    const codes = new Set<string>();
+    for (const role of roles) {
+      const r = role as { code?: string; name?: string };
+      const c = r.code?.trim();
+      if (c) codes.add(c);
+      const n = r.name?.trim();
+      if (n && /^R_[A-Z0-9_]+$/i.test(n)) codes.add(n);
+    }
+    return Array.from(codes);
   }
 
   /**

@@ -95,7 +95,7 @@ const JobAPI = {
   },
 
   getJobLogList(query: JobLogPageQuery) {
-    return request<ApiResponse<PageResult<JobLogTable[]>>>({
+    return request<ApiResponse<PageResult<JobLogTable>>>({
       url: `${API_PATH}/log/list`,
       method: "get",
       params: query,

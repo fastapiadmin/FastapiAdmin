@@ -7,7 +7,7 @@
       shadow: 'never',
     }"
   >
-    <el-watermark
+    <ElWatermark
       :font="{ color: fontColor }"
       :content="showWatermark ? watermarkContent : ''"
       :z-index="9999"
@@ -17,7 +17,7 @@
 
       <!-- AI 助手 -->
       <AiAssistant v-if="enableAiAssistant" />
-    </el-watermark>
+    </ElWatermark>
   </ElConfigProvider>
 </template>
 

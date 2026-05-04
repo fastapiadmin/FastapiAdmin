@@ -107,13 +107,13 @@ const fastEnterConfig: FastEnterConfig = {
       name: "定价",
       enabled: true,
       order: 4,
-      routeName: "Pricing",
+      routeName: "DashboardPricing",
     },
     {
       name: "个人中心",
       enabled: true,
       order: 5,
-      routeName: "UserCenter",
+      routeName: "Profile",
     },
     {
       name: "留言管理",

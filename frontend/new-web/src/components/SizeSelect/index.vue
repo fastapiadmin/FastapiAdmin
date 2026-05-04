@@ -1,7 +1,7 @@
 <!-- 布局大小（触发器与顶栏 ArtIconButton 一致，避免与其它图标尺寸/悬停不一致） -->
 <template>
-  <el-tooltip :content="t('sizeSelect.tooltip')" effect="dark" placement="bottom">
-    <el-dropdown trigger="click" @command="handleSizeChange">
+  <ElTooltip :content="t('sizeSelect.tooltip')" effect="dark" placement="bottom">
+    <ElDropdown trigger="click" @command="handleSizeChange">
       <span class="inline-flex outline-none leading-none">
         <ArtIconButton
           :icon="resolveIconForArtSvgIcon('size')"
@@ -9,19 +9,19 @@
         />
       </span>
       <template #dropdown>
-        <el-dropdown-menu>
-          <el-dropdown-item
+        <ElDropdownMenu>
+          <ElDropdownItem
             v-for="item of sizeOptions"
             :key="item.value"
             :disabled="appStore.size == item.value"
             :command="item.value"
           >
             {{ item.label }}
-          </el-dropdown-item>
-        </el-dropdown-menu>
+          </ElDropdownItem>
+        </ElDropdownMenu>
       </template>
-    </el-dropdown>
-  </el-tooltip>
+    </ElDropdown>
+  </ElTooltip>
 </template>
 
 <script setup lang="ts">

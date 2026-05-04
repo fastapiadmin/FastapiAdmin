@@ -4,7 +4,7 @@ const API_PATH = "/system/dict";
 
 const DictAPI = {
   listDictType(query: DictPageQuery) {
-    return request<ApiResponse<PageResult<DictTable[]>>>({
+    return request<ApiResponse<PageResult<DictTable>>>({
       url: `${API_PATH}/type/list`,
       method: "get",
       params: query,
@@ -67,7 +67,7 @@ const DictAPI = {
   },
 
   listDictData(query: DictDataPageQuery) {
-    return request<ApiResponse<PageResult<DictDataTable[]>>>({
+    return request<ApiResponse<PageResult<DictDataTable>>>({
       url: `${API_PATH}/data/list`,
       method: "get",
       params: query,

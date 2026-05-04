@@ -241,13 +241,13 @@ class VersionManager {
     // 首次访问处理
     if (this.isFirstVisit(storedVersion)) {
       this.setStoredVersion(StorageConfig.CURRENT_VERSION);
-      // console.info('[Upgrade] 首次访问，已设置当前版本')
+      console.info("[Upgrade] 首次访问，已设置当前版本");
       return;
     }
 
     // 版本相同，无需升级
     if (this.isSameVersion(storedVersion!)) {
-      // console.debug('[Upgrade] 版本相同，无需升级')
+      console.debug("[Upgrade] 版本相同，无需升级");
       return;
     }
 

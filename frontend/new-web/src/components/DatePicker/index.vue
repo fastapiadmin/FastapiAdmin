@@ -1,7 +1,7 @@
 <!-- 日期选择器 -->
 <template>
   <div class="custom-date-picker">
-    <el-date-picker
+    <ElDatePicker
       :model-value="modelValue"
       type="datetimerange"
       format="YYYY-MM-DD HH:mm:ss"

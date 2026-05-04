@@ -1,7 +1,7 @@
 <!-- 单图上传组件 -->
 <template>
   <div class="single-image-upload">
-    <el-upload
+    <ElUpload
       v-model:file-list="internalFileList"
       class="single-upload"
       list-type="picture-card"
@@ -16,7 +16,7 @@
     >
       <template #default>
         <template v-if="internalFileList && internalFileList.length > 0 && internalFileList[0].url">
-          <el-image
+          <ElImage
             :key="internalFileList[0].url"
             class="single-upload__image"
             :src="internalFileList[0].url"
@@ -25,21 +25,21 @@
             :preview-teleported="true"
             @click.stop="handleImageClick"
           />
-          <el-icon
+          <ElIcon
             v-if="!props.disabled"
             class="single-upload__delete-btn"
             @click.stop="handleDelete"
           >
             <CircleCloseFilled />
-          </el-icon>
+          </ElIcon>
         </template>
         <template v-else>
-          <el-icon class="single-upload__add-btn">
+          <ElIcon class="single-upload__add-btn">
             <Plus />
-          </el-icon>
+          </ElIcon>
         </template>
       </template>
-    </el-upload>
+    </ElUpload>
     <div v-if="props.showTip" class="el-upload__tip">
       {{ props.tipText || `支持 ${props.accept} 格式，文件大小不超过 ${props.maxFileSize}MB` }}
     </div>

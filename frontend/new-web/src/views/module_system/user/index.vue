@@ -1,166 +1,97 @@
-<!-- 用户管理 -->
+<!-- 用户管理：左部门树 + 右 Art 表格（参考 examples/tables/tree.vue） -->
 <template>
-  <div class="app-container">
-    <el-row class="page-row" :gutter="12" justify="start">
-      <el-col :span="4" class="dept-col">
-        <DeptTree v-model="deptFilterId" class="w-full h-full" @node-click="handleDeptNodeClick" />
-      </el-col>
-
-      <el-col :span="20" class="right-col">
-        <CrudSearch
-          ref="searchRef"
-          :search-config="searchConfig"
-          @query-click="handleQueryClick"
-          @reset-click="handleResetClick"
-        />
-
-        <CrudContent ref="contentRef" class="flex-1 min-h-0" :content-config="contentConfig">
-          <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-            <CrudToolbarLeft
-              :remove-ids="removeIds"
-              :perm-create="['module_system:user:create']"
-              :perm-delete="['module_system:user:delete']"
-              :perm-patch="['module_system:user:patch']"
-              :delete-loading="submitLoading"
-              @add="handleOpenDialog('create')"
-              @delete="onToolbar('delete')"
-              @more="handleMoreClick"
+  <div class="art-full-height user-manage-page">
+    <div
+      class="user-manage-body box-border flex gap-4 h-full max-md:block max-md:gap-0 max-md:h-auto"
+    >
+      <div
+        class="user-dept-panel flex-shrink-0 w-58 h-full max-md:w-full max-md:h-auto max-md:mb-5"
+      >
+        <ElCard class="tree-card art-card-xs flex flex-col h-full mt-0" shadow="hover">
+          <template #header>
+            <b>部门</b>
+          </template>
+          <ElScrollbar>
+            <DeptTree
+              v-model="deptFilterId"
+              class="dept-tree-inner"
+              @node-click="handleDeptNodeClick"
             />
-            <div class="data-table__toolbar--right">
-              <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
-                <template #prepend>
-                  <el-tooltip content="导入">
-                    <el-button
-                      v-hasPerm="['module_system:user:import']"
-                      type="info"
-                      icon="upload"
-                      circle
-                      @click="handleOpenImportDialog"
-                    />
-                  </el-tooltip>
-                  <el-tooltip content="导出">
-                    <el-button
-                      v-hasPerm="['module_system:user:export']"
-                      type="warning"
-                      icon="download"
-                      circle
-                      @click="handleOpenExportsModal"
-                    />
-                  </el-tooltip>
-                </template>
-              </CrudToolbarActions>
-            </div>
-          </template>
+          </ElScrollbar>
+        </ElCard>
+      </div>
 
-          <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-            <div class="data-table__content">
-              <el-table
-                :ref="tableRef as any"
-                v-loading="loading"
-                row-key="id"
-                :data="data"
-                height="100%"
-                border
-                stripe
-                @selection-change="onSelectionChange"
-              >
-                <template #empty>
-                  <el-empty :image-size="80" description="暂无数据" />
-                </template>
-                <el-table-column type="selection" min-width="55" align="center" />
-                <el-table-column fixed label="序号" min-width="60">
-                  <template #default="scope">
-                    {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="头像" prop="avatar" min-width="80" align="center">
-                  <template #default="scope">
-                    <template v-if="scope.row.avatar">
-                      <el-avatar size="small" :src="scope.row.avatar" />
-                    </template>
-                    <template v-else>
-                      <el-avatar size="small" icon="UserFilled" />
-                    </template>
-                  </template>
-                </el-table-column>
-                <el-table-column label="账号" prop="username" min-width="100" />
-                <el-table-column label="用户名" prop="name" min-width="100" />
-                <el-table-column label="状态" prop="status" min-width="100">
-                  <template #default="scope">
-                    <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                      {{ scope.row.status === "0" ? "启用" : "停用" }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="部门" prop="dept" min-width="100">
-                  <template #default="scope">
-                    {{ scope.row.dept ? scope.row.dept.name : "" }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="性别" prop="gender" min-width="100">
-                  <template #default="scope">
-                    <el-tag v-if="scope.row.gender === '0'" type="success">男</el-tag>
-                    <el-tag v-else-if="scope.row.gender === '1'" type="warning">女</el-tag>
-                    <el-tag v-else type="info">未知</el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="创建时间" prop="created_time" min-width="160" />
-                <el-table-column label="更新时间" prop="updated_time" min-width="160" />
-                <el-table-column label="操作" fixed="right" align="center" min-width="280">
-                  <template #default="scope">
-                    <el-button
-                      v-hasPerm="['module_system:user:update']"
-                      type="warning"
-                      icon="RefreshLeft"
-                      size="small"
-                      link
-                      :disabled="scope.row.is_superuser === true"
-                      @click="hancleResetPassword(scope.row)"
-                    >
-                      重置密码
-                    </el-button>
-                    <el-button
-                      v-hasPerm="['module_system:user:detail']"
-                      type="info"
-                      size="small"
-                      link
-                      icon="View"
-                      @click="handleOpenDialog('detail', scope.row.id)"
-                    >
-                      详情
-                    </el-button>
-                    <el-button
-                      v-hasPerm="['module_system:user:update']"
-                      type="primary"
-                      size="small"
-                      link
-                      icon="edit"
-                      :disabled="scope.row.is_superuser === true"
-                      @click="handleOpenDialog('update', scope.row.id)"
-                    >
-                      编辑
-                    </el-button>
-                    <el-button
-                      v-hasPerm="['module_system:user:delete']"
-                      type="danger"
-                      size="small"
-                      link
-                      icon="delete"
-                      :disabled="scope.row.is_superuser === true"
-                      @click="handleRowDelete(scope.row.id)"
-                    >
-                      删除
-                    </el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
+      <div class="user-main-panel flex flex-col flex-grow min-w-0 min-h-0">
+        <ArtSearchBar
+          v-show="showSearchBar"
+          ref="searchBarRef"
+          v-model="searchForm"
+          :items="userSearchItems"
+          :rules="searchBarRules"
+          :is-expand="false"
+          :show-expand="true"
+          :show-reset="true"
+          :show-search="true"
+          :disabled-search="false"
+          :default-expanded="false"
+          @search="handleSearchBarSearch"
+          @reset="onResetSearch"
+        >
+          <template #created_id>
+            <UserTableSelect
+              :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
+              @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
+              @confirm-click="afterUserSelectSearch"
+              @clear-click="afterUserSelectSearch"
+            />
           </template>
-        </CrudContent>
-      </el-col>
-    </el-row>
+        </ArtSearchBar>
 
-    <EnhancedDrawer
+        <ElCard
+          class="flex flex-col flex-1 min-h-0 art-table-card"
+          :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+        >
+          <ArtTableHeader
+            v-model:columns="columnChecks"
+            v-model:showSearchBar="showSearchBar"
+            :loading="loading"
+            @refresh="refreshData"
+          >
+            <template #left>
+              <ArtTableHeaderLeft
+                :remove-ids="selectedIds"
+                :perm-create="['module_system:user:create']"
+                :perm-import="['module_system:user:import']"
+                :perm-export="['module_system:user:export']"
+                :perm-delete="['module_system:user:delete']"
+                :perm-patch="['module_system:user:patch']"
+                :import-loading="uploadLoading"
+                :delete-loading="batchDeleting"
+                @add="handleOpenDialog('create')"
+                @import="openImportModal"
+                @export="openExportModal"
+                @delete="handleBatchDelete"
+                @more="handleMoreClick"
+              />
+            </template>
+          </ArtTableHeader>
+
+          <ArtTable
+            ref="artTableRef"
+            row-key="id"
+            :loading="loading"
+            :data="data"
+            :columns="columns"
+            :pagination="paginationBind"
+            @selection-change="onTableSelectionChange"
+            @pagination:size-change="handleSizeChange"
+            @pagination:current-change="handleCurrentChange"
+          />
+        </ElCard>
+      </div>
+    </div>
+
+    <ArtDrawer
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       append-to-body
@@ -168,82 +99,82 @@
       @close="handleCloseDialog"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="编号" :span="2">
+        <ElDescriptions :column="2" border>
+          <ElDescriptionsItem label="编号" :span="2">
             {{ detailFormData.id }}
-          </el-descriptions-item>
-          <el-descriptions-item label="头像" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="头像" :span="2">
             <template v-if="detailFormData.avatar">
-              <el-avatar :src="detailFormData.avatar" size="small"></el-avatar>
+              <ElAvatar :src="detailFormData.avatar" size="small"></ElAvatar>
             </template>
             <template v-else>
-              <el-avatar icon="UserFilled" size="small"></el-avatar>
+              <ElAvatar icon="UserFilled" size="small"></ElAvatar>
             </template>
-          </el-descriptions-item>
-          <el-descriptions-item label="账号" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="账号" :span="2">
             {{ detailFormData.username }}
-          </el-descriptions-item>
-          <el-descriptions-item label="用户名" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="用户名" :span="2">
             {{ detailFormData.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="性别" :span="2">
-            <el-tag v-if="detailFormData.gender === '0'" type="success">男</el-tag>
-            <el-tag v-else-if="detailFormData.gender === '1'" type="warning">女</el-tag>
-            <el-tag v-else type="info">未知</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="部门" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="性别" :span="2">
+            <ElTag v-if="detailFormData.gender === '0'" type="success">男</ElTag>
+            <ElTag v-else-if="detailFormData.gender === '1'" type="warning">女</ElTag>
+            <ElTag v-else type="info">未知</ElTag>
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="部门" :span="2">
             {{ detailFormData.dept ? detailFormData.dept.name : "" }}
-          </el-descriptions-item>
-          <el-descriptions-item label="角色" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="角色" :span="2">
             {{
               detailFormData.roles ? detailFormData.roles.map((item) => item.name).join("、") : ""
             }}
-          </el-descriptions-item>
-          <el-descriptions-item label="岗位" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="岗位" :span="2">
             {{
               detailFormData.positions
                 ? detailFormData.positions.map((item) => item.name).join("、")
                 : ""
             }}
-          </el-descriptions-item>
-          <el-descriptions-item label="邮箱" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="邮箱" :span="2">
             {{ detailFormData.email }}
-          </el-descriptions-item>
-          <el-descriptions-item label="手机号" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="手机号" :span="2">
             {{ detailFormData.mobile }}
-          </el-descriptions-item>
-          <el-descriptions-item label="是否超管" :span="2">
-            <el-tag :type="detailFormData.is_superuser ? 'success' : 'info'">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="是否超管" :span="2">
+            <ElTag :type="detailFormData.is_superuser ? 'success' : 'info'">
               {{ detailFormData.is_superuser ? "是" : "否" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="状态" :span="2">
-            <el-tag :type="detailFormData.status === '0' ? 'success' : 'danger'">
+            </ElTag>
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="状态" :span="2">
+            <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
               {{ detailFormData.status === "0" ? "启用" : "停用" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="上次登录时间" :span="2">
+            </ElTag>
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="上次登录时间" :span="2">
             {{ detailFormData.last_login }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="创建人" :span="2">
             {{ detailFormData.created_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新人" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="更新人" :span="2">
             {{ detailFormData.updated_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="创建时间" :span="2">
             {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="更新时间" :span="2">
             {{ detailFormData.updated_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="4">
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="描述" :span="4">
             {{ detailFormData.description }}
-          </el-descriptions-item>
-        </el-descriptions>
+          </ElDescriptionsItem>
+        </ElDescriptions>
       </template>
       <template v-else>
-        <el-form
+        <ElForm
           ref="dataFormRef"
           :model="formData"
           :rules="rules"
@@ -251,36 +182,36 @@
           label-width="auto"
           label-position="right"
         >
-          <el-form-item label="账号" prop="username">
-            <el-input
+          <ElFormItem label="账号" prop="username">
+            <ElInput
               v-model="formData.username"
               :disabled="!!formData.id"
               placeholder="请输入账号"
             />
-          </el-form-item>
+          </ElFormItem>
 
-          <el-form-item label="用户名" prop="name">
-            <el-input v-model="formData.name" placeholder="请输入用户名" />
-          </el-form-item>
+          <ElFormItem label="用户名" prop="name">
+            <ElInput v-model="formData.name" placeholder="请输入用户名" />
+          </ElFormItem>
 
-          <el-form-item label="性别" prop="gender">
-            <el-select v-model="formData.gender" placeholder="请选择性别">
-              <el-option label="男" value="0" />
-              <el-option label="女" value="1" />
-              <el-option label="未知" value="2" />
-            </el-select>
-          </el-form-item>
+          <ElFormItem label="性别" prop="gender">
+            <ElSelect v-model="formData.gender" placeholder="请选择性别">
+              <ElOption label="男" value="0" />
+              <ElOption label="女" value="1" />
+              <ElOption label="未知" value="2" />
+            </ElSelect>
+          </ElFormItem>
 
-          <el-form-item label="手机号" prop="mobile">
-            <el-input v-model="formData.mobile" placeholder="请输入手机号码" maxlength="11" />
-          </el-form-item>
+          <ElFormItem label="手机号" prop="mobile">
+            <ElInput v-model="formData.mobile" placeholder="请输入手机号码" maxlength="11" />
+          </ElFormItem>
 
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="formData.email" placeholder="请输入邮箱" maxlength="50" />
-          </el-form-item>
+          <ElFormItem label="邮箱" prop="email">
+            <ElInput v-model="formData.email" placeholder="请输入邮箱" maxlength="50" />
+          </ElFormItem>
 
-          <el-form-item label="部门" prop="dept_id">
-            <el-tree-select
+          <ElFormItem label="部门" prop="dept_id">
+            <ElTreeSelect
               v-model="formData.dept_id"
               placeholder="请选择上级部门"
               :data="deptOptions"
@@ -289,55 +220,55 @@
               check-strictly
               :render-after-expand="false"
             />
-          </el-form-item>
+          </ElFormItem>
 
-          <el-form-item label="角色" prop="role_ids">
-            <el-select v-model="formData.role_ids" multiple placeholder="请选择角色">
-              <el-option
+          <ElFormItem label="角色" prop="role_ids">
+            <ElSelect v-model="formData.role_ids" multiple placeholder="请选择角色">
+              <ElOption
                 v-for="item in roleOptions"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
                 :disabled="item.disabled"
               />
-            </el-select>
-          </el-form-item>
+            </ElSelect>
+          </ElFormItem>
 
-          <el-form-item label="岗位" prop="position_ids">
-            <el-select v-model="formData.position_ids" multiple placeholder="请选择岗位">
-              <el-option
+          <ElFormItem label="岗位" prop="position_ids">
+            <ElSelect v-model="formData.position_ids" multiple placeholder="请选择岗位">
+              <ElOption
                 v-for="item in positionOptions"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
                 :disabled="item.disabled"
               />
-            </el-select>
-          </el-form-item>
+            </ElSelect>
+          </ElFormItem>
 
-          <el-form-item v-if="!formData.id" label="密码" prop="password">
-            <el-input
+          <ElFormItem v-if="!formData.id" label="密码" prop="password">
+            <ElInput
               v-model="formData.password"
               placeholder="请输入密码"
               type="password"
               show-password
               clearable
             />
-          </el-form-item>
+          </ElFormItem>
 
-          <el-form-item label="是否超管" prop="is_superuser">
-            <el-switch v-model="formData.is_superuser" />
-          </el-form-item>
+          <ElFormItem label="是否超管" prop="is_superuser">
+            <ElSwitch v-model="formData.is_superuser" />
+          </ElFormItem>
 
-          <el-form-item label="状态" prop="status">
-            <el-radio-group v-model="formData.status">
-              <el-radio value="0">启用</el-radio>
-              <el-radio value="1">停用</el-radio>
-            </el-radio-group>
-          </el-form-item>
+          <ElFormItem label="状态" prop="status">
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </ElFormItem>
 
-          <el-form-item label="描述" prop="description">
-            <el-input
+          <ElFormItem label="描述" prop="description">
+            <ElInput
               v-model="formData.description"
               :rows="4"
               :maxlength="100"
@@ -345,39 +276,40 @@
               type="textarea"
               placeholder="请输入描述"
             />
-          </el-form-item>
-        </el-form>
+          </ElFormItem>
+        </ElForm>
       </template>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton
             v-if="dialogVisible.type === 'create' || dialogVisible.type === 'update'"
             type="primary"
             :loading="submitLoading"
             @click="handleSubmit"
           >
             确定
-          </el-button>
-          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
+          </ElButton>
+          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </EnhancedDrawer>
+    </ArtDrawer>
 
-    <CrudImportModal
-      v-model="importDialogVisible"
-      :content-config="curdContentConfig"
+    <ArtImportDialog
+      v-model="importModalVisible"
+      :content-config="userImportContentConfig"
+      default-template-file-name="user_import_template.xlsx"
       :loading="uploadLoading"
-      @upload="handleUpload"
+      @upload="handleImportUpload"
     />
 
-    <CrudExportModal
-      v-model="exportsDialogVisible"
-      :content-config="curdContentConfig"
+    <ArtExportDialog
+      v-model="exportModalVisible"
+      :content-config="userExportContentConfig"
       :query-params="exportQueryParams"
-      :page-data="exportPageData"
-      :selection-data="exportSelectionData"
+      :page-data="data"
+      :selection-data="selectedRows"
     />
   </div>
 </template>
@@ -388,10 +320,22 @@ defineOptions({
   inheritAttrs: false,
 });
 
+import { h, ref, reactive, computed, nextTick } from "vue";
+import { UserFilled } from "@element-plus/icons-vue";
 import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
-
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
+import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
+import type { IContentConfig, IObject } from "@/components/Core/modal/types";
 import UserAPI, {
   type UserForm,
   type UserInfo,
@@ -401,185 +345,493 @@ import { formatTree } from "@/utils/common";
 import PositionAPI from "@/api/module_system/position";
 import DeptAPI from "@/api/module_system/dept";
 import RoleAPI from "@/api/module_system/role";
-
 import DeptTree from "./components/DeptTree.vue";
 import UserTableSelect from "./components/UserTableSelect.vue";
 import { useUserStore } from "@/store";
-import CrudImportModal from "@/components/CURD/CrudImportModal.vue";
-import CrudExportModal from "@/components/CURD/CrudExportModal.vue";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import { CrudToolbarActions } from "@/components/Crud";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/Crud/types";
-import { ref, reactive, computed, markRaw, nextTick, unref } from "vue";
-import { fetchAllPages } from "@/utils/fetchAllPages";
+import {
+  ElMessage,
+  ElMessageBox,
+  ElTag,
+  ElTooltip,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+  ElAvatar,
+} from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
+import type { ColumnOption } from "@/types/component";
 
+const MAX_INLINE_ROW_ACTIONS = 3;
+const { hasAuth } = useAuth();
 const appStore = useAppStore();
+const userStore = useUserStore();
 
-const searchRef = ref<InstanceType<typeof CrudSearch>>();
-const contentRef = ref<InstanceType<typeof CrudContent>>();
+type UserSearchForm = {
+  username?: string;
+  name?: string;
+  status?: string;
+  created_id?: number;
+  created_time?: string[];
+};
+
+function normalizeUserQuery(params: Record<string, unknown>): UserPageQuery {
+  const p = { ...params } as Record<string, unknown>;
+  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
+  return p as unknown as UserPageQuery;
+}
+
+function buildUserReplaceParams(u: UserSearchForm): Record<string, unknown> {
+  return {
+    username: u.username,
+    name: u.name,
+    status: u.status,
+    created_id: u.created_id,
+    created_time:
+      Array.isArray(u.created_time) && u.created_time.length === 2 ? u.created_time : undefined,
+  };
+}
+
+function fetchUserTableList(params: Record<string, unknown>) {
+  return UserAPI.listUser({
+    page_no: 1,
+    page_size: 10,
+    ...params,
+    dept_id:
+      deptFilterId.value !== undefined && deptFilterId.value !== null && deptFilterId.value !== ""
+        ? Number(deptFilterId.value)
+        : undefined,
+  });
+}
+
+type RowAction = {
+  key: string;
+  label: string;
+  artType: "add" | "edit" | "delete" | "view" | "more";
+  icon?: string;
+  perm: string;
+  disabled?: boolean;
+  run: () => void;
+};
+
+function buildUserRowActions(
+  row: UserInfo,
+  ctx: {
+    onResetPwd: (row: UserInfo) => void;
+    onDetail: (id: number) => void;
+    onEdit: (id: number) => void;
+    onDelete: (id: number) => void;
+  }
+): RowAction[] {
+  const sys = row.is_superuser === true;
+  const all: RowAction[] = [
+    {
+      key: "resetPwd",
+      label: "重置密码",
+      artType: "edit",
+      icon: "ri:refresh-line",
+      perm: "module_system:user:update",
+      disabled: sys,
+      run: () => {
+        if (sys) return;
+        ctx.onResetPwd(row);
+      },
+    },
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:user:detail",
+      run: () => ctx.onDetail(row.id!),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      perm: "module_system:user:update",
+      disabled: sys,
+      run: () => {
+        if (sys) return;
+        ctx.onEdit(row.id!);
+      },
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      perm: "module_system:user:delete",
+      disabled: sys,
+      run: () => {
+        if (sys) return;
+        ctx.onDelete(row.id!);
+      },
+    },
+  ];
+  return all.filter((a) => hasAuth(a.perm));
+}
+
+function formatUserOperationCell(row: UserInfo, ctx: Parameters<typeof buildUserRowActions>[1]) {
+  const actions = buildUserRowActions(row, ctx);
+  if (actions.length === 0) {
+    return h("span", { class: "text-g-400" }, "—");
+  }
+  const inline = actions.slice(0, MAX_INLINE_ROW_ACTIONS);
+  const overflow = actions.slice(MAX_INLINE_ROW_ACTIONS);
+
+  const inlineNodes = inline.map((a) =>
+    h(ElTooltip, { content: a.label, placement: "top" }, () =>
+      h(
+        "span",
+        {
+          class: a.disabled ? "inline-flex opacity-40 pointer-events-none" : "inline-flex",
+        },
+        [
+          h(ArtButtonTable, {
+            type: a.artType,
+            icon: a.icon,
+            onClick: a.run,
+          }),
+        ]
+      )
+    )
+  );
+
+  if (overflow.length === 0) {
+    return h(
+      "div",
+      { class: "inline-flex flex-wrap items-center justify-end gap-1 user-table-actions" },
+      inlineNodes
+    );
+  }
+
+  const dropdown = h(
+    ElDropdown,
+    { trigger: "click" },
+    {
+      default: () =>
+        h(ElTooltip, { content: "更多", placement: "top" }, () =>
+          h("span", { class: "inline-flex align-middle" }, [
+            h(ArtButtonTable, {
+              type: "more",
+              onClick: () => {},
+            }),
+          ])
+        ),
+      dropdown: () =>
+        h(
+          ElDropdownMenu,
+          null,
+          overflow.map((a) =>
+            h(
+              ElDropdownItem,
+              {
+                key: a.key,
+                disabled: a.disabled,
+                onClick: () => a.run(),
+              },
+              () => a.label
+            )
+          )
+        ),
+    }
+  );
+
+  return h(
+    "div",
+    { class: "inline-flex flex-wrap items-center justify-end gap-1 user-table-actions" },
+    [...inlineNodes, dropdown]
+  );
+}
+
 const dataFormRef = ref();
 const submitLoading = ref(false);
 const uploadLoading = ref(false);
-const deptFilterId = ref<number | undefined>(undefined);
+const batchDeleting = ref(false);
+const deptFilterId = ref<string | number | undefined>(undefined);
 
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450px" : "90%"));
 const deptOptions = ref<OptionType[]>();
 const roleOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
 const positionOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
-const importDialogVisible = ref(false);
-const exportsDialogVisible = ref(false);
+const importModalVisible = ref(false);
+const exportModalVisible = ref(false);
 const detailFormData = ref<UserInfo>({});
 
-function triggerUserSearch() {
-  nextTick(() => {
-    contentRef.value?.fetchPageData(getMergedListParams(), true);
-  });
-}
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_system:user",
-  colon: true,
-  isExpandable: true,
-  showNumber: 3,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "username",
-      label: "账号",
-      type: "input",
-      attrs: { placeholder: "请输入账号", clearable: true },
-    },
-    {
-      prop: "name",
-      label: "用户名",
-      type: "input",
-      attrs: { placeholder: "请输入用户名", clearable: true },
-    },
-    {
-      prop: "status",
-      label: "状态",
-      type: "select",
-      options: [
-        { label: "启用", value: "0" },
-        { label: "停用", value: "1" },
-      ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
-    },
-    {
-      prop: "created_id",
-      label: "创建人",
-      type: "user-table-select",
-      initialValue: null,
-      events: {
-        "confirm-click": triggerUserSearch,
-        "clear-click": triggerUserSearch,
-      },
-    },
-  ],
-  customComponents: {
-    "user-table-select": markRaw(UserTableSelect),
-  },
+const searchForm = ref<UserSearchForm>({
+  username: undefined,
+  name: undefined,
+  status: undefined,
+  created_id: undefined,
+  created_time: undefined,
 });
 
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "avatar", label: "头像", show: true },
-  { prop: "username", label: "账号", show: true },
-  { prop: "name", label: "用户名", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "dept", label: "部门", show: true },
-  { prop: "gender", label: "性别", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "operation", label: "操作", show: true },
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "启用", value: "0" },
+  { label: "停用", value: "1" },
 ]);
 
-const contentConfig = reactive<IContentConfig<UserPageQuery>>({
-  permPrefix: "module_system:user",
-  pk: "id",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  initialFetch: false,
-  toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
+const userSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "账号",
+    key: "username",
+    type: "input",
+    placeholder: "请输入账号",
+    clearable: true,
+    span: 6,
   },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await UserAPI.listUser(params as UserPageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
+  {
+    label: "用户名",
+    key: "name",
+    type: "input",
+    placeholder: "请输入用户名",
+    clearable: true,
+    span: 6,
   },
-  deleteAction: async (ids) => {
-    await UserAPI.deleteUser(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n))
-    );
-    const userStore = useUserStore();
-    const idSet = ids.split(",").map((s) => Number(s.trim()));
-    if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
-      userStore.clearUserInfo();
-    }
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: statusOptions.value,
+      clearable: true,
+    },
+    span: 6,
   },
-  deleteConfirm: {
-    title: "警告",
-    message: "确认删除该项数据?",
+  {
+    label: "创建人",
+    key: "created_id",
+    type: "input",
+    span: 6,
+  },
+  {
+    label: "创建时间",
+    key: "created_time",
+    type: "datetimerange",
+    span: 6,
+    props: {
+      type: "datetimerange",
+      rangeSeparator: "至",
+      startPlaceholder: "开始日期",
+      endPlaceholder: "结束日期",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      style: { width: "340px" },
+    },
+  },
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<UserInfo[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
+);
+
+function onTableSelectionChange(rows: UserInfo[]) {
+  selectedRows.value = rows;
+}
+
+function handleResetPassword(row: UserInfo) {
+  ElMessageBox.prompt(`请输入用户【${row.username ?? ""}】的新密码`, "重置密码", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+  }).then(
+    async ({ value }) => {
+      if (!value || value.length < 6) {
+        ElMessage.warning("密码至少需要6位字符，请重新输入");
+        return;
+      }
+      await UserAPI.resetUserPassword({ id: row.id!, password: value });
+      ElMessage.success("密码已重置");
+    },
+    () => {}
+  );
+}
+
+function deleteUserRow(id: number) {
+  ElMessageBox.confirm("确认删除该项数据?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
     type: "warning",
+  })
+    .then(async () => {
+      await UserAPI.deleteUser([id]);
+      const idSet = [id];
+      if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
+        userStore.clearUserInfo();
+      } else {
+        ElMessage.success("删除成功");
+      }
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
+}
+
+const opCtx = {
+  onResetPwd: handleResetPassword,
+  onDetail: (id: number) => void handleOpenDialog("detail", id),
+  onEdit: (id: number) => void handleOpenDialog("update", id),
+  onDelete: deleteUserRow,
+};
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  searchParams,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: fetchUserTableList,
+    apiParams: {
+      current: 1,
+      size: 20,
+    },
+    columnsFactory: (): import("@/types/component").ColumnOption<UserInfo>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      {
+        prop: "avatar",
+        label: "头像",
+        width: 72,
+        align: "center",
+        formatter: (row: UserInfo) =>
+          h(
+            ElAvatar,
+            {
+              size: 28,
+              src: row.avatar || undefined,
+            },
+            () => (!row.avatar ? h(UserFilled) : undefined)
+          ),
+      },
+      { prop: "username", label: "账号", minWidth: 100, showOverflowTooltip: true },
+      { prop: "name", label: "用户名", minWidth: 100, showOverflowTooltip: true },
+      {
+        prop: "status",
+        label: "状态",
+        width: 88,
+        formatter: (row: UserInfo) =>
+          h(ElTag, { type: row.status === "0" ? "success" : "danger" }, () =>
+            row.status === "0" ? "启用" : "停用"
+          ),
+      },
+      {
+        prop: "dept",
+        label: "部门",
+        minWidth: 100,
+        formatter: (row: UserInfo) => row.dept?.name ?? "—",
+      },
+      {
+        prop: "gender",
+        label: "性别",
+        width: 88,
+        formatter: (row: UserInfo) => {
+          if (row.gender === "0") return h(ElTag, { type: "success" }, () => "男");
+          if (row.gender === "1") return h(ElTag, { type: "warning" }, () => "女");
+          return h(ElTag, { type: "info" }, () => "未知");
+        },
+      },
+      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
+      { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 280,
+        fixed: "right",
+        align: "right",
+        formatter: (row: UserInfo) => formatUserOperationCell(row, opCtx),
+      },
+    ],
   },
 });
 
-function getMergedListParams(): UserPageQuery {
-  const base = searchRef.value?.getQueryParams() ?? {};
-  return {
-    ...base,
-    dept_id: deptFilterId.value,
-  } as UserPageQuery;
-}
-
-function handleQueryClick() {
-  contentRef.value?.fetchPageData(getMergedListParams(), true);
-}
-
-function handleResetClick() {
-  deptFilterId.value = undefined;
-  contentRef.value?.fetchPageData(getMergedListParams(), true);
-}
-
-function handleDeptNodeClick() {
-  contentRef.value?.fetchPageData(getMergedListParams(), true);
-}
-
-function refreshList() {
-  contentRef.value?.fetchPageData(getMergedListParams(), true);
-}
-
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
-}
-
-const exportQueryParams = computed(() => getMergedListParams());
-
-const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as UserInfo[]);
-
-const exportSelectionData = computed(
-  () => (contentRef.value?.getSelectionData() ?? []) as UserInfo[]
+const userCrudCols = computed(() =>
+  columns.value.map((c: ColumnOption<UserInfo>) => {
+    const t = (c as { type?: string }).type;
+    return {
+      prop: c.prop,
+      label: c.label,
+      type: t === "selection" ? ("selection" as const) : ("default" as const),
+      show: true,
+    };
+  })
 );
+
+const exportQueryParams = computed(() => {
+  const sp = { ...(searchParams as object) } as Record<string, unknown>;
+  delete sp.current;
+  delete sp.size;
+  if (
+    deptFilterId.value !== undefined &&
+    deptFilterId.value !== null &&
+    deptFilterId.value !== ""
+  ) {
+    sp.dept_id = Number(deptFilterId.value);
+  }
+  const q = normalizeUserQuery(sp);
+  if (typeof q.status === "string") {
+    const s = q.status;
+    if (s === "true" || s === "false") {
+      (q as unknown as Record<string, unknown>).status = s === "true";
+    }
+  }
+  return q as unknown as Record<string, unknown>;
+});
+
+const userImportContentConfig = computed<IContentConfig>(() => ({
+  permPrefix: "module_system:user",
+  cols: userCrudCols.value,
+  indexAction: async () => ({}) as any,
+  importTemplate: () => UserAPI.downloadTemplateUser(),
+}));
+
+const userExportContentConfig = computed(() => ({
+  permPrefix: "module_system:user",
+  cols: userCrudCols.value,
+  exportsBlobAction: async (params: IObject) => {
+    const merged = normalizeUserQuery({
+      ...(exportQueryParams.value as Record<string, unknown>),
+      ...params,
+    } as Record<string, unknown>);
+    if (typeof merged.status === "string") {
+      const s = merged.status;
+      if (s === "true" || s === "false") {
+        (merged as unknown as Record<string, unknown>).status = s === "true";
+      }
+    }
+    const res = await UserAPI.exportUser(merged as unknown as UserPageQuery);
+    return res.data as Blob;
+  },
+}));
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
+});
 
 const formData = reactive<UserForm>({
   id: undefined,
@@ -629,73 +881,6 @@ const rules = reactive({
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
-const exportColumns = [
-  { prop: "username", label: "账号" },
-  { prop: "name", label: "名称" },
-  { prop: "status", label: "状态" },
-  { prop: "gender", label: "性别" },
-  { prop: "email", label: "邮箱" },
-  { prop: "mobile", label: "手机号" },
-  { prop: "is_superuser", label: "是否超管" },
-  { prop: "description", label: "描述" },
-  { prop: "created_time", label: "创建时间" },
-  { prop: "updated_time", label: "更新时间" },
-];
-
-const curdContentConfig = {
-  permPrefix: "module_system:user",
-  cols: exportColumns as unknown as IContentConfig["cols"],
-  importTemplate: () => UserAPI.downloadTemplateUser(),
-  exportsAction: async (params: Record<string, unknown>) => {
-    const query: Record<string, unknown> = { ...params };
-    if (typeof query.status === "string") {
-      query.status = query.status === "true";
-    }
-    return fetchAllPages<UserInfo>({
-      pageSize: 9999,
-      initialQuery: query,
-      fetchPage: async (q) => {
-        const res = await UserAPI.listUser(q as unknown as UserPageQuery);
-        return {
-          total: res.data?.data?.total ?? 0,
-          list: res.data?.data?.items ?? [],
-        };
-      },
-    });
-  },
-} as unknown as IContentConfig;
-
-function hancleResetPassword(row: UserInfo) {
-  ElMessageBox.prompt("请输入用户【" + row.username + "】的新密码", "重置密码", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-  }).then(
-    async ({ value }) => {
-      if (!value || value.length < 6) {
-        ElMessage.warning("密码至少需要6位字符，请重新输入");
-        return false;
-      }
-      await UserAPI.resetUserPassword({ id: row.id!, password: value });
-    },
-    () => {
-      ElMessageBox.close();
-    }
-  );
-}
-
-async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
 const initialFormData: UserForm = {
   id: undefined,
   username: undefined,
@@ -715,13 +900,88 @@ const initialFormData: UserForm = {
   description: undefined,
 };
 
+async function handleSearchBarSearch(params: UserSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildUserReplaceParams(params));
+  getData();
+}
+
+async function applyUserSearchFromForm() {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildUserReplaceParams(searchForm.value));
+  getData();
+}
+
+async function afterUserSelectSearch() {
+  await nextTick();
+  await applyUserSearchFromForm();
+}
+
+function onResetSearch() {
+  searchForm.value = {
+    username: undefined,
+    name: undefined,
+    status: undefined,
+    created_id: undefined,
+    created_time: undefined,
+  };
+  deptFilterId.value = undefined;
+  void resetSearchParams();
+}
+
+function handleDeptNodeClick() {
+  getData();
+}
+
+function openImportModal() {
+  importModalVisible.value = true;
+}
+
+function openExportModal() {
+  exportModalVisible.value = true;
+}
+
+function handleImportUpload(formDataUpload: FormData) {
+  uploadLoading.value = true;
+  UserAPI.importUser(formDataUpload)
+    .then(async (response) => {
+      if (response.data.code === ResultEnum.SUCCESS) {
+        ElMessage.success(`${response.data.msg}，${response.data.data}`);
+        importModalVisible.value = false;
+        await refreshData();
+      } else {
+        ElMessage.error(response.data.msg || "导入失败");
+      }
+    })
+    .catch((error: unknown) => {
+      console.error(error);
+      ElMessage.error("上传失败");
+    })
+    .finally(() => {
+      uploadLoading.value = false;
+    });
+}
+
+async function resetForm() {
+  if (dataFormRef.value) {
+    dataFormRef.value.resetFields();
+    dataFormRef.value.clearValidate();
+  }
+  Object.assign(formData, initialFormData);
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  await resetForm();
+}
+
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
   if (id) {
     const response = await UserAPI.detailUser(id);
     if (type === "detail") {
       dialogVisible.title = "用户详情";
-      Object.assign(detailFormData.value, response.data.data);
+      Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改用户";
       Object.assign(formData, response.data.data);
@@ -742,7 +1002,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
   deptOptions.value = formatTree(deptResponse.data.data);
 
   const roleResponse = await RoleAPI.listRole();
-  roleOptions.value = roleResponse.data.data.items
+  const roleRows = roleResponse.data.data.items ?? [];
+  roleOptions.value = roleRows
     .filter((item) => item.id !== undefined && item.name !== undefined)
     .map((item) => ({
       value: item.id as number,
@@ -752,7 +1013,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     .filter((opt) => !opt.disabled);
 
   const positionResponse = await PositionAPI.listPosition();
-  positionOptions.value = positionResponse.data.data.items
+  const positionRows = positionResponse.data.data.items ?? [];
+  positionOptions.value = positionRows
     .filter((item) => item.id !== undefined && item.name !== undefined)
     .map((item) => ({
       value: item.id as number,
@@ -764,34 +1026,58 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
 
 async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      submitLoading.value = true;
-      const id = formData.id;
-      try {
-        if (id) {
-          await UserAPI.updateUser(id, { id, ...formData });
-        } else {
-          await UserAPI.createUser(formData);
-        }
-        dialogVisible.visible = false;
-        await resetForm();
-        refreshList();
-        const userStore = useUserStore();
-        if (id === userStore.basicInfo.id) {
-          await userStore.getUserInfo();
-        }
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        submitLoading.value = false;
+    if (!valid) return;
+    submitLoading.value = true;
+    const id = formData.id;
+    try {
+      if (id) {
+        await UserAPI.updateUser(id, { id, ...formData });
+        await refreshUpdate();
+      } else {
+        await UserAPI.createUser(formData);
+        await refreshCreate();
       }
+      dialogVisible.visible = false;
+      await resetForm();
+      if (id === userStore.basicInfo.id) {
+        await userStore.getUserInfo();
+      }
+    } catch (error: unknown) {
+      console.error(error);
+    } finally {
+      submitLoading.value = false;
     }
   });
 }
 
-async function handleMoreClick(status: string) {
-  const rows = contentRef.value?.getSelectionData() as UserInfo[] | undefined;
-  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await UserAPI.deleteUser(ids);
+        if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
+          userStore.clearUserInfo();
+        } else {
+          ElMessage.success("删除成功");
+        }
+        selectedRows.value = [];
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+function handleMoreClick(status: string) {
+  const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
@@ -803,94 +1089,23 @@ async function handleMoreClick(status: string) {
   })
     .then(async () => {
       try {
-        submitLoading.value = true;
+        batchDeleting.value = true;
         await UserAPI.batchUser({ ids, status });
-        refreshList();
+        await refreshData();
       } catch (error: unknown) {
         console.error(error);
       } finally {
-        submitLoading.value = false;
+        batchDeleting.value = false;
       }
     })
-    .catch(() => {
-      ElMessageBox.close();
-    });
+    .catch(() => {});
 }
-
-function handleOpenImportDialog() {
-  importDialogVisible.value = true;
-}
-
-function handleOpenExportsModal() {
-  exportsDialogVisible.value = true;
-}
-
-const emit = defineEmits(["import-success"]);
-
-const handleUpload = async (formDataUpload: FormData) => {
-  try {
-    uploadLoading.value = true;
-    const response = await UserAPI.importUser(formDataUpload);
-    if (response.data.code === ResultEnum.SUCCESS) {
-      ElMessage.success(`${response.data.msg}，${response.data.data}`);
-      importDialogVisible.value = false;
-      await refreshList();
-      emit("import-success");
-    }
-  } catch (error: unknown) {
-    console.error(error);
-    ElMessage.error("上传失败：" + error);
-  } finally {
-    uploadLoading.value = false;
-  }
-};
-
-onMounted(() => {
-  nextTick(() => {
-    contentRef.value?.fetchPageData(getMergedListParams(), true);
-  });
-});
 </script>
 
 <style lang="scss" scoped>
-.page-row {
-  flex: 1;
-  align-items: stretch;
-  min-height: 0;
-}
-
-.dept-col {
-  display: flex;
-}
-
-.right-col {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.right-col :deep(.data-table) {
+.tree-card :deep(.el-card__body) {
   flex: 1;
   min-height: 0;
-}
-
-.right-col :deep(.data-table__content) {
-  min-height: 0;
-}
-
-.el-row {
-  height: 100%;
-}
-
-.el-col {
-  height: 100%;
-}
-
-.h-full {
-  height: 100%;
-}
-
-.w-full {
-  width: 100%;
+  padding: 10px 2px 10px 10px;
 }
 </style>

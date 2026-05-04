@@ -2,15 +2,16 @@ import request from "@/utils/http";
 
 const API_PATH = "/ai/chat";
 
+/** 会话分页列表查询（列表接口） */
+export interface ChatSessionListQuery extends PageQuery {
+  title?: string;
+  created_at?: string[];
+  updated_at?: string[];
+}
+
 export const AiChatAPI = {
-  getSessionList(query: {
-    page_no: number;
-    page_size: number;
-    title?: string;
-    created_at?: string[];
-    updated_at?: string[];
-  }) {
-    return request<ApiResponse<PageResult<ChatSession[]>>>({
+  getSessionList(query: ChatSessionListQuery) {
+    return request<ApiResponse<PageResult<ChatSession>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

@@ -7,7 +7,7 @@
       </div>
       <kbd class="command-palette-trigger__kbd">Ctrl K</kbd>
     </div>
-    <el-dialog
+    <ElDialog
       v-model="isModalVisible"
       width="30%"
       :append-to-body="true"
@@ -15,7 +15,7 @@
       @close="closeSearchModal"
     >
       <template #header>
-        <el-input
+        <ElInput
           ref="searchInputRef"
           v-model="searchKeyword"
           size="large"
@@ -28,9 +28,9 @@
           @keydown.esc="closeSearchModal"
         >
           <template #prepend>
-            <el-button icon="Search" />
+            <ElButton icon="Search" />
           </template>
-        </el-input>
+        </ElInput>
       </template>
 
       <div class="search-result">
@@ -39,15 +39,15 @@
           <div class="search-history">
             <div class="search-history__title">
               搜索历史
-              <el-button
+              <ElButton
                 type="primary"
                 text
                 size="small"
                 class="search-history__clear"
                 @click="clearHistory"
               >
-                <el-icon><Delete /></el-icon>
-              </el-button>
+                <ElIcon><Delete /></ElIcon>
+              </ElButton>
             </div>
             <ul class="search-history__list">
               <li
@@ -57,11 +57,11 @@
                 @click="navigateToRoute(item)"
               >
                 <div class="search-history__icon">
-                  <el-icon><Clock /></el-icon>
+                  <ElIcon><Clock /></ElIcon>
                 </div>
                 <span class="search-history__name">{{ item.title }}</span>
                 <div class="search-history__action">
-                  <el-icon @click.stop="removeHistoryItem(index)"><Close /></el-icon>
+                  <ElIcon @click.stop="removeHistoryItem(index)"><Close /></ElIcon>
                 </div>
               </li>
             </ul>
@@ -122,7 +122,7 @@
           </div>
         </div>
       </template>
-    </el-dialog>
+    </ElDialog>
   </div>
 </template>
 

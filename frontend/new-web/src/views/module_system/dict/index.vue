@@ -1,270 +1,145 @@
-<!-- 字典 -->
+<!-- 字典类型：与 demo 同一套 Art 布局；接口 DictAPI / fetchGetDictTypeList -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="dictTypeSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent
-      ref="contentRef"
-      :content-config="contentConfig"
-      @add-click="handleOpenDialog('create')"
-    >
-      <!-- 与 CrudContent 默认结构一致：不再套一层 data-table__toolbar（外层已由组件提供） -->
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft
-          :remove-ids="removeIds"
-          :perm-create="['module_system:dict_type:create']"
-          :perm-delete="['module_system:dict_type:delete']"
-          :perm-patch="['module_system:dict_type:patch']"
-          @add="handleOpenDialog('create')"
-          @delete="onToolbar('delete')"
-          @more="handleMoreClick"
-        />
-        <div class="data-table__toolbar--right">
-          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
-            <template #prepend>
-              <el-tooltip content="导出">
-                <el-button
-                  v-hasPerm="['module_system:dict_type:export']"
-                  type="warning"
-                  icon="download"
-                  circle
-                  @click="handleOpenExportsModal"
-                />
-              </el-tooltip>
-            </template>
-          </CrudToolbarActions>
-        </div>
-      </template>
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_system:dict_type:create']"
+            :perm-export="['module_system:dict_type:export']"
+            :perm-delete="['module_system:dict_type:delete']"
+            :perm-patch="['module_system:dict_type:patch']"
+            :delete-loading="batchDeleting"
+            @add="handleOpenDialog('create')"
+            @export="openExportModal"
+            @delete="handleBatchDelete"
+            @more="handleMoreClick"
+          />
+        </template>
+      </ArtTableHeader>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            row-key="id"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'dict_name')?.show"
-              key="dict_name"
-              label="字典名称"
-              prop="dict_name"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'dict_type')?.show"
-              key="dict_type"
-              label="字典类型"
-              prop="dict_type"
-              min-width="180"
-            >
-              <template #default="scope">
-                <el-tag type="primary">{{ scope.row.dict_type }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'status')?.show"
-              key="status"
-              label="状态"
-              prop="status"
-              min-width="80"
-            >
-              <template #default="scope">
-                <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === "0" ? "启用" : "停用" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'description')?.show"
-              key="description"
-              label="描述"
-              prop="description"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              key="created_time"
-              label="创建时间"
-              prop="created_time"
-              min-width="200"
-              sortable
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_time')?.show"
-              key="updated_time"
-              label="更新时间"
-              prop="updated_time"
-              min-width="200"
-              sortable
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="260"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_system:dict_data:query']"
-                  type="warning"
-                  size="small"
-                  link
-                  icon="Document"
-                  @click="handleDictDataDrawer(scope.row)"
-                >
-                  字典
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:dict_type:detail']"
-                  type="info"
-                  size="small"
-                  link
-                  icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
-                >
-                  详情
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:dict_type:update']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:dict_type:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleRowDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </CrudContent>
+      <ArtTable
+        ref="artTableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
-    <EnhancedDialog
+    <ArtDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
+      width="640px"
+      dialog-class="crud-embed-dialog"
+      modal-class="crud-embed-dialog"
       @close="handleCloseDialog"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <el-descriptions :column="4" border>
-          <el-descriptions-item label="字典名称" :span="2">
-            {{ detailFormData.dict_name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="字典类型" :span="2">
-            <el-tag type="primary">{{ detailFormData.dict_type }}</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="状态" :span="2">
-            <el-tag v-if="detailFormData.status === '0'" type="success">启用</el-tag>
-            <el-tag v-else type="danger">停用</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">
-            {{ detailFormData.description }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
+          <ElDescriptions :column="2" border>
+            <ElDescriptionsItem label="字典名称" :span="2">
+              {{ detailFormData.dict_name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="字典类型" :span="2">
+              <ElTag type="primary">{{ detailFormData.dict_type }}</ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="状态" :span="2">
+              <ElTag v-if="detailFormData.status === '0'" type="success">启用</ElTag>
+              <ElTag v-else type="danger">停用</ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="描述" :span="2">
+              {{ detailFormData.description }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="更新时间" :span="2">
+              {{ detailFormData.updated_time }}
+            </ElDescriptionsItem>
+          </ElDescriptions>
+        </ElScrollbar>
       </template>
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="字典名称" prop="dict_name">
-            <el-input v-model="formData.dict_name" placeholder="请输入字典名称" :maxlength="50" />
-          </el-form-item>
-          <el-form-item label="字典类型" prop="dict_type">
-            <el-input v-model="formData.dict_type" placeholder="请输入字典类型" :maxlength="50" />
-          </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-radio-group v-model="formData.status">
-              <el-radio value="0">启用</el-radio>
-              <el-radio value="1">停用</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="描述" prop="description">
-            <el-input
-              v-model="formData.description"
-              :rows="4"
-              :maxlength="100"
-              show-word-limit
-              type="textarea"
-              placeholder="请输入描述"
-            />
-          </el-form-item>
-        </el-form>
+        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
+          <ElForm
+            ref="dataFormRef"
+            :model="formData"
+            :rules="rules"
+            label-suffix=":"
+            label-width="auto"
+            label-position="right"
+          >
+            <ElFormItem label="字典名称" prop="dict_name">
+              <ElInput v-model="formData.dict_name" placeholder="请输入字典名称" :maxlength="50" />
+            </ElFormItem>
+            <ElFormItem label="字典类型" prop="dict_type">
+              <ElInput v-model="formData.dict_type" placeholder="请输入字典类型" :maxlength="50" />
+            </ElFormItem>
+            <ElFormItem label="状态" prop="status">
+              <ElRadioGroup v-model="formData.status">
+                <ElRadio value="0">启用</ElRadio>
+                <ElRadio value="1">停用</ElRadio>
+              </ElRadioGroup>
+            </ElFormItem>
+            <ElFormItem label="描述" prop="description">
+              <ElInput
+                v-model="formData.description"
+                :rows="4"
+                :maxlength="100"
+                show-word-limit
+                type="textarea"
+                placeholder="请输入描述"
+              />
+            </ElFormItem>
+          </ElForm>
+        </ElScrollbar>
       </template>
 
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
+        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
             确定
-          </el-button>
-          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
+          </ElButton>
+          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
 
-    <CrudExportModal
-      v-model="exportsDialogVisible"
-      :content-config="curdContentConfig"
+    <ArtExportDialog
+      v-model="exportModalVisible"
+      :content-config="dictTypeExportContentConfig"
       :query-params="exportQueryParams"
-      :page-data="exportPageData"
-      :selection-data="exportSelectionData"
+      :page-data="data"
+      :selection-data="selectedRows"
     />
+
     <DataDrawer
       v-if="drawerVisible"
       v-model="drawerVisible"
@@ -276,131 +151,258 @@
 </template>
 
 <script setup lang="ts">
+import { h, computed, ref, reactive } from "vue";
+import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
+import type { IObject } from "@/components/Core/modal/types";
+import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import type { ColumnOption } from "@/types/component";
+import DictAPI, {
+  type DictForm,
+  type DictPageQuery,
+  type DictTable,
+} from "@/api/module_system/dict";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { useDictStore } from "@/store";
+import DataDrawer from "@/views/module_system/dict/components/DataDrawer.vue";
+
 defineOptions({
   name: "Dict",
   inheritAttrs: false,
 });
 
-import DictAPI, { DictTable, DictForm, DictPageQuery } from "@/api/module_system/dict";
-import { useDictStore } from "@/store";
-import DataDrawer from "@/views/module_system/dict/components/DataDrawer.vue";
-import CrudExportModal from "@/components/CURD/CrudExportModal.vue";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import { CrudToolbarActions } from "@/components/Crud";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
-import type { ISearchConfig, IContentConfig } from "@/components/Crud/types";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import { computed, ref, reactive, unref } from "vue";
-import { fetchAllPages } from "@/utils/fetchAllPages";
+type DictTypeSearchForm = {
+  dict_name?: string;
+  dict_type?: string;
+  status?: string;
+  created_time?: string[];
+};
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-const dataFormRef = ref();
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_system:dict_type",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "dict_name",
-      label: "字典名称",
-      type: "input",
-      attrs: { placeholder: "请输入字典名称", clearable: true },
-    },
-    {
-      prop: "dict_type",
-      label: "字典类型",
-      type: "input",
-      attrs: { placeholder: "请输入字典类型", clearable: true },
-    },
-    {
-      prop: "status",
-      label: "状态",
-      type: "select",
-      options: [
-        { label: "启用", value: "0" },
-        { label: "停用", value: "1" },
-      ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
-    },
-    {
-      prop: "created_time",
-      label: "创建时间",
-      type: "date-picker",
-      attrs: {
-        type: "datetimerange",
-        rangeSeparator: "至",
-        startPlaceholder: "开始日期",
-        endPlaceholder: "结束日期",
-        format: "YYYY-MM-DD HH:mm:ss",
-        valueFormat: "YYYY-MM-DD HH:mm:ss",
-        style: { width: "340px" },
-      },
-    },
-  ],
-});
-
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "dict_name", label: "字典名称", show: true },
-  { prop: "dict_type", label: "字典类型", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "operation", label: "操作", show: true },
-]);
+function normalizeDictTypeQuery(params: Record<string, unknown>): DictPageQuery {
+  const p = { ...params } as Record<string, unknown>;
+  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
+  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
+  return p as unknown as DictPageQuery;
+}
 
 const dictStore = useDictStore();
 
-const contentConfig = reactive<IContentConfig<DictPageQuery>>({
-  permPrefix: "module_system:dict_type",
-  pk: "id",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
+const searchForm = ref<DictTypeSearchForm>({
+  dict_name: undefined,
+  dict_type: undefined,
+  status: undefined,
+  created_time: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "启用", value: "0" },
+  { label: "停用", value: "1" },
+]);
+
+const dictTypeSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "字典名称",
+    key: "dict_name",
+    type: "input",
+    placeholder: "请输入字典名称",
+    clearable: true,
+    span: 6,
   },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await DictAPI.listDictType(params as DictPageQuery);
+  {
+    label: "字典类型",
+    key: "dict_type",
+    type: "input",
+    placeholder: "请输入字典类型",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: statusOptions.value,
+      clearable: true,
+    },
+    span: 6,
+  },
+  {
+    label: "创建时间",
+    key: "created_time",
+    type: "datetimerange",
+    span: 6,
+    props: {
+      type: "datetimerange",
+      rangeSeparator: "至",
+      startPlaceholder: "开始日期",
+      endPlaceholder: "结束日期",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      style: { width: "340px" },
+    },
+  },
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<DictTable[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: DictTable[]) {
+  selectedRows.value = rows;
+}
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  searchParams,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: DictAPI.listDictType,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<DictTable>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { prop: "dict_name", label: "字典名称", minWidth: 140, showOverflowTooltip: true },
+      {
+        prop: "dict_type",
+        label: "字典类型",
+        minWidth: 180,
+        formatter: (row: DictTable) => h(ElTag, { type: "primary" }, () => row.dict_type ?? ""),
+      },
+      {
+        prop: "status",
+        label: "状态",
+        width: 88,
+        formatter: (row: DictTable) => {
+          const ok = row.status === "0";
+          const cfg = ok
+            ? { type: "success" as const, text: "启用" }
+            : { type: "danger" as const, text: "停用" };
+          return h(ElTag, { type: cfg.type }, () => cfg.text);
+        },
+      },
+      { prop: "description", label: "描述", minWidth: 140, showOverflowTooltip: true },
+      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
+      { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 120,
+        fixed: "right",
+        formatter: (row: DictTable) =>
+          h(ArtButtonMore, {
+            list: [
+              {
+                key: "dictData",
+                label: "字典",
+                icon: "ri:book-2-line",
+                auth: "module_system:dict_data:query",
+              },
+              {
+                key: "detail",
+                label: "详情",
+                icon: "ri:file-list-3-line",
+                auth: "module_system:dict_type:detail",
+              },
+              {
+                key: "edit",
+                label: "编辑",
+                icon: "ri:edit-2-line",
+                auth: "module_system:dict_type:update",
+              },
+              {
+                key: "delete",
+                label: "删除",
+                icon: "ri:delete-bin-4-line",
+                color: "#f56c6c",
+                auth: "module_system:dict_type:delete",
+              },
+            ],
+            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
+          }),
+      },
+    ],
+  },
+});
+
+const dictTypeCrudCols = computed(() =>
+  columns.value.map((c: ColumnOption<DictTable>) => {
+    const t = (c as { type?: string }).type;
     return {
-      total: res.data.data.total,
-      list: res.data.data.items,
+      prop: c.prop,
+      label: c.label,
+      type: t === "selection" ? ("selection" as const) : ("default" as const),
+      show: true,
     };
+  })
+);
+
+const exportQueryParams = computed(() => {
+  const sp = { ...(searchParams as object) } as Record<string, unknown>;
+  delete sp.current;
+  delete sp.size;
+  return normalizeDictTypeQuery(sp);
+});
+
+const dictTypeExportContentConfig = computed(() => ({
+  permPrefix: "module_system:dict_type",
+  cols: dictTypeCrudCols.value,
+  exportsBlobAction: async (params: IObject) => {
+    const merged = normalizeDictTypeQuery({
+      ...(exportQueryParams.value as unknown as Record<string, unknown>),
+      ...params,
+    } as Record<string, unknown>);
+    const res = await DictAPI.exportDictType(merged as DictPageQuery);
+    return res.data as Blob;
   },
-  deleteAction: async (ids) => {
-    await DictAPI.deleteDictType(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n))
-    );
-    dictStore.clearDictData();
-    const dictTypes = Object.keys(dictStore.dictData);
-    if (dictTypes.length > 0) {
-      await dictStore.getDict(dictTypes);
-    }
-  },
-  deleteConfirm: {
-    title: "警告",
-    message: "确认删除该项数据?",
-    type: "warning",
-  },
+}));
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
+});
+
+const dialogVisible = reactive({
+  title: "",
+  visible: false,
+  type: "create" as "create" | "update" | "detail",
 });
 
 const detailFormData = ref<DictTable>({});
@@ -413,17 +415,13 @@ const formData = reactive<DictForm>({
   description: undefined,
 });
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
-
 const rules = reactive({
   dict_name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
   dict_type: [{ required: true, message: "请选择字典类型", trigger: "blur" }],
   status: [{ required: true, message: "请选择字典状态", trigger: "blur" }],
 });
+
+const dataFormRef = ref();
 
 const initialFormData: DictForm = {
   id: undefined,
@@ -433,53 +431,59 @@ const initialFormData: DictForm = {
   description: undefined,
 };
 
-const exportsDialogVisible = ref(false);
+const exportModalVisible = ref(false);
 
-const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
+const drawerVisible = ref(false);
+const currentDictType = ref("");
+const currentDictLabel = ref("");
+const currentDictTypeId = ref(0);
 
-const exportPageData = computed(() => {
-  const pd = contentRef.value?.pageData;
-  return (unref(pd) ?? []) as DictTable[];
-});
-
-const exportSelectionData = computed(
-  () => (contentRef.value?.getSelectionData() ?? []) as DictTable[]
-);
-
-const exportColumns = [
-  { prop: "dict_name", label: "字典名称" },
-  { prop: "dict_type", label: "字典类型" },
-  { prop: "status", label: "状态" },
-  { prop: "description", label: "描述" },
-  { prop: "created_time", label: "创建时间" },
-  { prop: "updated_time", label: "更新时间" },
-];
-
-const curdContentConfig = {
-  permPrefix: "module_system:dict_type",
-  cols: exportColumns as any,
-  exportsAction: async (params: any) => {
-    const query: Record<string, unknown> = { ...params };
-    if (typeof query.status === "string") query.status = query.status === "true";
-    return fetchAllPages({
-      initialQuery: query,
-      fetchPage: async (q) => {
-        const res = await DictAPI.listDictType(q as unknown as DictPageQuery);
-        return {
-          total: res.data?.data?.total ?? 0,
-          list: res.data?.data?.items ?? [],
-        };
-      },
-    });
-  },
-} as unknown as IContentConfig;
-
-function handleOpenExportsModal() {
-  exportsDialogVisible.value = true;
+async function handleSearchBarSearch(params: DictTypeSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams({
+    dict_name: params.dict_name,
+    dict_type: params.dict_type,
+    status: params.status,
+    created_time:
+      Array.isArray(params.created_time) && params.created_time.length === 2
+        ? params.created_time
+        : undefined,
+  } as Record<string, unknown>);
+  getData();
 }
 
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
+function onResetSearch() {
+  searchForm.value = {
+    dict_name: undefined,
+    dict_type: undefined,
+    status: undefined,
+    created_time: undefined,
+  };
+  void resetSearchParams();
+}
+
+function buttonMoreClick(item: ButtonMoreItem, row: DictTable) {
+  switch (item.key) {
+    case "dictData":
+      handleDictDataDrawer(row);
+      break;
+    case "detail":
+      void handleOpenDialog("detail", row.id);
+      break;
+    case "edit":
+      void handleOpenDialog("update", row.id);
+      break;
+    case "delete":
+      if (row.id != null) deleteDictTypeRow(row.id);
+      break;
+  }
+}
+
+function handleDictDataDrawer(dictTypeRow: DictTable) {
+  currentDictType.value = dictTypeRow.dict_type || "";
+  currentDictLabel.value = dictTypeRow.dict_name || "";
+  currentDictTypeId.value = dictTypeRow.id ?? 0;
+  drawerVisible.value = true;
 }
 
 async function resetForm() {
@@ -501,45 +505,92 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     const response = await DictAPI.detailDictType(id);
     if (type === "detail") {
       dialogVisible.title = "字典详情";
-      Object.assign(detailFormData.value, response.data.data);
+      detailFormData.value = response.data.data ?? {};
     } else if (type === "update") {
       dialogVisible.title = "修改字典";
       Object.assign(formData, response.data.data);
     }
   } else {
     dialogVisible.title = "新增字典";
+    Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: any) => {
-    if (valid) {
-      const id = formData.id;
-      try {
-        if (id) {
-          await DictAPI.updateDictType(id, { id, ...formData });
-        } else {
-          await DictAPI.createDictType(formData);
-        }
-        dialogVisible.visible = false;
-        await resetForm();
-        refreshList();
-        dictStore.clearDictData();
-        if (formData.dict_type) {
-          await dictStore.getDict([formData.dict_type]);
-        }
-      } catch (error: any) {
-        console.error(error);
+  dataFormRef.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    const id = formData.id;
+    try {
+      if (id) {
+        await DictAPI.updateDictType(id, { id, ...formData });
+        await refreshUpdate();
+      } else {
+        await DictAPI.createDictType(formData);
+        await refreshCreate();
       }
+      dialogVisible.visible = false;
+      await resetForm();
+      dictStore.clearDictData();
+      if (formData.dict_type) {
+        await dictStore.getDict([formData.dict_type]);
+      }
+    } catch (error: unknown) {
+      console.error(error);
     }
   });
 }
 
-async function handleMoreClick(status: string) {
-  const rows = contentRef.value?.getSelectionData() as DictTable[] | undefined;
-  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+function deleteDictTypeRow(id: number) {
+  ElMessageBox.confirm("确认删除该项数据?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      await DictAPI.deleteDictType([id]);
+      dictStore.clearDictData();
+      const dictTypes = Object.keys(dictStore.dictData);
+      if (dictTypes.length > 0) {
+        await dictStore.getDict(dictTypes);
+      }
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
+}
+
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await DictAPI.deleteDictType(ids);
+        dictStore.clearDictData();
+        const dictTypes = Object.keys(dictStore.dictData);
+        if (dictTypes.length > 0) {
+          await dictStore.getDict(dictTypes);
+        }
+        ElMessage.success("删除成功");
+        artTableRef.value?.elTableRef?.clearSelection();
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+function handleMoreClick(status: string) {
+  const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
@@ -550,32 +601,30 @@ async function handleMoreClick(status: string) {
     type: "warning",
   })
     .then(async () => {
-      try {
-        await DictAPI.batchDictType({ ids, status });
-        refreshList();
-        dictStore.clearDictData();
-        const dictTypes = Object.keys(dictStore.dictData);
-        if (dictTypes.length > 0) {
-          await dictStore.getDict(dictTypes);
-        }
-      } catch (error: any) {
-        console.error(error);
+      await DictAPI.batchDictType({ ids, status });
+      await refreshData();
+      dictStore.clearDictData();
+      const dictTypes = Object.keys(dictStore.dictData);
+      if (dictTypes.length > 0) {
+        await dictStore.getDict(dictTypes);
       }
     })
-    .catch(() => {
-      ElMessageBox.close();
-    });
+    .catch(() => {});
 }
 
-const drawerVisible = ref(false);
-const currentDictType = ref("");
-const currentDictLabel = ref("");
-const currentDictTypeId = ref(1);
-
-function handleDictDataDrawer(dictType: DictTable) {
-  currentDictType.value = dictType.dict_type || "";
-  currentDictLabel.value = dictType.dict_name || "";
-  currentDictTypeId.value = dictType.id || 0;
-  drawerVisible.value = true;
+function openExportModal() {
+  exportModalVisible.value = true;
 }
 </script>
+
+<style scoped lang="scss">
+.art-full-height {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.art-table-card {
+  flex: 1;
+}
+</style>

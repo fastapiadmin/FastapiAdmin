@@ -1,4 +1,4 @@
-interface UpgradeLog {
+export interface UpgradeLog {
   version: string; // 版本号
   title: string; // 更新标题
   date: string; // 更新日期

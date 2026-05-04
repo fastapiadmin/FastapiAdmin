@@ -1,9 +1,9 @@
 <!-- 顶部通知公告 -->
 <template>
-  <el-dropdown trigger="click">
-    <el-badge v-if="noticeList.length > 0" :value="noticeList.length" :max="99">
+  <ElDropdown trigger="click">
+    <ElBadge v-if="noticeList.length > 0" :value="noticeList.length" :max="99">
       <ArtSvgIcon :icon="resolveIconForArtSvgIcon('bell')" />
-    </el-badge>
+    </ElBadge>
 
     <ArtSvgIcon v-else :icon="resolveIconForArtSvgIcon('bell')" />
 
@@ -12,14 +12,14 @@
         <template v-if="noticeList.length > 0">
           <div v-for="(item, index) in noticeList" :key="index" class="w-400px py-3">
             <div class="flex-y-center">
-              <el-tag :type="item.notice_type === '1' ? 'primary' : 'warning'">
+              <ElTag :type="item.notice_type === '1' ? 'primary' : 'warning'">
                 {{ item.notice_type === "1" ? "通知" : "公告" }}
-              </el-tag>
+              </ElTag>
 
               <!-- truncated: 超出部分省略 -->
-              <el-text size="small" class="w-200px cursor-pointer !ml-2 !flex-1" truncated>
+              <ElText size="small" class="w-200px cursor-pointer !ml-2 !flex-1" truncated>
                 {{ item.notice_content }}
-              </el-text>
+              </ElText>
 
               <!-- 时间 -->
               <div class="text-xs text-gray">
@@ -27,35 +27,35 @@
               </div>
             </div>
           </div>
-          <el-divider />
+          <ElDivider />
 
           <div class="flex-x-between">
-            <el-link type="primary" underline="never" @click="handleViewMoreNotice">
+            <ElLink type="primary" underline="never" @click="handleViewMoreNotice">
               <span class="text-xs">查看更多</span>
-              <el-icon class="text-xs">
+              <ElIcon class="text-xs">
                 <ArrowRight />
-              </el-icon>
-            </el-link>
-            <el-link
+              </ElIcon>
+            </ElLink>
+            <ElLink
               v-if="noticeList.length > 0"
               type="primary"
               underline="never"
               @click="handleMarkAllAsRead"
             >
               <span class="text-xs">全部已读</span>
-            </el-link>
+            </ElLink>
           </div>
         </template>
         <template v-else>
           <div class="flex-center h-150px w-350px">
-            <el-empty :image-size="50" description="暂无消息" />
+            <ElEmpty :image-size="50" description="暂无消息" />
           </div>
         </template>
       </div>
     </template>
-  </el-dropdown>
+  </ElDropdown>
 
-  <el-dialog
+  <ElDialog
     v-model="noticeDialogVisible"
     :title="noticeDetail?.notice_title ?? '通知详情'"
     width="800px"
@@ -64,15 +64,15 @@
     <div v-if="noticeDetail" class="p-x-20px">
       <div class="flex-y-center mb-16px text-13px text-color-secondary">
         <span class="flex-y-center">
-          <el-icon>
+          <ElIcon>
             <User />
-          </el-icon>
+          </ElIcon>
           {{ noticeDetail.created_by?.name }}
         </span>
         <span class="ml-2 flex-y-center">
-          <el-icon>
+          <ElIcon>
             <Timer />
-          </el-icon>
+          </ElIcon>
           {{ noticeDetail.created_time }}
         </span>
       </div>
@@ -81,7 +81,7 @@
         <div v-html="noticeDetail.notice_content"></div>
       </div>
     </div>
-  </el-dialog>
+  </ElDialog>
 </template>
 
 <script setup lang="ts">

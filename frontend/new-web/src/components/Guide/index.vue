@@ -1,6 +1,6 @@
 <!-- 新手引导：目标用函数延迟解析并带回退节点，避免找不到节点时浮层居中变成「纯弹窗」 -->
 <template>
-  <el-tour
+  <ElTour
     v-model="open"
     :show-close="false"
     :mask="true"
@@ -10,7 +10,7 @@
     @finish="handleTourFinish"
     @close="handleTourClose"
   >
-    <el-tour-step
+    <ElTourStep
       :target="targetMenu"
       :title="t('common.menu')"
       :description="t('common.menuDes')"
@@ -24,7 +24,7 @@
         onClick: handleNextClick,
       }"
     />
-    <el-tour-step
+    <ElTourStep
       :target="targetToolbar"
       :title="t('common.tool')"
       :description="t('common.toolDes')"
@@ -38,7 +38,7 @@
         onClick: handleNextClick,
       }"
     />
-    <el-tour-step
+    <ElTourStep
       :target="targetTags"
       :title="t('common.tagsView')"
       :description="t('common.tagsViewDes')"
@@ -53,9 +53,9 @@
       }"
     />
     <template #indicators>
-      <el-button size="small" @click="handleSkip">{{ t("common.skipLabel") }}</el-button>
+      <ElButton size="small" @click="handleSkip">{{ t("common.skipLabel") }}</ElButton>
     </template>
-  </el-tour>
+  </ElTour>
 </template>
 
 <script setup lang="ts">

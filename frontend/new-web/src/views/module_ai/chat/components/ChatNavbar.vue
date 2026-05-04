@@ -15,24 +15,22 @@
       </button>
     </div>
     <div class="navbar-right">
-      <el-button text :icon="Setting" @click="handleToggleConnection">
+      <ElButton text :icon="Setting" @click="handleToggleConnection">
         {{ isConnected ? "断开连接" : "重新连接" }}
-      </el-button>
-      <el-tag
+      </ElButton>
+      <ElTag
         class="connection-status"
         effect="plain"
         :type="connectionStatus === 'connected' ? 'success' : 'danger'"
       >
-        <el-icon :class="['status-icon', connectionStatus]">
+        <ElIcon :class="['status-icon', connectionStatus]">
           <Connection v-if="connectionStatus === 'connected'" />
           <Loading v-else-if="connectionStatus === 'connecting'" />
           <Warning v-else />
-        </el-icon>
+        </ElIcon>
         <span class="status-text">{{ connectionStatusText }}</span>
-      </el-tag>
-      <el-button v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
-        清空对话
-      </el-button>
+      </ElTag>
+      <ElButton v-if="hasMessages" text :icon="Delete" @click="handleClearChat">清空对话</ElButton>
     </div>
   </div>
 </template>

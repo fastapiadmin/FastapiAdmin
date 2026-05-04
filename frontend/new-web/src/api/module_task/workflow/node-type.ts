@@ -12,7 +12,7 @@ const WorkflowNodeTypeAPI = {
   },
 
   getWorkflowNodeTypeList(query: WorkflowNodeTypePageQuery) {
-    return request<ApiResponse<PageResult<WorkflowNodeTypeTable[]>>>({
+    return request<ApiResponse<PageResult<WorkflowNodeTypeTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

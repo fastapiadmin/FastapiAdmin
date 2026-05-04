@@ -1,5 +1,5 @@
 <template>
-  <EnhancedDialog
+  <ArtDialog
     v-model="visible"
     title="创建数据表"
     width="min(800px, 94vw)"
@@ -7,7 +7,7 @@
     dialog-class="create-table-dialog"
     @opened="onDialogOpened"
   >
-    <el-alert type="info" :closable="false" show-icon class="mb-3 !items-start">
+    <ElAlert type="info" :closable="false" show-icon class="mb-3 !items-start">
       <template #title>
         <span class="text-sm leading-relaxed">
           <template v-if="editMode === 'visual'">
@@ -16,40 +16,40 @@
           <template v-else>自带示例一键插入；会写 DDL 的可直接粘贴，支持多条语句。</template>
         </span>
       </template>
-    </el-alert>
+    </ElAlert>
 
     <div class="create-table-toolbar mb-3 flex flex-wrap items-center gap-2">
       <span class="text-sm text-[var(--el-text-color-regular)] shrink-0">方式</span>
-      <el-radio-group v-model="editMode" size="small">
-        <el-radio-button value="visual">表结构（推荐）</el-radio-button>
-        <el-radio-button value="sql">写 SQL</el-radio-button>
-      </el-radio-group>
+      <ElRadioGroup v-model="editMode" size="small">
+        <ElRadioButton value="visual">表结构（推荐）</ElRadioButton>
+        <ElRadioButton value="sql">写 SQL</ElRadioButton>
+      </ElRadioGroup>
     </div>
 
     <div v-show="editMode === 'sql'" class="sql-pane">
       <div class="mb-2 flex flex-wrap items-center gap-2">
-        <el-dropdown trigger="click" @command="onSqlPresetCommand">
-          <el-button type="primary" size="small">
+        <ElDropdown trigger="click" @command="onSqlPresetCommand">
+          <ElButton type="primary" size="small">
             插入示例模板
-            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-          </el-button>
+            <ElIcon class="el-icon--right"><ArrowDown /></ElIcon>
+          </ElButton>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="single-mysql">单表 · MySQL</el-dropdown-item>
-              <el-dropdown-item command="single-postgres">单表 · PostgreSQL</el-dropdown-item>
-              <el-dropdown-item command="master-mysql" divided>主子表 · MySQL</el-dropdown-item>
-              <el-dropdown-item command="master-postgres">主子表 · PostgreSQL</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem command="single-mysql">单表 · MySQL</ElDropdownItem>
+              <ElDropdownItem command="single-postgres">单表 · PostgreSQL</ElDropdownItem>
+              <ElDropdownItem command="master-mysql" divided>主子表 · MySQL</ElDropdownItem>
+              <ElDropdownItem command="master-postgres">主子表 · PostgreSQL</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
+        </ElDropdown>
         <span class="text-xs text-[var(--el-text-color-secondary)]">从模板开始比自己写更省事</span>
       </div>
-      <el-scrollbar max-height="min(52vh, 420px)" class="sql-editor-scroll">
+      <ElScrollbar max-height="min(52vh, 420px)" class="sql-editor-scroll">
         <div class="absolute z-36 right-5 top-2">
-          <el-link type="primary" @click="copySql">
-            <el-icon><CopyDocument /></el-icon>
+          <ElLink type="primary" @click="copySql">
+            <ElIcon><CopyDocument /></ElIcon>
             复制
-          </el-link>
+          </ElLink>
         </div>
         <Codemirror
           ref="sqlRef"
@@ -59,51 +59,51 @@
           height="360px"
           width="100%"
         />
-      </el-scrollbar>
+      </ElScrollbar>
     </div>
 
     <div v-show="editMode === 'visual'" class="visual-pane">
-      <el-scrollbar max-height="min(58vh, 520px)" class="visual-pane-scroll">
+      <ElScrollbar max-height="min(58vh, 520px)" class="visual-pane-scroll">
         <div class="visual-structure max-w-3xl">
-          <el-descriptions :column="1" border size="small" class="visual-desc">
+          <ElDescriptions :column="1" border size="small" class="visual-desc">
             <template #title>
               <span class="text-sm font-medium text-[var(--el-text-color-primary)]">选项</span>
             </template>
-            <el-descriptions-item label="数据库" label-class-name="visual-desc-label">
-              <el-radio-group v-model="visual.dialect" size="small">
-                <el-radio-button value="mysql">MySQL</el-radio-button>
-                <el-radio-button value="postgres">PostgreSQL</el-radio-button>
-              </el-radio-group>
-            </el-descriptions-item>
-            <el-descriptions-item label="表类型" label-class-name="visual-desc-label">
-              <el-radio-group v-model="templateKind" size="small">
-                <el-radio-button value="single">只要一张表</el-radio-button>
-                <el-radio-button value="masterSub">主表 + 子表明细</el-radio-button>
-              </el-radio-group>
-            </el-descriptions-item>
-          </el-descriptions>
+            <ElDescriptionsItem label="数据库" label-class-name="visual-desc-label">
+              <ElRadioGroup v-model="visual.dialect" size="small">
+                <ElRadioButton value="mysql">MySQL</ElRadioButton>
+                <ElRadioButton value="postgres">PostgreSQL</ElRadioButton>
+              </ElRadioGroup>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="表类型" label-class-name="visual-desc-label">
+              <ElRadioGroup v-model="templateKind" size="small">
+                <ElRadioButton value="single">只要一张表</ElRadioButton>
+                <ElRadioButton value="masterSub">主表 + 子表明细</ElRadioButton>
+              </ElRadioGroup>
+            </ElDescriptionsItem>
+          </ElDescriptions>
 
-          <el-descriptions :column="1" border size="small" class="visual-desc mt-3">
+          <ElDescriptions :column="1" border size="small" class="visual-desc mt-3">
             <template #title>
               <span class="text-sm font-medium text-[var(--el-text-color-primary)]">主表</span>
             </template>
-            <el-descriptions-item label-class-name="visual-desc-label">
+            <ElDescriptionsItem label-class-name="visual-desc-label">
               <template #label>
                 <span class="text-[var(--el-color-danger)]">*</span>
                 表名
               </template>
-              <el-input
+              <ElInput
                 v-model="visual.mainTableName"
                 placeholder="英文表名，如 gen_demo_order"
                 clearable
               />
-            </el-descriptions-item>
-            <el-descriptions-item label="说明" label-class-name="visual-desc-label">
-              <el-input v-model="visual.mainComment" placeholder="中文说明，可选" clearable />
-            </el-descriptions-item>
-          </el-descriptions>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="说明" label-class-name="visual-desc-label">
+              <ElInput v-model="visual.mainComment" placeholder="中文说明，可选" clearable />
+            </ElDescriptionsItem>
+          </ElDescriptions>
 
-          <el-descriptions
+          <ElDescriptions
             v-if="visual.subEnabled"
             :column="1"
             border
@@ -113,42 +113,42 @@
             <template #title>
               <span class="text-sm font-medium text-[var(--el-text-color-primary)]">子表</span>
             </template>
-            <el-descriptions-item label-class-name="visual-desc-label">
+            <ElDescriptionsItem label-class-name="visual-desc-label">
               <template #label>
                 <span class="text-[var(--el-color-danger)]">*</span>
                 表名
               </template>
-              <el-input
+              <ElInput
                 v-model="visual.subTableName"
                 placeholder="如 gen_demo_order_item"
                 clearable
               />
-            </el-descriptions-item>
-            <el-descriptions-item label="说明" label-class-name="visual-desc-label">
-              <el-input v-model="visual.subComment" placeholder="中文说明，可选" clearable />
-            </el-descriptions-item>
-            <el-descriptions-item label="外键列" label-class-name="visual-desc-label">
-              <el-input
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="说明" label-class-name="visual-desc-label">
+              <ElInput v-model="visual.subComment" placeholder="中文说明，可选" clearable />
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="外键列" label-class-name="visual-desc-label">
+              <ElInput
                 v-model="visual.fkColumn"
                 placeholder="子表里指向主表的那列，如 order_id"
                 clearable
               />
-            </el-descriptions-item>
-            <el-descriptions-item label="对应主表列" label-class-name="visual-desc-label">
-              <el-input v-model="visual.fkRefColumn" placeholder="一般是 id" clearable />
-            </el-descriptions-item>
-          </el-descriptions>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="对应主表列" label-class-name="visual-desc-label">
+              <ElInput v-model="visual.fkRefColumn" placeholder="一般是 id" clearable />
+            </ElDescriptionsItem>
+          </ElDescriptions>
 
           <div class="mt-3">
-            <el-link type="primary" :underline="false" @click="syncVisualToSql">
+            <ElLink type="primary" :underline="false" @click="syncVisualToSql">
               需要手写调整？生成 SQL 并切到「写 SQL」
-            </el-link>
+            </ElLink>
           </div>
         </div>
         <p class="mb-1 mt-2 text-xs text-[var(--el-text-color-secondary)]">
           将要执行的 SQL（随上面表格自动更新）
         </p>
-        <el-input
+        <ElInput
           v-model="visualPreviewSql"
           type="textarea"
           :rows="6"
@@ -156,16 +156,16 @@
           class="font-mono text-xs visual-sql-preview"
           placeholder="填写表名后会自动生成"
         />
-      </el-scrollbar>
+      </ElScrollbar>
     </div>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button type="primary" :loading="loading" @click="handleConfirm">创建表</el-button>
-        <el-button @click="handleCancel">取消</el-button>
+        <ElButton type="primary" :loading="loading" @click="handleConfirm">创建表</ElButton>
+        <ElButton @click="handleCancel">取消</ElButton>
       </div>
     </template>
-  </EnhancedDialog>
+  </ArtDialog>
 </template>
 
 <script setup lang="ts">
@@ -178,7 +178,7 @@ import type { CmComponentRef } from "codemirror-editor-vue3";
 import { ElMessage } from "element-plus";
 import { ArrowDown, CopyDocument } from "@element-plus/icons-vue";
 import { useClipboard } from "@vueuse/core";
-import EnhancedDialog from "@/components/Core/overlays/EnhancedDialog.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
 import { useSettingsStore } from "@/store";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { buildSqlFromVisual } from "../utils/buildCreateTableSql";

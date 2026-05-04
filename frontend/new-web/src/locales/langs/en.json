@@ -384,6 +384,7 @@
       },
       "password": {
         "required": "Please enter Password",
+        "currentRequired": "Please enter your current password",
         "min": "The password cannot be less than 6 characters",
         "confirm": "Please confirm the password again",
         "inconformity": "The two password entries are inconsistent"
@@ -534,10 +535,15 @@
       "title": "Dashboard",
       "console": "Console",
       "analysis": "Analysis",
-      "ecommerce": "Ecommerce"
+      "ecommerce": "Ecommerce",
+      "map": "Map",
+      "pricing": "Pricing"
     },
     "widgets": {
       "title": "Components",
+      "cards": "Cards",
+      "banners": "Banners",
+      "charts": "Charts",
       "icon": "Icon",
       "imageCrop": "Image Crop",
       "excel": "Excel Import Export",
@@ -549,17 +555,8 @@
       "qrcode": "QR Code",
       "drag": "Drag",
       "textScroll": "Text Scroll",
-      "fireworks": "Fireworks"
-    },
-    "template": {
-      "title": "Template Center",
-      "chat": "Chat",
-      "cards": "Cards",
-      "banners": "Banners",
-      "charts": "Charts",
-      "map": "Map",
-      "calendar": "Calendar",
-      "pricing": "Pricing"
+      "fireworks": "Fireworks",
+      "changeLog": "Changelog"
     },
     "article": {
       "title": "Article",
@@ -596,7 +593,7 @@
       }
     },
     "system": {
-      "title": "System Settings",
+      "title": "Template System",
       "user": "User Manage",
       "role": "Role Manage",
       "userCenter": "User Center",

@@ -174,7 +174,12 @@ async function handleRouteGuard(
   }
 
   // 3. 处理动态路由注册
-  if (!routeRegistry?.isRegistered() && userStore.isLogin) {
+  const menuStore = useMenuStore();
+  /** 未注册动态路由，或菜单已被清空（登出延迟 reset 与再登录竞态下可能出现「已注册但 menuList 为空」） */
+  const shouldInitRoutes =
+    userStore.isLogin && (!routeRegistry?.isRegistered() || menuStore.menuList.length === 0);
+
+  if (shouldInitRoutes) {
     // 防止并发请求（快速连续导航场景）
     if (routeInitInProgress) {
       // 正在初始化中，等待完成后重新导航
@@ -285,6 +290,21 @@ function isStaticRoute(path: string): boolean {
 }
 
 /**
+ * 动态路由仍标记为已注册但侧边菜单已被清空时，先卸下动态路由再拉菜单。
+ * 典型场景：`logout` 中 `resetRouterState(500)` 延迟执行，用户在 500ms 内再次登录，
+ * 守卫若仅判断 `isRegistered()` 会跳过拉菜单，侧栏空白。
+ */
+function repairDynamicRoutesIfMenuEmpty(): void {
+  if (!routeRegistry?.isRegistered()) return;
+  const ms = useMenuStore();
+  if (ms.menuList.length > 0) return;
+  routeRegistry.unregister();
+  IframeRouteManager.getInstance().clear();
+  ms.removeAllDynamicRoutes();
+  resetRouteInitState();
+}
+
+/**
  * 处理动态路由注册
  */
 async function handleDynamicRoutes(
@@ -292,6 +312,8 @@ async function handleDynamicRoutes(
   next: NavigationGuardNext,
   router: Router
 ): Promise<void> {
+  repairDynamicRoutesIfMenuEmpty();
+
   // 标记初始化进行中
   routeInitInProgress = true;
 

@@ -7,9 +7,9 @@
     @clear-click="handleClearSelection"
   >
     <template #status="scope">
-      <el-tag :type="scope.row[scope.prop] === '0' ? 'success' : 'danger'">
+      <ElTag :type="scope.row[scope.prop] === '0' ? 'success' : 'danger'">
         {{ scope.row[scope.prop] === "0" ? "启用" : "停用" }}
-      </el-tag>
+      </ElTag>
     </template>
   </table-select>
 </template>
@@ -29,7 +29,8 @@ const emit = defineEmits<{
 
 const selectConfig: ISelectConfig = {
   pk: "id",
-  width: "167.5px", // 与搜索表单其他输入宽度一致
+  /** 与 ArtSearchBar 栅格内 ElInput 一致，占满表单项内容区 */
+  width: "100%",
   placeholder: "请选择用户",
   popover: {
     width: 720, // 弹出层宽度，提升可用性（约 720px）

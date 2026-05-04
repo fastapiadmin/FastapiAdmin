@@ -1,6 +1,6 @@
 <!-- 角色授权 -->
 <template>
-  <EnhancedDrawer
+  <ArtDrawer
     v-model="drawerVisible"
     :title="'【' + props.roleName + '】权限分配'"
     :size="drawerSize"
@@ -8,9 +8,9 @@
     @close="handleCancel"
   >
     <div class="drawer-perm-content flex flex-col min-h-0 flex-1 overflow-hidden">
-      <el-container class="h-full min-h-0 flex-1">
+      <ElContainer class="h-full min-h-0 flex-1">
         <!-- 数据权限 -->
-        <el-aside>
+        <ElAside>
           <div
             class="border-r-1 border-r-[var(--el-border-color-lighter)] b-r-solid h-[100%] p-[20px] box-border"
           >
@@ -19,36 +19,36 @@
                 <div style="width: 10px; background-color: var(--el-color-primary)"></div>
                 <div>
                   <span style="font-size: 16px">数据授权</span>
-                  <el-tooltip placement="right">
+                  <ElTooltip placement="right">
                     <template #content>
                       <span>授权用户可操作的数据范围</span>
                     </template>
-                    <el-icon class="ml-1 inline-block cursor-pointer">
+                    <ElIcon class="ml-1 inline-block cursor-pointer">
                       <QuestionFilled />
-                    </el-icon>
-                  </el-tooltip>
+                    </ElIcon>
+                  </ElTooltip>
                 </div>
               </div>
             </div>
             <div class="mt-3">
-              <el-form ref="dataFormRef" :model="permissionState">
-                <el-form-item prop="data_scope">
-                  <el-select v-model="permissionState.data_scope">
-                    <el-option :key="1" label="仅本人数据权限" :value="1" />
-                    <el-option :key="2" label="本部门数据权限" :value="2" />
-                    <el-option :key="3" label="本部门及以下数据权限" :value="3" />
-                    <el-option :key="4" label="全部数据权限" :value="4" />
-                    <el-option :key="5" label="自定义数据权限" :value="5" />
-                  </el-select>
-                </el-form-item>
-              </el-form>
+              <ElForm ref="dataFormRef" :model="permissionState">
+                <ElFormItem prop="data_scope">
+                  <ElSelect v-model="permissionState.data_scope">
+                    <ElOption :key="1" label="仅本人数据权限" :value="1" />
+                    <ElOption :key="2" label="本部门数据权限" :value="2" />
+                    <ElOption :key="3" label="本部门及以下数据权限" :value="3" />
+                    <ElOption :key="4" label="全部数据权限" :value="4" />
+                    <ElOption :key="5" label="自定义数据权限" :value="5" />
+                  </ElSelect>
+                </ElFormItem>
+              </ElForm>
 
               <div
                 v-if="permissionState.data_scope === 5 && deptTreeData.length"
                 class="mt-5 max-h-[60vh] b-1 b-solid b-[var(--el-border-color-lighter)] p-10px overflow-auto box-border"
               >
-                <el-input v-model="deptFilterText" placeholder="部门名称" />
-                <el-tree
+                <ElInput v-model="deptFilterText" placeholder="部门名称" />
+                <ElTree
                   ref="deptTreeRef"
                   node-key="value"
                   show-checkbox
@@ -61,62 +61,62 @@
                   @check="deptTreeCheck"
                 >
                   <template #empty>
-                    <el-empty :image-size="80" description="暂无数据" />
+                    <ElEmpty :image-size="80" description="暂无数据" />
                   </template>
-                </el-tree>
+                </ElTree>
               </div>
             </div>
           </div>
-        </el-aside>
+        </ElAside>
 
         <!-- 菜单权限 -->
-        <el-main>
+        <ElMain>
           <div style="display: flex; gap: 10px">
             <div style="width: 10px; background-color: var(--el-color-primary)"></div>
             <div>
               <span style="font-size: 16px">菜单授权</span>
-              <el-tooltip placement="right">
+              <ElTooltip placement="right">
                 <template #content>
                   <span>授权用户可操作的菜单权限</span>
                 </template>
-                <el-icon class="ml-1 inline-block cursor-pointer">
+                <ElIcon class="ml-1 inline-block cursor-pointer">
                   <QuestionFilled />
-                </el-icon>
-              </el-tooltip>
+                </ElIcon>
+              </ElTooltip>
             </div>
           </div>
           <div class="mt-3 flex-x-between">
-            <el-input v-model="permFilterText" placeholder="菜单名称" />
+            <ElInput v-model="permFilterText" placeholder="菜单名称" />
             <div class="flex-center ml-5">
-              <el-button type="primary" size="small" plain @click="togglePermTree">
+              <ElButton type="primary" size="small" plain @click="togglePermTree">
                 <template #icon>
                   <SwitchIcon />
                 </template>
                 {{ isExpanded ? "收缩" : "展开" }}
-              </el-button>
-              <el-checkbox
+              </ElButton>
+              <ElCheckbox
                 v-model="parentChildLinked"
                 class="ml-5"
                 @change="handleParentChildLinkedChange"
               >
                 父子联动
-              </el-checkbox>
+              </ElCheckbox>
 
-              <el-tooltip placement="bottom">
+              <ElTooltip placement="bottom">
                 <template #content>
                   如果只需勾选菜单权限，不需要勾选子菜单或者按钮权限，请关闭父子联动
                 </template>
-                <el-icon class="ml-1 color-[--el-color-primary] inline-block cursor-pointer">
+                <ElIcon class="ml-1 color-[--el-color-primary] inline-block cursor-pointer">
                   <QuestionFilled />
-                </el-icon>
-              </el-tooltip>
+                </ElIcon>
+              </ElTooltip>
             </div>
           </div>
 
           <div
             class="mt-5 max-h-[69vh] b-1 b-solid b-[var(--el-border-color-lighter)] p-10px overflow-auto box-border"
           >
-            <el-tree
+            <ElTree
               ref="permTreeRef"
               node-key="value"
               show-checkbox
@@ -129,30 +129,28 @@
               @check="menuTreeCheck"
             >
               <template #empty>
-                <el-empty :image-size="80" description="暂无数据" />
+                <ElEmpty :image-size="80" description="暂无数据" />
               </template>
-            </el-tree>
+            </ElTree>
           </div>
-        </el-main>
-      </el-container>
+        </ElMain>
+      </ElContainer>
     </div>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取 消</el-button>
-        <el-button type="primary" :loading="loading" @click.stop="handleDrawerSave">
-          确 定
-        </el-button>
+        <ElButton @click="handleCancel">取 消</ElButton>
+        <ElButton type="primary" :loading="loading" @click.stop="handleDrawerSave">确 定</ElButton>
       </div>
     </template>
-  </EnhancedDrawer>
+  </ArtDrawer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from "vue";
 import { QuestionFilled, Switch as SwitchIcon } from "@element-plus/icons-vue";
 import type { TreeInstance } from "element-plus";
-import EnhancedDrawer from "@/components/Core/overlays/EnhancedDrawer.vue";
+import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
 import { listToTree, formatTree } from "@/utils/common";
 import RoleAPI, {
   permissionDataType,

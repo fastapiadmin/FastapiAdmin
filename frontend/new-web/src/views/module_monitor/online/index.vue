@@ -1,265 +1,279 @@
-<!-- 在线用户 -->
+<!-- 在线用户：Art + useTable -->
 <template>
-  <div class="app-container">
-    <CrudSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="onlineSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <CrudContent ref="contentRef" :content-config="contentConfig">
-      <!-- eslint-disable-next-line vue/no-unused-vars -- 与 demo 同源解构，本页无批删逻辑 -->
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft>
-          <el-button
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ElButton
             v-hasPerm="['module_monitor:online:delete']"
             type="danger"
-            icon="delete"
-            @click="handleClear"
+            plain
+            :loading="clearAllLoading"
+            @click="handleClearAll"
           >
             强退所有
-          </el-button>
-        </CrudToolbarLeft>
-        <div class="data-table__toolbar--right">
-          <CrudToolbarActions :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
-        </div>
-      </template>
+          </ElButton>
+        </template>
+      </ArtTableHeader>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              type="index"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'session_id')?.show"
-              key="session_id"
-              label="会话编号"
-              prop="session_id"
-              min-width="250"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'login_type')?.show"
-              key="login_type"
-              label="登录类型"
-              prop="login_type"
-              min-width="100"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'ipaddr')?.show"
-              key="ipaddr"
-              label="IP地址"
-              prop="ipaddr"
-              min-width="150"
-              show-overflow-tooltip
-            >
-              <template #default="scope">
-                <el-text>{{ scope.row.ipaddr }}</el-text>
-                <CopyButton
-                  v-if="scope.row.ipaddr"
-                  :text="scope.row.ipaddr"
-                  :style="{ marginLeft: '2px' }"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'name')?.show"
-              key="name"
-              label="用户名"
-              prop="name"
-              min-width="80"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'user_name')?.show"
-              key="user_name"
-              label="账号"
-              prop="user_name"
-              min-width="80"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'login_location')?.show"
-              key="login_location"
-              label="登录位置"
-              prop="login_location"
-              min-width="280"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'os')?.show"
-              key="os"
-              label="操作系统"
-              prop="os"
-              min-width="120"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'login_time')?.show"
-              key="login_time"
-              label="登录时间"
-              prop="login_time"
-              min-width="180"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              key="operation"
-              fixed="right"
-              label="操作"
-              min-width="100"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_monitor:online:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleSubmit(scope.row.session_id)"
-                >
-                  强退
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </CrudContent>
+      <ArtTable
+        row-key="session_id"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 defineOptions({
   name: "OnlineUser",
   inheritAttrs: false,
 });
 
-import OnlineAPI, { type OnlineUserPageQuery } from "@/api/module_monitor/online";
-import { reactive } from "vue";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import { CrudToolbarActions } from "@/components/Crud";
-import CrudSearch from "@/components/CURD/CrudSearch.vue";
-import CrudContent from "@/components/CURD/CrudContent.vue";
-import { useCrudList } from "@/components/Crud/useCrudList";
-import type { ISearchConfig, IContentConfig } from "@/components/Crud/types";
+import { h, ref, computed } from "vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import CopyButton from "@/components/CopyButton/index.vue";
+import OnlineAPI, { type OnlineUserTable } from "@/api/module_monitor/online";
+import type { ColumnOption } from "@/types/component";
+import { ElMessage, ElMessageBox, ElTooltip } from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
+const { hasAuth } = useAuth();
 
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_monitor:online",
-  colon: true,
-  isExpandable: false,
-  showNumber: 3,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "ipaddr",
-      label: "IP地址",
-      type: "input",
-      attrs: { placeholder: "请输入IP地址", clearable: true },
-    },
-    {
-      prop: "name",
-      label: "用户名",
-      type: "input",
-      attrs: { placeholder: "请输入用户名", clearable: true },
-    },
-    {
-      prop: "login_location",
-      label: "登录位置",
-      type: "input",
-      attrs: { placeholder: "请输入登录位置", clearable: true },
-    },
-  ],
+type OnlineSearchForm = {
+  ipaddr?: string;
+  name?: string;
+  login_location?: string;
+};
+
+function buildOnlineReplaceParams(u: OnlineSearchForm): Record<string, unknown> {
+  return {
+    ipaddr: u.ipaddr,
+    name: u.name,
+    login_location: u.login_location,
+  };
+}
+
+const searchForm = ref<OnlineSearchForm>({
+  ipaddr: undefined,
+  name: undefined,
+  login_location: undefined,
 });
 
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "session_id", label: "会话编号", show: true },
-  { prop: "login_type", label: "登录类型", show: true },
-  { prop: "name", label: "登录名称", show: true },
-  { prop: "user_name", label: "用户账号", show: true },
-  { prop: "ipaddr", label: "主机", show: true },
-  { prop: "login_location", label: "登录地点", show: true },
-  { prop: "os", label: "操作系统", show: true },
-  { prop: "login_time", label: "登录时间", show: true },
-  { prop: "operation", label: "操作", show: true },
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const onlineSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "IP地址",
+    key: "ipaddr",
+    type: "input",
+    placeholder: "请输入IP地址",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "用户名",
+    key: "name",
+    type: "input",
+    placeholder: "请输入用户名",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "登录位置",
+    key: "login_location",
+    type: "input",
+    placeholder: "请输入登录位置",
+    clearable: true,
+    span: 6,
+  },
 ]);
 
-const contentConfig = reactive<IContentConfig<OnlineUserPageQuery>>({
-  permPrefix: "module_monitor:online",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
-  },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await OnlineAPI.listOnline(params as OnlineUserPageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
-  },
-});
+const clearAllLoading = ref(false);
 
-async function handleSubmit(session_id: string) {
-  ElMessageBox.confirm(`确认强制退出会话 ${session_id}?`, "警告", {
+function kickSession(sessionId: string) {
+  ElMessageBox.confirm(`确认强制退出会话 ${sessionId}?`, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(async () => {
       try {
-        await OnlineAPI.deleteOnline(session_id);
-        refreshList();
+        await OnlineAPI.deleteOnline(sessionId);
+        ElMessage.success("操作成功");
+        await refreshData();
       } catch (error: unknown) {
         console.error(error);
       }
     })
-    .catch(() => {
-      ElMessageBox.close();
-    });
+    .catch(() => {});
 }
 
-async function handleClear() {
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+} = useTable({
+  core: {
+    apiFn: OnlineAPI.listOnline,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<OnlineUserTable>[] => [
+      {
+        prop: "session_id",
+        label: "会话编号",
+        minWidth: 250,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "login_type",
+        label: "登录类型",
+        minWidth: 100,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "ipaddr",
+        label: "IP地址",
+        minWidth: 150,
+        formatter: (row: OnlineUserTable) =>
+          h("span", { class: "inline-flex items-center flex-wrap gap-0.5" }, [
+            row.ipaddr ?? "",
+            row.ipaddr
+              ? h(CopyButton, {
+                  text: row.ipaddr,
+                  style: { marginLeft: "2px" },
+                })
+              : null,
+          ]),
+      },
+      {
+        prop: "name",
+        label: "用户名",
+        minWidth: 100,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "user_name",
+        label: "账号",
+        minWidth: 100,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "login_location",
+        label: "登录位置",
+        minWidth: 220,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "os",
+        label: "操作系统",
+        minWidth: 120,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "login_time",
+        label: "登录时间",
+        width: 180,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 88,
+        fixed: "right",
+        align: "right",
+        formatter: (row: OnlineUserTable) => {
+          if (!hasAuth("module_monitor:online:delete")) {
+            return h("span", { class: "text-g-400" }, "—");
+          }
+          return h(ElTooltip, { content: "强退", placement: "top" }, () =>
+            h("span", { class: "inline-flex" }, [
+              h(ArtButtonTable, {
+                type: "delete",
+                onClick: () => kickSession(row.session_id),
+              }),
+            ])
+          );
+        },
+      },
+    ],
+  },
+});
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
+});
+
+async function handleSearchBarSearch(params: OnlineSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildOnlineReplaceParams(params));
+  getData();
+}
+
+async function onResetSearch() {
+  searchForm.value = {
+    ipaddr: undefined,
+    name: undefined,
+    login_location: undefined,
+  };
+  await resetSearchParams();
+}
+
+function handleClearAll() {
   ElMessageBox.confirm("确认强制退出所有用户?", "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -267,15 +281,17 @@ async function handleClear() {
   })
     .then(async () => {
       try {
+        clearAllLoading.value = true;
         await OnlineAPI.clearOnline();
-        refreshList();
+        ElMessage.success("操作成功");
+        await refreshData();
       } catch (error: unknown) {
         console.error(error);
+      } finally {
+        clearAllLoading.value = false;
       }
     })
-    .catch(() => {
-      ElMessageBox.close();
-    });
+    .catch(() => {});
 }
 </script>
 

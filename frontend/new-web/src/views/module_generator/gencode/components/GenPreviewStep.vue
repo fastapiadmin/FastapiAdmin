@@ -1,35 +1,35 @@
 <template>
-  <el-row v-loading="previewLoading" element-loading-text="正在加载预览…">
-    <el-col v-if="!previewLoading && isTreeEmpty" :span="24">
-      <el-empty>
+  <ElRow v-loading="previewLoading" element-loading-text="正在加载预览…">
+    <ElCol v-if="!previewLoading && isTreeEmpty" :span="24">
+      <ElEmpty>
         <template #description>
           <p class="mb-1 font-medium">暂无预览文件</p>
           <p class="gencode-preview-empty-tip">
             若刚保存过仍为空，可将「预览范围」改为「全部」；或返回上一步检查字段与主子表后重新进入。
           </p>
         </template>
-      </el-empty>
-    </el-col>
+      </ElEmpty>
+    </ElCol>
     <template v-else>
-      <el-col :span="24" class="mb-2">
+      <ElCol :span="24" class="mb-2">
         <div class="flex items-center gap-3">
           <span class="text-sm text-[#909399]">预览范围</span>
-          <el-radio-group v-model="previewScope" size="small">
-            <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="frontend">前端</el-radio-button>
-            <el-radio-button value="backend">后端</el-radio-button>
-          </el-radio-group>
+          <ElRadioGroup v-model="previewScope" size="small">
+            <ElRadioButton value="all">全部</ElRadioButton>
+            <ElRadioButton value="frontend">前端</ElRadioButton>
+            <ElRadioButton value="backend">后端</ElRadioButton>
+          </ElRadioGroup>
           <span class="ml-3 text-sm text-[#909399]">类型</span>
-          <el-checkbox-group v-model="previewTypes" size="small">
-            <el-checkbox-button v-for="t in previewTypeOptions" :key="t" :value="t">
+          <ElCheckboxGroup v-model="previewTypes" size="small">
+            <ElCheckboxButton v-for="t in previewTypeOptions" :key="t" :value="t">
               {{ t }}
-            </el-checkbox-button>
-          </el-checkbox-group>
+            </ElCheckboxButton>
+          </ElCheckboxGroup>
         </div>
-      </el-col>
-      <el-col :span="6">
-        <el-scrollbar max-height="72vh">
-          <el-tree
+      </ElCol>
+      <ElCol :span="6">
+        <ElScrollbar max-height="72vh">
+          <ElTree
             :data="filteredTreeData"
             default-expand-all
             highlight-current
@@ -44,18 +44,18 @@
                 {{ data.label }}
               </span>
             </template>
-          </el-tree>
-        </el-scrollbar>
-      </el-col>
-      <el-col :span="18">
-        <el-scrollbar max-height="72vh">
+          </ElTree>
+        </ElScrollbar>
+      </ElCol>
+      <ElCol :span="18">
+        <ElScrollbar max-height="72vh">
           <div class="absolute z-36 right-5 top-2">
-            <el-link type="primary" @click="emit('copy-code')">
-              <el-icon>
+            <ElLink type="primary" @click="emit('copy-code')">
+              <ElIcon>
                 <CopyDocument />
-              </el-icon>
+              </ElIcon>
               复制代码
-            </el-link>
+            </ElLink>
           </div>
 
           <Codemirror
@@ -67,10 +67,10 @@
             height="100%"
             width="100%"
           />
-        </el-scrollbar>
-      </el-col>
+        </ElScrollbar>
+      </ElCol>
     </template>
-  </el-row>
+  </ElRow>
 </template>
 
 <script setup lang="ts">

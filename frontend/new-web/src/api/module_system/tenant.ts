@@ -4,7 +4,7 @@ const API_PATH = "/system/tenant";
 
 const TenantAPI = {
   listTenant(query?: TenantPageQuery) {
-    return request<ApiResponse<PageResult<TenantTable[]>>>({
+    return request<ApiResponse<PageResult<TenantTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

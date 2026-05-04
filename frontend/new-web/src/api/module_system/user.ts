@@ -61,7 +61,7 @@ export const UserAPI = {
   },
 
   listUser(query: UserPageQuery) {
-    return request<ApiResponse<PageResult<UserInfo[]>>>({
+    return request<ApiResponse<PageResult<UserInfo>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

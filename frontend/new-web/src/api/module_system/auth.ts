@@ -1,5 +1,4 @@
 import request from "@/utils/http";
-// import request from '@/utils/http'
 
 const API_PATH = "/system/auth";
 

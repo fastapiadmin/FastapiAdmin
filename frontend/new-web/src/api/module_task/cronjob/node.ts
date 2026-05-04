@@ -11,7 +11,7 @@ const NodeAPI = {
   },
 
   listNode(query: NodePageQuery) {
-    return request<ApiResponse<PageResult<NodeTable[]>>>({
+    return request<ApiResponse<PageResult<NodeTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

@@ -64,7 +64,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     redirect: "/home",
     component: Layout,
     children: [
-      /** 首页；壳层菜单见 mergeShellMenus */
+      /** 首页（壳层菜单见 mergeShellMenus）；仪表盘同挂在下方 `dashboard` 子树 */
       {
         path: "home",
         name: "Home",
@@ -78,8 +78,84 @@ export const staticRoutes: AppRouteRecordRaw[] = [
       {
         path: "profile",
         name: "Profile",
-        meta: { title: "个人中心", icon: "user", hidden: true },
+        meta: { title: "个人中心", icon: "ri:user-line", hidden: true },
         component: () => import("@/views/current/profile.vue"),
+      },
+      /** 仪表盘：嵌套在根 Layout 下，与 `/home`、`/profile` 同级挂载 */
+      {
+        path: "dashboard",
+        name: "Dashboard",
+        redirect: "/dashboard/workplace",
+        component: () => import("@/views/nested/router-view-parent/index.vue"),
+        meta: {
+          title: "menus.dashboard.title",
+          icon: "ri:pie-chart-line",
+          alwaysShow: true,
+        },
+        children: [
+          {
+            path: "workplace",
+            name: "DashboardWorkplace",
+            component: () => import("@/views/dashboard/workplace/index.vue"),
+            meta: {
+              title: "menus.workplace.title",
+              icon: "ri:layout-grid-line",
+              keepAlive: true,
+            },
+          },
+          {
+            path: "console",
+            name: "DashboardConsole",
+            component: () => import("@/views/dashboard/console/index.vue"),
+            meta: {
+              title: "menus.dashboard.console",
+              icon: "ri:home-smile-2-line",
+              keepAlive: false,
+              fixedTab: true,
+            },
+          },
+          {
+            path: "analysis",
+            name: "DashboardAnalysis",
+            component: () => import("@/views/dashboard/analysis/index.vue"),
+            meta: {
+              title: "menus.dashboard.analysis",
+              icon: "ri:align-item-bottom-line",
+              keepAlive: false,
+            },
+          },
+          {
+            path: "ecommerce",
+            name: "DashboardEcommerce",
+            component: () => import("@/views/dashboard/ecommerce/index.vue"),
+            meta: {
+              title: "menus.dashboard.ecommerce",
+              icon: "ri:bar-chart-box-line",
+              keepAlive: false,
+            },
+          },
+          {
+            path: "map",
+            name: "DashboardMap",
+            component: () => import("@/views/dashboard/map/index.vue"),
+            meta: {
+              title: "menus.dashboard.map",
+              icon: "ri:map-pin-line",
+              keepAlive: true,
+            },
+          },
+          {
+            path: "pricing",
+            name: "DashboardPricing",
+            component: () => import("@/views/dashboard/pricing/index.vue"),
+            meta: {
+              title: "menus.dashboard.pricing",
+              icon: "ri:money-cny-box-line",
+              keepAlive: true,
+              isFullPage: true,
+            },
+          },
+        ],
       },
     ],
   },

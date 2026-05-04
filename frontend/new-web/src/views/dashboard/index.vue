@@ -14,18 +14,18 @@
                     :src="currentUser.avatar"
                     class="workplace-hero__avatar"
                   />
-                  <el-icon v-else :size="40" class="text-secondary workplace-hero__avatar-fallback">
+                  <ElIcon v-else :size="40" class="text-secondary workplace-hero__avatar-fallback">
                     <UserFilled />
-                  </el-icon>
+                  </ElIcon>
                 </div>
                 <div>
                   <div class="workplace-hero__greeting">
                     {{ timefix }}{{ currentUser.name }}，{{ welcome }}
                   </div>
-                  <el-text class="workplace-hero__meta">
+                  <ElText class="workplace-hero__meta">
                     {{ currentUser.username }} · {{ currentUser.dept_name }} ·
                     {{ currentUser.description }}
-                  </el-text>
+                  </ElText>
                 </div>
               </div>
             </div>
@@ -64,9 +64,9 @@
               @keydown.space.prevent="goModuleEntry(mod.entryPath)"
             >
               <div class="workplace-module-card__icon">
-                <el-icon :size="26">
+                <ElIcon :size="26">
                   <component :is="moduleGroupIcons[mod.key as keyof typeof moduleGroupIcons]" />
-                </el-icon>
+                </ElIcon>
               </div>
               <div class="workplace-module-card__body">
                 <span class="workplace-module-card__name">{{ mod.title }}</span>
@@ -78,9 +78,9 @@
                   暂无该域权限
                 </span>
               </div>
-              <el-icon class="workplace-module-card__arrow" :size="16">
+              <ElIcon class="workplace-module-card__arrow" :size="16">
                 <Right />
-              </el-icon>
+              </ElIcon>
             </div>
           </div>
         </ElCard>
@@ -91,9 +91,9 @@
             <div class="workplace-bookmarks-card__header">
               <div>
                 <span class="workplace-panel-title workplace-bookmarks-card__title-line">
-                  <el-icon class="workplace-bookmarks-card__star" :size="18"><Star /></el-icon>
+                  <ElIcon class="workplace-bookmarks-card__star" :size="18"><Star /></ElIcon>
                   我的收藏
-                  <el-tag
+                  <ElTag
                     v-if="quickLinks.length > 0"
                     type="info"
                     size="small"
@@ -102,20 +102,20 @@
                     class="workplace-bookmarks-card__count"
                   >
                     {{ quickLinks.length }}/{{ QUICK_LINK_MAX }}
-                  </el-tag>
+                  </ElTag>
                 </span>
                 <p class="workplace-section-sub workplace-section-sub--inline">
                   最多 {{ QUICK_LINK_MAX }} 个 · 标签栏星标添加 · 仅本机
                 </p>
               </div>
               <div class="workplace-bookmarks-card__header-actions">
-                <el-tooltip content="在顶部标签栏左侧星标上点击，可加入或取消收藏" placement="top">
-                  <el-icon class="workplace-module-bookmarks__help" :size="15">
+                <ElTooltip content="在顶部标签栏左侧星标上点击，可加入或取消收藏" placement="top">
+                  <ElIcon class="workplace-module-bookmarks__help" :size="15">
                     <QuestionFilled />
-                  </el-icon>
-                </el-tooltip>
+                  </ElIcon>
+                </ElTooltip>
                 <ElButton size="small" type="danger" plain @click="clearBookmarks()">
-                  <el-icon><Delete /></el-icon>
+                  <ElIcon><Delete /></ElIcon>
                   {{ t("common.clear") }}
                 </ElButton>
               </div>
@@ -124,7 +124,7 @@
           <div class="workplace-module-bookmarks">
             <template v-if="quickLinks.length > 0">
               <div class="workplace-quick-list workplace-quick-list--hub">
-                <el-tooltip
+                <ElTooltip
                   v-for="(item, index) in quickLinks"
                   :key="item.id || `${item.href}-${index}`"
                   placement="top"
@@ -163,14 +163,14 @@
                         :aria-label="`移除收藏 ${item.title}`"
                         @click.stop="handleDeleteLink(item)"
                       >
-                        <el-icon><Close /></el-icon>
+                        <ElIcon><Close /></ElIcon>
                       </button>
                     </div>
                   </div>
-                </el-tooltip>
+                </ElTooltip>
               </div>
             </template>
-            <el-empty v-else :image-size="48" class="workplace-module-bookmarks__empty">
+            <ElEmpty v-else :image-size="48" class="workplace-module-bookmarks__empty">
               <template #description>
                 <p class="workplace-quick-empty__title">暂无收藏</p>
                 <p class="workplace-quick-empty__hint">
@@ -179,123 +179,37 @@
                   左侧星标点击添加
                 </p>
               </template>
-            </el-empty>
+            </ElEmpty>
           </div>
         </ElCard>
       </ElCol>
     </ElRow>
 
-    <!-- 运行快照/任务 与 日志/消息：独立纵向堆叠，避免 el-row 负边距与 flex 链导致块级重叠 -->
+    <!-- 日程日历 + 系统日志 + 消息（大屏三列，日历限宽；小屏纵向堆叠） -->
     <div class="mt-4 workplace-ops-stack">
-      <ElRow :gutter="16" class="workplace-ops-row workplace-ops-row--pair">
-        <ElCol :xs="24" :lg="16" class="workplace-ops-col">
-          <ElCard
-            v-loading="statsLoading"
-            shadow="hover"
-            class="workplace-snapshot-card workplace-surface workplace-ops-card"
-          >
-            <template #header>
-              <div class="workplace-snapshot-card__head">
-                <div>
-                  <span class="workplace-panel-title">运行快照</span>
-                  <p class="workplace-section-sub workplace-section-sub--inline">
-                    关键指标一览；可进菜单看全量
-                  </p>
-                </div>
-              </div>
-            </template>
-            <div class="workplace-snapshot-grid">
-              <div class="workplace-stat-tile">
-                <div class="workplace-stat-tile__label">系统用户</div>
-                <div class="workplace-stat-tile__value">
-                  {{ fmtMetric(overviewSnapshot.userTotal) }}
-                </div>
-                <div class="workplace-stat-tile__hint">账号总数</div>
-              </div>
-              <div class="workplace-stat-tile">
-                <div class="workplace-stat-tile__label">当前在线</div>
-                <div class="workplace-stat-tile__value">
-                  {{ fmtMetric(overviewSnapshot.onlineTotal) }}
-                </div>
-                <div class="workplace-stat-tile__hint">会话在线</div>
-              </div>
-              <div class="workplace-stat-tile">
-                <div class="workplace-stat-tile__label">本机负载</div>
-                <div class="workplace-stat-tile__value workplace-stat-tile__value--sm">
-                  CPU {{ fmtPercent(overviewSnapshot.cpuUsed) }} · 内存
-                  {{ fmtPercent(overviewSnapshot.memUsage) }}
-                </div>
-                <div class="workplace-stat-tile__hint">监控服务所在机器</div>
-              </div>
-              <div class="workplace-stat-tile">
-                <div class="workplace-stat-tile__label">调度任务</div>
-                <div class="workplace-stat-tile__value">
-                  {{ fmtMetric(overviewSnapshot.jobCount) }}
-                </div>
-                <div class="workplace-stat-tile__hint">
-                  {{ overviewSnapshot.schedulerStatus || "—" }}
-                  <template v-if="overviewSnapshot.schedulerRunning">· 引擎运行中</template>
-                </div>
-              </div>
-              <div class="workplace-stat-tile">
-                <div class="workplace-stat-tile__label">AI 与应用</div>
-                <div class="workplace-stat-tile__value workplace-stat-tile__value--sm">
-                  会话 {{ fmtMetric(overviewSnapshot.chatSessions) }} · 应用
-                  {{ fmtMetric(overviewSnapshot.appCount) }}
-                </div>
-                <div class="workplace-stat-tile__hint">对话列表与应用数量</div>
-              </div>
-            </div>
-            <div v-if="statsUpdatedAt" class="workplace-snapshot-card__foot">
-              <span class="workplace-snapshot-card__foot-dot" aria-hidden="true" />
-              更新于 {{ formatSnapshotTime(statsUpdatedAt) }}
-            </div>
-          </ElCard>
-        </ElCol>
-
-        <ElCol :xs="24" :lg="8" class="workplace-ops-col">
+      <ElRow :gutter="16" class="workplace-ops-row">
+        <ElCol :xs="24" :lg="7" class="workplace-ops-col workplace-ops-col--calendar">
           <ElCard
             shadow="hover"
-            class="workplace-section-card workplace-surface workplace-ops-card"
+            class="workplace-calendar-card workplace-surface workplace-ops-card"
           >
             <template #header>
               <div class="workplace-section-card__head">
                 <div>
-                  <span class="workplace-panel-title">运行中的任务</span>
+                  <span class="workplace-panel-title">日程日历</span>
                   <p class="workplace-section-sub workplace-section-sub--inline">
-                    调度器 · 最多 10 条
+                    点击日期添加或编辑（本地演示）
                   </p>
                 </div>
-                <ElButton type="primary" link @click="goToJob()">任务管理</ElButton>
               </div>
             </template>
-            <div v-loading="jobsLoading" class="workplace-ops-card__body">
-              <el-empty
-                v-if="!jobsLoading && runningJobs.length === 0"
-                :image-size="64"
-                description="暂无运行中的任务"
-              />
-              <ul v-else class="workplace-running-list workplace-running-list--in-grid">
-                <li v-for="job in runningJobs" :key="job.id" class="workplace-running-list__item">
-                  <div class="workplace-running-list__main">
-                    <span class="workplace-running-list__name">{{ job.name }}</span>
-                    <el-tag type="success" size="small">运行中</el-tag>
-                  </div>
-                  <div class="workplace-running-list__meta">
-                    <span v-if="job.next_run_time">下次：{{ job.next_run_time }}</span>
-                    <span v-if="job.trigger" class="workplace-running-list__trigger">
-                      {{ job.trigger }}
-                    </span>
-                  </div>
-                </li>
-              </ul>
+            <div class="workplace-ops-card__body workplace-ops-card__body--calendar">
+              <HomeCalendar />
             </div>
           </ElCard>
         </ElCol>
-      </ElRow>
 
-      <ElRow :gutter="16" class="workplace-ops-row workplace-ops-row--pair">
-        <ElCol :xs="24" :lg="16" class="workplace-ops-col">
+        <ElCol :xs="24" :lg="10" class="workplace-ops-col">
           <ElCard
             shadow="hover"
             class="workplace-section-card workplace-surface workplace-ops-card"
@@ -325,65 +239,64 @@
               v-loading="logsLoading"
               class="workplace-ops-card__body workplace-ops-card__body--logs"
             >
-              <el-empty
+              <ElEmpty
                 v-if="!logsLoading && systemLogs.length === 0"
                 :image-size="72"
                 description="暂无日志"
               />
               <div v-else class="workplace-logs-scroll">
-                <el-table
+                <ElTable
                   :data="displayedLogs"
                   class="workplace-logs-table"
                   size="small"
-                  stripe
                   :max-height="logsExpanded ? 360 : 220"
                 >
-                  <el-table-column label="类型" width="72" align="center">
+                  <ElTableColumn label="类型" width="72" align="center">
                     <template #default="{ row }">
-                      <el-tag :type="row.type === 1 ? 'success' : 'primary'" size="small">
+                      <ElTag :type="row.type === 1 ? 'success' : 'primary'" size="small">
                         {{ row.type === 1 ? "登录" : "操作" }}
-                      </el-tag>
+                      </ElTag>
                     </template>
-                  </el-table-column>
-                  <el-table-column
+                  </ElTableColumn>
+                  <ElTableColumn
                     label="路径"
                     prop="request_path"
                     min-width="120"
                     show-overflow-tooltip
                   />
-                  <el-table-column label="方法" width="72" align="center">
+                  <ElTableColumn label="方法" width="72" align="center">
                     <template #default="{ row }">
-                      <el-tag :type="getMethodType(row.request_method)" size="small">
+                      <ElTag :type="getMethodType(row.request_method)" size="small">
                         {{ row.request_method || "—" }}
-                      </el-tag>
+                      </ElTag>
                     </template>
-                  </el-table-column>
-                  <el-table-column label="状态" width="64" align="center">
+                  </ElTableColumn>
+                  <ElTableColumn label="状态" width="64" align="center">
                     <template #default="{ row }">
-                      <el-tag :type="getStatusCodeType(row.response_code)" size="small">
+                      <ElTag :type="getStatusCodeType(row.response_code)" size="small">
                         {{ row.response_code ?? "—" }}
-                      </el-tag>
+                      </ElTag>
                     </template>
-                  </el-table-column>
-                  <el-table-column
+                  </ElTableColumn>
+                  <ElTableColumn
                     label="IP"
                     prop="request_ip"
                     min-width="100"
                     show-overflow-tooltip
                   />
-                  <el-table-column
+                  <ElTableColumn
                     label="时间"
                     prop="created_time"
                     min-width="136"
                     show-overflow-tooltip
                   />
-                </el-table>
+                </ElTable>
               </div>
             </div>
           </ElCard>
         </ElCol>
 
-        <ElCol :xs="24" :lg="8" class="workplace-ops-col">
+        <ElCol :xs="24" :lg="7" class="workplace-ops-col">
           <ElCard
             shadow="hover"
             class="workplace-section-card workplace-surface workplace-ops-card"
@@ -400,7 +313,7 @@
               </div>
             </template>
             <div class="workplace-ops-card__body workplace-ops-card__body--notices">
-              <el-empty v-if="noticeList.length === 0" :image-size="80" description="暂无数据" />
+              <ElEmpty v-if="noticeList.length === 0" :image-size="80" description="暂无数据" />
               <ElTimeline v-else class="workplace-notice-timeline">
                 <ElTimelineItem
                   v-for="(item, index) in noticePreviewList"
@@ -413,9 +326,9 @@
                         <span class="workplace-notice-card__title">
                           {{ item.notice_title }}
                         </span>
-                        <el-tag size="small" :type="getNoticeTypeColor(item.notice_type)">
+                        <ElTag size="small" :type="getNoticeTypeColor(item.notice_type)">
                           {{ getNoticeTypeText(item.notice_type) }}
-                        </el-tag>
+                        </ElTag>
                       </div>
                       <span class="workplace-notice-card__time">
                         {{ formatTime(item.created_time) }}
@@ -428,14 +341,11 @@
                       <span class="workplace-notice-card__author">
                         {{ item.created_by?.name }} 发布
                       </span>
-                      <el-tooltip
-                        placement="top"
-                        :content="item.description || item.notice_content"
-                      >
+                      <ElTooltip placement="top" :content="item.description || item.notice_content">
                         <ElButton target="_blank" type="primary" link @click="goToNotice()">
                           详情↗
                         </ElButton>
-                      </el-tooltip>
+                      </ElTooltip>
                     </div>
                   </div>
                 </ElTimelineItem>
@@ -456,16 +366,10 @@ defineOptions({
 
 import { useUserStore } from "@/store/index";
 import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
+import HomeCalendar from "./components/HomeCalendar.vue";
 import { greetings } from "@/utils/common";
 import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
 import LogAPI, { type LogTable } from "@/api/module_system/log";
-import type { SchedulerJob } from "@/api/module_task/cronjob/job";
-import ServerAPI, { type ServerInfo } from "@/api/module_monitor/server";
-import OnlineAPI from "@/api/module_monitor/online";
-import { UserAPI } from "@/api/module_system/user";
-import JobAPI from "@/api/module_task/cronjob/job";
-import { AiChatAPI } from "@/api/module_ai/chat";
-import { ApplicationAPI } from "@/api/module_application/portal";
 import type { MenuTable } from "@/api/module_system/menu";
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
@@ -621,51 +525,10 @@ const noticeList = ref<NoticeTable[]>([]);
 const systemLogs = ref<LogTable[]>([]);
 const logsLoading = ref(false);
 const logsExpanded = ref(false);
-const runningJobs = ref<SchedulerJob[]>([]);
-const jobsLoading = ref(false);
-
 const displayedLogs = computed(() => {
   if (logsExpanded.value || systemLogs.value.length <= 10) return systemLogs.value;
   return systemLogs.value.slice(0, 10);
 });
-
-interface OverviewSnapshot {
-  userTotal: number | null;
-  onlineTotal: number | null;
-  cpuUsed: number | null;
-  memUsage: number | null;
-  jobCount: number | null;
-  schedulerStatus: string;
-  schedulerRunning: boolean;
-  chatSessions: number | null;
-  appCount: number | null;
-}
-
-const overviewSnapshot = ref<OverviewSnapshot>({
-  userTotal: null,
-  onlineTotal: null,
-  cpuUsed: null,
-  memUsage: null,
-  jobCount: null,
-  schedulerStatus: "",
-  schedulerRunning: false,
-  chatSessions: null,
-  appCount: null,
-});
-
-function fmtMetric(n: number | null | undefined) {
-  if (n == null || !Number.isFinite(n)) return "—";
-  return String(n);
-}
-
-function fmtPercent(n: number | null | undefined) {
-  if (n == null || !Number.isFinite(n)) return "—";
-  return `${Number(n).toFixed(1)}%`;
-}
-
-function formatSnapshotTime(ts: number) {
-  return new Date(ts).toLocaleString();
-}
 
 const moduleGroupIcons = {
   system: Setting,
@@ -738,12 +601,6 @@ function goToLog() {
   });
 }
 
-function goToJob() {
-  router.push({ name: "Job" }).catch(() => {
-    ElMessage.warning("任务管理页跳转失败，请检查路由配置");
-  });
-}
-
 function getStatusCodeType(code?: number): "success" | "warning" | "info" | "danger" {
   if (code === undefined) return "info";
   if (code >= 200 && code < 300) return "success";
@@ -771,21 +628,6 @@ async function fetchSystemLogs() {
     console.error("工作台加载系统日志失败:", e);
   } finally {
     logsLoading.value = false;
-  }
-}
-
-async function fetchRunningJobs() {
-  jobsLoading.value = true;
-  try {
-    const res = await JobAPI.getSchedulerJobs();
-    if (res.data.code === 0) {
-      const jobs = res.data.data ?? [];
-      runningJobs.value = jobs.filter((j) => j.status === "运行中").slice(0, 10);
-    }
-  } catch (e) {
-    console.error("工作台加载调度任务失败:", e);
-  } finally {
-    jobsLoading.value = false;
   }
 }
 
@@ -900,9 +742,7 @@ const updateQuickLinks = (links: QuickLink[]) => {
 // 组件挂载时获取数据和添加监听器
 onMounted(() => {
   listNotice();
-  fetchWorkplaceStats();
   fetchSystemLogs();
-  fetchRunningJobs();
   quickStartManager.addListener(updateQuickLinks);
 });
 
@@ -923,71 +763,6 @@ const currentUser = {
   dept_name: userStore.basicInfo.dept_name || "软件专业部",
   last_login: userStore.basicInfo.last_login || "2023-01-01 00:00:00",
 };
-
-const statsLoading = ref(false);
-const statsUpdatedAt = ref<number | null>(null);
-
-async function fetchWorkplaceStats() {
-  statsLoading.value = true;
-  try {
-    const [userR, onlineR, serverR, jobR, chatR, appR] = await Promise.allSettled([
-      UserAPI.listUser({ page_no: 1, page_size: 1 }),
-      OnlineAPI.listOnline({ page_no: 1, page_size: 1 }),
-      ServerAPI.getServer(),
-      JobAPI.getSchedulerStatus(),
-      AiChatAPI.getSessionList({ page_no: 1, page_size: 1 }),
-      ApplicationAPI.listApp({ page_no: 1, page_size: 1 }),
-    ]);
-
-    const snap = overviewSnapshot.value;
-
-    snap.userTotal =
-      userR.status === "fulfilled" && userR.value.data.code === 0
-        ? (userR.value.data.data?.total ?? null)
-        : null;
-
-    snap.onlineTotal =
-      onlineR.status === "fulfilled" && onlineR.value.data.code === 0
-        ? (onlineR.value.data.data?.total ?? null)
-        : null;
-
-    if (serverR.status === "fulfilled" && serverR.value.data.code === 0) {
-      const info = serverR.value.data.data as ServerInfo;
-      snap.cpuUsed = info.cpu?.used ?? null;
-      snap.memUsage = info.mem?.usage ?? null;
-    } else {
-      snap.cpuUsed = null;
-      snap.memUsage = null;
-    }
-
-    if (jobR.status === "fulfilled" && jobR.value.data.code === 0) {
-      const d = jobR.value.data.data;
-      snap.jobCount = d?.job_count ?? null;
-      snap.schedulerStatus = d?.status ?? "";
-      snap.schedulerRunning = !!d?.is_running;
-    } else {
-      snap.jobCount = null;
-      snap.schedulerStatus = "";
-      snap.schedulerRunning = false;
-    }
-
-    snap.chatSessions =
-      chatR.status === "fulfilled" && chatR.value.data.code === 0
-        ? (chatR.value.data.data?.total ?? null)
-        : null;
-
-    snap.appCount =
-      appR.status === "fulfilled" && appR.value.data.code === 0
-        ? (appR.value.data.data?.total ?? null)
-        : null;
-
-    statsUpdatedAt.value = Date.now();
-  } catch (e) {
-    console.error("工作台运行快照加载失败:", e);
-  } finally {
-    statsLoading.value = false;
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -1029,6 +804,22 @@ async function fetchWorkplaceStats() {
   :deep(.el-card__header) {
     border-bottom-color: var(--el-border-color-extra-light);
   }
+}
+
+.workplace-calendar-card {
+  :deep(.el-card__body) {
+    padding: 8px 10px 10px;
+  }
+}
+
+/* 与日志/消息同排时限高；列变窄后不再占满屏宽 */
+.workplace-ops-col--calendar {
+  max-width: 100%;
+}
+
+.workplace-ops-card__body--calendar {
+  max-height: min(300px, 36vh);
+  overflow: auto;
 }
 
 .workplace-panel-title {
@@ -1106,57 +897,6 @@ async function fetchWorkplaceStats() {
 
 .workplace-logs-table {
   width: 100%;
-}
-
-.workplace-running-list {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.workplace-running-list__item {
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  background: var(--el-fill-color-blank);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: var(--workplace-radius-sm);
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.workplace-running-list__main {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.workplace-running-list__name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  white-space: nowrap;
-}
-
-.workplace-running-list__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 1.35;
-  color: var(--el-text-color-secondary);
-}
-
-.workplace-running-list__trigger {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 /* ========== 模块入口 / 收藏：各为独立卡片（同行等高） ========== */
@@ -1349,12 +1089,6 @@ async function fetchWorkplaceStats() {
   padding-left: 2px;
 }
 
-.workplace-running-list--in-grid {
-  max-height: min(400px, 52vh);
-  padding-right: 2px;
-  overflow: hidden auto;
-}
-
 .workplace-module-card {
   position: relative;
   display: flex;
@@ -1448,131 +1182,6 @@ async function fetchWorkplaceStats() {
 
 .workplace-module-card:not(.is-disabled):hover .workplace-module-card__arrow {
   color: var(--el-color-primary);
-}
-
-.workplace-snapshot-card {
-  :deep(.el-card__body) {
-    padding: 18px 20px 16px;
-    background: var(--el-fill-color-blank);
-  }
-}
-
-.workplace-snapshot-card__head {
-  width: 100%;
-}
-
-.workplace-snapshot-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: 14px;
-}
-
-.workplace-ops-row--pair .workplace-snapshot-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (width <= 575px) {
-  .workplace-ops-row--pair .workplace-snapshot-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.workplace-stat-tile {
-  position: relative;
-  min-width: 0;
-  padding: 16px 16px 14px;
-  overflow: hidden;
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: var(--workplace-radius-sm);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &::before {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 3px;
-    content: "";
-    background: var(--el-color-primary);
-    opacity: 0.9;
-  }
-
-  &:hover {
-    border-color: var(--el-color-primary-light-7);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 7%);
-  }
-
-  &:nth-child(2)::before {
-    background: var(--el-color-success);
-  }
-
-  &:nth-child(3)::before {
-    background: var(--el-color-warning);
-  }
-
-  &:nth-child(4)::before {
-    background: var(--el-color-info);
-  }
-
-  &:nth-child(5)::before {
-    background: #722ed1;
-  }
-}
-
-.workplace-stat-tile__label {
-  margin-bottom: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--el-text-color-secondary);
-}
-
-.workplace-stat-tile__value {
-  font-size: 24px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-  color: var(--el-color-primary);
-  letter-spacing: -0.02em;
-}
-
-.workplace-stat-tile__value--sm {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
-  color: var(--el-text-color-primary);
-  letter-spacing: 0;
-  overflow-wrap: anywhere;
-}
-
-.workplace-stat-tile__hint {
-  margin-top: 8px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--el-text-color-placeholder);
-}
-
-.workplace-snapshot-card__foot {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding-top: 14px;
-  margin-top: 16px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  border-top: 1px dashed var(--el-border-color-lighter);
-}
-
-.workplace-snapshot-card__foot-dot {
-  flex-shrink: 0;
-  width: 6px;
-  height: 6px;
-  background: var(--el-color-success);
-  border-radius: 50%;
-  opacity: 0.85;
 }
 
 .workplace-notice-card {

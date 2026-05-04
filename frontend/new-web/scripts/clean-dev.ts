@@ -155,13 +155,9 @@ const targets = [
   "README.zh-CN.md",
   "CHANGELOG.md",
   "CHANGELOG.zh-CN.md",
-  "src/views/change",
   "src/views/safeguard",
-  "src/views/article",
-  "src/views/examples",
   "src/views/system/nested",
   "src/views/widgets",
-  "src/views/template",
   "src/views/dashboard/analysis",
   "src/views/dashboard/ecommerce",
   "src/mock/json",
@@ -240,7 +236,7 @@ async function cleanRouteModules() {
 
   try {
     // 删除演示相关的路由模块
-    const modulesToRemove = ["template.ts", "widgets.ts", "examples.ts", "article.ts"];
+    const modulesToRemove = ["widgets.ts"];
 
     for (const module of modulesToRemove) {
       const modulePath = path.join(modulesPath, module);
@@ -251,40 +247,19 @@ async function cleanRouteModules() {
       }
     }
 
-    // 重写 dashboard.ts - 只保留 console
-    const dashboardContent = `import { AppRouteRecord } from '@/types/router'
-
-export const dashboardRoutes: AppRouteRecord = {
-  name: 'Dashboard',
-  path: '/dashboard',
-  component: '/index/index',
-  meta: {
-    title: 'menus.dashboard.title',
-    icon: 'ri:pie-chart-line',
-    roles: ['R_SUPER', 'R_ADMIN']
-  },
-  children: [
-    {
-      path: 'console',
-      name: 'Console',
-      component: '/dashboard/console',
-      meta: {
-        title: 'menus.dashboard.console',
-        keepAlive: false,
-        fixedTab: true
-      }
+    // 仪表盘页面在 staticRoutes 根 Layout children 中挂载；删除独立 dashboard 模块文件
+    try {
+      await fs.rm(path.join(modulesPath, "dashboard.ts"), { force: true });
+    } catch {
+      // 忽略
     }
-  ]
-}
-`;
-    await fs.writeFile(path.join(modulesPath, "dashboard.ts"), dashboardContent, "utf-8");
 
     // 重写 system.ts - 移除 nested 嵌套菜单
     const systemContent = `import { AppRouteRecord } from '@/types/router'
 
 export const systemRoutes: AppRouteRecord = {
-  path: '/system',
-  name: 'System',
+  path: '/art-system',
+  name: 'ArtSystem',
   component: '/index/index',
   meta: {
     title: 'menus.system.title',
@@ -294,7 +269,7 @@ export const systemRoutes: AppRouteRecord = {
   children: [
     {
       path: 'user',
-      name: 'User',
+      name: 'ArtTplUser',
       component: '/system/user',
       meta: {
         title: 'menus.system.user',
@@ -304,7 +279,7 @@ export const systemRoutes: AppRouteRecord = {
     },
     {
       path: 'role',
-      name: 'Role',
+      name: 'ArtTplRole',
       component: '/system/role',
       meta: {
         title: 'menus.system.role',
@@ -313,19 +288,8 @@ export const systemRoutes: AppRouteRecord = {
       }
     },
     {
-      path: 'user-center',
-      name: 'UserCenter',
-      component: '/system/user-center',
-      meta: {
-        title: 'menus.system.userCenter',
-        isHide: true,
-        keepAlive: true,
-        isHideTab: true
-      }
-    },
-    {
       path: 'menu',
-      name: 'Menus',
+      name: 'ArtTplMenus',
       component: '/system/menu',
       meta: {
         title: 'menus.system.menu',
@@ -345,7 +309,6 @@ export const systemRoutes: AppRouteRecord = {
 
     // 重写 index.ts - 只导入保留的模块
     const indexContent = `import { AppRouteRecord } from '@/types/router'
-import { dashboardRoutes } from './dashboard'
 import { systemRoutes } from './system'
 import { resultRoutes } from './result'
 import { exceptionRoutes } from './exception'
@@ -354,7 +317,6 @@ import { exceptionRoutes } from './exception'
  * 导出所有模块化路由
  */
 export const routeModules: AppRouteRecord[] = [
-  dashboardRoutes,
   systemRoutes,
   resultRoutes,
   exceptionRoutes
@@ -564,7 +526,7 @@ const fastEnterConfig: FastEnterConfig = {
       name: '个人中心',
       enabled: true,
       order: 4,
-      routeName: 'UserCenter'
+      routeName: 'Profile'
     }
   ]
 }
@@ -639,7 +601,7 @@ async function showCleanupWarning() {
     {
       icon: icons.file,
       name: "演示页面",
-      desc: "widgets、template、article、examples、safeguard等页面",
+      desc: "widgets、article、examples、safeguard 等页面",
       color: theme.purple,
     },
     {
