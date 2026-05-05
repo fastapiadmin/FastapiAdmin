@@ -136,7 +136,7 @@ export const SETTING_DEFAULT_CONFIG = {
   /** 页面过渡效果 */
   pageTransition: "slide-left",
   /** 标签页样式 */
-  tabStyle: "tab-default",
+  tabStyle: "tab-google",
   /** 自定义圆角 */
   customRadius: "0.75",
   /** 容器宽度 */

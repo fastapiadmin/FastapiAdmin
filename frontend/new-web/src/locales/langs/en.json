@@ -111,11 +111,20 @@
   "setting": {
     "menuType": {
       "title": "Menu Layout",
-      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+      "list": [
+        "Vertical",
+        "Horizontal",
+        "Mixed",
+        "Dual"
+      ]
     },
     "theme": {
       "title": "Theme Style",
-      "list": ["Light", "Dark", "System"]
+      "list": [
+        "Light",
+        "Dark",
+        "System"
+      ]
     },
     "menu": {
       "title": "Menu Style"
@@ -125,11 +134,17 @@
     },
     "box": {
       "title": "Box Style",
-      "list": ["Border", "Shadow"]
+      "list": [
+        "Border",
+        "Shadow"
+      ]
     },
     "container": {
       "title": "Container Width",
-      "list": ["Full", "Boxed"]
+      "list": [
+        "Full",
+        "Boxed"
+      ]
     },
     "basics": {
       "title": "Basic Config",
@@ -159,7 +174,7 @@
       }
     },
     "tabStyle": {
-      "default": "Default",
+      "default": "Pill",
       "card": "Card",
       "google": "Chrome"
     },
@@ -183,11 +198,20 @@
   "settings": {
     "menuType": {
       "title": "Menu Layout",
-      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+      "list": [
+        "Vertical",
+        "Horizontal",
+        "Mixed",
+        "Dual"
+      ]
     },
     "theme": {
       "title": "Theme Style",
-      "list": ["Light", "Dark", "System"]
+      "list": [
+        "Light",
+        "Dark",
+        "System"
+      ]
     },
     "menu": {
       "title": "Menu Style"
@@ -197,11 +221,17 @@
     },
     "box": {
       "title": "Box Style",
-      "list": ["Border", "Shadow"]
+      "list": [
+        "Border",
+        "Shadow"
+      ]
     },
     "container": {
       "title": "Container Width",
-      "list": ["Full", "Boxed"]
+      "list": [
+        "Full",
+        "Boxed"
+      ]
     },
     "basics": {
       "title": "Basic Config",
@@ -227,7 +257,7 @@
       }
     },
     "tabStyle": {
-      "default": "Default",
+      "default": "Pill",
       "card": "Card",
       "google": "Chrome"
     },
@@ -294,8 +324,14 @@
   "notice": {
     "title": "Notice",
     "btnRead": "Mark as read",
-    "bar": ["Notice", "Message", "Todo"],
-    "text": ["No"],
+    "bar": [
+      "Notice",
+      "Message",
+      "Todo"
+    ],
+    "text": [
+      "No"
+    ],
     "viewAll": "View all"
   },
   "worktab": {
@@ -502,11 +538,11 @@
     "evening": "Good evening!"
   },
   "exceptionPage": {
-    "gohome": "Go Home",
     "401": "Sorry, you don't have permission to access this page.",
     "403": "Sorry, you do not have permission to access this page",
     "404": "Sorry, the page you are trying to access does not exist",
     "500": "Sorry, there was an error on the server",
+    "gohome": "Go Home",
     "noPermission": "Sorry, you don't have permission to access this page.",
     "pageError": "Sorry, the page you visited does not exist.",
     "networkError": "Sorry, the server reported an error.",

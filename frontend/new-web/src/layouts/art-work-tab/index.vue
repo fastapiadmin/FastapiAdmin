@@ -1,11 +1,12 @@
-<!-- 标签页：tab-card 胶囊；tab-default / tab-google 共用 Chrome 顶栏标签（非胶囊） -->
+<!-- 三种模式与 art-design-pro 一致：tab-default / tab-card / tab-google（参考 art-design-pro/src/components/core/layouts/art-work-tab） -->
 <template>
   <div
     v-if="showWorkTab"
     class="worktab-tags-shell box-border w-full select-none"
     :class="[
-      tabStyle === 'tab-card' ? 'py-1 border-b border-[var(--art-card-border)]' : '',
-      chromeTabStrip ? 'worktab-tags-shell--google' : '',
+      /** 三种模式统一底边线；谷歌模式底边与标签贴合，默认/卡片需要与底边留出间距（避免重合） */
+      'border-b border-[var(--art-card-border)]',
+      tabStyle === 'tab-google' ? 'worktab-tags-shell--google pt-1 pb-0' : 'py-1',
     ]"
   >
     <div
@@ -49,13 +50,14 @@
               chromeTabStrip ? 'google-tab relative !h-8 !leading-8 !border-none' : '',
             ]"
             :style="
-              chromeTabStrip
+              tabStyle === 'tab-google'
                 ? {
                     padding: item.fixedTab ? '0 10px' : '0 8px 0 12px',
-                    borderRadius: '6px 6px 0 0',
+                    borderRadius: 'calc(var(--custom-radius) / 2.5 + 4px)',
                   }
                 : {
-                    padding: item.fixedTab ? '0 12px' : '0 10px 0 14px',
+                    padding: item.fixedTab ? '0 10px' : '0 8px 0 12px',
+                    borderRadius: 'calc(var(--custom-radius) / 2.5 + 2px)',
                   }
             "
             v-for="(item, index) in list"
@@ -91,9 +93,9 @@
             />
             {{ item.customTitle || formatMenuTitle(item.title) }}
             <ArtSvgIcon
-              v-if="chromeTabStrip && item.fixedTab"
+              v-if="item.fixedTab"
               icon="ri:pushpin-2-fill"
-              class="worktab-pin shrink-0 text-sm ml-0.5 opacity-75"
+              class="worktab-pin shrink-0 text-sm ml-0.5"
             />
             <span
               v-if="list.length > 1 && !item.fixedTab"
@@ -195,10 +197,8 @@ const { currentRoute } = router;
 const settingStore = useSettingsStore();
 const { tabStyle, showWorkTab } = storeToRefs(settingStore);
 
-/** tab-default / tab-google：Chrome 顶栏标签（tab-card 单独走胶囊） */
-const chromeTabStrip = computed(
-  () => tabStyle.value === "tab-google" || tabStyle.value === "tab-default"
-);
+/** tab-google：Chrome 顶栏标签（tab-default / tab-card 走原有样式） */
+const chromeTabStrip = computed(() => tabStyle.value === "tab-google");
 const isCardTabs = computed(() => tabStyle.value === "tab-card");
 
 // DOM 引用
@@ -704,32 +704,66 @@ watch(
 
 <style scoped>
 /* 工具条：底边与内容区分界；顶边由顶部栏 border-b 承担，避免与标签条顶边双线 */
-.worktab-tags-bar {
-  background: var(--el-fill-color-blank);
-  border-top: 1px solid var(--el-border-color-lighter);
-  border-bottom: 1px solid var(--el-border-color-lighter);
+.worktab-tags-shell {
+  /* 外壳 padding（py-1 / pt-1 pb-0）会让内部分割线出现上下缝隙；用变量让分割线延伸到 padding 区 */
+  --worktab-shell-pad-top: 4px;
+  --worktab-shell-pad-bottom: 4px;
 }
 
-.worktab-tags-shell--google .worktab-tags-bar--google {
-  border-top: none;
+.worktab-tags-shell--google {
+  --worktab-shell-pad-top: 4px;
+  --worktab-shell-pad-bottom: 0px;
+}
+
+.worktab-tags-bar {
+  background: var(--el-fill-color-blank);
+  /* 外壳已统一提供 border-b，避免不同模式出现双线/高度不一致 */
+  border: none;
 }
 
 .worktab-toolbar-end {
   align-self: stretch;
-  border-left: 1px solid var(--el-border-color-lighter);
+  /* 让工具按钮边框（分割线）撑满外壳高度 */
+  margin-top: calc(var(--worktab-shell-pad-top) * -1);
+  margin-bottom: calc(var(--worktab-shell-pad-bottom) * -1);
+  position: relative;
 }
 
-.dark .worktab-toolbar-end {
-  border-left-color: rgb(255 255 255 / 12%);
+/* 工具区左侧分割线：拉满到标签栏高度 */
+.worktab-toolbar-end::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--el-border-color-lighter);
 }
 
-/* 覆盖上面的 border:none，否则竖线不显示 */
-.worktab-tags-bar .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell {
-  border-left: 1px solid var(--el-border-color-lighter);
+.dark .worktab-toolbar-end::before {
+  background: rgb(255 255 255 / 12%);
 }
 
-.dark .worktab-tags-bar .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell {
-  border-left-color: rgb(255 255 255 / 12%);
+/* 工具区内部按钮分割线：拉满到标签栏高度 */
+.worktab-toolbar-end .worktab-bar-cell {
+  position: relative;
+  /* 让 hover/active 背景也覆盖到外壳 padding 区域（与左侧按钮一致的手感） */
+  padding-top: var(--worktab-shell-pad-top);
+  padding-bottom: var(--worktab-shell-pad-bottom);
+}
+
+.worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--el-border-color-lighter);
+}
+
+.dark .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell::before {
+  background: rgb(255 255 255 / 12%);
 }
 
 /*
@@ -761,6 +795,9 @@ watch(
 
 .worktab-tags-bar .worktab-bar-cell--sep-r {
   border-right: 1px solid var(--el-border-color-lighter);
+  /* 左侧按钮分割线同样撑满外壳高度 */
+  margin-top: calc(var(--worktab-shell-pad-top) * -1);
+  margin-bottom: calc(var(--worktab-shell-pad-bottom) * -1);
 }
 
 .worktab-tags-bar .worktab-bar-btn:hover {
@@ -807,7 +844,8 @@ watch(
     var(--el-text-color-regular) 6%
   ) !important;
   border: 1px solid color-mix(in srgb, var(--art-card-border) 80%, transparent) !important;
-  border-radius: 9999px !important;
+  /* 卡片模式圆角不要半圆：与默认一致 */
+  border-radius: calc(var(--custom-radius) / 2.5 + 2px) !important;
   box-shadow:
     0 1px 2px rgb(0 0 0 / 5%),
     inset 0 1px 0 rgb(255 255 255 / 45%);
@@ -839,6 +877,15 @@ watch(
   box-shadow:
     0 2px 14px color-mix(in srgb, var(--el-color-primary) 20%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--el-color-primary) 28%, transparent);
+}
+
+/* 亮色：胶囊选中态与顶栏标签一致，用主题浅底 */
+html:not(.dark) .worktab-tab.worktab-tab--card.activ-tab {
+  background: var(--el-color-primary-light-9) !important;
+  border-color: var(--el-color-primary-light-7) !important;
+  box-shadow:
+    0 2px 14px color-mix(in srgb, var(--el-color-primary) 18%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--el-color-primary) 22%, transparent);
 }
 
 .worktab-star {
@@ -900,6 +947,11 @@ watch(
 .worktab-tags-shell--google {
   --worktab-google-active-bg: var(--el-fill-color-light);
   --worktab-google-tab-muted: var(--el-text-color-regular);
+}
+
+/* 亮色：当前选中标签条为主题浅底（::before/::after 弧角共用同一变量） */
+html:not(.dark) .worktab-tags-shell--google {
+  --worktab-google-active-bg: var(--el-color-primary-light-9);
 }
 
 .dark .worktab-tags-shell--google {
@@ -970,12 +1022,29 @@ watch(
   opacity: 0;
 }
 
+/* 固定标签图钉（pushpin）：常用黄色，与路由菜单图标区分 */
+.worktab-pin {
+  color: #ca8a04 !important;
+}
+
+.dark .worktab-pin {
+  color: #fbbf24 !important;
+}
+
 .worktab-tags-shell--google .worktab-pin {
-  color: color-mix(in srgb, var(--el-text-color-secondary) 88%, transparent);
+  color: #ca8a04 !important;
 }
 
 .dark .worktab-tags-shell--google .worktab-pin {
-  color: rgb(255 255 255 / 42%);
+  color: #fbbf24 !important;
+}
+
+.group:hover .worktab-pin {
+  color: #a16207 !important;
+}
+
+.dark .group:hover .worktab-pin {
+  color: #fcd34d !important;
 }
 
 .google-tab::before,
