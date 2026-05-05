@@ -121,7 +121,7 @@ export function setupBeforeEachGuard(router: Router): void {
       } catch (error) {
         console.error("[RouteGuard] 路由守卫处理失败:", error);
         closeLoading();
-        next({ name: "Exception500" });
+        next({ name: "500" });
       }
     }
   );
@@ -168,7 +168,7 @@ async function handleRouteGuard(
       next();
     } else {
       // 未匹配到路由，跳转到 500 页面
-      next({ name: "Exception500", replace: true });
+      next({ name: "500", replace: true });
     }
     return;
   }
@@ -204,7 +204,7 @@ async function handleRouteGuard(
   }
 
   // 6. 未匹配到路由，跳转到 404
-  next({ name: "Exception404" });
+  next({ name: "404" });
 }
 
 /**
@@ -262,9 +262,8 @@ function resolveStaticChildFullPath(parentFullPath: string, segment: string): st
 function isStaticRoute(path: string): boolean {
   const checkRoute = (routes: any[], targetPath: string, parentFullPath = ""): boolean => {
     return routes.some((route) => {
-      // 404 catch-all 路由不应视为可匿名访问的静态页，
-      // 否则未登录时手动输入任意地址会直接落到 404，无法跳转登录页。
-      if (route.name === "Exception404") {
+      // 通配 404（pathMatch）不应视为免登录静态页；静态表里可能与 `/404` 同名，按 path 区分。
+      if (route.path === "/:pathMatch(.*)*") {
         return false;
       }
 
@@ -416,7 +415,7 @@ async function handleDynamicRoutes(
     }
 
     // 跳转到 500 页面，使用 replace 避免产生历史记录
-    next({ name: "Exception500", replace: true });
+    next({ name: "500", replace: true });
   }
 }
 

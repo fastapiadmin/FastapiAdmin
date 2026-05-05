@@ -185,14 +185,12 @@
 
 <script setup lang="ts">
 import { h, computed, ref, reactive, nextTick, onMounted } from "vue";
-import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
 import type { IObject } from "@/components/Core/modal/types";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
@@ -203,6 +201,8 @@ import NoticeAPI, {
   type NoticeTable,
 } from "@/api/module_system/notice";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useDictStore, useNoticeStore } from "@/store/index";
 import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
 
@@ -213,6 +213,7 @@ defineOptions({
 
 const dictStore = useDictStore();
 const noticeStore = useNoticeStore();
+const { hasAuth } = useAuth();
 
 type NoticeSearchForm = {
   notice_title?: string;
@@ -391,33 +392,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 120,
+        width: 220,
         fixed: "right",
-        formatter: (row: NoticeTable) =>
-          h(ArtButtonMore, {
-            list: [
-              {
-                key: "detail",
-                label: "详情",
-                icon: "ri:file-list-3-line",
-                auth: "module_system:notice:detail",
-              },
-              {
-                key: "edit",
-                label: "编辑",
-                icon: "ri:edit-2-line",
-                auth: "module_system:notice:update",
-              },
-              {
-                key: "delete",
-                label: "删除",
-                icon: "ri:delete-bin-4-line",
-                color: "#f56c6c",
-                auth: "module_system:notice:delete",
-              },
-            ],
-            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-          }),
+        align: "right",
+        formatter: (row: NoticeTable) => formatNoticeOperationCell(row),
       },
     ],
   },
@@ -555,20 +533,6 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function buttonMoreClick(item: ButtonMoreItem, row: NoticeTable) {
-  switch (item.key) {
-    case "detail":
-      if (row.id != null) void handleOpenDialog("detail", row.id);
-      break;
-    case "edit":
-      if (row.id != null) void handleOpenDialog("update", row.id);
-      break;
-    case "delete":
-      if (row.id != null) deleteNoticeRow(row.id);
-      break;
-  }
-}
-
 async function resetForm() {
   if (dataFormRef.value) {
     dataFormRef.value.resetFields();
@@ -639,6 +603,47 @@ function deleteNoticeRow(id: number) {
       await refreshRemove();
     })
     .catch(() => {});
+}
+
+function buildNoticeRowActions(row: NoticeTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:notice:detail",
+      run: () => {
+        if (row.id != null) void handleOpenDialog("detail", row.id);
+      },
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_system:notice:update",
+      run: () => {
+        if (row.id != null) void handleOpenDialog("update", row.id);
+      },
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_system:notice:delete",
+      run: () => {
+        if (row.id != null) deleteNoticeRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatNoticeOperationCell(row: NoticeTable) {
+  return renderTableOperationCell(buildNoticeRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 notice-table-actions",
+  });
 }
 
 function handleBatchDelete() {

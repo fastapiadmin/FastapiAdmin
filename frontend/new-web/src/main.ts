@@ -8,6 +8,7 @@ import "@styles/index.scss"; // 样式
 import "@utils/sys/console.ts"; // 控制台输出内容
 import { initGlobDirectives } from "./directives";
 import { setupErrorHandle } from "./utils/sys/error-handle";
+import { initElIcons } from "@/plugins/icons";
 
 // 暗黑主题样式
 import "element-plus/theme-chalk/dark/css-vars.css";
@@ -21,6 +22,8 @@ import { createTerminal } from "vue-web-terminal";
 document.addEventListener("touchstart", function () {}, { passive: false });
 
 const app = createApp(App);
+/** Element Plus 图标（@element-plus/icons-vue）全局注册，模板中可直接 <Cpu />、<QuestionFilled /> 等 */
+initElIcons(app);
 initStore(app);
 initRouter(app);
 initGlobDirectives(app);

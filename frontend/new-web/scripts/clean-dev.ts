@@ -156,7 +156,6 @@ const targets = [
   "CHANGELOG.md",
   "CHANGELOG.zh-CN.md",
   "src/views/safeguard",
-  "src/views/system/nested",
   "src/views/widgets",
   "src/views/dashboard/analysis",
   "src/views/dashboard/ecommerce",
@@ -254,73 +253,14 @@ async function cleanRouteModules() {
       // 忽略
     }
 
-    // 重写 system.ts - 移除 nested 嵌套菜单
-    const systemContent = `import { AppRouteRecord } from '@/types/router'
-
-export const systemRoutes: AppRouteRecord = {
-  path: '/art-system',
-  name: 'ArtSystem',
-  component: '/index/index',
-  meta: {
-    title: 'menus.system.title',
-    icon: 'ri:user-3-line',
-    roles: ['R_SUPER', 'R_ADMIN']
-  },
-  children: [
-    {
-      path: 'user',
-      name: 'ArtTplUser',
-      component: '/system/user',
-      meta: {
-        title: 'menus.system.user',
-        keepAlive: true,
-        roles: ['R_SUPER', 'R_ADMIN']
-      }
-    },
-    {
-      path: 'role',
-      name: 'ArtTplRole',
-      component: '/system/role',
-      meta: {
-        title: 'menus.system.role',
-        keepAlive: true,
-        roles: ['R_SUPER']
-      }
-    },
-    {
-      path: 'menu',
-      name: 'ArtTplMenus',
-      component: '/system/menu',
-      meta: {
-        title: 'menus.system.menu',
-        keepAlive: true,
-        roles: ['R_SUPER'],
-        authList: [
-          { title: '新增', authMark: 'add' },
-          { title: '编辑', authMark: 'edit' },
-          { title: '删除', authMark: 'delete' }
-        ]
-      }
-    }
-  ]
-}
-`;
-    await fs.writeFile(path.join(modulesPath, "system.ts"), systemContent, "utf-8");
-
-    // 重写 index.ts - 只导入保留的模块
+    // 重写 index.ts：widgets 已删则仅保留 exception
     const indexContent = `import { AppRouteRecord } from '@/types/router'
-import { systemRoutes } from './system'
-import { resultRoutes } from './result'
 import { exceptionRoutes } from './exception'
 
 /**
- * 导出所有模块化路由
+ * 导出所有模块化路由（业务菜单由后端动态下发）
  */
-export const routeModules: AppRouteRecord[] = [
-  systemRoutes,
-  resultRoutes,
-  exceptionRoutes
-]
+export const routeModules: AppRouteRecord[] = [exceptionRoutes]
 `;
     await fs.writeFile(path.join(modulesPath, "index.ts"), indexContent, "utf-8");
 

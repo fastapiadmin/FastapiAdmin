@@ -89,7 +89,6 @@ const dashboardMenuSource: AppRouteRecord = {
         title: "menus.dashboard.pricing",
         icon: "ri:money-cny-box-line",
         keepAlive: true,
-        isFullPage: true,
       },
     },
   ],

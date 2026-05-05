@@ -117,8 +117,6 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   fixedTab?: boolean;
   /** 激活菜单路径 */
   activePath?: string;
-  /** 是否为全屏页面 */
-  isFullPage?: boolean;
   /** 是否为权限按钮行 */
   isAuthButton?: boolean;
   /** 权限标识 */

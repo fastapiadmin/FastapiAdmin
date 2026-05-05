@@ -18,11 +18,11 @@
     />
 
     <ElCard
-      class="flex flex-col flex-1 min-h-0 art-table-card"
+      class="resource-monitor-card flex flex-col flex-1 min-h-0 art-table-card"
       :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
     >
       <div
-        class="resource-breadcrumb mb-3 flex flex-wrap items-center gap-2 border-b border-g-200 pb-3"
+        class="resource-breadcrumb mb-3 shrink-0 flex flex-wrap items-center gap-2 border-b border-g-200 pb-3"
       >
         <ElTooltip content="资源文件管理系统: 点击路径可以快速返回上级目录">
           <QuestionFilled class="mx-1 h-4 w-4" />
@@ -43,9 +43,9 @@
       </div>
 
       <ArtTableHeader
+        class="resource-toolbar shrink-0"
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
-        layout="search,refresh,size,fullscreen"
         :loading="loading"
         @refresh="refreshData"
       >
@@ -91,16 +91,20 @@
         </template>
       </ArtTableHeader>
 
-      <ArtTable
-        row-key="file_url"
-        :loading="loading"
-        :data="data"
-        :columns="columns"
-        :pagination="paginationBind"
-        @selection-change="onTableSelectionChange"
-        @pagination:size-change="handleSizeChange"
-        @pagination:current-change="handleCurrentChange"
-      />
+      <!-- 面包屑与表头已占用高度：表格高度须在独立 flex 子项内计算，否则分页会被挤出卡片 -->
+      <div class="resource-table-region min-h-0 flex flex-1 flex-col overflow-hidden pb-3">
+        <ArtTable
+          row-key="file_url"
+          :show-table-header="false"
+          :loading="loading"
+          :data="data"
+          :columns="columns"
+          :pagination="paginationBind"
+          @selection-change="onTableSelectionChange"
+          @pagination:size-change="handleSizeChange"
+          @pagination:current-change="handleCurrentChange"
+        />
+      </div>
     </ElCard>
 
     <ArtDialog
@@ -644,6 +648,13 @@ async function handleBatchDelete() {
 </script>
 
 <style lang="scss" scoped>
+.resource-monitor-page :deep(.resource-monitor-card.el-card > .el-card__body) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 :deep(.el-breadcrumb__item) {
   &.is-link {
     color: var(--el-color-primary);

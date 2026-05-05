@@ -317,11 +317,11 @@ import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue"
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
-import type { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import type { ColumnOption } from "@/types/component";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useTable } from "@/hooks/core/useTable";
-import { h, computed, nextTick, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { vue3CronPlus } from "vue3-cron-plus";
 import "vue3-cron-plus/dist/index.css";
@@ -332,6 +332,7 @@ import "codemirror/mode/python/python.js";
 import "codemirror/theme/dracula.css";
 
 const dictStore = useDictStore();
+const { hasAuth } = useAuth();
 
 const BATCH_DELETE_NODE_MSG =
   "确认删除选中的节点吗？\n" +
@@ -389,20 +390,6 @@ function onTableSelectionChange(rows: NodeTable[]) {
   selectedRows.value = rows;
 }
 
-function buttonMoreClick(item: ButtonMoreItem, row: NodeTable) {
-  switch (item.key) {
-    case "execute":
-      handleOpenExecuteDialog(row);
-      break;
-    case "edit":
-      if (row.id != null) void handleOpenDialog("update", row.id);
-      break;
-    case "delete":
-      void deleteNodeRow(row.id);
-      break;
-  }
-}
-
 function deleteNodeRow(id: number | undefined) {
   if (id == null) return;
   ElMessageBox.confirm("确认删除该节点吗？将从调度器移除相关任务。", "警告", {
@@ -417,6 +404,47 @@ function deleteNodeRow(id: number | undefined) {
       await refreshRemove();
     })
     .catch(() => {});
+}
+
+function buildNodeRowActions(row: NodeTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "execute",
+      label: "调试",
+      artType: "more",
+      icon: "ri:play-circle-line",
+      iconColor: "var(--el-color-primary)",
+      perm: "module_task:cronjob:node:execute",
+      run: () => handleOpenExecuteDialog(row),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_task:cronjob:node:update",
+      run: () => {
+        if (row.id != null) void handleOpenDialog("update", row.id);
+      },
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_task:cronjob:node:delete",
+      run: () => {
+        void deleteNodeRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatNodeOperationCell(row: NodeTable) {
+  return renderTableOperationCell(buildNodeRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 cronjob-node-table-actions",
+  });
 }
 
 function handleBatchDelete() {
@@ -498,36 +526,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 88,
+        width: 220,
         fixed: "right",
-        align: "center",
-        formatter: (row: NodeTable) =>
-          h("div", [
-            h(ArtButtonMore, {
-              list: [
-                {
-                  key: "execute",
-                  label: "调试",
-                  icon: "ri:play-circle-line",
-                  auth: "module_task:cronjob:node:execute",
-                },
-                {
-                  key: "edit",
-                  label: "编辑",
-                  icon: "ri:edit-2-line",
-                  auth: "module_task:cronjob:node:update",
-                },
-                {
-                  key: "delete",
-                  label: "删除",
-                  icon: "ri:delete-bin-4-line",
-                  color: "#f56c6c",
-                  auth: "module_task:cronjob:node:delete",
-                },
-              ],
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-            }),
-          ]),
+        align: "right",
+        formatter: (row: NodeTable) => formatNodeOperationCell(row),
       },
     ],
   },

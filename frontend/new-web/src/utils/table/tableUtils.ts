@@ -42,6 +42,25 @@
 import type { ApiResponse } from "./tableCache";
 import { tableConfig } from "./tableConfig";
 
+/**
+ * 请求层若未拆包，这里拿到的是 Axios 整包：业务体在 .data 里。
+ * 否则「list」后的「data」会把 { code, msg, data } 误当成一层列表容器，读不到内层 items。
+ */
+function unwrapAxiosResponseBody(response: unknown): unknown {
+  if (response === null || typeof response !== "object") return response;
+  const r = response as Record<string, unknown>;
+  if (
+    "data" in r &&
+    "status" in r &&
+    typeof r.status === "number" &&
+    "config" in r &&
+    typeof r.config === "object"
+  ) {
+    return r.data;
+  }
+  return response;
+}
+
 // 请求参数基础接口，扩展分页参数
 export interface BaseRequestParams extends PageQuery {
   [key: string]: unknown;
@@ -115,6 +134,8 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
   // 定义支持的字段
   const recordFields = tableConfig.recordFields;
 
+  response = unwrapAxiosResponseBody(response);
+
   if (!response) {
     return { records: [], total: 0 };
   }
@@ -184,7 +205,10 @@ export const updatePaginationFromResponse = <T>(
   pagination: PageQuery,
   response: ApiResponse<T>
 ): void => {
-  pagination.page_size = response.total ?? pagination.page_size ?? 10;
+  const total = response.total;
+  if (typeof total === "number") {
+    (pagination as Record<string, unknown>).total = total;
+  }
 };
 
 /**

@@ -1,4 +1,4 @@
-<!-- 角色管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉（对齐 system/menu） -->
+<!-- 角色管理：Art + useTable；操作列最多 3 个外露 +「更多」 -->
 <template>
   <div class="art-full-height">
     <ArtSearchBar
@@ -201,7 +201,7 @@ import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import type { IObject } from "@/components/Core/modal/types";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
@@ -212,15 +212,7 @@ import RoleAPI, {
   type RoleTable,
   type TablePageQuery,
 } from "@/api/module_system/role";
-import {
-  ElMessage,
-  ElMessageBox,
-  ElTag,
-  ElTooltip,
-  ElDropdown,
-  ElDropdownMenu,
-  ElDropdownItem,
-} from "element-plus";
+import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@/store";
 import PermissonDrawer from "./components/PermissonDrawer.vue";
@@ -229,8 +221,6 @@ defineOptions({
   name: "Role",
   inheritAttrs: false,
 });
-
-const MAX_INLINE_ROW_ACTIONS = 3;
 
 const { hasAuth } = useAuth();
 
@@ -292,17 +282,6 @@ function deptsCell(row: RoleTable) {
   return h("span", { class: "inline-flex flex-wrap items-center" }, tags);
 }
 
-type RowAction = {
-  key: string;
-  label: string;
-  /** ArtButtonTable 预设类型，分配权限用 edit + 自定义图标 */
-  artType: "add" | "edit" | "delete" | "view" | "more";
-  icon?: string;
-  perm: string;
-  disabled?: boolean;
-  run: () => void;
-};
-
 function buildRoleRowActions(
   row: RoleTable,
   ctx: {
@@ -311,22 +290,25 @@ function buildRoleRowActions(
     onEdit: (id: number) => void;
     onDelete: (id: number) => void;
   }
-): RowAction[] {
+): TableOperationAction[] {
   const isSys = row.id === 1;
-  const warn = () => {
-    ElMessage.warning("系统默认角色，不可操作");
-  };
-  const all: RowAction[] = [
+  const warnSys = () => ElMessage.warning("系统默认角色，不可操作");
+
+  const all: TableOperationAction[] = [
     {
       key: "perm",
       label: "分配权限",
-      artType: "edit",
+      artType: "view",
       icon: "ri:shield-keyhole-line",
+      iconColor: "var(--el-color-primary)",
       perm: "module_system:role:permission",
       disabled: isSys,
       run: () => {
-        if (isSys) warn();
-        else ctx.onPerm(row.id, row.name);
+        if (isSys) {
+          warnSys();
+          return;
+        }
+        ctx.onPerm(row.id!, row.name);
       },
     },
     {
@@ -334,99 +316,46 @@ function buildRoleRowActions(
       label: "详情",
       artType: "view",
       perm: "module_system:role:detail",
-      run: () => ctx.onDetail(row.id),
+      run: () => ctx.onDetail(row.id!),
     },
     {
       key: "edit",
       label: "编辑",
       artType: "edit",
+      icon: "ri:edit-2-line",
       perm: "module_system:role:update",
       disabled: isSys,
       run: () => {
-        if (isSys) warn();
-        else ctx.onEdit(row.id);
+        if (isSys) {
+          warnSys();
+          return;
+        }
+        ctx.onEdit(row.id!);
       },
     },
     {
       key: "delete",
       label: "删除",
       artType: "delete",
+      icon: "ri:delete-bin-4-line",
       perm: "module_system:role:delete",
       disabled: isSys,
       run: () => {
-        if (isSys) warn();
-        else ctx.onDelete(row.id);
+        if (isSys) {
+          warnSys();
+          return;
+        }
+        ctx.onDelete(row.id!);
       },
     },
   ];
-  return all.filter((a) => hasAuth(a.perm));
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
 }
 
 function formatRoleOperationCell(row: RoleTable, ctx: Parameters<typeof buildRoleRowActions>[1]) {
-  const actions = buildRoleRowActions(row, ctx);
-  if (actions.length === 0) {
-    return h("span", { class: "text-g-400" }, "—");
-  }
-  const inline = actions.slice(0, MAX_INLINE_ROW_ACTIONS);
-  const overflow = actions.slice(MAX_INLINE_ROW_ACTIONS);
-
-  const inlineNodes = inline.map((a) =>
-    h(ElTooltip, { content: a.label, placement: "top" }, () =>
-      h("span", { class: "inline-flex" }, [
-        h(ArtButtonTable, {
-          type: a.artType,
-          icon: a.icon,
-          onClick: a.run,
-        }),
-      ])
-    )
-  );
-
-  if (overflow.length === 0) {
-    return h(
-      "div",
-      { class: "inline-flex flex-wrap items-center justify-end gap-1 role-table-actions" },
-      inlineNodes
-    );
-  }
-
-  const dropdown = h(
-    ElDropdown,
-    { trigger: "click" },
-    {
-      default: () =>
-        h(ElTooltip, { content: "更多", placement: "top" }, () =>
-          h("span", { class: "inline-flex align-middle" }, [
-            h(ArtButtonTable, {
-              type: "more",
-              onClick: () => {},
-            }),
-          ])
-        ),
-      dropdown: () =>
-        h(
-          ElDropdownMenu,
-          null,
-          overflow.map((a) =>
-            h(
-              ElDropdownItem,
-              {
-                key: a.key,
-                disabled: a.disabled,
-                onClick: () => a.run(),
-              },
-              () => a.label
-            )
-          )
-        ),
-    }
-  );
-
-  return h(
-    "div",
-    { class: "inline-flex flex-wrap items-center justify-end gap-1 role-table-actions" },
-    [...inlineNodes, dropdown]
-  );
+  return renderTableOperationCell(buildRoleRowActions(row, ctx), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 role-table-actions",
+  });
 }
 
 const searchForm = ref<RoleSearchForm>({
@@ -579,7 +508,7 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 200,
+        width: 220,
         fixed: "right",
         align: "right",
         formatter: (row: RoleTable) => formatRoleOperationCell(row, opCtx),

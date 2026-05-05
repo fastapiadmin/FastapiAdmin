@@ -19,19 +19,15 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from "vue-router";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { useCeremony } from "@/hooks/core/useCeremony";
 import { WEB_LINKS } from "@/utils/constants";
 
 defineOptions({ name: "ArtFestivalTextScroll" });
 
-const route = useRoute();
 const settingStore = useSettingsStore();
 const { showFestivalText } = storeToRefs(settingStore);
 const { currentFestivalData, closeFestivalScroll } = useCeremony();
-
-const isFullPageLayout = computed(() => route.matched.some((r) => r.meta?.isFullPage));
 
 function versionLabel(): string {
   const v = String(import.meta.env.VITE_VERSION ?? "").trim();
@@ -49,7 +45,6 @@ const showFestivalStrip = computed(
   () =>
     showFestivalText.value &&
     !!currentFestivalData.value?.scrollText &&
-    currentFestivalData.value.scrollText !== "" &&
-    !isFullPageLayout.value
+    currentFestivalData.value.scrollText !== ""
 );
 </script>

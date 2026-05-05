@@ -1,4 +1,4 @@
-<!-- 字典类型：与 demo 同一套 Art 布局；接口 DictAPI / fetchGetDictTypeList -->
+<!-- 字典类型：Art 布局；操作列最多 3 个外露 +「更多」 -->
 <template>
   <div class="art-full-height">
     <ArtSearchBar
@@ -152,12 +152,10 @@
 
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
-import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
 import type { IObject } from "@/components/Core/modal/types";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
@@ -170,6 +168,8 @@ import DictAPI, {
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useDictStore } from "@/store";
 import DataDrawer from "@/views/module_system/dict/components/DataDrawer.vue";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 
 defineOptions({
   name: "Dict",
@@ -191,6 +191,7 @@ function normalizeDictTypeQuery(params: Record<string, unknown>): DictPageQuery 
 }
 
 const dictStore = useDictStore();
+const { hasAuth } = useAuth();
 
 const searchForm = ref<DictTypeSearchForm>({
   dict_name: undefined,
@@ -314,39 +315,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 120,
+        width: 220,
         fixed: "right",
-        formatter: (row: DictTable) =>
-          h(ArtButtonMore, {
-            list: [
-              {
-                key: "dictData",
-                label: "字典",
-                icon: "ri:book-2-line",
-                auth: "module_system:dict_data:query",
-              },
-              {
-                key: "detail",
-                label: "详情",
-                icon: "ri:file-list-3-line",
-                auth: "module_system:dict_type:detail",
-              },
-              {
-                key: "edit",
-                label: "编辑",
-                icon: "ri:edit-2-line",
-                auth: "module_system:dict_type:update",
-              },
-              {
-                key: "delete",
-                label: "删除",
-                icon: "ri:delete-bin-4-line",
-                color: "#f56c6c",
-                auth: "module_system:dict_type:delete",
-              },
-            ],
-            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-          }),
+        align: "right",
+        formatter: (row: DictTable) => formatDictOperationCell(row),
       },
     ],
   },
@@ -462,21 +434,50 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function buttonMoreClick(item: ButtonMoreItem, row: DictTable) {
-  switch (item.key) {
-    case "dictData":
-      handleDictDataDrawer(row);
-      break;
-    case "detail":
-      void handleOpenDialog("detail", row.id);
-      break;
-    case "edit":
-      void handleOpenDialog("update", row.id);
-      break;
-    case "delete":
-      if (row.id != null) deleteDictTypeRow(row.id);
-      break;
-  }
+function buildDictRowActions(row: DictTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "dictData",
+      label: "字典",
+      artType: "view",
+      icon: "ri:book-2-line",
+      iconColor: "var(--el-color-warning)",
+      perm: "module_system:dict_data:query",
+      run: () => handleDictDataDrawer(row),
+    },
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:dict_type:detail",
+      run: () => void handleOpenDialog("detail", row.id),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_system:dict_type:update",
+      run: () => void handleOpenDialog("update", row.id),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_system:dict_type:delete",
+      run: () => {
+        if (row.id != null) deleteDictTypeRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatDictOperationCell(row: DictTable) {
+  return renderTableOperationCell(buildDictRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 dict-table-actions",
+  });
 }
 
 function handleDictDataDrawer(dictTypeRow: DictTable) {

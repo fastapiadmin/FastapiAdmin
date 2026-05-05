@@ -152,7 +152,6 @@ export const staticRoutes: AppRouteRecordRaw[] = [
               title: "menus.dashboard.pricing",
               icon: "ri:money-cny-box-line",
               keepAlive: true,
-              isFullPage: true,
             },
           },
         ],
@@ -173,10 +172,10 @@ export const staticRoutes: AppRouteRecordRaw[] = [
       },
     ],
   },
-  // 通配 404 必须置于静态路由最后
+  // 通配 404 必须置于静态路由最后（name 勿与上方 `/404` 重复，否则按名跳转不稳定）
   {
     path: "/:pathMatch(.*)*",
-    name: "404",
+    name: "CatchAll404",
     component: () => import("@views/exception/404/index.vue"),
     meta: { hidden: true, title: "404" },
   },

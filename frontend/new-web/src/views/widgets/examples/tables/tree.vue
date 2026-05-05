@@ -21,7 +21,19 @@
       </div>
 
       <div class="flex flex-col flex-grow min-w-0">
-        <UserSearch v-model="defaultFilter" />
+        <ArtSearchBar
+          ref="searchBarRef"
+          v-model="defaultFilter"
+          :items="treeSearchItems"
+          :rules="searchBarRules"
+          :is-expand="false"
+          :show-expand="true"
+          :show-reset="true"
+          :show-search="true"
+          :default-expanded="false"
+          @search="onTreeSearch"
+          @reset="onTreeSearchReset"
+        />
 
         <ElCard class="flex flex-col flex-1 min-h-0 art-table-card">
           <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
@@ -53,13 +65,52 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from "vue";
 import { useTable } from "@/hooks/core/useTable";
 import { fetchGetUserList } from "@/api/system-manage";
-import UserSearch from "@/views/system/user/modules/user-search.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 
 defineOptions({ name: "TreeTable" });
 
 const showButtons = ref(false);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "在线", value: "1" },
+  { label: "离线", value: "2" },
+  { label: "异常", value: "3" },
+  { label: "注销", value: "4" },
+]);
+
+const treeSearchItems = computed<SearchFormItem[]>(() => [
+  { label: "用户名", key: "userName", type: "input", placeholder: "请输入用户名", clearable: true },
+  {
+    label: "手机号",
+    key: "userPhone",
+    type: "input",
+    props: { placeholder: "请输入手机号", maxlength: "11" },
+  },
+  { label: "邮箱", key: "userEmail", type: "input", props: { placeholder: "请输入邮箱" } },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: { placeholder: "请选择状态", options: statusOptions.value },
+  },
+  {
+    label: "性别",
+    key: "userGender",
+    type: "radiogroup",
+    props: {
+      options: [
+        { label: "男", value: "1" },
+        { label: "女", value: "2" },
+      ],
+    },
+  },
+]);
 
 // 树形数据 - 组织架构示例
 const treeData = ref([
@@ -229,6 +280,15 @@ const {
     ],
   },
 });
+
+function onTreeSearch() {
+  void searchBarRef.value?.validate?.();
+  void refreshData();
+}
+
+function onTreeSearchReset() {
+  void refreshData();
+}
 </script>
 
 <style scoped>

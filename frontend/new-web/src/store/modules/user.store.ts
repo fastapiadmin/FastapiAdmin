@@ -43,7 +43,7 @@ import { useWorktabStore } from "./worktab.store";
 import { useMenuStore } from "./menu.store";
 import { AppRouteRecord } from "@/types/router";
 import { setPageTitle } from "@/utils/navigation/router";
-import { resetRouterState } from "@/router/guards/beforeEach";
+import { resetRouterState, resetRouteInitState } from "@/router/guards/beforeEach";
 import { StorageConfig } from "@/utils/storage/storage-config";
 import AuthAPI from "@/api/module_system/auth";
 import UserAPI from "@/api/module_system/user";
@@ -277,6 +277,8 @@ export const useUserStore = defineStore(
         });
       }
       rememberMe.value = loginForm.remember;
+      // 清除上次会话里「动态路由初始化失败」标记，避免重新登录后侧栏/菜单不注册
+      resetRouteInitState();
       Auth.setTokens(data.access_token, data.refresh_token, rememberMe.value);
       setToken(data.access_token, data.refresh_token);
       setLoginStatus(true);

@@ -39,10 +39,10 @@ export const tableConfig = {
   recordFields: ["list", "data", "records", "items", "result", "rows"],
   // 总条数
   totalFields: ["total", "count"],
-  // 当前页码
-  currentFields: ["current", "page", "pageNum"],
-  // 每页大小
-  sizeFields: ["size", "pageSize", "limit"],
+  // 当前页码（含后端常用 page_no）
+  currentFields: ["current", "page", "pageNum", "page_no"],
+  // 每页大小（含后端常用 page_size）
+  sizeFields: ["size", "pageSize", "limit", "page_size"],
 
   // 请求参数映射配置，前端发送请求时使用的分页参数名
   // useTable 组合式函数传递分页参数的时候 用 current 跟 size

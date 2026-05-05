@@ -1,4 +1,4 @@
-<!-- 菜单管理：Art + 树形表格（对齐 system/menu 模版） -->
+<!-- 菜单管理：Art + 树形表格；操作列最多 3 个外露，其余「更多」 -->
 <template>
   <div class="art-full-height">
     <ArtSearchBar
@@ -526,22 +526,13 @@ import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
 import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
-import {
-  ElMessage,
-  ElMessageBox,
-  ElTag,
-  ElTooltip,
-  ElDropdown,
-  ElDropdownMenu,
-  ElDropdownItem,
-} from "element-plus";
+import { ElMessage, ElMessageBox, ElTag, ElTooltip } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 
-const MAX_INLINE_ROW_ACTIONS = 3;
 const { hasAuth } = useAuth();
 const appStore = useAppStore();
 const userStore = useUserStore();
@@ -580,16 +571,6 @@ function ynTag(v: boolean | undefined, yes = "是", no = "否") {
   return h(ElTag, { type: v ? "success" : "danger" }, () => (v ? yes : no));
 }
 
-type RowAction = {
-  key: string;
-  label: string;
-  artType: "add" | "edit" | "delete" | "view" | "more";
-  icon?: string;
-  perm: string;
-  disabled?: boolean;
-  run: () => void;
-};
-
 function buildMenuRowActions(
   row: MenuTable,
   ctx: {
@@ -598,8 +579,8 @@ function buildMenuRowActions(
     onEdit: (id: number) => void;
     onDelete: (id: number) => void;
   }
-): RowAction[] {
-  const actions: RowAction[] = [];
+): TableOperationAction[] {
+  const actions: TableOperationAction[] = [];
   if (ctx.onAdd && (row.type === MenuTypeEnum.CATALOG || row.type === MenuTypeEnum.MENU)) {
     actions.push({
       key: "add",
@@ -632,74 +613,14 @@ function buildMenuRowActions(
       run: () => ctx.onDelete(row.id!),
     }
   );
-  return actions.filter((a) => hasAuth(a.perm));
+  return actions.filter((a) => a.perm != null && hasAuth(a.perm));
 }
 
 function formatMenuOperationCell(row: MenuTable, ctx: Parameters<typeof buildMenuRowActions>[1]) {
   const actions = buildMenuRowActions(row, ctx);
-  if (actions.length === 0) {
-    return h("span", { class: "text-g-400" }, "—");
-  }
-  const inline = actions.slice(0, MAX_INLINE_ROW_ACTIONS);
-  const overflow = actions.slice(MAX_INLINE_ROW_ACTIONS);
-
-  const inlineNodes = inline.map((a) =>
-    h(ElTooltip, { content: a.label, placement: "top" }, () =>
-      h("span", { class: "inline-flex" }, [
-        h(ArtButtonTable, {
-          type: a.artType,
-          icon: a.icon,
-          onClick: a.run,
-        }),
-      ])
-    )
-  );
-
-  if (overflow.length === 0) {
-    return h(
-      "div",
-      { class: "inline-flex flex-wrap items-center justify-end gap-1 menu-table-actions" },
-      inlineNodes
-    );
-  }
-
-  const dropdown = h(
-    ElDropdown,
-    { trigger: "click" },
-    {
-      default: () =>
-        h(ElTooltip, { content: "更多", placement: "top" }, () =>
-          h("span", { class: "inline-flex align-middle" }, [
-            h(ArtButtonTable, {
-              type: "more",
-              onClick: () => {},
-            }),
-          ])
-        ),
-      dropdown: () =>
-        h(
-          ElDropdownMenu,
-          null,
-          overflow.map((a) =>
-            h(
-              ElDropdownItem,
-              {
-                key: a.key,
-                disabled: a.disabled,
-                onClick: () => a.run(),
-              },
-              () => a.label
-            )
-          )
-        ),
-    }
-  );
-
-  return h(
-    "div",
-    { class: "inline-flex flex-wrap items-center justify-end gap-1 menu-table-actions" },
-    [...inlineNodes, dropdown]
-  );
+  return renderTableOperationCell(actions, {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 menu-table-actions",
+  });
 }
 
 const menuClientTab = ref<"pc" | "app">("pc");
@@ -997,7 +918,7 @@ const { columnChecks, columns } = useTableColumns<MenuTable>(() => [
   {
     prop: "operation",
     label: "操作",
-    width: 260,
+    width: 220,
     fixed: "right",
     align: "right",
     formatter: (row: MenuTable) => formatMenuOperationCell(row, opCtx),

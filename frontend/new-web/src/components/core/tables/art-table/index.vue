@@ -15,13 +15,13 @@
 
         <!-- 渲染展开行 -->
         <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
-          <template #default="{ row }">
-            <component :is="col.formatter ? col.formatter(row) : null" />
+          <template #default="{ row: expandRow }">
+            <component :is="col.formatter ? col.formatter(expandRow) : null" />
           </template>
         </ElTableColumn>
 
-        <!-- 渲染普通列 -->
-        <ElTableColumn v-else v-bind="cleanColumnProps(col)">
+        <!-- 渲染普通列：default 插槽须紧凑书写，避免空白文本抢占 formatter（见 renderColumnFormatter 注释） -->
+        <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
           <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
             <slot
               :name="col.headerSlotName || `${col.prop}-header`"
@@ -30,17 +30,9 @@
               {{ col.label }}
             </slot>
           </template>
-          <template v-if="col.useSlot && col.prop" #default="slotScope">
-            <slot
-              v-if="shouldRenderSlotScope(slotScope)"
-              :name="col.slotName || col.prop"
-              v-bind="{
-                ...slotScope,
-                prop: col.prop,
-                value: col.prop ? slotScope.row[col.prop] : undefined,
-              }"
-            />
-          </template>
+          <!-- 整段单行：插槽内兄弟节点之间的空白文本会让 EP 误判单元格内容 -->
+          <!-- eslint-disable-next-line vue/max-attributes-per-line, prettier/prettier -->
+          <template #default="slotScope"><slot v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)" :name="col.slotName || col.prop" v-bind="{ ...slotScope, prop: col.prop, value: col.prop ? slotScope.row[col.prop] : undefined }" /><TableFormatterOutlet v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)" :column="col" :record="slotScope.row" /></template>
         </ElTableColumn>
       </template>
 
@@ -58,21 +50,37 @@
       :class="mergedPaginationOptions?.align"
       ref="paginationRef"
     >
-      <ElPagination
-        v-bind="mergedPaginationOptions"
-        :total="pagination?.total"
-        :disabled="loading"
-        :page-size="pagination?.size"
-        :current-page="pagination?.current"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+      <Pagination
+        v-if="pagination"
+        :page="pagination.current"
+        :limit="pagination.size"
+        :total="pagination.total"
+        :page-sizes="mergedPaginationOptions.pageSizes"
+        :layout="mergedPaginationOptions.layout"
+        :background="mergedPaginationOptions.background ?? true"
+        :disabled="!!loading"
+        :hidden="paginationHidden"
+        :pager-count="mergedPaginationOptions.pagerCount"
+        :size="mergedPaginationOptions.size"
+        @pagination="handlePaginationEvent"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs } from "vue";
+import {
+  ref,
+  computed,
+  nextTick,
+  watchEffect,
+  getCurrentInstance,
+  useAttrs,
+  isVNode,
+  h,
+  defineComponent,
+  type PropType,
+} from "vue";
 import type { ElTable, TableProps } from "element-plus";
 import { storeToRefs } from "pinia";
 import { ColumnOption } from "@/types";
@@ -80,6 +88,7 @@ import { useTableStore } from "@/store/modules/table.store";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useTableHeight } from "@/hooks/core/useTableHeight";
 import { useResizeObserver, useWindowSize } from "@vueuse/core";
+import Pagination from "@/components/Pagination/index.vue";
 
 defineOptions({ name: "ArtTable" });
 
@@ -183,6 +192,17 @@ const mergedPaginationOptions = computed(() => ({
   ...props.paginationOptions,
 }));
 
+/** 对齐 ElPagination hide-on-single-page，交给封装组件的 hidden */
+const paginationHidden = computed(() => {
+  const p = props.pagination;
+  const opts = mergedPaginationOptions.value;
+  if (!p || !opts.hideOnSinglePage) return false;
+  const size = p.size || 10;
+  const total = p.total ?? 0;
+  if (total <= 0) return false;
+  return Math.ceil(total / size) <= 1;
+});
+
 // 边框 (优先级：props > store)
 const border = computed(() => props.border ?? isBorder.value);
 // 斑马纹
@@ -269,6 +289,11 @@ const mergedTableProps = computed(() => ({
     : undefined,
 }));
 
+const emit = defineEmits<{
+  (e: "pagination:size-change", val: number): void;
+  (e: "pagination:current-change", val: number): void;
+}>();
+
 // 是否显示分页器
 const showPagination = computed(() => props.pagination && !isEmpty.value);
 
@@ -277,6 +302,36 @@ const showPagination = computed(() => props.pagination && !isEmpty.value);
 const shouldRenderSlotScope = (slotScope: { $index?: number }) => {
   return slotScope.$index === undefined || slotScope.$index >= 0;
 };
+
+/**
+ * ElTableColumn 若存在 default 插槽且插槽产物含任意非 Comment 的 vnode（含空白文本节点），
+ * 将不会执行 formatter（见 element-plus render-helper setColumnRenders）。
+ * ArtTable 中 ElTableColumn 与子节点之间的换行/缩进可能被编译进默认插槽，导致 formatter（如操作列里的按钮）永远不渲染。
+ * 对声明了 formatter 且未使用 useSlot 的列，在此显式渲染 formatter 返回值。
+ */
+const renderColumnFormatter = (col: ColumnOption, row: Record<string, unknown>) => {
+  if (!col.formatter) return null;
+  const result = col.formatter(row as never);
+  if (isVNode(result)) return result;
+  if (result === null || result === undefined) return null;
+  return h("span", String(result));
+};
+
+/**
+ * 在 render 里调用 formatter(row) 生成 VNode；勿把 VNode 当 props 传入（克隆后会失效）。
+ * 与 renderColumnFormatter 同文件定义，保证闭包一致。
+ */
+const TableFormatterOutlet = defineComponent({
+  name: "TableFormatterOutlet",
+  props: {
+    column: { type: Object as PropType<ColumnOption>, required: true },
+    /** 避免 prop 名 row 与插槽解构冲突 */
+    record: { type: Object as PropType<Record<string, unknown>>, required: true },
+  },
+  setup(props) {
+    return () => renderColumnFormatter(props.column, props.record);
+  },
+});
 
 // 清理列属性，移除插槽相关的自定义属性，确保它们不会被 ElTableColumn 错误解释
 const cleanColumnProps = (col: ColumnOption) => {
@@ -289,15 +344,11 @@ const cleanColumnProps = (col: ColumnOption) => {
   return columnProps;
 };
 
-// 分页大小变化
-const handleSizeChange = (val: number) => {
-  emit("pagination:size-change", val);
-};
-
-// 分页当前页变化
-const handleCurrentChange = (val: number) => {
-  emit("pagination:current-change", val);
-  scrollToTop(); // 页码改变后滚动到表格顶部
+/** 普通列：单元格已由插槽内 TableFormatterOutlet 渲染，勿再把 formatter 传给 ElTableColumn，避免与 EP 内置 renderCell 混用 */
+const cleanBodyColumnProps = (col: ColumnOption) => {
+  const columnProps = cleanColumnProps(col);
+  delete columnProps.formatter;
+  return columnProps;
 };
 
 const { scrollToTop: scrollPageToTop } = useCommon();
@@ -310,17 +361,26 @@ const scrollToTop = () => {
   });
 };
 
+/** 对接封装分页 @pagination，保持对外仍为 size-change / current-change 事件 */
+const handlePaginationEvent = (payload: { page: number; limit: number }) => {
+  const p = props.pagination;
+  if (!p) return;
+  if (payload.limit !== p.size) {
+    emit("pagination:size-change", payload.limit);
+    return;
+  }
+  if (payload.page !== p.current) {
+    emit("pagination:current-change", payload.page);
+    scrollToTop();
+  }
+};
+
 // 全局序号
 const getGlobalIndex = (index: number) => {
   if (!props.pagination) return index + 1;
   const { current, size } = props.pagination;
   return (current - 1) * size + index + 1;
 };
-
-const emit = defineEmits<{
-  (e: "pagination:size-change", val: number): void;
-  (e: "pagination:current-change", val: number): void;
-}>();
 
 // 查找并绑定表格头部元素 - 使用 VueUse 优化
 const findTableHeader = () => {

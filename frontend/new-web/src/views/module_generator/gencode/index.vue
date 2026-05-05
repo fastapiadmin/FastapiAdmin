@@ -138,7 +138,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { h, ref, reactive, computed, onActivated, watch, nextTick, provide } from "vue";
+import { ref, reactive, computed, onActivated, watch, nextTick, provide } from "vue";
 import { useClipboard } from "@vueuse/core";
 import { useRoute } from "vue-router";
 import type { EditorConfiguration } from "codemirror";
@@ -160,9 +160,9 @@ import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
-import type { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import type { ColumnOption } from "@/types/component";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import CreateTableDialog, { type CreateTableSubmitMeta } from "./components/CreateTableDialog.vue";
 import GenCodeDrawer from "./components/GenCodeDrawer.vue";
 import ImportDbTableDialog from "./components/ImportDbTableDialog.vue";
@@ -192,6 +192,7 @@ const listRefresh = {
 };
 
 const route = useRoute();
+const { hasAuth } = useAuth();
 
 provide(GENCODE_BASIC_FORM_KEY, basicInfo);
 provide(GENCODE_CM_KEY, cmRef);
@@ -763,18 +764,42 @@ type GencodeSearchForm = {
   table_comment?: string;
 };
 
-function buttonMoreClick(item: ButtonMoreItem, row: GenTableSchema) {
-  switch (item.key) {
-    case "preview":
-      void handlePreviewTable(row);
-      break;
-    case "delete":
-      void handleDelete(row);
-      break;
-    case "sync":
-      void handleSynchDb(row);
-      break;
-  }
+function buildGencodeRowActions(row: GenTableSchema): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "preview",
+      label: "代码生成",
+      artType: "edit",
+      icon: "ri:magic-line",
+      iconColor: "var(--el-color-primary)",
+      perm: "module_generator:gencode:update",
+      run: () => void handlePreviewTable(row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_generator:gencode:delete",
+      run: () => void handleDelete(row),
+    },
+    {
+      key: "sync",
+      label: "同步",
+      artType: "view",
+      icon: "ri:refresh-line",
+      iconColor: "var(--el-color-primary)",
+      perm: "module_generator:db:sync",
+      run: () => void handleSynchDb(row),
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatGencodeOperationCell(row: GenTableSchema) {
+  return renderTableOperationCell(buildGencodeRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 gencode-table-actions",
+  });
 }
 
 const searchForm = ref<GencodeSearchForm>({
@@ -862,36 +887,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 100,
+        width: 220,
         fixed: "right",
-        align: "center",
-        formatter: (row: GenTableSchema) =>
-          h("div", [
-            h(ArtButtonMore, {
-              list: [
-                {
-                  key: "preview",
-                  label: "代码生成",
-                  icon: "ri:magic-stick-line",
-                  auth: "module_generator:gencode:update",
-                },
-                {
-                  key: "delete",
-                  label: "删除",
-                  icon: "ri:delete-bin-4-line",
-                  color: "#f56c6c",
-                  auth: "module_generator:gencode:delete",
-                },
-                {
-                  key: "sync",
-                  label: "同步",
-                  icon: "ri:refresh-line",
-                  auth: "module_generator:db:sync",
-                },
-              ],
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-            }),
-          ]),
+        align: "right",
+        formatter: (row: GenTableSchema) => formatGencodeOperationCell(row),
       },
     ],
   },

@@ -6,7 +6,7 @@ const asciiArt = `
 \x1b[0m
 \x1b[33mGitHub: https://github.com/fastapiadmin/FastapiAdmin
 \x1b[0m
-\x1b[31m技术支持（微信）: 948080782，和开发者一起交流～ 群里有小伙伴实时答疑，遇到问题不用慌！
+\x1b[31m技术支持（社区群）: https://service.fastapiadmin.com/about/，和开发者一起交流～ 群里有小伙伴实时答疑，遇到问题不用慌！
 \x1b[0m
 `;
 

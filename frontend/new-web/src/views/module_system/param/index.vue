@@ -161,14 +161,12 @@
 
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
-import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
 import type { IObject } from "@/components/Core/modal/types";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
@@ -179,6 +177,8 @@ import ParamsAPI, {
   type ConfigTable,
 } from "@/api/module_system/params";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useConfigStore } from "@/store";
 
 defineOptions({
@@ -187,6 +187,7 @@ defineOptions({
 });
 
 const configStore = useConfigStore();
+const { hasAuth } = useAuth();
 
 type ParamSearchForm = {
   config_name?: string;
@@ -329,33 +330,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 120,
+        width: 220,
         fixed: "right",
-        formatter: (row: ConfigTable) =>
-          h(ArtButtonMore, {
-            list: [
-              {
-                key: "detail",
-                label: "详情",
-                icon: "ri:file-list-3-line",
-                auth: "module_system:param:detail",
-              },
-              {
-                key: "edit",
-                label: "编辑",
-                icon: "ri:edit-2-line",
-                auth: "module_system:param:update",
-              },
-              {
-                key: "delete",
-                label: "删除",
-                icon: "ri:delete-bin-4-line",
-                color: "#f56c6c",
-                auth: "module_system:param:delete",
-              },
-            ],
-            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-          }),
+        align: "right",
+        formatter: (row: ConfigTable) => formatParamOperationCell(row),
       },
     ],
   },
@@ -462,20 +440,6 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function buttonMoreClick(item: ButtonMoreItem, row: ConfigTable) {
-  switch (item.key) {
-    case "detail":
-      if (row.id != null) void handleOpenDialog("detail", row.id);
-      break;
-    case "edit":
-      if (row.id != null) void handleOpenDialog("update", row.id);
-      break;
-    case "delete":
-      if (row.id != null) deleteParamRow(row.id);
-      break;
-  }
-}
-
 async function resetForm() {
   if (dataFormRef.value) {
     dataFormRef.value.resetFields();
@@ -548,6 +512,47 @@ function deleteParamRow(id: number) {
       await refreshRemove();
     })
     .catch(() => {});
+}
+
+function buildParamRowActions(row: ConfigTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:param:detail",
+      run: () => {
+        if (row.id != null) void handleOpenDialog("detail", row.id);
+      },
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_system:param:update",
+      run: () => {
+        if (row.id != null) void handleOpenDialog("update", row.id);
+      },
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_system:param:delete",
+      run: () => {
+        if (row.id != null) deleteParamRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatParamOperationCell(row: ConfigTable) {
+  return renderTableOperationCell(buildParamRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 param-table-actions",
+  });
 }
 
 function handleBatchDelete() {

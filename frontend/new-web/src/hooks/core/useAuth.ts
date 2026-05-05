@@ -35,13 +35,13 @@ import { storeToRefs } from "pinia";
 import { useUserStore } from "@/store/modules/user.store";
 import { useAppMode } from "@/hooks/core/useAppMode";
 import type { AppRouteRecord } from "@/types/router";
+import { ROLE_ROOT } from "@/constants";
 
 type AuthItem = NonNullable<AppRouteRecord["meta"]["authList"]>[number];
 
-const userStore = useUserStore();
-
 export const useAuth = () => {
   const route = useRoute();
+  const userStore = useUserStore();
   const { isFrontendMode } = useAppMode();
   const { info } = storeToRefs(userStore);
 
@@ -54,17 +54,28 @@ export const useAuth = () => {
     : [];
 
   /**
-   * 检查是否拥有某权限标识（前后端模式通用）
-   * @param auth 权限标识
-   * @returns 是否有权限
+   * 检查是否拥有某权限标识（与 v-hasPerm / 表格内 ArtButtonMore 全码一致）
+   * @param auth 权限标识（多为后端菜单 permission 全码，如 module_system:role:update）
    */
   const hasAuth = (auth: string): boolean => {
-    // 前端模式
+    if (!auth) return true;
+
+    const userPrems = userStore.prems;
+    const roles = userStore.basicInfo?.roles as { code?: string }[] | undefined;
+
+    // 与 directives/permission hasPerm 一致：超级管理员、通配
+    if (roles?.some((r) => r.code === ROLE_ROOT)) return true;
+    if (userPrems.includes("*:*:*")) return true;
+
+    /** 登录后由菜单树汇总的全局权限码（与 v-hasPerm 同源） */
+    if (userPrems.includes(auth)) return true;
+
+    // 前端模式：兼容 info.permissions
     if (isFrontendMode.value) {
       return frontendAuthList.includes(auth);
     }
 
-    // 后端模式
+    // 后端模式：当前路由 meta 短标识（与 v-auth 一致）
     return backendAuthList.some((item) => item?.authMark === auth);
   };
 

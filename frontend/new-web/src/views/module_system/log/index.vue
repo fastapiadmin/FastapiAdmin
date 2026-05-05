@@ -144,14 +144,12 @@
 
 <script setup lang="ts">
 import { h, computed, ref, nextTick } from "vue";
-import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
 import type { IObject } from "@/components/Core/modal/types";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
@@ -160,12 +158,16 @@ import CopyButton from "@/components/CopyButton/index.vue";
 import type { ColumnOption } from "@/types/component";
 import LogAPI, { type LogPageQuery, type LogTable } from "@/api/module_system/log";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
 
 defineOptions({
   name: "Log",
   inheritAttrs: false,
 });
+
+const { hasAuth } = useAuth();
 
 type LogSearchForm = {
   request_path?: string;
@@ -348,27 +350,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 100,
+        width: 160,
         fixed: "right",
-        formatter: (row: LogTable) =>
-          h(ArtButtonMore, {
-            list: [
-              {
-                key: "detail",
-                label: "详情",
-                icon: "ri:file-list-3-line",
-                auth: "module_system:log:detail",
-              },
-              {
-                key: "delete",
-                label: "删除",
-                icon: "ri:delete-bin-4-line",
-                color: "#f56c6c",
-                auth: "module_system:log:delete",
-              },
-            ],
-            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-          }),
+        align: "right",
+        formatter: (row: LogTable) => formatLogOperationCell(row),
       },
     ],
   },
@@ -473,17 +458,6 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function buttonMoreClick(item: ButtonMoreItem, row: LogTable) {
-  switch (item.key) {
-    case "detail":
-      if (row.id != null) void handleOpenDialog(row.id);
-      break;
-    case "delete":
-      if (row.id != null) deleteLogRow(row.id);
-      break;
-  }
-}
-
 async function resetForm() {
   formData.value = {};
 }
@@ -513,6 +487,37 @@ function deleteLogRow(id: number) {
       await refreshRemove();
     })
     .catch(() => {});
+}
+
+function buildLogRowActions(row: LogTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:log:detail",
+      run: () => {
+        if (row.id != null) void handleOpenDialog(row.id);
+      },
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_system:log:delete",
+      run: () => {
+        if (row.id != null) deleteLogRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatLogOperationCell(row: LogTable) {
+  return renderTableOperationCell(buildLogRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 log-table-actions",
+  });
 }
 
 function handleBatchDelete() {

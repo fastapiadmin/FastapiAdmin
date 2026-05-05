@@ -155,13 +155,13 @@
 
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
-import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
 import type { IContentConfig, IObject } from "@/components/Core/modal/types";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import ArtSearchBarWithAudit from "@/components/Core/forms/art-search-bar/ArtSearchBarWithAudit.vue";
 import type { AuditSearchFormParams } from "@/components/Core/forms/art-search-bar/auditSearchFormItems";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
@@ -178,6 +178,8 @@ defineOptions({
   name: "ModuleExampleDemo01",
   inheritAttrs: false,
 });
+
+const { hasAuth } = useAuth();
 
 type Demo01SearchFormParams = {
   name?: string;
@@ -310,19 +312,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 120,
+        width: 220,
         fixed: "right",
-        formatter: (row: Demo01Table) =>
-          h("div", [
-            h(ArtButtonMore, {
-              list: [
-                { key: "detail", label: "详情", icon: "ri:file-list-3-line" },
-                { key: "edit", label: "编辑", icon: "ri:edit-2-line" },
-                { key: "delete", label: "删除", icon: "ri:delete-bin-4-line", color: "#f56c6c" },
-              ],
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-            }),
-          ]),
+        align: "right",
+        formatter: (row: Demo01Table) => formatDemo01OperationCell(row),
       },
     ],
   },
@@ -447,19 +440,41 @@ const onResetSearch = async () => {
   await resetSearchParams();
 };
 
-const buttonMoreClick = (item: ButtonMoreItem, row: Demo01Table) => {
-  switch (item.key) {
-    case "detail":
-      openDetailDialog(row);
-      break;
-    case "edit":
-      openEditDialog("edit", row);
-      break;
-    case "delete":
-      deleteDemo01Row(row);
-      break;
-  }
-};
+function buildDemo01RowActions(row: Demo01Table): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      icon: "ri:file-list-3-line",
+      perm: "module_example:demo01:detail",
+      run: () => void openDetailDialog(row),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_example:demo01:update",
+      run: () => void openEditDialog("edit", row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_example:demo01:delete",
+      run: () => deleteDemo01Row(row),
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatDemo01OperationCell(row: Demo01Table) {
+  return renderTableOperationCell(buildDemo01RowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 demo01-table-actions",
+  });
+}
 
 async function openDetailDialog(row: Demo01Table) {
   if (!row.id) return;

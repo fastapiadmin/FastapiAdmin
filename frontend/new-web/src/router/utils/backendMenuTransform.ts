@@ -5,6 +5,7 @@
 import type { MenuTable } from "@/api/module_system/menu";
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import { RoutesAlias } from "@/router/routesAlias";
+import { MenuTypeEnum } from "@/enums/system/menu.enum";
 
 /**
  * 后端常把「模块目录」与「其下功能菜单」写成同一绝对 route_path。
@@ -98,7 +99,7 @@ function toComponentImportPath(componentPath: string): string {
 }
 
 function mapMenuNode(item: MenuTable, depth = 0): AppRouteRecord {
-  const childrenRaw = item.children?.filter((c) => c.type !== 3) ?? [];
+  const childrenRaw = item.children?.filter((c) => c.type !== MenuTypeEnum.BUTTON) ?? [];
   const children = childrenRaw.length
     ? childrenRaw.map((c) => mapMenuNode(c, depth + 1))
     : undefined;
@@ -108,7 +109,7 @@ function mapMenuNode(item: MenuTable, depth = 0): AppRouteRecord {
   const redirect = item.redirect?.trim() || undefined;
 
   const hasKids = !!(children && children.length > 0);
-  const isDirectory = item.type === 1;
+  const isDirectory = item.type === MenuTypeEnum.CATALOG;
 
   let component: string | undefined;
   if (isDirectory || (hasKids && !(item.component_path ?? "").trim())) {
@@ -144,7 +145,7 @@ function mapMenuNode(item: MenuTable, depth = 0): AppRouteRecord {
  * 过滤按钮(type=3)，再递归映射为 AppRouteRecord
  */
 export function backendMenusToAppRoutes(menus: MenuTable[]): AppRouteRecord[] {
-  const roots = menus.filter((m) => m.type !== 3);
+  const roots = menus.filter((m) => m.type !== MenuTypeEnum.BUTTON);
   const normalized = normalizeMenuNestedPaths(roots);
   const mapped = normalized.map((m) => mapMenuNode(m, 0));
   return normalizeAppRouteChildPaths(mapped);

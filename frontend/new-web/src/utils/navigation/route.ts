@@ -30,19 +30,14 @@ export function isIframe(url: string): boolean {
 }
 
 /**
- * 判断菜单项是否可作为默认导航落点
- * 隐藏的全屏页面虽然不展示在菜单中，但仍然可能是合法首页。
+ * 判断菜单项是否可作为默认导航落点（隐藏菜单不作为首选路径）
  */
 export const isNavigableMenuItem = (menuItem: AppRouteRecord): boolean => {
   if (!menuItem.path || !menuItem.path.trim()) {
     return false;
   }
 
-  if (!menuItem.meta?.isHide) {
-    return true;
-  }
-
-  return menuItem.meta?.isFullPage === true;
+  return !menuItem.meta?.isHide;
 };
 
 /**

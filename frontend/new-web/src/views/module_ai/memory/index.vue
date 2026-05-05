@@ -172,7 +172,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { h, ref, reactive, computed, nextTick } from "vue";
+import { ref, reactive, computed, nextTick } from "vue";
 import { Edit } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
@@ -184,9 +184,9 @@ import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/i
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
-import type { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import type { ColumnOption } from "@/types/component";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 
 type MemorySearchForm = {
   title?: string;
@@ -211,6 +211,8 @@ const searchForm = ref<MemorySearchForm>({
 const showSearchBar = ref(true);
 const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
+
+const { hasAuth } = useAuth();
 
 const memorySearchItems = computed<SearchFormItem[]>(() => [
   {
@@ -267,17 +269,6 @@ const batchDeleting = ref(false);
 
 function onTableSelectionChange(rows: ChatSession[]) {
   selectedRows.value = rows;
-}
-
-function buttonMoreClick(item: ButtonMoreItem, row: ChatSession) {
-  switch (item.key) {
-    case "detail":
-      void handleOpenDialog("detail", row.id);
-      break;
-    case "delete":
-      void deleteSessionRow(row.id);
-      break;
-  }
 }
 
 function deleteSessionRow(id: string) {
@@ -407,30 +398,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 102,
+        width: 160,
         fixed: "right",
-        align: "center",
-        formatter: (row: ChatSession) =>
-          h("div", [
-            h(ArtButtonMore, {
-              list: [
-                {
-                  key: "detail",
-                  label: "详情",
-                  icon: "ri:file-list-3-line",
-                  auth: "module_ai:chat:detail",
-                },
-                {
-                  key: "delete",
-                  label: "删除",
-                  icon: "ri:delete-bin-4-line",
-                  color: "#f56c6c",
-                  auth: "module_ai:chat:delete",
-                },
-              ],
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-            }),
-          ]),
+        align: "right",
+        formatter: (row: ChatSession) => formatMemoryOperationCell(row),
       },
     ],
   },
@@ -520,6 +491,37 @@ async function handleOpenDialog(type: "create" | "detail", id?: string) {
     formData.id = undefined;
   }
   dialogVisible.visible = true;
+}
+
+function buildMemoryRowActions(row: ChatSession): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_ai:chat:detail",
+      run: () => {
+        void handleOpenDialog("detail", row.id);
+      },
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_ai:chat:delete",
+      run: () => {
+        deleteSessionRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatMemoryOperationCell(row: ChatSession) {
+  return renderTableOperationCell(buildMemoryRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 memory-table-actions",
+  });
 }
 
 function handleEditTitle(row: ChatSession) {

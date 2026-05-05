@@ -267,12 +267,10 @@
 
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
-import { ButtonMoreItem } from "@/components/Core/forms/art-button-more/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
 import type { IObject } from "@/components/Core/modal/types";
-import ArtButtonMore from "@/components/Core/forms/art-button-more/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
@@ -284,6 +282,8 @@ import DictAPI, {
   type DictDataTable,
 } from "@/api/module_system/dict";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useDictStore } from "@/store";
 import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
@@ -328,6 +328,7 @@ const TAG_TYPE_STYLE_MAP: Record<string, { background: string; color: string; bo
 
 const appStore = useAppStore();
 const dictStore = useDictStore();
+const { hasAuth } = useAuth();
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "80%" : "60%"));
 
 function getTagPreviewStyle(value?: string) {
@@ -398,7 +399,7 @@ const statusOptions = ref([
 
 const dictDataSearchItems = computed<SearchFormItem[]>(() => [
   {
-    label: "字典数据标签",
+    label: "字典标签",
     key: "dict_label",
     type: "input",
     placeholder: "请输入字典标签",
@@ -509,33 +510,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 120,
+        width: 220,
         fixed: "right",
-        formatter: (row: DictDataTable) =>
-          h(ArtButtonMore, {
-            list: [
-              {
-                key: "detail",
-                label: "详情",
-                icon: "ri:file-list-3-line",
-                auth: "module_system:dict_data:detail",
-              },
-              {
-                key: "edit",
-                label: "编辑",
-                icon: "ri:edit-2-line",
-                auth: "module_system:dict_data:update",
-              },
-              {
-                key: "delete",
-                label: "删除",
-                icon: "ri:delete-bin-4-line",
-                color: "#f56c6c",
-                auth: "module_system:dict_data:delete",
-              },
-            ],
-            onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-          }),
+        align: "right",
+        formatter: (row: DictDataTable) => formatDictDataOperationCell(row),
       },
     ],
   },
@@ -667,20 +645,6 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function buttonMoreClick(item: ButtonMoreItem, row: DictDataTable) {
-  switch (item.key) {
-    case "detail":
-      void handleOpenDialog("detail", row.id);
-      break;
-    case "edit":
-      void handleOpenDialog("update", row.id);
-      break;
-    case "delete":
-      if (row.id != null) deleteDictDataRow(row.id);
-      break;
-  }
-}
-
 async function resetForm() {
   if (dataFormRef.value) {
     dataFormRef.value.resetFields();
@@ -741,6 +705,43 @@ async function handleSubmit() {
     } catch (error: unknown) {
       console.error(error);
     }
+  });
+}
+
+function buildDictDataRowActions(row: DictDataTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:dict_data:detail",
+      run: () => void handleOpenDialog("detail", row.id),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_system:dict_data:update",
+      run: () => void handleOpenDialog("update", row.id),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_system:dict_data:delete",
+      run: () => {
+        if (row.id != null) deleteDictDataRow(row.id);
+      },
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatDictDataOperationCell(row: DictDataTable) {
+  return renderTableOperationCell(buildDictDataRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 dict-data-drawer-actions",
   });
 }
 
