@@ -5,30 +5,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev docs || true",
-    "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "dev": "vitepress dev || true",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
   },
   "devDependencies": {
-    "@types/node": "^25.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.15.0",
-    "@typescript-eslint/parser": "^8.15.0",
-    "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/eslint-config-typescript": "^14.1.3",
-    "eslint": "^9.15.0",
-    "eslint-config-prettier": "^9.1.2",
-    "eslint-plugin-prettier": "^5.2.2",
-    "eslint-plugin-vue": "^9.30.0",
     "medium-zoom": "^1.1.0",
-    "prettier": "^3.3.3",
-    "vitepress": "1.6.4",
-    "vue": "^3.5.21",
-    "vue-eslint-parser": "^9.4.3"
+    "vitepress": "1.6.4"
   },
   "packageManager": "pnpm@9.15.3",
   "engines": {
     "node": ">=18.0.0",
-    "npm": ">=10.0.0",
     "pnpm": ">=8.1.0"
   },
   "repository": {

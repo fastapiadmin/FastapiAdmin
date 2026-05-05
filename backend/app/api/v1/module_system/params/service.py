@@ -162,6 +162,7 @@ class ParamsService:
             result = await RedisCURD(redis).set(
                 key=redis_key,
                 value="",
+                expire=None,
             )
             if not result:
                 log.error(f"同步配置到缓存失败: {new_obj_dict}")
@@ -208,6 +209,7 @@ class ParamsService:
             result = await RedisCURD(redis).set(
                 key=redis_key,
                 value=value,
+                expire=None,
             )
             if not result:
                 log.error(f"同步配置到缓存失败: {new_obj_dict}")
@@ -346,6 +348,7 @@ class ParamsService:
                         result = await RedisCURD(redis).set(
                             key=redis_key,
                             value=value,
+                            expire=None,
                         )
                         if not result:
                             log.error(f"❌️ 初始化系统配置失败: {config_obj_dict}")

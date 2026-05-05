@@ -1,0 +1,68 @@
+$border: 1px solid var(--el-border-color-light);
+
+/* el-dialog */
+.el-dialog {
+  .el-dialog__header {
+    padding: 15px 20px;
+    margin: 0;
+    border-bottom: $border;
+  }
+
+  .el-dialog__body {
+    padding: 20px;
+  }
+
+  .el-dialog__footer {
+    padding: 15px;
+    border-top: $border;
+  }
+}
+
+/** el-drawer */
+.el-drawer {
+  .el-drawer__header {
+    padding: 15px 20px;
+    margin: 0;
+    color: inherit;
+    border-bottom: $border;
+  }
+
+  .el-drawer__body {
+    padding: 20px;
+  }
+
+  .el-drawer__footer {
+    padding: 15px;
+    border-top: $border;
+  }
+}
+
+// 抽屉和对话框底部按钮区域
+.dialog-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+// 列表
+.el-card {
+  .el-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+// 表格内操作列：单元格 .cell 默认 overflow:hidden，会裁切 el-button 的 :focus-visible outline（常见为底边缺失）。
+// 仅对「含 el-button」的单元格放开裁剪，避免整表 .cell 全改为 visible 破坏省略号与长文本布局。
+.el-table .el-table__cell .cell:has(.el-button) {
+  overflow: visible;
+}
+
+// 不支持 :has() 的环境：将 outline 略向内收，减轻裁切（效果弱于上一段）。
+@supports not selector(:has(*)) {
+  .el-table .el-button:focus-visible {
+    outline-offset: -1px;
+  }
+}

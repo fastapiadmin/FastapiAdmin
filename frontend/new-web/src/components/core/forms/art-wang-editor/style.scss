@@ -1,0 +1,273 @@
+$box-radius: calc(var(--custom-radius) / 3 + 2px);
+
+// 全屏容器 z-index 调整
+.w-e-full-screen-container {
+  z-index: 100 !important;
+}
+
+/* 编辑器容器 */
+.editor-wrapper {
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--art-gray-300);
+  border-radius: $box-radius !important;
+
+  .w-e-bar {
+    border-radius: $box-radius $box-radius 0 0 !important;
+  }
+
+  .menu-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    i {
+      margin-right: 5px;
+    }
+  }
+
+  /* 工具栏 */
+  .editor-toolbar {
+    border-bottom: 1px solid var(--default-border);
+  }
+
+  /* 下拉选择框配置 */
+  .w-e-select-list {
+    min-width: 140px;
+    padding: 5px 10px 10px;
+    border: none;
+    border-radius: $box-radius;
+  }
+
+  /* 下拉选择框元素配置 */
+  .w-e-select-list ul li {
+    margin-top: 5px;
+    font-size: 15px !important;
+    border-radius: $box-radius;
+  }
+
+  /* 下拉选择框 正文文字大小调整 */
+  .w-e-select-list ul li:last-of-type {
+    font-size: 16px !important;
+  }
+
+  /* 下拉选择框 hover 样式调整 */
+  .w-e-select-list ul li:hover {
+    background-color: var(--art-gray-200);
+  }
+
+  :root {
+    /* 激活颜色 */
+    --w-e-toolbar-active-bg-color: var(--art-gray-200);
+
+    /* toolbar 图标和文字颜色 */
+    --w-e-toolbar-color: #000;
+
+    /* 表格选中时候的边框颜色 */
+    --w-e-textarea-selected-border-color: #ddd;
+
+    /* 表格头背景颜色 */
+    --w-e-textarea-slight-bg-color: var(--art-gray-200);
+  }
+
+  /* 工具栏按钮样式 */
+  .w-e-bar-item svg {
+    fill: var(--art-gray-800);
+  }
+
+  .w-e-bar-item button {
+    color: var(--art-gray-800);
+    border-radius: $box-radius;
+  }
+
+  /* 工具栏 hover 按钮背景颜色 */
+  .w-e-bar-item button:hover {
+    background-color: var(--art-gray-200);
+  }
+
+  /* 工具栏分割线 */
+  .w-e-bar-divider {
+    height: 20px;
+    margin-top: 10px;
+    background-color: #ccc;
+  }
+
+  /* 工具栏菜单 */
+  .w-e-bar-item-group .w-e-bar-item-menus-container {
+    min-width: 120px;
+    padding: 10px 0;
+    border: none;
+    border-radius: $box-radius;
+
+    .w-e-bar-item {
+      button {
+        width: 100%;
+        margin: 0 5px;
+      }
+    }
+  }
+
+  /* 代码块 */
+  .w-e-text-container [data-slate-editor] pre > code {
+    padding: 0.6rem 1rem;
+    background-color: var(--art-gray-50);
+    border-radius: $box-radius;
+  }
+
+  /* 弹出框 */
+  .w-e-drop-panel {
+    border: 0;
+    border-radius: $box-radius;
+  }
+
+  a {
+    color: #318ef4;
+  }
+
+  .w-e-text-container {
+    [data-slate-editor] {
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 0.8em 0 0.4em;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+
+      h1 {
+        font-size: 2em;
+      }
+
+      h2 {
+        font-size: 1.5em;
+      }
+
+      h3 {
+        font-size: 1.25em;
+      }
+
+      h4 {
+        font-size: 1.125em;
+      }
+
+      h5 {
+        font-size: 1em;
+      }
+
+      h6 {
+        font-size: 0.875em;
+      }
+
+      ul,
+      ol {
+        padding-left: 1.5em;
+        margin: 0.8em 0;
+      }
+
+      ul {
+        list-style: disc;
+      }
+
+      ol {
+        list-style: decimal;
+      }
+
+      li {
+        margin: 0.25em 0;
+      }
+
+      ul ul {
+        list-style: circle;
+      }
+
+      ul ul ul {
+        list-style: square;
+      }
+    }
+
+    strong,
+    b {
+      font-weight: 700;
+    }
+
+    i,
+    em {
+      font-style: italic;
+    }
+  }
+
+  /* 表格样式优化 */
+  .w-e-text-container [data-slate-editor] .table-container th {
+    border-right: none;
+  }
+
+  .w-e-text-container [data-slate-editor] .table-container th:last-of-type {
+    border-right: 1px solid #ccc !important;
+  }
+
+  /* 引用 */
+  .w-e-text-container [data-slate-editor] blockquote {
+    background-color: var(--art-gray-200);
+    border-left: 4px solid var(--art-gray-300);
+  }
+
+  /* 输入区域弹出 bar  */
+  .w-e-hover-bar {
+    border-radius: $box-radius;
+  }
+
+  /* 超链接弹窗 */
+  .w-e-modal {
+    border: none;
+    border-radius: $box-radius;
+  }
+
+  /* 图片样式调整 */
+  .w-e-text-container [data-slate-editor] .w-e-selected-image-container {
+    overflow: inherit;
+
+    &:hover {
+      border: 0;
+    }
+
+    img {
+      border: 1px solid transparent;
+      transition: border 0.3s;
+
+      &:hover {
+        border: 1px solid #318ef4 !important;
+      }
+    }
+
+    .w-e-image-dragger {
+      width: 12px;
+      height: 12px;
+      background-color: #318ef4;
+      border: 2px solid #fff;
+      border-radius: $box-radius;
+    }
+
+    .left-top {
+      top: -6px;
+      left: -6px;
+    }
+
+    .right-top {
+      top: -6px;
+      right: -6px;
+    }
+
+    .left-bottom {
+      bottom: -6px;
+      left: -6px;
+    }
+
+    .right-bottom {
+      right: -6px;
+      bottom: -6px;
+    }
+  }
+}

@@ -14,12 +14,13 @@
       <span class="lock-dialog-name">{{ userStore.basicInfo.name }}</span>
     </div>
     <el-form ref="lockFormRef" :model="form" :rules="rules">
-      <el-form-item :label="t('lock.lockPassword')" prop="password">
+      <el-form-item :label="t('lockScreen.lockPassword')" prop="password">
         <el-input
           v-model="form.password"
           type="password"
           show-password
           clearable
+          :placeholder="t('lock.placeholder')"
           @keydown.enter="handleLock"
         />
       </el-form-item>
