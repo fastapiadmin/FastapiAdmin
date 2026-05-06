@@ -112,37 +112,22 @@
         </template>
         <template v-else>
           <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-            <ElForm
+            <ArtForm
+              :key="dictDataFormRenderKey"
               ref="dataFormRef"
-              :model="formData"
+              v-model="formData"
+              :items="dictDataDialogFormItems"
               :rules="rules"
               label-suffix=":"
-              label-width="auto"
+              :label-width="'auto'"
               label-position="right"
+              :span="24"
+              :gutter="16"
+              :show-reset="false"
+              :show-submit="false"
+              class="crud-dialog-art-form"
             >
-              <ElFormItem label="数据类型" prop="dict_type">
-                <ElInput
-                  v-model="formData.dict_type"
-                  placeholder="请输入数据类型"
-                  :maxlength="50"
-                  :disabled="true"
-                />
-              </ElFormItem>
-              <ElFormItem label="数据标签" prop="dict_label">
-                <ElInput
-                  v-model="formData.dict_label"
-                  placeholder="请输入数据标签"
-                  :maxlength="255"
-                />
-              </ElFormItem>
-              <ElFormItem label="数据值" prop="dict_value">
-                <ElInput
-                  v-model="formData.dict_value"
-                  placeholder="请输入数据值"
-                  :maxlength="255"
-                />
-              </ElFormItem>
-              <ElFormItem label="样式属性" prop="css_class">
+              <template #css_class>
                 <ElSelect
                   v-model="formData.css_class"
                   placeholder="请选择常用颜色或输入自定义"
@@ -177,8 +162,8 @@
                     </span>
                   </ElOption>
                 </ElSelect>
-              </ElFormItem>
-              <ElFormItem label="列表类样式" prop="list_class">
+              </template>
+              <template #list_class>
                 <ElSelect v-model="formData.list_class" placeholder="请选择列表类样式" clearable>
                   <ElOption value="default" label="默认(default)">
                     <span class="tag-option-preview tag-option-preview--default">
@@ -211,35 +196,22 @@
                     </span>
                   </ElOption>
                 </ElSelect>
-              </ElFormItem>
-              <ElFormItem label="是否默认" prop="is_default">
+              </template>
+              <template #is_default>
                 <ElRadioGroup v-model="formData.is_default">
                   <ElRadio :value="true">是</ElRadio>
                   <ElRadio :value="false">否</ElRadio>
                 </ElRadioGroup>
-              </ElFormItem>
-              <ElFormItem label="排序" prop="dict_sort">
-                <ElInputNumber v-model="formData.dict_sort" controls-position="right" :min="1" />
-              </ElFormItem>
-              <ElFormItem label="状态" prop="status">
+              </template>
+              <template #status>
                 <ElSwitch
                   v-model="formData.status"
                   inline-prompt
                   :active-value="'0'"
                   :inactive-value="'1'"
                 />
-              </ElFormItem>
-              <ElFormItem label="描述" prop="description">
-                <ElInput
-                  v-model="formData.description"
-                  :rows="4"
-                  :maxlength="100"
-                  show-word-limit
-                  type="textarea"
-                  placeholder="请输入描述"
-                />
-              </ElFormItem>
-            </ElForm>
+              </template>
+            </ArtForm>
           </ElScrollbar>
         </template>
 
@@ -275,6 +247,8 @@ import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
 import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DictAPI, {
   type DictDataForm,
@@ -603,7 +577,88 @@ const rules = reactive({
   is_default: [{ required: true, message: "请选择是否默认", trigger: "blur" }],
 });
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dictDataFormRenderKey = ref(0);
+
+const dictDataDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "数据类型",
+    key: "dict_type",
+    type: "input",
+    span: 24,
+    props: {
+      placeholder: "请输入数据类型",
+      maxlength: 50,
+      disabled: true,
+    },
+  },
+  {
+    label: "数据标签",
+    key: "dict_label",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入数据标签", maxlength: 255 },
+  },
+  {
+    label: "数据值",
+    key: "dict_value",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入数据值", maxlength: 255 },
+  },
+  {
+    label: "样式属性",
+    key: "css_class",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "列表类样式",
+    key: "list_class",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "是否默认",
+    key: "is_default",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "排序",
+    key: "dict_sort",
+    type: "number",
+    span: 24,
+    props: {
+      controlsPosition: "right",
+      min: 1,
+      style: { width: "100px" },
+    },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 
 const initialFormData: DictDataForm = {
   id: undefined,
@@ -646,10 +701,8 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, {
     ...initialFormData,
     dict_type_id: props.dictTypeId,
@@ -681,11 +734,12 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     formData.status = "0";
     formData.id = undefined;
   }
+  dictDataFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     const id = formData.id;
     try {
@@ -847,5 +901,13 @@ function openExportModal() {
   color: var(--el-text-color-regular);
   background: var(--el-fill-color-light);
   border-color: var(--el-border-color-lighter);
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 </style>

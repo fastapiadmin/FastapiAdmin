@@ -59,21 +59,21 @@
       <ElSplitter direction="horizontal" style="height: 500px">
         <ElSplitterPanel size="300px" :min="200" :max="400">
           <ElScrollbar style="height: 100%">
-            <ElForm
+            <ArtForm
+              :key="nodeFormRenderKey"
               ref="dataFormRef"
-              :model="formData"
+              v-model="formData"
+              :items="nodeDialogFormItems"
               :rules="rules"
               label-suffix=":"
               label-width="auto"
-              style="padding: 0 10px"
+              :span="24"
+              :gutter="16"
+              :show-reset="false"
+              :show-submit="false"
+              class="crud-dialog-art-form node-splitter-art-form"
             >
-              <ElFormItem label="节点名称" prop="name">
-                <ElInput v-model="formData.name" placeholder="请输入节点名称" :maxlength="50" />
-              </ElFormItem>
-              <ElFormItem label="节点编码" prop="code">
-                <ElInput v-model="formData.code" placeholder="请输入节点编码" :maxlength="32" />
-              </ElFormItem>
-              <ElFormItem label="存储器" prop="jobstore">
+              <template #jobstore>
                 <ElSelect v-model="formData.jobstore" placeholder="请选择存储器">
                   <ElOption
                     v-for="item in dictStore.getDictArray('sys_job_store')"
@@ -82,8 +82,8 @@
                     :value="item.dict_value"
                   />
                 </ElSelect>
-              </ElFormItem>
-              <ElFormItem label="执行器" prop="executor">
+              </template>
+              <template #executor>
                 <ElSelect v-model="formData.executor" placeholder="请选择执行器">
                   <ElOption
                     v-for="item in dictStore.getDictArray('sys_job_executor')"
@@ -92,8 +92,8 @@
                     :value="item.dict_value"
                   />
                 </ElSelect>
-              </ElFormItem>
-              <ElFormItem label="位置参数" prop="args">
+              </template>
+              <template #args>
                 <div class="dynamic-params">
                   <div v-for="(_item, index) in argsList" :key="index" class="param-item">
                     <ElInput v-model="argsList[index]" placeholder="参数值" />
@@ -108,8 +108,8 @@
                     添加位置参数
                   </ElButton>
                 </div>
-              </ElFormItem>
-              <ElFormItem label="关键字参数" prop="kwargs">
+              </template>
+              <template #kwargs>
                 <div class="dynamic-params">
                   <div v-for="(item, index) in kwargsList" :key="index" class="param-item">
                     <ElInput v-model="item.key" placeholder="键" />
@@ -129,22 +129,22 @@
                     添加关键词参数
                   </ElButton>
                 </div>
-              </ElFormItem>
-              <ElFormItem label="合并运行" prop="coalesce">
+              </template>
+              <template #coalesce>
                 <ElRadioGroup v-model="formData.coalesce">
                   <ElRadio :value="true">是</ElRadio>
                   <ElRadio :value="false">否</ElRadio>
                 </ElRadioGroup>
-              </ElFormItem>
-              <ElFormItem label="最大实例数" prop="max_instances">
+              </template>
+              <template #max_instances>
                 <ElInputNumber
                   v-model="formData.max_instances"
                   controls-position="right"
                   :min="1"
                   :max="10"
                 />
-              </ElFormItem>
-            </ElForm>
+              </template>
+            </ArtForm>
           </ElScrollbar>
         </ElSplitterPanel>
 
@@ -180,120 +180,82 @@
       width="700px"
       @close="handleCloseExecuteDialog"
     >
-      <ElForm
+      <ArtForm
+        :key="executeFormRenderKey"
         ref="executeFormRef"
-        :model="executeFormData"
+        v-model="executeFormData"
+        :items="executeDialogFormItems"
         :rules="executeRules"
         label-suffix=":"
         label-width="auto"
+        :span="24"
+        :gutter="16"
+        :show-reset="false"
+        :show-submit="false"
+        class="crud-dialog-art-form execute-debug-art-form"
       >
-        <ElFormItem label="节点名称">
-          <ElInput :value="currentExecuteNode?.name" disabled />
-        </ElFormItem>
-        <ElFormItem label="执行方式" prop="trigger">
+        <template #trigger>
           <ElRadioGroup v-model="executeFormData.trigger">
             <ElRadio value="now">立即执行</ElRadio>
             <ElRadio value="cron">Cron表达式</ElRadio>
             <ElRadio value="interval">时间间隔</ElRadio>
             <ElRadio value="date">固定日期</ElRadio>
           </ElRadioGroup>
-        </ElFormItem>
-
-        <ElFormItem
-          v-if="executeFormData.trigger === 'cron'"
-          label="Cron表达式"
-          prop="trigger_args"
-        >
-          <ElPopover
-            :visible="openCron"
-            width="700px"
-            trigger="click"
-            :persistent="false"
-            placement="auto-end"
-            popper-class="node-cron-popover-fix"
-          >
-            <template #reference>
-              <ElInput
-                v-model="executeFormData.trigger_args"
-                placeholder="请输入 * * * * * ? *"
-                @click="openCron = true"
-              />
-            </template>
-            <vue3CronPlus i18n="cn" @change="handlechangeCron" @close="openCron = false" />
-          </ElPopover>
-        </ElFormItem>
-
-        <ElFormItem
-          v-else-if="executeFormData.trigger === 'interval'"
-          label="间隔时间"
-          prop="trigger_args"
-        >
-          <ElPopover
-            :visible="openInterval"
-            width="600px"
-            trigger="click"
-            :persistent="false"
-            placement="auto-end"
-          >
-            <template #reference>
-              <ElInput
-                v-model="executeFormData.trigger_args"
-                placeholder="请点击设置间隔时间"
-                @click="openInterval = true"
-              />
-            </template>
-            <IntervalTab
-              :cron-value="executeFormData.trigger_args"
-              @confirm="handleIntervalConfirm"
-              @cancel="openInterval = false"
-            />
-          </ElPopover>
-        </ElFormItem>
-
-        <ElFormItem
-          v-else-if="executeFormData.trigger === 'date'"
-          label="执行时间"
-          prop="trigger_args"
-        >
-          <ElDatePicker
-            v-model="executeFormData.trigger_args"
-            type="datetime"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            placeholder="请选择执行时间"
-            style="width: 100%"
-          />
-        </ElFormItem>
-
-        <template
-          v-if="
-            executeFormData.trigger &&
-            executeFormData.trigger !== 'now' &&
-            executeFormData.trigger !== 'date'
-          "
-        >
-          <ElFormItem label="开始时间" prop="start_date">
-            <ElDatePicker
-              v-model="executeFormData.start_date"
-              type="datetime"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              placeholder="请选择开始时间（可选）"
-              style="width: 100%"
-            />
-          </ElFormItem>
-          <ElFormItem label="结束时间" prop="end_date">
-            <ElDatePicker
-              v-model="executeFormData.end_date"
-              type="datetime"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              placeholder="请选择结束时间（可选）"
-              style="width: 100%"
-            />
-          </ElFormItem>
         </template>
-      </ElForm>
+        <template #trigger_args>
+          <template v-if="executeFormData.trigger === 'cron'">
+            <ElPopover
+              :visible="openCron"
+              width="700px"
+              trigger="click"
+              :persistent="false"
+              placement="auto-end"
+              popper-class="node-cron-popover-fix"
+            >
+              <template #reference>
+                <ElInput
+                  v-model="executeFormData.trigger_args"
+                  placeholder="请输入 * * * * * ? *"
+                  @click="openCron = true"
+                />
+              </template>
+              <vue3CronPlus i18n="cn" @change="handlechangeCron" @close="openCron = false" />
+            </ElPopover>
+          </template>
+          <template v-else-if="executeFormData.trigger === 'interval'">
+            <ElPopover
+              :visible="openInterval"
+              width="600px"
+              trigger="click"
+              :persistent="false"
+              placement="auto-end"
+            >
+              <template #reference>
+                <ElInput
+                  v-model="executeFormData.trigger_args"
+                  placeholder="请点击设置间隔时间"
+                  @click="openInterval = true"
+                />
+              </template>
+              <IntervalTab
+                :cron-value="executeFormData.trigger_args"
+                @confirm="handleIntervalConfirm"
+                @cancel="openInterval = false"
+              />
+            </ElPopover>
+          </template>
+          <template v-else-if="executeFormData.trigger === 'date'">
+            <ElDatePicker
+              v-model="executeFormData.trigger_args"
+              type="datetime"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              placeholder="请选择执行时间"
+              style="width: 100%"
+            />
+          </template>
+        </template>
+      </ArtForm>
 
       <template #footer>
         <ElButton @click="handleCloseExecuteDialog">取消</ElButton>
@@ -312,6 +274,8 @@ defineOptions({
 import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
 import { useDictStore } from "@/store/index";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
@@ -575,8 +539,10 @@ const codeEditorOptions: EditorConfiguration = {
   autofocus: false,
 };
 
-const dataFormRef = ref();
-const executeFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const executeFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const nodeFormRenderKey = ref(0);
+const executeFormRenderKey = ref(0);
 const submitLoading = ref(false);
 const openCron = ref(false);
 const openInterval = ref(false);
@@ -653,15 +619,79 @@ const kwargsList = ref<{ key: string; value: string }[]>([]);
 const executeDialogVisible = ref(false);
 const currentExecuteNode = ref<NodeTable | null>(null);
 const executeFormData = reactive<{
+  node_display_name: string;
   trigger: TriggerType;
   trigger_args?: string;
   start_date?: string;
   end_date?: string;
 }>({
+  node_display_name: "",
   trigger: "now",
   trigger_args: undefined,
   start_date: undefined,
   end_date: undefined,
+});
+
+const executeDialogFormItems = computed<FormItem[]>(() => {
+  const trig = executeFormData.trigger;
+  const showRange = !!trig && trig !== "now" && trig !== "date";
+  let triggerArgsLabel = "执行参数";
+  if (trig === "cron") triggerArgsLabel = "Cron表达式";
+  else if (trig === "interval") triggerArgsLabel = "间隔时间";
+  else if (trig === "date") triggerArgsLabel = "执行时间";
+
+  return [
+    {
+      label: "节点名称",
+      key: "node_display_name",
+      type: "input",
+      span: 24,
+      props: { disabled: true },
+    },
+    {
+      label: "执行方式",
+      key: "trigger",
+      type: "input",
+      span: 24,
+      placeholder: "",
+    },
+    {
+      label: triggerArgsLabel,
+      key: "trigger_args",
+      type: "input",
+      span: 24,
+      placeholder: "",
+      hidden: trig === "now" || !trig,
+    },
+    {
+      label: "开始时间",
+      key: "start_date",
+      type: "datetime",
+      span: 24,
+      hidden: !showRange,
+      props: {
+        type: "datetime",
+        format: "YYYY-MM-DD HH:mm:ss",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        placeholder: "请选择开始时间（可选）",
+        style: { width: "100%" },
+      },
+    },
+    {
+      label: "结束时间",
+      key: "end_date",
+      type: "datetime",
+      span: 24,
+      hidden: !showRange,
+      props: {
+        type: "datetime",
+        format: "YYYY-MM-DD HH:mm:ss",
+        valueFormat: "YYYY-MM-DD HH:mm:ss",
+        placeholder: "请选择结束时间（可选）",
+        style: { width: "100%" },
+      },
+    },
+  ];
 });
 
 const dialogVisible = reactive({
@@ -674,6 +704,69 @@ const rules = reactive({
   name: [{ required: true, message: "请输入节点名称", trigger: "blur" }],
   code: [{ required: true, message: "请输入节点编码", trigger: "blur" }],
 });
+
+const nodeDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "节点名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入节点名称", maxlength: 50 },
+  },
+  {
+    label: "节点编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入节点编码", maxlength: 32 },
+  },
+  {
+    label: "存储器",
+    key: "jobstore",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "执行器",
+    key: "executor",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "位置参数",
+    key: "args",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "关键字参数",
+    key: "kwargs",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "合并运行",
+    key: "coalesce",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "最大实例数",
+    key: "max_instances",
+    type: "number",
+    span: 24,
+    props: {
+      controlsPosition: "right",
+      min: 1,
+      max: 10,
+    },
+  },
+]);
 
 const executeRules = reactive({
   trigger: [{ required: true, message: "请选择执行方式", trigger: "change" }],
@@ -696,10 +789,8 @@ const initialFormData: Partial<NodeForm> = {
 };
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
   argsList.value = [];
   kwargsList.value = [];
@@ -730,6 +821,7 @@ async function handleOpenDialog(type: "create" | "update", id?: number) {
     argsList.value = [];
     kwargsList.value = [];
   }
+  nodeFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
@@ -742,7 +834,7 @@ function handleDialogOpened() {
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: any) => {
+  dataFormRef.value?.validate(async (valid: any) => {
     if (valid) {
       submitLoading.value = true;
       const id = formData.id;
@@ -793,24 +885,27 @@ const handleIntervalConfirm = (value: string) => {
 
 function handleOpenExecuteDialog(row: NodeTable) {
   currentExecuteNode.value = row;
+  executeFormData.node_display_name = row.name ?? "";
   executeFormData.trigger = "now";
   executeFormData.trigger_args = undefined;
   executeFormData.start_date = undefined;
   executeFormData.end_date = undefined;
+  executeFormRenderKey.value += 1;
   executeDialogVisible.value = true;
 }
 
 function handleCloseExecuteDialog() {
   executeDialogVisible.value = false;
   currentExecuteNode.value = null;
-  if (executeFormRef.value) {
-    executeFormRef.value.resetFields();
-  }
+  executeFormRef.value?.ref?.resetFields();
 }
 
 async function handleExecuteNode() {
   if (executeFormData.trigger !== "now") {
-    const valid = await executeFormRef.value?.validate().catch(() => false);
+    const execForm = executeFormRef.value;
+    const elForm = execForm?.ref;
+    if (!elForm) return;
+    const valid = await elForm.validate().catch(() => false);
     if (!valid) return;
   }
 
@@ -904,6 +999,21 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.node-splitter-art-form :deep(.el-row > .el-col:last-child),
+.execute-debug-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.node-splitter-art-form :deep(.el-form-item__content),
+.execute-debug-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+.node-splitter-art-form :deep(section) {
+  padding-right: 10px;
+  padding-left: 10px;
 }
 </style>
 

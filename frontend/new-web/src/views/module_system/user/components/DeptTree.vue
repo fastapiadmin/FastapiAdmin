@@ -187,10 +187,10 @@ onBeforeMount(() => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-right: -2px;
     padding: 2px;
-    color: var(--el-text-color-secondary);
+    margin-right: -2px;
     vertical-align: middle;
+    color: var(--el-text-color-secondary);
     cursor: pointer;
     border-radius: var(--el-border-radius-small);
     transition:

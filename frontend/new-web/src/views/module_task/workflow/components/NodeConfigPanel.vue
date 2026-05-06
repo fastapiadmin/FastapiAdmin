@@ -8,46 +8,44 @@
     </div>
 
     <div class="panel-content">
-      <ElForm :model="formData" label-width="80px" size="small">
-        <ElFormItem label="节点类型">
+      <ArtForm
+        v-model="formData"
+        :items="nodePanelFormItems"
+        label-width="80px"
+        size="small"
+        label-position="right"
+        :span="24"
+        :gutter="12"
+        :show-reset="false"
+        :show-submit="false"
+        class="panel-art-form"
+      >
+        <template #type>
           <ElSelect v-model="formData.type" placeholder="请选择节点类型" @change="handleTypeChange">
-            <ElOption
-              v-for="type in nodeTypes"
-              :key="type.id"
-              :label="type.name"
-              :value="type.code"
-            />
+            <ElOption v-for="t in nodeTypes" :key="t.id" :label="t.name" :value="t.code" />
           </ElSelect>
-        </ElFormItem>
-
-        <ElFormItem label="节点名称">
-          <ElInput v-model="formData.label" placeholder="请输入节点名称" />
-        </ElFormItem>
-
-        <ElFormItem label="位置参数">
-          <ElInput v-model="formData.args" placeholder="多个参数用逗号分隔，如: arg1, arg2, arg3" />
-          <div class="field-hint">多个参数用逗号分隔</div>
-        </ElFormItem>
-
-        <ElFormItem label="关键字参数">
-          <ElInput
-            v-model="formData.kwargsStr"
-            type="textarea"
-            :rows="4"
-            placeholder='JSON格式，如: {"key": "value", "count": 10}'
-          />
-          <div class="field-hint">JSON 格式的关键字参数</div>
-        </ElFormItem>
-
-        <ElFormItem label="描述">
-          <ElInput
-            v-model="formData.description"
-            type="textarea"
-            :rows="2"
-            placeholder="请输入描述信息"
-          />
-        </ElFormItem>
-      </ElForm>
+        </template>
+        <template #args>
+          <div>
+            <ElInput
+              v-model="formData.args"
+              placeholder="多个参数用逗号分隔，如: arg1, arg2, arg3"
+            />
+            <div class="field-hint">多个参数用逗号分隔</div>
+          </div>
+        </template>
+        <template #kwargsStr>
+          <div>
+            <ElInput
+              v-model="formData.kwargsStr"
+              type="textarea"
+              :rows="4"
+              placeholder='JSON格式，如: {"key": "value", "count": 10}'
+            />
+            <div class="field-hint">JSON 格式的关键字参数</div>
+          </div>
+        </template>
+      </ArtForm>
 
       <div class="panel-actions">
         <ElButton type="primary" size="small" @click="handleSave">保存</ElButton>
@@ -58,18 +56,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
-import {
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElMessage,
-  ElIcon,
-} from "element-plus";
+import { ref, watch, onMounted, computed } from "vue";
+import { ElButton, ElInput, ElSelect, ElOption, ElMessage, ElIcon } from "element-plus";
 import { Close } from "@element-plus/icons-vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import WorkflowNodeTypeAPI, {
   type WorkflowNodeTypeOption,
 } from "@/api/module_task/workflow/node-type";
@@ -92,6 +83,48 @@ const formData = ref({
   kwargsStr: props.node?.data?.kwargsStr || "{}",
   description: props.node?.data?.description || "",
 });
+
+const nodePanelFormItems = computed<FormItem[]>(() => [
+  {
+    label: "节点类型",
+    key: "type",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "节点名称",
+    key: "label",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入节点名称" },
+  },
+  {
+    label: "位置参数",
+    key: "args",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "关键字参数",
+    key: "kwargsStr",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 2,
+      placeholder: "请输入描述信息",
+    },
+  },
+]);
 
 const loadNodeTypes = async () => {
   try {
@@ -215,5 +248,17 @@ onMounted(() => {
 
 .panel-actions .el-button {
   flex: 1;
+}
+
+.panel-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.panel-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+.panel-art-form :deep(section) {
+  padding: 0;
 }
 </style>

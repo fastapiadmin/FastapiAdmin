@@ -87,59 +87,21 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
+          <ArtForm
+            :key="tenantFormRenderKey"
             ref="dataFormRef"
-            :model="formData"
+            v-model="formData"
+            :items="tenantDialogFormItems"
             :rules="rules"
             label-suffix=":"
-            label-width="auto"
+            :label-width="'auto'"
             label-position="right"
-          >
-            <ElFormItem label="租户名称" prop="name">
-              <ElInput v-model="formData.name" placeholder="请输入租户名称" :maxlength="100" />
-            </ElFormItem>
-            <ElFormItem label="租户编码" prop="code">
-              <ElInput
-                v-model="formData.code"
-                placeholder="字母与数字，创建后不可改"
-                :maxlength="100"
-                :disabled="dialogVisible.type === 'update'"
-              />
-            </ElFormItem>
-            <ElFormItem label="状态" prop="status">
-              <ElSelect v-model="formData.status" placeholder="请选择状态" style="width: 100%">
-                <ElOption label="正常" value="0" />
-                <ElOption label="禁用" value="1" />
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                type="textarea"
-                :rows="3"
-                placeholder="请输入描述"
-                :maxlength="255"
-              />
-            </ElFormItem>
-            <ElFormItem label="开始时间" prop="start_time">
-              <ElDatePicker
-                v-model="formData.start_time"
-                type="datetime"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                placeholder="可选"
-                style="width: 100%"
-              />
-            </ElFormItem>
-            <ElFormItem label="结束时间" prop="end_time">
-              <ElDatePicker
-                v-model="formData.end_time"
-                type="datetime"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                placeholder="可选"
-                style="width: 100%"
-              />
-            </ElFormItem>
-          </ElForm>
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
+          />
         </ElScrollbar>
       </template>
 
@@ -171,6 +133,8 @@ import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
   type TenantCreateForm,
@@ -538,14 +502,84 @@ const initialFormData: TenantForm = {
   end_time: undefined,
 };
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
 const submitLoading = ref(false);
+const tenantFormRenderKey = ref(0);
+
+const tenantDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "租户名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入租户名称", maxlength: 100 },
+  },
+  {
+    label: "租户编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: {
+      placeholder: "字母与数字，创建后不可改",
+      maxlength: 100,
+      disabled: dialogVisible.type === "update",
+    },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    span: 24,
+    props: {
+      placeholder: "请选择状态",
+      style: { width: "100%" },
+      options: [
+        { label: "正常", value: "0" },
+        { label: "禁用", value: "1" },
+      ],
+    },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 3,
+      maxlength: 255,
+      placeholder: "请输入描述",
+    },
+  },
+  {
+    label: "开始时间",
+    key: "start_time",
+    type: "datetime",
+    span: 24,
+    props: {
+      style: { width: "100%" },
+      placeholder: "可选",
+      type: "datetime",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+    },
+  },
+  {
+    label: "结束时间",
+    key: "end_time",
+    type: "datetime",
+    span: 24,
+    props: {
+      style: { width: "100%" },
+      placeholder: "可选",
+      type: "datetime",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+    },
+  },
+]);
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
   currentEditId.value = null;
 }
@@ -571,6 +605,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     dialogVisible.title = "新增租户";
     await resetForm();
   }
+  tenantFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
@@ -591,7 +626,7 @@ function onResetSearch() {
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
     const id = currentEditId.value;
@@ -650,6 +685,14 @@ function handleBatchDelete() {
 <style scoped lang="scss">
 .art-table-card {
   flex: 1;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 
 :deep(.tenant-table-actions .inline-flex) {

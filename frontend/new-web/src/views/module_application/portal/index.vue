@@ -142,43 +142,27 @@
       direction="rtl"
       @close="handleCloseDialog"
     >
-      <ElForm
+      <ArtForm
+        :key="portalFormRenderKey"
         ref="formRef"
-        :model="formData"
+        v-model="formData"
+        :items="portalDrawerFormItems"
         :rules="formRules"
         label-width="100px"
         label-position="right"
+        :span="24"
+        :gutter="16"
+        :show-reset="false"
+        :show-submit="false"
+        class="crud-dialog-art-form"
       >
-        <ElFormItem label="应用名称" prop="name">
-          <ElInput v-model="formData.name" placeholder="请输入应用名称" />
-        </ElFormItem>
-
-        <ElFormItem label="访问地址" prop="access_url">
-          <ElInput v-model="formData.access_url" placeholder="请输入访问地址" />
-        </ElFormItem>
-
-        <ElFormItem label="图标地址" prop="icon_url">
-          <ElInput v-model="formData.icon_url" placeholder="请输入图标地址" />
-        </ElFormItem>
-
-        <ElFormItem label="应用状态" prop="status">
+        <template #status>
           <ElRadioGroup v-model="formData.status">
             <ElRadio value="0">启用</ElRadio>
             <ElRadio value="1">停用</ElRadio>
           </ElRadioGroup>
-        </ElFormItem>
-
-        <ElFormItem label="应用描述" prop="description">
-          <ElInput
-            v-model="formData.description"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入应用描述"
-            maxlength="200"
-            show-word-limit
-          />
-        </ElFormItem>
-      </ElForm>
+        </template>
+      </ArtForm>
 
       <template #footer>
         <div class="dialog-footer">
@@ -211,6 +195,8 @@ import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue"
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
 import type { ColumnOption } from "@/types/component";
 
@@ -282,7 +268,53 @@ const portalSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const formRef = ref();
+const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const portalFormRenderKey = ref(0);
+
+const portalDrawerFormItems = computed<FormItem[]>(() => [
+  {
+    label: "应用名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入应用名称" },
+  },
+  {
+    label: "访问地址",
+    key: "access_url",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入访问地址" },
+  },
+  {
+    label: "图标地址",
+    key: "icon_url",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入图标地址" },
+  },
+  {
+    label: "应用状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "应用描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 200,
+      showWordLimit: true,
+      placeholder: "请输入应用描述",
+    },
+  },
+]);
+
 const dialogVisible = ref(false);
 const dialogType = ref<"create" | "edit">("create");
 const currentApp = ref<ApplicationInfo | null>(null);
@@ -388,6 +420,7 @@ async function onResetSearch() {
 function handleCreateApp() {
   dialogType.value = "create";
   resetForm();
+  portalFormRenderKey.value += 1;
   dialogVisible.value = true;
 }
 
@@ -395,6 +428,7 @@ function handleEditApp(app: ApplicationInfo) {
   dialogType.value = "edit";
   currentApp.value = app;
   Object.assign(formData, app);
+  portalFormRenderKey.value += 1;
   dialogVisible.value = true;
 }
 
@@ -438,7 +472,8 @@ function resetForm() {
     status: "0",
     description: "",
   });
-  formRef.value?.resetFields();
+  formRef.value?.ref?.resetFields();
+  formRef.value?.ref?.clearValidate();
 }
 
 function handleCloseDialog() {
@@ -612,5 +647,13 @@ async function handleSubmit() {
   .card-actions {
     margin-left: auto;
   }
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 </style>

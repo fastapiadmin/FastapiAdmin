@@ -138,19 +138,21 @@
         </ElScrollbar>
       </template>
       <template v-else>
-        <ElForm
+        <ArtForm
+          :key="memoryFormRenderKey"
           ref="dataFormRef"
-          :model="formData"
+          v-model="formData"
+          :items="memoryDialogFormItems"
           :rules="rules"
           label-suffix=":"
-          label-width="auto"
+          :label-width="'auto'"
           label-position="right"
-          inline
-        >
-          <ElFormItem label="标题" prop="title">
-            <ElInput v-model="formData.title" placeholder="请输入标题" :maxlength="100" />
-          </ElFormItem>
-        </ElForm>
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        />
       </template>
 
       <template #footer>
@@ -184,6 +186,8 @@ import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/i
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
@@ -255,7 +259,18 @@ const memorySearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const memoryFormRenderKey = ref(0);
+
+const memoryDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "标题",
+    key: "title",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入标题", maxlength: 100 },
+  },
+]);
 const titleInputRef = ref();
 const editingRowId = ref<string | null>(null);
 const editingTitle = ref("");
@@ -465,10 +480,8 @@ async function onResetSearch() {
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -490,6 +503,7 @@ async function handleOpenDialog(type: "create" | "detail", id?: string) {
     dialogVisible.title = "新增会话";
     formData.id = undefined;
   }
+  memoryFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
@@ -630,5 +644,13 @@ pre {
   max-height: 60vh;
   padding: 20px;
   overflow-y: auto;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 </style>

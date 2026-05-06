@@ -81,47 +81,20 @@
       destroy-on-close
       @close="handleCloseDialog"
     >
-      <ElForm ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <ElFormItem label="名称" prop="name">
-          <ElInput v-model="form.name" maxlength="128" show-word-limit />
-        </ElFormItem>
-        <ElFormItem label="编码" prop="code">
-          <ElInput v-model="form.code" maxlength="64" show-word-limit :disabled="!!editingId" />
-        </ElFormItem>
-        <ElFormItem label="分类" prop="category">
-          <ElSelect v-model="form.category" style="width: 100%">
-            <ElOption label="触发器" value="trigger" />
-            <ElOption label="动作" value="action" />
-            <ElOption label="条件" value="condition" />
-            <ElOption label="控制" value="control" />
-          </ElSelect>
-        </ElFormItem>
-        <ElFormItem label="代码块" prop="func">
-          <ElInput
-            v-model="form.func"
-            type="textarea"
-            :rows="12"
-            placeholder="须定义 handler(*args, **kwargs)，可接收 upstream、variables"
-          />
-        </ElFormItem>
-        <ElFormItem label="位置参数" prop="args">
-          <ElInput v-model="form.args" placeholder="逗号分隔，如 a, b" />
-        </ElFormItem>
-        <ElFormItem label="关键字参数" prop="kwargs">
-          <ElInput
-            v-model="form.kwargs"
-            type="textarea"
-            :rows="3"
-            placeholder='JSON，如 {"key": "v"}'
-          />
-        </ElFormItem>
-        <ElFormItem label="排序" prop="sort_order">
-          <ElInputNumber v-model="form.sort_order" :min="0" />
-        </ElFormItem>
-        <ElFormItem label="启用" prop="is_active">
-          <ElSwitch v-model="form.is_active" />
-        </ElFormItem>
-      </ElForm>
+      <ArtForm
+        :key="nodeTypeFormRenderKey"
+        ref="formRef"
+        v-model="form"
+        :items="nodeTypeDialogFormItems"
+        :rules="rules"
+        label-width="100px"
+        label-position="right"
+        :span="24"
+        :gutter="16"
+        :show-reset="false"
+        :show-submit="false"
+        class="crud-dialog-art-form"
+      />
       <template #footer>
         <ElButton @click="dialogVisible = false">取消</ElButton>
         <ElButton type="primary" :loading="submitting" @click="submitForm">保存</ElButton>
@@ -146,10 +119,12 @@ import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
-import type { FormInstance, FormRules } from "element-plus";
+import type { FormRules } from "element-plus";
 import { computed, h, reactive, ref } from "vue";
 
 const BATCH_DELETE_MSG = "确认删除选中的编排节点类型吗？";
@@ -390,7 +365,82 @@ const dialogVisible = ref(false);
 const dialogTitle = ref("新增节点类型");
 const editingId = ref<number | null>(null);
 const submitting = ref(false);
-const formRef = ref<FormInstance>();
+const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const nodeTypeFormRenderKey = ref(0);
+
+const nodeTypeDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { maxlength: 128, showWordLimit: true },
+  },
+  {
+    label: "编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: { maxlength: 64, showWordLimit: true, disabled: !!editingId.value },
+  },
+  {
+    label: "分类",
+    key: "category",
+    type: "select",
+    span: 24,
+    props: {
+      style: { width: "100%" },
+      options: [
+        { label: "触发器", value: "trigger" },
+        { label: "动作", value: "action" },
+        { label: "条件", value: "condition" },
+        { label: "控制", value: "control" },
+      ],
+    },
+  },
+  {
+    label: "代码块",
+    key: "func",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 12,
+      placeholder: "须定义 handler(*args, **kwargs)，可接收 upstream、variables",
+    },
+  },
+  {
+    label: "位置参数",
+    key: "args",
+    type: "input",
+    span: 24,
+    props: { placeholder: "逗号分隔，如 a, b" },
+  },
+  {
+    label: "关键字参数",
+    key: "kwargs",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 3,
+      placeholder: 'JSON，如 {"key": "v"}',
+    },
+  },
+  {
+    label: "排序",
+    key: "sort_order",
+    type: "number",
+    span: 24,
+    props: { min: 0 },
+  },
+  {
+    label: "启用",
+    key: "is_active",
+    type: "switch",
+    span: 24,
+  },
+]);
 
 const defaultForm = (): WorkflowNodeTypeForm => ({
   name: "",
@@ -415,7 +465,8 @@ const rules: FormRules = {
 function resetForm() {
   Object.assign(form, defaultForm());
   editingId.value = null;
-  formRef.value?.resetFields();
+  formRef.value?.ref?.resetFields();
+  formRef.value?.ref?.clearValidate();
 }
 
 function handleCloseDialog() {
@@ -445,6 +496,7 @@ async function openDialog(id?: number) {
       return;
     }
   }
+  nodeTypeFormRenderKey.value += 1;
   dialogVisible.value = true;
 }
 
@@ -480,4 +532,12 @@ async function submitForm() {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+</style>

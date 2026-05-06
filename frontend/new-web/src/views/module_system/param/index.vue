@@ -88,48 +88,28 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
+          <ArtForm
+            :key="paramFormRenderKey"
             ref="dataFormRef"
-            :model="formData"
+            v-model="formData"
+            :items="paramDialogFormItems"
             :rules="rules"
             label-suffix=":"
-            label-width="100px"
+            :label-width="100"
             label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
           >
-            <ElFormItem label="配置名称" prop="config_name">
-              <ElInput
-                v-model="formData.config_name"
-                placeholder="请输入配置名称"
-                :maxlength="50"
-              />
-            </ElFormItem>
-            <ElFormItem label="配置键" prop="config_key">
-              <ElInput v-model="formData.config_key" placeholder="请输入配置键" :maxlength="50" />
-            </ElFormItem>
-            <ElFormItem label="配置值" prop="config_value">
-              <ElInput
-                v-model="formData.config_value"
-                placeholder="请输入配置值"
-                :maxlength="100"
-              />
-            </ElFormItem>
-            <ElFormItem label="系统内置" prop="config_type">
+            <template #config_type>
               <ElRadioGroup v-model="formData.config_type">
                 <ElRadio :value="true">是</ElRadio>
                 <ElRadio :value="false">否</ElRadio>
               </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                :rows="4"
-                :maxlength="100"
-                show-word-limit
-                type="textarea"
-                placeholder="请输入描述"
-              />
-            </ElFormItem>
-          </ElForm>
+            </template>
+          </ArtForm>
         </ElScrollbar>
       </template>
 
@@ -170,6 +150,8 @@ import type { IObject } from "@/components/Core/modal/types";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import ParamsAPI, {
   type ConfigForm,
@@ -410,7 +392,52 @@ const rules = reactive({
   config_type: [{ required: true, message: "请选择系统配置类型", trigger: "blur" }],
 });
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const paramFormRenderKey = ref(0);
+
+const paramDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "配置名称",
+    key: "config_name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入配置名称", maxlength: 50 },
+  },
+  {
+    label: "配置键",
+    key: "config_key",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入配置键", maxlength: 50 },
+  },
+  {
+    label: "配置值",
+    key: "config_value",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入配置值", maxlength: 100 },
+  },
+  {
+    label: "系统内置",
+    key: "config_type",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 const submitLoading = ref(false);
 
 const initialFormData: ConfigForm = {
@@ -441,10 +468,8 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -469,11 +494,12 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
+  paramFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
     const id = formData.id;
@@ -587,5 +613,13 @@ function openExportModal() {
 <style scoped lang="scss">
 .art-table-card {
   flex: 1;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 </style>

@@ -127,7 +127,7 @@
             :gutter="16"
             :show-reset="false"
             :show-submit="false"
-            class="notice-dialog-art-form"
+            class="crud-dialog-art-form"
           >
             <template #status>
               <ElRadioGroup v-model="formData.status">
@@ -764,11 +764,11 @@ onMounted(async () => {
 }
 
 /* ArtForm 底部预留的操作栏列在弹窗内不需要占位 */
-.notice-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.notice-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 

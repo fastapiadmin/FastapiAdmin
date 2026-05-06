@@ -13,28 +13,20 @@
           <ElScrollbar style="height: 100%">
             <div class="panel-section">
               <div class="section-title">基础信息</div>
-              <ElForm
+              <ArtForm
                 ref="formRef"
-                :model="formData"
-                label-width="50px"
+                v-model="formData"
+                :items="workflowBaseFormItems"
                 :rules="formRules"
+                label-width="50px"
+                label-position="right"
                 size="small"
-              >
-                <ElFormItem label="编码" prop="code">
-                  <ElInput v-model="formData.code" placeholder="请输入流程编码" />
-                </ElFormItem>
-                <ElFormItem label="名称" prop="name">
-                  <ElInput v-model="formData.name" placeholder="请输入流程名称" />
-                </ElFormItem>
-                <ElFormItem label="描述" prop="description">
-                  <ElInput
-                    v-model="formData.description"
-                    type="textarea"
-                    :rows="2"
-                    placeholder="请输入流程描述"
-                  />
-                </ElFormItem>
-              </ElForm>
+                :span="24"
+                :gutter="12"
+                :show-reset="false"
+                :show-submit="false"
+                class="workflow-base-art-form"
+              />
             </div>
 
             <ElDivider style="margin: 4px 0" />
@@ -209,6 +201,8 @@ import "element-plus/dist/index.css";
 import DynamicNode from "./DynamicNode.vue";
 import NodeConfigPanel from "./NodeConfigPanel.vue";
 import EdgeConfigPanel from "./EdgeConfigPanel.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import WorkflowDefinitionAPI, {
   type WorkflowTable,
   type WorkflowForm,
@@ -233,7 +227,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:visible", "refresh"]);
 
-const formRef = ref();
+const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
 const workflowId = ref<number>();
 
 const formData = reactive<Partial<WorkflowForm>>({
@@ -246,6 +240,34 @@ const formRules = {
   code: [{ required: true, message: "请输入流程编码", trigger: "blur" }],
   name: [{ required: true, message: "请输入流程名称", trigger: "blur" }],
 };
+
+const workflowBaseFormItems = computed<FormItem[]>(() => [
+  {
+    label: "编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入流程编码" },
+  },
+  {
+    label: "名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入流程名称" },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 2,
+      placeholder: "请输入流程描述",
+    },
+  },
+]);
 
 const dialogVisible = computed({
   get: () => props.visible,
@@ -739,7 +761,7 @@ const handleFinish = async () => {
   if (!formRef.value) return;
 
   try {
-    await formRef.value.validate();
+    await formRef.value.validate?.();
     await handleValidate();
     await handleSave();
     emit("refresh");
@@ -972,5 +994,17 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+}
+
+.workflow-base-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.workflow-base-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+.workflow-base-art-form :deep(section) {
+  padding: 0;
 }
 </style>

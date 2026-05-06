@@ -96,32 +96,28 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
+          <ArtForm
+            :key="demo01FormRenderKey"
             ref="dataFormRef"
-            :model="formData"
+            v-model="formData"
+            :items="demo01DialogFormItems"
             :rules="rules"
             label-suffix=":"
-            label-width="auto"
+            :label-width="'auto'"
             label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
           >
-            <ElFormItem label="名称" prop="name">
-              <ElInput v-model="formData.name" placeholder="请输入名称" clearable />
-            </ElFormItem>
-            <ElFormItem label="状态" prop="status">
+            <template #status>
               <ElRadioGroup v-model="formData.status">
                 <ElRadio value="0">正常</ElRadio>
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                type="textarea"
-                :rows="4"
-                placeholder="请输入描述"
-              />
-            </ElFormItem>
-          </ElForm>
+            </template>
+          </ArtForm>
         </ElScrollbar>
       </template>
 
@@ -165,6 +161,8 @@ import type { IContentConfig, IObject } from "@/components/Core/modal/types";
 import ArtSearchBarWithAudit from "@/components/Core/forms/art-search-bar/ArtSearchBarWithAudit.vue";
 import type { AuditSearchFormParams } from "@/components/Core/forms/art-search-bar/auditSearchFormItems";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import Demo01API, {
   type Demo01Form,
@@ -395,7 +393,32 @@ const rules = reactive({
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const demo01FormRenderKey = ref(0);
+
+const demo01DialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入名称", clearable: true },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: { type: "textarea", rows: 4, placeholder: "请输入描述" },
+  },
+]);
 
 const importModalVisible = ref(false);
 const exportModalVisible = ref(false);
@@ -496,14 +519,13 @@ async function openEditDialog(type: "add" | "edit", row?: Demo01Table) {
     const response = await Demo01API.getDemo01Detail(row.id);
     Object.assign(formData, response.data.data);
   }
+  demo01FormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -513,7 +535,7 @@ async function handleCloseDialog() {
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     const id = formData.id;
     try {
@@ -616,3 +638,13 @@ function openExportModal() {
   exportModalVisible.value = true;
 }
 </script>
+
+<style scoped lang="scss">
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+</style>

@@ -25,10 +25,10 @@
     }
 
     #app-content {
-      display: flex;
-      flex-direction: column;
       box-sizing: border-box;
+      display: flex;
       flex: 1;
+      flex-direction: column;
       min-height: 0;
       padding: 20px;
       overflow: auto;

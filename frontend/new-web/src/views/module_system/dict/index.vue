@@ -87,37 +87,28 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
+          <ArtForm
+            :key="dictFormRenderKey"
             ref="dataFormRef"
-            :model="formData"
+            v-model="formData"
+            :items="dictDialogFormItems"
             :rules="rules"
             label-suffix=":"
-            label-width="auto"
+            :label-width="'auto'"
             label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
           >
-            <ElFormItem label="字典名称" prop="dict_name">
-              <ElInput v-model="formData.dict_name" placeholder="请输入字典名称" :maxlength="50" />
-            </ElFormItem>
-            <ElFormItem label="字典类型" prop="dict_type">
-              <ElInput v-model="formData.dict_type" placeholder="请输入字典类型" :maxlength="50" />
-            </ElFormItem>
-            <ElFormItem label="状态" prop="status">
+            <template #status>
               <ElRadioGroup v-model="formData.status">
                 <ElRadio value="0">启用</ElRadio>
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                :rows="4"
-                :maxlength="100"
-                show-word-limit
-                type="textarea"
-                placeholder="请输入描述"
-              />
-            </ElFormItem>
-          </ElForm>
+            </template>
+          </ArtForm>
         </ElScrollbar>
       </template>
 
@@ -159,6 +150,8 @@ import type { IObject } from "@/components/Core/modal/types";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DictAPI, {
   type DictForm,
@@ -393,7 +386,45 @@ const rules = reactive({
   status: [{ required: true, message: "请选择字典状态", trigger: "blur" }],
 });
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dictFormRenderKey = ref(0);
+
+const dictDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "字典名称",
+    key: "dict_name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入字典名称", maxlength: 50 },
+  },
+  {
+    label: "字典类型",
+    key: "dict_type",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入字典类型", maxlength: 50 },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 
 const initialFormData: DictForm = {
   id: undefined,
@@ -488,10 +519,8 @@ function handleDictDataDrawer(dictTypeRow: DictTable) {
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -516,11 +545,12 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
+  dictFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     const id = formData.id;
     try {
@@ -621,5 +651,13 @@ function openExportModal() {
 <style scoped lang="scss">
 .art-table-card {
   flex: 1;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 </style>

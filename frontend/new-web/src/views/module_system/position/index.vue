@@ -102,37 +102,28 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
+          <ArtForm
+            :key="positionFormRenderKey"
             ref="dataFormRef"
-            :model="formData"
+            v-model="formData"
+            :items="positionDialogFormItems"
             :rules="rules"
             label-suffix=":"
-            label-width="auto"
+            :label-width="'auto'"
             label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
           >
-            <ElFormItem label="岗位名称" prop="name">
-              <ElInput v-model="formData.name" placeholder="请输入岗位名称" :maxlength="50" />
-            </ElFormItem>
-            <ElFormItem label="排序" prop="order">
-              <ElInputNumber v-model="formData.order" controls-position="right" :min="1" />
-            </ElFormItem>
-            <ElFormItem label="状态" prop="status">
+            <template #status>
               <ElRadioGroup v-model="formData.status">
                 <ElRadio value="0">启用</ElRadio>
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                :rows="4"
-                :maxlength="100"
-                show-word-limit
-                type="textarea"
-                placeholder="请输入描述"
-              />
-            </ElFormItem>
-          </ElForm>
+            </template>
+          </ArtForm>
         </ElScrollbar>
       </template>
 
@@ -174,6 +165,8 @@ import type { IObject } from "@/components/Core/modal/types";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
 import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import PositionAPI, {
   type PositionForm,
@@ -572,7 +565,45 @@ const initialFormData: PositionForm = {
   description: undefined,
 };
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const positionFormRenderKey = ref(0);
+
+const positionDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "岗位名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入岗位名称", maxlength: 50 },
+  },
+  {
+    label: "排序",
+    key: "order",
+    type: "number",
+    span: 24,
+    props: { controlsPosition: "right", min: 1 },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 const submitLoading = ref(false);
 const exportModalVisible = ref(false);
 
@@ -608,10 +639,8 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -636,11 +665,12 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
+  positionFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
     const id = formData.id;
@@ -713,6 +743,14 @@ function handleMoreClick(status: string) {
 <style scoped lang="scss">
 .art-table-card {
   flex: 1;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 
 :deep(.position-table-actions .inline-flex) {

@@ -8,49 +8,22 @@
     </div>
 
     <div class="panel-content">
-      <ElForm :model="formData" label-width="80px" size="small">
-        <ElFormItem label="连线名称">
-          <ElInput v-model="formData.label" placeholder="请输入连线名称" />
-        </ElFormItem>
-
-        <ElFormItem label="连线类型">
-          <ElSelect v-model="formData.type" placeholder="请选择连线类型">
-            <ElOption label="折线" value="smoothstep" />
-            <ElOption label="曲线" value="default" />
-            <ElOption label="直线" value="straight" />
-          </ElSelect>
-        </ElFormItem>
-
-        <ElFormItem label="连线颜色">
+      <ArtForm
+        v-model="formData"
+        :items="edgeFormItems"
+        label-width="80px"
+        size="small"
+        label-position="right"
+        :span="24"
+        :gutter="12"
+        :show-reset="false"
+        :show-submit="false"
+        class="panel-art-form"
+      >
+        <template #color>
           <ElColorPicker v-model="formData.color" />
-        </ElFormItem>
-
-        <ElFormItem label="线条宽度">
-          <ElInputNumber v-model="formData.strokeWidth" :min="1" :max="10" />
-        </ElFormItem>
-
-        <ElFormItem label="启用动画">
-          <ElSwitch v-model="formData.animated" />
-        </ElFormItem>
-
-        <ElFormItem label="条件表达式">
-          <ElInput
-            v-model="formData.condition"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入条件表达式"
-          />
-        </ElFormItem>
-
-        <ElFormItem label="描述">
-          <ElInput
-            v-model="formData.description"
-            type="textarea"
-            :rows="2"
-            placeholder="请输入描述信息"
-          />
-        </ElFormItem>
-      </ElForm>
+        </template>
+      </ArtForm>
 
       <div class="panel-actions">
         <ElButton type="primary" size="small" @click="handleSave">保存</ElButton>
@@ -61,21 +34,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import {
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElInputNumber,
-  ElSwitch,
-  ElColorPicker,
-  ElMessage,
-  ElIcon,
-} from "element-plus";
+import { ref, watch, computed } from "vue";
+import { ElButton, ElColorPicker, ElMessage, ElIcon } from "element-plus";
 import { Close } from "@element-plus/icons-vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
 
 const props = defineProps({
   edge: {
@@ -95,6 +57,72 @@ const formData = ref({
   condition: props.edge?.data?.condition || "",
   description: props.edge?.data?.description || "",
 });
+
+const edgeFormItems = computed(() => [
+  {
+    label: "连线名称",
+    key: "label",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入连线名称" },
+  },
+  {
+    label: "连线类型",
+    key: "type",
+    type: "select",
+    span: 24,
+    props: {
+      placeholder: "请选择连线类型",
+      options: [
+        { label: "折线", value: "smoothstep" },
+        { label: "曲线", value: "default" },
+        { label: "直线", value: "straight" },
+      ],
+    },
+  },
+  {
+    label: "连线颜色",
+    key: "color",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "线条宽度",
+    key: "strokeWidth",
+    type: "number",
+    span: 24,
+    props: { min: 1, max: 10 },
+  },
+  {
+    label: "启用动画",
+    key: "animated",
+    type: "switch",
+    span: 24,
+  },
+  {
+    label: "条件表达式",
+    key: "condition",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 3,
+      placeholder: "请输入条件表达式",
+    },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 2,
+      placeholder: "请输入描述信息",
+    },
+  },
+]);
 
 watch(
   () => props.edge,
@@ -163,5 +191,17 @@ function handleDelete() {
 
 .panel-actions .el-button {
   flex: 1;
+}
+
+.panel-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.panel-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+.panel-art-form :deep(section) {
+  padding: 0;
 }
 </style>
