@@ -18,6 +18,11 @@ from .schema import (
 class CheckinService:
     """
     活动打卡服务层
+
+    职责：活动打卡增删改查、GPS位置验证、打卡有效性判定
+    状态：checked_in(已打卡) -> validated(已验证) / invalid(无效)
+    GPS验证：创建打卡时若提供坐标则自动验证；支持事后重新验证
+    验证逻辑：计算打卡位置与目标位置的距离，与允许半径(默认500m)比较
     """
 
     @classmethod
@@ -76,12 +81,8 @@ class CheckinService:
         """
         创建活动打卡
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - data (dict): 创建数据
-
-        返回:
-        - dict: 创建的活动打卡模型实例字典
+        若提供了打卡坐标和目标坐标，创建时自动进行GPS距离校验，
+        将结果写入 gps_validated(0/1) 和 gps_distance 字段
         """
         # 如果提供了GPS坐标，进行GPS验证
         latitude = data.get("latitude")
@@ -219,14 +220,10 @@ class CheckinService:
     @classmethod
     async def gps_validate_service(cls, auth: AuthSchema, id: int) -> dict:
         """
-        GPS位置验证
+        GPS位置验证（事后重新验证）
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 活动打卡ID
-
-        返回:
-        - dict: 包含验证结果的字典
+        从已有打卡记录中读取坐标，调用 GPSService 计算距离，
+        更新 gps_validated 和 gps_distance 字段，返回验证结果消息
         """
         existing = await CheckinCRUD(auth).get_by_id_crud(id=id)
         if not existing:

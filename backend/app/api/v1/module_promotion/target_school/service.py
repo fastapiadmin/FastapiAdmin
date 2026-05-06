@@ -16,6 +16,9 @@ from .schema import (
 class TargetSchoolService:
     """
     目标学校管理服务层
+
+    职责：目标学校增删改查、跟进记录维护(拜访内容/次数/下次计划)、按组/按负责人查询
+    约束：学校代码(school_code)唯一
     """
 
     @classmethod
@@ -173,13 +176,8 @@ class TargetSchoolService:
         """
         跟进目标学校
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 目标学校ID
-        - data (dict): 跟进数据
-
-        返回:
-        - dict: 更新后的目标学校模型实例字典
+        支持更新的字段：visit_content(拜访内容) -> 自动累加拜访次数
+        visit_date / next_visit_plan / next_visit_date / follow_status
         """
         existing = await TargetSchoolCRUD(auth).get_by_id_crud(id=id)
         if not existing:
@@ -187,6 +185,7 @@ class TargetSchoolService:
 
         update_data = {}
 
+        # 提交拜访内容时自动累加拜访次数
         if "visit_content" in data:
             update_data["last_visit_content"] = data["visit_content"]
             update_data["visit_count"] = existing.visit_count + 1

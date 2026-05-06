@@ -44,7 +44,9 @@ async def apply_insurance_controller(
 @InsuranceRouter.get("/policies/{policy_id}/download", summary="下载保单")
 async def download_policy_controller(
     policy_id: Annotated[int, Path(description="保单ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_campus_return:insurance:download"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_campus_return:insurance:download"]))
+    ],
 ) -> ResponseSchema[dict]:
     """下载保单"""
     return ResponseSchema(data={})

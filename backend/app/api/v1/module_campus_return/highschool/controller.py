@@ -35,7 +35,9 @@ async def get_docking_controller(
 @HighSchoolRouter.post("/docking", summary="创建对接")
 async def create_docking_controller(
     data: dict,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_campus_return:highschool:create"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_campus_return:highschool:create"]))
+    ],
 ) -> ResponseSchema[dict]:
     """创建高中对接"""
     return ResponseSchema(data={})
@@ -45,7 +47,9 @@ async def create_docking_controller(
 async def update_docking_controller(
     docking_id: Annotated[int, Path(description="对接ID")],
     data: dict,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_campus_return:highschool:update"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_campus_return:highschool:update"]))
+    ],
 ) -> ResponseSchema[dict]:
     """更新高中对接"""
     return ResponseSchema(data={})
@@ -54,7 +58,9 @@ async def update_docking_controller(
 @HighSchoolRouter.delete("/docking/{docking_id}", summary="删除对接")
 async def delete_docking_controller(
     docking_id: Annotated[int, Path(description="对接ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_campus_return:highschool:delete"]))],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_campus_return:highschool:delete"]))
+    ],
 ) -> ResponseSchema[bool]:
     """删除高中对接"""
     return ResponseSchema(data=True)

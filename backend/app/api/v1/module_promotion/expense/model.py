@@ -12,12 +12,12 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class ExpenseStatus(str, Enum):
-    """费用状态枚举"""
+    """费用报销状态枚举，控制报销审批和打款流程"""
 
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
-    REIMBURSED = "reimbursed"
+    PENDING = "pending"  # 待审批
+    APPROVED = "approved"  # 已批准
+    REJECTED = "rejected"  # 已拒绝
+    REIMBURSED = "reimbursed"  # 已报销（已打款，不可删除）
 
 
 class PromotionExpenseModel(ModelMixin, UserMixin):

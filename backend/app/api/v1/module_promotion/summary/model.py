@@ -11,12 +11,12 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class SummaryStatus(str, Enum):
-    """总结状态枚举"""
+    """总结状态枚举，控制总结的提交和审批流程"""
 
-    DRAFT = "draft"
-    SUBMITTED = "submitted"
-    APPROVED = "approved"
-    REJECTED = "rejected"
+    DRAFT = "draft"  # 草稿（可编辑）
+    SUBMITTED = "submitted"  # 已提交（待审批）
+    APPROVED = "approved"  # 已通过（不可删除）
+    REJECTED = "rejected"  # 已拒绝（可编辑后重新提交）
 
 
 class PromotionSummaryModel(ModelMixin, UserMixin):

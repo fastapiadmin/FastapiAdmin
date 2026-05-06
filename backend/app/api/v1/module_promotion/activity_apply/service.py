@@ -19,6 +19,10 @@ from .schema import (
 class ActivityApplyService:
     """
     活动申请管理服务层
+
+    职责：活动申请增删改查、审批流(通过/拒绝/取消)
+    状态机：pending(待审批) -> approved(已批准) / rejected(已拒绝) / cancelled(已取消)
+    约束：只有待审批状态可编辑/审批；已批准不可删除；只有待审批和已批准可取消
     """
 
     @classmethod
@@ -137,6 +141,8 @@ class ActivityApplyService:
         if existing.approval_status != ApprovalStatus.PENDING.value:
             raise CustomException(msg="只有待审批状态的申请可以编辑")
 
+        # 编码唯一性校验（仅编码变更时检查）
+
         if data.get("activity_code") and data["activity_code"] != existing.activity_code:
             code_existing = await ActivityApplyCRUD(auth).get_by_activity_code_crud(
                 data["activity_code"]
@@ -161,6 +167,7 @@ class ActivityApplyService:
         if not existing:
             raise CustomException(msg="该活动申请不存在")
 
+        # 已批准的申请不可删除，防止审批后撤回
         if existing.approval_status == ApprovalStatus.APPROVED.value:
             raise CustomException(msg="已批准的申请无法删除")
 
@@ -241,6 +248,7 @@ class ActivityApplyService:
         if existing.approval_status != ApprovalStatus.PENDING.value:
             raise CustomException(msg="只有待审批状态的申请可以审批")
 
+        # 拒绝时必须填写审批意见
         if not approval_comment:
             raise CustomException(msg="请填写审批意见")
 

@@ -20,6 +20,10 @@ from .schema import (
 class ExpenseService:
     """
     费用报销服务层
+
+    职责：费用报销单增删改查、审批流(通过/拒绝)、报销打款
+    状态机：pending(待审批) -> approved(已批准) -> reimbursed(已报销) / rejected(已拒绝)
+    约束：只有待审批可编辑/审批；已报销不可删除
     """
 
     @classmethod
@@ -76,14 +80,9 @@ class ExpenseService:
     @classmethod
     async def create_service(cls, auth: AuthSchema, data: dict) -> dict:
         """
-        创建费用报销
+        创建费用报销单
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - data (dict): 创建数据
-
-        返回:
-        - dict: 创建的费用报销模型实例字典
+        自动生成报销单号，格式：EX + 12位大写随机字符
         """
         expense_no = f"EX{uuid.uuid4().hex[:12].upper()}"
         data["expense_no"] = expense_no
@@ -129,6 +128,7 @@ class ExpenseService:
         if not existing:
             raise CustomException(msg="该费用报销不存在")
 
+        # 已报销的单据不可删除，防止财务数据丢失
         if existing.approval_status == ExpenseStatus.REIMBURSED.value:
             raise CustomException(msg="已报销的报销单无法删除")
 
@@ -224,15 +224,10 @@ class ExpenseService:
         cls, auth: AuthSchema, id: int, reimbursement_account: str | None = None
     ) -> dict:
         """
-        报销
+        报销打款
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 费用报销ID
-        - reimbursement_account (str | None): 报销账户
-
-        返回:
-        - dict: 更新后的费用报销模型实例字典
+        前置条件：审批状态为 approved
+        操作：状态变为 reimbursed，记录报销时间和账户
         """
         existing = await ExpenseCRUD(auth).get_by_id_crud(id=id)
         if not existing:

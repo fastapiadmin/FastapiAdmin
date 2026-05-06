@@ -17,6 +17,9 @@ from .schema import (
 class TeamService:
     """
     招生组管理服务层
+
+    职责：招生组的增删改查、树形结构构建、层级路径(level_path/level_depth)维护、状态切换
+    约束：存在下级组织时禁止删除；不能将自己设为上级组织
     """
 
     @classmethod
@@ -104,11 +107,13 @@ class TeamService:
         返回:
         - dict: 创建的招生组模型实例字典
         """
+        # 编码唯一性校验
         if data.get("team_code"):
             existing = await TeamCRUD(auth).get_by_team_code_crud(data["team_code"])
             if existing:
                 raise CustomException(msg="招生组编码已存在")
 
+        # 维护层级路径：level_depth 表示深度，level_path 记录从根到父的ID路径，用于快速查询子树
         if data.get("parent_id"):
             parent = await TeamCRUD(auth).get_by_id_crud(data["parent_id"])
             if not parent:
@@ -118,6 +123,7 @@ class TeamService:
                 f"{parent.level_path}{parent.id}/" if parent.level_path else f"/{parent.id}/"
             )
         else:
+            # 顶级组织
             data["level_depth"] = 1
             data["level_path"] = "/"
 
@@ -175,6 +181,7 @@ class TeamService:
         if not existing:
             raise CustomException(msg="该招生组不存在")
 
+        # 存在下级组织时禁止删除，避免产生孤立节点
         children = await TeamCRUD(auth).get_children_crud(id)
         if children:
             raise CustomException(msg="该招生组存在下级组织，无法删除")
@@ -219,7 +226,7 @@ class TeamService:
 
     @classmethod
     async def _build_tree(cls, auth: AuthSchema, team: PromotionTeamModel) -> dict:
-        """递归构建树形结构"""
+        """递归构建树形结构，从顶级节点向下遍历所有子节点"""
         children = await TeamCRUD(auth).get_children_crud(team.id)
         children_list = []
         for child in children:

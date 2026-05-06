@@ -12,21 +12,21 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class FollowStatus(str, Enum):
-    """跟进状态枚举"""
+    """跟进状态枚举，表示与目标学校的合作推进阶段"""
 
-    NEW = "new"
-    CONTACTED = "contacted"
-    VISITED = "visited"
-    COOPERATING = "cooperating"
-    INACTIVE = "inactive"
+    NEW = "new"  # 新建，尚未联系
+    CONTACTED = "contacted"  # 已联系
+    VISITED = "visited"  # 已拜访
+    COOPERATING = "cooperating"  # 合作中
+    INACTIVE = "inactive"  # 不活跃/暂停跟进
 
 
 class IntentionLevel(str, Enum):
-    """意向级别枚举"""
+    """意向级别枚举，评估目标学校与本校合作的意向程度"""
 
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
+    HIGH = "high"  # 高意向
+    MEDIUM = "medium"  # 中意向
+    LOW = "low"  # 低意向
 
 
 class PromotionTargetSchoolModel(ModelMixin, UserMixin):

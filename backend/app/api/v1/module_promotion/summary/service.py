@@ -21,6 +21,10 @@ from .schema import (
 class SummaryService:
     """
     总结上传服务层
+
+    职责：活动总结增删改查、提交审批流、附件JSON序列化处理
+    状态机：draft(草稿) -> submitted(已提交) -> approved(已通过) / rejected(已拒绝)
+    约束：只有草稿或已拒绝状态可编辑；已通过不可删除；附件字段需JSON序列化/反序列化
     """
 
     @classmethod
@@ -79,12 +83,8 @@ class SummaryService:
         """
         创建总结
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - data (dict): 创建数据
-
-        返回:
-        - dict: 创建的总结模型实例字典
+        自动生成总结编号，格式：SM + 12位大写随机字符
+        附件字段(attachment_urls/names)若为list则自动序列化为JSON字符串存储
         """
         summary_no = f"SM{uuid.uuid4().hex[:12].upper()}"
         data["summary_no"] = summary_no
@@ -115,6 +115,7 @@ class SummaryService:
         if not existing:
             raise CustomException(msg="该总结不存在")
 
+        # 只有草稿或被拒绝的总结才允许编辑，防止修改已提交/已通过的内容
         if existing.summary_status not in [SummaryStatus.DRAFT.value, SummaryStatus.REJECTED.value]:
             raise CustomException(msg="只有草稿或已拒绝状态的总结可以编辑")
 
@@ -140,6 +141,7 @@ class SummaryService:
         if not existing:
             raise CustomException(msg="该总结不存在")
 
+        # 已通过的总结不可删除，保留审批记录
         if existing.summary_status == SummaryStatus.APPROVED.value:
             raise CustomException(msg="已通过的总结无法删除")
 
@@ -260,7 +262,7 @@ class SummaryService:
 
     @classmethod
     def _format_summary_output(cls, obj: PromotionSummaryModel) -> dict:
-        """格式化总结输出"""
+        """格式化总结输出，将附件字段从JSON字符串反序列化为list"""
         result = SummaryOutSchema.model_validate(obj).model_dump()
 
         for field in ["attachment_urls", "attachment_names"]:

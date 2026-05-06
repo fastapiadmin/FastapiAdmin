@@ -22,6 +22,9 @@ from .schema import (
 class MaterialService:
     """
     物料管理服务层
+
+    职责：物料增删改查、库存补充与预警
+    库存状态自动维护：补充后若超过阈值恢复正常；低于阈值标记 low_stock；为0标记 out_of_stock
     """
 
     @classmethod
@@ -145,13 +148,7 @@ class MaterialService:
         """
         补充库存（招生办录入全年物料总量）
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 物料ID
-        - add_quantity (int): 补充数量
-
-        返回:
-        - dict: 更新后的物料模型实例字典
+        同时增加总库存和可用库存，若补充后可用量超过预警阈值则恢复正常状态
         """
         existing = await MaterialCRUD(auth).get_by_id_crud(id=id)
         if not existing:
@@ -184,16 +181,9 @@ class MaterialService:
         cls, auth: AuthSchema, id: int, change_type: str, quantity: int
     ) -> dict:
         """
-        库存变动
+        库存变动（increase/decrease）
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 物料ID
-        - change_type (str): 变动类型(increase/decrease)
-        - quantity (int): 变动数量
-
-        返回:
-        - dict: 更新后的物料模型实例字典
+        减少时检查可用库存是否充足；变动后自动更新库存状态
         """
         existing = await MaterialCRUD(auth).get_by_id_crud(id=id)
         if not existing:
@@ -226,6 +216,10 @@ class MaterialService:
 class MaterialApplyService:
     """
     物料申请服务层
+
+    职责：物料申领单增删改查、审批流(通过/拒绝)、发放(自动扣库存)
+    状态机：pending(待审批) -> approved(已批准) -> issued(已发放) / rejected(已拒绝)
+    关键约束：发放时自动扣减物料可用库存，库存不足则拒绝发放
     """
 
     @classmethod
@@ -282,14 +276,9 @@ class MaterialApplyService:
     @classmethod
     async def create_service(cls, auth: AuthSchema, data: dict) -> dict:
         """
-        创建物料申请
+        创建物料申领单
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - data (dict): 创建数据
-
-        返回:
-        - dict: 创建的物料申请模型实例字典
+        自动生成申领单号，格式：MA + 12位大写随机字符
         """
         apply_no = f"MA{uuid.uuid4().hex[:12].upper()}"
         data["apply_no"] = apply_no
@@ -375,15 +364,11 @@ class MaterialApplyService:
         cls, auth: AuthSchema, id: int, issued_quantity: int | None = None
     ) -> dict:
         """
-        发放物料（自动减库存）
+        发放物料
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 物料申请ID
-        - issued_quantity (int | None): 发放数量
-
-        返回:
-        - dict: 更新后的物料申请模型实例字典
+        前置条件：申请状态为 approved
+        核心逻辑：扣减物料可用库存，库存不足则拒绝发放
+        发放数量优先级：issued_quantity参数 > approved_quantity > apply_quantity
         """
         existing = await MaterialApplyCRUD(auth).get_by_id_crud(id=id)
         if not existing:

@@ -12,11 +12,11 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class DocumentStatus(str, Enum):
-    """文档状态枚举"""
+    """文档状态枚举，控制文档的发布和归档流程"""
 
-    DRAFT = "draft"
-    PUBLISHED = "published"
-    ARCHIVED = "archived"
+    DRAFT = "draft"  # 草稿（可编辑）
+    PUBLISHED = "published"  # 已发布（不可编辑，需先撤销）
+    ARCHIVED = "archived"  # 已归档
 
 
 class PromotionDocumentModel(ModelMixin, UserMixin):

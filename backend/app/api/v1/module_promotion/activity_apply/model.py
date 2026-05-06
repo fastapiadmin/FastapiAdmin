@@ -12,12 +12,12 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class ApprovalStatus(str, Enum):
-    """审批状态枚举"""
+    """审批状态枚举，控制活动申请的审批流程"""
 
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
-    CANCELLED = "cancelled"
+    PENDING = "pending"  # 待审批
+    APPROVED = "approved"  # 已批准
+    REJECTED = "rejected"  # 已拒绝
+    CANCELLED = "cancelled"  # 已取消（申请人主动取消）
 
 
 class ActivityApplyModel(ModelMixin, UserMixin):

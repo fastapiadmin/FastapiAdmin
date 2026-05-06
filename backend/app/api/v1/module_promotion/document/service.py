@@ -22,6 +22,11 @@ from .schema import (
 class DocumentService:
     """
     活动撰写服务层
+
+    职责：活动文档增删改查、发布/归档、阅读计数、AI生成微信公众号内容
+    状态机：draft(草稿) -> published(已发布) -> archived(已归档)
+    约束：已发布文档需先撤销才能编辑；附件字段需JSON序列化/反序列化
+    AI生成：状态机 pending -> generating -> success/failed
     """
 
     @classmethod
@@ -80,12 +85,8 @@ class DocumentService:
         """
         创建活动撰写
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - data (dict): 创建数据
-
-        返回:
-        - dict: 创建的活动撰写模型实例字典
+        自动生成文档编号，格式：DC + 12位大写随机字符
+        附件字段(attachment_urls/names)若为list则自动序列化为JSON字符串存储
         """
         document_no = f"DC{uuid.uuid4().hex[:12].upper()}"
         data["document_no"] = document_no
@@ -116,6 +117,7 @@ class DocumentService:
         if not existing:
             raise CustomException(msg="该文档不存在")
 
+        # 已发布文档需先撤销(变更为非published状态)才能编辑
         if existing.document_status == DocumentStatus.PUBLISHED.value:
             raise CustomException(msg="已发布的文档需要先撤销才能编辑")
 
@@ -237,12 +239,11 @@ class DocumentService:
         """
         AI生成微信公众号格式化内容
 
-        参数:
-            auth (AuthSchema): 认证信息模型
-            id (int): 活动撰写ID
-
-        返回:
-            dict: 更新后的活动撰写模型实例字典
+        流程：
+        1. 更新状态为 generating
+        2. 调用 AIService.generate_wechat_content 生成内容
+        3. 成功：写入 wechat_formatted_content，状态改为 success
+        4. 失败：状态改为 failed，抛出异常
         """
         existing = await DocumentCRUD(auth).get_by_id_crud(id=id)
         if not existing:
@@ -281,7 +282,7 @@ class DocumentService:
 
     @classmethod
     def _format_document_output(cls, obj: PromotionDocumentModel) -> dict:
-        """格式化文档输出"""
+        """格式化文档输出，将附件字段从JSON字符串反序列化为list"""
         result = DocumentOutSchema.model_validate(obj).model_dump()
 
         for field in ["attachment_urls", "attachment_names"]:

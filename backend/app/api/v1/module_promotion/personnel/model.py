@@ -12,19 +12,19 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class PersonnelStatus(str, Enum):
-    """人员状态枚举"""
+    """人员状态枚举，控制人员生命周期：invited -> active -> inactive"""
 
     ACTIVE = "active"  # 在岗
     INACTIVE = "inactive"  # 离岗
-    INVITED = "invited"  # 已邀请待加入
+    INVITED = "invited"  # 已邀请待加入（通过邀请码加入后变为active）
     PENDING = "pending"  # 待审核
 
 
 class PersonnelType(str, Enum):
-    """人员类型枚举"""
+    """人员来源类型：区分不同入职方式"""
 
     RECRUIT = "recruit"  # 招募
-    INVITE = "invite"  # 邀请
+    INVITE = "invite"  # 邀请（通过邀请码加入）
     MANUAL = "manual"  # 手动新增
 
 

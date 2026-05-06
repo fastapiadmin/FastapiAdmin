@@ -10,8 +10,8 @@ from app.api.v1.module_campus_return.batch.schema import (
     BatchOutSchema,
     BatchUpdateSchema,
 )
-from app.core.exceptions import CustomException
 from app.core.dependencies import AuthSchema
+from app.core.exceptions import CustomException
 
 
 class BatchService:

@@ -15,7 +15,7 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class TeamStatus(str, Enum):
-    """招生组状态枚举"""
+    """招生组状态枚举（使用"0"/"1"编码，与系统通用状态枚举一致）"""
 
     ACTIVE = "0"  # 在用
     INACTIVE = "1"  # 停用

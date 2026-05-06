@@ -20,6 +20,9 @@ from .schema import (
 class PersonnelService:
     """
     招生人员管理服务层
+
+    职责：招生人员增删改查、邀请码邀请加入、状态切换(在岗/离岗)、按组查询
+    约束：一个用户只能关联一个招生人员记录；邀请码7天过期；离岗时自动记录离开日期
     """
 
     @classmethod
@@ -97,6 +100,13 @@ class PersonnelService:
 
     @classmethod
     async def create_service(cls, auth: AuthSchema, data: dict) -> dict:
+        """
+        创建招生人员
+
+        校验规则：
+        - 人员编号(personnel_code)唯一
+        - 同一用户(user_id)不可重复关联
+        """
         """
         创建招生人员
 
@@ -187,13 +197,10 @@ class PersonnelService:
         """
         邀请招生人员
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - data (dict): 邀请数据
-
-        返回:
-        - dict: 邀请信息
+        生成12位邀请码，有效期7天，状态设为 invited
+        被邀请人通过 /join/{invite_code} 接口完成加入
         """
+        # 生成12位随机邀请码
         invite_code = str(uuid.uuid4()).replace("-", "")[:12]
         expire_time = datetime.now() + timedelta(days=7)
 
@@ -220,20 +227,16 @@ class PersonnelService:
     @classmethod
     async def join_service(cls, auth: AuthSchema, invite_code: str, user_id: int) -> dict:
         """
-        招生人员加入
+        招生人员通过邀请码加入
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - invite_code (str): 邀请码
-        - user_id (int): 用户ID
-
-        返回:
-        - dict: 更新后的招生人员模型实例字典
+        校验：邀请码存在 -> 状态为invited -> 未过期 -> 未被使用
+        加入后状态变为 active，记录加入日期
         """
         result = await PersonnelCRUD(auth).get(row_key="invite_code", row_value=invite_code)
         if not result:
             raise CustomException(msg="邀请码无效")
 
+        # 以下四种情况均视为无效邀请
         if result.status != PersonnelStatus.INVITED.value:
             raise CustomException(msg="邀请已失效")
 
@@ -272,6 +275,7 @@ class PersonnelService:
         if not existing:
             raise CustomException(msg="该招生人员不存在")
 
+        # 离岗时自动记录离开日期
         update_data = {"status": status}
         if status == PersonnelStatus.INACTIVE.value:
             from datetime import date

@@ -12,22 +12,22 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class MaterialStatus(str, Enum):
-    """物料状态枚举"""
+    """物料状态枚举，根据可用库存与预警阈值自动切换"""
 
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    LOW_STOCK = "low"
-    OUT_OF_STOCK = "out"
+    ACTIVE = "active"  # 正常（可用库存 > 预警阈值）
+    INACTIVE = "inactive"  # 停用
+    LOW_STOCK = "low"  # 低库存（0 < 可用库存 <= 预警阈值）
+    OUT_OF_STOCK = "out"  # 缺货（可用库存 = 0）
 
 
 class ApplyStatus(str, Enum):
-    """申领状态枚举"""
+    """申领状态枚举，控制物料申领的审批和发放流程"""
 
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
-    ISSUED = "issued"
-    CANCELLED = "cancelled"
+    PENDING = "pending"  # 待审批
+    APPROVED = "approved"  # 已批准
+    REJECTED = "rejected"  # 已拒绝
+    ISSUED = "issued"  # 已发放（发放时自动扣减库存）
+    CANCELLED = "cancelled"  # 已取消
 
 
 class PromotionMaterialModel(ModelMixin, UserMixin):

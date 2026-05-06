@@ -12,11 +12,11 @@ from app.core.base_model import ModelMixin, UserMixin
 
 
 class CheckinStatus(str, Enum):
-    """打卡状态枚举"""
+    """打卡状态枚举，由管理员审核或GPS验证自动判定"""
 
-    CHECKED_IN = "checked_in"
-    VALIDATED = "validated"
-    INVALID = "invalid"
+    CHECKED_IN = "checked_in"  # 已打卡（待验证）
+    VALIDATED = "validated"  # 已验证（有效打卡）
+    INVALID = "invalid"  # 无效打卡
 
 
 class PromotionCheckinModel(ModelMixin, UserMixin):
