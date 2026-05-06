@@ -1,4 +1,7 @@
 import type { AppRouteRecordRaw } from "@/utils/navigation";
+import { defineComponent, h, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { IframeRouteManager } from "@/router/core/IframeRouteManager";
 
 /** 后端菜单 / 动态路由里 `component` 占位（与 ComponentLoader 约定一致） */
 export const ROUTE_COMPONENT_LAYOUT = "/index/index";
@@ -14,6 +17,47 @@ export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
  * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
  */
 export const Layout = () => import("@/layouts/index.vue");
+
+/** 多级目录父级占位：内联 RouterView（无需 views/nested/router-view-parent） */
+const NestedRouterParent = defineComponent({
+  name: "NestedRouterParent",
+  setup() {
+    return () => h("router-view");
+  },
+});
+
+/** iframe 内跳页面：内联组件（无需 views/outside/Iframe.vue） */
+const IframeView = defineComponent({
+  name: "IframeView",
+  setup() {
+    const route = useRoute();
+    const isLoading = ref(true);
+    const iframeUrl = ref("");
+    const iframeRef = ref<HTMLIFrameElement | null>(null);
+
+    onMounted(() => {
+      const iframeRoute = IframeRouteManager.getInstance().findByPath(route.path);
+      if (iframeRoute?.meta) {
+        iframeUrl.value = (iframeRoute.meta as any).link || "";
+      }
+    });
+
+    const handleIframeLoad = () => {
+      isLoading.value = false;
+    };
+
+    return () =>
+      h("div", { class: "box-border w-full h-full", "v-loading": isLoading.value }, [
+        h("iframe", {
+          ref: iframeRef,
+          src: iframeUrl.value,
+          frameborder: "0",
+          class: "w-full h-full min-h-[calc(100vh-120px)] border-none",
+          onLoad: handleIframeLoad,
+        }),
+      ]);
+  },
+});
 
 /**
  * 静态路由配置（不需要权限就能访问的路由）
@@ -95,7 +139,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         path: "dashboard",
         name: "Dashboard",
         redirect: "/dashboard/workplace",
-        component: () => import("@/views/nested/router-view-parent/index.vue"),
+        component: NestedRouterParent,
         meta: {
           title: "menus.dashboard.title",
           icon: "ri:pie-chart-line",
@@ -176,7 +220,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
       {
         path: "/outside/iframe/:path",
         name: "Iframe",
-        component: () => import("@/views/outside/Iframe.vue"),
+        component: IframeView,
         meta: { title: "iframe" },
       },
     ],
