@@ -205,7 +205,7 @@ import ApplicationAPI, {
   type ApplicationForm,
   type ApplicationInfo,
 } from "@/api/module_application/portal";
-import { formatToDateTime } from "@/utils/common/dateUtil";
+import { formatToDateTime } from "@/utils/common";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
 import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";

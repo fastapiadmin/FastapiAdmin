@@ -34,8 +34,7 @@
 import type { RouteRecordRaw } from "vue-router";
 import { router } from "@/router";
 import { store, useUserStore } from "@/store";
-import { Layout, staticRoutes } from "@/router/routes/staticRoutes";
-import { RoutesAlias } from "@/router/routesAlias";
+import { Layout, ROUTE_COMPONENT_LAYOUT, staticRoutes } from "@/router/routes/staticRoutes";
 import type { AppRouteRecord } from "@/types/router";
 import { MenuTable } from "@/api/module_system/menu";
 import {
@@ -94,7 +93,7 @@ export const generator = (routers: MenuTable[]): RouteVO[] => {
 
       let component: string | undefined;
       if (isDir || (hasKids && !(item.component_path ?? "").trim())) {
-        component = RoutesAlias.Layout;
+        component = ROUTE_COMPONENT_LAYOUT;
       } else if ((item.component_path ?? "").trim()) {
         const cp = item.component_path!.trim().replace(/^\/+/, "");
         component = `/${cp}`;

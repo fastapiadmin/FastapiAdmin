@@ -28,7 +28,7 @@
 import ArtIconButton from "@/components/Core/widget/art-icon-button/index.vue";
 import { ComponentSize } from "@/enums/settings/layout.enum";
 import { useAppStore } from "@/store/modules/app.store";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 import { computed } from "vue";
 
 const { t } = useI18n();

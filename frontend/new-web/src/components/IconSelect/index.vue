@@ -86,7 +86,7 @@
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import { isIconifyStoredIcon, resolveElementPlusIconComponent } from "@/utils/menuIcon";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 
 const props = defineProps({
   modelValue: {

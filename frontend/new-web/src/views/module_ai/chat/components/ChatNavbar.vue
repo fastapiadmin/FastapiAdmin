@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 import { computed } from "vue";
 import { Connection, Loading, Warning, Delete, Setting } from "@element-plus/icons-vue";
 

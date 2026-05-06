@@ -149,7 +149,7 @@ import { useRoute, useRouter } from "vue-router";
 import CryptoJS from "crypto-js";
 import { useUserStore } from "@/store/modules/user.store";
 import { mittBus } from "@/utils/sys";
-import { useNow } from "@/utils/common/dateUtil";
+import { useNow } from "@/utils/common";
 
 const { t } = useI18n();
 const route = useRoute();

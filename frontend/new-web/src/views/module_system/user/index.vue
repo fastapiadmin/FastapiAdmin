@@ -11,7 +11,7 @@
           <template #header>
             <b>部门</b>
           </template>
-          <ElScrollbar>
+          <ElScrollbar class="dept-tree-scroll min-h-0 flex-1">
             <DeptTree
               v-model="deptFilterId"
               class="dept-tree-inner"
@@ -533,7 +533,7 @@ const userSearchItems = computed<SearchFormItem[]>(() => [
       endPlaceholder: "结束日期",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "340px" },
+      style: { width: "100%" },
     },
   },
 ]);
@@ -1017,9 +1017,12 @@ function handleMoreClick(status: string) {
 </script>
 
 <style lang="scss" scoped>
+/* 左侧部门树内容区：card body 纵向 flex + 滚动条占满剩余高度（布局在 index，内边距在 DeptTree） */
 .tree-card :deep(.el-card__body) {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 0;
-  padding: 10px 2px 10px 10px;
+  padding: 0;
 }
 </style>

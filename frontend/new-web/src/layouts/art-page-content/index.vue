@@ -16,18 +16,18 @@
 
     <RouterView v-if="isRefresh" v-slot="{ Component, route: router }" :style="contentStyle">
       <Transition :name="actualTransition" mode="out-in" appear>
-        <div class="route-view-shell flex min-h-0 flex-1 flex-col">
+        <div class="route-view-shell flex min-h-0 min-w-0 w-full flex-1 flex-col">
           <KeepAlive :max="10" :exclude="keepAliveExclude">
             <component
               v-if="router.meta.keepAlive === true"
-              class="art-page-view min-h-0 flex-1"
+              class="art-page-view min-h-0 min-w-0 w-full flex-1"
               :is="Component"
               :key="router.fullPath"
             />
           </KeepAlive>
           <component
             v-if="router.meta.keepAlive !== true"
-            class="art-page-view min-h-0 flex-1"
+            class="art-page-view min-h-0 min-w-0 w-full flex-1"
             :is="Component"
             :key="router.fullPath"
           />
@@ -52,7 +52,6 @@ import type { CSSProperties } from "vue";
 import { useMediaQuery } from "@vueuse/core";
 import { useRoute } from "vue-router";
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
-import { useAutoLayoutHeight } from "@/hooks/core/useLayoutHeight";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { useWorktabStore } from "@/store/modules/worktab.store";
 
@@ -63,7 +62,6 @@ const isNarrowViewport = useMediaQuery("(max-width: 800px)");
 const backtopScrollTarget = computed(() => (isNarrowViewport.value ? "" : "#app-scroll-main"));
 const backtopTargetKey = computed(() => (isNarrowViewport.value ? "win" : "main"));
 
-useAutoLayoutHeight();
 const { pageTransition, containerWidth, refresh } = storeToRefs(useSettingsStore());
 const { keepAliveExclude } = storeToRefs(useWorktabStore());
 
@@ -80,6 +78,8 @@ const actualTransition = computed(() => {
 
 const containerStyle = computed(
   (): CSSProperties => ({
+    width: "100%",
+    minWidth: 0,
     maxWidth: containerWidth.value,
     flex: "1",
     minHeight: "0",
@@ -89,7 +89,9 @@ const containerStyle = computed(
 );
 
 /** 常规布局下由 `.layout-content` 承担纵向滚动，路由视图填满剩余高度 */
-const contentStyle = computed((): CSSProperties => ({ flex: "1", minHeight: "0" }));
+const contentStyle = computed(
+  (): CSSProperties => ({ flex: "1", minHeight: "0", minWidth: 0, width: "100%" })
+);
 
 const reload = () => {
   isRefresh.value = false;

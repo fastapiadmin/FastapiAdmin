@@ -1,7 +1,7 @@
 import { nextTick } from "vue";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { Router } from "vue-router";
-import NProgress from "nprogress";
+import { NProgress } from "@/utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
 import { loadingService } from "@/utils/ui";
 import { getPendingLoading, resetPendingLoading } from "./beforeEach";

@@ -99,7 +99,7 @@ import { AppRouteRecord } from "@/types/router";
 import { Search } from "@element-plus/icons-vue";
 import { mittBus } from "@/utils/sys";
 import { useMenuStore } from "@/store/modules/menu.store";
-import { formatMenuTitle } from "@/utils/navigation/router";
+import { formatMenuTitle } from "@/utils/navigation";
 import { handleMenuJump } from "@/utils/navigation";
 import { type ScrollbarInstance } from "element-plus";
 

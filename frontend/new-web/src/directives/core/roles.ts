@@ -63,7 +63,10 @@ function checkRolePermission(el: HTMLElement, binding: DirectiveBinding<string |
   const requiredRoles = Array.isArray(binding.value) ? binding.value : [binding.value];
 
   // 检查用户是否具有所需角色之一
-  const hasPermission = requiredRoles.some((role: string) => userRoles.includes(role));
+  const roleCodes = userRoles
+    .map((r) => (typeof r === "string" ? r : r?.code))
+    .filter((r): r is string => typeof r === "string" && r.length > 0);
+  const hasPermission = requiredRoles.some((role: string) => roleCodes.includes(role));
 
   // 如果没有权限，安全地移除元素
   if (!hasPermission) {

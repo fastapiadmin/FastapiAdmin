@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 
 defineProps({
   isActive: { type: Boolean, required: true },

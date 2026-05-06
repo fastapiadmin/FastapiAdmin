@@ -28,7 +28,7 @@ import { useSettingsStore } from "./store/modules/setting.store";
 import { defaultSettings } from "./config/setting";
 import { ComponentSize } from "./enums/settings/layout.enum";
 import AiAssistant from "./components/AiAssistant/index.vue";
-import { toggleTransition } from "./utils/ui/animation";
+import { toggleTransition } from "./utils/ui";
 import { checkStorageCompatibility } from "./utils/storage";
 import { initializeTheme } from "./hooks/core/useTheme";
 import { systemUpgrade } from "./utils/sys";

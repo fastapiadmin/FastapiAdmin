@@ -8,7 +8,7 @@
  */
 
 import type { AppRouteRecord } from "@/types/router";
-import { RoutesAlias } from "../routesAlias";
+import { ROUTE_COMPONENT_LAYOUT } from "../routes/staticRoutes";
 
 export interface ValidationResult {
   valid: boolean;
@@ -73,7 +73,7 @@ export class RouteValidator {
         // 组件路径重复检测
         if (route.component && typeof route.component === "string") {
           const componentPath = route.component;
-          if (componentPath !== RoutesAlias.Layout) {
+          if (componentPath !== ROUTE_COMPONENT_LAYOUT) {
             const componentKey = `${parentPath}:${componentPath}`;
             if (componentPathMap.has(componentKey)) {
               warnings.push(`组件路径重复: "${componentPath}" (${fullPath})`);
@@ -120,7 +120,7 @@ export class RouteValidator {
 
       // 一级菜单：必须指定 Layout，除非是外链或 iframe
       if (parentPath === "" && !hasExternalLink && !isIframe) {
-        errors.push(`一级菜单(${routePath}) 缺少 component，必须指向 ${RoutesAlias.Layout}`);
+        errors.push(`一级菜单(${routePath}) 缺少 component，必须指向 ${ROUTE_COMPONENT_LAYOUT}`);
         return;
       }
 
@@ -144,7 +144,7 @@ export class RouteValidator {
   private checkNestedIndexComponent(routes: AppRouteRecord[], level = 1): void {
     routes.forEach((route) => {
       // 检查二级及以下菜单是否错误使用了 Layout
-      if (level > 1 && route.component === RoutesAlias.Layout) {
+      if (level > 1 && route.component === ROUTE_COMPONENT_LAYOUT) {
         this.logLayoutError(route, level);
       }
 
@@ -171,9 +171,9 @@ export class RouteValidator {
 
     console.error(
       `[路由配置错误] 菜单 "${menuTitle}" (name: ${routeName}, path: ${routePath}) 配置错误\n` +
-        `  问题: ${level}级菜单不能使用 ${RoutesAlias.Layout} 作为 component\n` +
-        `  说明: 只有一级菜单才能使用 ${RoutesAlias.Layout}，二级及以下菜单应该指向具体的组件路径\n` +
-        `  当前配置: component: '${RoutesAlias.Layout}'\n` +
+        `  问题: ${level}级菜单不能使用 ${ROUTE_COMPONENT_LAYOUT} 作为 component\n` +
+        `  说明: 只有一级菜单才能使用 ${ROUTE_COMPONENT_LAYOUT}，二级及以下菜单应该指向具体的组件路径\n` +
+        `  当前配置: component: '${ROUTE_COMPONENT_LAYOUT}'\n` +
         `  应该改为: component: '/your/component/path' 或留空 ''（如果是目录菜单）`
     );
   }

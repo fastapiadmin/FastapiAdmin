@@ -23,9 +23,9 @@
 
 import { createI18n } from "vue-i18n";
 import type { I18n, I18nOptions } from "vue-i18n";
+import type { App } from "vue";
 import { LanguageEnum } from "@/enums/appEnum";
-import { getSystemStorage } from "@/utils/storage";
-import { StorageKeyManager } from "@/utils/storage/storage-key-manager";
+import { getSystemStorage, StorageKeyManager } from "@/utils/storage";
 
 // 同步导入语言文件
 import enMessages from "./langs/en.json";
@@ -73,14 +73,12 @@ const getDefaultLanguage = (): LanguageEnum => {
     console.warn("[i18n] 从版本化存储获取语言设置失败:", error);
   }
 
-  // 尝试从系统存储中获取语言设置
+  // 尝试从系统存储中获取语言设置（getSystemStorage 已返回解析后的对象）
   try {
-    const sys = getSystemStorage();
-    if (sys) {
-      const { user } = JSON.parse(sys);
-      if (user?.language && Object.values(LanguageEnum).includes(user.language)) {
-        return user.language;
-      }
+    const sys = getSystemStorage() as { user?: { language?: string } } | null;
+    const lang = sys?.user?.language;
+    if (lang && Object.values(LanguageEnum).includes(lang as LanguageEnum)) {
+      return lang as LanguageEnum;
     }
   } catch (error) {
     console.warn("[i18n] 从系统存储获取语言设置失败:", error);
@@ -121,3 +119,11 @@ interface Translation {
 export const $t = i18n.global.t as Translation;
 
 export default i18n;
+
+/**
+ * 初始化 i18n（由 `initPlugins` / `main` 注册）
+ * @param app Vue 应用实例
+ */
+export function initI18n(app: App<Element>) {
+  app.use(i18n);
+}

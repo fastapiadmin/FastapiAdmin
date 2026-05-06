@@ -176,7 +176,7 @@ import { ref, reactive, computed, nextTick } from "vue";
 import { Edit } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
-import { formatToDateTime } from "@/utils/common/dateUtil";
+import { formatToDateTime } from "@/utils/common";
 import { useTable } from "@/hooks/core/useTable";
 import ArtTable from "@/components/Core/tables/art-table/index.vue";
 import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
@@ -235,7 +235,7 @@ const memorySearchItems = computed<SearchFormItem[]>(() => [
       endPlaceholder: "结束日期",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "340px" },
+      style: { width: "100%" },
     },
   },
   {
@@ -250,7 +250,7 @@ const memorySearchItems = computed<SearchFormItem[]>(() => [
       endPlaceholder: "结束日期",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "340px" },
+      style: { width: "100%" },
     },
   },
 ]);

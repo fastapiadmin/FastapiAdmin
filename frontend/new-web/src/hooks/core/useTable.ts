@@ -19,13 +19,14 @@
 
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick, readonly } from "vue";
 import { useWindowSize } from "@vueuse/core";
+import type { AxiosResponse } from "axios";
 import { useTableColumns } from "./useTableColumns";
 import type { ColumnOption } from "@/types/component";
 import {
   TableCache,
   CacheInvalidationStrategy,
-  type ApiResponse,
-} from "../../utils/table/tableCache";
+  type ApiResponse as TableApiResponse,
+} from "@/utils/table";
 import {
   type TableError,
   defaultResponseAdapter,
@@ -33,13 +34,31 @@ import {
   updatePaginationFromResponse,
   createSmartDebounce,
   createErrorHandler,
-} from "../../utils/table/tableUtils";
-import { tableConfig } from "../../utils/table/tableConfig";
+} from "@/utils/table";
+import { tableConfig } from "@/utils/table";
 
 // 类型推导工具类型
 type InferApiParams<T> = T extends (params: infer P) => any ? P : never;
-type InferApiResponse<T> = T extends (params: any) => Promise<infer R> ? R : never;
-type InferRecordType<T> = T extends PageResult<infer U> ? U : never;
+type UnwrapAxiosResponse<T> = T extends AxiosResponse<infer D> ? D : T;
+type InferApiResponse<T> = T extends (params: any) => Promise<infer R>
+  ? UnwrapAxiosResponse<R>
+  : never;
+type InferRecordType<T> =
+  T extends ApiResponse<PageResult<infer U>>
+    ? U
+    : T extends ApiResponse<(infer U)[]>
+      ? U
+      : T extends PageResult<infer U>
+        ? U
+        : T extends (infer U)[]
+          ? U
+          : never;
+
+type PaginationState = {
+  current: number;
+  size: number;
+  total: number;
+};
 
 // 优化的配置接口 - 支持自动类型推导
 export interface UseTableConfig<
@@ -74,7 +93,7 @@ export interface UseTableConfig<
     /** 数据转换函数 */
     dataTransformer?: (data: TRecord[]) => TRecord[];
     /** 响应数据适配器 */
-    responseAdapter?: (response: TResponse) => ApiResponse<TRecord>;
+    responseAdapter?: (response: TResponse) => TableApiResponse<TRecord>;
   };
 
   // 性能优化
@@ -92,11 +111,11 @@ export interface UseTableConfig<
   // 生命周期钩子
   hooks?: {
     /** 数据加载成功回调（仅网络请求成功时触发） */
-    onSuccess?: (data: TRecord[], response: ApiResponse<TRecord>) => void;
+    onSuccess?: (data: TRecord[], response: TableApiResponse<TRecord>) => void;
     /** 错误处理回调 */
     onError?: (error: TableError) => void;
     /** 缓存命中回调（从缓存获取数据时触发） */
-    onCacheHit?: (data: TRecord[], response: ApiResponse<TRecord>) => void;
+    onCacheHit?: (data: TRecord[], response: TableApiResponse<TRecord>) => void;
     /** 加载状态变化回调 */
     onLoading?: (loading: boolean) => void;
     /** 重置表单回调函数 */
@@ -212,9 +231,10 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   );
 
   // 分页配置
-  const pagination = reactive<PageQuery>({
-    page_no: ((searchParams as Record<string, unknown>)[pageKey] as number) || 1,
-    page_size: ((searchParams as Record<string, unknown>)[sizeKey] as number) || 10,
+  const pagination = reactive<PaginationState>({
+    current: ((searchParams as Record<string, unknown>)[pageKey] as number) || 1,
+    size: ((searchParams as Record<string, unknown>)[sizeKey] as number) || 10,
+    total: 0,
   });
 
   // 移动端分页 (响应式)
@@ -278,7 +298,7 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   const fetchData = async (
     params?: Partial<TParams>,
     useCache = enableCache
-  ): Promise<ApiResponse<TRecord>> => {
+  ): Promise<TableApiResponse<TRecord>> => {
     // 取消上一个请求
     if (abortController) {
       abortController.abort();
@@ -410,7 +430,7 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   };
 
   // 获取数据 (保持当前页)
-  const getData = async (params?: Partial<TParams>): Promise<ApiResponse<TRecord> | void> => {
+  const getData = async (params?: Partial<TParams>): Promise<TableApiResponse<TRecord> | void> => {
     try {
       return await fetchData(params);
     } catch {
@@ -420,7 +440,9 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   };
 
   // 分页获取数据 (重置到第一页) - 专门用于搜索场景
-  const getDataByPage = async (params?: Partial<TParams>): Promise<ApiResponse<TRecord> | void> => {
+  const getDataByPage = async (
+    params?: Partial<TParams>
+  ): Promise<TableApiResponse<TRecord> | void> => {
     pagination.current = 1;
     (searchParams as Record<string, unknown>)[pageKey] = 1;
 
@@ -756,6 +778,6 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
 }
 
 // 重新导出类型和枚举，方便使用
-export { CacheInvalidationStrategy } from "../../utils/table/tableCache";
-export type { ApiResponse, CacheItem } from "../../utils/table/tableCache";
-export type { BaseRequestParams, TableError } from "../../utils/table/tableUtils";
+export { CacheInvalidationStrategy } from "@/utils/table";
+export type { ApiResponse, CacheItem } from "@/utils/table";
+export type { BaseRequestParams, TableError } from "@/utils/table";

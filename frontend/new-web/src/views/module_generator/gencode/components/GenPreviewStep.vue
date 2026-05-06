@@ -83,7 +83,7 @@ import Codemirror from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 import { CopyDocument } from "@element-plus/icons-vue";
 import { GENCODE_CM_KEY } from "../gencodeInjectionKeys";
 import type { TreeNode } from "../types";

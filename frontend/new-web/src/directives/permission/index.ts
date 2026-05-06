@@ -25,7 +25,10 @@ export const hasPerm: Directive = {
       requiredPerms === "*:*:*";
 
     // 超级管理员；或指令显式传入 "*:*:*" 时跳过校验（勿用 includes 子串匹配，避免含 "*:*:*" 的权限被误放行）
-    if ((roles && roles.map((r) => r.code).includes(ROLE_ROOT)) || isWildcardBypass) {
+    if (
+      (roles && roles.map((r: { code?: string }) => r.code).includes(ROLE_ROOT)) ||
+      isWildcardBypass
+    ) {
       return;
     }
 
@@ -59,11 +62,11 @@ export const hasRole: Directive = {
 
     // 检查是否有对应角色权限
     const hasAuth = Array.isArray(requiredRoles)
-      ? requiredRoles.some((role) =>
-          roles ? roles.map((role) => role.code).includes(role) : false
+      ? requiredRoles.some((requiredRole: string) =>
+          roles ? roles.map((r: { code?: string }) => r.code).includes(requiredRole) : false
         )
       : roles
-        ? roles.map((role) => role.code).includes(requiredRoles)
+        ? roles.map((r: { code?: string }) => r.code).includes(requiredRoles)
         : false;
 
     // 如果没有权限，移除元素

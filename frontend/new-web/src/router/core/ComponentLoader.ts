@@ -8,7 +8,7 @@
  */
 
 import { h } from "vue";
-import { RoutesAlias } from "@/router/routesAlias";
+import { ROUTE_COMPONENT_LAYOUT } from "@/router/routes/staticRoutes";
 
 export class ComponentLoader {
   private modules: Record<string, () => Promise<any>>;
@@ -27,7 +27,7 @@ export class ComponentLoader {
     }
 
     /** 布局别名指向 `@/layouts/index.vue`（勿写成 `/layouts/index`，会在 views 下误解析） */
-    if (componentPath === RoutesAlias.Layout || componentPath === "/layouts/index") {
+    if (componentPath === ROUTE_COMPONENT_LAYOUT || componentPath === "/layouts/index") {
       return this.loadLayout();
     }
 

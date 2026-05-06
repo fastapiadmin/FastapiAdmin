@@ -81,7 +81,7 @@
 import AppConfig from "@/config";
 import loginIcon from "@imgs/svg/login_icon.svg";
 import { useConfigStore } from "@/store/modules/config.store";
-import { themeAnimation } from "@/utils/ui/animation";
+import { themeAnimation } from "@/utils/ui";
 
 defineProps<{
   hideContent?: boolean;

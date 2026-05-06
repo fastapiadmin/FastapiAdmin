@@ -37,20 +37,18 @@
  */
 import type { Router, RouteLocationNormalized, NavigationGuardNext } from "vue-router";
 import { nextTick } from "vue";
-import NProgress from "nprogress";
+import { NProgress } from "@/utils/ui";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { useUserStore } from "@/store/modules/user.store";
 import { useMenuStore } from "@/store/modules/menu.store";
 import { setWorktab } from "@/utils/navigation";
-import { setPageTitle } from "@/utils/navigation/router";
-import { RoutesAlias } from "../routesAlias";
-import { staticRoutes } from "../routes/staticRoutes";
+import { setPageTitle } from "@/utils/navigation";
+import { ROUTE_PATH_LOGIN_ALT, staticRoutes } from "../routes/staticRoutes";
 import { loadingService } from "@/utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useWorktabStore } from "@/store/modules/worktab.store";
 import { UserAPI } from "@/api/module_system/user";
-import { ApiStatus } from "@/utils/http/status";
-import { isHttpError } from "@/utils/http/error";
+import { ApiStatus, isHttpError } from "@/utils/http";
 import {
   RouteRegistry,
   MenuProcessor,
@@ -140,6 +138,19 @@ function closeLoading(): void {
 }
 
 /**
+ * 若路由带有 query/params 传入的 title，写入 meta（净化防注入与过长字符串）
+ */
+function applySafeTitleFromQuery(to: RouteLocationNormalized): void {
+  const rawTitle = (to.params.title as string) || (to.query.title as string);
+  if (rawTitle && typeof rawTitle === "string") {
+    const safe = rawTitle.replace(/[<>]/g, "").trim().slice(0, 64);
+    if (safe) {
+      to.meta.title = safe;
+    }
+  }
+}
+
+/**
  * 处理路由守卫逻辑
  */
 async function handleRouteGuard(
@@ -197,6 +208,7 @@ async function handleRouteGuard(
 
   // 5. 处理已匹配的路由
   if (to.matched.length > 0) {
+    applySafeTitleFromQuery(to);
     setWorktab(to);
     setPageTitle(to);
     next();
@@ -234,7 +246,7 @@ function handleLoginStatus(
 
 /** 登录页（项目里同时存在 `/login` 与 `/auth/login` 等多套入口） */
 function isLoginRoute(to: RouteLocationNormalized): boolean {
-  return to.path === "/login" || to.path === RoutesAlias.Login || to.name === "Login";
+  return to.path === "/login" || to.path === ROUTE_PATH_LOGIN_ALT || to.name === "Login";
 }
 
 /**

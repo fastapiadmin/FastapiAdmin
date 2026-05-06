@@ -1,7 +1,12 @@
-/**
- * 国际化工具函数统一导出
- *
- * @module utils/i18n
- */
+import i18n from "@/locales";
 
-export * from "./i18n";
+export function translateRouteTitle(title: unknown): string {
+  if (typeof title !== "string") return String(title);
+
+  const key = `route.${title}`;
+  if (i18n.global.te(key)) {
+    const t = i18n.global.t as (key: string) => string;
+    return t(key);
+  }
+  return title;
+}

@@ -23,7 +23,7 @@
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import { useAppStore } from "@/store/modules/app.store";
 import { LanguageEnum } from "@/enums/settings/locale.enum";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 
 defineProps({
   size: {

@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 import { nextTick, onBeforeUnmount, onMounted, watch, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";

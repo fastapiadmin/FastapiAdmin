@@ -271,7 +271,7 @@ const paramSearchItems = computed<SearchFormItem[]>(() => [
       endPlaceholder: "结束日期",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "340px" },
+      style: { width: "100%" },
     },
   },
 ]);
@@ -585,12 +585,6 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.art-full-height {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .art-table-card {
   flex: 1;
 }

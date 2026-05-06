@@ -1,42 +1,36 @@
 /**
- * 工具函数统一导出入口
+ * 工具与横切能力统一导出入口
+ *
+ * 目录约定：按领域分子目录，各包以 `index.ts` 为入口（如 `http/`、`storage/`）。
  *
  * @module utils/index
- * @author FastapiAdmin Team
  */
 
-// 认证相关
+// 认证 & OAuth
 export * from "./auth";
+export * from "./oauth";
 
-// 通用工具
+// 通用
 export * from "./common";
-
-// 常量定义
+export { default as download } from "./download";
 export * from "./constants";
-
-// 表单处理
 export * from "./form";
-
-// HTTP 请求
-export * from "./http";
-
-// 国际化
 export * from "./i18n";
 
-// 导航路由
-export * from "./navigation";
-
-// Socket 通信
+// 网络
+export * from "./http";
 export * from "./socket";
 
-// 存储操作
+// 浏览器 / 系统
 export * from "./storage";
-
-// 系统管理
 export * from "./sys";
+export * from "./ui";
 
-// 表格处理
+// 路由与导航
+export * from "./navigation";
+
+// 数据展示
 export * from "./table";
 
-// UI 相关
-export * from "./ui";
+// 菜单与图标
+export * from "./menuIcon";

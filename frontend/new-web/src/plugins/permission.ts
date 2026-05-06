@@ -1,5 +1,5 @@
 import type { NavigationGuardNext, RouteLocationNormalized, RouteRecordRaw } from "vue-router";
-import NProgress from "@/utils/ui/nprogress";
+import { NProgress } from "@/utils/ui";
 import { Auth } from "@/utils/auth";
 import { router } from "@/router";
 import { usePermissionStore, useUserStore } from "@/store";

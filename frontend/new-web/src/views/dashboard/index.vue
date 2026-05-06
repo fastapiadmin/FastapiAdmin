@@ -389,11 +389,7 @@ import {
   QuestionFilled,
 } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import {
-  quickStartManager,
-  QUICK_LINK_MAX,
-  type QuickLink,
-} from "@/utils/common/quickStartManager";
+import { quickStartManager, QUICK_LINK_MAX, type QuickLink } from "@/utils/common";
 
 /**
  * 工作台「模块总览」与 src/views 下目录对应：

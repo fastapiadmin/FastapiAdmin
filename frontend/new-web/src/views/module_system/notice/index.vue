@@ -89,7 +89,12 @@
               {{ detailFormData.description }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="内容" :span="4">
-              <WangEditor v-model="detailContentHtml" :readonly="true" />
+              <div class="notice-html-preview">
+                <template v-if="detailHasRenderableContent">
+                  <div v-html="detailContentHtml" />
+                </template>
+                <p v-else class="notice-html-empty">暂无内容</p>
+              </div>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="创建人" :span="2">
               {{ detailFormData.created_by?.name }}
@@ -108,52 +113,38 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
+          <!-- 与 widgets/examples/forms 一致：ArtForm + items + 栅格；弹窗内关闭内置提交/重置，仍用底部按钮 -->
+          <ArtForm
+            :key="noticeFormRenderKey"
             ref="dataFormRef"
-            :model="formData"
+            v-model="formData"
+            :items="noticeDialogFormItems"
             :rules="rules"
             label-suffix=":"
-            label-width="100px"
+            :label-width="100"
             label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="notice-dialog-art-form"
           >
-            <ElFormItem label="标题" prop="notice_title">
-              <ElInput v-model="formData.notice_title" placeholder="请输入标题" :maxlength="50" />
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                :rows="2"
-                :maxlength="100"
-                show-word-limit
-                type="textarea"
-                placeholder="请输入描述"
-              />
-            </ElFormItem>
-            <ElFormItem label="类型" prop="notice_type">
-              <ElSelect
-                v-model="formData.notice_type"
-                placeholder="请选择类型"
-                clearable
-                class="!w-full max-w-md"
-              >
-                <ElOption
-                  v-for="item in dictStore.getDictArray('sys_notice_type')"
-                  :key="item.dict_value"
-                  :value="item.dict_value"
-                  :label="item.dict_label"
-                />
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem label="状态" prop="status">
+            <template #status>
               <ElRadioGroup v-model="formData.status">
                 <ElRadio value="0">启用</ElRadio>
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="内容" prop="notice_content">
-              <WangEditor v-model="formData.notice_content" />
-            </ElFormItem>
-          </ElForm>
+            </template>
+            <template #notice_content>
+              <ArtWangEditor
+                :model-value="formData.notice_content ?? ''"
+                height="min(38vh, 280px)"
+                placeholder="请输入公告内容，支持完整排版与插入..."
+                :exclude-keys="[]"
+                @update:model-value="(v: string) => (formData.notice_content = v)"
+              />
+            </template>
+          </ArtForm>
         </ElScrollbar>
       </template>
 
@@ -205,6 +196,9 @@ import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useDictStore, useNoticeStore } from "@/store/index";
 import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
+import ArtWangEditor from "@/components/Core/forms/art-wang-editor/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 
 defineOptions({
   name: "Notice",
@@ -304,7 +298,7 @@ const noticeSearchItems = computed<SearchFormItem[]>(() => [
       endPlaceholder: "结束日期",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "340px" },
+      style: { width: "100%" },
     },
   },
   {
@@ -450,12 +444,23 @@ const paginationBind = computed(() => {
 
 const detailFormData = ref<NoticeTable>({});
 
-/** 详情里 WangEditor 需 string，避免 undefined */
+/** 详情富文本 HTML（用于预览） */
 const detailContentHtml = computed({
   get: () => detailFormData.value.notice_content ?? "",
   set: (v: string) => {
     detailFormData.value.notice_content = v;
   },
+});
+
+/** 详情是否有可视文本（排除仅空标签） */
+const detailHasRenderableContent = computed(() => {
+  const raw = detailFormData.value.notice_content ?? "";
+  if (!raw.trim()) return false;
+  const plain = raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return plain.length > 0;
 });
 
 const formData = reactive<NoticeForm>({
@@ -480,8 +485,64 @@ const rules = reactive({
   status: [{ required: true, message: "请选择公告通知状态", trigger: "blur" }],
 });
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
 const submitLoading = ref(false);
+
+/** 每次打开弹窗递增，令 ArtForm 重新挂载并同步初始 model（与示例页声明式 items 一致） */
+const noticeFormRenderKey = ref(0);
+
+/** 公告编辑表单字段配置（对齐 widgets/examples/forms 的 ArtForm + items 写法） */
+const noticeDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "标题",
+    key: "notice_title",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入标题", maxlength: 50 },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 2,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+  {
+    label: "类型",
+    key: "notice_type",
+    type: "select",
+    span: 24,
+    props: {
+      placeholder: "请选择类型",
+      clearable: true,
+      class: "!w-full max-w-md",
+      options: dictStore.getDictArray("sys_notice_type").map((item) => ({
+        label: item.dict_label,
+        value: item.dict_value,
+      })),
+    },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "内容",
+    key: "notice_content",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+]);
 
 const initialFormData: NoticeForm = {
   id: undefined,
@@ -534,10 +595,9 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  const inner = dataFormRef.value?.ref;
+  inner?.resetFields();
+  inner?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -562,11 +622,12 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
+  noticeFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
     const id = formData.id;
@@ -698,13 +759,74 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.art-full-height {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .art-table-card {
   flex: 1;
+}
+
+/* ArtForm 底部预留的操作栏列在弹窗内不需要占位 */
+.notice-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.notice-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+/* 对齐 widgets/wang-editor 中 content-preview 的阅读样式 */
+.notice-html-preview {
+  box-sizing: border-box;
+  min-height: 120px;
+  max-height: min(360px, 45vh);
+  padding: 12px 16px;
+  overflow-y: auto;
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: calc(var(--custom-radius) / 3 + 2px);
+}
+
+.notice-html-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--el-text-color-placeholder);
+}
+
+.notice-html-preview :deep(h1),
+.notice-html-preview :deep(h2),
+.notice-html-preview :deep(h3) {
+  margin: 12px 0 8px;
+}
+
+.notice-html-preview :deep(p) {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.notice-html-preview :deep(table) {
+  margin: 12px 0;
+}
+
+.notice-html-preview :deep(table th),
+.notice-html-preview :deep(table td) {
+  padding: 8px 12px;
+}
+
+.notice-html-preview :deep(pre) {
+  padding: 12px;
+  margin: 12px 0;
+  overflow-x: auto;
+  background-color: var(--el-fill-color-light);
+  border-radius: 4px;
+}
+
+.notice-html-preview :deep(blockquote) {
+  padding-left: 16px;
+  margin: 12px 0;
+  color: var(--el-text-color-regular);
+  border-left: 4px solid var(--el-color-primary);
+}
+
+.notice-html-preview :deep(img) {
+  max-width: 100%;
+  height: auto;
 }
 </style>

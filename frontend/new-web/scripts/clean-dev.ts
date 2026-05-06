@@ -271,27 +271,11 @@ export const routeModules: AppRouteRecord[] = [exceptionRoutes]
   }
 }
 
-// 清理路由别名
-async function cleanRoutesAlias() {
-  const routesAliasPath = path.resolve(process.cwd(), "src/router/routesAlias.ts");
-
-  try {
-    const cleanedAlias = `/**
- * 公共路由别名
- # 存放系统级公共路由路径，如布局容器、登录页等   
- */
-export enum RoutesAlias {
-  Layout = '/index/index', // 布局容器
-  Login = '/auth/login' // 登录页
-}
-`;
-
-    await fs.writeFile(routesAliasPath, cleanedAlias, "utf-8");
-    console.log(`     ${icons.success} ${fmt.success("重写路由别名配置完成")}`);
-  } catch (err) {
-    console.log(`     ${icons.error} ${fmt.error("清理路由别名失败")}`);
-    console.log(`     ${fmt.dim("错误详情: " + err)}`);
-  }
+// 路由占位常量已写在 src/router/routes/staticRoutes.ts 顶部，清理脚本不再单独重写
+async function cleanRouterConstants() {
+  console.log(
+    `     ${icons.info} ${fmt.dim("路由常量（ROUTE_*）位于 staticRoutes.ts 顶部，请按需手动修改")}`
+  );
 }
 
 // 清理变更日志
@@ -552,8 +536,8 @@ async function showCleanupWarning() {
     },
     {
       icon: icons.link,
-      name: "路由别名",
-      desc: "重写routesAlias.ts，移除演示路由别名",
+      name: "路由常量",
+      desc: "占位路径见 staticRoutes.ts 顶部（脚本不自动覆盖）",
       color: theme.info,
     },
     {
@@ -693,9 +677,9 @@ async function main() {
   await cleanRouteModules();
   console.log();
 
-  console.log(`  ${fmt.badge("步骤 3/6", theme.bgBlue)} ${fmt.title("重写路由别名")}`);
+  console.log(`  ${fmt.badge("步骤 3/6", theme.bgBlue)} ${fmt.title("重写路由常量")}`);
   console.log();
-  await cleanRoutesAlias();
+  await cleanRouterConstants();
   console.log();
 
   console.log(`  ${fmt.badge("步骤 4/6", theme.bgBlue)} ${fmt.title("清空变更日志")}`);

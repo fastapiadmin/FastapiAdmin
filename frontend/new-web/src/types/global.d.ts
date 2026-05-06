@@ -113,6 +113,18 @@ declare global {
   }
 
   /**
+   * 兼容 web 工程遗留的 `Api.*` 命名空间类型引用
+   * new-web 目前以真实接口模块导出的类型为准，这里先提供最小声明避免 vue-tsc 阻断。
+   */
+  namespace Api {
+    namespace Auth {
+      interface UserInfo {
+        [key: string]: unknown;
+      }
+    }
+  }
+
+  /**
    * 分页查询参数
    */
   interface PageQuery {

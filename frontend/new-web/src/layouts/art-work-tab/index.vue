@@ -165,11 +165,11 @@ import { ElMessage } from "element-plus";
 import { refreshAppCaches } from "@/store";
 import { useWorktabStore } from "@/store/modules/worktab.store";
 import { useUserStore } from "@/store/modules/user.store";
-import { formatMenuTitle } from "@/utils/navigation/router";
+import { formatMenuTitle } from "@/utils/navigation";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { MenuItemType } from "@/components/Core/others/art-menu-right/index.vue";
 import { useCommon } from "@/hooks/core/useCommon";
-import { quickStartManager } from "@/utils/common/quickStartManager";
+import { quickStartManager } from "@/utils/common";
 import { WorkTab } from "@/types";
 
 defineOptions({ name: "ArtWorkTab" });
@@ -710,33 +710,38 @@ watch(
   --worktab-shell-pad-bottom: 4px;
 }
 
+/* Google 标签模式：外壳 padding + 激活块 / 主题变量（与下方 Chrome 弧角样式共用） */
 .worktab-tags-shell--google {
   --worktab-shell-pad-top: 4px;
   --worktab-shell-pad-bottom: 0px;
+  --worktab-google-active-bg: var(--el-fill-color-light);
+  --worktab-google-tab-muted: var(--el-text-color-regular);
 }
 
 .worktab-tags-bar {
   background: var(--el-fill-color-blank);
+
   /* 外壳已统一提供 border-b，避免不同模式出现双线/高度不一致 */
   border: none;
 }
 
 .worktab-toolbar-end {
+  position: relative;
   align-self: stretch;
+
   /* 让工具按钮边框（分割线）撑满外壳高度 */
   margin-top: calc(var(--worktab-shell-pad-top) * -1);
   margin-bottom: calc(var(--worktab-shell-pad-bottom) * -1);
-  position: relative;
 }
 
 /* 工具区左侧分割线：拉满到标签栏高度 */
 .worktab-toolbar-end::before {
-  content: "";
   position: absolute;
-  left: 0;
   top: 0;
   bottom: 0;
+  left: 0;
   width: 1px;
+  content: "";
   background: var(--el-border-color-lighter);
 }
 
@@ -747,18 +752,21 @@ watch(
 /* 工具区内部按钮分割线：拉满到标签栏高度 */
 .worktab-toolbar-end .worktab-bar-cell {
   position: relative;
+
   /* 让 hover/active 背景也覆盖到外壳 padding 区域（与左侧按钮一致的手感） */
   padding-top: var(--worktab-shell-pad-top);
   padding-bottom: var(--worktab-shell-pad-bottom);
+  margin-top: calc(var(--worktab-shell-pad-top) * -1);
+  margin-bottom: calc(var(--worktab-shell-pad-bottom) * -1);
 }
 
 .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell::before {
-  content: "";
   position: absolute;
-  left: 0;
   top: 0;
   bottom: 0;
+  left: 0;
   width: 1px;
+  content: "";
   background: var(--el-border-color-lighter);
 }
 
@@ -794,10 +802,10 @@ watch(
 }
 
 .worktab-tags-bar .worktab-bar-cell--sep-r {
-  border-right: 1px solid var(--el-border-color-lighter);
   /* 左侧按钮分割线同样撑满外壳高度 */
   margin-top: calc(var(--worktab-shell-pad-top) * -1);
   margin-bottom: calc(var(--worktab-shell-pad-bottom) * -1);
+  border-right: 1px solid var(--el-border-color-lighter);
 }
 
 .worktab-tags-bar .worktab-bar-btn:hover {
@@ -844,6 +852,7 @@ watch(
     var(--el-text-color-regular) 6%
   ) !important;
   border: 1px solid color-mix(in srgb, var(--art-card-border) 80%, transparent) !important;
+
   /* 卡片模式圆角不要半圆：与默认一致 */
   border-radius: calc(var(--custom-radius) / 2.5 + 2px) !important;
   box-shadow:
@@ -939,14 +948,6 @@ html:not(.dark) .worktab-tab.worktab-tab--card.activ-tab {
 .worktab-close:hover {
   color: var(--el-color-danger);
   background-color: color-mix(in srgb, var(--el-color-danger) 12%, transparent) !important;
-}
-
-/*
- * Google Chrome 标签：激活块（底部外凸弧线）+ 固定区竖线；轨底与全局工具条同色，不单独铺色
- */
-.worktab-tags-shell--google {
-  --worktab-google-active-bg: var(--el-fill-color-light);
-  --worktab-google-tab-muted: var(--el-text-color-regular);
 }
 
 /* 亮色：当前选中标签条为主题浅底（::before/::after 弧角共用同一变量） */

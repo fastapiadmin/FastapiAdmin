@@ -269,7 +269,11 @@ export const useTagsViewStore = defineStore(
           vn.startsWith("Dashboard")
         ) {
           // to reload home page
-          router.replace("/redirect" + view.fullPath);
+          if (view?.fullPath) {
+            router.replace("/redirect" + view.fullPath);
+          } else {
+            router.push("/");
+          }
         } else {
           router.push("/");
         }

@@ -6,15 +6,20 @@
     </div>
 
     <div class="flex-c md:justify-end max-md:mt-3 max-sm:!hidden">
-      <!-- 搜索显示 -->
-      <div
+      <!-- 搜索区域显示/隐藏：默认展示搜索（未高亮）；点按收起后高亮表示当前为隐藏状态 -->
+      <ElTooltip
         v-if="showSearchBar != null"
-        class="button"
-        @click="search"
-        :class="showSearchBar ? 'active !bg-theme hover:!bg-theme/80' : ''"
+        placement="bottom"
+        :content="showSearchBar ? t('table.toolbar.hideSearch') : t('table.toolbar.showSearch')"
       >
-        <ArtSvgIcon icon="ri:search-line" :class="showSearchBar ? 'text-white' : 'text-g-700'" />
-      </div>
+        <div
+          class="button"
+          @click="search"
+          :class="!showSearchBar ? 'active !bg-theme hover:!bg-theme/80' : ''"
+        >
+          <ArtSvgIcon icon="ri:search-line" :class="!showSearchBar ? 'text-white' : 'text-g-700'" />
+        </div>
+      </ElTooltip>
 
       <!-- 刷新 -->
       <div
@@ -109,14 +114,14 @@
             <ArtSvgIcon icon="ri:settings-line" />
           </div>
         </template>
-        <div>
-          <ElCheckbox v-if="showZebra" v-model="isZebra" :value="true">
+        <div class="flex min-w-[200px] flex-col gap-2">
+          <ElCheckbox v-model="isZebra" :value="true">
             {{ t("table.zebra") }}
           </ElCheckbox>
-          <ElCheckbox v-if="showBorder" v-model="isBorder" :value="true">
+          <ElCheckbox v-model="isBorder" :value="true">
             {{ t("table.border") }}
           </ElCheckbox>
-          <ElCheckbox v-if="showHeaderBackground" v-model="isHeaderBackground" :value="true">
+          <ElCheckbox v-model="isHeaderBackground" :value="true">
             {{ t("table.headerBackground") }}
           </ElCheckbox>
         </div>
@@ -141,12 +146,6 @@ defineOptions({ name: "ArtTableHeader" });
 const { t } = useI18n();
 
 interface Props {
-  /** 斑马纹 */
-  showZebra?: boolean;
-  /** 边框 */
-  showBorder?: boolean;
-  /** 表头背景 */
-  showHeaderBackground?: boolean;
   /** 全屏 class */
   fullClass?: string;
   /** 组件布局，子组件名用逗号分隔 */
@@ -158,9 +157,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showZebra: true,
-  showBorder: true,
-  showHeaderBackground: true,
   fullClass: "art-page-view",
   layout: "search,refresh,size,fullscreen,columns,settings",
   showSearchBar: undefined,

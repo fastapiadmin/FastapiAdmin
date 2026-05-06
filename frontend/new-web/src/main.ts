@@ -1,47 +1,24 @@
 import App from "./App.vue";
 import { createApp } from "vue";
-import { initStore } from "./store"; // Store
-import { initRouter } from "./router"; // Router
-import language from "./locales"; // 国际化
-import "@styles/core/tailwind.css"; // tailwind
-import "@styles/index.scss"; // 样式
-import "@utils/sys/console.ts"; // 控制台输出内容
-import { initGlobDirectives } from "./directives";
-import { setupErrorHandle } from "./utils/sys/error-handle";
-import { initElIcons } from "@/plugins/icons";
-
-// 暗黑主题样式
+import "@styles/core/tailwind.css";
+import "@styles/index.scss";
 import "element-plus/theme-chalk/dark/css-vars.css";
-
-// 过渡动画
 import "animate.css";
-
-// 引入 vue-web-terminal
-import { createTerminal } from "vue-web-terminal";
+import { printConsoleBanner } from "@/utils/sys";
+import { initPlugins } from "@/plugins";
+import { useConfigStore } from "./store/modules/config.store";
 
 document.addEventListener("touchstart", function () {}, { passive: false });
 
 const app = createApp(App);
-/** Element Plus 图标（@element-plus/icons-vue）全局注册，模板中可直接 <Cpu />、<QuestionFilled /> 等 */
-initElIcons(app);
-initStore(app);
-initRouter(app);
-initGlobDirectives(app);
-setupErrorHandle(app);
-
-// 注册终端组件
-app.use(createTerminal());
-
-app.use(language);
+printConsoleBanner();
+initPlugins(app);
 app.mount("#app");
 
-// 封装设置 title 和 favicon 的函数
-import { useConfigStore } from "./store/modules/config.store";
-
+/** 挂载后拉取站点标题 / favicon（依赖 Pinia 与接口） */
 const setTitleAndFavicon = async () => {
   try {
     const configStore = useConfigStore();
-    // 强制从服务器获取最新配置
     await configStore.getConfig(true);
 
     const webTitle = configStore.configData.sys_web_title?.config_value;
@@ -63,5 +40,4 @@ const setTitleAndFavicon = async () => {
   }
 };
 
-// 在应用挂载后执行设置逻辑
-setTitleAndFavicon();
+void setTitleAndFavicon();

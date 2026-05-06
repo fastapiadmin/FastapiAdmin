@@ -1,4 +1,13 @@
-import type { AppRouteRecordRaw } from "@/utils/navigation/router";
+import type { AppRouteRecordRaw } from "@/utils/navigation";
+
+/** 后端菜单 / 动态路由里 `component` 占位（与 ComponentLoader 约定一致） */
+export const ROUTE_COMPONENT_LAYOUT = "/index/index";
+
+/** 多级目录父级占位（`views/nested/router-view-parent`） */
+export const ROUTE_COMPONENT_NESTED_PARENT = "/nested/router-view-parent";
+
+/** 登录页备用 path（与静态 `/login` 并存，守卫与白名单用） */
+export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
 
 /**
  * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。

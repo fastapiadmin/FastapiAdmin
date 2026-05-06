@@ -131,7 +131,7 @@ import {
   ElTreeSelect,
   type FormInstance,
 } from "element-plus";
-import { calculateResponsiveSpan, type ResponsiveBreakpoint } from "@/utils/form/responsive";
+import { calculateResponsiveSpan, type ResponsiveBreakpoint } from "@/utils/form";
 
 defineOptions({ name: "ArtSearchBar" });
 

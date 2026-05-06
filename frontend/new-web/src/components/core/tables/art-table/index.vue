@@ -32,7 +32,22 @@
           </template>
           <!-- 整段单行：插槽内兄弟节点之间的空白文本会让 EP 误判单元格内容 -->
           <!-- eslint-disable-next-line vue/max-attributes-per-line, prettier/prettier -->
-          <template #default="slotScope"><slot v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)" :name="col.slotName || col.prop" v-bind="{ ...slotScope, prop: col.prop, value: col.prop ? slotScope.row[col.prop] : undefined }" /><TableFormatterOutlet v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)" :column="col" :record="slotScope.row" /></template>
+          <template #default="slotScope">
+            <slot
+              v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
+              :name="col.slotName || col.prop"
+              v-bind="{
+                ...slotScope,
+                prop: col.prop,
+                value: col.prop ? slotScope.row[col.prop] : undefined,
+              }"
+            />
+            <TableFormatterOutlet
+              v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
+              :column="col"
+              :record="slotScope.row"
+            />
+          </template>
         </ElTableColumn>
       </template>
 
@@ -159,6 +174,13 @@ const props = withDefaults(defineProps<ArtTableProps>(), {
 const instance = getCurrentInstance();
 const attrs = useAttrs();
 
+/** 仅当调用方显式传入对应 prop 时视为「固定」，否则交由表格 store */
+const hasExplicitTableProp = (propName: string): boolean => {
+  const rawProps = (instance?.vnode.props || {}) as Record<string, unknown>;
+  const kebabName = propName.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+  return propName in rawProps || kebabName in rawProps;
+};
+
 const LAYOUT = {
   MOBILE: "prev, pager, next, sizes, jumper, total",
   IPAD: "prev, pager, next, jumper, total",
@@ -267,13 +289,6 @@ const headerCellStyle = computed(() => ({
     : "var(--default-box-color)",
   ...(props.headerCellStyle || {}), // 合并用户传入的样式
 }));
-
-// 只有显式传入时才覆盖 ElTable 的原生默认值，避免继承的 Boolean props 把官方默认值冲掉。
-const hasExplicitTableProp = (propName: string): boolean => {
-  const rawProps = (instance?.vnode.props || {}) as Record<string, unknown>;
-  const kebabName = propName.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
-  return propName in rawProps || kebabName in rawProps;
-};
 
 const mergedTableProps = computed(() => ({
   ...attrs,

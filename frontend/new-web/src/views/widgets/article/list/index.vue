@@ -91,7 +91,7 @@
 import { Search } from "@element-plus/icons-vue";
 import { router } from "@/router";
 import { useDateFormat } from "@vueuse/core";
-import EmojiText from "@/utils/ui/emojo";
+import { EmojiText } from "@/utils/ui";
 import { ArticleList } from "@/mock/temp/articleList";
 import { useCommon } from "@/hooks/core/useCommon";
 

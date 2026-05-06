@@ -1,50 +1,14 @@
-/**
- * 系统设置状态管理模块
- *
- * 提供完整的系统设置状态管理
- *
- * ## 主要功能
- *
- * - 菜单布局配置（左侧、顶部、混合、双栏）
- * - 主题管理（亮色、暗色、自动）
- * - 菜单主题样式配置
- * - 界面显示开关（面包屑、标签页、语言切换等）
- * - 功能开关（手风琴模式、色弱模式、水印等）
- * - 样式配置（边框、圆角、容器宽度、页面过渡）
- * - 节日功能配置
- * - Element Plus 主题色动态设置
- *
- * ## 使用场景
- *
- * - 设置面板配置管理
- * - 主题切换和样式定制
- * - 界面功能开关控制
- * - 用户偏好设置持久化
- *
- * ## 持久化
- *
- * - 使用 localStorage 存储
- * - 存储键：sys-v{version}-setting
- * - 支持跨版本数据迁移
- *
- * @module store/modules/setting.store
- * @author FastapiAdmin Team
- */
+/** Settings store. */
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { MenuThemeType } from "@/types/store";
 import AppConfig from "@/config";
 import { SystemThemeEnum, MenuThemeEnum, MenuTypeEnum, ContainerWidthEnum } from "@/enums/appEnum";
 import { setElementThemeColor } from "@/utils/ui";
-import { formatToDate } from "@/utils/common/dateUtil";
-import { StorageConfig } from "@/utils/storage/storage-config";
+import { formatToDate } from "@/utils/common";
+import { StorageConfig } from "@/utils/storage";
 import { SETTING_DEFAULT_CONFIG } from "@/config/setting";
-import {
-  applyTheme,
-  generateThemeColors,
-  toggleDarkMode,
-  toggleSidebarColor,
-} from "@/utils/ui/theme";
+import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/ui";
 import { SETTINGS_KEYS } from "@/constants";
 import { useStorage } from "@vueuse/core";
 import { defaultSettings } from "@/config/setting";
@@ -52,30 +16,22 @@ import { SidebarColor, ThemeMode } from "@/enums/settings/theme.enum";
 import type { LayoutMode } from "@/enums/settings/layout.enum";
 import type { Ref } from "vue";
 
-/**
- * 系统设置状态管理
- * 管理应用的菜单、主题、界面显示等各项设置
- */
 export const useSettingsStore = defineStore(
   "settingStore",
   () => {
-    // ==============================================
-    // 从 setting.ts 整合的功能
-    // ==============================================
-
-    // 菜单相关设置
+    // 菜单
     const menuType = ref(SETTING_DEFAULT_CONFIG.menuType);
     const menuOpenWidth = ref(SETTING_DEFAULT_CONFIG.menuOpenWidth);
     const menuOpen = ref(SETTING_DEFAULT_CONFIG.menuOpen);
     const dualMenuShowText = ref(SETTING_DEFAULT_CONFIG.dualMenuShowText);
 
-    // 主题相关设置
+    // 主题
     const systemThemeType = ref(SETTING_DEFAULT_CONFIG.systemThemeType);
     const systemThemeMode = ref(SETTING_DEFAULT_CONFIG.systemThemeMode);
     const menuThemeType = ref(SETTING_DEFAULT_CONFIG.menuThemeType);
     const systemThemeColor = ref(SETTING_DEFAULT_CONFIG.systemThemeColor);
 
-    // 界面显示设置
+    // 显示
     const showMenuButton = ref(SETTING_DEFAULT_CONFIG.showMenuButton);
     const showFastEnter = ref(SETTING_DEFAULT_CONFIG.showFastEnter);
     const showRefreshButton = ref(SETTING_DEFAULT_CONFIG.showRefreshButton);
@@ -87,31 +43,27 @@ export const useSettingsStore = defineStore(
     const showFestivalText = ref(SETTING_DEFAULT_CONFIG.showFestivalText);
     const watermarkVisible = ref(SETTING_DEFAULT_CONFIG.watermarkVisible);
 
-    // 功能设置
+    // 功能
     const autoClose = ref(SETTING_DEFAULT_CONFIG.autoClose);
     const uniqueOpened = ref(SETTING_DEFAULT_CONFIG.uniqueOpened);
     const colorWeak = ref(SETTING_DEFAULT_CONFIG.colorWeak);
     const refresh = ref(SETTING_DEFAULT_CONFIG.refresh);
     const holidayFireworksLoaded = ref(SETTING_DEFAULT_CONFIG.holidayFireworksLoaded);
 
-    // 样式设置
+    // 样式
     const boxBorderMode = ref(SETTING_DEFAULT_CONFIG.boxBorderMode);
     const pageTransition = ref(SETTING_DEFAULT_CONFIG.pageTransition);
     const tabStyle = ref(SETTING_DEFAULT_CONFIG.tabStyle);
     const customRadius = ref(SETTING_DEFAULT_CONFIG.customRadius);
     const containerWidth = ref(SETTING_DEFAULT_CONFIG.containerWidth);
 
-    // 节日相关
+    // 节日
     const festivalDate = ref("");
 
-    // ==============================================
-    // 从 settings.store.ts 整合的功能（持久化）
-    // ==============================================
-
-    // 基础设置 - 非持久化
+    // 面板开关（非持久化）
     const settingsVisible = ref<boolean>(false);
 
-    // 界面显示设置 - 持久化
+    // 持久化（web-style：useStorage）
     const showTagsView = useStorage<boolean>(
       SETTINGS_KEYS.SHOW_TAGS_VIEW,
       defaultSettings.showTagsView
@@ -172,15 +124,6 @@ export const useSettingsStore = defineStore(
       defaultSettings.pageSwitchingAnimation
     );
 
-    // ==============================================
-    // 从 config/setting.ts 整合的功能
-    // ==============================================
-    // 已通过持久化设置覆盖
-
-    // ==============================================
-    // 计算属性（来自 setting.ts）
-    // ==============================================
-
     const getMenuTheme = computed((): MenuThemeType => {
       const list = AppConfig.themeList.filter((item) => item.theme === menuThemeType.value);
       if (isDark.value) {
@@ -208,10 +151,6 @@ export const useSettingsStore = defineStore(
       return festivalDate.value !== today;
     });
 
-    // ==============================================
-    // 设置项映射（来自 settings.store.ts）
-    // ==============================================
-
     const settingsMap = {
       showTagsView,
       showAppLogo,
@@ -228,10 +167,6 @@ export const useSettingsStore = defineStore(
       grayMode,
       userEnableAi,
     } as const;
-
-    // ==============================================
-    // 监听器（来自 settings.store.ts）
-    // ==============================================
 
     watch(
       [theme, themeColor],
@@ -258,10 +193,6 @@ export const useSettingsStore = defineStore(
       },
       { immediate: true }
     );
-
-    // ==============================================
-    // 方法（来自 setting.ts）
-    // ==============================================
 
     const switchMenuLayouts = (type: MenuTypeEnum) => {
       menuType.value = type;
@@ -382,10 +313,6 @@ export const useSettingsStore = defineStore(
     const setDualMenuShowText = (show: boolean) => {
       dualMenuShowText.value = show;
     };
-
-    // ==============================================
-    // 方法（来自 settings.store.ts）
-    // ==============================================
 
     function updateSetting<K extends keyof typeof settingsMap>(
       key: K,

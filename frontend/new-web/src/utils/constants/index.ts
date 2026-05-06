@@ -1,8 +1,6 @@
 /**
- * 常量定义相关工具函数统一导出
- *
- * @module utils/constants/index
- * @author FastapiAdmin Team
+ * 全局常量与错误码文案
  */
 
-export * from "./links";
+export * from "./definitions";
+export { default as errorCode } from "./error-code";

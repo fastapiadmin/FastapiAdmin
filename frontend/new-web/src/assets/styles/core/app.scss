@@ -180,6 +180,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   margin-top: 12px;
   border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
 
@@ -189,13 +190,19 @@
   }
 }
 
-// 容器全高
+// 容器全高：沿布局 flex 链填满 `#app-scroll-main` 内剩余高度，底部自然对齐 #app-content 的 padding（勿再用 100vh 估算）
 .art-full-height {
-  height: var(--art-full-height);
+  box-sizing: border-box;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
 
   @media (max-width: 640px) {
+    flex: 0 1 auto;
+    min-height: 0;
     height: auto;
   }
 }

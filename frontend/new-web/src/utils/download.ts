@@ -1,8 +1,11 @@
+/**
+ * 通用文件下载（axios + blob），非 Vue 插件。
+ */
 import axios, { AxiosResponse } from "axios";
 import { ElLoading, ElMessage } from "element-plus";
 import { saveAs as fileSaverSaveAs } from "file-saver";
 import { Auth } from "@/utils/auth";
-import errorCode from "@/utils/errorCode";
+import { errorCode } from "@/utils/constants";
 import { blobValidate } from "@/utils/common";
 
 const baseURL = import.meta.env.VITE_APP_BASE_API;

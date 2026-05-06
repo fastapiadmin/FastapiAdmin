@@ -1,9 +1,82 @@
-import {
-  elementMenuIconToEpIconify,
-  isElementPlusStoredIcon,
-  isIconifyStoredIcon,
-  resolveElementPlusIconComponent,
-} from "@/utils/menuIcon";
+import type { Component } from "vue";
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+
+/**
+ * 菜单 / IconSelect 共用的图标存值约定（与 `components/IconSelect` 一致）：
+ * - Element Plus：`el-icon-{组件名}`，或与 `@element-plus/icons-vue` 导出键一致的裸名（如 `PieChart`，兼容旧库手写）
+ * - 历史自定义 SVG 文件名：原 `assets/icons` + `i-svg:` 展示，现由 `menuIcon/remix` 的 `resolveIconForArtSvgIcon` 映射为 Iconify（默认 Remix `ri:`）
+ * - Iconify：`collection:name`（含冒号，如 `ri:home-line`）
+ */
+
+export function isElementPlusStoredIcon(icon?: string | null): boolean {
+  const s = icon?.trim();
+  return !!s && s.startsWith("el-icon");
+}
+
+/** 与历史 `MenuSearch` 中 `resolveEpMenuIcon` 一致：`pie-chart` → `PieChart` */
+function kebabSnakeBodyToPascalKey(body: string): string {
+  return body
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1).toLowerCase())
+    .join("");
+}
+
+/**
+ * 解析为 Element Plus 图标组件；否则 null（再走 Iconify / Remix 映射）。
+ * 对齐旧版 `layouts/old/components/Menu/components/MenuItemContent.vue`（el-icon / 自定义文件名）
+ * 及 `MenuSearch` 里对 `el-icon-*` 主体的 Pascal 推导。
+ */
+export function resolveElementPlusIconComponent(icon?: string | null): Component | null {
+  const ic = icon?.trim();
+  if (!ic) return null;
+
+  const body = isElementPlusStoredIcon(ic) ? ic.replace(/^el-icon-?/i, "").trim() : ic;
+
+  if (!body) return null;
+
+  const mod = ElementPlusIconsVue as Record<string, Component | undefined>;
+
+  let comp = mod[body];
+  if (comp) return comp;
+
+  if (/[-_]/.test(body)) {
+    const pascal = kebabSnakeBodyToPascalKey(body);
+    comp = mod[pascal];
+    if (comp) return comp;
+  }
+
+  return null;
+}
+
+/** Iconify 完整 id（侧栏 ArtSvgIcon 使用） */
+export function isIconifyStoredIcon(icon?: string | null): boolean {
+  const s = icon?.trim();
+  return !!s && s.includes(":");
+}
+
+function pascalOrPlainToKebab(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "";
+
+  if (!/[A-Z]/.test(trimmed)) {
+    return trimmed.replace(/_/g, "-").toLowerCase();
+  }
+
+  return trimmed
+    .replace(/([a-z\d])([A-Z])/g, "$1-$2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
+    .toLowerCase();
+}
+
+/**
+ * `el-icon-Xxx` 无法映射到 EP 组件时的兜底，转为 Iconify `ep:`（与 Element Plus 图标集对应）
+ */
+export function elementMenuIconToEpIconify(icon: string): string {
+  const name = icon.replace(/^el-icon-/i, "").trim();
+  const kebab = pascalOrPlainToKebab(name);
+  return kebab ? `ep:${kebab}` : "ep:menu";
+}
 
 /**
  * 历史：本地 `assets/icons/*.svg` 文件名作菜单存值，配合 `i-svg:` 类展示。
@@ -190,4 +263,41 @@ export function resolveIconForArtSvgIcon(stored?: string | null): string {
   }
 
   return localSvgNameToRemixIcon(s);
+}
+
+/**
+ * 本地 SVG：`assets/icons/*.svg` 文件名 → Vite 静态 URL。
+ * 菜单等处若仅依赖 Tailwind 动态类 `` `i-svg:${name}` ``，构建时往往扫描不到类名，导致样式缺失；
+ * 运行时通过 glob + ?url 保证一定能加载到资源。
+ */
+const raw = import.meta.glob("../../assets/icons/*.svg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+const urlByExactName = new Map<string, string>();
+
+for (const [fullPath, url] of Object.entries(raw)) {
+  const m = fullPath.match(/\/([^/]+)\.svg$/);
+  if (m) {
+    urlByExactName.set(m[1], url);
+  }
+}
+
+export function resolveMenuLocalSvgUrl(iconBasename: string): string | undefined {
+  const key = iconBasename.trim();
+  if (!key) return undefined;
+
+  const direct = urlByExactName.get(key);
+  if (direct) return direct;
+
+  const lower = key.toLowerCase();
+  for (const [fileBase, url] of urlByExactName.entries()) {
+    if (fileBase.toLowerCase() === lower) {
+      return url;
+    }
+  }
+
+  return undefined;
 }

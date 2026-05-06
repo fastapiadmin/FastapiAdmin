@@ -120,7 +120,7 @@ import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { useUserStore } from "@/store/modules/user.store";
 import { useHeaderBar } from "@/hooks/core/useHeaderBar";
-import { themeAnimation } from "@/utils/ui/animation";
+import { themeAnimation } from "@/utils/ui";
 import { languageOptions } from "@/locales";
 import { LanguageEnum } from "@/enums/appEnum";
 import AppConfig from "@/config";

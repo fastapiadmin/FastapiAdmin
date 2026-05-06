@@ -22,9 +22,10 @@ import "@wangeditor/editor/dist/css/style.css";
 import { onBeforeUnmount, onMounted, shallowRef, computed } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import { useUserStore } from "@/store/modules/user.store";
-import EmojiText from "@/utils/ui/emojo";
+import { EmojiText } from "@/utils/ui";
 import { IDomEditor, IToolbarConfig, IEditorConfig } from "@wangeditor/editor";
 import request from "@/utils/http";
+import type { AxiosResponse } from "axios";
 
 defineOptions({ name: "ArtWangEditor" });
 
@@ -136,22 +137,26 @@ const editorConfig: Partial<IEditorConfig> = {
 };
 
 // 自定义上传
-if (props.uploadConfig?.isCustomUpload && props.uploadConfig?.server && editorConfig.MENU_CONF) {
+const uploadConfig = props.uploadConfig;
+if (uploadConfig?.isCustomUpload && uploadConfig.server && editorConfig.MENU_CONF) {
+  const uploadServerUrl = uploadConfig.server;
   editorConfig.MENU_CONF.uploadImage.customUpload = async (file: File, insertFn: InsertFnType) => {
     try {
       const formData = new FormData();
       formData.append(mergedUploadConfig.value.fieldName, file);
 
-      const response = await request.post<{ url: string; alt: string; href: string }>({
-        url: props.uploadConfig?.server,
-        data: formData,
+      type UploadImagePayload = { url: string; alt?: string; href?: string };
+      const response = await request.post<
+        ApiResponse<UploadImagePayload>,
+        AxiosResponse<ApiResponse<UploadImagePayload>>
+      >(uploadServerUrl, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: userStore.accessToken,
         },
       });
 
-      const { url, alt, href } = response;
+      const { url, alt = "", href = "" } = response.data.data ?? ({} as any);
 
       if (!url) {
         throw new Error("上传失败，请检查服务端配置");

@@ -46,7 +46,7 @@ import { computed } from "vue";
 import { useSettingsStore } from "@/store/modules/setting.store";
 import { mittBus } from "@/utils/sys";
 import { festivalConfigList } from "@/config/modules/festival";
-import { formatToDate } from "@/utils/common/dateUtil";
+import { formatToDate } from "@/utils/common";
 
 /**
  * 节日庆祝配置常量

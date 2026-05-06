@@ -371,7 +371,7 @@ import {
 } from "@element-plus/icons-vue";
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import { greetings } from "@/utils/common";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 
 const timefix = greetings();
 const welcome = "祝你开心每一天！";

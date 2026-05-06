@@ -22,7 +22,6 @@
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
-        :show-zebra="false"
         @refresh="loadDeptData"
       >
         <template #left>
@@ -48,7 +47,6 @@
         :loading="loading"
         :columns="columns"
         :data="tableData"
-        :stripe="false"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         :default-expand-all="false"
         @selection-change="onTableSelectionChange"
@@ -306,7 +304,7 @@ const deptSearchItems = computed<SearchFormItem[]>(() => [
       endPlaceholder: "结束日期",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "340px" },
+      style: { width: "100%" },
     },
   },
 ]);
@@ -581,12 +579,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.art-full-height {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .art-table-card {
   flex: 1;
 }

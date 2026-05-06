@@ -130,7 +130,7 @@
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
 import { router } from "@/router";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 import { usePermissionStore } from "@/store";
 import { isExternal } from "@/utils";
 import { RouteRecordRaw, LocationQueryRaw } from "vue-router";

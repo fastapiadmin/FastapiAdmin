@@ -190,7 +190,7 @@ import AppConfig from "@/config";
 import { useConfigStore } from "@/store/modules/config.store";
 import { languageOptions } from "@/locales";
 import { mittBus } from "@/utils/sys";
-import { themeAnimation } from "@/utils/ui/animation";
+import { themeAnimation } from "@/utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useHeaderBar } from "@/hooks/core/useHeaderBar";
 import ArtUserMenu from "./widget/ArtUserMenu.vue";

@@ -4,7 +4,10 @@
  */
 import type { MenuTable } from "@/api/module_system/menu";
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
-import { RoutesAlias } from "@/router/routesAlias";
+import {
+  ROUTE_COMPONENT_LAYOUT,
+  ROUTE_COMPONENT_NESTED_PARENT,
+} from "@/router/routes/staticRoutes";
 import { MenuTypeEnum } from "@/enums/system/menu.enum";
 
 /**
@@ -113,7 +116,7 @@ function mapMenuNode(item: MenuTable, depth = 0): AppRouteRecord {
 
   let component: string | undefined;
   if (isDirectory || (hasKids && !(item.component_path ?? "").trim())) {
-    component = depth === 0 ? RoutesAlias.Layout : RoutesAlias.NestedRouterParent;
+    component = depth === 0 ? ROUTE_COMPONENT_LAYOUT : ROUTE_COMPONENT_NESTED_PARENT;
   } else if ((item.component_path ?? "").trim()) {
     component = toComponentImportPath(item.component_path!);
   }

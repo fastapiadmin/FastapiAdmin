@@ -36,7 +36,7 @@ import {
   isElementPlusStoredIcon,
   resolveElementPlusIconComponent,
 } from "@/utils/menuIcon";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 
 defineOptions({ name: "MenuRouteIcon", inheritAttrs: false });
 
@@ -44,7 +44,7 @@ const props = defineProps<{
   icon?: string;
   color?: string;
   /** 与 Vue `class` 一致（含条件 `false`） */
-  class?: import("vue").ClassValue;
+  class?: string | string[] | Record<string, boolean> | null | undefined | false;
   style?: Record<string, unknown> | string;
 }>();
 

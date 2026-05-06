@@ -13,7 +13,7 @@ import { useUserStore } from "@/store/modules/user.store";
 import { useAppMode } from "@/hooks/core/useAppMode";
 import MenuAPI from "@/api/module_system/menu";
 import { asyncRoutes } from "../routes/asyncRoutes";
-import { RoutesAlias } from "../routesAlias";
+import { ROUTE_COMPONENT_LAYOUT } from "../routes/staticRoutes";
 import { backendMenusToAppRoutes } from "../utils/backendMenuTransform";
 import { mergeAppRouteRecords } from "../utils/mergeAppRouteRecords";
 import { formatMenuTitle } from "@/utils";
@@ -154,7 +154,7 @@ export class MenuProcessor {
         }
 
         // 如果有有效的 component，保留
-        if (item.component && item.component !== "" && item.component !== RoutesAlias.Layout) {
+        if (item.component && item.component !== "" && item.component !== ROUTE_COMPONENT_LAYOUT) {
           return true;
         }
 

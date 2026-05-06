@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
-import { resolveIconForArtSvgIcon } from "@/utils/menuIconRemix";
+import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
 import { ArrowRight, Timer, User } from "@element-plus/icons-vue";
 import { router } from "@/router";
 import { useNoticeStore } from "@/store";
