@@ -20,6 +20,7 @@
     },
     "user": {
       "userCenter": "个人中心",
+      "changeLog": "更新日志",
       "paramConfig": "配置中心",
       "docs": "使用文档",
       "github": "Github",
@@ -531,6 +532,9 @@
     "workplace": {
       "title": "工作台"
     },
+    "changelog": {
+      "title": "更新日志"
+    },
     "dashboard": {
       "title": "仪表盘",
       "console": "控制台",
@@ -541,22 +545,12 @@
     },
     "widgets": {
       "title": "组件中心",
-      "cards": "卡片",
-      "banners": "横幅",
-      "charts": "图表",
       "icon": "图标",
       "imageCrop": "图像裁剪",
-      "excel": "Excel 导入导出",
       "video": "视频播放器",
-      "countTo": "数字滚动",
-      "wangEditor": "富文本编辑器",
-      "watermark": "水印",
-      "contextMenu": "右键菜单",
       "qrcode": "二维码",
       "drag": "拖拽",
-      "textScroll": "文字滚动",
-      "fireworks": "礼花",
-      "changeLog": "更新日志"
+      "fireworks": "礼花"
     },
     "article": {
       "title": "文章管理",
@@ -565,32 +559,11 @@
       "comment": "留言管理",
       "articlePublish": "文章发布"
     },
-    "result": {
-      "title": "结果页面",
-      "success": "成功页",
-      "fail": "失败页"
-    },
     "exception": {
       "title": "异常页面",
       "forbidden": "403",
       "notFound": "404",
       "serverError": "500"
-    },
-    "examples": {
-      "title": "功能示例",
-      "tabs": "标签页",
-      "tablesBasic": "基础表格",
-      "tables": "高级表格",
-      "tablesTree": "左右布局表格",
-      "forms": "表单",
-      "searchBar": "搜索表单",
-      "socketChat": "Socket 连接",
-      "permission": {
-        "title": "前端权限",
-        "switchRole": "切换权限",
-        "buttonAuth": "按钮权限演示",
-        "pageVisibility": "超级管理员可见"
-      }
     },
     "system": {
       "title": "模板系统",

@@ -113,7 +113,7 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <!-- 与 widgets/examples/forms 一致：ArtForm + items + 栅格；弹窗内关闭内置提交/重置，仍用底部按钮 -->
+          <!-- ArtForm + items + 栅格；弹窗内关闭内置提交/重置，仍用底部按钮 -->
           <ArtForm
             :key="noticeFormRenderKey"
             ref="dataFormRef"
@@ -491,7 +491,7 @@ const submitLoading = ref(false);
 /** 每次打开弹窗递增，令 ArtForm 重新挂载并同步初始 model（与示例页声明式 items 一致） */
 const noticeFormRenderKey = ref(0);
 
-/** 公告编辑表单字段配置（对齐 widgets/examples/forms 的 ArtForm + items 写法） */
+/** 公告编辑表单字段配置（ArtForm + items） */
 const noticeDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "标题",
@@ -772,7 +772,7 @@ onMounted(async () => {
   max-width: 100%;
 }
 
-/* 对齐 widgets/wang-editor 中 content-preview 的阅读样式 */
+/* 富文本预览区域阅读样式（与 ArtWangEditor 输出 HTML 展示一致） */
 .notice-html-preview {
   box-sizing: border-box;
   min-height: 120px;

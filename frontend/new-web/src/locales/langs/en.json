@@ -20,6 +20,7 @@
     },
     "user": {
       "userCenter": "User center",
+      "changeLog": "Release notes",
       "paramConfig": "Config center",
       "docs": "Document",
       "github": "Github",
@@ -531,6 +532,9 @@
     "workplace": {
       "title": "Workbench"
     },
+    "changelog": {
+      "title": "Release notes"
+    },
     "dashboard": {
       "title": "Dashboard",
       "console": "Console",
@@ -541,22 +545,12 @@
     },
     "widgets": {
       "title": "Components",
-      "cards": "Cards",
-      "banners": "Banners",
-      "charts": "Charts",
       "icon": "Icon",
       "imageCrop": "Image Crop",
-      "excel": "Excel Import Export",
       "video": "Video Player",
-      "countTo": "Count To",
-      "wangEditor": "Wang Editor",
-      "watermark": "Watermark",
-      "contextMenu": "Context Menu",
       "qrcode": "QR Code",
       "drag": "Drag",
-      "textScroll": "Text Scroll",
-      "fireworks": "Fireworks",
-      "changeLog": "Changelog"
+      "fireworks": "Fireworks"
     },
     "article": {
       "title": "Article",
@@ -565,32 +559,11 @@
       "comment": "Comment",
       "articlePublish": "Article Publish"
     },
-    "result": {
-      "title": "Result Page",
-      "success": "Success",
-      "fail": "Fail"
-    },
     "exception": {
       "title": "Exception",
       "forbidden": "403",
       "notFound": "404",
       "serverError": "500"
-    },
-    "examples": {
-      "title": "Feature Examples",
-      "tabs": "Tabs",
-      "tablesBasic": "Basic Tables",
-      "tables": "Advanced Tables",
-      "tablesTree": "Tree Table Layout",
-      "forms": "Forms",
-      "searchBar": "Search Form",
-      "socketChat": "Socket Connection",
-      "permission": {
-        "title": "Frontend Permission",
-        "switchRole": "Toggle Auth",
-        "buttonAuth": "Button Authority",
-        "pageVisibility": "Super Admin Visibility"
-      }
     },
     "system": {
       "title": "Template System",

@@ -1,4 +1,4 @@
-<!-- 用户管理：左部门树 + 右 Art 表格（参考 examples/tables/tree.vue） -->
+<!-- 用户管理：左部门树 + 右 Art 表格 -->
 <template>
   <div class="art-full-height user-manage-page">
     <div

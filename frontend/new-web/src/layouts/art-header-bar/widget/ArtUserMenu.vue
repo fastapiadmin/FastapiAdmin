@@ -60,6 +60,10 @@
               <ArtSvgIcon icon="ri:user-3-line" />
               <span>{{ $t("topBar.user.userCenter") }}</span>
             </li>
+            <li class="btn-item" @click="goChangeLog">
+              <ArtSvgIcon icon="ri:draft-line" />
+              <span>{{ $t("topBar.user.changeLog") }}</span>
+            </li>
             <li class="btn-item" @click="openParamConfig">
               <ArtSvgIcon icon="ri:settings-3-line" />
               <span>{{ $t("topBar.user.paramConfig") }}</span>
@@ -149,6 +153,11 @@ function openParamConfig(): void {
 
 function goPage(path: string): void {
   router.push(path);
+}
+
+function goChangeLog(): void {
+  closeUserMenu();
+  router.push({ name: "ChangeLog" }).catch(() => {});
 }
 
 function toDocs(): void {

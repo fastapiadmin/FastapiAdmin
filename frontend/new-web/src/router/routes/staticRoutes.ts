@@ -1,7 +1,27 @@
 import type { AppRouteRecordRaw } from "@/utils/navigation";
 import { defineComponent, h, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
-import { IframeRouteManager } from "@/router/core/IframeRouteManager";
+import { RouterView, useRoute } from "vue-router";
+import { IframeRouteManager } from "../core/IframeRouteManager";
+import type { DashboardLeafSegment } from "./shellMenuDescriptors";
+import {
+  DASHBOARD_LEAF_DESCRIPTORS,
+  DASHBOARD_PARENT_META,
+  HOME_MENU_META,
+} from "./shellMenuDescriptors";
+
+/** 根 Layout 的 route.name；动态路由 `addRoute` 父级须与此一致 */
+export const ROOT_LAYOUT_ROUTE_NAME = "RootLayout" as const;
+
+/** 静态首页子路由 name（面包屑等） */
+export const HOME_ROUTE_NAME = "Home" as const;
+
+/** 目录占位：仅嵌一层 RouterView（与 ComponentLoader 中占位同源） */
+export const NestedRouterParent = defineComponent({
+  name: "NestedRouterParent",
+  setup() {
+    return () => h(RouterView);
+  },
+});
 
 /** 后端菜单 / 动态路由里 `component` 占位（与 ComponentLoader 约定一致） */
 export const ROUTE_COMPONENT_LAYOUT = "/index/index";
@@ -18,13 +38,14 @@ export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
  */
 export const Layout = () => import("@/layouts/index.vue");
 
-/** 多级目录父级占位：内联 RouterView（无需 views/nested/router-view-parent） */
-const NestedRouterParent = defineComponent({
-  name: "NestedRouterParent",
-  setup() {
-    return () => h("router-view");
-  },
-});
+const dashboardLeafComponents: Record<DashboardLeafSegment, () => Promise<unknown>> = {
+  workplace: () => import("@/views/dashboard/workplace/index.vue"),
+  console: () => import("@/views/dashboard/console/index.vue"),
+  analysis: () => import("@/views/dashboard/analysis/index.vue"),
+  ecommerce: () => import("@/views/dashboard/ecommerce/index.vue"),
+  map: () => import("@/views/dashboard/map/index.vue"),
+  pricing: () => import("@/views/dashboard/pricing/index.vue"),
+};
 
 /** iframe 内跳页面：内联组件（无需 views/outside/Iframe.vue） */
 const IframeView = defineComponent({
@@ -113,20 +134,16 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   },
   {
     path: "/",
-    name: "/",
+    name: ROOT_LAYOUT_ROUTE_NAME,
     redirect: "/home",
     component: Layout,
     children: [
-      /** 首页（壳层菜单见 mergeShellMenus）；仪表盘同挂在下方 `dashboard` 子树 */
+      /** 首页（侧栏补入逻辑见 mergeShellMenus + shellMenuDescriptors） */
       {
         path: "home",
-        name: "Home",
+        name: HOME_ROUTE_NAME,
         component: () => import("@/views/dashboard/index.vue"),
-        meta: {
-          title: "menus.home.title",
-          icon: "ri:presentation-line",
-          keepAlive: true,
-        },
+        meta: HOME_MENU_META,
       },
       {
         path: "profile",
@@ -134,78 +151,91 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         meta: { title: "个人中心", icon: "ri:user-line", hidden: true },
         component: () => import("@/views/current/profile.vue"),
       },
-      /** 仪表盘：嵌套在根 Layout 下，与 `/home`、`/profile` 同级挂载 */
+      /** 更新日志（mock 数据）：侧栏隐藏，由顶栏头像下拉进入（routeName 供 fastEnter 等使用） */
+      {
+        path: "changelog",
+        name: "ChangeLog",
+        meta: {
+          title: "menus.changelog.title",
+          icon: "ri:draft-line",
+          hidden: true,
+          keepAlive: true,
+        },
+        component: () => import("@/views/changelog/index.vue"),
+      },
+      /** 仪表盘：嵌套在根 Layout 下（叶子 meta 与 mergeShellMenus 同源：shellMenuDescriptors） */
       {
         path: "dashboard",
         name: "Dashboard",
         redirect: "/dashboard/workplace",
         component: NestedRouterParent,
-        meta: {
-          title: "menus.dashboard.title",
-          icon: "ri:pie-chart-line",
-          alwaysShow: true,
-        },
+        meta: DASHBOARD_PARENT_META,
         children: [
+          ...DASHBOARD_LEAF_DESCRIPTORS.map((d) => ({
+            path: d.segment,
+            name: d.name,
+            component: dashboardLeafComponents[d.segment],
+            meta: d.meta,
+          })),
+          /** 文章演示（由 widgets 迁入 dashboard） */
           {
-            path: "workplace",
-            name: "DashboardWorkplace",
-            component: () => import("@/views/dashboard/workplace/index.vue"),
+            path: "article",
+            name: "DashboardArticle",
+            component: NestedRouterParent,
             meta: {
-              title: "menus.workplace.title",
-              icon: "ri:layout-grid-line",
-              keepAlive: true,
+              title: "menus.article.title",
+              icon: "ri:book-2-line",
+              alwaysShow: true,
+              roles: ["R_SUPER", "R_ADMIN"],
             },
-          },
-          {
-            path: "console",
-            name: "DashboardConsole",
-            component: () => import("@/views/dashboard/console/index.vue"),
-            meta: {
-              title: "menus.dashboard.console",
-              icon: "ri:home-smile-2-line",
-              keepAlive: false,
-              fixedTab: true,
-            },
-          },
-          {
-            path: "analysis",
-            name: "DashboardAnalysis",
-            component: () => import("@/views/dashboard/analysis/index.vue"),
-            meta: {
-              title: "menus.dashboard.analysis",
-              icon: "ri:align-item-bottom-line",
-              keepAlive: false,
-            },
-          },
-          {
-            path: "ecommerce",
-            name: "DashboardEcommerce",
-            component: () => import("@/views/dashboard/ecommerce/index.vue"),
-            meta: {
-              title: "menus.dashboard.ecommerce",
-              icon: "ri:bar-chart-box-line",
-              keepAlive: false,
-            },
-          },
-          {
-            path: "map",
-            name: "DashboardMap",
-            component: () => import("@/views/dashboard/map/index.vue"),
-            meta: {
-              title: "menus.dashboard.map",
-              icon: "ri:map-pin-line",
-              keepAlive: true,
-            },
-          },
-          {
-            path: "pricing",
-            name: "DashboardPricing",
-            component: () => import("@/views/dashboard/pricing/index.vue"),
-            meta: {
-              title: "menus.dashboard.pricing",
-              icon: "ri:money-cny-box-line",
-              keepAlive: true,
-            },
+            children: [
+              {
+                path: "article-list",
+                name: "ArticleList",
+                component: () => import("@/views/dashboard/article/list/index.vue"),
+                meta: {
+                  title: "menus.article.articleList",
+                  icon: "ri:article-line",
+                  keepAlive: true,
+                  authList: [
+                    { title: "新增", authMark: "add" },
+                    { title: "编辑", authMark: "edit" },
+                  ],
+                },
+              },
+              {
+                path: "detail/:id",
+                name: "ArticleDetail",
+                component: () => import("@/views/dashboard/article/detail/index.vue"),
+                meta: {
+                  title: "menus.article.articleDetail",
+                  isHide: true,
+                  keepAlive: true,
+                  activePath: "/dashboard/article/article-list",
+                },
+              },
+              {
+                path: "comment",
+                name: "ArticleComment",
+                component: () => import("@/views/dashboard/article/comment/index.vue"),
+                meta: {
+                  title: "menus.article.comment",
+                  icon: "ri:mail-line",
+                  keepAlive: true,
+                },
+              },
+              {
+                path: "publish",
+                name: "ArticlePublish",
+                component: () => import("@/views/dashboard/article/publish/index.vue"),
+                meta: {
+                  title: "menus.article.articlePublish",
+                  icon: "ri:telegram-2-line",
+                  keepAlive: true,
+                  authList: [{ title: "发布", authMark: "add" }],
+                },
+              },
+            ],
           },
         ],
       },

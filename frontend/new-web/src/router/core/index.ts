@@ -1,14 +1,5 @@
-/**
- * 路由核心模块导出
- *
- * @module router/core
- * @author FastapiAdmin Team
- */
-
-export { RouteRegistry } from "./RouteRegistry";
-export { ComponentLoader } from "./ComponentLoader";
+export { RouteRegistry, ComponentLoader, RouteTransformer } from "../dynamicRoutes";
 export { RouteValidator } from "./RouteValidator";
-export { RouteTransformer } from "./RouteTransformer";
 export { IframeRouteManager } from "./IframeRouteManager";
 export { MenuProcessor } from "./MenuProcessor";
 export { RoutePermissionValidator } from "./RoutePermissionValidator";

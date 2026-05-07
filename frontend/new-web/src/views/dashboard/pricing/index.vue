@@ -1,7 +1,18 @@
 <template>
   <div class="pt-24 px-20 max-md:!pt-15 max-sm:!px-5 max-md:!px-8 bg-transparent !border-none">
     <div class="mb-10 text-center">
-      <h1 class="mb-2 text-4xl font-medium max-sm:text-3xl">超过 53,476 位信赖的开发者</h1>
+      <h1
+        class="mb-2 text-4xl font-medium max-sm:text-3xl flex flex-wrap justify-center items-baseline gap-x-2 gap-y-1"
+      >
+        <span>超过</span>
+        <ArtCountTo
+          class="text-4xl font-medium max-sm:text-3xl"
+          :target="53476"
+          :duration="2000"
+          separator=","
+        />
+        <span>位信赖的开发者</span>
+      </h1>
       <h2 class="mb-2.5 text-2xl font-normal text-g-600 max-sm:text-2xl">以及众多科技巨头的选择</h2>
       <div class="gap-2 flex-cc mt-2.5 max-sm:mt-3.5 max-sm:!block">
         <p class="text-sm italic text-g-600 max-sm:text-sm">
@@ -22,9 +33,15 @@
               >
                 {{ plan.description }}
               </p>
-              <div class="mt-7.5">
-                <span class="text-3xl font-medium">¥{{ plan.price }}</span>
-                <span class="ml-2.5 text-sm text-g-600">/一次性付款</span>
+              <div class="mt-7.5 flex flex-wrap items-baseline gap-x-1">
+                <ArtCountTo
+                  class="text-3xl font-medium"
+                  :target="plan.price"
+                  :duration="1400"
+                  prefix="¥"
+                  :decimals="0"
+                />
+                <span class="ml-2 text-sm text-g-600">/一次性付款</span>
               </div>
             </div>
 

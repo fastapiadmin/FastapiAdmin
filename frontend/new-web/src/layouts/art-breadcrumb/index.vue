@@ -54,8 +54,12 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
   const { matched } = route;
   const matchedLength = matched.length;
 
-  // 处理首页情况
-  if (!matchedLength || isHomeRoute(matched[0])) {
+  // 首页：看叶子路由（matched[0] 始终是壳层 RootLayout，不能用它判断首页）
+  if (!matchedLength) {
+    return [];
+  }
+  const leafRoute = matched[matchedLength - 1];
+  if (leafRoute.name === "Home") {
     return [];
   }
 
@@ -92,9 +96,6 @@ const createBreadcrumbItem = (route: RouteLocationMatched): BreadcrumbItem => ({
   path: route.path,
   meta: route.meta,
 });
-
-// 辅助函数：判断是否为首页
-const isHomeRoute = (route: RouteLocationMatched): boolean => route.name === "/";
 
 // 辅助函数：判断是否为最后一项
 const isLastItem = (index: number): boolean => {

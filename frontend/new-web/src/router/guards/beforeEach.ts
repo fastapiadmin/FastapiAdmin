@@ -444,19 +444,25 @@ async function fetchUserInfo(): Promise<void> {
 }
 
 /**
- * 重置路由相关状态
+ * 立即卸下动态路由与菜单缓存（与 {@link resetRouterState} 回调一致，供刷新路由等同步场景）。
+ */
+export function resetDynamicRoutesSync(): void {
+  routeRegistry?.unregister();
+  IframeRouteManager.getInstance().clear();
+
+  const menuStore = useMenuStore();
+  menuStore.removeAllDynamicRoutes();
+  menuStore.setMenuList([]);
+
+  resetRouteInitState();
+}
+
+/**
+ * 延迟重置路由相关状态（登出等场景避免与导航竞态）
  */
 export function resetRouterState(delay: number): void {
   setTimeout(() => {
-    routeRegistry?.unregister();
-    IframeRouteManager.getInstance().clear();
-
-    const menuStore = useMenuStore();
-    menuStore.removeAllDynamicRoutes();
-    menuStore.setMenuList([]);
-
-    // 重置路由初始化状态，允许重新登录后再次初始化
-    resetRouteInitState();
+    resetDynamicRoutesSync();
   }, delay);
 }
 

@@ -185,10 +185,154 @@
       </ElCol>
     </ElRow>
 
-    <!-- 日程日历 + 系统日志 + 消息（大屏三列，日历限宽；小屏纵向堆叠） -->
+    <!-- 横幅组件演示（原 widgets/banners，后续可调整） -->
+    <div class="mt-4 workplace-banners-showcase">
+      <h2 class="workplace-banners-showcase__title">基础 & 自定义按钮+背景色</h2>
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
+          <ArtBasicBanner
+            title="数据中心运行状态"
+            subtitle="系统访问量同比增长 23%，所有服务运行稳定，数据监控正常。"
+          />
+        </ElCol>
+        <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
+          <ArtBasicBanner
+            title="欢迎使用 Art Design Pro"
+            subtitle="基于 Vue 3 + TypeScript + Element Plus 构建的现代化管理系统。"
+            titleColor="#333"
+            subtitleColor="#666"
+            boxStyle="!bg-[#D4F1F7]"
+            :buttonConfig="{
+              show: true,
+              text: '开始探索',
+              color: 'var(--art-success)',
+              textColor: '#fff',
+              radius: '6px',
+            }"
+            @buttonClick="handleBannerDemoClick"
+          />
+        </ElCol>
+      </ElRow>
+
+      <h2 class="workplace-banners-showcase__title">自定义图片 & 使用 slot 自定义内容</h2>
+
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
+          <ArtBasicBanner
+            title="探索星空计划"
+            subtitle="加入我们的天文观测活动，发现宇宙的奥秘"
+            boxStyle="!bg-[#FF8AAB]"
+            :buttonConfig="{
+              show: true,
+              text: '立即参与',
+              color: '#FF5A89',
+              textColor: '#fff',
+            }"
+            :imageConfig="{
+              src: bannerIcon3,
+            }"
+          />
+        </ElCol>
+        <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
+          <ArtBasicBanner
+            boxStyle="!bg-[#70B1FF]"
+            :imageConfig="{
+              src: bannerIcon5,
+            }"
+          >
+            <template #title>
+              <h3 class="workplace-banners-showcase__slot-heading">智能组件系统</h3>
+            </template>
+
+            <template #subtitle>
+              <div class="workplace-banners-showcase__slot-sub">
+                <p class="workplace-banners-showcase__slot-sub-p">
+                  灵活配置，强大扩展，支持自定义插槽内容
+                </p>
+              </div>
+            </template>
+
+            <template #button>
+              <div class="workplace-banners-showcase__slot-btn-wrap">
+                <ElButton type="primary" color="#04A1FF">查看文档</ElButton>
+              </div>
+            </template>
+          </ArtBasicBanner>
+        </ElCol>
+      </ElRow>
+
+      <h2 class="workplace-banners-showcase__title">抽象配置方案（Preset 模式）</h2>
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
+          <ArtBasicBanner v-bind="presetBanners.marketing" />
+        </ElCol>
+        <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
+          <ArtBasicBanner v-bind="presetBanners.info" />
+        </ElCol>
+      </ElRow>
+
+      <h2 class="workplace-banners-showcase__title">卡片横幅</h2>
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
+          <ArtCardBanner
+            title="系统运行正常"
+            description="所有核心服务运行稳定，响应时间在正常范围内。"
+          />
+        </ElCol>
+        <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
+          <ArtCardBanner
+            :image="bannerIcon2"
+            title="重要消息通知"
+            description="您有 3 条待处理的重要消息，请及时查看。"
+            :button="{
+              show: true,
+              text: '查看详情',
+              color: 'var(--art-warning)',
+              textColor: '#fff',
+            }"
+          />
+        </ElCol>
+        <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
+          <ArtCardBanner
+            :image="bannerIcon3"
+            title="数据分析报告"
+            description="本周业务数据分析报告已完成，请查看关键指标。"
+            :button="{
+              show: true,
+              text: '下载报告',
+              color: 'var(--art-error)',
+              textColor: '#fff',
+            }"
+          />
+        </ElCol>
+        <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
+          <ArtCardBanner
+            :image="bannerIcon4"
+            title="版本更新提醒"
+            description="Art Design Pro v2.1.0 已发布，包含性能优化和新功能。"
+            :button="{
+              show: true,
+              text: '立即更新',
+              color: 'var(--theme-color)',
+              textColor: '#fff',
+            }"
+            :cancelButton="{
+              show: true,
+              text: '稍后提醒',
+              color: '#eee',
+              textColor: '#333',
+            }"
+            @click="handleBannerDemoConfirm"
+            @cancel="handleBannerDemoCancel"
+          />
+        </ElCol>
+      </ElRow>
+    </div>
+
+    <!-- 日程日历（系统日志 / 消息区后期再调整） -->
     <div class="mt-4 workplace-ops-stack">
       <ElRow :gutter="16" class="workplace-ops-row">
-        <ElCol :xs="24" :lg="7" class="workplace-ops-col workplace-ops-col--calendar">
+        <ElCol :xs="24" class="workplace-ops-col workplace-ops-col--calendar">
           <ElCard
             shadow="hover"
             class="workplace-calendar-card workplace-surface workplace-ops-card"
@@ -208,151 +352,6 @@
             </div>
           </ElCard>
         </ElCol>
-
-        <ElCol :xs="24" :lg="10" class="workplace-ops-col">
-          <ElCard
-            shadow="hover"
-            class="workplace-section-card workplace-surface workplace-ops-card"
-          >
-            <template #header>
-              <div class="workplace-section-card__head">
-                <div>
-                  <span class="workplace-panel-title">系统日志</span>
-                  <p class="workplace-section-sub workplace-section-sub--inline">
-                    已加载 {{ systemLogs.length }} 条 · 默认 10 条
-                  </p>
-                </div>
-                <div class="workplace-section-card__actions">
-                  <ElButton
-                    v-if="systemLogs.length > 10"
-                    type="primary"
-                    link
-                    @click="logsExpanded = !logsExpanded"
-                  >
-                    {{ logsExpanded ? "收起" : "展开全部" }}
-                  </ElButton>
-                  <ElButton type="primary" link @click="goToLog()">日志管理</ElButton>
-                </div>
-              </div>
-            </template>
-            <div
-              v-loading="logsLoading"
-              class="workplace-ops-card__body workplace-ops-card__body--logs"
-            >
-              <ElEmpty
-                v-if="!logsLoading && systemLogs.length === 0"
-                :image-size="72"
-                description="暂无日志"
-              />
-              <div v-else class="workplace-logs-scroll">
-                <ElTable
-                  :data="displayedLogs"
-                  class="workplace-logs-table"
-                  size="small"
-                  :max-height="logsExpanded ? 360 : 220"
-                >
-                  <ElTableColumn label="类型" width="72" align="center">
-                    <template #default="{ row }">
-                      <ElTag :type="row.type === 1 ? 'success' : 'primary'" size="small">
-                        {{ row.type === 1 ? "登录" : "操作" }}
-                      </ElTag>
-                    </template>
-                  </ElTableColumn>
-                  <ElTableColumn
-                    label="路径"
-                    prop="request_path"
-                    min-width="120"
-                    show-overflow-tooltip
-                  />
-                  <ElTableColumn label="方法" width="72" align="center">
-                    <template #default="{ row }">
-                      <ElTag :type="getMethodType(row.request_method)" size="small">
-                        {{ row.request_method || "—" }}
-                      </ElTag>
-                    </template>
-                  </ElTableColumn>
-                  <ElTableColumn label="状态" width="64" align="center">
-                    <template #default="{ row }">
-                      <ElTag :type="getStatusCodeType(row.response_code)" size="small">
-                        {{ row.response_code ?? "—" }}
-                      </ElTag>
-                    </template>
-                  </ElTableColumn>
-                  <ElTableColumn
-                    label="IP"
-                    prop="request_ip"
-                    min-width="100"
-                    show-overflow-tooltip
-                  />
-                  <ElTableColumn
-                    label="时间"
-                    prop="created_time"
-                    min-width="136"
-                    show-overflow-tooltip
-                  />
-                </ElTable>
-              </div>
-            </div>
-          </ElCard>
-        </ElCol>
-
-        <ElCol :xs="24" :lg="7" class="workplace-ops-col">
-          <ElCard
-            shadow="hover"
-            class="workplace-section-card workplace-surface workplace-ops-card"
-          >
-            <template #header>
-              <div class="workplace-section-card__head">
-                <div>
-                  <span class="workplace-panel-title">最新消息</span>
-                  <p class="workplace-section-sub workplace-section-sub--inline">
-                    公告与通知 · 最近 5 条
-                  </p>
-                </div>
-                <ElButton type="primary" link @click="goToNotice()">公告管理</ElButton>
-              </div>
-            </template>
-            <div class="workplace-ops-card__body workplace-ops-card__body--notices">
-              <ElEmpty v-if="noticeList.length === 0" :image-size="80" description="暂无数据" />
-              <ElTimeline v-else class="workplace-notice-timeline">
-                <ElTimelineItem
-                  v-for="(item, index) in noticePreviewList"
-                  :key="item.id"
-                  :type="index === 0 ? 'primary' : 'info'"
-                >
-                  <div class="workplace-notice-card">
-                    <div class="workplace-notice-card__head">
-                      <div class="workplace-notice-card__titles">
-                        <span class="workplace-notice-card__title">
-                          {{ item.notice_title }}
-                        </span>
-                        <ElTag size="small" :type="getNoticeTypeColor(item.notice_type)">
-                          {{ getNoticeTypeText(item.notice_type) }}
-                        </ElTag>
-                      </div>
-                      <span class="workplace-notice-card__time">
-                        {{ formatTime(item.created_time) }}
-                      </span>
-                    </div>
-                    <div class="workplace-notice-card__content">
-                      {{ item.notice_content }}
-                    </div>
-                    <div class="workplace-notice-card__foot">
-                      <span class="workplace-notice-card__author">
-                        {{ item.created_by?.name }} 发布
-                      </span>
-                      <ElTooltip placement="top" :content="item.description || item.notice_content">
-                        <ElButton target="_blank" type="primary" link @click="goToNotice()">
-                          详情↗
-                        </ElButton>
-                      </ElTooltip>
-                    </div>
-                  </div>
-                </ElTimelineItem>
-              </ElTimeline>
-            </div>
-          </ElCard>
-        </ElCol>
       </ElRow>
     </div>
   </div>
@@ -368,8 +367,6 @@ import { useUserStore } from "@/store/index";
 import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
 import HomeCalendar from "./components/HomeCalendar.vue";
 import { greetings } from "@/utils/common";
-import NoticeAPI, { NoticeTable } from "@/api/module_system/notice";
-import LogAPI, { type LogTable } from "@/api/module_system/log";
 import type { MenuTable } from "@/api/module_system/menu";
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
@@ -390,6 +387,10 @@ import {
 } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { quickStartManager, QUICK_LINK_MAX, type QuickLink } from "@/utils/common";
+import bannerIcon2 from "@imgs/3d/icon2.webp";
+import bannerIcon3 from "@imgs/3d/icon3.webp";
+import bannerIcon4 from "@imgs/3d/icon4.webp";
+import bannerIcon5 from "@imgs/3d/icon7.webp";
 
 /**
  * 工作台「模块总览」与 src/views 下目录对应：
@@ -510,21 +511,54 @@ function flattenLeafMenusFromTree(menus: MenuTable[]): MenuLeaf[] {
   return out;
 }
 
+/** 横幅演示（原 widgets/banners） */
+function handleBannerDemoClick() {
+  console.log("banner clicked");
+}
+
+function handleBannerDemoConfirm() {
+  console.log("confirm clicked");
+}
+
+function handleBannerDemoCancel() {
+  console.log("cancel clicked");
+}
+
+const presetBanners = {
+  marketing: {
+    title: "限时优惠活动",
+    subtitle: "精选商品 48 小时闪购，最高享受 7 折优惠，数量有限！",
+    titleColor: "var(--art-gray-900)",
+    subtitleColor: "var(--art-gray-900)",
+    boxStyle: "!bg-success/15",
+    meteorConfig: { enabled: true, count: 15 },
+    buttonConfig: {
+      show: true,
+      text: "立即抢购",
+      color: "var(--art-success)",
+      textColor: "#fff",
+    },
+  },
+  info: {
+    title: "服务到期提醒",
+    subtitle: "您的高级服务将在 7 天后到期，请及时续费以继续享受完整功能。",
+    titleColor: "var(--art-gray-900)",
+    subtitleColor: "var(--art-gray-900)",
+    boxStyle: "!bg-theme/15",
+    meteorConfig: { enabled: true, count: 15 },
+    buttonConfig: {
+      show: true,
+      text: "立即续费",
+      color: "var(--art-secondary)",
+      textColor: "#fff",
+    },
+  },
+} as const;
+
 const userStore = useUserStore();
 const timefix = greetings();
 const { t } = useI18n();
 const router = useRouter();
-
-// 通知公告数据（需早于 noticePreviewList）
-const noticeList = ref<NoticeTable[]>([]);
-
-const systemLogs = ref<LogTable[]>([]);
-const logsLoading = ref(false);
-const logsExpanded = ref(false);
-const displayedLogs = computed(() => {
-  if (logsExpanded.value || systemLogs.value.length <= 10) return systemLogs.value;
-  return systemLogs.value.slice(0, 10);
-});
 
 const moduleGroupIcons = {
   system: Setting,
@@ -555,8 +589,6 @@ function goModuleEntry(path: string | undefined) {
   goMenuShortcut(path);
 }
 
-const noticePreviewList = computed(() => noticeList.value.slice(0, 5));
-
 function goMenuShortcut(path: string) {
   if (!path) return;
   router.push(path).catch(() => {
@@ -566,106 +598,6 @@ function goMenuShortcut(path: string) {
 
 // 快速链接数据
 const quickLinks = ref<QuickLink[]>(quickStartManager.getQuickLinks());
-
-// 格式化时间
-const formatTime = (time: string | undefined) => {
-  if (!time) return "";
-  const date = new Date(time);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (minutes < 1) return "刚刚";
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
-  if (days < 7) return `${days}天前`;
-  return date.toLocaleDateString();
-};
-
-// 跳转通知公告详情页
-const goToNotice = () => {
-  router.push({ name: "Notice" }).catch(() => {
-    ElMessage.warning(`公告通知跳转失败，请检查路由配置`);
-  });
-};
-
-function goToLog() {
-  router.push({ name: "Log" }).catch(() => {
-    ElMessage.warning("日志管理页跳转失败，请检查路由配置");
-  });
-}
-
-function getStatusCodeType(code?: number): "success" | "warning" | "info" | "danger" {
-  if (code === undefined) return "info";
-  if (code >= 200 && code < 300) return "success";
-  if (code >= 300 && code < 400) return "warning";
-  return "danger";
-}
-
-function getMethodType(method?: string): "success" | "warning" | "info" | "danger" {
-  if (method === undefined) return "info";
-  if (method === "GET") return "info";
-  if (method === "POST") return "success";
-  if (method === "PUT" || method === "PATCH") return "warning";
-  if (method === "DELETE") return "danger";
-  return "info";
-}
-
-async function fetchSystemLogs() {
-  logsLoading.value = true;
-  try {
-    const res = await LogAPI.listLog({ page_no: 1, page_size: 50 });
-    if (res.data.code === 0) {
-      systemLogs.value = res.data.data?.items ?? [];
-    }
-  } catch (e) {
-    console.error("工作台加载系统日志失败:", e);
-  } finally {
-    logsLoading.value = false;
-  }
-}
-
-// 获取通知类型文本和颜色
-const getNoticeTypeText = (type: string | undefined) => {
-  switch (type) {
-    case "1":
-      return "通知";
-    case "2":
-      return "公告";
-    default:
-      return "通知";
-  }
-};
-
-// 获取通知类型对应的标签颜色
-const getNoticeTypeColor = (type: string | undefined) => {
-  switch (type) {
-    case "1":
-      return "primary";
-    case "2":
-      return "success";
-    default:
-      return "primary";
-  }
-};
-
-// 获取通知公告列表
-const listNotice = async () => {
-  try {
-    const response = await NoticeAPI.listNotice({
-      page_no: 1,
-      page_size: 5,
-      status: "0", // 只获取启用的公告
-    });
-    if (response.data.code === 0) {
-      noticeList.value = response.data.data.items;
-    }
-  } catch (error) {
-    console.error("获取通知公告失败:", error);
-  }
-};
 
 // 处理快速链接点击
 const handleQuickLinkClick = (item: QuickLink) => {
@@ -737,8 +669,6 @@ const updateQuickLinks = (links: QuickLink[]) => {
 
 // 组件挂载时获取数据和添加监听器
 onMounted(() => {
-  listNotice();
-  fetchSystemLogs();
   quickStartManager.addListener(updateQuickLinks);
 });
 
@@ -808,7 +738,6 @@ const currentUser = {
   }
 }
 
-/* 与日志/消息同排时限高；列变窄后不再占满屏宽 */
 .workplace-ops-col--calendar {
   max-width: 100%;
 }
@@ -889,10 +818,6 @@ const currentUser = {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--el-text-color-primary);
-}
-
-.workplace-logs-table {
-  width: 100%;
 }
 
 /* ========== 模块入口 / 收藏：各为独立卡片（同行等高） ========== */
@@ -1034,7 +959,6 @@ const currentUser = {
   align-items: center;
 }
 
-/* 运行快照+任务、日志+消息：每行两列并排 */
 .workplace-ops-row {
   row-gap: 16px;
   align-items: stretch;
@@ -1063,26 +987,6 @@ const currentUser = {
 .workplace-ops-card__body {
   flex: 1;
   min-height: 0;
-}
-
-.workplace-ops-card__body--logs {
-  min-width: 0;
-}
-
-.workplace-ops-card__body--notices {
-  max-height: min(520px, 62vh);
-  padding-right: 2px;
-  overflow: hidden auto;
-}
-
-.workplace-logs-scroll {
-  width: 100%;
-  min-width: 0;
-  overflow-x: auto;
-}
-
-.workplace-notice-timeline {
-  padding-left: 2px;
 }
 
 .workplace-module-card {
@@ -1178,77 +1082,6 @@ const currentUser = {
 
 .workplace-module-card:not(.is-disabled):hover .workplace-module-card__arrow {
   color: var(--el-color-primary);
-}
-
-.workplace-notice-card {
-  padding: 14px 16px;
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: var(--workplace-radius-sm);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 4%);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-
-  &:hover {
-    border-color: var(--el-color-primary-light-7);
-    box-shadow: 0 4px 14px rgb(0 0 0 / 6%);
-  }
-}
-
-.workplace-notice-card__head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.workplace-notice-card__titles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  min-width: 0;
-}
-
-.workplace-notice-card__title {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--el-text-color-primary);
-}
-
-.workplace-notice-card__time {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-}
-
-.workplace-notice-card__content {
-  display: -webkit-box;
-  margin-bottom: 12px;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--el-text-color-regular);
-  -webkit-box-orient: vertical;
-}
-
-.workplace-notice-card__foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-.workplace-notice-card__author {
-  color: var(--el-text-color-secondary);
 }
 
 /* ========== 顶栏问候 ========== */
@@ -1458,5 +1291,45 @@ const currentUser = {
 
 .workplace-quick-list--hub .workplace-quick-row__title {
   font-size: 12px;
+}
+
+/* 首页横幅组件演示区 */
+.workplace-banners-showcase {
+  padding: 16px;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--el-border-radius-base);
+}
+
+.workplace-banners-showcase__title {
+  margin: 20px 0 16px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.workplace-banners-showcase__slot-heading {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #fff !important;
+}
+
+.workplace-banners-showcase__slot-sub {
+  margin-top: 12px;
+}
+
+.workplace-banners-showcase__slot-sub-p {
+  position: relative;
+  z-index: 10;
+  margin: 0;
+  font-style: italic;
+}
+
+.workplace-banners-showcase__slot-btn-wrap {
+  margin-top: 12px;
 }
 </style>

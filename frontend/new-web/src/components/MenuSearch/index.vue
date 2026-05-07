@@ -131,9 +131,10 @@ import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
 import { router } from "@/router";
 import { resolveIconForArtSvgIcon } from "@/utils/menuIcon/remix";
-import { usePermissionStore } from "@/store";
+import { useMenuStore } from "@/store";
+import type { AppRouteRecord } from "@/types/router";
 import { isExternal } from "@/utils";
-import { RouteRecordRaw, LocationQueryRaw } from "vue-router";
+import { LocationQueryRaw } from "vue-router";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 const { Clock, Close, Delete } = ElementPlusIconsVue;
@@ -141,7 +142,7 @@ const { Clock, Close, Delete } = ElementPlusIconsVue;
 const HISTORY_KEY = "menu_search_history";
 const MAX_HISTORY = 5;
 
-const permissionStore = usePermissionStore();
+const menuStore = useMenuStore();
 const isModalVisible = ref(false);
 const searchKeyword = ref("");
 const searchInputRef = ref();
@@ -220,9 +221,17 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
+watch(
+  () => menuStore.menuList,
+  (list) => {
+    menuItems.value = [];
+    loadRoutesFromMenu(list ?? []);
+  },
+  { deep: true, immediate: true }
+);
+
 // 添加键盘事件监听
 onMounted(() => {
-  loadRoutes(permissionStore.routes);
   loadSearchHistory();
   document.addEventListener("keydown", handleKeyDown);
 });
@@ -296,48 +305,41 @@ function navigateToRoute(item: SearchItem) {
   }
 }
 
-function loadRoutes(routes: RouteRecordRaw[], parentPath = "") {
+function loadRoutesFromMenu(routes: AppRouteRecord[], parentPath = "") {
   routes.forEach((route) => {
-    // 计算完整路径
-    const path = route.path.startsWith("/")
-      ? route.path
-      : `${parentPath}${parentPath.endsWith("/") ? "" : "/"}${route.path}`;
+    const rawPath = route.path ?? "";
+    const path = rawPath.startsWith("/")
+      ? rawPath
+      : `${parentPath}${parentPath.endsWith("/") ? "" : "/"}${rawPath}`;
 
-    // 检查是否需要排除
-    if (excludedRoutes.value.includes(route.path) || isExternal(route.path) || route.meta?.hidden)
-      return;
+    const meta = route.meta;
+    const hidden = meta?.hidden === true || meta?.isHide === true;
+    if (excludedRoutes.value.includes(route.path ?? "") || isExternal(path) || hidden) return;
 
-    // 处理有子路由的情况
-    if (route.children) {
-      // 如果父路由本身有title，也添加到menuItems中
-      if (route.meta?.title) {
-        const title = route.meta.title === "dashboard" ? "首页" : route.meta.title;
+    if (route.children?.length) {
+      if (meta?.title) {
+        const title = meta.title === "dashboard" ? "首页" : meta.title;
+        const params = (meta as { params?: unknown }).params;
         menuItems.value.push({
           title,
           path,
           name: typeof route.name === "string" ? route.name : undefined,
-          icon: route.meta.icon,
+          icon: meta.icon,
           redirect: typeof route.redirect === "string" ? route.redirect : undefined,
-          params: route.meta.params
-            ? JSON.parse(JSON.stringify(toRaw(route.meta.params)))
-            : undefined,
+          params: params ? JSON.parse(JSON.stringify(toRaw(params))) : undefined,
         });
       }
-      // 递归处理子路由
-      loadRoutes(route.children, path);
-    }
-    // 处理没有子路由但有title的情况
-    else if (route.meta?.title) {
-      const title = route.meta.title === "dashboard" ? "首页" : route.meta.title;
+      loadRoutesFromMenu(route.children, path);
+    } else if (meta?.title) {
+      const title = meta.title === "dashboard" ? "首页" : meta.title;
+      const params = (meta as { params?: unknown }).params;
       menuItems.value.push({
         title,
         path,
         name: typeof route.name === "string" ? route.name : undefined,
-        icon: route.meta.icon,
+        icon: meta.icon,
         redirect: typeof route.redirect === "string" ? route.redirect : undefined,
-        params: route.meta.params
-          ? JSON.parse(JSON.stringify(toRaw(route.meta.params)))
-          : undefined,
+        params: params ? JSON.parse(JSON.stringify(toRaw(params))) : undefined,
       });
     }
   });

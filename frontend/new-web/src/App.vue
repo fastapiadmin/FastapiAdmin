@@ -28,7 +28,7 @@ import { useSettingsStore } from "./store/modules/setting.store";
 import { defaultSettings } from "./config/setting";
 import { ComponentSize } from "./enums/settings/layout.enum";
 import AiAssistant from "./components/AiAssistant/index.vue";
-import { toggleTransition } from "./utils/ui";
+import { hexToRgba, toggleTransition } from "./utils/ui";
 import { checkStorageCompatibility } from "./utils/storage";
 import { initializeTheme } from "./hooks/core/useTheme";
 import { systemUpgrade } from "./utils/sys";
@@ -56,9 +56,15 @@ const enableAiAssistant = computed(() => {
   return isEnabled && isLoggedIn;
 });
 
-// 明亮/暗黑主题水印字体颜色适配
+// 水印文字默认使用当前主题色（半透明），随主题色设置变化
 const fontColor = computed(() => {
-  return settingsStore.theme === ThemeMode.DARK ? "rgba(255, 255, 255, .15)" : "rgba(0, 0, 0, .15)";
+  const hex = settingsStore.themeColor || defaultSettings.themeColor;
+  const alpha = settingsStore.theme === ThemeMode.DARK ? 0.22 : 0.16;
+  try {
+    return hexToRgba(hex, alpha).rgba;
+  } catch {
+    return hexToRgba(defaultSettings.themeColor, alpha).rgba;
+  }
 });
 
 onBeforeMount(() => {

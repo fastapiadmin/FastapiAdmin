@@ -1,11 +1,9 @@
 import type { App } from "vue";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-import type { RouteRecordRaw } from "vue-router";
-
 import { router } from "@/router";
+import { resetDynamicRoutesSync } from "@/router/guards/beforeEach";
 import { useUserStore } from "./modules/user.store";
-import { usePermissionStore } from "./modules/permission.store";
 import { useDictStore } from "./modules/dict.store";
 import { useNoticeStore } from "./modules/notice.store";
 import { useConfigStore } from "./modules/config.store";
@@ -25,7 +23,6 @@ export * from "./modules/dict.store";
 export * from "./modules/lock.store";
 export * from "./modules/menu.store";
 export * from "./modules/notice.store";
-export * from "./modules/permission.store";
 export * from "./modules/setting.store";
 export * from "./modules/table.store";
 export * from "./modules/tags-view.store";
@@ -33,14 +30,7 @@ export * from "./modules/user.store";
 export * from "./modules/worktab.store";
 
 export { store };
-export {
-  useUserStore,
-  usePermissionStore,
-  useDictStore,
-  useNoticeStore,
-  useConfigStore,
-  useTagsViewStore,
-};
+export { useUserStore, useDictStore, useNoticeStore, useConfigStore, useTagsViewStore };
 
 export interface RefreshCacheOptions {
   dictTypes?: string[];
@@ -64,7 +54,6 @@ export async function refreshAppCaches(opts: RefreshCacheOptions = {}) {
   } = opts;
 
   const userStore = useUserStore(store);
-  const permStore = usePermissionStore(store);
   const dictStore = useDictStore(store);
   const noticeStore = useNoticeStore(store);
   const configStore = useConfigStore(store);
@@ -89,9 +78,12 @@ export async function refreshAppCaches(opts: RefreshCacheOptions = {}) {
   await Promise.allSettled(tasks);
 
   if (refreshRoutes) {
-    permStore.resetRouter();
-    const dynamicRoutes = await permStore.generateRoutes();
-    dynamicRoutes.forEach((route: RouteRecordRaw) => router.addRoute(route));
+    resetDynamicRoutesSync();
+    await router.replace({
+      path: router.currentRoute.value.path,
+      query: router.currentRoute.value.query,
+      hash: router.currentRoute.value.hash,
+    });
   }
 
   if (clearTags) {

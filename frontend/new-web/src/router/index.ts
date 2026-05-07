@@ -1,6 +1,6 @@
 import type { App } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
-import { staticRoutes } from "./routes/staticRoutes";
+import { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME, staticRoutes } from "./routes/staticRoutes";
 import { setupBeforeEachGuard } from "./guards/beforeEach";
 import { setupAfterEachGuard } from "./guards/afterEach";
 import "@/utils/ui";
@@ -22,3 +22,5 @@ export function initRouter(app: App<Element>): void {
 
 // 主页路径；须与 `staticRoutes` 中首页子路由一致（当前为 `/home`）
 export const HOME_PAGE_PATH = "/home";
+
+export { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME };

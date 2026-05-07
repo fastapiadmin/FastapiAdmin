@@ -141,7 +141,7 @@ export interface ISearchConfig {
    * 需要限制时再传，如 `"200px"`、`"min(100%, 280px)"`；`false` 显式铺满栅格列。
    */
   artSearchFieldMaxWidth?: string | false;
-  /** 透传 ArtSearchBar → ElForm.rules（与 `examples/forms/search-bar` 一致） */
+  /** 透传 ArtSearchBar → ElForm.rules */
   artSearchRules?: FormRules;
   /** 透传 ArtSearchBar `sanitizeOutput`，控制搜索提交前清洗空值等行为 */
   artSearchSanitizeOutput?: IObject;
@@ -250,17 +250,17 @@ export interface IContentConfig<T = any> {
   /** 为 true 时隐藏 ArtTableHeader「列筛选」按钮（默认 false，显示列筛选） */
   hideColumnFilter?: boolean;
   /**
-   * 表格栈：`art` 时使用 ArtTableHeader + ArtTable（与 examples/tables 高级示例一致）；
+   * 表格栈：`art` 时使用 ArtTableHeader + ArtTable；
    * `legacy` 为内置 el-table（默认）。
    */
   tableVariant?: "legacy" | "art";
-  /** 内容区外层 el-card 额外 class（默认已含 `art-table-card`，与 examples/tables 表格卡片一致） */
+  /** 内容区外层 el-card 额外 class（默认已含 `art-table-card`） */
   cardClass?: string;
   /** el-card 阴影（默认 never，与 Element Plus el-card shadow 一致） */
   cardShadow?: "always" | "hover" | "never";
   /** 是否显示表格上方工具条（默认 true；纯卡片/无按钮时可设为 false） */
   showToolbar?: boolean;
-  /** ArtTableHeader 布局（与 examples/tables 高级表格一致；不传则用内置默认） */
+  /** ArtTableHeader 布局（不传则用内置默认） */
   artToolbarLayout?: string;
   /** 表格全屏区域 class，传给 ArtTableHeader fullClass */
   artFullScreenClass?: string;

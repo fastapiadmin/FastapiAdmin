@@ -18,10 +18,7 @@ import { initErrorHandle } from "@/utils/sys";
 import { initCodeMirror } from "./codemirror";
 import { initElementPlus } from "./element-plus";
 import { initElIcons } from "./icons";
-import { initPermission } from "./permission";
 import { initTerminal } from "./terminal";
-
-export { initPermission };
 
 export function initPlugins(app: App<Element>): void {
   initElIcons(app);

@@ -7,7 +7,7 @@
   >
     <ElWatermark
       :content="content"
-      :font="{ fontSize: fontSize, color: fontColor }"
+      :font="watermarkFont"
       :rotate="rotate"
       :gap="[gapX, gapY]"
       :offset="[offsetX, offsetY]"
@@ -18,13 +18,15 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import AppConfig from "@/config";
+import { defaultSettings } from "@/config/setting";
+import { ThemeMode } from "@/enums";
+import { hexToRgba } from "@/utils/ui";
 import { useSettingsStore } from "@/store/modules/setting.store";
 
 defineOptions({ name: "ArtWatermark" });
-
-const settingStore = useSettingsStore();
-const { watermarkVisible } = storeToRefs(settingStore);
 
 interface WatermarkProps {
   /** 水印内容 */
@@ -33,7 +35,7 @@ interface WatermarkProps {
   visible?: boolean;
   /** 水印字体大小 */
   fontSize?: number;
-  /** 水印字体颜色 */
+  /** 水印字体颜色（不传则跟随设置里的主题色） */
   fontColor?: string;
   /** 水印旋转角度 */
   rotate?: number;
@@ -49,16 +51,36 @@ interface WatermarkProps {
   zIndex?: number;
 }
 
-withDefaults(defineProps<WatermarkProps>(), {
+const props = withDefaults(defineProps<WatermarkProps>(), {
   content: AppConfig.systemInfo.name,
   visible: false,
   fontSize: 16,
-  fontColor: "rgba(128, 128, 128, 0.2)",
+  fontColor: undefined,
   rotate: -22,
   gapX: 100,
   gapY: 100,
   offsetX: 50,
   offsetY: 50,
   zIndex: 3100,
+});
+
+const settingStore = useSettingsStore();
+const { watermarkVisible, themeColor, theme } = storeToRefs(settingStore);
+
+/** 未指定 fontColor 时使用当前主题色半透明，与 App.vue 全局水印策略一致 */
+const watermarkFont = computed(() => {
+  let color: string;
+  if (props.fontColor) {
+    color = props.fontColor;
+  } else {
+    const hex = themeColor.value || defaultSettings.themeColor;
+    const alpha = theme.value === ThemeMode.DARK ? 0.22 : 0.16;
+    try {
+      color = hexToRgba(hex, alpha).rgba;
+    } catch {
+      color = hexToRgba(defaultSettings.themeColor, alpha).rgba;
+    }
+  }
+  return { fontSize: props.fontSize, color };
 });
 </script>

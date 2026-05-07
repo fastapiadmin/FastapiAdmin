@@ -16,7 +16,7 @@ import type { MenuTable } from "@/api/module_system/menu";
 import { Auth } from "@/utils/auth";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { ElNotification } from "element-plus";
-import { store, useTagsViewStore, usePermissionStore, useDictStore } from "@/store";
+import { store, useTagsViewStore, useDictStore } from "@/store";
 import type { UserInfo } from "@/api/module_system/user";
 
 /** {@link useUserStore} 的 `logout` 可选参数 */
@@ -281,8 +281,6 @@ export const useUserStore = defineStore(
       resetAllState();
       sessionStorage.removeItem("iframeRoutes");
       useMenuStore().setHomePath("");
-      // 与 RouteRegistry 并行：立即清理 permissionStore 中的动态路由标记与实例，避免仅依赖延迟 reset 时侧栏/守卫状态不一致
-      usePermissionStore(store).resetRouter();
       resetRouterState(500);
 
       if (shouldNavigate) {
@@ -357,8 +355,6 @@ export const useUserStore = defineStore(
       Auth.clearAuth();
       // 重置用户信息
       clearUserInfo();
-      // 重置路由
-      usePermissionStore(store).resetRouter();
       // 清除标签视图
       useTagsViewStore().delAllViews();
       // 重置字典

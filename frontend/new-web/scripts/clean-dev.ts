@@ -229,44 +229,76 @@ async function remove(targetPath: string, index: number) {
   }
 }
 
-// 清理路由模块
+// 清理前端路由演示（重写 `asyncRoutes.ts`，去掉 widgets，仅保留 exception）
 async function cleanRouteModules() {
-  const modulesPath = path.resolve(process.cwd(), "src/router/modules");
+  const routesPath = path.resolve(process.cwd(), "src/router/routes");
 
   try {
-    // 删除演示相关的路由模块
-    const modulesToRemove = ["widgets.ts"];
-
-    for (const module of modulesToRemove) {
-      const modulePath = path.join(modulesPath, module);
-      try {
-        await fs.rm(modulePath, { force: true });
-      } catch {
-        // 文件不存在时忽略错误
-      }
-    }
-
-    // 仪表盘页面在 staticRoutes 根 Layout children 中挂载；删除独立 dashboard 模块文件
     try {
-      await fs.rm(path.join(modulesPath, "dashboard.ts"), { force: true });
+      await fs.rm(path.join(routesPath, "dashboard.ts"), { force: true });
     } catch {
       // 忽略
     }
 
-    // 重写 index.ts：widgets 已删则仅保留 exception
-    const indexContent = `import { AppRouteRecord } from '@/types/router'
-import { exceptionRoutes } from './exception'
+    const asyncRoutesContent = `// 权限文档：https://www.artd.pro/docs/zh/guide/in-depth/permission.html
+import { AppRouteRecord } from "@/types/router";
 
 /**
- * 导出所有模块化路由（业务菜单由后端动态下发）
+ * 「异常」菜单分组（挂载在 /exception/*，走 Layout）。
+ * 与 staticRoutes 中独立页区分：编程式跳转守卫使用 name 为 403/404/500 的路由。
  */
-export const routeModules: AppRouteRecord[] = [exceptionRoutes]
-`;
-    await fs.writeFile(path.join(modulesPath, "index.ts"), indexContent, "utf-8");
+const exceptionRoutes: AppRouteRecord = {
+  path: "/exception",
+  name: "Exception",
+  component: "/index/index",
+  meta: {
+    title: "menus.exception.title",
+    icon: "ri:error-warning-line",
+  },
+  children: [
+    {
+      path: "403",
+      name: "Exception403",
+      component: "/exception/403",
+      meta: {
+        title: "menus.exception.forbidden",
+        keepAlive: true,
+        isHideTab: true,
+      },
+    },
+    {
+      path: "404",
+      name: "Exception404",
+      component: "/exception/404",
+      meta: {
+        title: "menus.exception.notFound",
+        keepAlive: true,
+        isHideTab: true,
+      },
+    },
+    {
+      path: "500",
+      name: "Exception500",
+      component: "/exception/500",
+      meta: {
+        title: "menus.exception.serverError",
+        keepAlive: true,
+        isHideTab: true,
+      },
+    },
+  ],
+};
 
-    console.log(`     ${icons.success} ${fmt.success("清理路由模块完成")}`);
+/**
+ * 前端内置路由表（与后端菜单合并或单独在前端模式下使用）。
+ */
+export const asyncRoutes: AppRouteRecord[] = [exceptionRoutes];
+`;
+    await fs.writeFile(path.join(routesPath, "asyncRoutes.ts"), asyncRoutesContent, "utf-8");
+
+    console.log(`     ${icons.success} ${fmt.success("清理路由演示模块完成")}`);
   } catch (err) {
-    console.log(`     ${icons.error} ${fmt.error("清理路由模块失败")}`);
+    console.log(`     ${icons.error} ${fmt.error("清理路由演示模块失败")}`);
     console.log(`     ${fmt.dim("错误详情: " + err)}`);
   }
 }

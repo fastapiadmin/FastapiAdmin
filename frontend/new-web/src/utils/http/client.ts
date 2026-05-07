@@ -13,6 +13,7 @@ import { Auth, redirectToLogin } from "@/utils/auth";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { $t } from "@/locales";
 import { defaultConfig, NO_AUTH_FLAG } from "./config";
+import { ApiStatus, HttpError } from "./error";
 
 const handleRequest = (config: InternalAxiosRequestConfig) => {
   const accessToken = Auth.getAccessToken();
@@ -106,12 +107,13 @@ const handleResponseError = async (error: AxiosError<ApiResponse>) => {
 
   if (status === 401 && !hasApiCode) {
     await redirectToLogin("登录已失效，请重新登录");
-    return Promise.reject(new Error("Unauthorized"));
+    return Promise.reject(new HttpError("Unauthorized", ApiStatus.unauthorized));
   }
 
   if (data?.code === ResultEnum.TOKEN_EXPIRED) {
     await redirectToLogin("登录已过期，请重新登录");
-    return Promise.reject(new Error(data.msg));
+    const msg = data.msg || "登录已过期，请重新登录";
+    return Promise.reject(new HttpError(msg, ApiStatus.unauthorized));
   }
   if (data?.code === ResultEnum.ERROR) {
     ElMessage.error(data.msg || "请求错误");
