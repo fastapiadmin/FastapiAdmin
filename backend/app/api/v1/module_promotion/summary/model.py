@@ -4,7 +4,7 @@
 
 from enum import Enum
 
-from sqlalchemy import BIGINT, JSON, String, Text
+from sqlalchemy import BIGINT, JSON, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import ModelMixin, UserMixin
@@ -47,4 +47,10 @@ class PromotionSummaryModel(ModelMixin, UserMixin):
 
     summary_status: Mapped[str | None] = mapped_column(
         String(20), nullable=True, comment="总结状态"
+    )
+
+    recruitment_results: Mapped[str | None] = mapped_column(Text, nullable=True, comment="招生成果")
+
+    travel_expense: Mapped[Numeric | None] = mapped_column(
+        Numeric(10, 2), nullable=True, comment="差旅费用"
     )

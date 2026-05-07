@@ -41,6 +41,18 @@ class PromotionTeamModel(ModelMixin, UserMixin):
 
     leader_id: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="负责人用户ID")
 
+    leader_name: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, comment="负责人姓名"
+    )
+
+    leader_phone: Mapped[str | None] = mapped_column(
+        String(20), nullable=True, comment="负责人电话"
+    )
+
+    province: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="省份")
+
+    city: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="城市")
+
     responsible_area: Mapped[str | None] = mapped_column(
         String(200), nullable=True, comment="负责区域"
     )

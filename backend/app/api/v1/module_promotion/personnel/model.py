@@ -52,6 +52,14 @@ class PromotionPersonnelModel(ModelMixin, UserMixin):
 
     role: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="角色")
 
+    province: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="省份")
+
+    city: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="城市")
+
+    responsible_area: Mapped[str | None] = mapped_column(
+        String(200), nullable=True, comment="负责区域"
+    )
+
     invitation_status: Mapped[str | None] = mapped_column(
         String(20), nullable=True, comment="邀请状态"
     )

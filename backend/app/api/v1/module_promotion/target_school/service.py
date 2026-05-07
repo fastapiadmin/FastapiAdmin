@@ -2,11 +2,18 @@
 目标学校管理 - 服务层
 """
 
+import io
+
+import pandas as pd
+from fastapi import UploadFile
+
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
 from app.core.logger import log
+from app.utils.excel_util import ExcelUtil
 
 from .crud import TargetSchoolCRUD
+from .model import FollowStatus, IntentionLevel
 from .schema import (
     TargetSchoolOutSchema,
     TargetSchoolQuerySchema,
@@ -235,3 +242,163 @@ class TargetSchoolService:
         """
         obj_list = await TargetSchoolCRUD(auth).get_by_personnel_id_crud(personnel_id=personnel_id)
         return [TargetSchoolOutSchema.model_validate(obj).model_dump() for obj in obj_list]
+
+    @classmethod
+    async def batch_import_service(
+        cls, auth: AuthSchema, file: UploadFile, update_support: bool = False
+    ) -> str:
+        """
+        批量导入目标学校
+
+        去重规则：name（学校名称）
+        """
+        header_dict = {
+            "学校名称": "name",
+            "学校类型": "school_type",
+            "省份": "province",
+            "城市": "city",
+            "联系人": "contact_person",
+            "联系电话": "contact_phone",
+            "学生规模": "student_scale",
+            "意向级别": "intention_level",
+        }
+
+        # 中文意向级别 -> 枚举值
+        intention_level_map = {
+            "高意向": IntentionLevel.HIGH.value,
+            "中意向": IntentionLevel.MEDIUM.value,
+            "低意向": IntentionLevel.LOW.value,
+        }
+
+        try:
+            contents = await file.read()
+            df = pd.read_excel(io.BytesIO(contents))
+            await file.close()
+
+            if df.empty:
+                raise CustomException(msg="导入文件为空")
+
+            missing_headers = [h for h in header_dict.keys() if h not in df.columns]
+            if missing_headers:
+                raise CustomException(msg=f"导入文件缺少必要的列: {', '.join(missing_headers)}")
+
+            df.rename(columns=header_dict, inplace=True)
+
+            required_fields = ["name"]
+            errors = []
+            for field in required_fields:
+                missing_rows = df[df[field].isnull()].index.tolist()
+                if missing_rows:
+                    field_name = next(k for k, v in header_dict.items() if v == field)
+                    rows_str = "、".join([str(i + 1) for i in missing_rows])
+                    errors.append(f"{field_name}不能为空，第{rows_str}行")
+
+            if errors:
+                raise CustomException(msg="；".join(errors))
+
+            error_msgs = []
+            success_count = 0
+            count = 0
+
+            for _index, row in df.iterrows():
+                try:
+                    count += 1
+
+                    name = str(row["name"]).strip() if pd.notna(row["name"]) else None
+                    if not name:
+                        error_msgs.append(f"第{count}行: 学校名称不能为空")
+                        continue
+
+                    school_type = (
+                        str(row["school_type"]).strip() if pd.notna(row["school_type"]) else None
+                    )
+                    province = str(row["province"]).strip() if pd.notna(row["province"]) else None
+                    city = str(row["city"]).strip() if pd.notna(row["city"]) else None
+                    contact_person = (
+                        str(row["contact_person"]).strip()
+                        if pd.notna(row["contact_person"])
+                        else None
+                    )
+                    contact_phone = (
+                        str(row["contact_phone"]).strip()
+                        if pd.notna(row["contact_phone"])
+                        else None
+                    )
+                    student_scale = (
+                        int(row["student_scale"]) if pd.notna(row["student_scale"]) else None
+                    )
+                    # 意向级别中文映射
+                    intention_raw = (
+                        str(row["intention_level"]).strip()
+                        if pd.notna(row["intention_level"])
+                        else None
+                    )
+                    intention_level = intention_level_map.get(intention_raw, intention_raw)
+
+                    school_data = {
+                        "name": name,
+                        "school_type": school_type,
+                        "province": province,
+                        "city": city,
+                        "contact_person": contact_person,
+                        "contact_phone": contact_phone,
+                        "student_scale": student_scale,
+                        "intention_level": intention_level,
+                        "follow_status": FollowStatus.NEW.value,
+                    }
+
+                    # 按学校名称去重
+                    existing_list = await TargetSchoolCRUD(auth).list_crud(
+                        search={"name": ("eq", name)}
+                    )
+                    if existing_list:
+                        if update_support:
+                            await TargetSchoolCRUD(auth).update_crud(
+                                id=existing_list[0].id, data=school_data
+                            )
+                            success_count += 1
+                        else:
+                            error_msgs.append(f"第{count}行: 学校 {name} 已存在")
+                        continue
+
+                    await TargetSchoolCRUD(auth).create_crud(data=school_data)
+                    success_count += 1
+
+                except Exception as e:
+                    error_msgs.append(f"第{count}行: 异常{e!s}")
+                    continue
+
+            result = f"成功导入 {success_count} 条数据"
+            if error_msgs:
+                result += "\n错误信息:\n" + "\n".join(error_msgs)
+            return result
+
+        except CustomException:
+            raise
+        except Exception as e:
+            log.error(f"批量导入目标学校失败: {e!s}")
+            raise CustomException(msg=f"导入失败: {e!s}")
+
+    @classmethod
+    async def import_template_download_service(cls) -> bytes:
+        """获取目标学校导入模板"""
+        header_list = [
+            "学校名称",
+            "学校类型",
+            "省份",
+            "城市",
+            "联系人",
+            "联系电话",
+            "学生规模",
+            "意向级别",
+        ]
+        selector_header_list = ["学校类型", "意向级别"]
+        option_list = [
+            {"学校类型": ["重点高中", "普通高中", "职业高中", "完全中学"]},
+            {"意向级别": ["高意向", "中意向", "低意向"]},
+        ]
+        return ExcelUtil.get_excel_template(
+            header_list=header_list,
+            selector_header_list=selector_header_list,
+            option_list=option_list,
+        )

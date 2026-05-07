@@ -2,17 +2,19 @@
 目标学校管理 - 控制器
 """
 
+import urllib.parse
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Path, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.api.v1.module_system.auth.schema import AuthSchema
-from app.common.response import ResponseSchema, SuccessResponse
+from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
+from app.utils.common_util import bytes2file_response
 
 from .schema import (
     TargetSchoolCreateSchema,
@@ -264,3 +266,42 @@ async def get_by_personnel_controller(
     )
     log.info("获取负责人目标学校列表成功")
     return SuccessResponse(data=result_list, msg="获取列表成功")
+
+
+@TargetSchoolRouter.post(
+    "/import/template",
+    summary="获取目标学校导入模板",
+    description="获取目标学校导入模板",
+    dependencies=[Depends(AuthPermission(["module_promotion:target_school:download"]))],
+)
+async def export_obj_template_controller() -> StreamingResponse:
+    """获取目标学校导入模板"""
+    result = await TargetSchoolService.import_template_download_service()
+    log.info("获取目标学校导入模板成功")
+
+    return StreamResponse(
+        data=bytes2file_response(result),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"attachment; filename={urllib.parse.quote('目标学校导入模板.xlsx')}",
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@TargetSchoolRouter.post(
+    "/import/data",
+    summary="导入目标学校",
+    description="导入目标学校",
+    response_model=ResponseSchema,
+)
+async def import_obj_list_controller(
+    file: UploadFile,
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:target_school:import"]))],
+) -> JSONResponse:
+    """导入目标学校"""
+    result = await TargetSchoolService.batch_import_service(
+        file=file, auth=auth, update_support=True
+    )
+    log.info(f"导入目标学校成功: {result}")
+    return SuccessResponse(data=result, msg="导入目标学校成功")

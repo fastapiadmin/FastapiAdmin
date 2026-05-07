@@ -2,17 +2,19 @@
 人员管理 - 控制器
 """
 
+import urllib.parse
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Path, Query, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.api.v1.module_system.auth.schema import AuthSchema
-from app.common.response import ResponseSchema, SuccessResponse
+from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
+from app.utils.common_util import bytes2file_response
 
 from .schema import (
     PersonnelCreateSchema,
@@ -290,3 +292,40 @@ async def get_by_team_controller(
     result_list = await PersonnelService.get_by_team_service(auth=auth, team_id=team_id)
     log.info("获取招生组人员列表成功")
     return SuccessResponse(data=result_list, msg="获取列表成功")
+
+
+@PersonnelRouter.post(
+    "/import/template",
+    summary="获取招生人员导入模板",
+    description="获取招生人员导入模板",
+    dependencies=[Depends(AuthPermission(["module_promotion:personnel:download"]))],
+)
+async def export_obj_template_controller() -> StreamingResponse:
+    """获取招生人员导入模板"""
+    result = await PersonnelService.import_template_download_service()
+    log.info("获取招生人员导入模板成功")
+
+    return StreamResponse(
+        data=bytes2file_response(result),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"attachment; filename={urllib.parse.quote('招生人员导入模板.xlsx')}",
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@PersonnelRouter.post(
+    "/import/data",
+    summary="导入招生人员",
+    description="导入招生人员",
+    response_model=ResponseSchema,
+)
+async def import_obj_list_controller(
+    file: UploadFile,
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_promotion:personnel:import"]))],
+) -> JSONResponse:
+    """导入招生人员"""
+    result = await PersonnelService.batch_import_service(file=file, auth=auth, update_support=True)
+    log.info(f"导入招生人员成功: {result}")
+    return SuccessResponse(data=result, msg="导入招生人员成功")

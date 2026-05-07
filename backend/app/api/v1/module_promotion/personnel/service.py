@@ -2,12 +2,17 @@
 人员管理 - 服务层
 """
 
+import io
 import uuid
 from datetime import datetime, timedelta
+
+import pandas as pd
+from fastapi import UploadFile
 
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
 from app.core.logger import log
+from app.utils.excel_util import ExcelUtil
 
 from .crud import PersonnelCRUD
 from .model import PersonnelStatus, PersonnelType
@@ -300,3 +305,135 @@ class PersonnelService:
         """
         obj_list = await PersonnelCRUD(auth).get_by_team_id_crud(team_id=team_id)
         return [PersonnelOutSchema.model_validate(obj).model_dump() for obj in obj_list]
+
+    @classmethod
+    async def batch_import_service(
+        cls, auth: AuthSchema, file: UploadFile, update_support: bool = False
+    ) -> str:
+        """
+        批量导入招生人员
+
+        去重规则：name + phone 组合
+        """
+        header_dict = {
+            "人员姓名": "name",
+            "手机号": "phone",
+            "邮箱": "email",
+            "招生组ID": "team_id",
+            "角色": "role",
+            "省份": "province",
+            "城市": "city",
+            "负责区域": "responsible_area",
+        }
+
+        try:
+            contents = await file.read()
+            df = pd.read_excel(io.BytesIO(contents))
+            await file.close()
+
+            if df.empty:
+                raise CustomException(msg="导入文件为空")
+
+            # 检查表头是否完整
+            missing_headers = [h for h in header_dict.keys() if h not in df.columns]
+            if missing_headers:
+                raise CustomException(msg=f"导入文件缺少必要的列: {', '.join(missing_headers)}")
+
+            df.rename(columns=header_dict, inplace=True)
+
+            # 验证必填字段
+            required_fields = ["name"]
+            errors = []
+            for field in required_fields:
+                missing_rows = df[df[field].isnull()].index.tolist()
+                if missing_rows:
+                    field_name = next(k for k, v in header_dict.items() if v == field)
+                    rows_str = "、".join([str(i + 1) for i in missing_rows])
+                    errors.append(f"{field_name}不能为空，第{rows_str}行")
+
+            if errors:
+                raise CustomException(msg="；".join(errors))
+
+            error_msgs = []
+            success_count = 0
+            count = 0
+
+            for _index, row in df.iterrows():
+                try:
+                    count += 1
+
+                    name = str(row["name"]).strip() if pd.notna(row["name"]) else None
+                    if not name:
+                        error_msgs.append(f"第{count}行: 人员姓名不能为空")
+                        continue
+
+                    phone = str(row["phone"]).strip() if pd.notna(row["phone"]) else None
+                    email = str(row["email"]).strip() if pd.notna(row["email"]) else None
+                    team_id = int(row["team_id"]) if pd.notna(row["team_id"]) else None
+                    role = str(row["role"]).strip() if pd.notna(row["role"]) else None
+                    province = str(row["province"]).strip() if pd.notna(row["province"]) else None
+                    city = str(row["city"]).strip() if pd.notna(row["city"]) else None
+                    responsible_area = (
+                        str(row["responsible_area"]).strip()
+                        if pd.notna(row["responsible_area"])
+                        else None
+                    )
+
+                    personnel_data = {
+                        "name": name,
+                        "phone": phone,
+                        "email": email,
+                        "team_id": team_id,
+                        "role": role,
+                        "province": province,
+                        "city": city,
+                        "responsible_area": responsible_area,
+                        "status": PersonnelStatus.ACTIVE.value,
+                    }
+
+                    # 按 name+phone 去重
+                    if phone:
+                        existing_list = await PersonnelCRUD(auth).list_crud(
+                            search={"name": ("eq", name), "phone": ("eq", phone)}
+                        )
+                        if existing_list:
+                            if update_support:
+                                await PersonnelCRUD(auth).update_crud(
+                                    id=existing_list[0].id, data=personnel_data
+                                )
+                                success_count += 1
+                            else:
+                                error_msgs.append(f"第{count}行: 人员 {name}({phone}) 已存在")
+                            continue
+
+                    await PersonnelCRUD(auth).create_crud(data=personnel_data)
+                    success_count += 1
+
+                except Exception as e:
+                    error_msgs.append(f"第{count}行: 异常{e!s}")
+                    continue
+
+            result = f"成功导入 {success_count} 条数据"
+            if error_msgs:
+                result += "\n错误信息:\n" + "\n".join(error_msgs)
+            return result
+
+        except CustomException:
+            raise
+        except Exception as e:
+            log.error(f"批量导入招生人员失败: {e!s}")
+            raise CustomException(msg=f"导入失败: {e!s}")
+
+    @classmethod
+    async def import_template_download_service(cls) -> bytes:
+        """获取招生人员导入模板"""
+        header_list = ["人员姓名", "手机号", "邮箱", "招生组ID", "角色", "省份", "城市", "负责区域"]
+        selector_header_list = ["角色"]
+        option_list = [
+            {"角色": ["组长", "副组长", "组员"]},
+        ]
+        return ExcelUtil.get_excel_template(
+            header_list=header_list,
+            selector_header_list=selector_header_list,
+            option_list=option_list,
+        )

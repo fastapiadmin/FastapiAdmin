@@ -18,6 +18,9 @@ class PersonnelCreateSchema(BaseModel):
     email: str | None = Field(default=None, description="邮箱", max_length=100)
     team_id: int | None = Field(default=None, description="招生组ID")
     role: str | None = Field(default=None, description="角色", max_length=50)
+    province: str | None = Field(default=None, description="省份", max_length=50)
+    city: str | None = Field(default=None, description="城市", max_length=50)
+    responsible_area: str | None = Field(default=None, description="负责区域", max_length=200)
     invitation_status: str | None = Field(default=None, description="邀请状态")
     join_time: DateTimeStr | None = Field(default=None, description="加入时间")
     exit_time: DateTimeStr | None = Field(default=None, description="离开时间")
@@ -57,6 +60,7 @@ class PersonnelQuerySchema(BaseModel):
         user_id: int | None = Query(None, description="用户ID"),
         team_id: int | None = Query(None, description="招生组ID"),
         role: str | None = Query(None, description="角色"),
+        province: str | None = Query(None, description="省份"),
         status: str | None = Query(None, description="状态"),
         invitation_status: str | None = Query(None, description="邀请状态"),
     ) -> None:
@@ -70,6 +74,8 @@ class PersonnelQuerySchema(BaseModel):
             self.team_id = (QueueEnum.eq.value, team_id)
         if role:
             self.role = (QueueEnum.eq.value, role)
+        if province:
+            self.province = (QueueEnum.eq.value, province)
         if status:
             self.status = (QueueEnum.eq.value, status)
         if invitation_status:

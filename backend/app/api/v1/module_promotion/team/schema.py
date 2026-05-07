@@ -15,6 +15,10 @@ class TeamCreateSchema(BaseModel):
     parent_id: int | None = Field(default=None, description="上级招生组ID")
     level: int = Field(default=1, description="层级")
     leader_id: int | None = Field(default=None, description="负责人用户ID")
+    leader_name: str | None = Field(default=None, description="负责人姓名", max_length=100)
+    leader_phone: str | None = Field(default=None, description="负责人电话", max_length=20)
+    province: str | None = Field(default=None, description="省份", max_length=50)
+    city: str | None = Field(default=None, description="城市", max_length=50)
     responsible_area: str | None = Field(default=None, description="负责区域", max_length=200)
 
     @field_validator("name")
@@ -51,6 +55,7 @@ class TeamQuerySchema(BaseModel):
         name: str | None = Query(None, description="招生组名称"),
         parent_id: int | None = Query(None, description="上级招生组ID"),
         level: int | None = Query(None, description="层级"),
+        province: str | None = Query(None, description="省份"),
         status: str | None = Query(None, description="状态"),
     ) -> None:
         from app.common.enums import QueueEnum
@@ -61,6 +66,8 @@ class TeamQuerySchema(BaseModel):
             self.parent_id = (QueueEnum.eq.value, parent_id)
         if level is not None:
             self.level = (QueueEnum.eq.value, level)
+        if province:
+            self.province = (QueueEnum.eq.value, province)
         if status:
             self.status = (QueueEnum.eq.value, status)
 
@@ -75,6 +82,10 @@ class TeamTreeSchema(BaseModel):
     parent_id: int | None = Field(default=None, description="上级招生组ID")
     level: int = Field(..., description="层级")
     leader_id: int | None = Field(default=None, description="负责人用户ID")
+    leader_name: str | None = Field(default=None, description="负责人姓名")
+    leader_phone: str | None = Field(default=None, description="负责人电话")
+    province: str | None = Field(default=None, description="省份")
+    city: str | None = Field(default=None, description="城市")
     responsible_area: str | None = Field(default=None, description="负责区域")
     status: str | None = Field(default=None, description="状态")
     children: list["TeamTreeSchema"] = Field(default_factory=list, description="下级招生组")

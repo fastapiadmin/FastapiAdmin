@@ -21,6 +21,8 @@ class SummaryCreateSchema(BaseModel):
     upload_by: int | None = Field(default=None, description="上传人ID")
     upload_time: DateTimeStr | None = Field(default=None, description="上传时间")
     is_archived: int | None = Field(default=None, description="是否归档")
+    recruitment_results: str | None = Field(default=None, description="招生成果")
+    travel_expense: float | None = Field(default=None, description="差旅费用")
 
 
 class SummaryUpdateSchema(SummaryCreateSchema):

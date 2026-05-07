@@ -8,11 +8,13 @@
 from fastapi import APIRouter
 
 from .activity_apply.controller import ActivityApplyRouter
+from .approval_record.controller import ApprovalRecordRouter
 from .checkin.controller import CheckinRouter
 from .document.controller import DocumentRouter
 from .expense.controller import ExpenseRouter
 from .material.controller import MaterialRouter
 from .personnel.controller import PersonnelRouter
+from .school_library.controller import SchoolLibraryRouter
 from .summary.controller import SummaryRouter
 from .target_school.controller import TargetSchoolRouter
 from .team.controller import TeamRouter
@@ -28,3 +30,5 @@ promotion_router.include_router(ExpenseRouter)
 promotion_router.include_router(CheckinRouter)
 promotion_router.include_router(SummaryRouter)
 promotion_router.include_router(DocumentRouter)
+promotion_router.include_router(ApprovalRecordRouter)
+promotion_router.include_router(SchoolLibraryRouter)
