@@ -1,11 +1,14 @@
 <!-- 全屏切换按钮 -->
 <template>
   <div @click="toggle">
-    <div :class="`i-svg:` + (isFullscreen ? 'fullscreen-exit' : 'fullscreen')" />
+    <ArtSvgIcon :icon="resolveIconForArtSvgIcon(isFullscreen ? 'fullscreen-exit' : 'fullscreen')" />
   </div>
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
+
 const { isFullscreen, toggle } = useFullscreen();
 </script>
 

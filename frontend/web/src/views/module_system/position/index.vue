@@ -1,467 +1,539 @@
-<!-- 岗位管理 -->
+<!-- 岗位管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
 <template>
-  <div class="app-container">
-    <PageSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
-    />
-
-    <PageContent ref="contentRef" :content-config="contentConfig">
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft
-          :remove-ids="removeIds"
-          :perm-create="['module_system:position:create']"
-          :perm-delete="['module_system:position:delete']"
-          :perm-patch="['module_system:position:patch']"
-          @add="handleOpenDialog('create')"
-          @delete="onToolbar('delete')"
-          @more="handleMoreClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="positionSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
+    >
+      <template #created_id>
+        <UserTableSelect
+          :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
+          @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
+          @confirm-click="afterUserSelectSearch"
+          @clear-click="afterUserSelectSearch"
         />
-        <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar">
-            <template #prepend>
-              <el-tooltip content="导出">
-                <el-button
-                  v-hasPerm="['module_system:position:export']"
-                  type="warning"
-                  icon="download"
-                  circle
-                  @click="handleOpenExportsModal"
-                />
-              </el-tooltip>
-            </template>
-          </CrudToolbarRight>
-        </div>
       </template>
+    </ArtSearchBar>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            row-key="id"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'name')?.show"
-              key="name"
-              label="岗位名称"
-              prop="name"
-              min-width="100"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'status')?.show"
-              key="status"
-              label="状态"
-              prop="status"
-              min-width="80"
-            >
-              <template #default="scope">
-                <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === "0" ? "启用" : "停用" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'order')?.show"
-              key="order"
-              label="岗位排序"
-              prop="order"
-              min-width="80"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'description')?.show"
-              key="description"
-              label="描述"
-              prop="description"
-              min-width="120"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              key="created_time"
-              label="创建时间"
-              prop="created_time"
-              min-width="200"
-              sortable
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_time')?.show"
-              key="updated_time"
-              label="更新时间"
-              prop="updated_time"
-              min-width="200"
-              sortable
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_id')?.show"
-              key="created_id"
-              label="创建人"
-              min-width="100"
-            >
-              <template #default="scope">
-                {{ scope.row.created_by?.name }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_id')?.show"
-              key="updated_id"
-              label="更新人"
-              min-width="100"
-            >
-              <template #default="scope">
-                {{ scope.row.updated_by?.name }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="200"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_system:position:detail']"
-                  type="info"
-                  size="small"
-                  link
-                  icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
-                >
-                  详情
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:position:update']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:position:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleRowDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </PageContent>
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_system:position:create']"
+            :perm-export="['module_system:position:export']"
+            :perm-delete="['module_system:position:delete']"
+            :perm-patch="['module_system:position:patch']"
+            :delete-loading="batchDeleting"
+            @add="handleOpenDialog('create')"
+            @export="openExportModal"
+            @delete="handleBatchDelete"
+            @more="handleMoreClick"
+          />
+        </template>
+      </ArtTableHeader>
 
-    <EnhancedDialog
+      <ArtTable
+        ref="artTableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
+
+    <ArtDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
+      width="720px"
+      dialog-class="crud-embed-dialog"
+      modal-class="crud-embed-dialog"
       @close="handleCloseDialog"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <el-descriptions :column="4" border>
-          <el-descriptions-item label="岗位名称" :span="2">
-            {{ detailFormData.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="排序" :span="2">
-            {{ detailFormData.order }}
-          </el-descriptions-item>
-          <el-descriptions-item label="状态" :span="2">
-            <el-tag v-if="detailFormData.status === '0'" type="success">启用</el-tag>
-            <el-tag v-else type="danger">停用</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.created_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新人" :span="2">
-            {{ detailFormData.updated_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="4">
-            {{ detailFormData.description }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
+          <ElDescriptions :column="4" border>
+            <ElDescriptionsItem label="岗位名称" :span="2">
+              {{ detailFormData.name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="排序" :span="2">
+              {{ detailFormData.order }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="状态" :span="2">
+              <ElTag v-if="detailFormData.status === '0'" type="success">启用</ElTag>
+              <ElTag v-else type="danger">停用</ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建人" :span="2">
+              {{ detailFormData.created_by?.name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="更新人" :span="2">
+              {{ detailFormData.updated_by?.name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="更新时间" :span="2">
+              {{ detailFormData.updated_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="描述" :span="4">
+              {{ detailFormData.description }}
+            </ElDescriptionsItem>
+          </ElDescriptions>
+        </ElScrollbar>
       </template>
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="岗位名称" prop="name">
-            <el-input v-model="formData.name" placeholder="请输入岗位名称" :maxlength="50" />
-          </el-form-item>
-          <el-form-item label="排序" prop="order">
-            <el-input-number v-model="formData.order" controls-position="right" :min="1" />
-          </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-radio-group v-model="formData.status">
-              <el-radio value="0">启用</el-radio>
-              <el-radio value="1">停用</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="描述" prop="description">
-            <el-input
-              v-model="formData.description"
-              :rows="4"
-              :maxlength="100"
-              show-word-limit
-              type="textarea"
-              placeholder="请输入描述"
-            />
-          </el-form-item>
-        </el-form>
+        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
+          <ArtForm
+            :key="positionFormRenderKey"
+            ref="dataFormRef"
+            v-model="formData"
+            :items="positionDialogFormItems"
+            :rules="rules"
+            label-suffix=":"
+            :label-width="'auto'"
+            label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
+          >
+            <template #status>
+              <ElRadioGroup v-model="formData.status">
+                <ElRadio value="0">启用</ElRadio>
+                <ElRadio value="1">停用</ElRadio>
+              </ElRadioGroup>
+            </template>
+          </ArtForm>
+        </ElScrollbar>
       </template>
 
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
+        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton
             v-if="dialogVisible.type !== 'detail'"
             type="primary"
             :loading="submitLoading"
             @click="handleSubmit"
           >
             确定
-          </el-button>
-          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
+          </ElButton>
+          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
 
-    <ExportModal
-      v-model="exportsDialogVisible"
-      :content-config="curdContentConfig"
+    <ArtExportDialog
+      v-model="exportModalVisible"
+      :content-config="positionExportContentConfig"
       :query-params="exportQueryParams"
-      :page-data="exportPageData"
-      :selection-data="exportSelectionData"
+      :page-data="data"
+      :selection-data="selectedRows"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { h, computed, ref, reactive, nextTick } from "vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
+import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import type { IObject } from "@/components/Core/modal/types";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import type { ColumnOption } from "@/types/component";
+import PositionAPI, {
+  type PositionForm,
+  type PositionPageQuery,
+  type PositionTable,
+} from "@/api/module_system/position";
+import {
+  ElMessage,
+  ElMessageBox,
+  ElTag,
+  ElTooltip,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+} from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
+import { useUserStore } from "@stores";
+import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+
 defineOptions({
   name: "Position",
   inheritAttrs: false,
 });
 
-import { ref, reactive, computed, markRaw, nextTick, unref } from "vue";
-import { fetchAllPages } from "@/utils/fetchAllPages";
-import PositionAPI, {
-  PositionTable,
-  PositionForm,
-  PositionPageQuery,
-} from "@/api/module_system/position";
-import { useUserStore } from "@/store";
-import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
-import ExportModal from "@/components/CURD/ExportModal.vue";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+const MAX_INLINE_ROW_ACTIONS = 3;
+const { hasAuth } = useAuth();
+const userStore = useUserStore();
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-const dataFormRef = ref();
-const submitLoading = ref(false);
+type PositionSearchForm = {
+  name?: string;
+  status?: string;
+  created_time?: string[];
+  created_id?: number;
+};
 
-function triggerUserSearch() {
-  nextTick(() => refreshList());
+function normalizePositionQuery(params: Record<string, unknown>): PositionPageQuery {
+  const p = { ...params } as Record<string, unknown>;
+  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
+  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
+  return p as unknown as PositionPageQuery;
 }
 
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_system:position",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
+function buildPositionReplaceParams(p: PositionSearchForm): Record<string, unknown> {
+  return {
+    name: p.name,
+    status: p.status,
+    created_id: p.created_id,
+    created_time:
+      Array.isArray(p.created_time) && p.created_time.length === 2 ? p.created_time : undefined,
+  };
+}
+
+type RowAction = {
+  key: string;
+  label: string;
+  artType: "add" | "edit" | "delete" | "view" | "more";
+  icon?: string;
+  perm: string;
+  disabled?: boolean;
+  run: () => void;
+};
+
+function buildPositionRowActions(
+  row: PositionTable,
+  ctx: {
+    onDetail: (id: number) => void;
+    onEdit: (id: number) => void;
+    onDelete: (id: number) => void;
+  }
+): RowAction[] {
+  const all: RowAction[] = [
     {
-      prop: "name",
-      label: "岗位名称",
-      type: "input",
-      attrs: { placeholder: "请输入岗位名称", clearable: true },
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:position:detail",
+      run: () => ctx.onDetail(row.id!),
     },
     {
-      prop: "status",
-      label: "状态",
-      type: "select",
-      options: [
-        { label: "启用", value: "0" },
-        { label: "停用", value: "1" },
-      ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "167.5px" } },
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      perm: "module_system:position:update",
+      run: () => ctx.onEdit(row.id!),
     },
     {
-      prop: "created_time",
-      label: "创建时间",
-      type: "date-picker",
-      initialValue: [],
-      attrs: {
-        type: "datetimerange",
-        valueFormat: "YYYY-MM-DD HH:mm:ss",
-        rangeSeparator: "至",
-        startPlaceholder: "开始日期",
-        endPlaceholder: "结束日期",
-        style: { width: "340px" },
-      },
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      perm: "module_system:position:delete",
+      run: () => ctx.onDelete(row.id!),
     },
+  ];
+  return all.filter((a) => hasAuth(a.perm));
+}
+
+function formatPositionOperationCell(
+  row: PositionTable,
+  ctx: Parameters<typeof buildPositionRowActions>[1]
+) {
+  const actions = buildPositionRowActions(row, ctx);
+  if (actions.length === 0) {
+    return h("span", { class: "text-g-400" }, "—");
+  }
+  const inline = actions.slice(0, MAX_INLINE_ROW_ACTIONS);
+  const overflow = actions.slice(MAX_INLINE_ROW_ACTIONS);
+
+  const inlineNodes = inline.map((a) =>
+    h(ElTooltip, { content: a.label, placement: "top" }, () =>
+      h("span", { class: "inline-flex" }, [
+        h(ArtButtonTable, {
+          type: a.artType,
+          icon: a.icon,
+          onClick: a.run,
+        }),
+      ])
+    )
+  );
+
+  if (overflow.length === 0) {
+    return h(
+      "div",
+      { class: "inline-flex flex-wrap items-center justify-end gap-1 position-table-actions" },
+      inlineNodes
+    );
+  }
+
+  const dropdown = h(
+    ElDropdown,
+    { trigger: "click" },
     {
-      prop: "created_id",
-      label: "创建人",
-      type: "user-table-select",
-      initialValue: null,
-      events: {
-        "confirm-click": triggerUserSearch,
-        "clear-click": triggerUserSearch,
-      },
-    },
-  ],
-  customComponents: {
-    "user-table-select": markRaw(UserTableSelect),
-  },
+      default: () =>
+        h(ElTooltip, { content: "更多", placement: "top" }, () =>
+          h("span", { class: "inline-flex align-middle" }, [
+            h(ArtButtonTable, {
+              type: "more",
+              onClick: () => {},
+            }),
+          ])
+        ),
+      dropdown: () =>
+        h(
+          ElDropdownMenu,
+          null,
+          overflow.map((a) =>
+            h(
+              ElDropdownItem,
+              {
+                key: a.key,
+                disabled: a.disabled,
+                onClick: () => a.run(),
+              },
+              () => a.label
+            )
+          )
+        ),
+    }
+  );
+
+  return h(
+    "div",
+    { class: "inline-flex flex-wrap items-center justify-end gap-1 position-table-actions" },
+    [...inlineNodes, dropdown]
+  );
+}
+
+const searchForm = ref<PositionSearchForm>({
+  name: undefined,
+  status: undefined,
+  created_time: undefined,
+  created_id: undefined,
 });
 
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "name", label: "岗位名称", show: true },
-  { prop: "order", label: "岗位排序", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人", show: true },
-  { prop: "updated_id", label: "更新人", show: true },
-  { prop: "operation", label: "操作", show: true },
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "启用", value: "0" },
+  { label: "停用", value: "1" },
 ]);
 
-const contentConfig = reactive<IContentConfig<PositionPageQuery>>({
-  permPrefix: "module_system:position",
-  pk: "id",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
+const positionSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "岗位名称",
+    key: "name",
+    type: "input",
+    placeholder: "请输入岗位名称",
+    clearable: true,
+    span: 6,
   },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await PositionAPI.listPosition(params as PositionPageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: statusOptions.value,
+      clearable: true,
+    },
+    span: 6,
   },
-  deleteAction: async (ids) => {
-    await PositionAPI.deletePosition(
-      ids
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !Number.isNaN(n))
-    );
-    const userStore = useUserStore();
-    await userStore.getUserInfo();
+  {
+    label: "创建时间",
+    key: "created_time",
+    type: "datetimerange",
+    span: 6,
+    props: {
+      type: "datetimerange",
+      rangeSeparator: "至",
+      startPlaceholder: "开始日期",
+      endPlaceholder: "结束日期",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      style: { width: "100%" },
+    },
   },
-  deleteConfirm: {
-    title: "警告",
-    message: "确认删除该项数据?",
+  {
+    label: "创建人",
+    key: "created_id",
+    type: "input",
+    span: 6,
+  },
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<PositionTable[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: PositionTable[]) {
+  selectedRows.value = rows;
+}
+
+function deletePositionRow(id: number) {
+  ElMessageBox.confirm("确认删除该项数据?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
     type: "warning",
+  })
+    .then(async () => {
+      await PositionAPI.deletePosition([id]);
+      await userStore.getUserInfo();
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
+}
+
+const opCtx = {
+  onDetail: (id: number) => void handleOpenDialog("detail", id),
+  onEdit: (id: number) => void handleOpenDialog("update", id),
+  onDelete: deletePositionRow,
+};
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  searchParams,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: PositionAPI.listPosition,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<PositionTable>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { prop: "name", label: "岗位名称", minWidth: 100, showOverflowTooltip: true },
+      {
+        prop: "status",
+        label: "状态",
+        width: 88,
+        formatter: (row: PositionTable) =>
+          h(ElTag, { type: row.status === "0" ? "success" : "danger" }, () =>
+            row.status === "0" ? "启用" : "停用"
+          ),
+      },
+      { prop: "order", label: "岗位排序", width: 100, showOverflowTooltip: true },
+      { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
+      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
+      { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "created_id",
+        label: "创建人",
+        minWidth: 100,
+        formatter: (row: PositionTable) => row.created_by?.name ?? "—",
+      },
+      {
+        prop: "updated_id",
+        label: "更新人",
+        minWidth: 100,
+        formatter: (row: PositionTable) => row.updated_by?.name ?? "—",
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 200,
+        fixed: "right",
+        align: "right",
+        formatter: (row: PositionTable) => formatPositionOperationCell(row, opCtx),
+      },
+    ],
   },
 });
 
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
-}
-
-const exportsDialogVisible = ref(false);
-
-const exportQueryParams = computed(() => searchRef.value?.getQueryParams() ?? {});
-
-const exportPageData = computed(() => (unref(contentRef.value?.pageData) ?? []) as PositionTable[]);
-
-const exportSelectionData = computed(
-  () => (contentRef.value?.getSelectionData() ?? []) as PositionTable[]
+const positionCrudCols = computed(() =>
+  columns.value.map((c: ColumnOption<PositionTable>) => {
+    const t = (c as { type?: string }).type;
+    return {
+      prop: c.prop,
+      label: c.label,
+      type: t === "selection" ? ("selection" as const) : ("default" as const),
+      show: true,
+    };
+  })
 );
 
-const exportColumns = [
-  { prop: "name", label: "岗位名称" },
-  { prop: "order", label: "岗位排序" },
-  { prop: "status", label: "状态" },
-  { prop: "description", label: "描述" },
-  { prop: "created_time", label: "创建时间" },
-  { prop: "updated_time", label: "更新时间" },
-];
+const exportQueryParams = computed(() => {
+  const sp = { ...(searchParams as object) } as Record<string, unknown>;
+  delete sp.current;
+  delete sp.size;
+  return normalizePositionQuery(sp) as unknown as Record<string, unknown>;
+});
 
-const curdContentConfig = {
+const positionExportContentConfig = computed(() => ({
   permPrefix: "module_system:position",
-  cols: exportColumns as unknown as IContentConfig["cols"],
-  exportsAction: async (params: Record<string, unknown>) => {
-    const query = { ...params } as Record<string, unknown>;
-    return fetchAllPages<PositionTable>({
-      initialQuery: query,
-      fetchPage: async (q) => {
-        const res = await PositionAPI.listPosition(q as unknown as PositionPageQuery);
-        return {
-          total: res.data?.data?.total ?? 0,
-          list: res.data?.data?.items ?? [],
-        };
-      },
-    });
+  cols: positionCrudCols.value,
+  exportsBlobAction: async (params: IObject) => {
+    const merged = normalizePositionQuery({
+      ...(exportQueryParams.value as Record<string, unknown>),
+      ...params,
+    } as Record<string, unknown>);
+    const res = await PositionAPI.exportPosition(merged as PositionPageQuery);
+    return res.data as Blob;
   },
-} as unknown as IContentConfig;
+}));
 
-function handleOpenExportsModal() {
-  exportsDialogVisible.value = true;
-}
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
+});
 
 const detailFormData = ref<PositionTable>({});
 
@@ -493,11 +565,82 @@ const initialFormData: PositionForm = {
   description: undefined,
 };
 
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const positionFormRenderKey = ref(0);
+
+const positionDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "岗位名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入岗位名称", maxlength: 50 },
+  },
+  {
+    label: "排序",
+    key: "order",
+    type: "number",
+    span: 24,
+    props: { controlsPosition: "right", min: 1 },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
+const submitLoading = ref(false);
+const exportModalVisible = ref(false);
+
+function openExportModal() {
+  exportModalVisible.value = true;
+}
+
+async function handleSearchBarSearch(params: PositionSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildPositionReplaceParams(params));
+  getData();
+}
+
+async function applyPositionSearchFromForm() {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildPositionReplaceParams(searchForm.value));
+  getData();
+}
+
+async function afterUserSelectSearch() {
+  await nextTick();
+  await applyPositionSearchFromForm();
+}
+
+function onResetSearch() {
+  searchForm.value = {
+    name: undefined,
+    status: undefined,
+    created_time: undefined,
+    created_id: undefined,
+  };
+  void resetSearchParams();
+}
+
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -512,46 +655,69 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     const response = await PositionAPI.detailPosition(id);
     if (type === "detail") {
       dialogVisible.title = "岗位详情";
-      Object.assign(detailFormData.value, response.data.data);
+      Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改岗位";
       Object.assign(formData, response.data.data);
     }
   } else {
     dialogVisible.title = "新增岗位";
+    Object.assign(formData, initialFormData);
     formData.id = undefined;
   }
+  positionFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      submitLoading.value = true;
-      const id = formData.id;
-      try {
-        if (id) {
-          await PositionAPI.updatePosition(id, { id, ...formData });
-        } else {
-          await PositionAPI.createPosition(formData);
-        }
-        dialogVisible.visible = false;
-        await resetForm();
-        refreshList();
-        const userStore = useUserStore();
-        await userStore.getUserInfo();
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        submitLoading.value = false;
+  dataFormRef.value?.validate(async (valid: boolean) => {
+    if (!valid) return;
+    submitLoading.value = true;
+    const id = formData.id;
+    try {
+      if (id) {
+        await PositionAPI.updatePosition(id, { id, ...formData });
+        await refreshUpdate();
+      } else {
+        await PositionAPI.createPosition(formData);
+        await refreshCreate();
       }
+      dialogVisible.visible = false;
+      await resetForm();
+      await userStore.getUserInfo();
+    } catch (error: unknown) {
+      console.error(error);
+    } finally {
+      submitLoading.value = false;
     }
   });
 }
 
-async function handleMoreClick(status: string) {
-  const rows = contentRef.value?.getSelectionData() as PositionTable[] | undefined;
-  const ids = (rows ?? []).map((r) => r.id).filter((id): id is number => id != null);
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await PositionAPI.deletePosition(ids);
+        await userStore.getUserInfo();
+        ElMessage.success("删除成功");
+        artTableRef.value?.elTableRef?.clearSelection();
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+function handleMoreClick(status: string) {
+  const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
@@ -564,15 +730,30 @@ async function handleMoreClick(status: string) {
     .then(async () => {
       try {
         await PositionAPI.batchPosition({ ids, status });
-        refreshList();
-        const userStore = useUserStore();
+        await refreshData();
         await userStore.getUserInfo();
       } catch (error: unknown) {
         console.error(error);
       }
     })
-    .catch(() => {
-      ElMessageBox.close();
-    });
+    .catch(() => {});
 }
 </script>
+
+<style scoped lang="scss">
+.art-table-card {
+  flex: 1;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+:deep(.position-table-actions .inline-flex) {
+  vertical-align: middle;
+}
+</style>

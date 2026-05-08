@@ -1,5 +1,5 @@
 <template>
-  <el-drawer
+  <ElDrawer
     v-model="dialogVisible"
     :title="drawerTitle"
     :close-on-click-modal="true"
@@ -7,41 +7,33 @@
     class="workflow-drawer"
     @close="handleClose"
   >
-    <el-container class="workflow-create-content">
-      <el-splitter direction="horizontal" style="height: 100%">
-        <el-splitter-panel size="250px" :min="200" :max="400">
-          <el-scrollbar style="height: 100%">
+    <ElContainer class="workflow-create-content">
+      <ElSplitter direction="horizontal" style="height: 100%">
+        <ElSplitterPanel size="250px" :min="200" :max="400">
+          <ElScrollbar style="height: 100%">
             <div class="panel-section">
               <div class="section-title">基础信息</div>
-              <el-form
+              <ArtForm
                 ref="formRef"
-                :model="formData"
-                label-width="50px"
+                v-model="formData"
+                :items="workflowBaseFormItems"
                 :rules="formRules"
+                label-width="50px"
+                label-position="right"
                 size="small"
-              >
-                <el-form-item label="编码" prop="code">
-                  <el-input v-model="formData.code" placeholder="请输入流程编码" />
-                </el-form-item>
-                <el-form-item label="名称" prop="name">
-                  <el-input v-model="formData.name" placeholder="请输入流程名称" />
-                </el-form-item>
-                <el-form-item label="描述" prop="description">
-                  <el-input
-                    v-model="formData.description"
-                    type="textarea"
-                    :rows="2"
-                    placeholder="请输入流程描述"
-                  />
-                </el-form-item>
-              </el-form>
+                :span="24"
+                :gutter="12"
+                :show-reset="false"
+                :show-submit="false"
+                class="workflow-base-art-form"
+              />
             </div>
 
-            <el-divider style="margin: 4px 0" />
+            <ElDivider style="margin: 4px 0" />
 
             <div class="panel-section">
               <div class="section-title">节点</div>
-              <el-input
+              <ElInput
                 v-model="searchKeyword"
                 placeholder="搜索节点名称"
                 clearable
@@ -49,11 +41,11 @@
                 class="search-box"
               >
                 <template #prefix>
-                  <el-icon><Search /></el-icon>
+                  <ElIcon><Search /></ElIcon>
                 </template>
-              </el-input>
-              <el-space direction="vertical" :size="8" fill style="width: 100%; margin-top: 8px">
-                <el-tag
+              </ElInput>
+              <ElSpace direction="vertical" :size="8" fill style="width: 100%; margin-top: 8px">
+                <ElTag
                   v-for="item in filteredNodes"
                   :key="item.id"
                   :type="getCategoryType(item.category) as any"
@@ -67,13 +59,13 @@
                   <span style="margin-left: 4px; font-size: 10px; opacity: 0.7">
                     [{{ getCategoryText(item.category) }}]
                   </span>
-                </el-tag>
-              </el-space>
+                </ElTag>
+              </ElSpace>
             </div>
-          </el-scrollbar>
-        </el-splitter-panel>
+          </ElScrollbar>
+        </ElSplitterPanel>
 
-        <el-splitter-panel>
+        <ElSplitterPanel>
           <div class="canvas-main">
             <div class="canvas-container" @click="handleCanvasClick">
               <VueFlow
@@ -93,76 +85,76 @@
                 <Controls />
                 <Background pattern-color="#aaa" :gap="16" />
                 <Panel position="top-right" class="workflow-toolbar">
-                  <el-button
+                  <ElButton
                     class="vue-flow__controls-button"
                     title="格式化画布"
                     :icon="Grid"
                     @click="handleFormatCanvas"
                   />
-                  <el-dropdown trigger="click" @command="handleEdgeStyleChange">
-                    <el-button class="vue-flow__controls-button" title="连线样式" :icon="Share" />
+                  <ElDropdown trigger="click" @command="handleEdgeStyleChange">
+                    <ElButton class="vue-flow__controls-button" title="连线样式" :icon="Share" />
                     <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item
+                      <ElDropdownMenu>
+                        <ElDropdownItem
                           command="bezier"
                           :class="{ active: edgeStyle === 'bezier' }"
                         >
                           平滑曲线
-                        </el-dropdown-item>
-                        <el-dropdown-item
+                        </ElDropdownItem>
+                        <ElDropdownItem
                           command="smoothstep"
                           :class="{ active: edgeStyle === 'smoothstep' }"
                         >
                           阶梯折线
-                        </el-dropdown-item>
-                        <el-dropdown-item
+                        </ElDropdownItem>
+                        <ElDropdownItem
                           command="straight"
                           :class="{ active: edgeStyle === 'straight' }"
                         >
                           直线
-                        </el-dropdown-item>
-                      </el-dropdown-menu>
+                        </ElDropdownItem>
+                      </ElDropdownMenu>
                     </template>
-                  </el-dropdown>
-                  <el-button
+                  </ElDropdown>
+                  <ElButton
                     class="vue-flow__controls-button"
                     :title="edgeAnimated ? '关闭动画' : '开启动画'"
                     :icon="VideoPlay"
                     @click="handleEdgeAnimatedChange(!edgeAnimated)"
                   />
-                  <el-dropdown trigger="click">
-                    <el-button class="vue-flow__controls-button" title="布局方向">
-                      <el-icon><Rank /></el-icon>
-                    </el-button>
+                  <ElDropdown trigger="click">
+                    <ElButton class="vue-flow__controls-button" title="布局方向">
+                      <ElIcon><Rank /></ElIcon>
+                    </ElButton>
                     <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item
+                      <ElDropdownMenu>
+                        <ElDropdownItem
                           @click="
                             layoutDirection = 'LR';
                             handleLayout();
                           "
                         >
                           横向布局
-                        </el-dropdown-item>
-                        <el-dropdown-item
+                        </ElDropdownItem>
+                        <ElDropdownItem
                           @click="
                             layoutDirection = 'TB';
                             handleLayout();
                           "
                         >
                           纵向布局
-                        </el-dropdown-item>
-                      </el-dropdown-menu>
+                        </ElDropdownItem>
+                      </ElDropdownMenu>
                     </template>
-                  </el-dropdown>
+                  </ElDropdown>
                 </Panel>
                 <MiniMap pannable zoomable />
               </VueFlow>
             </div>
           </div>
-        </el-splitter-panel>
+        </ElSplitterPanel>
 
-        <el-splitter-panel v-if="updateState" size="320px" :min="280" :max="400">
+        <ElSplitterPanel v-if="updateState" size="320px" :min="280" :max="400">
           <NodeConfigPanel
             v-if="updateState === 'node'"
             :node="selectedNode"
@@ -177,17 +169,17 @@
             @save="handleSaveEdge"
             @delete="handleDeleteEdge"
           />
-        </el-splitter-panel>
-      </el-splitter>
-    </el-container>
+        </ElSplitterPanel>
+      </ElSplitter>
+    </ElContainer>
 
     <template #footer>
       <div class="drawer-footer">
-        <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="handleFinish">保存</el-button>
+        <ElButton @click="handleClose">取消</ElButton>
+        <ElButton type="primary" @click="handleFinish">保存</ElButton>
       </div>
     </template>
-  </el-drawer>
+  </ElDrawer>
 </template>
 
 <script setup lang="ts">
@@ -209,6 +201,8 @@ import "element-plus/dist/index.css";
 import DynamicNode from "./DynamicNode.vue";
 import NodeConfigPanel from "./NodeConfigPanel.vue";
 import EdgeConfigPanel from "./EdgeConfigPanel.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
 import WorkflowDefinitionAPI, {
   type WorkflowTable,
   type WorkflowForm,
@@ -233,7 +227,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:visible", "refresh"]);
 
-const formRef = ref();
+const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
 const workflowId = ref<number>();
 
 const formData = reactive<Partial<WorkflowForm>>({
@@ -246,6 +240,34 @@ const formRules = {
   code: [{ required: true, message: "请输入流程编码", trigger: "blur" }],
   name: [{ required: true, message: "请输入流程名称", trigger: "blur" }],
 };
+
+const workflowBaseFormItems = computed<FormItem[]>(() => [
+  {
+    label: "编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入流程编码" },
+  },
+  {
+    label: "名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入流程名称" },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 2,
+      placeholder: "请输入流程描述",
+    },
+  },
+]);
 
 const dialogVisible = computed({
   get: () => props.visible,
@@ -739,7 +761,7 @@ const handleFinish = async () => {
   if (!formRef.value) return;
 
   try {
-    await formRef.value.validate();
+    await formRef.value.validate?.();
     await handleValidate();
     await handleSave();
     emit("refresh");
@@ -965,12 +987,24 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   gap: 4px;
   padding: 8px;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .drawer-footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+}
+
+.workflow-base-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.workflow-base-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+.workflow-base-art-form :deep(section) {
+  padding: 0;
 }
 </style>

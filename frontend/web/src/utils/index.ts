@@ -1,120 +1,39 @@
 /**
- * Check if an element has a class
- * @param {HTMLElement} ele
- * @param {string} cls
- * @returns {boolean}
- */
-export function hasClass(ele: HTMLElement, cls: string) {
-  return !!ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
-}
-
-/**
- * Add class to element
- * @param {HTMLElement} ele
- * @param {string} cls
- */
-export function addClass(ele: HTMLElement, cls: string) {
-  if (!hasClass(ele, cls)) ele.className += " " + cls;
-}
-
-/**
- * Remove class from element
- * @param {HTMLElement} ele
- * @param {string} cls
- */
-export function removeClass(ele: HTMLElement, cls: string) {
-  if (hasClass(ele, cls)) {
-    const reg = new RegExp("(\\s|^)" + cls + "(\\s|$)");
-    ele.className = ele.className.replace(reg, " ");
-  }
-}
-
-/**
- * 判断是否是外部链接
+ * 工具与横切能力统一导出入口
  *
- * @param {string} path
- * @returns {Boolean}
- */
-export function isExternal(path: string) {
-  const isExternal = /^(https?:|http?:|mailto:|tel:)/.test(path);
-  return isExternal;
-}
-
-/**
- * 格式化增长率，保留两位小数 ，并且去掉末尾的0  取绝对值
+ * 目录约定：按领域分子目录，各包以 `index.ts` 为入口（如 `http/`、`storage/`）。
  *
- * @param growthRate
- * @returns
+ * @module utils/index
  */
-export function formatGrowthRate(growthRate: number) {
-  if (growthRate === 0) {
-    return "-";
-  }
 
-  const formattedRate = Math.abs(growthRate * 100)
-    .toFixed(2)
-    .replace(/\.?0+$/, "");
-  return formattedRate + "%";
-}
+// 认证 & OAuth
+export * from "./auth";
+export * from "./oauth";
 
-//表单生成相关
+// 通用
+export * from "./common";
+export { default as download } from "./download";
+export * from "./constants";
+export * from "./form";
+export * from "./i18n";
 
-export function isNumberStr(str: string): boolean {
-  return /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g.test(str);
-}
+// 网络
+export * from "./http";
+export * from "./socket";
 
-export function titleCase(str: string): string {
-  return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
-    return str.toUpperCase();
-  });
-}
+// 浏览器 / 系统
+export * from "./storage";
+export * from "./sys";
+export * from "./ui";
 
-export function makeMap(str: string, expectsLowerCase?: boolean) {
-  const map = Object.create(null);
-  const list = str.split(",");
-  for (let i = 0; i < list.length; i++) {
-    map[list[i]] = true;
-  }
-  return expectsLowerCase ? (val: string) => map[val.toLowerCase()] : (val: string) => map[val];
-}
+// 路由与导航
+export * from "./navigation";
 
-export const beautifierConf = {
-  html: {
-    indent_size: "2",
-    indent_char: " ",
-    max_preserve_newlines: "-1",
-    preserve_newlines: false,
-    keep_array_indentation: false,
-    break_chained_methods: false,
-    indent_scripts: "separate",
-    brace_style: "end-expand",
-    space_before_conditional: true,
-    unescape_strings: false,
-    jslint_happy: false,
-    end_with_newline: true,
-    wrap_line_length: "110",
-    indent_inner_html: true,
-    comma_first: false,
-    e4x: true,
-    indent_empty_lines: true,
-  },
-  js: {
-    indent_size: "2",
-    indent_char: " ",
-    max_preserve_newlines: "-1",
-    preserve_newlines: false,
-    keep_array_indentation: false,
-    break_chained_methods: false,
-    indent_scripts: "normal",
-    brace_style: "end-expand",
-    space_before_conditional: true,
-    unescape_strings: false,
-    jslint_happy: true,
-    end_with_newline: true,
-    wrap_line_length: "110",
-    indent_inner_html: true,
-    comma_first: false,
-    e4x: true,
-    indent_empty_lines: true,
-  },
-};
+// 数据展示
+export * from "./table";
+
+// 菜单与图标
+export * from "./menuIcon";
+
+// 文件
+export * from "./file/dataUrl";

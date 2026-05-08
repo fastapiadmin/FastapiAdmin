@@ -18,36 +18,112 @@
  * - en: English
  *
  * @module locales
- * @author Fastapi Admin Team
+ * @author FastapiAdmin Team
  */
-import type { App } from "vue";
+
 import { createI18n } from "vue-i18n";
-import { useAppStoreHook } from "@/store/modules/app.store";
-// 本地语言包
-import enLocale from "./langs/en.json";
-import zhCnLocale from "./langs/zh.json";
+import type { I18n, I18nOptions } from "vue-i18n";
+import type { App } from "vue";
+import { LanguageEnum } from "@/enums/appEnum";
+import { getSystemStorage, StorageKeyManager } from "@utils/storage";
 
-const appStore = useAppStoreHook();
+// 同步导入语言文件
+import enMessages from "./langs/en.json";
+import zhMessages from "./langs/zh.json";
 
+/**
+ * 存储键管理器实例
+ */
+const storageKeyManager = new StorageKeyManager();
+
+/**
+ * 语言消息对象
+ */
 const messages = {
-  zh: {
-    ...zhCnLocale,
-  },
-  en: {
-    ...enLocale,
-  },
+  [LanguageEnum.EN]: enMessages,
+  [LanguageEnum.ZH]: zhMessages,
 };
 
-const i18n = createI18n({
-  legacy: false,
-  locale: appStore.language,
-  messages,
-  globalInjection: true,
-});
+/**
+ * 语言选项列表
+ * 用于语言切换下拉框
+ */
+export const languageOptions = [
+  { value: LanguageEnum.ZH, label: "简体中文" },
+  { value: LanguageEnum.EN, label: "English" },
+];
 
-// 全局注册 i18n
+/**
+ * 从存储中获取语言设置
+ * @returns 语言设置，如果获取失败则返回默认语言
+ */
+const getDefaultLanguage = (): LanguageEnum => {
+  // 尝试从版本化的存储中获取语言设置
+  try {
+    const storageKey = storageKeyManager.getStorageKey("user");
+    const userStore = localStorage.getItem(storageKey);
+
+    if (userStore) {
+      const { language } = JSON.parse(userStore);
+      if (language && Object.values(LanguageEnum).includes(language)) {
+        return language;
+      }
+    }
+  } catch (error) {
+    console.warn("[i18n] 从版本化存储获取语言设置失败:", error);
+  }
+
+  // 尝试从系统存储中获取语言设置（getSystemStorage 已返回解析后的对象）
+  try {
+    const sys = getSystemStorage() as { user?: { language?: string } } | null;
+    const lang = sys?.user?.language;
+    if (lang && Object.values(LanguageEnum).includes(lang as LanguageEnum)) {
+      return lang as LanguageEnum;
+    }
+  } catch (error) {
+    console.warn("[i18n] 从系统存储获取语言设置失败:", error);
+  }
+
+  // 返回默认语言
+  console.debug("[i18n] 使用默认语言:", LanguageEnum.ZH);
+  return LanguageEnum.ZH;
+};
+
+/**
+ * i18n 配置选项
+ */
+const i18nOptions: I18nOptions = {
+  locale: getDefaultLanguage(),
+  legacy: false,
+  globalInjection: true,
+  fallbackLocale: LanguageEnum.ZH,
+  messages,
+};
+
+/**
+ * i18n 实例
+ */
+const i18n: I18n = createI18n(i18nOptions);
+
+/**
+ * 翻译函数类型
+ */
+interface Translation {
+  (key: string): string;
+}
+
+/**
+ * 全局翻译函数
+ * 可在任何地方使用，无需导入 useI18n
+ */
+export const $t = i18n.global.t as Translation;
+
+export default i18n;
+
+/**
+ * 初始化 i18n（由 `initPlugins` / `main` 注册）
+ * @param app Vue 应用实例
+ */
 export function initI18n(app: App<Element>) {
   app.use(i18n);
 }
-
-export default i18n;

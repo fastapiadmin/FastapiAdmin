@@ -1,47 +1,89 @@
-import { store } from "@/store";
+/**
+ * 字典状态管理模块
+ *
+ * 提供数据字典的状态管理和缓存机制
+ *
+ * ## 主要功能
+ *
+ * - 字典数据缓存和管理
+ * - 批量获取字典数据
+ * - 字典标签查找
+ * - 字典数据清空
+ *
+ * ## 使用场景
+ *
+ * - 表单下拉选择框数据填充
+ * - 表格列数据格式化显示
+ * - 状态字段标签转换
+ * - 动态表单配置
+ *
+ * ## 核心特性
+ *
+ * - 自动去重缓存
+ * - 按需加载字典
+ * - 统一的数据格式
+ * - 支持批量获取
+ *
+ * ## 持久化
+ *
+ * - 使用 localStorage 存储
+ * - 缓存已加载的字典数据
+ * - 减少重复请求
+ *
+ * @module store/modules/dict.store
+ * @author FastapiAdmin Team
+ */
+import { store } from "@stores";
 import DictAPI, { DictDataTable } from "@/api/module_system/dict";
 import { defineStore } from "pinia";
+import { ref, computed } from "vue";
 
-export const useDictStore = defineStore("dict", {
-  state: () => ({
-    dictData: {} as Record<string, DictDataTable[]>,
-    isLoaded: false,
-  }),
-  getters: {
-    getDictData(): Record<string, DictDataTable[]> {
-      return this.dictData;
-    },
+export const useDictStore = defineStore(
+  "dictStore",
+  () => {
+    // 字典数据
+    const dictData = ref<Record<string, DictDataTable[]>>({});
+    // 是否已加载
+    const isLoaded = ref(false);
 
-    // 获取指定类型的字典数据，确保返回数组
-    getDictArray() {
-      return (type: string): Array<{ dict_value: string; dict_label: string }> => {
-        return (this.dictData[type] || [])
-          .filter((item) => item.dict_value !== undefined && item.dict_label !== undefined)
-          .map((item) => ({
-            dict_value: item.dict_value!,
-            dict_label: item.dict_label!,
-          }));
-      };
-    },
-  },
-  actions: {
-    // 批量获取字典数据
-    async getDict(types: string[]): Promise<Record<string, DictDataTable[]>> {
+    /**
+     * 获取所有字典数据
+     */
+    const getDictData = computed(() => dictData.value);
+
+    /**
+     * 获取指定类型的字典数据，确保返回数组
+     */
+    const getDictArray = (type: string): Array<{ dict_value: string; dict_label: string }> => {
+      return (dictData.value[type] || [])
+        .filter((item) => item.dict_value !== undefined && item.dict_label !== undefined)
+        .map((item) => ({
+          dict_value: item.dict_value!,
+          dict_label: item.dict_label!,
+        }));
+    };
+
+    /**
+     * 批量获取字典数据
+     * @param types 字典类型数组
+     * @returns 指定类型的字典数据
+     */
+    async function getDict(types: string[]): Promise<Record<string, DictDataTable[]>> {
       try {
         for (const type of types) {
-          if (!this.dictData[type]) {
+          if (!dictData.value[type]) {
             const response = await DictAPI.getInitDict(type);
             // 确保数据格式正确
-            this.dictData[type] = ((response.data.data as DictDataTable[]) || []).filter(
+            dictData.value[type] = ((response.data.data as DictDataTable[]) || []).filter(
               (item) => item.dict_value !== undefined && item.dict_label !== undefined
             );
-            this.isLoaded = true;
+            isLoaded.value = true;
           }
         }
         // 返回请求的字典数据
         return types.reduce(
           (result, type) => {
-            result[type] = this.getDictArray(type);
+            result[type] = getDictArray(type);
             return result;
           },
           {} as Record<string, DictDataTable[]>
@@ -50,10 +92,16 @@ export const useDictStore = defineStore("dict", {
         console.error("获取字典数据失败", error);
         return {};
       }
-    },
+    }
 
-    getDictLabel(type: string, value: string) {
-      const result = this.dictData[type].find((item) => item.dict_value === value);
+    /**
+     * 根据类型和值获取字典标签
+     * @param type 字典类型
+     * @param value 字典值
+     * @returns 字典标签对象或原值
+     */
+    function getDictLabel(type: string, value: string) {
+      const result = dictData.value[type]?.find((item) => item.dict_value === value);
       if (!result) {
         return value;
       }
@@ -74,13 +122,29 @@ export const useDictStore = defineStore("dict", {
         updated_time: result.updated_time,
       };
       return dict_data;
-    },
-    clearDictData() {
-      this.dictData = {};
-    },
+    }
+
+    /**
+     * 清空字典数据
+     */
+    function clearDictData() {
+      dictData.value = {};
+    }
+
+    return {
+      dictData,
+      isLoaded,
+      getDictData,
+      getDictArray,
+      getDict,
+      getDictLabel,
+      clearDictData,
+    };
   },
-  persist: true,
-});
+  {
+    persist: true,
+  }
+);
 
 export function useDictStoreHook() {
   return useDictStore(store);

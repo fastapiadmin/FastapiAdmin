@@ -10,7 +10,7 @@
       />
     </div>
     <div v-if="error" class="error-banner">
-      <el-alert :title="error" type="error" :closable="true" show-icon @close="handleErrorClose" />
+      <ElAlert :title="error" type="error" :closable="true" show-icon @close="handleErrorClose" />
     </div>
   </div>
 </template>
@@ -19,7 +19,7 @@
 import { ref, nextTick, watch } from "vue";
 import WelcomeScreen from "./WelcomeScreen.vue";
 import MessageItem from "./MessageItem.vue";
-import type { ChatMessage } from "@/views/module_ai/chat/types";
+import type { ChatMessage } from "@views/module_ai/chat/types";
 
 interface Props {
   messages: ChatMessage[];
@@ -73,6 +73,7 @@ defineExpose({
 .chat-messages {
   height: 100%;
   overflow-y: auto;
+
   /* 与 index chat-main 同底，避免 disabled 灰 + page 色打架 */
   background: transparent;
 

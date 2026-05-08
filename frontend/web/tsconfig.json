@@ -2,39 +2,37 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@views": ["src/views"],
+      "@views/*": ["src/views/*"],
+      "@imgs": ["src/assets/images"],
+      "@imgs/*": ["src/assets/images/*"],
+      "@icons": ["src/assets/images/svg"],
+      "@icons/*": ["src/assets/images/svg/*"],
+      "@utils": ["src/utils"],
+      "@utils/*": ["src/utils/*"],
+      "@stores": ["src/store"],
+      "@stores/*": ["src/store/*"],
+      "@styles": ["src/styles"],
+      "@plugins/*": ["src/plugins/*"],
+      "@styles/*": ["src/styles/*"]
     },
-
-    // 严格性和类型检查相关配置
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
-    // 模块和兼容性相关配置
+    "jsx": "preserve",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-
-    // 调试和兼容性相关配置
     "sourceMap": true,
     "useDefineForClassFields": true,
     "allowJs": true,
-
-    // 类型检查相关配置
     "types": ["node", "vite/client", "element-plus/global"]
   },
-
-  "include": [
-    "src/types/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.vue",
-    "vite.config.ts",
-    "eslint.config.ts",
-    "uno.config.ts"
-  ],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/types/**/*.d.ts", "src/**/*.ts", "src/**/*.vue", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", "**/*.js"]
 }

@@ -2,34 +2,42 @@
   <div class="chat-navbar">
     <div class="navbar-left">
       <button class="collapse-btn" @click="toggleSidebar">
-        <div v-if="!props.isSidebarCollapsed" class="i-svg:layout_leftbar_close_line w-6 h-6" />
-        <div v-else class="i-svg:layout_leftbar_open_line w-6 h-6" />
+        <ArtSvgIcon
+          v-if="!props.isSidebarCollapsed"
+          :icon="resolveIconForArtSvgIcon('layout_leftbar_close_line')"
+          class="size-6"
+        />
+        <ArtSvgIcon
+          v-else
+          :icon="resolveIconForArtSvgIcon('layout_leftbar_open_line')"
+          class="size-6"
+        />
       </button>
     </div>
     <div class="navbar-right">
-      <el-button text :icon="Setting" @click="handleToggleConnection">
+      <ElButton text :icon="Setting" @click="handleToggleConnection">
         {{ isConnected ? "断开连接" : "重新连接" }}
-      </el-button>
-      <el-tag
+      </ElButton>
+      <ElTag
         class="connection-status"
         effect="plain"
         :type="connectionStatus === 'connected' ? 'success' : 'danger'"
       >
-        <el-icon :class="['status-icon', connectionStatus]">
+        <ElIcon :class="['status-icon', connectionStatus]">
           <Connection v-if="connectionStatus === 'connected'" />
           <Loading v-else-if="connectionStatus === 'connecting'" />
           <Warning v-else />
-        </el-icon>
+        </ElIcon>
         <span class="status-text">{{ connectionStatusText }}</span>
-      </el-tag>
-      <el-button v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
-        清空对话
-      </el-button>
+      </ElTag>
+      <ElButton v-if="hasMessages" text :icon="Delete" @click="handleClearChat">清空对话</ElButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
 import { computed } from "vue";
 import { Connection, Loading, Warning, Delete, Setting } from "@element-plus/icons-vue";
 
@@ -161,9 +169,11 @@ const toggleSidebar = () => {
         &.connected {
           color: var(--el-color-success);
         }
+
         &.connecting {
           color: var(--el-color-warning);
         }
+
         &.disconnected {
           color: var(--el-color-danger);
         }

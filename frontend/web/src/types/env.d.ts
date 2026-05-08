@@ -5,26 +5,50 @@
 
 // TypeScript 类型提示都为 string： https://github.com/vitejs/vite/issues/6930
 interface ImportMetaEnv {
-  /** 环境 */
+  /** 环境标识 */
   VITE_APP_ENV: string;
 
   /** 项目名称 */
   VITE_APP_TITLE: string;
 
-  /** 网络请求公用地址 */
+  /** API 请求基础路径 */
+  VITE_API_URL: string;
+
+  /** 开发环境代理目标地址 */
   VITE_API_BASE_URL: string;
 
   /** 代理前缀 */
   VITE_APP_BASE_API: string;
 
-  /** 应用端口 */
-  VITE_APP_PORT: number;
+  /** 开发服务器端口 */
+  VITE_PORT: number;
 
-  /** 超时时间 */
-  VITE_TIMEOUT: number;
+  /** 网络请求超时时间（毫秒） */
+  VITE_API_TIMEOUT: number;
 
-  /** ws 端点 */
+  /** WebSocket 端点 */
   VITE_APP_WS_ENDPOINT: string;
+
+  /** 应用部署基础路径 */
+  VITE_BASE_URL: string;
+
+  /** 权限模式 */
+  VITE_ACCESS_MODE: string;
+
+  /** 跨域请求是否携带 Cookie */
+  VITE_WITH_CREDENTIALS: string;
+
+  /** 是否在控制台输出路由信息 */
+  VITE_OPEN_ROUTE_INFO: string;
+
+  /** 锁屏加密密钥 */
+  VITE_LOCK_ENCRYPT_KEY: string;
+
+  /** 是否删除控制台输出 */
+  VITE_DROP_CONSOLE: string;
+
+  /** 应用版本号 */
+  VITE_VERSION: string;
 }
 
 interface ImportMeta {

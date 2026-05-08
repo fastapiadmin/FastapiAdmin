@@ -1,7 +1,7 @@
 <template>
-  <el-scrollbar>
+  <ElScrollbar>
     <div class="flex-y-center gap-2">
-      <el-tag
+      <ElTag
         v-for="tag in tags"
         :key="tag"
         closable
@@ -10,8 +10,8 @@
         @close="handleClose(tag)"
       >
         {{ tag }}
-      </el-tag>
-      <el-input
+      </ElTag>
+      <ElInput
         v-if="inputVisible"
         ref="inputRef"
         v-model.trim="inputValue"
@@ -19,11 +19,11 @@
         @keyup.enter.stop.prevent="handleInputConfirm"
         @blur.stop.prevent="handleInputConfirm"
       />
-      <el-button v-else v-bind="config.buttonAttrs" @click="showInput">
+      <ElButton v-else v-bind="config.buttonAttrs" @click="showInput">
         {{ config.buttonAttrs.btnText ? config.buttonAttrs.btnText : "+ New Tag" }}
-      </el-button>
+      </ElButton>
     </div>
-  </el-scrollbar>
+  </ElScrollbar>
 </template>
 <script setup lang="ts">
 import type { InputInstance } from "element-plus";

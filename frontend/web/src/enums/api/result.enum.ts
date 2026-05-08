@@ -1,5 +1,12 @@
 /**
- * 响应码枚举
+ * API 结果枚举
+ * 定义后端 API 响应状态码
+ *
+ * @module enums/api/result.enum
+ */
+
+/**
+ * 结果枚举 - 与后端 ResultEnum 对应
  */
 export const enum ResultEnum {
   /**

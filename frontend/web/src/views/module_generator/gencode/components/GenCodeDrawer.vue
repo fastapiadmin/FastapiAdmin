@@ -1,5 +1,5 @@
 <template>
-  <EnhancedDrawer
+  <ArtDrawer
     v-model="drawerVisible"
     :title="'【代码生成】' + (info.table_name || '')"
     size="90%"
@@ -7,11 +7,11 @@
     append-to-body
     @close="emit('close')"
   >
-    <el-steps :active="activeStep" finish-status="success" simple>
-      <el-step title="基础配置" />
-      <el-step title="字段配置" />
-      <el-step title="预览代码" />
-    </el-steps>
+    <ElSteps :active="activeStep" finish-status="success" simple>
+      <ElStep title="基础配置" />
+      <ElStep title="字段配置" />
+      <ElStep title="预览代码" />
+    </ElSteps>
 
     <div class="gencode-drawer-step-wrap mt-4">
       <div v-show="activeStep === 0">
@@ -48,8 +48,8 @@
     </div>
 
     <template #footer>
-      <el-button :icon="Close" @click="emit('close')">关闭</el-button>
-      <el-button
+      <ElButton :icon="Close" @click="emit('close')">关闭</ElButton>
+      <ElButton
         v-if="activeStep < 2"
         type="info"
         :icon="Finished"
@@ -57,44 +57,39 @@
         @click="emit('save')"
       >
         保存
-      </el-button>
-      <el-button v-if="activeStep !== 0" type="success" :icon="Back" @click="emit('prev-step')">
+      </ElButton>
+      <ElButton v-if="activeStep !== 0" type="success" :icon="Back" @click="emit('prev-step')">
         上一步
-      </el-button>
-      <el-button
+      </ElButton>
+      <ElButton
         v-if="activeStep !== 2"
         type="primary"
         :loading="nextStepLoading"
         @click="emit('next-step')"
       >
         {{ nextStepButtonLabel }}
-        <el-icon class="el-icon--right"><Right /></el-icon>
-      </el-button>
-      <el-tooltip
+        <ElIcon class="el-icon--right"><Right /></ElIcon>
+      </ElButton>
+      <ElTooltip
         v-if="activeStep === 2"
         content="打包为 ZIP 下载到本机，不会在服务器创建菜单或文件"
         placement="top"
       >
-        <el-button type="warning" :icon="Download" :loading="loading" @click="emit('gen-download')">
+        <ElButton type="warning" :icon="Download" :loading="loading" @click="emit('gen-download')">
           下载代码
-        </el-button>
-      </el-tooltip>
-      <el-tooltip
+        </ElButton>
+      </ElTooltip>
+      <ElTooltip
         v-if="activeStep === 2"
         content="在服务端项目目录生成源码，并自动创建目录/菜单/按钮（若名称未冲突）"
         placement="top"
       >
-        <el-button
-          type="primary"
-          :icon="FolderOpened"
-          :loading="loading"
-          @click="emit('gen-write')"
-        >
+        <ElButton type="primary" :icon="FolderOpened" :loading="loading" @click="emit('gen-write')">
           写入本地
-        </el-button>
-      </el-tooltip>
+        </ElButton>
+      </ElTooltip>
     </template>
-  </EnhancedDrawer>
+  </ArtDrawer>
 </template>
 
 <script setup lang="ts">
@@ -104,7 +99,7 @@ import { Close, Right, FolderOpened, Back, Download, Finished } from "@element-p
 import type { EditorConfiguration } from "codemirror";
 import type { GenTableSchema } from "@/api/module_generator/gencode";
 import type { DictTable } from "@/api/module_system/dict";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
 import type { TreeNode } from "../types";
 import GenBasicStep from "./GenBasicStep.vue";
 import GenColumnsStep from "./GenColumnsStep.vue";
@@ -158,7 +153,6 @@ const emit = defineEmits<{
 .gencode-drawer-step-wrap {
   max-height: calc(100vh - 220px);
   padding-right: 6px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
 }
 </style>

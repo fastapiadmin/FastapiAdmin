@@ -1,21 +1,21 @@
 <template>
-  <EnhancedDrawer
+  <ArtDrawer
     v-model="drawerVisible"
     title="配置中心"
     :size="drawerSize"
     destroy-on-close
     @close="onDrawerClosed"
   >
-    <el-tabs v-model="activeTabRef" type="border-card">
+    <ElTabs v-model="activeTabRef" type="border-card">
       <!-- 网站配置 -->
-      <el-tab-pane label="网站配置" name="website">
-        <el-form :model="configState" label-suffix=":" label-width="auto" label-position="right">
+      <ElTabPane label="网站配置" name="website">
+        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
           <!-- 系统配置 -->
-          <el-divider>网站配置</el-divider>
+          <ElDivider>网站配置</ElDivider>
           <div v-for="(item, key) in systemConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <span class="flex items-center gap-2 w-full">
-                <el-input
+                <ElInput
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
@@ -23,13 +23,13 @@
                   @input="markModified(key)"
                 />
               </span>
-            </el-form-item>
+            </ElFormItem>
           </div>
 
           <!-- logo配置 -->
-          <el-divider>网站图标</el-divider>
+          <ElDivider>网站图标</ElDivider>
           <div v-for="(item, key) in logoConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <div class="flex items-center gap-2 w-full">
                 <SingleImageUpload
                   v-model="item.config_value"
@@ -38,22 +38,24 @@
                   :max-file-size="item.maxFileSize"
                   :show-tip="true"
                   :enable-preview="true"
+                  :enable-crop="true"
+                  v-bind="logoCropBind(String(key))"
                   @success="(fileInfo: UploadFilePath) => handleUploadSuccess(fileInfo, key)"
                   @error="handleUploadError"
                 />
               </div>
-            </el-form-item>
+            </ElFormItem>
           </div>
-        </el-form>
-      </el-tab-pane>
-      <el-tab-pane label="安全隐私" name="securityPrivacy">
-        <el-form :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        </ElForm>
+      </ElTabPane>
+      <ElTabPane label="安全隐私" name="securityPrivacy">
+        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
           <!-- 系统配置 -->
-          <el-divider>安全隐私</el-divider>
+          <ElDivider>安全隐私</ElDivider>
           <div v-for="(item, key) in securityPrivacyConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <span class="flex items-center gap-2 w-full">
-                <el-input
+                <ElInput
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
@@ -61,18 +63,18 @@
                   @input="markModified(key)"
                 />
               </span>
-            </el-form-item>
+            </ElFormItem>
           </div>
-        </el-form>
-      </el-tab-pane>
-      <el-tab-pane label="用户协议" name="userAgreement">
+        </ElForm>
+      </ElTabPane>
+      <ElTabPane label="用户协议" name="userAgreement">
         <!-- 系统配置 -->
-        <el-form :model="configState" label-suffix=":" label-width="auto" label-position="right">
-          <el-divider>用户协议</el-divider>
+        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+          <ElDivider>用户协议</ElDivider>
           <div v-for="(item, key) in userAgreementConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <span class="flex items-center gap-2 w-full">
-                <el-input
+                <ElInput
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
@@ -80,23 +82,23 @@
                   @input="markModified(key)"
                 />
               </span>
-            </el-form-item>
+            </ElFormItem>
           </div>
-        </el-form>
-      </el-tab-pane>
-      <el-tab-pane label="接口白名单" name="apiWhitelist">
-        <el-form :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        </ElForm>
+      </ElTabPane>
+      <ElTabPane label="接口白名单" name="apiWhitelist">
+        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
           <!-- 系统配置 -->
-          <el-divider>接口白名单</el-divider>
+          <ElDivider>接口白名单</ElDivider>
           <div v-for="(item, key) in apiWhitelistConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <div class="space-y-2">
                 <div
                   v-for="listItem in apiWhitelistItems"
                   :key="listItem.id"
                   class="flex items-center gap-2"
                 >
-                  <el-input
+                  <ElInput
                     v-model="listItem.value"
                     :placeholder="'/api/v1/users/get'"
                     clearable
@@ -109,7 +111,7 @@
                       }
                     "
                   />
-                  <el-button
+                  <ElButton
                     type="danger"
                     icon="minus"
                     circle
@@ -117,7 +119,7 @@
                     @click="removeApiWhitelistItem(listItem.id)"
                   />
                 </div>
-                <el-button
+                <ElButton
                   type="primary"
                   icon="plus"
                   size="small"
@@ -125,28 +127,28 @@
                   @click="addApiWhitelistItem"
                 >
                   添加接口路径
-                </el-button>
+                </ElButton>
                 <div class="text-xs text-gray-500 mt-2">
                   配置说明：添加到白名单的接口路径无需登录即可访问，支持完整路径配置。
                 </div>
               </div>
-            </el-form-item>
+            </ElFormItem>
           </div>
-        </el-form>
-      </el-tab-pane>
-      <el-tab-pane label="IP黑名单" name="ipBlacklist">
-        <el-form :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        </ElForm>
+      </ElTabPane>
+      <ElTabPane label="IP黑名单" name="ipBlacklist">
+        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
           <!-- 系统配置 -->
-          <el-divider>IP黑名单</el-divider>
+          <ElDivider>IP黑名单</ElDivider>
           <div v-for="(item, key) in ipBlacklistConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <div class="space-y-2">
                 <div
                   v-for="listItem in ipBlacklistItems"
                   :key="listItem.id"
                   class="flex items-center gap-2"
                 >
-                  <el-input
+                  <ElInput
                     v-model="listItem.value"
                     :placeholder="'192.168.1.1'"
                     clearable
@@ -160,7 +162,7 @@
                       }
                     "
                   />
-                  <el-button
+                  <ElButton
                     type="danger"
                     icon="minus"
                     circle
@@ -168,7 +170,7 @@
                     @click="removeIpBlacklistItem(listItem.id)"
                   />
                 </div>
-                <el-button
+                <ElButton
                   type="primary"
                   icon="plus"
                   size="small"
@@ -176,24 +178,24 @@
                   @click="addIpBlacklistItem"
                 >
                   添加IP地址
-                </el-button>
+                </ElButton>
                 <div class="text-xs text-gray-500 mt-2">
                   配置说明：添加到黑名单的IP地址将无法访问系统，支持单个IP配置。
                 </div>
               </div>
-            </el-form-item>
+            </ElFormItem>
           </div>
-        </el-form>
-      </el-tab-pane>
-      <el-tab-pane label="演示环境配置" name="demo">
-        <el-form :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        </ElForm>
+      </ElTabPane>
+      <ElTabPane label="演示环境配置" name="demo">
+        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
           <!-- 系统配置 -->
-          <el-divider>演示环境配置</el-divider>
+          <ElDivider>演示环境配置</ElDivider>
           <div v-for="(item, key) in demoConfigs" :key="key">
-            <el-form-item :label="item.config_name">
+            <ElFormItem :label="item.config_name">
               <!-- 演示模式开关 -->
               <template v-if="key === 'demo_enable'">
-                <el-switch
+                <ElSwitch
                   inline-prompt
                   active-text="启用"
                   inactive-text="禁用"
@@ -217,7 +219,7 @@
                     :key="listItem.id"
                     class="flex items-center gap-2"
                   >
-                    <el-input
+                    <ElInput
                       v-model="listItem.value"
                       :placeholder="'192.168.1.1'"
                       clearable
@@ -231,7 +233,7 @@
                         }
                       "
                     />
-                    <el-button
+                    <ElButton
                       type="danger"
                       icon="minus"
                       circle
@@ -239,7 +241,7 @@
                       @click="removeDemoIpWhitelistItem(listItem.id)"
                     />
                   </div>
-                  <el-button
+                  <ElButton
                     type="primary"
                     icon="plus"
                     size="small"
@@ -247,7 +249,7 @@
                     @click="addDemoIpWhitelistItem"
                   >
                     添加IP地址
-                  </el-button>
+                  </ElButton>
                   <div class="text-xs text-gray-500 mt-2">
                     配置说明：演示模式下，只有白名单中的IP地址可以访问系统，支持单个IP配置。
                   </div>
@@ -255,7 +257,7 @@
               </template>
               <!-- 其他配置项 -->
               <template v-else>
-                <el-input
+                <ElInput
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
@@ -263,34 +265,34 @@
                   @input="markModified(key)"
                 />
               </template>
-            </el-form-item>
+            </ElFormItem>
           </div>
-        </el-form>
-      </el-tab-pane>
-    </el-tabs>
+        </ElForm>
+      </ElTabPane>
+    </ElTabs>
     <template #footer>
-      <el-button @click="handleCloseDialog">取消</el-button>
-      <el-button
+      <ElButton @click="handleCloseDialog">取消</ElButton>
+      <ElButton
         v-hasPerm="['module_system:config:update']"
         type="primary"
         :disabled="!hasChanges"
         @click="submitChanges"
       >
         保存
-      </el-button>
+      </ElButton>
     </template>
-  </EnhancedDrawer>
+  </ArtDrawer>
 </template>
 
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import ParamsAPI, { type ConfigTable } from "@/api/module_system/params";
-import { useConfigStore } from "@/store";
+import { useConfigStore } from "@stores";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
+import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
 import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
-import { useAppStore } from "@/store/modules/app.store";
+import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 
 // 定义列表项类型
@@ -322,6 +324,45 @@ const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "60%
 
 const t = useI18n().t;
 const configStore = useConfigStore();
+
+/** 网站图标裁剪：favicon 方形、Logo 横版、登录背景 16:9 */
+function logoCropBind(key: string) {
+  switch (key) {
+    case "sys_web_favicon":
+      return {
+        cropCutWidth: 64,
+        cropCutHeight: 64,
+        cropBoxWidth: 380,
+        cropBoxHeight: 320,
+        cropDialogTitle: "裁剪网站图标",
+        cropInnerTitle: "调整图标",
+        cropPreviewTitle: "预览",
+      };
+    case "sys_web_logo":
+      return {
+        cropCutWidth: 320,
+        cropCutHeight: 96,
+        cropBoxWidth: 520,
+        cropBoxHeight: 360,
+        cropDialogTitle: "裁剪站点 Logo",
+        cropInnerTitle: "调整 Logo",
+        cropPreviewTitle: "预览",
+      };
+    case "sys_login_background":
+      return {
+        cropCutWidth: 960,
+        cropCutHeight: 540,
+        cropBoxWidth: 560,
+        cropBoxHeight: 380,
+        cropDialogTitle: "裁剪登录背景",
+        cropInnerTitle: "调整背景图",
+        cropPreviewTitle: "预览",
+        cropFileType: "jpeg" as const,
+      };
+    default:
+      return {};
+  }
+}
 const activeTabRef = ref("website");
 
 // 与父组件的 v-model 同步
@@ -701,15 +742,19 @@ onMounted(() => {
 .flex {
   display: flex;
 }
+
 .items-center {
   align-items: center;
 }
+
 .justify-end {
   justify-content: flex-end;
 }
+
 .gap-4 {
   gap: 1rem;
 }
+
 .mt-6 {
   margin-top: 1.5rem;
 }

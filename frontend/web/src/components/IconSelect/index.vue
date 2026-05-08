@@ -1,50 +1,51 @@
 <!-- 图标选择器 -->
 <template>
   <div ref="iconSelectRef" :style="{ width: props.width }">
-    <el-popover :visible="popoverVisible" :width="props.width" placement="bottom-end">
+    <ElPopover :visible="popoverVisible" :width="props.width" placement="bottom-end">
       <template #reference>
         <div @click="popoverVisible = !popoverVisible">
           <slot>
-            <el-input v-model="selectedIcon" readonly placeholder="点击选择图标" class="reference">
+            <ElInput v-model="selectedIcon" readonly placeholder="点击选择图标" class="reference">
               <template #prepend>
-                <!-- 根据图标类型展示 -->
-                <el-icon v-if="isElementIcon">
-                  <component :is="selectedIcon.replace('el-icon-', '')" />
-                </el-icon>
-                <template v-else>
-                  <div :class="`i-svg:${selectedIcon}`" />
-                </template>
+                <!-- EP（含 el-icon- 前缀或与 icons-vue 同名的裸值） / Iconify / 自定义 SVG 文件名 -->
+                <ElIcon v-if="elementIconComp">
+                  <component :is="elementIconComp" />
+                </ElIcon>
+                <ArtSvgIcon
+                  v-else-if="selectedIcon"
+                  :icon="resolveIconForArtSvgIcon(selectedIcon)"
+                />
               </template>
               <template #suffix>
                 <!-- 清空按钮 -->
-                <el-icon
+                <ElIcon
                   v-if="selectedIcon"
                   style="margin-right: 8px"
                   @click.stop="clearSelectedIcon"
                 >
                   <CircleClose />
-                </el-icon>
+                </ElIcon>
 
-                <el-icon
+                <ElIcon
                   :style="{
                     transform: popoverVisible ? 'rotate(180deg)' : 'rotate(0)',
                     transition: 'transform .5s',
                   }"
                 >
                   <ArrowDown @click.stop="togglePopover" />
-                </el-icon>
+                </ElIcon>
               </template>
-            </el-input>
+            </ElInput>
           </slot>
         </div>
       </template>
 
       <!-- 图标选择弹窗 -->
       <div ref="popoverContentRef">
-        <el-input v-model="filterText" placeholder="搜索图标" clearable @input="filterIcons" />
-        <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-          <el-tab-pane label="SVG 图标" name="svg">
-            <el-scrollbar height="300px">
+        <ElInput v-model="filterText" placeholder="搜索图标" clearable @input="filterIcons" />
+        <ElTabs v-model="activeTab" @tab-click="handleTabClick">
+          <ElTabPane label="SVG 图标" name="svg">
+            <ElScrollbar height="300px">
               <ul class="icon-grid">
                 <li
                   v-for="icon in filteredSvgIcons"
@@ -52,15 +53,15 @@
                   class="icon-grid-item"
                   @click="selectIcon(icon)"
                 >
-                  <el-tooltip :content="icon" placement="bottom" effect="light">
-                    <div :class="`i-svg:${icon}`" />
-                  </el-tooltip>
+                  <ElTooltip :content="icon" placement="bottom" effect="light">
+                    <ArtSvgIcon :icon="resolveIconForArtSvgIcon(icon)" />
+                  </ElTooltip>
                 </li>
               </ul>
-            </el-scrollbar>
-          </el-tab-pane>
-          <el-tab-pane label="Element 图标" name="element">
-            <el-scrollbar height="300px">
+            </ElScrollbar>
+          </ElTabPane>
+          <ElTabPane label="Element 图标" name="element">
+            <ElScrollbar height="300px">
               <ul class="icon-grid">
                 <li
                   v-for="icon in filteredElementIcons"
@@ -68,21 +69,25 @@
                   class="icon-grid-item"
                   @click="selectIcon(icon)"
                 >
-                  <el-icon>
+                  <ElIcon>
                     <component :is="icon" />
-                  </el-icon>
+                  </ElIcon>
                 </li>
               </ul>
-            </el-scrollbar>
-          </el-tab-pane>
-        </el-tabs>
+            </ElScrollbar>
+          </ElTabPane>
+        </ElTabs>
       </div>
-    </el-popover>
+    </ElPopover>
   </div>
 </template>
 
 <script setup lang="ts">
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { listLocalIconBasenames } from "@utils/icons";
+import { isIconifyStoredIcon, resolveElementPlusIconComponent } from "@utils/menuIcon";
+import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
 
 const props = defineProps({
   modelValue: {
@@ -113,16 +118,11 @@ const selectedIcon = defineModel("modelValue", {
 const filterText = ref("");
 const filteredSvgIcons = ref<string[]>([]);
 const filteredElementIcons = ref<string[]>(elementIcons.value);
-const isElementIcon = computed(() => {
-  return selectedIcon.value && selectedIcon.value.startsWith("el-icon");
-});
+
+const elementIconComp = computed(() => resolveElementPlusIconComponent(selectedIcon.value));
 
 function loadIcons() {
-  const icons = import.meta.glob("../../assets/icons/*.svg");
-  for (const path in icons) {
-    const iconName = path.replace(/.*\/(.*)\.svg$/, "$1");
-    svgIcons.value.push(iconName);
-  }
+  svgIcons.value = listLocalIconBasenames();
   filteredSvgIcons.value = svgIcons.value;
 }
 
@@ -169,8 +169,12 @@ function clearSelectedIcon() {
 onMounted(() => {
   loadIcons();
   if (selectedIcon.value) {
-    if (elementIcons.value.includes(selectedIcon.value.replace("el-icon-", ""))) {
+    const raw = selectedIcon.value.trim();
+    const epKey = raw.replace(/^el-icon-/i, "");
+    if (elementIcons.value.includes(epKey)) {
       activeTab.value = "element";
+    } else if (isIconifyStoredIcon(raw)) {
+      activeTab.value = "svg";
     } else {
       activeTab.value = "svg";
     }

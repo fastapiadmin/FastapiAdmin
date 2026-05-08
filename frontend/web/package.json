@@ -9,7 +9,7 @@
     "dev": "vite",
     "dev:force": "vite --force",
     "prod": "vite --mode prod",
-    "build": "vue-tsc --noEmit & vite build",
+    "build": "vue-tsc --noEmit && vite build",
     "build:pro": "pnpm vite build --mode pro",
     "build:gitee": "pnpm vite build --mode gitee",
     "build:dev": "pnpm vite build --mode dev",
@@ -25,15 +25,16 @@
     "icon": "esno ./scripts/icon.ts",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
+    "lint": "pnpm run lint:eslint && pnpm run lint:prettier && pnpm run lint:stylelint",
     "lint:format": "prettier --write --loglevel warn \"src/**/*.{js,ts,json,tsx,css,less,vue,html,md}\"",
     "lint:style": "stylelint --fix \"**/*.{vue,less,postcss,css,scss}\" --cache --cache-location node_modules/.cache/stylelint/",
     "lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.cjs",
     "lint:eslint": "eslint --cache \"src/**/*.{vue,ts,js}\" --fix",
-    "lint:prettier": "prettier --write \"**/*.{js,cjs,ts,json,css,scss,vue,html,md}\"",
+    "lint:prettier": "prettier --write \"**/*.{js,cjs,ts,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:stylelint": "stylelint --cache \"**/*.{css,scss,vue}\" --fix",
-    "lint": "pnpm run lint:eslint && pnpm run lint:prettier && pnpm run lint:stylelint",
-    "preinstall": "npx only-allow pnpm",
-    "commit": "git-cz"
+    "fix": "eslint --fix",
+    "commit": "git-cz",
+    "clean:dev": "tsx scripts/clean-dev.ts"
   },
   "config": {
     "commitizen": {
@@ -41,67 +42,84 @@
     }
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "*.{js,ts,mjs,mts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{cjs,json}": [
+    "*.{cjs,json,jsonc}": [
       "prettier --write"
     ],
-    "*.{vue,html}": [
+    "*.vue": [
       "eslint --fix",
-      "prettier --write",
-      "stylelint --fix"
-    ],
-    "*.{scss,css}": [
-      "stylelint --fix",
+      "stylelint --fix --allow-empty-input",
       "prettier --write"
     ],
-    "*.md": [
+    "*.{html,htm}": [
+      "prettier --write"
+    ],
+    "*.{scss,css,less}": [
+      "stylelint --fix --allow-empty-input",
+      "prettier --write"
+    ],
+    "*.{md,mdx}": [
+      "prettier --write"
+    ],
+    "*.{yaml,yml}": [
       "prettier --write"
     ]
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
+    "@element-plus/icons-vue": "^2.3.2",
+    "@iconify/vue": "^5.0.0",
+    "@tailwindcss/vite": "^4.1.14",
     "@vue-flow/background": "^1.3.2",
     "@vue-flow/controls": "^1.1.3",
     "@vue-flow/core": "^1.48.1",
     "@vue-flow/minimap": "^1.5.4",
-    "@vueuse/core": "^13.5.0",
+    "@vueuse/core": "^13.9.0",
     "@wangeditor-next/editor": "^5.6.49",
     "@wangeditor-next/editor-for-vue": "^5.1.14",
     "animate.css": "^4.1.1",
-    "axios": "^1.10.0",
+    "axios": "^1.12.2",
     "clipboard": "^2.0.11",
     "codemirror": "^5.65.19",
     "codemirror-editor-vue3": "^2.8.0",
+    "crypto-js": "^4.2.0",
     "dagre": "^0.8.5",
     "dayjs": "^1.11.13",
     "dompurify": "^3.3.1",
-    "echarts": "^5.6.0",
-    "element-plus": "^2.11.0",
+    "echarts": "^6.0.0",
+    "element-plus": "^2.11.2",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "highlight.js": "^11.11.1",
     "js-beautify": "^1.15.4",
     "markdown-it": "^14.1.0",
     "markdown-it-highlightjs": "^4.2.0",
+    "mitt": "^3.0.1",
     "nprogress": "^0.2.0",
+    "ohash": "^2.0.11",
     "path-browserify": "^1.0.1",
     "path-to-regexp": "^8.2.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.4.1",
+    "qrcode.vue": "^3.6.0",
     "qs": "^6.14.0",
-    "vue": "^3.5.17",
+    "tailwindcss": "^4.1.14",
+    "vue": "^3.5.21",
     "vue-draggable-plus": "^0.6.0",
     "vue-i18n": "^11.1.10",
     "vue-json-pretty": "^2.5.0",
     "vue-router": "^4.5.1",
     "vue-web-terminal": "^3.4.1",
     "vue3-cron-plus": "^0.1.9",
-    "vuedraggable": "^4.1.0"
+    "vuedraggable": "^4.1.0",
+    "xgplayer": "^3.0.20",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.4.1",
+    "@commitlint/config-conventional": "^19.4.1",
     "@eslint/js": "^9.32.0",
     "@iconify/utils": "^2.3.0",
     "@types/codemirror": "^5.60.16",
@@ -109,13 +127,14 @@
     "@types/dompurify": "^3.2.0",
     "@types/file-saver": "^2.0.7",
     "@types/markdown-it": "^14.1.2",
-    "@types/node": "^22.16.5",
+    "@types/node": "^24.0.5",
     "@types/nprogress": "^0.2.3",
     "@types/path-browserify": "^1.0.3",
     "@types/qs": "^6.14.0",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/compiler-sfc": "^3.0.5",
     "autoprefixer": "^10.4.21",
     "commitizen": "^4.3.1",
     "cz-git": "^1.12.0",
@@ -131,6 +150,7 @@
     "postcss-html": "^1.8.0",
     "postcss-scss": "^4.0.9",
     "prettier": "^3.6.2",
+    "rollup-plugin-visualizer": "^5.12.0",
     "sass": "^1.89.2",
     "stylelint": "^16.25.0",
     "stylelint-config-html": "^1.1.0",
@@ -138,22 +158,27 @@
     "stylelint-config-recommended": "^15.0.0",
     "stylelint-config-recommended-scss": "^14.1.0",
     "stylelint-config-recommended-vue": "^1.6.1",
+    "stylelint-config-standard": "^36.0.1",
     "stylelint-prettier": "^5.0.3",
     "terser": "^5.43.1",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "unocss": "66.2.3",
-    "unplugin-auto-import": "^19.3.0",
-    "unplugin-vue-components": "^28.8.0",
-    "vite": "^6.3.5",
+    "unplugin-auto-import": "^20.2.0",
+    "unplugin-element-plus": "^0.10.0",
+    "unplugin-vue-components": "^29.1.0",
+    "vite": "^7.1.5",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-vue-devtools": "^7.7.6",
+    "vue-demi": "^0.14.9",
     "vue-eslint-parser": "^10.2.0",
     "vue-tsc": "^2.2.12"
   },
   "packageManager": "pnpm@9.15.3",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.19.0",
     "npm": ">=10.0.0",
-    "pnpm": ">=8.1.0"
+    "pnpm": ">=8.8.0"
   },
   "repository": {
     "type": "git",

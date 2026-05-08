@@ -1,4 +1,4 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 import { MenuTable, MenuForm } from "@/api/module_system/menu";
 
 const API_PATH = "/system/user";
@@ -61,7 +61,7 @@ export const UserAPI = {
   },
 
   listUser(query: UserPageQuery) {
-    return request<ApiResponse<PageResult<UserInfo[]>>>({
+    return request<ApiResponse<PageResult<UserInfo>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

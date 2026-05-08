@@ -1,139 +1,139 @@
 <template>
-  <div class="app-container">
-    <el-tabs type="border-card" class="cache-page-tabs">
+  <div class="art-full-height">
+    <el-tabs>
       <!-- 监控信息 Tab -->
-      <el-tab-pane class="monitor" label="监控信息">
+      <ElTabPane label="监控信息">
         <div class="monitor-tab">
-          <el-row :gutter="16">
+          <ElRow :gutter="16">
             <!-- 基本信息 -->
-            <el-col :span="24">
-              <el-card shadow="hover">
+            <ElCol :span="24">
+              <ElCard shadow="hover">
                 <template #header>
                   <div class="flex items-center gap-2">
-                    <el-icon>
+                    <ElIcon>
                       <Monitor />
-                    </el-icon>
+                    </ElIcon>
                     <span>Redis监控信息</span>
-                    <el-tooltip content="展示Redis监控信息详情">
-                      <el-icon>
+                    <ElTooltip content="展示Redis监控信息详情">
+                      <ElIcon>
                         <QuestionFilled />
-                      </el-icon>
-                    </el-tooltip>
+                      </ElIcon>
+                    </ElTooltip>
                   </div>
                 </template>
-                <el-descriptions :column="12" border :direction="'vertical'">
-                  <el-descriptions-item label="Redis版本">
+                <ElDescriptions :column="12" border :direction="'vertical'">
+                  <ElDescriptionsItem label="Redis版本">
                     {{ cache.info?.redis_version || "-" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="运行模式">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="运行模式">
                     {{ cache.info?.redis_mode === "standalone" ? "单机" : "集群" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="端口">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="端口">
                     {{ cache.info?.tcp_port || "-" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="客户端数">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="客户端数">
                     {{ cache.info?.connected_clients || 0 }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="运行时间(天)">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="运行时间(天)">
                     {{ cache.info?.uptime_in_days || 0 }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="使用内存">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="使用内存">
                     {{ cache.info?.used_memory_human || "-" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="使用CPU">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="使用CPU">
                     {{
                       cache.info?.used_cpu_user_children
                         ? parseFloat(cache.info.used_cpu_user_children).toFixed(2)
                         : "-"
                     }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="内存配置">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="内存配置">
                     {{ cache.info?.maxmemory_human || "-" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="AOF是否开启">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="AOF是否开启">
                     {{ cache.info?.aof_enabled === "0" ? "否" : "是" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="RDB是否成功">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="RDB是否成功">
                     {{ cache.info?.rdb_last_bgsave_status || "-" }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="Key数量">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="Key数量">
                     {{ cache.db_size || 0 }}
-                  </el-descriptions-item>
-                  <el-descriptions-item label="网络入口/出口">
+                  </ElDescriptionsItem>
+                  <ElDescriptionsItem label="网络入口/出口">
                     {{
                       `${cache.info?.instantaneous_input_kbps || 0}kps/${cache.info?.instantaneous_output_kbps || 0}kps`
                     }}
-                  </el-descriptions-item>
-                </el-descriptions>
-              </el-card>
-            </el-col>
-          </el-row>
+                  </ElDescriptionsItem>
+                </ElDescriptions>
+              </ElCard>
+            </ElCol>
+          </ElRow>
 
           <!-- 监控图表：单独一行并占满剩余高度 -->
-          <el-row :gutter="16" class="monitor-charts-row">
-            <el-col :span="12" class="cache-chart-col">
-              <el-card shadow="hover" class="cache-chart-card">
+          <ElRow :gutter="16" class="monitor-charts-row">
+            <ElCol :span="12" class="cache-chart-col">
+              <ElCard shadow="hover" class="cache-chart-card">
                 <template #header>
                   <div class="flex items-center gap-2">
-                    <el-icon>
+                    <ElIcon>
                       <Stopwatch />
-                    </el-icon>
+                    </ElIcon>
                     <span class="title">命令统计</span>
-                    <el-tooltip content="展示命令统计详情">
-                      <el-icon>
+                    <ElTooltip content="展示命令统计详情">
+                      <ElIcon>
                         <QuestionFilled />
-                      </el-icon>
-                    </el-tooltip>
+                      </ElIcon>
+                    </ElTooltip>
                   </div>
                 </template>
                 <div ref="commandstats" class="chart-container" />
-              </el-card>
-            </el-col>
+              </ElCard>
+            </ElCol>
 
-            <el-col :span="12" class="cache-chart-col">
-              <el-card shadow="hover" class="cache-chart-card">
+            <ElCol :span="12" class="cache-chart-col">
+              <ElCard shadow="hover" class="cache-chart-card">
                 <template #header>
                   <div class="flex items-center gap-2">
-                    <el-icon>
+                    <ElIcon>
                       <Stopwatch />
-                    </el-icon>
+                    </ElIcon>
                     <span>内存信息</span>
-                    <el-tooltip content="展示内存信息详情">
-                      <el-icon>
+                    <ElTooltip content="展示内存信息详情">
+                      <ElIcon>
                         <QuestionFilled />
-                      </el-icon>
-                    </el-tooltip>
+                      </ElIcon>
+                    </ElTooltip>
                   </div>
                 </template>
                 <div ref="usedmemory" class="chart-container" />
-              </el-card>
-            </el-col>
-          </el-row>
+              </ElCard>
+            </ElCol>
+          </ElRow>
         </div>
-      </el-tab-pane>
+      </ElTabPane>
 
       <!-- 缓存管理 Tab -->
-      <el-tab-pane class="cache" label="缓存管理">
+      <ElTabPane label="缓存管理">
         <div class="cache-mgmt-tab">
-          <el-row :gutter="16" class="cache-mgmt-row">
+          <ElRow :gutter="16" class="cache-mgmt-row">
             <!-- 缓存列表 -->
-            <el-col :span="8" class="cache-mgmt-col">
-              <el-card :loading="loading" shadow="hover" class="cache-mgmt-card">
+            <ElCol :span="8" class="cache-mgmt-col">
+              <ElCard :loading="loading" shadow="hover" class="cache-mgmt-card">
                 <template #header>
                   <div class="flex justify-between items-center">
                     <div class="flex items-center gap-2">
-                      <el-icon>
+                      <ElIcon>
                         <Tickets />
-                      </el-icon>
+                      </ElIcon>
                       <span class="flex items-center gap-2">缓存列表</span>
-                      <el-tooltip content="展示缓存列表详情">
-                        <el-icon>
+                      <ElTooltip content="展示缓存列表详情">
+                        <ElIcon>
                           <QuestionFilled />
-                        </el-icon>
-                      </el-tooltip>
+                        </ElIcon>
+                      </ElTooltip>
                     </div>
                     <div>
-                      <el-button
+                      <ElButton
                         v-hasPerm="['module_monitor:cache:query']"
                         type="primary"
                         link
@@ -143,40 +143,33 @@
                     </div>
                   </div>
                 </template>
-                <el-table
-                  :loading="loading"
-                  :data="cacheNames"
-                  row-key="cache_name"
-                  height="100%"
-                  border
-                  stripe
-                >
+                <ElTable :loading="loading" :data="cacheNames" row-key="cache_name">
                   <template #empty>
-                    <el-empty :image-size="80" description="暂无数据" />
+                    <ElEmpty :image-size="80" description="暂无数据" />
                   </template>
-                  <el-table-column prop="cache_name" label="缓存名称" show-overflow-tooltip>
+                  <ElTableColumn prop="cache_name" label="缓存名称" show-overflow-tooltip>
                     <template #default="{ row }">
-                      <el-button
+                      <ElButton
                         v-hasPerm="['module_monitor:cache:query']"
                         type="primary"
                         link
                         @click="getCacheKeyList(row)"
                       >
                         {{ row.cache_name }}
-                      </el-button>
+                      </ElButton>
                     </template>
-                  </el-table-column>
-                  <el-table-column prop="remark" label="备注" show-overflow-tooltip />
-                  <el-table-column label="操作" width="60" align="center">
+                  </ElTableColumn>
+                  <ElTableColumn prop="remark" label="备注" show-overflow-tooltip />
+                  <ElTableColumn label="操作" width="60" align="center">
                     <template #default="{ row }">
-                      <el-popconfirm
+                      <ElPopconfirm
                         class="box-item"
                         :title="`确认删除缓存 ${row.cache_name} 吗？`"
                         placement="top"
                         @confirm="handleClearCacheName(row)"
                       >
                         <template #reference>
-                          <el-button
+                          <ElButton
                             v-hasPerm="['module_monitor:cache:delete']"
                             type="danger"
                             size="small"
@@ -184,31 +177,31 @@
                             icon="delete"
                           />
                         </template>
-                      </el-popconfirm>
+                      </ElPopconfirm>
                     </template>
-                  </el-table-column>
-                </el-table>
-              </el-card>
-            </el-col>
+                  </ElTableColumn>
+                </ElTable>
+              </ElCard>
+            </ElCol>
 
             <!-- 键名列表 -->
-            <el-col :span="8" class="cache-mgmt-col">
-              <el-card :loading="loading" shadow="hover" class="cache-mgmt-card">
+            <ElCol :span="8" class="cache-mgmt-col">
+              <ElCard :loading="loading" shadow="hover" class="cache-mgmt-card">
                 <template #header>
                   <div class="flex justify-between items-center">
                     <div class="flex items-center gap-2">
-                      <el-icon>
+                      <ElIcon>
                         <Key />
-                      </el-icon>
+                      </ElIcon>
                       <span class="flex items-center gap-2">键名列表</span>
-                      <el-tooltip content="展示键名列表详情">
-                        <el-icon>
+                      <ElTooltip content="展示键名列表详情">
+                        <ElIcon>
                           <QuestionFilled />
-                        </el-icon>
-                      </el-tooltip>
+                        </ElIcon>
+                      </ElTooltip>
                     </div>
                     <div>
-                      <el-button
+                      <ElButton
                         v-hasPerm="['module_monitor:cache:query']"
                         type="primary"
                         link
@@ -218,38 +211,36 @@
                     </div>
                   </div>
                 </template>
-                <el-table
+                <ElTable
                   :loading="subLoading"
                   :data="cacheKeys.map((key) => ({ cacheKey: key }))"
-                  height="100%"
                   row-key="cacheKey"
-                  border
                 >
                   <template #empty>
-                    <el-empty :image-size="80" description="暂无数据" />
+                    <ElEmpty :image-size="80" description="暂无数据" />
                   </template>
-                  <el-table-column prop="cacheKey" label="缓存键名" show-overflow-tooltip>
+                  <ElTableColumn prop="cacheKey" label="缓存键名" show-overflow-tooltip>
                     <template #default="{ row }">
-                      <el-button
+                      <ElButton
                         v-hasPerm="['module_monitor:cache:detail']"
                         type="primary"
                         link
                         @click="handleCacheValue(row.cacheKey)"
                       >
                         {{ row.cacheKey }}
-                      </el-button>
+                      </ElButton>
                     </template>
-                  </el-table-column>
-                  <el-table-column label="操作" width="60" align="center">
+                  </ElTableColumn>
+                  <ElTableColumn label="操作" width="60" align="center">
                     <template #default="{ row }">
-                      <el-popconfirm
+                      <ElPopconfirm
                         class="box-item"
                         :title="`确认删除键 ${row.cacheKey} 吗？`"
                         placement="top"
                         @confirm="handleClearCacheKey(row.cacheKey)"
                       >
                         <template #reference>
-                          <el-button
+                          <ElButton
                             v-hasPerm="['module_monitor:cache:delete']"
                             type="danger"
                             size="small"
@@ -257,31 +248,31 @@
                             icon="delete"
                           />
                         </template>
-                      </el-popconfirm>
+                      </ElPopconfirm>
                     </template>
-                  </el-table-column>
-                </el-table>
-              </el-card>
-            </el-col>
+                  </ElTableColumn>
+                </ElTable>
+              </ElCard>
+            </ElCol>
 
             <!-- 缓存内容 -->
-            <el-col :span="8">
-              <el-card :loading="loading" shadow="hover">
+            <ElCol :span="8">
+              <ElCard :loading="loading" shadow="hover">
                 <template #header>
                   <div class="flex justify-between items-center">
                     <div class="flex items-center gap-2">
-                      <el-icon>
+                      <ElIcon>
                         <Key />
-                      </el-icon>
+                      </ElIcon>
                       <span class="flex items-center gap-2">缓存内容</span>
-                      <el-tooltip content="展示缓存内容详情">
-                        <el-icon>
+                      <ElTooltip content="展示缓存内容详情">
+                        <ElIcon>
                           <QuestionFilled />
-                        </el-icon>
-                      </el-tooltip>
+                        </ElIcon>
+                      </ElTooltip>
                     </div>
                     <div>
-                      <el-button
+                      <ElButton
                         v-hasPerm="['module_monitor:cache:delete']"
                         type="danger"
                         link
@@ -289,37 +280,32 @@
                         @click="handleClearCacheAll"
                       >
                         清理全部
-                      </el-button>
+                      </ElButton>
                     </div>
                   </div>
                 </template>
-                <el-form
-                  :model="cacheForm"
-                  label-suffix=":"
-                  label-width="auto"
-                  label-position="top"
-                >
-                  <el-form-item label="缓存名称">
-                    <el-input v-model="cacheForm.cache_name" readonly placeholder="缓存名称" />
-                  </el-form-item>
-                  <el-form-item label="缓存键名">
-                    <el-input v-model="cacheForm.cache_key" readonly placeholder="缓存键名" />
-                  </el-form-item>
-                  <el-form-item label="缓存内容">
-                    <el-input
+                <ElForm :model="cacheForm" label-suffix=":" label-width="auto" label-position="top">
+                  <ElFormItem label="缓存名称">
+                    <ElInput v-model="cacheForm.cache_name" readonly placeholder="缓存名称" />
+                  </ElFormItem>
+                  <ElFormItem label="缓存键名">
+                    <ElInput v-model="cacheForm.cache_key" readonly placeholder="缓存键名" />
+                  </ElFormItem>
+                  <ElFormItem label="缓存内容">
+                    <ElInput
                       v-model="cacheForm.cache_value"
                       type="textarea"
                       :rows="20"
                       readonly
                       placeholder="缓存内容"
                     />
-                  </el-form-item>
-                </el-form>
-              </el-card>
-            </el-col>
-          </el-row>
+                  </ElFormItem>
+                </ElForm>
+              </ElCard>
+            </ElCol>
+          </ElRow>
         </div>
-      </el-tab-pane>
+      </ElTabPane>
     </el-tabs>
   </div>
 </template>
@@ -553,34 +539,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 与 .app-container 纵向 flex 衔接：tabs 占满剩余高度 */
-.cache-page-tabs {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  width: 100%;
-  min-height: 0;
-
-  :deep(.el-tabs__header) {
-    flex-shrink: 0;
-  }
-
-  :deep(.el-tabs__content) {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  :deep(.el-tab-pane) {
-    box-sizing: border-box;
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-  }
-}
-
 .monitor-tab {
   box-sizing: border-box;
   display: flex;

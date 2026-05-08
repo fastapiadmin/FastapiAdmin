@@ -1,11 +1,17 @@
 <!-- 折叠按钮 -->
 <template>
   <div class="hamburger-wrapper" @click="toggleClick">
-    <div :class="['i-svg:collapse', { hamburger: true, 'is-active': isActive }]" />
+    <ArtSvgIcon
+      :icon="resolveIconForArtSvgIcon('collapse')"
+      :class="[{ hamburger: true, 'is-active': isActive }]"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
+
 defineProps({
   isActive: { type: Boolean, required: true },
 });

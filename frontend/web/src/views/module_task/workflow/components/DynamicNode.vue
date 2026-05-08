@@ -95,14 +95,14 @@ const nodeClass = computed(() => {
   width: 80px !important;
   height: 80px !important;
   padding: 0 !important;
-  color: #ffffff !important;
+  color: #fff !important;
   cursor: pointer !important;
   background: linear-gradient(135deg, #67c23a 0%, #5daf34 100%) !important;
   border: 3px solid #5daf34 !important;
   border-radius: 50% !important;
   box-shadow:
-    0 6px 12px rgba(103, 194, 58, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    0 6px 12px rgb(103 194 58 / 40%),
+    0 2px 4px rgb(0 0 0 / 10%) !important;
 }
 
 .vue-flow__node-output {
@@ -112,14 +112,14 @@ const nodeClass = computed(() => {
   width: 80px !important;
   height: 80px !important;
   padding: 0 !important;
-  color: #ffffff !important;
+  color: #fff !important;
   cursor: pointer !important;
   background: linear-gradient(135deg, #f56c6c 0%, #e04e4e 100%) !important;
   border: 3px solid #e04e4e !important;
   border-radius: 50% !important;
   box-shadow:
-    0 6px 12px rgba(245, 108, 108, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    0 6px 12px rgb(245 108 108 / 40%),
+    0 2px 4px rgb(0 0 0 / 10%) !important;
 }
 
 .dynamic-node {
@@ -127,7 +127,7 @@ const nodeClass = computed(() => {
   cursor: pointer;
   border: 2px solid #409eff;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 2px 8px rgb(64 158 255 / 20%);
 }
 
 .vue-flow__node-input .dynamic-node,

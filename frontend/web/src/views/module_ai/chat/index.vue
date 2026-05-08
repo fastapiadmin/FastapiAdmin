@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container">
-    <el-container class="main-chat">
-      <el-aside class="sidebar-container" :class="{ collapsed: isSidebarCollapsed }">
+  <div class="art-full-height">
+    <ElContainer class="main-chat">
+      <ElAside class="sidebar-container" :class="{ collapsed: isSidebarCollapsed }">
         <Sidebar
           ref="sidebarRef"
           :current-session-id="currentSessionId"
@@ -9,9 +9,9 @@
           @select-session="handleSelectSession"
           @new-session="handleNewSession"
         />
-      </el-aside>
-      <el-container class="chat-container">
-        <el-header class="chat-header">
+      </ElAside>
+      <ElContainer class="chat-container">
+        <ElHeader class="chat-header">
           <ChatNavbar
             :connection-status="connectionStatus"
             :is-connected="isConnected"
@@ -21,8 +21,8 @@
             @toggle-connection="toggleConnection"
             @toggle-sidebar="toggleSidebar"
           />
-        </el-header>
-        <el-main class="chat-main">
+        </ElHeader>
+        <ElMain class="chat-main">
           <ChatMessages
             ref="chatMessagesRef"
             :messages="messages"
@@ -30,17 +30,17 @@
             @prompt-click="handleSendMessage"
             @error-close="error = ''"
           />
-        </el-main>
-        <el-footer class="chat-footer">
+        </ElMain>
+        <ElFooter class="chat-footer">
           <ChatInput
             :disabled="!isConnected"
             :sending="sending"
             :is-connected="isConnected"
             @send="handleSendMessage"
           />
-        </el-footer>
-      </el-container>
-    </el-container>
+        </ElFooter>
+      </ElContainer>
+    </ElContainer>
   </div>
 </template>
 
@@ -57,7 +57,7 @@ import ChatMessages from "./components/ChatMessages.vue";
 import ChatInput from "./components/ChatInput.vue";
 import Sidebar from "./components/Sidebar.vue";
 import AiChatAPI, { ChatSession } from "@/api/module_ai/chat";
-import { Auth } from "@/utils/auth";
+import { Auth } from "@utils/auth";
 import type { ChatMessage, UploadedFile } from "./types";
 
 // 状态
@@ -298,12 +298,8 @@ onUnmounted(disconnectWebSocket);
 
 <style lang="scss" scoped>
 .main-chat {
-  /* L2 内容面：与 AppMain 的 L0 画布（留白/间隙）区分开，避免与 gap 同色 */
-  --chat-area-bg: var(--el-bg-color-overlay);
-
   height: 100%;
   overflow: hidden;
-  background: var(--chat-area-bg);
   border: 1px solid var(--el-border-color-light);
   border-radius: 8px;
   box-shadow: var(--el-box-shadow-light);
@@ -324,27 +320,23 @@ onUnmounted(disconnectWebSocket);
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    background: var(--chat-area-bg);
   }
 
   .chat-header {
     height: auto;
     padding: 0;
-    background: var(--chat-area-bg);
     border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
   .chat-main {
     flex: 1;
     overflow: hidden;
-    background: var(--chat-area-bg);
   }
 
   .chat-footer {
     height: auto;
     min-height: 80px;
     padding: 0;
-    background: var(--chat-area-bg);
     border-top: 1px solid var(--el-border-color-lighter);
   }
 }

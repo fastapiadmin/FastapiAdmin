@@ -1,10 +1,10 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/system/position";
 
 const PositionAPI = {
   listPosition(query?: PositionPageQuery) {
-    return request<ApiResponse<PageResult<PositionTable[]>>>({
+    return request<ApiResponse<PageResult<PositionTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

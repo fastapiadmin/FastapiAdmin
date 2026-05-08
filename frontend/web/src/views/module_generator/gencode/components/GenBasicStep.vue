@@ -1,9 +1,9 @@
 <template>
-  <el-form ref="formRef" class="gen-basic-step" :model="info" :rules="rules" label-width="120px">
+  <ElForm ref="formRef" class="gen-basic-step" :model="info" :rules="rules" label-width="120px">
     <!-- 顶部：生成回显 -->
-    <el-row :gutter="12" class="mb-3">
-      <el-col :span="24">
-        <el-card shadow="never" class="gen-echo-card">
+    <ElRow :gutter="12" class="mb-3">
+      <ElCol :span="24">
+        <ElCard shadow="never" class="gen-echo-card">
           <div class="gen-echo-card__title">生成回显 / 生成文件路径</div>
           <div class="gen-echo-grid">
             <div class="gen-echo-item">
@@ -21,12 +21,12 @@
             <div class="gen-echo-item">
               <div class="gen-echo-item__k gen-echo-item__k--with-tip">
                 权限
-                <el-tooltip
+                <ElTooltip
                   content="前两段为包名、模块名；第三段为操作类型（与接口/按钮一致）：query、detail、create、update、delete、patch、export、import、download。"
                   placement="top"
                 >
-                  <el-icon class="gen-echo-item__tip"><QuestionFilled /></el-icon>
-                </el-tooltip>
+                  <ElIcon class="gen-echo-item__tip"><QuestionFilled /></ElIcon>
+                </ElTooltip>
               </div>
               <code class="gen-echo-item__v">{{ permissionPreview }}</code>
             </div>
@@ -37,105 +37,105 @@
           >
             将额外生成子表代码（不创建子表菜单）
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </ElCard>
+      </ElCol>
+    </ElRow>
 
-    <el-row :gutter="16" class="gen-layout-row">
-      <el-col :span="24" class="gen-layout-left">
-        <el-card shadow="never" class="gen-form-card">
+    <ElRow :gutter="16" class="gen-layout-row">
+      <ElCol :span="24" class="gen-layout-left">
+        <ElCard shadow="never" class="gen-form-card">
           <template #header>
             <div class="gen-form-card__header">
               <span class="font-medium">基础信息</span>
               <span class="gen-form-card__hint">切换步骤会先保存当前页</span>
             </div>
           </template>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="表名称" prop="table_name">
-                <el-input v-model="info.table_name" placeholder="请输入表名称" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="表描述" prop="table_comment">
-                <el-input v-model="info.table_comment" placeholder="请输入表描述" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="实体类名称" prop="class_name">
-                <el-input v-model="info.class_name" placeholder="请输入" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="package_name">
+          <ElRow :gutter="16">
+            <ElCol :span="12">
+              <ElFormItem label="表名称" prop="table_name">
+                <ElInput v-model="info.table_name" placeholder="请输入表名称" />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem label="表描述" prop="table_comment">
+                <ElInput v-model="info.table_comment" placeholder="请输入表描述" />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem label="实体类名称" prop="class_name">
+                <ElInput v-model="info.class_name" placeholder="请输入" />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem prop="package_name">
                 <template #label>
                   包名
-                  <el-tooltip
+                  <ElTooltip
                     content="插件包名（plugin 顶层目录）。三段式示例：module_example"
                     placement="top"
                   >
-                    <el-icon><QuestionFilled /></el-icon>
-                  </el-tooltip>
+                    <ElIcon><QuestionFilled /></ElIcon>
+                  </ElTooltip>
                 </template>
                 <div class="gen-package-row">
-                  <el-input
+                  <ElInput
                     v-model="info.package_name"
                     class="gen-package-row__input"
                     placeholder="例如 module_example"
                     clearable
                   />
                 </div>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="module_name">
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem prop="module_name">
                 <template #label>
                   模块名
-                  <el-tooltip content="包名下第二层目录。示例：demo / gen_demo02" placement="top">
-                    <el-icon><QuestionFilled /></el-icon>
-                  </el-tooltip>
+                  <ElTooltip content="包名下第二层目录。示例：demo / gen_demo02" placement="top">
+                    <ElIcon><QuestionFilled /></ElIcon>
+                  </ElTooltip>
                 </template>
-                <el-input v-model="info.module_name" placeholder="例如 demo" clearable />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="business_name">
+                <ElInput v-model="info.module_name" placeholder="例如 demo" clearable />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem prop="business_name">
                 <template #label>
                   业务名
-                  <el-tooltip
+                  <ElTooltip
                     content="模块下第三层目录（可为空）。示例：demo01；留空表示仅到模块目录"
                     placement="top"
                   >
-                    <el-icon><QuestionFilled /></el-icon>
-                  </el-tooltip>
+                    <ElIcon><QuestionFilled /></ElIcon>
+                  </ElTooltip>
                 </template>
-                <el-input
+                <ElInput
                   v-model="info.business_name"
                   placeholder="例如 demo01（可留空）"
                   clearable
                 />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="function_name">
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem prop="function_name">
                 <template #label>
                   功能名
-                  <el-tooltip content="写入本地时作为菜单名称，例如 用户管理" placement="top">
-                    <el-icon><QuestionFilled /></el-icon>
-                  </el-tooltip>
+                  <ElTooltip content="写入本地时作为菜单名称，例如 用户管理" placement="top">
+                    <ElIcon><QuestionFilled /></ElIcon>
+                  </ElTooltip>
                 </template>
-                <el-input v-model="info.function_name" placeholder="例如 用户管理" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item>
+                <ElInput v-model="info.function_name" placeholder="例如 用户管理" />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="12">
+              <ElFormItem>
                 <template #label>
                   上级菜单
-                  <el-tooltip content="仅可选目录；留空则在侧栏根下创建模块目录" placement="top">
-                    <el-icon><QuestionFilled /></el-icon>
-                  </el-tooltip>
+                  <ElTooltip content="仅可选目录；留空则在侧栏根下创建模块目录" placement="top">
+                    <ElIcon><QuestionFilled /></ElIcon>
+                  </ElTooltip>
                 </template>
-                <el-tree-select
+                <ElTreeSelect
                   v-model="info.parent_menu_id"
                   :data="menuOptions"
                   placeholder="不选=根目录下挂模块目录；选=挂到该目录下"
@@ -146,56 +146,56 @@
                   clearable
                   style="width: 100%"
                 />
-              </el-form-item>
-            </el-col>
-            <el-col :span="24">
-              <el-form-item label="备注" prop="description">
-                <el-input v-model="info.description" type="textarea" :rows="3"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24">
-              <el-card shadow="never" class="master-sub-card mb-4">
-                <el-row :gutter="16">
-                  <el-col :span="12">
-                    <el-form-item prop="sub_table_name">
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="24">
+              <ElFormItem label="备注" prop="description">
+                <ElInput v-model="info.description" type="textarea" :rows="3"></ElInput>
+              </ElFormItem>
+            </ElCol>
+            <ElCol :span="24">
+              <ElCard shadow="never" class="master-sub-card mb-4">
+                <ElRow :gutter="16">
+                  <ElCol :span="12">
+                    <ElFormItem prop="sub_table_name">
                       <template #label>
                         子表表名
-                        <el-tooltip
+                        <ElTooltip
                           content="数据库中已存在的物理表名，例如 gen_order_item"
                           placement="top"
                         >
-                          <el-icon><QuestionFilled /></el-icon>
-                        </el-tooltip>
+                          <ElIcon><QuestionFilled /></ElIcon>
+                        </ElTooltip>
                       </template>
-                      <el-input
+                      <ElInput
                         v-model="info.sub_table_name"
                         placeholder="与下栏同时填写，如 gen_order_item"
                         clearable
                         @blur="emit('master-sub-blur')"
                       />
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="12">
-                    <el-form-item prop="sub_table_fk_name">
+                    </ElFormItem>
+                  </ElCol>
+                  <ElCol :span="12">
+                    <ElFormItem prop="sub_table_fk_name">
                       <template #label>
                         子表外键列
-                        <el-tooltip
+                        <ElTooltip
                           content="子表中指向主表主键的列名，例如 order_id（类型需与主键匹配）"
                           placement="top"
                         >
-                          <el-icon><QuestionFilled /></el-icon>
-                        </el-tooltip>
+                          <ElIcon><QuestionFilled /></ElIcon>
+                        </ElTooltip>
                       </template>
-                      <el-input
+                      <ElInput
                         v-model="info.sub_table_fk_name"
                         placeholder="与上栏同时填写，如 order_id"
                         clearable
                         @blur="emit('master-sub-blur')"
                       />
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-                <el-alert
+                    </ElFormItem>
+                  </ElCol>
+                </ElRow>
+                <ElAlert
                   v-if="info.master_sub_hint"
                   class="mt-1"
                   type="warning"
@@ -203,7 +203,7 @@
                   show-icon
                   :title="info.master_sub_hint"
                 />
-                <el-alert
+                <ElAlert
                   v-else-if="info.sub && info.sub_table_name && info.sub_table_fk_name"
                   class="mt-1"
                   type="success"
@@ -211,13 +211,13 @@
                   show-icon
                   title="主子表结构已从数据库加载，预览与生成将包含子表代码。"
                 />
-              </el-card>
-            </el-col>
-          </el-row>
-        </el-card>
-      </el-col>
-    </el-row>
-  </el-form>
+              </ElCard>
+            </ElCol>
+          </ElRow>
+        </ElCard>
+      </ElCol>
+    </ElRow>
+  </ElForm>
 </template>
 
 <script setup lang="ts">

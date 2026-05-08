@@ -10,7 +10,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { isExternal } from "@/utils/index";
+import { isExternal } from "@utils/index";
 
 const props = defineProps({
   to: {

@@ -18,7 +18,7 @@
   >
     <!-- 左侧图标 -->
     <div class="left-icon">
-      <el-icon><Bell /></el-icon>
+      <ElIcon><Bell /></ElIcon>
     </div>
     <!-- 滚动内容包装器 -->
     <div class="scroll-wrapper">
@@ -35,7 +35,7 @@
     </div>
     <!-- 可选的关闭按钮 -->
     <div v-if="showClose" class="right-icon" @click="handleRightIconClick">
-      <el-icon><Close /></el-icon>
+      <ElIcon><Close /></ElIcon>
     </div>
   </div>
 </template>

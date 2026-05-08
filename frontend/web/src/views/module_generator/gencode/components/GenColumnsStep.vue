@@ -1,6 +1,6 @@
 <template>
   <div class="elTableCustom">
-    <el-alert
+    <ElAlert
       v-if="info.sub && !info.master_sub_hint && info.sub_table_name"
       class="mb-3"
       type="success"
@@ -8,7 +8,7 @@
       show-icon
       title="当前已启用主子表：以下为「主表」字段配置；子表字段来自数据库结构，保存后可在预览中查看子表生成代码。"
     />
-    <el-alert
+    <ElAlert
       v-else-if="info.master_sub_hint"
       class="mb-3"
       type="warning"
@@ -19,7 +19,7 @@
     <p class="gencode-columns-tip">
       菜单与路由、接口路径的对应见「基础配置」第一步中的折叠「对照」表。
     </p>
-    <el-alert
+    <ElAlert
       v-if="columnKeyword.trim() && displayColumns.length === 0 && (info.columns?.length ?? 0) > 0"
       class="mb-2"
       type="warning"
@@ -28,7 +28,7 @@
       title="无匹配列，请调整筛选词或清空筛选框"
     />
     <div class="mb-2 flex flex-wrap items-center gap-2">
-      <el-input
+      <ElInput
         v-model="columnKeyword"
         clearable
         placeholder="筛选列名或注释"
@@ -36,47 +36,47 @@
         :prefix-icon="Search"
       />
       <span class="gencode-bulk-hint">批量设置：</span>
-      <el-space size="small">
-        <el-dropdown>
-          <el-button size="small" type="primary" plain>查询</el-button>
+      <ElSpace size="small">
+        <ElDropdown>
+          <ElButton size="small" type="primary" plain>查询</ElButton>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="bulkSet('is_query', true)">全选</el-dropdown-item>
-              <el-dropdown-item @click="bulkSet('is_query', false)">全不选</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem @click="bulkSet('is_query', true)">全选</ElDropdownItem>
+              <ElDropdownItem @click="bulkSet('is_query', false)">全不选</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
-        <el-dropdown>
-          <el-button size="small" type="success" plain>列表</el-button>
+        </ElDropdown>
+        <ElDropdown>
+          <ElButton size="small" type="success" plain>列表</ElButton>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="bulkSet('is_list', true)">全选</el-dropdown-item>
-              <el-dropdown-item @click="bulkSet('is_list', false)">全不选</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem @click="bulkSet('is_list', true)">全选</ElDropdownItem>
+              <ElDropdownItem @click="bulkSet('is_list', false)">全不选</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
-        <el-dropdown>
-          <el-button size="small" type="warning" plain>新增</el-button>
+        </ElDropdown>
+        <ElDropdown>
+          <ElButton size="small" type="warning" plain>新增</ElButton>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="bulkSet('is_insert', true)">全选</el-dropdown-item>
-              <el-dropdown-item @click="bulkSet('is_insert', false)">全不选</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem @click="bulkSet('is_insert', true)">全选</ElDropdownItem>
+              <ElDropdownItem @click="bulkSet('is_insert', false)">全不选</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
-        <el-dropdown>
-          <el-button size="small" type="danger" plain>编辑</el-button>
+        </ElDropdown>
+        <ElDropdown>
+          <ElButton size="small" type="danger" plain>编辑</ElButton>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="bulkSet('is_edit', true)">全选</el-dropdown-item>
-              <el-dropdown-item @click="bulkSet('is_edit', false)">全不选</el-dropdown-item>
-            </el-dropdown-menu>
+            <ElDropdownMenu>
+              <ElDropdownItem @click="bulkSet('is_edit', true)">全选</ElDropdownItem>
+              <ElDropdownItem @click="bulkSet('is_edit', false)">全不选</ElDropdownItem>
+            </ElDropdownMenu>
           </template>
-        </el-dropdown>
-      </el-space>
+        </ElDropdown>
+      </ElSpace>
     </div>
     <div class="data-table__content">
-      <el-table
+      <ElTable
         ref="dragTable"
         v-loading="loading"
         :data="displayColumns"
@@ -87,146 +87,146 @@
         stripe
       >
         <template #empty>
-          <el-empty :image-size="80" description="暂无数据" />
+          <ElEmpty :image-size="80" description="暂无数据" />
         </template>
-        <el-table-column label="拖拽" width="56" fixed align="center">
+        <ElTableColumn label="拖拽" width="56" fixed align="center">
           <template #default>
             <span
               class="gencode-drag-handle"
               :class="{ disabled: !!columnKeyword.trim() }"
               title="拖拽排序（筛选时禁用）"
             >
-              <el-icon><Rank /></el-icon>
+              <ElIcon><Rank /></ElIcon>
             </span>
           </template>
-        </el-table-column>
-        <el-table-column label="序号" type="index" width="60" fixed />
-        <el-table-column
+        </ElTableColumn>
+        <ElTableColumn label="序号" type="index" width="60" fixed />
+        <ElTableColumn
           label="列名"
           prop="column_name"
           min-width="60"
           :show-overflow-tooltip="true"
         />
-        <el-table-column
+        <ElTableColumn
           label="类型"
           prop="column_type"
           min-width="60"
           :show-overflow-tooltip="true"
         />
-        <el-table-column label="长度" prop="column_length" width="80" :show-overflow-tooltip="true">
+        <ElTableColumn label="长度" prop="column_length" width="80" :show-overflow-tooltip="true">
           <template #default="scope">
-            <el-input v-model="scope.row.column_length" :disabled="!!scope.row.is_pk" />
+            <ElInput v-model="scope.row.column_length" :disabled="!!scope.row.is_pk" />
           </template>
-        </el-table-column>
-        <el-table-column label="注释" min-width="60">
+        </ElTableColumn>
+        <ElTableColumn label="注释" min-width="60">
           <template #default="scope">
-            <el-input v-model="scope.row.column_comment"></el-input>
+            <ElInput v-model="scope.row.column_comment"></ElInput>
           </template>
-        </el-table-column>
-        <el-table-column label="后端类型" min-width="60">
+        </ElTableColumn>
+        <ElTableColumn label="后端类型" min-width="60">
           <template #default="scope">
-            <el-select v-model="scope.row.python_type">
-              <el-option label="str" value="str" />
-              <el-option label="int" value="int" />
-              <el-option label="float" value="float" />
-              <el-option label="Decimal" value="Decimal" />
-              <el-option label="date" value="date" />
-              <el-option label="time" value="time" />
-              <el-option label="datetime" value="datetime" />
-              <el-option label="bytes" value="bytes" />
-              <el-option label="dict" value="dict" />
-              <el-option label="list" value="list" />
-            </el-select>
+            <ElSelect v-model="scope.row.python_type">
+              <ElOption label="str" value="str" />
+              <ElOption label="int" value="int" />
+              <ElOption label="float" value="float" />
+              <ElOption label="Decimal" value="Decimal" />
+              <ElOption label="date" value="date" />
+              <ElOption label="time" value="time" />
+              <ElOption label="datetime" value="datetime" />
+              <ElOption label="bytes" value="bytes" />
+              <ElOption label="dict" value="dict" />
+              <ElOption label="list" value="list" />
+            </ElSelect>
           </template>
-        </el-table-column>
-        <el-table-column label="后端属性" min-width="60">
+        </ElTableColumn>
+        <ElTableColumn label="后端属性" min-width="60">
           <template #default="scope">
-            <el-input v-model="scope.row.python_field"></el-input>
+            <ElInput v-model="scope.row.python_field"></ElInput>
           </template>
-        </el-table-column>
-        <el-table-column label="新增" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="新增" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_insert" />
+            <ElCheckbox v-model="scope.row.is_insert" />
           </template>
-        </el-table-column>
-        <el-table-column label="编辑" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="编辑" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_edit" />
+            <ElCheckbox v-model="scope.row.is_edit" />
           </template>
-        </el-table-column>
-        <el-table-column label="列表" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="列表" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_list" />
+            <ElCheckbox v-model="scope.row.is_list" />
           </template>
-        </el-table-column>
-        <el-table-column label="查询" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="查询" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_query" />
+            <ElCheckbox v-model="scope.row.is_query" />
           </template>
-        </el-table-column>
-        <el-table-column label="查询方式" min-width="60">
+        </ElTableColumn>
+        <ElTableColumn label="查询方式" min-width="60">
           <template #default="scope">
-            <el-select v-model="scope.row.query_type">
-              <el-option label="=" value="EQ" />
-              <el-option label="!=" value="NE" />
-              <el-option label=">" value="GT" />
-              <el-option label=">=" value="GTE" />
-              <el-option label="<" value="LT" />
-              <el-option label="<=" value="LTE" />
-              <el-option label="LIKE" value="LIKE" />
-              <el-option label="BETWEEN" value="BETWEEN" />
-            </el-select>
+            <ElSelect v-model="scope.row.query_type">
+              <ElOption label="=" value="EQ" />
+              <ElOption label="!=" value="NE" />
+              <ElOption label=">" value="GT" />
+              <ElOption label=">=" value="GTE" />
+              <ElOption label="<" value="LT" />
+              <ElOption label="<=" value="LTE" />
+              <ElOption label="LIKE" value="LIKE" />
+              <ElOption label="BETWEEN" value="BETWEEN" />
+            </ElSelect>
           </template>
-        </el-table-column>
-        <el-table-column
+        </ElTableColumn>
+        <ElTableColumn
           label="默认值"
           prop="column_default"
           min-width="60"
           :show-overflow-tooltip="true"
         >
           <template #default="scope">
-            <el-input v-model="scope.row.column_default" :disabled="!!scope.row.is_pk" />
+            <ElInput v-model="scope.row.column_default" :disabled="!!scope.row.is_pk" />
           </template>
-        </el-table-column>
-        <el-table-column label="自增" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="自增" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_increment" />
+            <ElCheckbox v-model="scope.row.is_increment" />
           </template>
-        </el-table-column>
-        <el-table-column label="可空" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="可空" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_nullable" />
+            <ElCheckbox v-model="scope.row.is_nullable" />
           </template>
-        </el-table-column>
-        <el-table-column label="唯一" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="唯一" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_unique" />
+            <ElCheckbox v-model="scope.row.is_unique" />
           </template>
-        </el-table-column>
-        <el-table-column label="主键" width="60">
+        </ElTableColumn>
+        <ElTableColumn label="主键" width="60">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.is_pk" />
+            <ElCheckbox v-model="scope.row.is_pk" />
           </template>
-        </el-table-column>
-        <el-table-column label="表单类型">
+        </ElTableColumn>
+        <ElTableColumn label="表单类型">
           <template #default="scope">
-            <el-select v-model="scope.row.html_type">
-              <el-option label="文本框" value="input" />
-              <el-option label="文本域" value="textarea" />
-              <el-option label="下拉框" value="select" />
-              <el-option label="单选框" value="radio" />
-              <el-option label="复选框" value="checkbox" />
-              <el-option label="日期控件" value="datetime" />
-              <el-option label="图片上传" value="imageUpload" />
-              <el-option label="文件上传" value="fileUpload" />
-              <el-option label="富文本控件" value="editor" />
-            </el-select>
+            <ElSelect v-model="scope.row.html_type">
+              <ElOption label="文本框" value="input" />
+              <ElOption label="文本域" value="textarea" />
+              <ElOption label="下拉框" value="select" />
+              <ElOption label="单选框" value="radio" />
+              <ElOption label="复选框" value="checkbox" />
+              <ElOption label="日期控件" value="datetime" />
+              <ElOption label="图片上传" value="imageUpload" />
+              <ElOption label="文件上传" value="fileUpload" />
+              <ElOption label="富文本控件" value="editor" />
+            </ElSelect>
           </template>
-        </el-table-column>
-        <el-table-column label="字典类型" fixed="right">
+        </ElTableColumn>
+        <ElTableColumn label="字典类型" fixed="right">
           <template #default="scope">
-            <el-select v-model="scope.row.dict_type" clearable filterable placeholder="请选择">
-              <el-option
+            <ElSelect v-model="scope.row.dict_type" clearable filterable placeholder="请选择">
+              <ElOption
                 v-for="dict in dictOptions"
                 :key="dict.dict_type"
                 :label="dict.dict_name"
@@ -236,11 +236,11 @@
                 <span style="float: right; font-size: 13px; color: #8492a6">
                   {{ dict.dict_type }}
                 </span>
-              </el-option>
-            </el-select>
+              </ElOption>
+            </ElSelect>
           </template>
-        </el-table-column>
-      </el-table>
+        </ElTableColumn>
+      </ElTable>
     </div>
   </div>
 </template>

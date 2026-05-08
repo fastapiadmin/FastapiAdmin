@@ -1,333 +1,296 @@
+<!-- 个人中心（Art 模版布局 + 当前用户接口） -->
 <template>
-  <div class="app-container">
-    <el-row :gutter="12">
-      <!-- 左侧信息卡片 -->
-      <el-col :span="6" class="mb-4">
-        <el-card :loading="loading" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>基本信息</span>
-            </div>
-          </template>
-          <div class="user-info-header">
-            <div class="avatar-alert mb-10px">
-              <!-- 提示：头像上传成功后请点击“保存更改”按钮才会生效 -->
-              <el-alert
-                type="info"
-                show-icon
-                :closable="false"
-                title="头像上传，点击“保存更改”按钮使其生效"
+  <div class="w-full h-full p-0 bg-transparent border-none shadow-none">
+    <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
+      <!-- 左侧卡片 -->
+      <div class="w-112 mr-5 max-md:w-full max-md:mr-0">
+        <div class="art-card-sm relative p-9 pb-6 overflow-hidden text-center">
+          <img
+            class="absolute top-0 left-0 w-full h-50 object-cover"
+            src="@imgs/user/bg.webp"
+            alt=""
+          />
+
+          <div class="relative z-10 mt-30 mx-auto">
+            <div class="relative inline-block">
+              <img
+                v-if="infoFormState.avatar"
+                class="w-20 h-20 object-cover border-2 border-white rounded-full"
+                :src="infoFormState.avatar"
+                alt=""
               />
-            </div>
-
-            <div class="avatar-wrapper">
-              <el-avatar v-if="infoFormState.avatar" :src="infoFormState.avatar" :size="120" />
-              <el-avatar v-else icon="UserFilled" :size="120" />
-
-              <el-upload
+              <img
+                v-else
+                class="w-20 h-20 object-cover border-2 border-white rounded-full"
+                src="@imgs/user/avatar.webp"
+                alt=""
+              />
+              <ElUpload
                 ref="uploadRef"
                 v-model:file-list="fileList"
-                class="el-upload"
+                class="profile-avatar-upload"
                 name="file"
                 :show-file-list="false"
                 :before-upload="handleBeforeUpload"
                 :http-request="handleUpload"
-                :disabled="loading"
                 :limit="1"
                 :auto-upload="false"
-                @change="handleFileChange"
+                @change="handleAvatarFileChange"
               >
                 <template #trigger>
-                  <el-button type="primary" :icon="Camera" class="upload-trigger" />
+                  <ElButton
+                    type="primary"
+                    :icon="Camera"
+                    circle
+                    size="small"
+                    class="upload-trigger"
+                  />
                 </template>
-              </el-upload>
+              </ElUpload>
             </div>
-            <span class="user-name">
-              {{ infoFormState.name }}
-            </span>
-
-            <el-text>{{ infoFormState.roles?.map((item) => item.name).join("、") }}</el-text>
           </div>
 
-          <el-divider />
+          <p class="relative z-10 mt-3 text-sm text-g-600">{{ greeting }}</p>
+          <h2 class="relative z-10 mt-1 text-xl font-normal">{{ infoFormState.name || "—" }}</h2>
+          <p class="relative z-10 mt-2 text-sm text-g-500">
+            {{ infoFormState.roles?.map((r) => r.name).join("、") || " " }}
+          </p>
 
-          <el-descriptions :column="1" border>
-            <el-descriptions-item>
-              <template #label>
-                <div class="cell-item">
-                  <el-icon :style="iconStyle">
-                    <User />
-                  </el-icon>
-                  <span>账号</span>
-                </div>
-              </template>
-              <span>{{ infoFormState.username }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template #label>
-                <div class="cell-item">
-                  <el-icon :style="iconStyle">
-                    <Coordinate />
-                  </el-icon>
-                  <span>部门</span>
-                </div>
-              </template>
-              <span>{{ infoFormState.dept?.name }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template #label>
-                <div class="cell-item">
-                  <el-icon :style="iconStyle">
-                    <OfficeBuilding />
-                  </el-icon>
-                  <span>岗位</span>
-                </div>
-              </template>
-              <span>{{ infoFormState.positions?.map((item) => item.name).join("、") }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template #label>
-                <div class="cell-item">
-                  <el-icon :style="iconStyle">
-                    <Phone />
-                  </el-icon>
-                  <span>手机</span>
-                </div>
-              </template>
-              <span>{{ infoFormState.mobile }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template #label>
-                <div class="cell-item">
-                  <el-icon :style="iconStyle">
-                    <Message />
-                  </el-icon>
-                  <span>邮箱</span>
-                </div>
-              </template>
-              <span>{{ infoFormState.email }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template #label>
-                <div class="cell-item">
-                  <el-icon :style="iconStyle">
-                    <Clock />
-                  </el-icon>
-                  <span>加入时间</span>
-                </div>
-              </template>
-              <span>{{ infoFormState.created_time }}</span>
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-card>
-      </el-col>
+          <div class="relative z-10 w-75 mx-auto mt-7.5 text-left">
+            <div class="mt-2.5 flex items-start">
+              <ArtSvgIcon icon="ri:mail-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm break-all">{{ infoFormState.email || "—" }}</span>
+            </div>
+            <div class="mt-2.5 flex items-start">
+              <ArtSvgIcon icon="ri:user-3-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm">{{ infoFormState.username || "—" }}</span>
+            </div>
+            <div class="mt-2.5 flex items-start">
+              <ArtSvgIcon icon="ri:map-pin-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm">{{ infoFormState.dept?.name || "—" }}</span>
+            </div>
+            <div class="mt-2.5 flex items-start">
+              <ArtSvgIcon icon="ri:briefcase-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm">
+                {{ infoFormState.positions?.map((p) => p.name).join("、") || "—" }}
+              </span>
+            </div>
+          </div>
 
-      <!-- 右侧设置区域 -->
-      <el-col :span="18" class="mb-4">
-        <el-card :loading="loading" shadow="hover">
-          <el-tabs type="border-card">
-            <el-tab-pane>
-              <template #label>
-                <el-icon>
-                  <User />
-                </el-icon>
-                <span>基本设置</span>
-              </template>
-              <div>
-                <el-form
-                  ref="infoFormRef"
-                  :model="infoFormState"
-                  :rules="rules"
-                  label-width="80px"
-                  label-suffix=":"
-                >
-                  <el-form-item label="用户名" prop="name">
-                    <el-input
-                      v-model="infoFormState.name"
-                      placeholder="请输入用户名"
-                      prefix-icon="User"
-                      clearable
-                      style="width: 240px"
-                    />
-                  </el-form-item>
-
-                  <el-form-item label="手机号" prop="mobile">
-                    <el-input
-                      v-model="infoFormState.mobile"
-                      placeholder="请输入手机号码"
-                      prefix-icon="Phone"
-                      clearable
-                      style="width: 240px"
-                    />
-                  </el-form-item>
-
-                  <el-form-item label="邮箱" prop="email">
-                    <el-input
-                      v-model="infoFormState.email"
-                      placeholder="请输入邮箱"
-                      prefix-icon="Message"
-                      clearable
-                      style="width: 240px"
-                    />
-                  </el-form-item>
-
-                  <el-form-item label="性别" prop="gender">
-                    <el-radio-group v-model="infoFormState.gender">
-                      <el-radio
-                        v-for="item in dictDataStore['sys_user_sex']"
-                        :key="item.dict_value"
-                        :value="item.dict_value"
-                      >
-                        {{ item.dict_label }}
-                      </el-radio>
-                    </el-radio-group>
-                  </el-form-item>
-
-                  <el-form-item>
-                    <el-button
-                      type="primary"
-                      :loading="infoSubmitting"
-                      icon="edit"
-                      @click="handleSave"
-                    >
-                      保存更改
-                    </el-button>
-                  </el-form-item>
-                </el-form>
+          <div v-if="roleTagList.length" class="relative z-10 mt-10">
+            <h3 class="text-sm font-medium">角色</h3>
+            <div class="flex flex-wrap justify-center mt-3.5">
+              <div
+                v-for="item in roleTagList"
+                :key="item"
+                class="py-1 px-1.5 mr-2.5 mb-2.5 text-xs border border-g-300 rounded"
+              >
+                {{ item }}
               </div>
-            </el-tab-pane>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <el-tab-pane>
-              <template #label>
-                <el-icon>
-                  <Lock />
-                </el-icon>
-                <span>安全设置</span>
-              </template>
-              <div>
-                <el-form
-                  ref="passwordFormRef"
-                  :model="passwordFormState"
-                  :rules="resetPasswordRules"
-                  label-width="120px"
-                  label-suffix=":"
+      <ElDialog
+        v-model="avatarCropVisible"
+        title="裁剪头像"
+        width="640px"
+        append-to-body
+        destroy-on-close
+        @closed="onAvatarCropDialogClosed"
+      >
+        <ArtCutterImg
+          v-if="avatarCropVisible && avatarCropSrc"
+          :key="avatarCropSrc"
+          :img-url="avatarCropSrc"
+          :box-width="420"
+          :box-height="340"
+          :cut-width="240"
+          :cut-height="240"
+          :quality="0.92"
+          :tool="true"
+          :show-preview="true"
+          :original-graph="false"
+          file-type="jpeg"
+          title="调整头像"
+          preview-title="预览"
+          @update:img-url="onAvatarCropConfirm"
+          @error="onAvatarCropImgError"
+        />
+      </ElDialog>
+
+      <!-- 右侧表单 -->
+      <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
+        <div class="art-card-sm">
+          <h1 class="p-4 text-xl font-normal border-b border-g-300">基本设置</h1>
+
+          <ElForm
+            ref="infoFormRef"
+            :model="infoFormState"
+            class="box-border p-5 [&>.el-row_.el-form-item]:w-[calc(50%-10px)] [&>.el-row_.el-input]:w-full [&>.el-row_.el-select]:w-full"
+            :rules="rules"
+            label-width="86px"
+            label-position="top"
+          >
+            <ElRow>
+              <ElFormItem label="姓名" prop="name">
+                <ElInput
+                  v-model="infoFormState.name"
+                  :disabled="!isEdit"
+                  placeholder="请输入姓名"
+                />
+              </ElFormItem>
+              <ElFormItem label="性别" prop="gender" class="ml-5">
+                <ElSelect
+                  v-model="infoFormState.gender"
+                  placeholder="请选择"
+                  :disabled="!isEdit"
+                  class="w-full"
                 >
-                  <el-form-item label="当前密码" prop="old_password">
-                    <el-input
-                      v-model.trim="passwordFormState.old_password"
-                      :placeholder="t('login.password')"
-                      type="password"
-                      prefix-icon="Unlock"
-                      show-password
-                      clearable
-                      style="width: 240px"
-                    >
-                      <template #prefix>
-                        <Lock />
-                      </template>
-                    </el-input>
-                  </el-form-item>
+                  <ElOption
+                    v-for="item in dictDataStore['sys_user_sex']"
+                    :key="String(item.dict_value)"
+                    :label="item.dict_label"
+                    :value="normalizeGenderValue(item.dict_value)"
+                  />
+                </ElSelect>
+              </ElFormItem>
+            </ElRow>
 
-                  <el-form-item label="新密码" prop="new_password">
-                    <el-input
-                      v-model.trim="passwordFormState.new_password"
-                      type="password"
-                      :placeholder="t('login.newPassword')"
-                      prefix-icon="Unlock"
-                      show-password
-                      clearable
-                      style="width: 240px"
-                    >
-                      <template #prefix>
-                        <Key />
-                      </template>
-                    </el-input>
-                  </el-form-item>
+            <ElRow>
+              <ElFormItem label="账号" prop="username">
+                <ElInput v-model="infoFormState.username" disabled placeholder="登录账号" />
+              </ElFormItem>
+              <ElFormItem label="邮箱" prop="email" class="ml-5">
+                <ElInput
+                  v-model="infoFormState.email"
+                  :disabled="!isEdit"
+                  placeholder="请输入邮箱"
+                />
+              </ElFormItem>
+            </ElRow>
 
-                  <el-form-item label="确认新密码" prop="confirm_password">
-                    <el-input
-                      v-model.trim="passwordFormState.confirm_password"
-                      type="password"
-                      :placeholder="t('login.message.password.confirm')"
-                      prefix-icon="Lock"
-                      show-password
-                      clearable
-                      style="width: 240px"
-                    >
-                      <template #prefix>
-                        <Check />
-                      </template>
-                    </el-input>
-                  </el-form-item>
+            <ElRow>
+              <ElFormItem label="手机" prop="mobile">
+                <ElInput
+                  v-model="infoFormState.mobile"
+                  :disabled="!isEdit"
+                  placeholder="请输入手机号码"
+                />
+              </ElFormItem>
+              <ElFormItem label="部门" class="ml-5">
+                <ElInput :model-value="infoFormState.dept?.name || '—'" disabled />
+              </ElFormItem>
+            </ElRow>
 
-                  <el-form-item>
-                    <el-button
-                      type="primary"
-                      :loading="passwordChanging"
-                      icon="edit"
-                      @click="handlePasswordChange"
-                    >
-                      更新密码
-                    </el-button>
-                  </el-form-item>
-                </el-form>
-              </div>
-            </el-tab-pane>
-          </el-tabs>
-        </el-card>
-      </el-col>
-    </el-row>
+            <div class="flex-c justify-end [&_.el-button]:!w-27.5">
+              <ElButton
+                type="primary"
+                class="w-22.5"
+                :loading="infoSubmitting"
+                v-ripple
+                @click="onBasicToggleSave"
+              >
+                {{ isEdit ? "保存" : "编辑" }}
+              </ElButton>
+            </div>
+          </ElForm>
+        </div>
+
+        <div class="art-card-sm my-5">
+          <h1 class="p-4 text-xl font-normal border-b border-g-300">更改密码</h1>
+
+          <ElForm
+            ref="passwordFormRef"
+            :model="passwordFormState"
+            class="box-border p-5"
+            :rules="resetPasswordRules"
+            label-width="86px"
+            label-position="top"
+          >
+            <ElFormItem label="当前密码" prop="old_password">
+              <ElInput
+                v-model="passwordFormState.old_password"
+                type="password"
+                :disabled="!isEditPwd"
+                show-password
+              />
+            </ElFormItem>
+
+            <ElFormItem label="新密码" prop="new_password">
+              <ElInput
+                v-model="passwordFormState.new_password"
+                type="password"
+                :disabled="!isEditPwd"
+                show-password
+              />
+            </ElFormItem>
+
+            <ElFormItem label="确认新密码" prop="confirm_password">
+              <ElInput
+                v-model="passwordFormState.confirm_password"
+                type="password"
+                :disabled="!isEditPwd"
+                show-password
+              />
+            </ElFormItem>
+
+            <div class="flex-c justify-end [&_.el-button]:!w-27.5">
+              <ElButton
+                type="primary"
+                class="w-22.5"
+                :loading="passwordChanging"
+                v-ripple
+                @click="onPasswordToggleSave"
+              >
+                {{ isEditPwd ? "保存" : "编辑" }}
+              </ElButton>
+            </div>
+          </ElForm>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type {
-  FormInstance,
-  UploadRequestOptions,
-  UploadFile,
-  ElUpload,
-  ComponentSize,
-} from "element-plus";
+import type { FormInstance, UploadRequestOptions, UploadFile } from "element-plus";
+import type { ElUpload } from "element-plus";
 import UserAPI, { type InfoFormState, type PasswordFormState } from "@/api/module_system/user";
-import { useUserStore, useDictStore } from "@/store";
+import { useUserStore, useDictStore } from "@stores";
 import { Camera } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
-import { nextTick } from "vue";
-import { redirectToLogin } from "@/utils/authRedirect";
+import { redirectToLogin } from "@utils/auth";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import ArtCutterImg from "@/components/Core/media/art-cutter-img/index.vue";
+import { dataURLToFile } from "@utils/file/dataUrl";
+
+defineOptions({ name: "UserProfile" });
 
 const { t } = useI18n();
 const userStore = useUserStore();
 const dictStore = useDictStore();
 const infoFormRef = ref<FormInstance>();
 const passwordFormRef = ref<FormInstance>();
-const loading = ref<boolean>(false);
+
+const infoSubmitting = ref(false);
+const passwordChanging = ref(false);
+
+const isEdit = ref(false);
+const isEditPwd = ref(false);
 
 const dictDataStore = computed(() => dictStore.dictData);
 
-const size = ref<ComponentSize>("default");
+const greeting = ref("");
 
-const iconStyle = computed(() => {
-  const marginMap = {
-    large: "8px",
-    default: "6px",
-    small: "4px",
-  };
-  return {
-    marginRight: marginMap[size.value || "default"],
-  };
-});
+const roleTagList = computed(() =>
+  (infoFormState.roles ?? [])
+    .map((r) => r.name)
+    .filter((n): n is string => !!n && n.trim().length > 0)
+);
 
-// 字典数据
-const getOptions = async () => {
-  return await dictStore.getDict(["sys_user_sex"]);
-};
-
-// 状态定义
-const passwordChanging = ref(false);
-const infoSubmitting = ref(false);
-
-// 用户基础信息表单
 const infoFormState = reactive<InfoFormState>({
   name: undefined,
   gender: 1,
@@ -342,116 +305,92 @@ const infoFormState = reactive<InfoFormState>({
   created_time: undefined,
 });
 
-// 修改密码表单
 const passwordFormState = reactive<PasswordFormState>({
   old_password: "",
   new_password: "",
   confirm_password: "",
 });
 
-// 头像上传处理优化
 const fileList = ref<any[]>([]);
 const uploadRef = ref<InstanceType<typeof ElUpload>>();
 
-// 文件上传前校验
-const handleBeforeUpload = (file: File) => {
-  const isImage = file.type.startsWith("image/");
-  const isLt2M = file.size / 1024 / 1024 < 2;
+const avatarCropVisible = ref(false);
+const avatarCropSrc = ref("");
 
-  if (!isImage) {
-    ElMessage.error("只能上传图片文件");
-    return false;
+function revokeAvatarCropSrc() {
+  if (avatarCropSrc.value.startsWith("blob:")) {
+    URL.revokeObjectURL(avatarCropSrc.value);
   }
-  if (!isLt2M) {
-    ElMessage.error("上传图片大小不能超过 2MB!");
-    return false;
-  }
-  return true;
-};
+  avatarCropSrc.value = "";
+}
 
-// 自定义上传处理
-const handleUpload = async (options: UploadRequestOptions) => {
+function onAvatarCropDialogClosed() {
+  revokeAvatarCropSrc();
+}
+
+function onAvatarCropImgError() {
+  ElMessage.error("图片加载失败，请换一张图重试");
+}
+
+async function onAvatarCropConfirm(dataURL: string) {
   try {
-    const file = options.file;
+    const file = dataURLToFile(dataURL, "avatar.jpg");
     const formData = new FormData();
     formData.append("file", file);
-
     const response = await UserAPI.uploadCurrentUserAvatar(formData);
 
     if (response.data.code === 0 && response.data.data) {
       const fileUrl = response.data.data.file_url;
       updateAvatar(fileUrl);
-      options.onSuccess(response);
-      // 重置上传组件状态，允许再次选择上传
-      if (uploadRef.value) {
-        uploadRef.value.clearFiles();
-      }
+      uploadRef.value?.clearFiles();
       fileList.value = [];
+      ElMessage.success("头像已更新，请保存基本设置以同步资料（如需）");
+      avatarCropVisible.value = false;
     } else {
-      const errorMsg = response.data.msg || "上传失败";
-      ElMessage.error(errorMsg);
-      options.onError({
-        ...new Error(errorMsg),
-        status: response.status || 500,
-        method: "POST",
-        url: "/system/user/current/avatar/upload",
-      });
+      ElMessage.error(response.data.msg || "上传失败");
     }
-  } catch (error) {
+  } catch {
     ElMessage.error("头像上传失败，请重试");
-    const errorObj = error instanceof Error ? error : new Error(String(error));
-    options.onError({
-      ...errorObj,
-      status: 500,
-      method: "POST",
-      url: "/system/user/current/avatar/upload",
-    });
-    console.error("Upload error:", error);
   }
+}
+
+function normalizeGenderValue(v: string | number | undefined): number {
+  if (v === undefined || v === null || v === "") return 1;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 1;
+}
+
+const getOptions = async () => {
+  await dictStore.getDict(["sys_user_sex"]);
 };
 
-// 处理文件选择变化
-const handleFileChange = (file: UploadFile, files: UploadFile[]) => {
-  // 当有新文件被添加且状态为ready时触发上传
-  if (file) {
-    // 更新文件列表
-    fileList.value = [...files];
-    // 提交上传
-    if (uploadRef.value) {
-      uploadRef.value.submit();
-    }
-  }
-};
-
-// 更新头像信息
-const updateAvatar = (fileUrl: string) => {
-  if (fileUrl) {
-    // 更新头像状态
-    infoFormState.avatar = fileUrl;
-    // 确保DOM正确更新
-    nextTick(() => {
-      console.log("头像已更新:", infoFormState.avatar);
-    });
-  } else {
-    ElMessage.error("无效的头像URL");
-    console.error("Invalid fileUrl:", fileUrl);
-  }
-};
-
-// 邮箱校验规则优化
 const rules = {
-  name: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
   mobile: [
     {
-      pattern: /^1[3-9]\d{9}$/,
-      message: "请输入有效的手机号格式",
+      validator: (_: unknown, v: string, cb: (e?: Error) => void) => {
+        const s = v != null ? String(v).trim() : "";
+        if (!s) return cb();
+        if (!/^1[3-9]\d{9}$/.test(s)) {
+          cb(new Error("请输入有效的手机号格式"));
+          return;
+        }
+        cb();
+      },
       trigger: "blur",
     },
   ],
   email: [
     {
-      pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
-      message: "请输入有效的邮箱格式",
+      validator: (_: unknown, v: string, cb: (e?: Error) => void) => {
+        const s = v != null ? String(v).trim() : "";
+        if (!s) return cb();
+        if (!/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/.test(s)) {
+          cb(new Error("请输入有效的邮箱格式"));
+          return;
+        }
+        cb();
+      },
       trigger: "blur",
     },
   ],
@@ -462,7 +401,7 @@ const resetPasswordRules = {
     {
       required: true,
       trigger: "blur",
-      message: t("login.password"),
+      message: t("login.message.password.currentRequired"),
     },
   ],
   new_password: [
@@ -489,7 +428,7 @@ const resetPasswordRules = {
       trigger: "blur",
     },
     {
-      validator: (_: any, value: string) => {
+      validator: (_: unknown, value: string) => {
         return value === passwordFormState.new_password;
       },
       trigger: "blur",
@@ -498,13 +437,97 @@ const resetPasswordRules = {
   ],
 };
 
-// 初始化表单
+function refreshGreeting() {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 9) greeting.value = "早上好";
+  else if (h >= 9 && h < 11) greeting.value = "上午好";
+  else if (h >= 11 && h < 13) greeting.value = "中午好";
+  else if (h >= 13 && h < 18) greeting.value = "下午好";
+  else if (h >= 18 && h < 24) greeting.value = "晚上好";
+  else greeting.value = "很晚了，早点休息";
+}
+
+const handleBeforeUpload = (file: File) => {
+  const isImage = file.type.startsWith("image/");
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isImage) {
+    ElMessage.error("只能上传图片文件");
+    return false;
+  }
+  if (!isLt2M) {
+    ElMessage.error("上传图片大小不能超过 2MB!");
+    return false;
+  }
+  return true;
+};
+
+const handleUpload = async (options: UploadRequestOptions) => {
+  try {
+    const file = options.file;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await UserAPI.uploadCurrentUserAvatar(formData);
+
+    if (response.data.code === 0 && response.data.data) {
+      const fileUrl = response.data.data.file_url;
+      updateAvatar(fileUrl);
+      options.onSuccess(response);
+      uploadRef.value?.clearFiles();
+      fileList.value = [];
+      ElMessage.success("头像已更新，请保存基本设置以同步资料（如需）");
+    } else {
+      const errorMsg = response.data.msg || "上传失败";
+      ElMessage.error(errorMsg);
+      options.onError({
+        ...new Error(errorMsg),
+        status: response.status || 500,
+        method: "POST",
+        url: "/system/user/current/avatar/upload",
+      });
+    }
+  } catch (error) {
+    ElMessage.error("头像上传失败，请重试");
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    options.onError({
+      ...errorObj,
+      status: 500,
+      method: "POST",
+      url: "/system/user/current/avatar/upload",
+    });
+  }
+};
+
+const handleAvatarFileChange = (file: UploadFile) => {
+  if (!file.raw) {
+    return;
+  }
+  if (!handleBeforeUpload(file.raw)) {
+    uploadRef.value?.clearFiles();
+    fileList.value = [];
+    return;
+  }
+  revokeAvatarCropSrc();
+  avatarCropSrc.value = URL.createObjectURL(file.raw);
+  avatarCropVisible.value = true;
+  uploadRef.value?.clearFiles();
+  fileList.value = [];
+};
+
+const updateAvatar = (fileUrl: string) => {
+  if (fileUrl) {
+    infoFormState.avatar = fileUrl;
+  } else {
+    ElMessage.error("无效的头像URL");
+  }
+};
+
 const initInfoForm = () => {
   const basicInfo = userStore.basicInfo;
   Object.assign(infoFormState, { ...basicInfo });
 };
 
-// 初始化密码表单
 const initPasswordForm = () => {
   Object.assign(passwordFormState, {
     old_password: "",
@@ -513,98 +536,85 @@ const initPasswordForm = () => {
   });
 };
 
-// 基本信息表单提交
 const handleSave = async () => {
   try {
     infoSubmitting.value = true;
     const valid = await infoFormRef.value?.validate().catch(() => false);
     if (!valid) {
-      return;
+      return false;
     }
-    // 确保avatar字段被正确处理
     const response = await UserAPI.updateCurrentUserInfo({ ...infoFormState });
     await userStore.setUserInfo(response.data.data);
+    initInfoForm();
     ElMessage.success("个人资料已保存");
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
   } finally {
     infoSubmitting.value = false;
   }
 };
 
-// 修改密码
 const handlePasswordChange = async () => {
   try {
     passwordChanging.value = true;
     const valid = await passwordFormRef.value?.validate().catch(() => false);
     if (!valid) {
-      return;
+      return false;
     }
     const response = await UserAPI.changeCurrentUserPassword(passwordFormState);
     initPasswordForm();
     await redirectToLogin(response.data.msg);
+    return true;
   } catch (error) {
     console.error(error);
+    return false;
   } finally {
     passwordChanging.value = false;
   }
 };
 
+async function onBasicToggleSave() {
+  if (!isEdit.value) {
+    isEdit.value = true;
+    return;
+  }
+  const ok = await handleSave();
+  if (ok) {
+    isEdit.value = false;
+  }
+}
+
+async function onPasswordToggleSave() {
+  if (!isEditPwd.value) {
+    isEditPwd.value = true;
+    initPasswordForm();
+    return;
+  }
+  await handlePasswordChange();
+}
+
 onMounted(async () => {
+  refreshGreeting();
   await getOptions();
   initInfoForm();
 });
 </script>
 
 <style lang="scss" scoped>
-/* 样式调整 */
-.user-info-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.profile-avatar-upload {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
 
-  .avatar-wrapper {
-    position: relative;
-    margin-bottom: 16px;
-
-    .el-upload {
-      &:hover {
-        opacity: 0.8; /* 鼠标悬浮时稍微降低透明度 */
-      }
-    }
-
-    .upload-trigger {
-      // top: 50%;
-      // left: 50%;
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      background: var(--el-color-primary);
-      border-radius: 50%;
-      opacity: 0;
-      transform: translate(-50%, -50%);
-    }
-
-    /* 提升 hover 样式优先级 */
-    &:hover .upload-trigger {
-      opacity: 1 !important; /* 强制生效 */
-    }
+  :deep(.el-upload) {
+    display: inline-flex;
   }
-}
 
-/* 修复表单输入框清除按钮导致的宽度变化问题 */
-.el-input {
-  transition: none !important;
-}
-
-.el-input__wrapper {
-  transition: none !important;
-}
-
-.iconStyle {
-  margin-right: 6px;
-}
-
-.cell-item {
-  display: flex;
-  align-items: center;
+  .upload-trigger {
+    box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
+  }
 }
 </style>

@@ -1,94 +1,36 @@
 import type { App } from "vue";
-import { createRouter, createWebHashHistory, type RouteRecordRaw } from "vue-router";
-export const Layout = () => import("@/layouts/index.vue");
-/**
- * 静态路由
- */
-export const constantRoutes: RouteRecordRaw[] = [
-  {
-    path: "/redirect",
-    meta: { hidden: true },
-    component: Layout,
-    children: [
-      {
-        path: "/redirect/:path(.*)",
-        component: () => import("@/views/redirect/index.vue"),
-      },
-    ],
-  },
-  {
-    path: "/login",
-    name: "Login",
-    meta: { hidden: true },
-    component: () => import("@/views/module_system/auth/index.vue"),
-  },
-  {
-    path: "/401",
-    name: "401",
-    meta: { hidden: true, title: "401" },
-    component: () => import("@/views/error/401.vue"),
-  },
-  {
-    path: "/404",
-    name: "404",
-    meta: { hidden: true, title: "404" },
-    component: () => import("@/views/error/404.vue"),
-  },
-  {
-    path: "/500",
-    name: "500",
-    meta: { hidden: true, title: "500" },
-    component: () => import("@/views/error/500.vue"),
-  },
-  {
-    path: "/",
-    name: "/",
-    redirect: "/home",
-    component: Layout,
-    children: [
-      {
-        path: "home",
-        component: () => import("@/views/dashboard/index.vue"),
-        // 用于 keep-alive 功能，需要与 SFC 中自动推导或显式声明的组件名称一致
-        // 参考文档: https://cn.vuejs.org/guide/built-ins/keep-alive.html#include-exclude
-        name: "Home",
-        meta: {
-          title: "首页",
-          icon: "homepage",
-          affix: true,
-          keepAlive: true,
-        },
-      },
-      {
-        path: "profile",
-        name: "Profile",
-        meta: { title: "个人中心", icon: "user", hidden: true },
-        component: () => import("@/views/current/profile.vue"),
-      },
-    ],
-  },
-  // 通配 404 必须置于静态路由最后，否则会抢先匹配 /、/home 等
-  {
-    path: "/:pathMatch(.*)*",
-    component: () => import("@/views/error/404.vue"),
-    meta: { hidden: true, title: "404" },
-  },
-];
+import { createRouter, createWebHashHistory } from "vue-router";
+import { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME, staticRoutes } from "./staticRoutes";
+import { setupBeforeEachGuard } from "./beforeEach";
+import { setupAfterEachGuard } from "./afterEach";
+import "@utils/ui";
 
 /**
- * 创建路由
+ * 路由分层：`staticRoutes` 一次性注册（登录页、首页、仪表盘、异常页等）；
+ * 业务菜单来自后端或壳层合并后再由守卫动态 `addRoute`。
  */
-const router = createRouter({
+export const router = createRouter({
   history: createWebHashHistory(),
-  routes: constantRoutes,
+  routes: staticRoutes,
   // 刷新时，滚动条位置还原
   scrollBehavior: () => ({ left: 0, top: 0 }),
 });
 
-// 全局注册 router
-// 为了捕获并处理全局错误，在注册路由时添加错误处理
-export function initRouter(app: App<Element>) {
+// 初始化路由
+export function initRouter(app: App<Element>): void {
+  setupBeforeEachGuard(router); // 路由前置守卫
+  setupAfterEachGuard(router); // 路由后置守卫
   app.use(router);
 }
 
-export default router;
+// 主页路径；须与 `staticRoutes` 中首页子路由一致（当前为 `/home`）
+export const HOME_PAGE_PATH = "/home";
+
+export { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME };
+
+/** 供 `@/router` 一处导入的运行时模块 */
+export { RouteRegistry, ComponentLoader, RouteTransformer, RouteValidator } from "./dynamicRoutes";
+export type { ValidationResult } from "./dynamicRoutes";
+export { IframeRouteManager } from "./staticRoutes";
+export { MenuProcessor, builtinFrontendRoutes } from "./MenuProcessor";
+export { RoutePermissionValidator } from "./beforeEach";

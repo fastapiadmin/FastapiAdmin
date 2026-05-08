@@ -1,58 +1,70 @@
 <template>
-  <el-row v-loading="previewLoading" element-loading-text="正在加载预览…">
-    <el-col v-if="!previewLoading && isTreeEmpty" :span="24">
-      <el-empty>
+  <ElRow v-loading="previewLoading" element-loading-text="正在加载预览…">
+    <ElCol v-if="!previewLoading && isTreeEmpty" :span="24">
+      <ElEmpty>
         <template #description>
           <p class="mb-1 font-medium">暂无预览文件</p>
           <p class="gencode-preview-empty-tip">
             若刚保存过仍为空，可将「预览范围」改为「全部」；或返回上一步检查字段与主子表后重新进入。
           </p>
         </template>
-      </el-empty>
-    </el-col>
+      </ElEmpty>
+    </ElCol>
     <template v-else>
-      <el-col :span="24" class="mb-2">
-        <div class="flex-y-center gap-3">
-          <span class="text-sm color-#909399">预览范围</span>
-          <el-radio-group v-model="previewScope" size="small">
-            <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="frontend">前端</el-radio-button>
-            <el-radio-button value="backend">后端</el-radio-button>
-          </el-radio-group>
-          <span class="ml-3 text-sm color-#909399">类型</span>
-          <el-checkbox-group v-model="previewTypes" size="small">
-            <el-checkbox-button v-for="t in previewTypeOptions" :key="t" :value="t">
+      <ElCol :span="24" class="mb-2">
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-[#909399]">预览范围</span>
+          <ElRadioGroup v-model="previewScope" size="small">
+            <ElRadioButton value="all">全部</ElRadioButton>
+            <ElRadioButton value="frontend">前端</ElRadioButton>
+            <ElRadioButton value="backend">后端</ElRadioButton>
+          </ElRadioGroup>
+          <span class="ml-3 text-sm text-[#909399]">类型</span>
+          <ElCheckboxGroup v-model="previewTypes" size="small">
+            <ElCheckboxButton v-for="t in previewTypeOptions" :key="t" :value="t">
               {{ t }}
-            </el-checkbox-button>
-          </el-checkbox-group>
+            </ElCheckboxButton>
+          </ElCheckboxGroup>
         </div>
-      </el-col>
-      <el-col :span="6">
-        <el-scrollbar max-height="72vh">
-          <el-tree
+      </ElCol>
+      <ElCol :span="6">
+        <ElScrollbar max-height="72vh">
+          <ElTree
             :data="filteredTreeData"
             default-expand-all
             highlight-current
             @node-click="onTreeNodeClick"
           >
             <template #default="{ data }">
-              <div :class="`i-svg:${getFileTreeNodeIcon(data.label)}`" />
+              <!-- 优先使用 resolveLocalIconUrl（@utils/icons），无对应 svg 时再走 Iconify -->
+              <img
+                v-if="previewIconAssetUrl(data.label)"
+                :src="previewIconAssetUrl(data.label)"
+                class="inline-block h-[1em] w-[1em] shrink-0 align-middle object-contain"
+                alt=""
+                aria-hidden="true"
+              />
+              <ArtSvgIcon
+                v-else
+                :icon="resolveIconForArtSvgIcon(getFileTreeNodeIcon(data.label))"
+                class="inline shrink-0 text-base"
+              />
               <span class="ml-1" :title="data.full_path || data.label">
                 {{ data.label }}
               </span>
             </template>
-          </el-tree>
-        </el-scrollbar>
-      </el-col>
-      <el-col :span="18">
-        <el-scrollbar max-height="72vh">
+          </ElTree>
+        </ElScrollbar>
+      </ElCol>
+      <ElCol :span="18">
+        <ElScrollbar max-height="72vh">
           <div class="absolute z-36 right-5 top-2">
-            <el-link type="primary" @click="emit('copy-code')">
-              <el-icon>
+            <ElLink type="primary" @click="emit('copy-code')">
+              <ElIcon>
                 <CopyDocument />
-              </el-icon>
+              </ElIcon>
               复制代码
-            </el-link>
+            </ElLink>
           </div>
 
           <Codemirror
@@ -64,10 +76,10 @@
             height="100%"
             width="100%"
           />
-        </el-scrollbar>
-      </el-col>
+        </ElScrollbar>
+      </ElCol>
     </template>
-  </el-row>
+  </ElRow>
 </template>
 
 <script setup lang="ts">
@@ -79,6 +91,9 @@ import { computed, inject, onUnmounted, ref, watch } from "vue";
 import Codemirror from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import { resolveLocalIconUrl } from "@utils/icons";
+import { resolveIconForArtSvgIcon } from "@utils/menuIcon/index";
 import { CopyDocument } from "@element-plus/icons-vue";
 import { GENCODE_CM_KEY } from "../gencodeInjectionKeys";
 import type { TreeNode } from "../types";
@@ -125,11 +140,43 @@ function onTreeNodeClick(data: TreeNode) {
   emit("file-click", data);
 }
 
+/** 与 `src/assets/images/svg/*.svg` 基名对齐，供本地文件优先展示 */
 function getFileTreeNodeIcon(label: string): string {
-  if (label.endsWith(".py")) return "python";
-  if (label.endsWith(".vue")) return "vue";
-  if (label.endsWith(".ts")) return "typescript";
+  const baseName = label.split(/[/\\]/).pop() ?? label;
+  const lower = baseName.toLowerCase();
+  if (lower.endsWith(".py")) return "python";
+  if (lower.endsWith(".vue")) return "vue";
+  if (lower.endsWith(".tsx") || lower.endsWith(".ts")) return "typescript";
+  if (
+    lower.endsWith(".jsx") ||
+    lower.endsWith(".js") ||
+    lower.endsWith(".mjs") ||
+    lower.endsWith(".cjs")
+  )
+    return "item-js";
+  if (lower.endsWith(".json")) return "file-json";
+  if (lower.endsWith(".html") || lower.endsWith(".htm")) return "file-html";
+  if (
+    lower.endsWith(".css") ||
+    lower.endsWith(".scss") ||
+    lower.endsWith(".sass") ||
+    lower.endsWith(".less")
+  )
+    return "file-css";
+  if (lower.endsWith(".sql")) return "sql";
+  if (lower.endsWith(".java")) return "java";
+  if (lower.endsWith(".xml")) return "xml";
+  if (lower.endsWith(".md")) return "document";
+  if (lower.endsWith(".yaml") || lower.endsWith(".yml")) return "file-json";
+  if (/\.(png|jpe?g|gif|webp|svg|ico)$/i.test(lower)) return "file-image";
+  if (/\.(zip|rar|7z)$/i.test(lower)) return "file-zip";
+  if (/\.(pdf)$/i.test(lower)) return "file-pdf";
   return "file";
+}
+
+/** 若 assets/images/svg 存在对应 svg 则返回 Vite 资源 URL，否则 undefined → 回退 Iconify */
+function previewIconAssetUrl(label: string): string | undefined {
+  return resolveLocalIconUrl(getFileTreeNodeIcon(label));
 }
 </script>
 

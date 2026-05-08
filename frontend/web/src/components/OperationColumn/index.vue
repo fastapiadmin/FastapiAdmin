@@ -1,6 +1,6 @@
 <!-- 操作列自适应宽度 -->
 <template>
-  <el-table-column
+  <ElTableColumn
     :label="label"
     :fixed="fixed"
     :align="align"
@@ -12,7 +12,7 @@
         <slot v-bind="{ row, column, $index }"></slot>
       </div>
     </template>
-  </el-table-column>
+  </ElTableColumn>
 </template>
 
 <script setup lang="ts">

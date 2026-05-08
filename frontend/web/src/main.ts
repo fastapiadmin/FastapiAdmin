@@ -1,61 +1,43 @@
-import { createApp } from "vue";
 import App from "./App.vue";
-import setupPlugins from "@/plugins";
-import { createTerminal } from "vue-web-terminal";
-
-// 暗黑主题样式
+import { createApp } from "vue";
+import "@styles/core/tailwind.css";
+import "@styles/index.scss";
 import "element-plus/theme-chalk/dark/css-vars.css";
-import "element-plus/dist/index.css";
-// 暗黑模式自定义变量
-import "@/styles/dark/css-vars.css";
-import "@/styles/index.scss";
-
-import "uno.css";
-
-// 过渡动画
 import "animate.css";
+import { printConsoleBanner } from "@utils/sys";
+import { initPlugins } from "@/plugins";
+import { useConfigStore } from "./store/modules/config.store";
 
-import { useConfigStore } from "@/store";
+document.addEventListener("touchstart", function () {}, { passive: false });
 
 const app = createApp(App);
-// 注册插件
-app.use(setupPlugins);
-// 注册终端组件
-app.use(createTerminal());
-// 封装设置 title 和 favicon 的函数
+printConsoleBanner();
+initPlugins(app);
+app.mount("#app");
+
+/** 挂载后拉取站点标题 / favicon（依赖 Pinia 与接口） */
 const setTitleAndFavicon = async () => {
   try {
     const configStore = useConfigStore();
-    // 强制从服务器获取最新配置
     await configStore.getConfig(true);
 
     const webTitle = configStore.configData.sys_web_title?.config_value;
     const webFavicon = configStore.configData.sys_web_favicon?.config_value;
-    const webLogo = configStore.configData.sys_web_logo?.config_value;
 
     if (webTitle) {
       document.title = webTitle;
     }
 
     if (webFavicon) {
-      const favicon = document.querySelector('link[rel="icon"]');
-      if (favicon instanceof HTMLLinkElement) {
-        favicon.href = webFavicon;
-      }
-    }
-
-    if (webLogo) {
-      const loadingLogo = document.querySelector(".loading-container-logo");
-      if (loadingLogo instanceof HTMLImageElement) {
-        loadingLogo.src = webLogo;
-      }
+      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach((node) => {
+        if (node instanceof HTMLLinkElement) {
+          node.href = webFavicon;
+        }
+      });
     }
   } catch (error) {
     console.error("获取配置数据失败:", error);
   }
 };
 
-app.mount("#app");
-
-// 在应用挂载后执行设置逻辑
-setTitleAndFavicon();
+void setTitleAndFavicon();

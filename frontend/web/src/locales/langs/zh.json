@@ -20,8 +20,12 @@
     },
     "user": {
       "userCenter": "个人中心",
+      "changeLog": "更新日志",
+      "paramConfig": "配置中心",
       "docs": "使用文档",
       "github": "Github",
+      "gitee": "Gitee",
+      "tour": "功能引导",
       "lockScreen": "锁定屏幕",
       "logout": "退出登录"
     },
@@ -36,7 +40,7 @@
     "tips": "提示",
     "cancel": "取消",
     "confirm": "确定",
-    "logOutTips": "您是否要退出登录?",
+    "logoutTips": "您是否要退出登录?",
     "reset": "重置",
     "save": "保存",
     "edit": "编辑",
@@ -105,6 +109,78 @@
     "selectKeydown": "选择",
     "exitKeydown": "关闭"
   },
+  "setting": {
+    "menuType": {
+      "title": "菜单布局",
+      "list": ["垂直", "水平", "混合", "双列"]
+    },
+    "theme": {
+      "title": "主题风格",
+      "list": ["浅色", "深色", "系统"]
+    },
+    "menu": {
+      "title": "菜单风格"
+    },
+    "color": {
+      "title": "系统主题色"
+    },
+    "box": {
+      "title": "盒子样式",
+      "list": ["边框", "阴影"]
+    },
+    "container": {
+      "title": "容器宽度",
+      "list": ["铺满", "定宽"]
+    },
+    "basics": {
+      "title": "基础配置",
+      "list": {
+        "multiTab": "开启多标签栏",
+        "accordion": "侧边栏开启手风琴模式",
+        "collapseSidebar": "显示折叠侧边栏按钮",
+        "reloadPage": "显示重载页面按钮",
+        "fastEnter": "显示快速入口",
+        "breadcrumb": "显示全局面包屑导航",
+        "language": "显示多语言选择",
+        "menuSearch": "显示全局菜单搜索",
+        "fullscreenTool": "显示全屏切换",
+        "layoutSize": "显示组件尺寸切换",
+        "notificationTool": "显示通知入口",
+        "progressBar": "显示顶部进度条",
+        "weakMode": "色弱模式",
+        "watermark": "全局水印",
+        "appLogo": "显示应用 Logo 与系统标题",
+        "loginGuide": "登录后开启新手引导",
+        "grayMode": "灰色模式",
+        "aiAssistant": "启用 AI 助手入口",
+        "menuWidth": "菜单宽度",
+        "tabStyle": "标签页风格",
+        "pageTransition": "页面切换动画",
+        "borderRadius": "自定义圆角"
+      }
+    },
+    "tabStyle": {
+      "default": "胶囊",
+      "card": "卡片",
+      "google": "谷歌"
+    },
+    "transition": {
+      "list": {
+        "none": "无动画",
+        "fade": "淡入淡出",
+        "slideLeft": "左侧滑入",
+        "slideBottom": "下方滑入",
+        "slideTop": "上方滑入"
+      }
+    },
+    "actions": {
+      "resetConfig": "重置配置",
+      "copyConfig": "复制配置",
+      "copySuccess": "配置已复制到剪贴板，可粘贴到 src/config/setting.ts 文件中",
+      "copyFailed": "复制失败，请重试",
+      "resetFailed": "重置失败，请刷新页面后重试"
+    }
+  },
   "settings": {
     "menuType": {
       "title": "菜单布局",
@@ -141,6 +217,10 @@
         "progressBar": "显示顶部进度条",
         "weakMode": "色弱模式",
         "watermark": "全局水印",
+        "appLogo": "显示应用 Logo 与系统标题",
+        "loginGuide": "登录后开启新手引导",
+        "grayMode": "灰色模式",
+        "aiAssistant": "启用 AI 助手入口",
         "menuWidth": "菜单宽度",
         "tabStyle": "标签页风格",
         "pageTransition": "页面切换动画",
@@ -148,7 +228,7 @@
       }
     },
     "tabStyle": {
-      "default": "默认",
+      "default": "胶囊",
       "card": "卡片",
       "google": "谷歌"
     },
@@ -194,7 +274,7 @@
     "topLayout": "顶部模式",
     "mixLayout": "混合模式",
     "configManagement": "配置管理",
-    "copyConfigDescription": "生成当前设置的代码并复制到剪贴板，然后覆盖 src/settings.ts 文件",
+    "copyConfigDescription": "生成当前设置的代码并复制到剪贴板，然后覆盖 src/config/setting.ts 中相应配置",
     "resetConfigDescription": "恢复所有设置为系统默认值",
     "systemTheme": "系统主题",
     "showGuide": "启动引导",
@@ -220,10 +300,21 @@
     "viewAll": "查看全部"
   },
   "worktab": {
+    "scrollLeft": "向左滚动标签",
+    "scrollRight": "向右滚动标签",
+    "menuMore": "标签选项",
+    "bookmarkAdd": "加入工作台收藏",
+    "bookmarkRemove": "取消工作台收藏",
+    "bookmarkAdded": "已加入收藏",
+    "bookmarkRemoved": "已取消收藏",
+    "bookmarkFail": "收藏操作失败",
+    "refreshCacheDone": "已刷新缓存并重新加载当前页",
+    "refreshCacheFail": "刷新缓存失败",
     "btn": {
       "refresh": "刷新",
       "fixed": "固定",
       "unfixed": "取消固定",
+      "closeCurrent": "关闭当前",
       "closeLeft": "关闭左侧",
       "closeRight": "关闭右侧",
       "closeOther": "关闭其他",
@@ -233,10 +324,30 @@
   "login": {
     "leftView": {
       "title": "一款兼具设计美学与高效开发的后台系统",
-      "subTitle": "美观实用的界面，经过视觉优化，确保卓越的用户体验"
+      "subTitle": "提供安全、高效、可扩展的管理解决方案，助力企业数字化转型与业务增长。"
     },
-    "title": "欢迎回来",
-    "subTitle": "输入您的账号和密码登录",
+    "title": "欢迎回来 👋",
+    "subTitle": "请输入您的账户信息以开始管理您的项目",
+    "versionLabel": "版本",
+    "quickSelectAccount": "快速选择账号",
+    "mobileLogin": "手机号登录",
+    "mobileLoginSubTitle": "请输入您的手机号码以开始管理您的项目",
+    "mobilePhonePlaceholder": "手机号码",
+    "getSmsCode": "获取验证码",
+    "smsCodeSentMock": "验证码已发送（演示环境）",
+    "smsCodeRequired": "请输入 6 位短信验证码",
+    "mobileLoginPending": "手机号登录接口暂未接入，仅供界面演示",
+    "backToAccountLogin": "返回",
+    "qrLogin": "扫码登录",
+    "qrLoginTitle": "欢迎回来 📱",
+    "qrLoginSubTitle": "请用手机扫描二维码登录",
+    "qrLoginHint": "扫码后点击「确认」，即可完成登录",
+    "oauthNoticeTitle": "通知",
+    "oauthLoginSuccess": "第三方账号登录成功",
+    "oauthLoginFailed": "第三方登录失败，请尝试账号密码登录",
+    "comingSoon": "功能开发中，敬请期待",
+    "accountLoginTab": "账号登录",
+    "quickLoginTab": "快速登录",
     "roles": {
       "super": "超级管理员",
       "admin": "管理员",
@@ -252,7 +363,7 @@
     "rememberPwd": "记住密码",
     "forgetPwd": "忘记密码",
     "btnText": "登录",
-    "backLoginBtnText": "返回登录",
+    "backLoginBtnText": "去登录",
     "noAccount": "还没有账号？",
     "register": "注册",
     "success": {
@@ -266,6 +377,7 @@
     "auto": "自动",
     "newPassword": "请输入新密码",
     "captchaCode": "请输入验证码",
+    "captchaClickHint": "点击刷新验证码",
     "capsLock": "大写锁定已打开",
     "message": {
       "username": {
@@ -273,6 +385,7 @@
       },
       "password": {
         "required": "请输入密码",
+        "currentRequired": "请输入当前密码",
         "min": "密码不能少于6位",
         "confirm": "请再次确认密码",
         "inconformity": "两次密码输入不一致"
@@ -299,6 +412,12 @@
         "required": "请先勾选同意用户协议"
       }
     },
+    "oauthTooltip": {
+      "wechat": "微信",
+      "qq": "QQ",
+      "github": "GitHub",
+      "gitee": "Gitee"
+    },
     "otherLoginMethods": "其他登录方式",
     "resetPassword": "重置密码",
     "thinkOfPasswd": "想起密码？",
@@ -309,14 +428,20 @@
     "quickFill": "快速填写",
     "quickLoginTip": "点击用户头像快速登录",
     "selectUser": "请选择用户",
-    "reg": "注 册"
+    "reg": "注 册",
+    "panelAlign": {
+      "label": "分栏布局",
+      "left": "居左",
+      "center": "居中",
+      "right": "居右"
+    }
   },
   "loginForm": {
     "remember": "记住我"
   },
   "forgetPassword": {
     "title": "忘记密码？",
-    "subTitle": "输入您的电子邮件来重置您的密码",
+    "subTitle": "请输入账号并设置新密码",
     "placeholder": "请输入您的电子邮件",
     "submitBtnText": "提交",
     "backBtnText": "返回"
@@ -378,10 +503,11 @@
     "evening": "晚上好！"
   },
   "exceptionPage": {
-    "gohome": "返回首页",
+    "401": "抱歉，您没有权限访问此页面。",
     "403": "抱歉，您无权访问该页面",
     "404": "抱歉，您访问的页面不存在",
     "500": "抱歉，服务器出错了",
+    "gohome": "返回首页",
     "noPermission": "抱歉，您无权访问此页面。",
     "pageError": "抱歉，您访问的页面不存在。",
     "networkError": "抱歉，服务器报告错误。",
@@ -400,37 +526,23 @@
     "outside": {
       "title": "内嵌页面"
     },
+    "home": {
+      "title": "首页"
+    },
+    "workplace": {
+      "title": "工作台"
+    },
+    "changelog": {
+      "title": "更新日志"
+    },
     "dashboard": {
       "title": "仪表盘",
-      "console": "工作台",
+      "console": "控制台",
       "analysis": "分析页",
-      "ecommerce": "电子商务"
-    },
-    "widgets": {
-      "title": "组件中心",
-      "icon": "图标",
-      "imageCrop": "图像裁剪",
-      "excel": "Excel 导入导出",
-      "video": "视频播放器",
-      "countTo": "数字滚动",
-      "wangEditor": "富文本编辑器",
-      "watermark": "水印",
-      "contextMenu": "右键菜单",
-      "qrcode": "二维码",
-      "drag": "拖拽",
-      "textScroll": "文字滚动",
-      "fireworks": "礼花",
-      "elementUI": "组件总览"
-    },
-    "template": {
-      "title": "模板中心",
-      "chat": "聊天",
-      "cards": "卡片",
-      "banners": "横幅",
-      "charts": "图表",
+      "ecommerce": "电子商务",
       "map": "地图",
-      "calendar": "日历",
-      "pricing": "定价"
+      "pricing": "定价",
+      "tutorial": "操作教程"
     },
     "article": {
       "title": "文章管理",
@@ -439,35 +551,14 @@
       "comment": "留言管理",
       "articlePublish": "文章发布"
     },
-    "result": {
-      "title": "结果页面",
-      "success": "成功页",
-      "fail": "失败页"
-    },
     "exception": {
       "title": "异常页面",
       "forbidden": "403",
       "notFound": "404",
       "serverError": "500"
     },
-    "examples": {
-      "title": "功能示例",
-      "tabs": "标签页",
-      "tablesBasic": "基础表格",
-      "tables": "高级表格",
-      "tablesTree": "左右布局表格",
-      "forms": "表单",
-      "searchBar": "搜索表单",
-      "socketChat": "Socket 连接",
-      "permission": {
-        "title": "前端权限",
-        "switchRole": "切换权限",
-        "buttonAuth": "按钮权限演示",
-        "pageVisibility": "超级管理员可见"
-      }
-    },
     "system": {
-      "title": "系统管理",
+      "title": "模板系统",
       "user": "用户管理",
       "role": "角色管理",
       "userCenter": "个人中心",
@@ -522,7 +613,13 @@
     },
     "zebra": "斑马纹",
     "border": "边框",
-    "headerBackground": "表头背景"
+    "headerBackground": "表头背景",
+    "toolbar": {
+      "hideSearch": "隐藏搜索区域",
+      "showSearch": "显示搜索区域",
+      "enableRowDrag": "开启行拖拽排序（当前页）",
+      "disableRowDrag": "关闭行拖拽排序"
+    }
   },
   "navbar": {
     "dashboard": "首页",
