@@ -3,14 +3,14 @@
     <div class="input-wrapper">
       <div v-if="uploadedFiles.length > 0" class="uploaded-files">
         <div v-for="file in uploadedFiles" :key="file.id" class="file-item">
-          <el-icon class="file-icon"><Document /></el-icon>
+          <ElIcon class="file-icon"><Document /></ElIcon>
           <span class="file-name">{{ file.name }}</span>
-          <el-icon class="file-remove" @click="removeFile(file.id)"><Close /></el-icon>
+          <ElIcon class="file-remove" @click="removeFile(file.id)"><Close /></ElIcon>
         </div>
       </div>
       <div class="input-container">
-        <el-form>
-          <el-input
+        <ElForm>
+          <ElInput
             v-model="inputMessage"
             type="textarea"
             :placeholder="placeholder"
@@ -21,10 +21,10 @@
             @keydown.enter.exact.prevent="handleSend"
             @keydown.shift.enter.exact="handleShiftEnter"
           />
-        </el-form>
+        </ElForm>
         <div class="input-footer">
           <div class="input-actions">
-            <el-upload
+            <ElUpload
               ref="uploadRef"
               :auto-upload="false"
               :show-file-list="false"
@@ -32,9 +32,9 @@
               :accept="acceptTypes"
               :multiple="true"
             >
-              <el-button :icon="Paperclip" class="upload-btn" circle />
-            </el-upload>
-            <el-button
+              <ElButton :icon="Paperclip" class="upload-btn" circle />
+            </ElUpload>
+            <ElButton
               :disabled="
                 (!inputMessage.trim() && uploadedFiles.length === 0) || disabled || sending
               "
@@ -44,8 +44,8 @@
               circle
               @click="handleSend"
             >
-              <el-icon><Promotion /></el-icon>
-            </el-button>
+              <ElIcon><Promotion /></ElIcon>
+            </ElButton>
           </div>
         </div>
       </div>
@@ -60,7 +60,7 @@
 import { ref, computed } from "vue";
 import { Promotion, Paperclip, Document, Close } from "@element-plus/icons-vue";
 import type { UploadFile } from "element-plus";
-import type { UploadedFile } from "@/views/module_ai/chat/types";
+import type { UploadedFile } from "@views/module_ai/chat/types";
 
 interface Props {
   disabled?: boolean;

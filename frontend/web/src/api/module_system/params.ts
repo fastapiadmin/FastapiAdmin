@@ -1,4 +1,5 @@
-import request from "@/utils/request";
+import request from "@utils/http";
+import { NO_AUTH_FLAG } from "@utils/http";
 
 const API_PATH = "/system/param";
 
@@ -12,15 +13,19 @@ const ParamsAPI = {
     });
   },
 
+  /** 登录前拉取站点参数：不带 Token，避免过期 JWT 导致 401 无法展示底部备案等 */
   getInitConfig() {
     return request<ApiResponse<ConfigTable[]>>({
       url: `${API_PATH}/info`,
       method: "get",
+      headers: {
+        Authorization: NO_AUTH_FLAG,
+      },
     });
   },
 
   listParams(query: ConfigPageQuery) {
-    return request<ApiResponse<PageResult<ConfigTable[]>>>({
+    return request<ApiResponse<PageResult<ConfigTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

@@ -1,10 +1,10 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/system/log";
 
 const LogAPI = {
   listLog(query: LogPageQuery) {
-    return request<ApiResponse<PageResult<LogTable[]>>>({
+    return request<ApiResponse<PageResult<LogTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

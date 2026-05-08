@@ -2,10 +2,10 @@
   <div :class="['message-group', message.type]">
     <div class="message-avatar">
       <div v-if="message.type === 'user'" class="user-avatar">
-        <el-icon><User /></el-icon>
+        <ElIcon><User /></ElIcon>
       </div>
       <div v-else class="ai-avatar">
-        <el-icon><ChatDotRound /></el-icon>
+        <ElIcon><ChatDotRound /></ElIcon>
       </div>
     </div>
     <div class="message-content">
@@ -13,24 +13,24 @@
         <strong class="sender-name">
           {{ message.type === "user" ? userName : "FA助手" }}
         </strong>
-        <el-button
+        <ElButton
           v-if="message.content"
           text
           size="small"
           :icon="CopyDocument"
           class="copy-button"
           @click="handleCopy"
-        ></el-button>
+        ></ElButton>
       </div>
       <div class="message-body">
         <div v-if="message.files && message.files.length > 0" class="message-files">
           <div v-for="file in message.files" :key="file.id" class="attached-file">
-            <el-icon class="file-icon"><Document /></el-icon>
+            <ElIcon class="file-icon"><Document /></ElIcon>
             <span class="file-name">{{ file.name }}</span>
             <span class="file-size">{{ formatFileSize(file.size) }}</span>
           </div>
         </div>
-        <el-button
+        <ElButton
           v-if="message.content.length > 200"
           text
           size="small"
@@ -39,7 +39,7 @@
           @click="handleToggleFold"
         >
           {{ message.collapsed ? "展开" : "收起" }}
-        </el-button>
+        </ElButton>
         <div
           class="message-text"
           :class="{ collapsed: message.collapsed }"
@@ -77,8 +77,8 @@ import hljs from "highlight.js";
 import DOMPurify from "dompurify";
 /* 亮色用 atom-one；暗色由文末全局块覆盖 .hljs 底与字色，避免整段代码发亮底 */
 import "highlight.js/styles/atom-one-light.css";
-import { useUserStoreHook } from "@/store";
-import type { ChatMessage } from "@/views/module_ai/chat/types";
+import { useUserStoreHook } from "@stores";
+import type { ChatMessage } from "@views/module_ai/chat/types";
 
 interface Props {
   message: ChatMessage;
@@ -527,6 +527,7 @@ const formatFileSize = (bytes: number): string => {
   100% {
     transform: translateY(0);
   }
+
   30% {
     transform: translateY(-4px);
   }

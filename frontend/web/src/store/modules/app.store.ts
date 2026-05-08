@@ -1,129 +1,122 @@
-import { defaultSettings } from "@/settings";
-
-// 导入 Element Plus 中英文语言包
+/**
+ * 应用状态管理模块（兼容 web 项目）
+ *
+ * 提供应用相关的状态管理
+ *
+ * ## 主要功能
+ *
+ * - 设备类型管理（桌面/平板/移动端）
+ * - 布局大小管理（默认/紧凑/宽松）
+ * - 语言管理（中文/英文）
+ * - 侧边栏状态管理（展开/收起）
+ * - 顶部菜单激活路径管理
+ * - 引导功能可见性管理
+ *
+ * ## 使用场景
+ *
+ * - 响应式布局适配
+ * - 多语言切换
+ * - 侧边栏折叠展开
+ * - 顶部菜单导航
+ * - 新手引导展示
+ *
+ * @module store/modules/app.store
+ * @author FastapiAdmin Team
+ */
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { DeviceEnum } from "@/enums/settings/device.enum";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
 import en from "element-plus/es/locale/lang/en";
-import { store } from "@/store";
-import { DeviceEnum } from "@/enums/settings/device.enum";
-import { SidebarStatus } from "@/enums/settings/layout.enum";
-import { defineStore } from "pinia";
-import { useStorage } from "@vueuse/core";
-import { computed, reactive } from "vue";
 
-export const useAppStore = defineStore("app", () => {
-  // 设备类型
-  const device = useStorage("device", DeviceEnum.DESKTOP);
-  // 布局大小
-  const size = useStorage("size", defaultSettings.size);
-  // 语言
-  const language = useStorage("language", defaultSettings.language);
-  // 侧边栏状态
-  const sidebarStatus = useStorage("sidebarStatus", SidebarStatus.CLOSED);
-  const sidebar = reactive({
-    opened: sidebarStatus.value === SidebarStatus.OPENED,
-    withoutAnimation: false,
-  });
+export const useAppStore = defineStore(
+  "appStore",
+  () => {
+    /** 设备类型 */
+    const device = ref<string>(DeviceEnum.DESKTOP);
 
-  // 顶部菜单激活路径
-  const activeTopMenuPath = useStorage("activeTopMenuPath", "");
-  // 项目引导
-  const guideVisible = useStorage("guideVisible", defaultSettings.guideVisible);
+    /** 布局大小 */
+    const size = ref<string>("default");
 
-  /**
-   * 根据语言标识读取对应的语言包
-   */
-  const locale = computed(() => {
-    if (language?.value == "en") {
-      return en;
-    } else {
-      return zhCn;
+    /** 语言 */
+    const language = ref<string>("zh");
+
+    /** 侧边栏状态 */
+    const sidebar = ref({
+      opened: true,
+      withoutAnimation: false,
+    });
+
+    /** 顶部菜单激活路径 */
+    const activeTopMenuPath = ref<string>("");
+
+    /** 引导可见性 */
+    const guideVisible = ref<boolean>(false);
+
+    /** 语言区域 */
+    const locale = computed(() => {
+      return language.value === "en" ? en : zhCn;
+    });
+
+    /** 切换侧边栏 */
+    function toggleSidebar() {
+      sidebar.value.opened = !sidebar.value.opened;
     }
-  });
 
-  /**
-   * 切换侧边栏
-   */
-  function toggleSidebar() {
-    sidebar.opened = !sidebar.opened;
-    sidebarStatus.value = sidebar.opened ? SidebarStatus.OPENED : SidebarStatus.CLOSED;
-  }
+    /** 关闭侧边栏 */
+    function closeSideBar() {
+      sidebar.value.opened = false;
+    }
 
-  /**
-   * 关闭侧边栏
-   */
-  function closeSideBar() {
-    sidebar.opened = false;
-    sidebarStatus.value = SidebarStatus.CLOSED;
-  }
+    /** 打开侧边栏 */
+    function openSideBar() {
+      sidebar.value.opened = true;
+    }
 
-  /**
-   * 打开侧边栏
-   */
-  function openSideBar() {
-    sidebar.opened = true;
-    sidebarStatus.value = SidebarStatus.OPENED;
-  }
+    /** 切换设备 */
+    function toggleDevice(val: string) {
+      device.value = val;
+    }
 
-  /**
-   * 切换设备
-   * @param val 设备类型
-   */
-  function toggleDevice(val: string) {
-    device.value = val;
-  }
+    /** 改变布局大小 */
+    function changeSize(val: string) {
+      size.value = val;
+    }
 
-  /**
-   * 改变布局大小
-   * @param val 布局大小 default | small | large
-   */
-  function changeSize(val: string) {
-    size.value = val;
-  }
-  /**
-   * 切换语言
-   * @param val
-   */
-  function changeLanguage(val: string) {
-    language.value = val;
-  }
-  /**
-   * 混合模式顶部切换
-   * @param val
-   */
-  function activeTopMenu(val: string) {
-    activeTopMenuPath.value = val;
-  }
-  /**
-   * 显示或隐藏引导
-   * @param val 是否显示引导
-   */
-  function showGuide(val: boolean) {
-    guideVisible.value = val;
-  }
-  return {
-    device,
-    sidebar,
-    language,
-    locale,
-    size,
-    activeTopMenu,
-    toggleDevice,
-    showGuide,
-    changeSize,
-    changeLanguage,
-    toggleSidebar,
-    closeSideBar,
-    openSideBar,
-    activeTopMenuPath,
-    guideVisible,
-  };
-});
+    /** 改变语言 */
+    function changeLanguage(val: string) {
+      language.value = val;
+    }
 
-/**
- * 用于在组件外部（如在Pinia Store 中）使用 Pinia 提供的 store 实例。
- * 官方文档解释了如何在组件外部使用 Pinia Store：
- * https://pinia.vuejs.org/core-concepts/outside-component-usage.html#using-a-store-outside-of-a-component
- */
-export function useAppStoreHook() {
-  return useAppStore(store);
-}
+    /** 顶部菜单切换 */
+    function activeTopMenu(val: string) {
+      activeTopMenuPath.value = val;
+    }
+
+    /** 显示或隐藏引导 */
+    function showGuide(val: boolean) {
+      guideVisible.value = val;
+    }
+
+    return {
+      device,
+      sidebar,
+      language,
+      locale,
+      size,
+      activeTopMenu,
+      toggleDevice,
+      showGuide,
+      changeSize,
+      changeLanguage,
+      toggleSidebar,
+      closeSideBar,
+      openSideBar,
+      activeTopMenuPath,
+      guideVisible,
+    };
+  },
+  {
+    persist: true,
+  }
+);

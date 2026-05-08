@@ -1,6 +1,6 @@
 <template>
   <div ref="tableSelectRef" :style="'width:' + width">
-    <el-popover
+    <ElPopover
       :visible="popoverVisible"
       :width="selectConfig.popover?.width ?? popoverWidth"
       placement="bottom-end"
@@ -10,8 +10,9 @@
       <template #reference>
         <div @click="popoverVisible = !popoverVisible">
           <slot>
-            <el-input
+            <ElInput
               class="reference"
+              style="width: 100%"
               :model-value="text"
               :readonly="true"
               :placeholder="placeholder"
@@ -19,36 +20,36 @@
               @clear="handleClear"
             >
               <template #suffix>
-                <el-icon
+                <ElIcon
                   :style="{
                     transform: popoverVisible ? 'rotate(180deg)' : 'rotate(0)',
                     transition: 'transform .5s',
                   }"
                 >
                   <ArrowDown />
-                </el-icon>
+                </ElIcon>
               </template>
-            </el-input>
+            </ElInput>
           </slot>
         </div>
       </template>
       <!-- 弹出框内容 -->
       <div ref="popoverContentRef">
         <!-- 表单 -->
-        <el-form ref="formRef" :model="queryParams" :inline="true">
+        <ElForm ref="formRef" :model="queryParams" :inline="true">
           <template v-for="item in selectConfig.formItems" :key="item.prop">
-            <el-form-item :label="item.label" :prop="item.prop">
+            <ElFormItem :label="item.label" :prop="item.prop">
               <!-- Input 输入框 -->
               <template v-if="item.type === 'input'">
                 <template v-if="item.attrs?.type === 'number'">
-                  <el-input
+                  <ElInput
                     v-model.number="queryParams[item.prop]"
                     v-bind="item.attrs"
                     @keyup.enter="handleQuery"
                   />
                 </template>
                 <template v-else>
-                  <el-input
+                  <ElInput
                     v-model="queryParams[item.prop]"
                     v-bind="item.attrs"
                     @keyup.enter="handleQuery"
@@ -57,46 +58,46 @@
               </template>
               <!-- Select 选择器 -->
               <template v-else-if="item.type === 'select'">
-                <el-select v-model="queryParams[item.prop]" v-bind="item.attrs">
+                <ElSelect v-model="queryParams[item.prop]" v-bind="item.attrs">
                   <template v-for="option in item.options" :key="option.value">
-                    <el-option :label="option.label" :value="option.value" />
+                    <ElOption :label="option.label" :value="option.value" />
                   </template>
-                </el-select>
+                </ElSelect>
               </template>
               <!-- TreeSelect 树形选择 -->
               <template v-else-if="item.type === 'tree-select'">
-                <el-tree-select v-model="queryParams[item.prop]" v-bind="item.attrs" />
+                <ElTreeSelect v-model="queryParams[item.prop]" v-bind="item.attrs" />
               </template>
               <!-- DatePicker 日期选择器 -->
               <template v-else-if="item.type === 'date-picker'">
-                <el-date-picker v-model="queryParams[item.prop]" v-bind="item.attrs" />
+                <ElDatePicker v-model="queryParams[item.prop]" v-bind="item.attrs" />
               </template>
               <!-- Input 输入框 -->
               <template v-else>
                 <template v-if="item.attrs?.type === 'number'">
-                  <el-input
+                  <ElInput
                     v-model.number="queryParams[item.prop]"
                     v-bind="item.attrs"
                     @keyup.enter="handleQuery"
                   />
                 </template>
                 <template v-else>
-                  <el-input
+                  <ElInput
                     v-model="queryParams[item.prop]"
                     v-bind="item.attrs"
                     @keyup.enter="handleQuery"
                   />
                 </template>
               </template>
-            </el-form-item>
+            </ElFormItem>
           </template>
-          <el-form-item>
-            <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
-            <el-button icon="refresh" @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
+          <ElFormItem>
+            <ElButton type="primary" icon="search" @click="handleQuery">搜索</ElButton>
+            <ElButton icon="refresh" @click="handleReset">重置</ElButton>
+          </ElFormItem>
+        </ElForm>
         <!-- 列表 -->
-        <el-table
+        <ElTable
           ref="tableRef"
           v-loading="loading"
           :data="pageData"
@@ -110,18 +111,18 @@
           <template v-for="col in selectConfig.tableColumns" :key="col.prop">
             <!-- 自定义 -->
             <template v-if="col.templet === 'custom'">
-              <el-table-column v-bind="col">
+              <ElTableColumn v-bind="col">
                 <template #default="scope">
                   <slot :name="col.slotName ?? col.prop" :prop="col.prop" v-bind="scope" />
                 </template>
-              </el-table-column>
+              </ElTableColumn>
             </template>
             <!-- 其他 -->
             <template v-else>
-              <el-table-column v-bind="col" />
+              <ElTableColumn v-bind="col" />
             </template>
           </template>
-        </el-table>
+        </ElTable>
         <!-- 分页 -->
         <pagination
           v-model:total="total"
@@ -130,14 +131,14 @@
           @pagination="handlePagination"
         />
         <div class="feedback">
-          <el-button type="primary" size="small" @click="handleConfirm">
+          <ElButton type="primary" size="small" @click="handleConfirm">
             {{ confirmText }}
-          </el-button>
-          <el-button size="small" @click="handleClear">清 空</el-button>
-          <el-button size="small" @click="handleClose">关 闭</el-button>
+          </ElButton>
+          <ElButton size="small" @click="handleClear">清 空</ElButton>
+          <ElButton size="small" @click="handleClose">关 闭</ElButton>
         </div>
       </div>
-    </el-popover>
+    </ElPopover>
   </div>
 </template>
 

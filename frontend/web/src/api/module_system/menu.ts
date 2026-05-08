@@ -1,4 +1,4 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/system/menu";
 

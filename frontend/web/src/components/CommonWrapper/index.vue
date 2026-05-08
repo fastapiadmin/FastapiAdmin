@@ -14,6 +14,7 @@ defineProps({
 <style scoped lang="scss">
 .el {
   transition: 0.3s var(--el-transition-function-ease-in-out-bezier);
+
   &:hover {
     background-color: var(--el-fill-color);
   }

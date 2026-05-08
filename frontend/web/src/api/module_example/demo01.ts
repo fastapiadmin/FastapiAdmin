@@ -1,10 +1,10 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/example/demo01";
 
 const Demo01API = {
   getDemo01List(query: Demo01PageQuery) {
-    return request<ApiResponse<PageResult<Demo01Table[]>>>({
+    return request<ApiResponse<PageResult<Demo01Table>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

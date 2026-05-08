@@ -1,4 +1,4 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 /** 对应后端 `plugin.module_task.workflow.node_type` */
 const API_PATH = "/task/workflow/node-type";
@@ -12,7 +12,7 @@ const WorkflowNodeTypeAPI = {
   },
 
   getWorkflowNodeTypeList(query: WorkflowNodeTypePageQuery) {
-    return request<ApiResponse<PageResult<WorkflowNodeTypeTable[]>>>({
+    return request<ApiResponse<PageResult<WorkflowNodeTypeTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

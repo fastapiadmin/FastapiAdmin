@@ -1,405 +1,454 @@
-<!-- 租户管理 -->
+<!-- 租户管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
 <template>
-  <div class="app-container">
-    <PageSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="tenantSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft
-          :remove-ids="removeIds"
-          :perm-create="['module_system:tenant:create']"
-          :perm-delete="['module_system:tenant:delete']"
-          @add="handleOpenDialog('create')"
-          @delete="onToolbar('delete')"
-        />
-        <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
-        </div>
-      </template>
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ArtTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['module_system:tenant:create']"
+            :perm-delete="['module_system:tenant:delete']"
+            :delete-loading="batchDeleting"
+            @add="handleOpenDialog('create')"
+            @delete="handleBatchDelete"
+          />
+        </template>
+      </ArtTableHeader>
 
-      <template #table="{ data, loading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="loading"
-            row-key="id"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="onSelectionChange"
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              min-width="55"
-              align="center"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              fixed
-              label="序号"
-              min-width="60"
-            >
-              <template #default="scope">
-                {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'name')?.show"
-              key="name"
-              label="租户名称"
-              prop="name"
-              min-width="140"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'code')?.show"
-              key="code"
-              label="租户编码"
-              prop="code"
-              min-width="120"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'status')?.show"
-              key="status"
-              label="状态"
-              prop="status"
-              min-width="80"
-              align="center"
-            >
-              <template #default="scope">
-                <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'">
-                  {{ scope.row.status === "0" ? "正常" : "禁用" }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'start_time')?.show"
-              key="start_time"
-              label="开始时间"
-              prop="start_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'end_time')?.show"
-              key="end_time"
-              label="结束时间"
-              prop="end_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'description')?.show"
-              key="description"
-              label="描述"
-              prop="description"
-              min-width="150"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              key="created_time"
-              label="创建时间"
-              prop="created_time"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              fixed="right"
-              label="操作"
-              align="center"
-              min-width="200"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_system:tenant:query']"
-                  type="info"
-                  size="small"
-                  link
-                  icon="View"
-                  @click="handleOpenDialog('detail', scope.row.id)"
-                >
-                  详情
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:tenant:update']"
-                  type="primary"
-                  size="small"
-                  link
-                  icon="edit"
-                  @click="handleOpenDialog('update', scope.row.id)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_system:tenant:delete']"
-                  type="danger"
-                  size="small"
-                  link
-                  icon="delete"
-                  @click="handleRowDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </PageContent>
+      <ArtTable
+        ref="artTableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
-    <EnhancedDialog
+    <ArtDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
+      width="640px"
+      dialog-class="crud-embed-dialog"
+      modal-class="crud-embed-dialog"
       @close="handleCloseDialog"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="租户名称" :span="2">
-            {{ detailFormData.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="租户编码" :span="2">
-            {{ detailFormData.code }}
-          </el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-              {{ detailFormData.status === "0" ? "正常" : "禁用" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="开始时间">
-            {{ detailFormData.start_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="结束时间">
-            {{ detailFormData.end_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">
-            {{ detailFormData.description }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
+          <ElDescriptions :column="2" border>
+            <ElDescriptionsItem label="租户名称" :span="2">
+              {{ detailFormData.name }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="租户编码" :span="2">
+              {{ detailFormData.code }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="状态">
+              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
+                {{ detailFormData.status === "0" ? "正常" : "禁用" }}
+              </ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="开始时间">
+              {{ detailFormData.start_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="结束时间">
+              {{ detailFormData.end_time }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="描述" :span="2">
+              {{ detailFormData.description }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </ElDescriptionsItem>
+          </ElDescriptions>
+        </ElScrollbar>
       </template>
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="租户名称" prop="name">
-            <el-input v-model="formData.name" placeholder="请输入租户名称" :maxlength="100" />
-          </el-form-item>
-          <el-form-item label="租户编码" prop="code">
-            <el-input
-              v-model="formData.code"
-              placeholder="字母与数字，创建后不可改"
-              :maxlength="100"
-              :disabled="dialogVisible.type === 'update'"
-            />
-          </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-select v-model="formData.status" placeholder="请选择状态" style="width: 100%">
-              <el-option label="正常" value="0" />
-              <el-option label="禁用" value="1" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="描述" prop="description">
-            <el-input
-              v-model="formData.description"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入描述"
-              :maxlength="255"
-            />
-          </el-form-item>
-          <el-form-item label="开始时间" prop="start_time">
-            <el-date-picker
-              v-model="formData.start_time"
-              type="datetime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              placeholder="可选"
-              style="width: 100%"
-            />
-          </el-form-item>
-          <el-form-item label="结束时间" prop="end_time">
-            <el-date-picker
-              v-model="formData.end_time"
-              type="datetime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              placeholder="可选"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-form>
+        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
+          <ArtForm
+            :key="tenantFormRenderKey"
+            ref="dataFormRef"
+            v-model="formData"
+            :items="tenantDialogFormItems"
+            :rules="rules"
+            label-suffix=":"
+            :label-width="'auto'"
+            label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
+          />
+        </ElScrollbar>
       </template>
 
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button
-            v-if="dialogVisible.type === 'create'"
-            v-hasPerm="['module_system:tenant:create']"
+        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton
+            v-if="dialogVisible.type !== 'detail'"
             type="primary"
             :loading="submitLoading"
             @click="handleSubmit"
           >
             确定
-          </el-button>
-          <el-button
-            v-else-if="dialogVisible.type === 'update'"
-            v-hasPerm="['module_system:tenant:update']"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </el-button>
-          <el-button v-else type="primary" @click="handleCloseDialog">确定</el-button>
+          </ElButton>
+          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </EnhancedDialog>
+    </ArtDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { h, computed, ref, reactive } from "vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
-  TenantForm,
-  TenantCreateForm,
-  TenantUpdateForm,
-  TenantPageQuery,
-  TenantTable,
+  type TenantCreateForm,
+  type TenantForm,
+  type TenantTable,
+  type TenantUpdateForm,
 } from "@/api/module_system/tenant";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDialog from "@/components/CURD/EnhancedDialog.vue";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
+import {
+  ElMessage,
+  ElMessageBox,
+  ElTag,
+  ElTooltip,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+} from "element-plus";
+import { useAuth } from "@/hooks/core/useAuth";
 
 defineOptions({
   name: "Tenant",
   inheritAttrs: false,
 });
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-const dataFormRef = ref();
-const submitLoading = ref(false);
+const MAX_INLINE_ROW_ACTIONS = 3;
+const { hasAuth } = useAuth();
 
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_system:tenant",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
+type TenantSearchForm = {
+  name?: string;
+  code?: string;
+  status?: string;
+  created_time?: string[];
+};
+
+function buildTenantReplaceParams(p: TenantSearchForm): Record<string, unknown> {
+  return {
+    name: p.name,
+    code: p.code,
+    status: p.status,
+    created_time:
+      Array.isArray(p.created_time) && p.created_time.length === 2 ? p.created_time : undefined,
+  };
+}
+
+type RowAction = {
+  key: string;
+  label: string;
+  artType: "add" | "edit" | "delete" | "view" | "more";
+  icon?: string;
+  perm: string;
+  disabled?: boolean;
+  run: () => void;
+};
+
+function buildTenantRowActions(
+  row: TenantTable,
+  ctx: {
+    onDetail: (id: number) => void;
+    onEdit: (id: number) => void;
+    onDelete: (id: number) => void;
+  }
+): RowAction[] {
+  const all: RowAction[] = [
     {
-      prop: "name",
-      label: "租户名称",
-      type: "input",
-      attrs: { placeholder: "请输入租户名称", clearable: true },
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "module_system:tenant:query",
+      run: () => ctx.onDetail(row.id!),
     },
     {
-      prop: "code",
-      label: "租户编码",
-      type: "input",
-      attrs: { placeholder: "请输入租户编码", clearable: true },
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      perm: "module_system:tenant:update",
+      run: () => ctx.onEdit(row.id!),
     },
     {
-      prop: "status",
-      label: "状态",
-      type: "select",
-      attrs: {
-        placeholder: "请选择状态",
-        clearable: true,
-        options: [
-          { label: "正常", value: "0" },
-          { label: "禁用", value: "1" },
-        ],
-        style: { width: "167.5px" },
-      },
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      perm: "module_system:tenant:delete",
+      run: () => ctx.onDelete(row.id!),
     },
+  ];
+  return all.filter((a) => hasAuth(a.perm));
+}
+
+function formatTenantOperationCell(
+  row: TenantTable,
+  ctx: Parameters<typeof buildTenantRowActions>[1]
+) {
+  const actions = buildTenantRowActions(row, ctx);
+  if (actions.length === 0) {
+    return h("span", { class: "text-g-400" }, "—");
+  }
+  const inline = actions.slice(0, MAX_INLINE_ROW_ACTIONS);
+  const overflow = actions.slice(MAX_INLINE_ROW_ACTIONS);
+
+  const inlineNodes = inline.map((a) =>
+    h(ElTooltip, { content: a.label, placement: "top" }, () =>
+      h("span", { class: "inline-flex" }, [
+        h(ArtButtonTable, {
+          type: a.artType,
+          icon: a.icon,
+          onClick: a.run,
+        }),
+      ])
+    )
+  );
+
+  if (overflow.length === 0) {
+    return h(
+      "div",
+      { class: "inline-flex flex-wrap items-center justify-end gap-1 tenant-table-actions" },
+      inlineNodes
+    );
+  }
+
+  const dropdown = h(
+    ElDropdown,
+    { trigger: "click" },
     {
-      prop: "created_time",
-      label: "创建时间",
-      type: "date-picker",
-      initialValue: [],
-      attrs: {
-        type: "datetimerange",
-        valueFormat: "YYYY-MM-DD HH:mm:ss",
-        rangeSeparator: "至",
-        startPlaceholder: "开始日期",
-        endPlaceholder: "结束日期",
-        style: { width: "340px" },
-      },
-    },
-  ],
+      default: () =>
+        h(ElTooltip, { content: "更多", placement: "top" }, () =>
+          h("span", { class: "inline-flex align-middle" }, [
+            h(ArtButtonTable, {
+              type: "more",
+              onClick: () => {},
+            }),
+          ])
+        ),
+      dropdown: () =>
+        h(
+          ElDropdownMenu,
+          null,
+          overflow.map((a) =>
+            h(
+              ElDropdownItem,
+              {
+                key: a.key,
+                disabled: a.disabled,
+                onClick: () => a.run(),
+              },
+              () => a.label
+            )
+          )
+        ),
+    }
+  );
+
+  return h(
+    "div",
+    { class: "inline-flex flex-wrap items-center justify-end gap-1 tenant-table-actions" },
+    [...inlineNodes, dropdown]
+  );
+}
+
+const searchForm = ref<TenantSearchForm>({
+  name: undefined,
+  code: undefined,
+  status: undefined,
+  created_time: undefined,
 });
 
-const contentCols = reactive<
-  Array<{
-    prop?: string;
-    label?: string;
-    show?: boolean;
-  }>
->([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "name", label: "租户名称", show: true },
-  { prop: "code", label: "租户编码", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "operation", label: "操作", show: true },
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "正常", value: "0" },
+  { label: "禁用", value: "1" },
 ]);
 
-const contentConfig = reactive<IContentConfig<TenantPageQuery>>({
-  permPrefix: "module_system:tenant",
-  pk: "id",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  toolbar: [],
-  defaultToolbar: ["import", "export", "refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
+const tenantSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "租户名称",
+    key: "name",
+    type: "input",
+    placeholder: "请输入租户名称",
+    clearable: true,
+    span: 6,
   },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await TenantAPI.listTenant(params as TenantPageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
+  {
+    label: "租户编码",
+    key: "code",
+    type: "input",
+    placeholder: "请输入租户编码",
+    clearable: true,
+    span: 6,
   },
-  deleteAction: async (ids) => {
-    const idList = ids
-      .split(",")
-      .map((s) => Number(s.trim()))
-      .filter((n) => !Number.isNaN(n));
-    await TenantAPI.deleteTenant(idList);
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: statusOptions.value,
+      clearable: true,
+    },
+    span: 6,
   },
-  deleteConfirm: {
-    title: "警告",
-    message: "确认删除该项数据?",
+  {
+    label: "创建时间",
+    key: "created_time",
+    type: "datetimerange",
+    span: 6,
+    props: {
+      type: "datetimerange",
+      rangeSeparator: "至",
+      startPlaceholder: "开始日期",
+      endPlaceholder: "结束日期",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      style: { width: "100%" },
+    },
+  },
+]);
+
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const selectedRows = ref<TenantTable[]>([]);
+const selectedIds = computed(() =>
+  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
+);
+const batchDeleting = ref(false);
+
+function onTableSelectionChange(rows: TenantTable[]) {
+  selectedRows.value = rows;
+}
+
+function deleteTenantRow(id: number) {
+  ElMessageBox.confirm("确认删除该项数据?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
     type: "warning",
+  })
+    .then(async () => {
+      await TenantAPI.deleteTenant([id]);
+      ElMessage.success("删除成功");
+      artTableRef.value?.elTableRef?.clearSelection();
+      await refreshRemove();
+    })
+    .catch(() => {});
+}
+
+const opCtx = {
+  onDetail: (id: number) => void handleOpenDialog("detail", id),
+  onEdit: (id: number) => void handleOpenDialog("update", id),
+  onDelete: deleteTenantRow,
+};
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: TenantAPI.listTenant,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<TenantTable>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { prop: "name", label: "租户名称", minWidth: 140, showOverflowTooltip: true },
+      { prop: "code", label: "租户编码", minWidth: 120, showOverflowTooltip: true },
+      {
+        prop: "status",
+        label: "状态",
+        width: 88,
+        formatter: (row: TenantTable) =>
+          h(ElTag, { type: row.status === "0" ? "success" : "danger" }, () =>
+            row.status === "0" ? "正常" : "禁用"
+          ),
+      },
+      { prop: "start_time", label: "开始时间", width: 168, showOverflowTooltip: true },
+      { prop: "end_time", label: "结束时间", width: 168, showOverflowTooltip: true },
+      { prop: "description", label: "描述", minWidth: 150, showOverflowTooltip: true },
+      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 200,
+        fixed: "right",
+        align: "right",
+        formatter: (row: TenantTable) => formatTenantOperationCell(row, opCtx),
+      },
+    ],
   },
+});
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 20,
+    total: p.total ?? 0,
+  };
 });
 
 const detailFormData = ref<TenantTable>({ code: "", name: "", status: "0" });
@@ -423,7 +472,7 @@ const dialogVisible = reactive({
 
 const CODE_PATTERN = /^[A-Za-z0-9]+$/;
 
-const validateTimeRange = (rule: any, value: any, callback: any) => {
+const validateTimeRange = (rule: unknown, value: unknown, callback: (e?: Error) => void) => {
   if (formData.start_time && formData.end_time && formData.start_time > formData.end_time) {
     callback(new Error("结束时间不能早于开始时间"));
   } else {
@@ -453,15 +502,84 @@ const initialFormData: TenantForm = {
   end_time: undefined,
 };
 
-function handleRowDelete(id: number) {
-  contentRef.value?.handleDelete(id);
-}
+const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const submitLoading = ref(false);
+const tenantFormRenderKey = ref(0);
+
+const tenantDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "租户名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入租户名称", maxlength: 100 },
+  },
+  {
+    label: "租户编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: {
+      placeholder: "字母与数字，创建后不可改",
+      maxlength: 100,
+      disabled: dialogVisible.type === "update",
+    },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    span: 24,
+    props: {
+      placeholder: "请选择状态",
+      style: { width: "100%" },
+      options: [
+        { label: "正常", value: "0" },
+        { label: "禁用", value: "1" },
+      ],
+    },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 3,
+      maxlength: 255,
+      placeholder: "请输入描述",
+    },
+  },
+  {
+    label: "开始时间",
+    key: "start_time",
+    type: "datetime",
+    span: 24,
+    props: {
+      style: { width: "100%" },
+      placeholder: "可选",
+      type: "datetime",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+    },
+  },
+  {
+    label: "结束时间",
+    key: "end_time",
+    type: "datetime",
+    span: 24,
+    props: {
+      style: { width: "100%" },
+      placeholder: "可选",
+      type: "datetime",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+    },
+  },
+]);
 
 async function resetForm() {
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
-    dataFormRef.value.clearValidate();
-  }
+  dataFormRef.value?.ref?.resetFields();
+  dataFormRef.value?.ref?.clearValidate();
   Object.assign(formData, initialFormData);
   currentEditId.value = null;
 }
@@ -485,41 +603,99 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增租户";
+    await resetForm();
   }
+  tenantFormRenderKey.value += 1;
   dialogVisible.visible = true;
 }
 
+async function handleSearchBarSearch(params: TenantSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildTenantReplaceParams(params));
+  getData();
+}
+
+function onResetSearch() {
+  searchForm.value = {
+    name: undefined,
+    code: undefined,
+    status: undefined,
+    created_time: undefined,
+  };
+  void resetSearchParams();
+}
+
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      submitLoading.value = true;
-      const id = currentEditId.value;
-      try {
-        if (id) {
-          const payload: TenantUpdateForm = {
-            name: formData.name,
-            start_time: formData.start_time,
-            end_time: formData.end_time,
-          };
-          await TenantAPI.updateTenant(id, payload);
-        } else {
-          const payload: TenantCreateForm = {
-            name: formData.name as string,
-            code: formData.code as string,
-            start_time: formData.start_time,
-            end_time: formData.end_time,
-          };
-          await TenantAPI.createTenant(payload);
-        }
-        dialogVisible.visible = false;
-        await resetForm();
-        refreshList();
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        submitLoading.value = false;
+  dataFormRef.value?.validate(async (valid: boolean) => {
+    if (!valid) return;
+    submitLoading.value = true;
+    const id = currentEditId.value;
+    try {
+      if (id) {
+        const payload: TenantUpdateForm = {
+          name: formData.name,
+          start_time: formData.start_time,
+          end_time: formData.end_time,
+        };
+        await TenantAPI.updateTenant(id, payload);
+        await refreshUpdate();
+      } else {
+        const payload: TenantCreateForm = {
+          name: formData.name as string,
+          code: formData.code as string,
+          start_time: formData.start_time,
+          end_time: formData.end_time,
+        };
+        await TenantAPI.createTenant(payload);
+        await refreshCreate();
       }
+      dialogVisible.visible = false;
+      await resetForm();
+    } catch (error: unknown) {
+      console.error(error);
+    } finally {
+      submitLoading.value = false;
     }
   });
 }
+
+function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      try {
+        batchDeleting.value = true;
+        await TenantAPI.deleteTenant(ids);
+        ElMessage.success("删除成功");
+        artTableRef.value?.elTableRef?.clearSelection();
+        await refreshRemove();
+      } finally {
+        batchDeleting.value = false;
+      }
+    })
+    .catch(() => {});
+}
 </script>
+
+<style scoped lang="scss">
+.art-table-card {
+  flex: 1;
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
+}
+
+:deep(.tenant-table-actions .inline-flex) {
+  vertical-align: middle;
+}
+</style>

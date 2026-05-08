@@ -1,39 +1,5 @@
 declare global {
   /**
-   * 响应数据
-   */
-  interface ApiResponse<T = any> {
-    code: number;
-    data: T;
-    msg: string;
-    status_code: number;
-    success: boolean;
-  }
-
-  /**
-   * 分页查询参数
-   */
-  interface PageQuery {
-    /** 当前页码 */
-    page_no: number;
-    /** 每页条数 */
-    page_size: number;
-  }
-
-  /**
-   * 分页响应对象
-   */
-  interface PageResult<T> {
-    /** 数据列表 */
-    items: T;
-    /** 总数 */
-    total: number;
-    page_no: number;
-    page_size: number;
-    has_next: boolean;
-  }
-
-  /**
    * 页签对象
    */
   interface TagView {
@@ -136,6 +102,48 @@ declare global {
   }
 
   /**
+   * 基础响应结构
+   */
+  interface ApiResponse<T = any> {
+    code: number;
+    data: T;
+    msg: string;
+    status_code: number;
+    success: boolean;
+  }
+
+  /**
+   * 兼容 web 工程遗留的 `Api.*` 命名空间类型引用
+   * web 目前以真实接口模块导出的类型为准，这里先提供最小声明避免 vue-tsc 阻断。
+   */
+  namespace Api {
+    namespace Auth {
+      interface UserInfo {
+        [key: string]: unknown;
+      }
+    }
+  }
+
+  /**
+   * 分页查询参数
+   */
+  interface PageQuery {
+    page_no: number;
+    page_size: number;
+  }
+
+  /**
+   * 分页响应对象
+   */
+  interface PageResult<T = any> {
+    items: T[];
+    total: number;
+    page_no: number;
+    page_size: number;
+    has_next: boolean;
+  }
+
+  /**
    * 创建人
    */
   interface CommonType {
@@ -144,7 +152,7 @@ declare global {
   }
 
   /**
-   * 租户嵌套（与后端 TenantRefSchema / 列表出参 ``tenant`` 一致）
+   * 租户
    */
   interface TenantType {
     id?: number;
@@ -167,16 +175,26 @@ declare global {
   }
 
   /**
-   * 基础类型
+   * 基础表单类型
    */
   interface BaseFormType {
     id?: number;
     status?: string;
     description?: string;
+    remark?: string;
+    order?: number;
   }
 
   /**
-   * 上传文件返回
+   * 批量操作类型
+   */
+  interface BatchType {
+    ids: number[];
+    status: string;
+  }
+
+  /**
+   * 上传文件路径
    */
   interface UploadFilePath {
     file_path: string;
@@ -186,11 +204,132 @@ declare global {
   }
 
   /**
-   * 批量启用、停用
+   * 通用搜索参数
    */
-  export interface BatchType {
-    ids?: number[];
-    status?: string;
+  type CommonSearchParams = Pick<PageQuery, "page_no" | "page_size">;
+
+  /**
+   * 启用状态
+   */
+  type EnableStatus = "0" | "1";
+
+  /**
+   * 登录参数
+   */
+  interface LoginParams {
+    username: string;
+    password: string;
+    captcha_key?: string;
+    captcha?: string;
+    remember?: boolean;
+    login_type?: string;
   }
+
+  /**
+   * 登录响应
+   */
+  interface LoginResponse {
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+    expires_in: number;
+  }
+
+  /**
+   * 用户信息
+   */
+  interface UserInfo {
+    user_id: number;
+    username: string;
+    nickname?: string;
+    email?: string;
+    avatar?: string;
+    phone?: string;
+    roles?: RoleInfo[];
+    permissions?: string[];
+    menus?: MenuTable[];
+    created_at?: string;
+    updated_at?: string;
+  }
+
+  /**
+   * 角色信息
+   */
+  interface RoleInfo {
+    id?: number;
+    name?: string;
+    code?: string;
+    menus?: any[];
+  }
+
+  /**
+   * 验证码信息
+   */
+  interface CaptchaInfo {
+    enable: boolean;
+    key: string;
+    img_base: string;
+  }
+
+  /**
+   * 用户列表
+   */
+  type UserList = PageResult<UserListItem>;
+
+  /**
+   * 用户列表项
+   */
+  interface UserListItem {
+    id: number;
+    avatar: string;
+    status: string;
+    userName: string;
+    userGender: string;
+    nickName: string;
+    userPhone: string;
+    userEmail: string;
+    userRoles: string[];
+    createBy: string;
+    createTime: string;
+    updateBy: string;
+    updateTime: string;
+  }
+
+  /**
+   * 用户搜索参数
+   */
+  type UserSearchParams = Partial<
+    Pick<UserListItem, "id" | "userName" | "userGender" | "userPhone" | "userEmail" | "status"> &
+      CommonSearchParams
+  >;
+
+  /**
+   * 角色列表
+   */
+  type RoleList = PaginatedResponse<RoleListItem>;
+
+  /**
+   * 角色列表项
+   */
+  interface RoleListItem {
+    roleId: number;
+    roleName: string;
+    roleCode: string;
+    description: string;
+    enabled: boolean;
+    createTime: string;
+  }
+
+  /**
+   * 角色搜索参数
+   */
+  type RoleSearchParams = Partial<
+    Pick<RoleListItem, "roleId" | "roleName" | "roleCode" | "description" | "enabled"> &
+      CommonSearchParams & {
+        startTime: string | null;
+        endTime: string | null;
+      }
+  >;
 }
+
 export {};

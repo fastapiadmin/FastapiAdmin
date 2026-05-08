@@ -1,22 +1,27 @@
 <!-- 分页组件 -->
 <template>
-  <el-scrollbar>
+  <ElScrollbar>
     <div :class="{ hidden: hidden }" class="pagination">
-      <el-pagination
+      <ElPagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :background="background"
+        :disabled="disabled"
         :layout="layout"
         :page-sizes="pageSizes"
+        :pager-count="pagerCount"
+        :size="size"
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
     </div>
-  </el-scrollbar>
+  </ElScrollbar>
 </template>
 
 <script setup lang="ts">
+import { watch, type PropType } from "vue";
+
 const props = defineProps({
   total: {
     type: Number as PropType<number>,
@@ -25,7 +30,7 @@ const props = defineProps({
   pageSizes: {
     type: Array as PropType<number[]>,
     default() {
-      return [10, 20, 30, 50];
+      return [10, 20, 30, 50, 100];
     },
   },
   layout: {
@@ -35,6 +40,20 @@ const props = defineProps({
   background: {
     type: Boolean,
     default: true,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  /** 页码按钮数量（透传 ElPagination） */
+  pagerCount: {
+    type: Number as PropType<number>,
+    default: undefined,
+  },
+  /** 分页器尺寸（透传 ElPagination） */
+  size: {
+    type: String as PropType<"" | "default" | "small" | "large">,
+    default: undefined,
   },
   autoScroll: {
     type: Boolean,

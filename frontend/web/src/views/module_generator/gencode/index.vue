@@ -1,174 +1,84 @@
 <template>
-  <div class="app-container">
-    <PageSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
+  <div class="art-full-height">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="gencodeSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
     />
 
-    <PageContent ref="contentRef" :content-config="contentConfig">
-      <template #toolbar="{ toolbarRight, onToolbar, removeIds, cols }">
-        <CrudToolbarLeft :remove-ids="removeIds">
-          <el-row :gutter="10">
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_generator:gencode:create']"
-                type="primary"
-                icon="Plus"
-                @click="createTableVisible = true"
-              >
-                创建
-              </el-button>
-            </el-col>
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_generator:gencode:import']"
-                type="success"
-                icon="Upload"
-                @click="handleImportClick"
-              >
-                导入
-              </el-button>
-            </el-col>
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_generator:gencode:delete']"
-                type="danger"
-                icon="Delete"
-                :disabled="removeIds.length === 0"
-                @click="handleDelete()"
-              >
-                批量删除
-              </el-button>
-            </el-col>
-            <el-col :span="1.5">
-              <el-button
-                v-hasPerm="['module_generator:gencode:operate']"
-                type="warning"
-                icon="Download"
-                :disabled="removeIds.length === 0"
-                @click="handleGenTable('0')"
-              >
-                批量生成
-              </el-button>
-            </el-col>
-          </el-row>
-        </CrudToolbarLeft>
-        <div class="data-table__toolbar--right">
-          <CrudToolbarRight :buttons="toolbarRight" :cols="cols" :on-toolbar="onToolbar" />
-        </div>
-      </template>
+    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="tableLoading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ElSpace wrap>
+            <ElButton
+              v-hasPerm="['module_generator:gencode:create']"
+              type="primary"
+              plain
+              :icon="Plus"
+              @click="createTableVisible = true"
+            >
+              创建
+            </ElButton>
+            <ElButton
+              v-hasPerm="['module_generator:gencode:import']"
+              type="success"
+              plain
+              :icon="Upload"
+              @click="handleImportClick"
+            >
+              导入
+            </ElButton>
+            <ElButton
+              v-hasPerm="['module_generator:gencode:delete']"
+              type="danger"
+              plain
+              :icon="Delete"
+              :disabled="ids.length === 0"
+              @click="handleDelete()"
+            >
+              批量删除
+            </ElButton>
+            <ElButton
+              v-hasPerm="['module_generator:gencode:operate']"
+              type="warning"
+              plain
+              :icon="Download"
+              :disabled="tableNames.length === 0"
+              @click="handleGenTable('0')"
+            >
+              批量生成
+            </ElButton>
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
 
-      <template #table="{ data, loading: tableLoading, tableRef, onSelectionChange, pagination }">
-        <div class="data-table__content">
-          <el-table
-            :ref="tableRef as any"
-            v-loading="tableLoading"
-            row-key="id"
-            :data="data"
-            height="100%"
-            border
-            stripe
-            @selection-change="
-              (s) => {
-                handleTableSelectionChange(s as GenTableSchema[]);
-                onSelectionChange(s);
-              }
-            "
-          >
-            <template #empty>
-              <el-empty :image-size="80" description="暂无数据" />
-            </template>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'selection')?.show"
-              type="selection"
-              align="center"
-              width="55"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'index')?.show"
-              label="序号"
-              type="index"
-              min-width="30"
-              align="center"
-              fixed
-            >
-              <template #default="scope">
-                <span>
-                  {{ (pagination.currentPage - 1) * pagination.pageSize + scope.$index + 1 }}
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'table_name')?.show"
-              label="表名称"
-              prop="table_name"
-              :show-overflow-tooltip="true"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'table_comment')?.show"
-              label="表描述"
-              prop="table_comment"
-              :show-overflow-tooltip="true"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'class_name')?.show"
-              label="实体"
-              prop="class_name"
-              :show-overflow-tooltip="true"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'created_time')?.show"
-              label="创建时间"
-              prop="created_time"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'updated_time')?.show"
-              label="更新时间"
-              prop="updated_time"
-            />
-            <el-table-column
-              v-if="contentCols.find((col) => col.prop === 'operation')?.show"
-              label="操作"
-              align="center"
-              min-width="120"
-              class-name="small-padding fixed-width"
-            >
-              <template #default="scope">
-                <el-button
-                  v-hasPerm="['module_generator:gencode:update']"
-                  link
-                  type="primary"
-                  :icon="MagicStick"
-                  @click="handlePreviewTable(scope.row)"
-                >
-                  代码生成
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_generator:gencode:delete']"
-                  link
-                  type="danger"
-                  icon="Delete"
-                  @click="handleDelete(scope.row)"
-                >
-                  删除
-                </el-button>
-                <el-button
-                  v-hasPerm="['module_generator:db:sync']"
-                  link
-                  type="success"
-                  icon="Refresh"
-                  @click="handleSynchDb(scope.row)"
-                >
-                  同步
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </template>
-    </PageContent>
+      <ArtTable
+        ref="artTableRef"
+        row-key="id"
+        :loading="tableLoading"
+        :data="tableListData"
+        :columns="columns"
+        :pagination="paginationBind"
+        @selection-change="handleTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
     <CreateTableDialog
       v-model="createTableVisible"
@@ -228,13 +138,13 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ref, reactive, computed, onActivated, watch, nextTick, unref, provide } from "vue";
+import { ref, reactive, computed, onActivated, watch, nextTick, provide } from "vue";
 import { useClipboard } from "@vueuse/core";
 import { useRoute } from "vue-router";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
-import { MagicStick } from "@element-plus/icons-vue";
+import { Plus, Upload, Delete, Download } from "@element-plus/icons-vue";
 import GencodeAPI, {
   type GenTableSchema,
   type DBTableSchema,
@@ -243,28 +153,21 @@ import GencodeAPI, {
 import MenuAPI, { MenuTable } from "@/api/module_system/menu";
 import DictAPI, { DictTable } from "@/api/module_system/dict";
 import { MenuTypeEnum } from "@/enums";
-import { useSettingsStore } from "@/store";
+import { useSettingsStore } from "@stores";
 import { ThemeMode } from "@/enums/settings/theme.enum";
-import CrudToolbarLeft from "@/components/CURD/CrudToolbarLeft.vue";
-import CrudToolbarRight from "@/components/CURD/CrudToolbarRight.vue";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTable from "@/components/Core/tables/art-table/index.vue";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import type { ColumnOption } from "@/types/component";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import CreateTableDialog, { type CreateTableSubmitMeta } from "./components/CreateTableDialog.vue";
 import GenCodeDrawer from "./components/GenCodeDrawer.vue";
 import ImportDbTableDialog from "./components/ImportDbTableDialog.vue";
 import { GENCODE_BASIC_FORM_KEY, GENCODE_CM_KEY } from "./gencodeInjectionKeys";
 import type { TreeNode } from "./types";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
-
-// 表格列配置接口
-interface TableColumn {
-  prop: string;
-  label: string;
-  show: boolean;
-  minWidth?: string;
-  formatter?: (row: any, column: any) => any;
-}
 
 // 文件数据接口
 interface FileData {
@@ -274,12 +177,22 @@ interface FileData {
   full_path: string;
 }
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-
 // 组件引用（与子组件 inject 同步，供校验 / CodeMirror 主题）
 const cmRef = ref<CmComponentRef>();
 const basicInfo = ref<FormInstance>();
 const importDbDialogRef = ref<InstanceType<typeof ImportDbTableDialog>>();
+/** ArtTable：勾选清空（删除后） */
+const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+
+/** useTable 初始化前的占位，供同步/删除/导入等在文件中靠前定义的函数调用 */
+const listRefresh = {
+  refreshData: async () => {},
+  refreshCreate: async () => {},
+  refreshRemove: async () => {},
+};
+
+const route = useRoute();
+const { hasAuth } = useAuth();
 
 provide(GENCODE_BASIC_FORM_KEY, basicInfo);
 provide(GENCODE_CM_KEY, cmRef);
@@ -343,61 +256,6 @@ const previewTypeOptions = ["ts", "vue", "python"];
 const previewTypes = ref<string[]>([...previewTypeOptions]);
 const code = ref<string>("");
 const treeData = ref<TreeNode[]>([]);
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_generator:gencode",
-  colon: true,
-  isExpandable: false,
-  showNumber: 3,
-  form: { labelWidth: "auto" },
-  searchButtonPerm: "module_generator:gencode:query",
-  resetButtonPerm: "module_generator:gencode:query",
-  formItems: [
-    {
-      prop: "table_name",
-      label: "表名称",
-      type: "input",
-      attrs: { placeholder: "请输入表名称", clearable: true, style: { width: "200px" } },
-    },
-    {
-      prop: "table_comment",
-      label: "表描述",
-      type: "input",
-      attrs: { placeholder: "请输入表描述", clearable: true, style: { width: "200px" } },
-    },
-  ],
-});
-
-const contentCols = reactive<TableColumn[]>([
-  { prop: "selection", label: "选择框", show: true },
-  { prop: "index", label: "序号", show: true },
-  { prop: "table_name", label: "表名称", show: true },
-  { prop: "table_comment", label: "表描述", show: true },
-  { prop: "class_name", label: "实体", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "operation", label: "操作", show: true },
-]);
-
-const contentConfig = reactive<IContentConfig<GenTablePageQuery>>({
-  permPrefix: "module_generator:gencode",
-  cols: contentCols as IContentConfig["cols"],
-  hideColumnFilter: false,
-  toolbar: [],
-  defaultToolbar: ["refresh", "filter"],
-  pagination: {
-    pageSize: 10,
-    pageSizes: [10, 20, 30, 50],
-  },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await GencodeAPI.listTable(params as GenTablePageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
-  },
-});
 
 const settingsStore = useSettingsStore();
 
@@ -777,7 +635,7 @@ async function handleSynchDb(row: GenTableSchema): Promise<void> {
 
     await GencodeAPI.syncDb(tableName);
     ElMessage.success("表结构已同步到代码生成配置");
-    refreshList();
+    await listRefresh.refreshData();
   } catch (error) {
     if (error !== "cancel") console.error("同步表结构失败:", error);
   } finally {
@@ -892,13 +750,202 @@ async function handleDelete(row?: GenTableSchema): Promise<void> {
     });
 
     await GencodeAPI.deleteTable(tableIds);
-    refreshList();
+    artTableRef.value?.elTableRef?.clearSelection();
+    await listRefresh.refreshRemove();
   } catch (error) {
     if (error !== "cancel") {
       console.error("删除表数据失败:", error);
     }
   }
 }
+
+type GencodeSearchForm = {
+  table_name?: string;
+  table_comment?: string;
+};
+
+function buildGencodeRowActions(row: GenTableSchema): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "preview",
+      label: "代码生成",
+      artType: "edit",
+      icon: "ri:magic-line",
+      iconColor: "var(--el-color-primary)",
+      perm: "module_generator:gencode:update",
+      run: () => void handlePreviewTable(row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_generator:gencode:delete",
+      run: () => void handleDelete(row),
+    },
+    {
+      key: "sync",
+      label: "同步",
+      artType: "view",
+      icon: "ri:refresh-line",
+      iconColor: "var(--el-color-primary)",
+      perm: "module_generator:db:sync",
+      run: () => void handleSynchDb(row),
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatGencodeOperationCell(row: GenTableSchema) {
+  return renderTableOperationCell(buildGencodeRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 gencode-table-actions",
+  });
+}
+
+const searchForm = ref<GencodeSearchForm>({
+  table_name: undefined,
+  table_comment: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const gencodeSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "表名称",
+    key: "table_name",
+    type: "input",
+    placeholder: "请输入表名称",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "表描述",
+    key: "table_comment",
+    type: "input",
+    placeholder: "请输入表描述",
+    clearable: true,
+    span: 6,
+  },
+]);
+
+const {
+  columns,
+  columnChecks,
+  data: tableListData,
+  loading: tableLoading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: GencodeAPI.listTable,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<GenTableSchema>[] => [
+      { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
+      {
+        prop: "table_name",
+        label: "表名称",
+        minWidth: 160,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "table_comment",
+        label: "表描述",
+        minWidth: 160,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "class_name",
+        label: "实体",
+        minWidth: 120,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "created_time",
+        label: "创建时间",
+        width: 168,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "updated_time",
+        label: "更新时间",
+        width: 168,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "operation",
+        label: "操作",
+        width: 220,
+        fixed: "right",
+        align: "right",
+        formatter: (row: GenTableSchema) => formatGencodeOperationCell(row),
+      },
+    ],
+  },
+});
+
+listRefresh.refreshData = refreshData;
+listRefresh.refreshCreate = refreshCreate;
+listRefresh.refreshRemove = refreshRemove;
+
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 10,
+    total: p.total ?? 0,
+  };
+});
+
+async function handleSearchBarSearch(params: GencodeSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams({
+    table_name: params.table_name,
+    table_comment: params.table_comment,
+  });
+  getData();
+}
+
+async function onResetSearch() {
+  searchForm.value = {
+    table_name: undefined,
+    table_comment: undefined,
+  };
+  await resetSearchParams();
+}
+
+/** 页面激活时执行（依赖 useTable 分页与刷新） */
+onActivated(async () => {
+  const time = route.query.t;
+  if (time == null || String(time) === uniqueId.value) return;
+  uniqueId.value = String(time);
+  const pageNo = Number(route.query.page_no || 1);
+  await nextTick();
+  const cur = (pagination as unknown as { current?: number }).current ?? 1;
+  if (cur !== pageNo) {
+    await handleCurrentChange(pageNo);
+  } else {
+    await refreshData();
+  }
+});
 
 /** 创建表（由 CreateTableDialog 提交 SQL；表结构模式成功后可回写第三步主子表配置） */
 async function handleCreateTableSubmit(sql: string, meta?: CreateTableSubmitMeta): Promise<void> {
@@ -928,7 +975,7 @@ async function handleCreateTableSubmit(sql: string, meta?: CreateTableSubmitMeta
         basicInfo.value?.clearValidate?.(["table_name", "sub_table_name", "sub_table_fk_name"]);
       });
     }
-    refreshList();
+    await listRefresh.refreshCreate();
     importVisible.value = true;
     await getDbList();
   } catch (error) {
@@ -948,15 +995,17 @@ async function handleImportTable(): Promise<void> {
   importLoading.value = true;
   try {
     // 提取表名数组
-    const tableNames = tables.value.map((table) => table.table_name || "");
+    const tableNames = tables.value.map((table: TableItem) => table.table_name || "");
     await GencodeAPI.importTable(tableNames);
     importVisible.value = false;
-    refreshList();
+    await listRefresh.refreshData();
     // 导入成功后自动打开代码生成抽屉
     if (tables.value.length === 1) {
       await nextTick();
-      const list = (unref(contentRef.value?.pageData) ?? []) as GenTableSchema[];
-      const importedTable = list.find((t) => t.table_name === tables.value[0].table_name);
+      const list = tableListData.value as unknown as GenTableSchema[];
+      const importedTable = list.find(
+        (t: GenTableSchema) => t.table_name === tables.value[0].table_name
+      );
       if (importedTable) {
         await handlePreviewTable(importedTable);
       }
@@ -998,27 +1047,6 @@ async function handleImportReset(): Promise<void> {
   importDbDialogRef.value?.resetQueryForm();
   await handleImportQuery();
 }
-
-// 路由和导航
-const route = useRoute();
-
-// ===== 生命周期和初始化 =====
-
-/** 页面激活时执行 */
-onActivated(async () => {
-  const time = route.query.t;
-  if (time != null && String(time) !== uniqueId.value) {
-    uniqueId.value = String(time);
-    const pageNo = Number(route.query.page_no || 1);
-    await nextTick();
-    if (contentRef.value) {
-      contentRef.value.pagination.currentPage = pageNo;
-      const q = searchRef.value?.getQueryParams() ?? {};
-      const f = contentRef.value.getFilterParams?.() ?? {};
-      contentRef.value.fetchPageData({ ...q, ...f }, false);
-    }
-  }
-});
 
 // 表单数据（后端返回字段可能含 null，这里做更宽松的承载，避免 TS 因类型收窄报错）
 const info = reactive<

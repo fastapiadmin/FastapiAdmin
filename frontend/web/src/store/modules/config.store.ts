@@ -1,59 +1,85 @@
-import { store } from "@/store";
+/**
+ * 系统配置状态管理模块
+ *
+ * 提供系统配置参数的状态管理
+ *
+ * ## 主要功能
+ *
+ * - 网站基础信息管理（标题、版本、描述）
+ * - 网站图标配置（登录背景、favicon、Logo）
+ * - 安全隐私配置（服务条款、版权、隐私政策）
+ * - 接口安全配置（白名单、黑名单）
+ * - 演示环境配置
+ *
+ * ## 使用场景
+ *
+ * - 系统初始化配置加载
+ * - 登录页背景和Logo显示
+ * - 底部版权信息展示
+ * - 接口安全控制
+ *
+ * ## 持久化
+ *
+ * - 使用 localStorage 存储
+ * - 自动缓存已加载的配置
+ * - 支持强制刷新配置
+ *
+ * @module store/modules/config.store
+ * @author FastapiAdmin Team
+ */
+import { store } from "@stores";
 import ParamsAPI, { ConfigTable } from "@/api/module_system/params";
 import { defineStore } from "pinia";
+import { ref } from "vue";
 
-interface ConfigState {
-  // 网站信息
-  sys_web_title: ConfigTable;
-  sys_web_version: ConfigTable;
-  sys_web_description: ConfigTable;
-  // 网站图标
-  sys_login_background: ConfigTable;
-  sys_web_favicon: ConfigTable;
-  sys_web_logo: ConfigTable;
-  // 安全隐私配置
-  sys_keep_record: ConfigTable;
-  sys_web_clause: ConfigTable;
-  sys_web_copyright: ConfigTable;
-  sys_web_privacy: ConfigTable;
-  sys_git_code: ConfigTable;
-  sys_help_doc: ConfigTable;
-  // 接口安全配置
-  white_api_list_path: ConfigTable;
-  ip_black_list: ConfigTable;
-  // 演示环境配置
-  demo_enable: ConfigTable;
-  ip_white_list: ConfigTable;
-}
+export const useConfigStore = defineStore(
+  "configStore",
+  () => {
+    // 配置数据
+    const configData = ref<Record<string, ConfigTable>>({});
+    // 是否已加载配置
+    const isConfigLoaded = ref(false);
+    // 是否正在加载配置
+    const configLoading = ref(false);
 
-export const useConfigStore = defineStore("config", {
-  state: () => ({
-    configData: {} as ConfigState,
-    isConfigLoaded: false,
-    configLoading: false,
-  }),
-
-  actions: {
-    async getConfig(force = false) {
-      if ((this.isConfigLoaded && !force) || this.configLoading) {
+    /**
+     * 获取系统配置
+     * @param force 是否强制刷新配置
+     */
+    async function getConfig(force = false) {
+      if ((isConfigLoaded.value && !force) || configLoading.value) {
         return;
       }
-      this.configLoading = true;
+      configLoading.value = true;
       try {
         const response = await ParamsAPI.getInitConfig();
-        response.data.data.forEach((item: ConfigTable) => {
-          if (item.config_value !== undefined) {
-            this.configData[item.config_key as keyof ConfigState] = item;
+        const list = response?.data?.data;
+        if (!Array.isArray(list)) {
+          console.warn("[configStore] getInitConfig: 响应 data 非数组", response?.data);
+          return;
+        }
+        list.forEach((item: ConfigTable) => {
+          if (item.config_value !== undefined && item.config_key) {
+            configData.value[item.config_key] = item;
           }
         });
-        this.isConfigLoaded = true;
+        isConfigLoaded.value = true;
       } finally {
-        this.configLoading = false;
+        configLoading.value = false;
       }
-    },
+    }
+
+    return {
+      configData,
+      isConfigLoaded,
+      configLoading,
+      getConfig,
+    };
   },
-  persist: true,
-});
+  {
+    persist: true,
+  }
+);
 
 export function useConfigStoreHook() {
   return useConfigStore(store);

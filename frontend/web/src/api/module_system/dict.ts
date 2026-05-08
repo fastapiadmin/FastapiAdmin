@@ -1,10 +1,10 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/system/dict";
 
 const DictAPI = {
   listDictType(query: DictPageQuery) {
-    return request<ApiResponse<PageResult<DictTable[]>>>({
+    return request<ApiResponse<PageResult<DictTable>>>({
       url: `${API_PATH}/type/list`,
       method: "get",
       params: query,
@@ -67,7 +67,7 @@ const DictAPI = {
   },
 
   listDictData(query: DictDataPageQuery) {
-    return request<ApiResponse<PageResult<DictDataTable[]>>>({
+    return request<ApiResponse<PageResult<DictDataTable>>>({
       url: `${API_PATH}/data/list`,
       method: "get",
       params: query,
@@ -123,7 +123,7 @@ const DictAPI = {
   },
 
   getInitDict(dict_type: string) {
-    return request<ApiResponse>({
+    return request<ApiResponse<DictDataTable[]>>({
       url: `${API_PATH}/data/info/${dict_type}`,
       method: "get",
     });

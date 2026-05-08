@@ -2,7 +2,7 @@
   <div class="welcome-screen">
     <div class="welcome-content">
       <div class="ai-logo">
-        <el-icon size="64"><ChatDotRound /></el-icon>
+        <ElIcon size="64"><ChatDotRound /></ElIcon>
       </div>
       <h1>FA智能助手</h1>
       <p class="welcome-subtitle">我是您的专属AI助手，可以帮您回答问题、处理任务和进行智能对话</p>

@@ -20,8 +20,12 @@
     },
     "user": {
       "userCenter": "User center",
+      "changeLog": "Release notes",
+      "paramConfig": "Config center",
       "docs": "Document",
       "github": "Github",
+      "gitee": "Gitee",
+      "tour": "Guided tour",
       "lockScreen": "Lock screen",
       "logout": "Log out"
     },
@@ -36,7 +40,7 @@
     "tips": "Prompt",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "logOutTips": "Do you want to log out?",
+    "logoutTips": "Do you want to log out?",
     "reset": "Reset",
     "save": "Save",
     "edit": "Edit",
@@ -105,6 +109,78 @@
     "selectKeydown": "Select",
     "exitKeydown": "Close"
   },
+  "setting": {
+    "menuType": {
+      "title": "Menu Layout",
+      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+    },
+    "theme": {
+      "title": "Theme Style",
+      "list": ["Light", "Dark", "System"]
+    },
+    "menu": {
+      "title": "Menu Style"
+    },
+    "color": {
+      "title": "Theme Color"
+    },
+    "box": {
+      "title": "Box Style",
+      "list": ["Border", "Shadow"]
+    },
+    "container": {
+      "title": "Container Width",
+      "list": ["Full", "Boxed"]
+    },
+    "basics": {
+      "title": "Basic Config",
+      "list": {
+        "multiTab": "Show work tab",
+        "accordion": "Sidebar opens accordion",
+        "collapseSidebar": "Show sidebar button",
+        "reloadPage": "Show reload page button",
+        "fastEnter": "Show fast enter",
+        "breadcrumb": "Show crumb navigation",
+        "language": "Show multilingual selection",
+        "menuSearch": "Show global menu search",
+        "fullscreenTool": "Show fullscreen toggle",
+        "layoutSize": "Show component size selector",
+        "notificationTool": "Show notification entry",
+        "progressBar": "Show top progress bar",
+        "weakMode": "Color Weakness Mode",
+        "watermark": "Global watermark",
+        "appLogo": "Show app logo & system title",
+        "loginGuide": "Show onboarding guide after login",
+        "grayMode": "Grayscale mode",
+        "aiAssistant": "Enable AI assistant entry",
+        "menuWidth": "Menu width",
+        "tabStyle": "Tab style",
+        "pageTransition": "Page animation",
+        "borderRadius": "Custom radius"
+      }
+    },
+    "tabStyle": {
+      "default": "Pill",
+      "card": "Card",
+      "google": "Chrome"
+    },
+    "transition": {
+      "list": {
+        "none": "None",
+        "fade": "Fade",
+        "slideLeft": "Slide Left",
+        "slideBottom": "Slide Bottom",
+        "slideTop": "Slide Top"
+      }
+    },
+    "actions": {
+      "resetConfig": "Reset Config",
+      "copyConfig": "Copy Config",
+      "copySuccess": "Configuration copied to clipboard, paste it into src/config/setting.ts file",
+      "copyFailed": "Copy failed, please try again",
+      "resetFailed": "Reset failed, please refresh the page and try again"
+    }
+  },
   "settings": {
     "menuType": {
       "title": "Menu Layout",
@@ -141,6 +217,10 @@
         "progressBar": "Show top progress bar",
         "weakMode": "Color Weakness Mode",
         "watermark": "Global watermark",
+        "appLogo": "Show app logo & system title",
+        "loginGuide": "Show onboarding guide after login",
+        "grayMode": "Grayscale mode",
+        "aiAssistant": "Enable AI assistant entry",
         "menuWidth": "Menu width",
         "tabStyle": "Tab style",
         "pageTransition": "Page animation",
@@ -148,7 +228,7 @@
       }
     },
     "tabStyle": {
-      "default": "Default",
+      "default": "Pill",
       "card": "Card",
       "google": "Chrome"
     },
@@ -171,10 +251,13 @@
     "project": "Project Settings",
     "themeSetting": "Theme Settings",
     "themeColor": "Theme Color",
+    "themeColorTip": "Theme Color",
     "customColor": "Custom Color",
+    "darkMode": "Dark Mode",
+    "layoutSetting": "Layout Settings",
+    "sidebarColorScheme": "Sidebar Color Scheme",
     "showTagsView": "Show Tags View",
     "showAppLogo": "Show App Logo",
-    "sidebarColorScheme": "Sidebar Color Scheme",
     "showWatermark": "Show Watermark",
     "grayMode": "Gray Mode",
     "userEnableAi": "Enable AI Assistant",
@@ -191,7 +274,7 @@
     "topLayout": "Top Mode",
     "mixLayout": "Mix Mode",
     "configManagement": "Config Management",
-    "copyConfigDescription": "Generate current settings code and copy to clipboard, then overwrite src/settings.ts file",
+    "copyConfigDescription": "Generate current settings code and copy to clipboard, then merge into src/config/setting.ts",
     "resetConfigDescription": "Restore all settings to system default values",
     "systemTheme": "System Theme",
     "showGuide": "Show Guide",
@@ -217,10 +300,21 @@
     "viewAll": "View all"
   },
   "worktab": {
+    "scrollLeft": "Scroll tabs left",
+    "scrollRight": "Scroll tabs right",
+    "menuMore": "Tab menu",
+    "bookmarkAdd": "Add to workplace favorites",
+    "bookmarkRemove": "Remove from favorites",
+    "bookmarkAdded": "Added to favorites",
+    "bookmarkRemoved": "Removed from favorites",
+    "bookmarkFail": "Favorite action failed",
+    "refreshCacheDone": "Cache refreshed and page reloaded",
+    "refreshCacheFail": "Failed to refresh cache",
     "btn": {
       "refresh": "Refresh",
       "fixed": "Fixed",
       "unfixed": "Unfixed",
+      "closeCurrent": "Close current",
       "closeLeft": "Close left",
       "closeRight": "Close right",
       "closeOther": "Close other",
@@ -230,18 +324,38 @@
   "login": {
     "leftView": {
       "title": "A backend system of beauty and efficiency",
-      "subTitle": "A sleek and practical interface for a great user experience"
+      "subTitle": "Provide secure, efficient, and scalable management solutions to help enterprises digitalize and grow their businesses."
     },
-    "title": "Welcome back",
-    "subTitle": "Please enter your account and password to login",
+    "title": "Welcome back 👋",
+    "subTitle": "Enter your account details to start managing your project",
+    "versionLabel": "Version",
+    "quickSelectAccount": "Quick select account",
+    "mobileLogin": "Mobile login",
+    "mobileLoginSubTitle": "Enter your mobile number to start managing your projects",
+    "mobilePhonePlaceholder": "Mobile number",
+    "getSmsCode": "Get code",
+    "smsCodeSentMock": "Verification code sent (demo only)",
+    "smsCodeRequired": "Enter the 6-digit SMS code",
+    "mobileLoginPending": "Mobile login API is not connected yet — UI preview only",
+    "backToAccountLogin": "Back",
+    "qrLogin": "QR code login",
+    "qrLoginTitle": "Welcome back 📱",
+    "qrLoginSubTitle": "Scan the QR code with your phone to sign in",
+    "qrLoginHint": "After scanning, tap Confirm on your phone to finish signing in",
+    "oauthNoticeTitle": "Notice",
+    "oauthLoginSuccess": "Signed in with your social account",
+    "oauthLoginFailed": "Social sign-in failed. Try username and password.",
+    "comingSoon": "Coming soon",
+    "accountLoginTab": "Account",
+    "quickLoginTab": "Quick login",
     "roles": {
       "super": "Super Admin",
       "admin": "Admin",
       "user": "User"
     },
     "placeholder": {
-      "username": "Please enter your account",
-      "password": "Please enter your password",
+      "username": "Please enter username",
+      "password": "Please enter password",
       "slider": "Please slide to verify"
     },
     "sliderText": "Please slide to verify",
@@ -263,6 +377,7 @@
     "auto": "Auto",
     "newPassword": "Please enter new Password",
     "captchaCode": "Please enter Verify Code",
+    "captchaClickHint": "Click to refresh captcha",
     "capsLock": "Caps Lock is On",
     "message": {
       "username": {
@@ -270,6 +385,7 @@
       },
       "password": {
         "required": "Please enter Password",
+        "currentRequired": "Please enter your current password",
         "min": "The password cannot be less than 6 characters",
         "confirm": "Please confirm the password again",
         "inconformity": "The two password entries are inconsistent"
@@ -296,6 +412,12 @@
         "required": "Please agree to the User Agreement"
       }
     },
+    "oauthTooltip": {
+      "wechat": "WeChat",
+      "qq": "QQ",
+      "github": "GitHub",
+      "gitee": "Gitee"
+    },
     "otherLoginMethods": "Other",
     "resetPassword": "Reset password",
     "thinkOfPasswd": "Remember your password?",
@@ -306,14 +428,20 @@
     "quickFill": "Quick fill",
     "quickLoginTip": "Click user avatar to login quickly",
     "selectUser": "Select a user",
-    "reg": "Register"
+    "reg": "Register",
+    "panelAlign": {
+      "label": "Column layout",
+      "left": "Wide illustration",
+      "center": "Balanced",
+      "right": "Wide form"
+    }
   },
   "loginForm": {
     "remember": "Remember me"
   },
   "forgetPassword": {
     "title": "Forgot password?",
-    "subTitle": "Enter your email to reset your password",
+    "subTitle": "Enter your username and set a new password",
     "placeholder": "Please enter your email",
     "submitBtnText": "Submit",
     "backBtnText": "Back"
@@ -322,16 +450,16 @@
     "title": "Create account",
     "subTitle": "Welcome to join us, please fill in the following information to complete the registration",
     "placeholder": {
-      "username": "Please enter your account",
-      "password": "Please enter your password",
-      "confirmPassword": "Please enter your password again"
+      "username": "Please enter account",
+      "password": "Please enter password",
+      "confirmPassword": "Please enter password again"
     },
     "rule": {
       "confirmPasswordRequired": "Please enter your password again",
       "passwordMismatch": "The two passwords are inconsistent!",
-      "usernameLength": "The length is 3 to 20 characters",
-      "passwordLength": "The password length cannot be less than 6 digits",
-      "agreementRequired": "Please agree to the privacy policy"
+      "usernameLength": "Length is 3 to 20 characters",
+      "passwordLength": "Password length cannot be less than 6 digits",
+      "agreementRequired": "Please agree to privacy policy"
     },
     "agreeText": "I agree",
     "privacyPolicy": "Privacy policy",
@@ -375,10 +503,11 @@
     "evening": "Good evening!"
   },
   "exceptionPage": {
-    "gohome": "Go Home",
+    "401": "Sorry, you don't have permission to access this page.",
     "403": "Sorry, you do not have permission to access this page",
     "404": "Sorry, the page you are trying to access does not exist",
     "500": "Sorry, there was an error on the server",
+    "gohome": "Go Home",
     "noPermission": "Sorry, you don't have permission to access this page.",
     "pageError": "Sorry, the page you visited does not exist.",
     "networkError": "Sorry, the server reported an error.",
@@ -397,37 +526,23 @@
     "outside": {
       "title": "Outside"
     },
+    "home": {
+      "title": "Home"
+    },
+    "workplace": {
+      "title": "Workbench"
+    },
+    "changelog": {
+      "title": "Release notes"
+    },
     "dashboard": {
       "title": "Dashboard",
       "console": "Console",
       "analysis": "Analysis",
-      "ecommerce": "Ecommerce"
-    },
-    "widgets": {
-      "title": "Components",
-      "icon": "Icon",
-      "imageCrop": "Image Crop",
-      "excel": "Excel Import Export",
-      "video": "Video Player",
-      "countTo": "Count To",
-      "wangEditor": "Wang Editor",
-      "watermark": "Watermark",
-      "contextMenu": "Context Menu",
-      "qrcode": "QR Code",
-      "drag": "Drag",
-      "textScroll": "Text Scroll",
-      "fireworks": "Fireworks",
-      "elementUI": "Component Overview"
-    },
-    "template": {
-      "title": "Template Center",
-      "chat": "Chat",
-      "cards": "Cards",
-      "banners": "Banners",
-      "charts": "Charts",
+      "ecommerce": "Ecommerce",
       "map": "Map",
-      "calendar": "Calendar",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "tutorial": "Tutorial"
     },
     "article": {
       "title": "Article",
@@ -436,35 +551,14 @@
       "comment": "Comment",
       "articlePublish": "Article Publish"
     },
-    "result": {
-      "title": "Result Page",
-      "success": "Success",
-      "fail": "Fail"
-    },
     "exception": {
       "title": "Exception",
       "forbidden": "403",
       "notFound": "404",
       "serverError": "500"
     },
-    "examples": {
-      "title": "Feature Examples",
-      "tabs": "Tabs",
-      "tablesBasic": "Basic Tables",
-      "tables": "Advanced Tables",
-      "tablesTree": "Tree Table Layout",
-      "forms": "Forms",
-      "searchBar": "Search Form",
-      "socketChat": "Socket Connection",
-      "permission": {
-        "title": "Frontend Permission",
-        "switchRole": "Toggle Auth",
-        "buttonAuth": "Button Authority",
-        "pageVisibility": "Super Admin Visibility"
-      }
-    },
     "system": {
-      "title": "System Settings",
+      "title": "Template System",
       "user": "User Manage",
       "role": "Role Manage",
       "userCenter": "User Center",
@@ -519,7 +613,13 @@
     },
     "zebra": "Zebra",
     "border": "Border",
-    "headerBackground": "Header BG"
+    "headerBackground": "Header BG",
+    "toolbar": {
+      "hideSearch": "Hide search area",
+      "showSearch": "Show search area",
+      "enableRowDrag": "Enable row drag sort (current page)",
+      "disableRowDrag": "Disable row drag sort"
+    }
   },
   "navbar": {
     "dashboard": "Dashboard",

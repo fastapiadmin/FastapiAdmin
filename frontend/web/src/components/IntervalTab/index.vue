@@ -1,5 +1,5 @@
 <template>
-  <el-form
+  <ElForm
     ref="formRef"
     :model="crontabValueObj"
     label-width="auto"
@@ -7,60 +7,60 @@
     :inline="true"
     class="interval-tab-form"
   >
-    <el-form-item label="秒" prop="second" class="form-item">
-      <el-select v-model="crontabValueObj.second" placeholder="秒" clearable>
-        <el-option label="每秒" value="*">*</el-option>
-        <el-option
+    <ElFormItem label="秒" prop="second" class="form-item">
+      <ElSelect v-model="crontabValueObj.second" placeholder="秒" clearable>
+        <ElOption label="每秒" value="*">*</ElOption>
+        <ElOption
           v-for="second in seconds"
           :key="second"
           :label="second"
           :value="second.toString()"
         >
           {{ second }}
-        </el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="分" prop="min" class="form-item">
-      <el-select v-model="crontabValueObj.min" placeholder="分" clearable>
-        <el-option label="每分" value="*">*</el-option>
-        <el-option v-for="min in minutes" :key="min" :label="min" :value="min.toString()">
+        </ElOption>
+      </ElSelect>
+    </ElFormItem>
+    <ElFormItem label="分" prop="min" class="form-item">
+      <ElSelect v-model="crontabValueObj.min" placeholder="分" clearable>
+        <ElOption label="每分" value="*">*</ElOption>
+        <ElOption v-for="min in minutes" :key="min" :label="min" :value="min.toString()">
           {{ min }}
-        </el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="时" prop="hour" class="form-item">
-      <el-select v-model="crontabValueObj.hour" placeholder="时" clearable>
-        <el-option label="每时" value="*">*</el-option>
-        <el-option v-for="hour in hours" :key="hour" :label="hour" :value="hour.toString()">
+        </ElOption>
+      </ElSelect>
+    </ElFormItem>
+    <ElFormItem label="时" prop="hour" class="form-item">
+      <ElSelect v-model="crontabValueObj.hour" placeholder="时" clearable>
+        <ElOption label="每时" value="*">*</ElOption>
+        <ElOption v-for="hour in hours" :key="hour" :label="hour" :value="hour.toString()">
           {{ hour }}
-        </el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="天" prop="day" class="form-item">
-      <el-select v-model="crontabValueObj.day" placeholder="天" clearable>
-        <el-option label="每天" value="*">*</el-option>
-        <el-option v-for="day in days" :key="day" :label="day" :value="day">{{ day }}</el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="周" prop="week" class="form-item">
-      <el-select v-model="crontabValueObj.week" placeholder="周" clearable>
-        <el-option label="每周" value="*">*</el-option>
-        <el-option
+        </ElOption>
+      </ElSelect>
+    </ElFormItem>
+    <ElFormItem label="天" prop="day" class="form-item">
+      <ElSelect v-model="crontabValueObj.day" placeholder="天" clearable>
+        <ElOption label="每天" value="*">*</ElOption>
+        <ElOption v-for="day in days" :key="day" :label="day" :value="day">{{ day }}</ElOption>
+      </ElSelect>
+    </ElFormItem>
+    <ElFormItem label="周" prop="week" class="form-item">
+      <ElSelect v-model="crontabValueObj.week" placeholder="周" clearable>
+        <ElOption label="每周" value="*">*</ElOption>
+        <ElOption
           v-for="week in weekOptions"
           :key="week.value"
           :label="week.label"
           :value="week.value"
         >
           {{ week.label }}
-        </el-option>
-      </el-select>
-    </el-form-item>
+        </ElOption>
+      </ElSelect>
+    </ElFormItem>
 
     <div class="form-actions">
-      <el-button @click="emit('cancel')">取消</el-button>
-      <el-button type="primary" @click="handleConfirm">确认</el-button>
+      <ElButton @click="emit('cancel')">取消</ElButton>
+      <ElButton type="primary" @click="handleConfirm">确认</ElButton>
     </div>
-  </el-form>
+  </ElForm>
 </template>
 
 <script lang="ts" setup>
@@ -185,13 +185,13 @@ defineExpose({ setCron });
 }
 
 // 响应式调整
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .form-item {
     width: calc(33.33% - 8px);
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .form-item {
     width: calc(50% - 8px);
   }

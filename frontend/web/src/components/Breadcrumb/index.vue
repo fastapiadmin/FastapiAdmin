@@ -1,6 +1,6 @@
 <template>
-  <el-breadcrumb class="flex-y-center">
-    <el-breadcrumb-item v-for="(item, index) in breadcrumbs" :key="item.path">
+  <ElBreadcrumb class="flex-y-center">
+    <ElBreadcrumbItem v-for="(item, index) in breadcrumbs" :key="item.path">
       <span
         v-if="item.redirect === 'noredirect' || index === breadcrumbs.length - 1"
         class="color-gray-400"
@@ -10,15 +10,15 @@
       <a v-else @click.prevent="handleLink(item)">
         {{ translateRouteTitle(item.meta.title) }}
       </a>
-    </el-breadcrumb-item>
-  </el-breadcrumb>
+    </ElBreadcrumbItem>
+  </ElBreadcrumb>
 </template>
 
 <script setup lang="ts">
 import { RouteLocationMatched } from "vue-router";
 import { compile } from "path-to-regexp";
-import router from "@/router";
-import { translateRouteTitle } from "@/utils/i18n";
+import { router } from "@/router";
+import { translateRouteTitle } from "@utils/i18n";
 
 const currentRoute = useRoute();
 const pathCompile = (path: string) => {
@@ -33,7 +33,7 @@ function getBreadcrumb() {
   let matched = currentRoute.matched.filter((item) => item.meta && item.meta.title);
   const first = matched[0];
   if (!isDashboard(first)) {
-    matched = [{ path: "/home", meta: { title: "首页" } } as any].concat(matched);
+    matched = [{ path: "/home", meta: { title: "menus.home.title" } } as any].concat(matched);
   }
   breadcrumbs.value = matched.filter((item) => {
     return item.meta && item.meta.title && item.meta.breadcrumb !== false;
@@ -45,7 +45,8 @@ function isDashboard(route: RouteLocationMatched) {
   if (!name) {
     return false;
   }
-  return name.toString().trim().toLocaleLowerCase() === "Dashboard".toLocaleLowerCase();
+  const n = name.toString().trim().toLowerCase();
+  return n === "home" || n === "workplace" || n === "dashboard" || n.startsWith("dashboard");
 }
 
 function handleLink(item: any) {

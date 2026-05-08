@@ -1,11 +1,11 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 /** 对应后端 `plugin.module_task.workflow.definition` */
 const API_PATH = "/task/workflow/definition";
 
 const WorkflowDefinitionAPI = {
   getWorkflowList(query: WorkflowPageQuery) {
-    return request<ApiResponse<PageResult<WorkflowTable[]>>>({
+    return request<ApiResponse<PageResult<WorkflowTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

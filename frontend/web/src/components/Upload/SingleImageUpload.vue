@@ -1,7 +1,36 @@
 <!-- 单图上传组件 -->
 <template>
   <div class="single-image-upload">
-    <el-upload
+    <ElDialog
+      v-model="cropVisible"
+      :title="cropDialogTitle"
+      width="640px"
+      append-to-body
+      destroy-on-close
+      class="single-image-upload__crop-dialog"
+      @closed="onCropDialogClosed"
+    >
+      <ArtCutterImg
+        v-if="cropVisible && cropSourceUrl"
+        :key="cropSourceUrl"
+        :img-url="cropSourceUrl"
+        :box-width="cropBoxWidth"
+        :box-height="cropBoxHeight"
+        :cut-width="cropCutWidth"
+        :cut-height="cropCutHeight"
+        :quality="cropQuality"
+        :tool="true"
+        :show-preview="true"
+        :original-graph="false"
+        :file-type="cropFileType"
+        :title="cropInnerTitle"
+        :preview-title="cropPreviewTitle"
+        @update:img-url="onCropConfirm"
+        @error="onCropError"
+      />
+    </ElDialog>
+
+    <ElUpload
       v-model:file-list="internalFileList"
       class="single-upload"
       list-type="picture-card"
@@ -16,7 +45,7 @@
     >
       <template #default>
         <template v-if="internalFileList && internalFileList.length > 0 && internalFileList[0].url">
-          <el-image
+          <ElImage
             :key="internalFileList[0].url"
             class="single-upload__image"
             :src="internalFileList[0].url"
@@ -25,21 +54,21 @@
             :preview-teleported="true"
             @click.stop="handleImageClick"
           />
-          <el-icon
+          <ElIcon
             v-if="!props.disabled"
             class="single-upload__delete-btn"
             @click.stop="handleDelete"
           >
             <CircleCloseFilled />
-          </el-icon>
+          </ElIcon>
         </template>
         <template v-else>
-          <el-icon class="single-upload__add-btn">
+          <ElIcon class="single-upload__add-btn">
             <Plus />
-          </el-icon>
+          </ElIcon>
         </template>
       </template>
-    </el-upload>
+    </ElUpload>
     <div v-if="props.showTip" class="el-upload__tip">
       {{ props.tipText || `支持 ${props.accept} 格式，文件大小不超过 ${props.maxFileSize}MB` }}
     </div>
@@ -50,6 +79,8 @@
 import { ref, watch } from "vue";
 import { UploadRawFile, UploadRequestOptions, ElMessage, type UploadUserFile } from "element-plus";
 import ParamsAPI from "@/api/module_system/params";
+import ArtCutterImg from "@/components/Core/media/art-cutter-img/index.vue";
+import { dataURLToFile } from "@utils/file/dataUrl";
 
 const props = defineProps({
   /**
@@ -128,6 +159,57 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+
+  /** 选图后先裁剪再上传（用于站点 Logo / 背景等） */
+  enableCrop: {
+    type: Boolean,
+    default: false,
+  },
+
+  cropBoxWidth: {
+    type: Number,
+    default: 520,
+  },
+
+  cropBoxHeight: {
+    type: Number,
+    default: 360,
+  },
+
+  cropCutWidth: {
+    type: Number,
+    default: 400,
+  },
+
+  cropCutHeight: {
+    type: Number,
+    default: 300,
+  },
+
+  cropQuality: {
+    type: Number,
+    default: 0.92,
+  },
+
+  cropFileType: {
+    type: String as () => "png" | "jpeg" | "webp",
+    default: "jpeg",
+  },
+
+  cropDialogTitle: {
+    type: String,
+    default: "裁剪图片",
+  },
+
+  cropInnerTitle: {
+    type: String,
+    default: "调整图片",
+  },
+
+  cropPreviewTitle: {
+    type: String,
+    default: "预览",
+  },
 });
 
 // 接收字符串类型的modelValue，保持与现有代码的兼容性
@@ -137,6 +219,58 @@ const modelValue = defineModel<string>({
 
 // 内部使用的文件列表
 const internalFileList = ref<UploadUserFile[]>([]);
+
+const cropVisible = ref(false);
+const cropSourceUrl = ref("");
+
+function revokeCropUrl() {
+  if (cropSourceUrl.value.startsWith("blob:")) {
+    URL.revokeObjectURL(cropSourceUrl.value);
+  }
+  cropSourceUrl.value = "";
+}
+
+function onCropDialogClosed() {
+  revokeCropUrl();
+}
+
+function onCropError() {
+  ElMessage.error("图片加载失败，请换一张图重试");
+}
+
+async function onCropConfirm(dataURL: string) {
+  try {
+    const ext =
+      props.cropFileType === "png" ? "png" : props.cropFileType === "webp" ? "webp" : "jpg";
+    const file = dataURLToFile(dataURL, `upload.${ext}`);
+    await uploadFileInternal(file);
+    cropVisible.value = false;
+    revokeCropUrl();
+  } catch (e) {
+    console.error(e);
+    ElMessage.error("裁剪结果上传失败，请重试");
+  }
+}
+
+async function uploadFileInternal(file: File | UploadRawFile) {
+  const formData = new FormData();
+  formData.append(props.name, file);
+
+  for (const [key, value] of Object.entries(props.data)) {
+    formData.append(key, String(value));
+  }
+
+  const response = await ParamsAPI.uploadFile(formData);
+
+  if (response.data.code === 0 && response.data) {
+    const fileInfo: UploadFilePath = response.data.data;
+    onSuccess(fileInfo);
+    return fileInfo;
+  }
+  const errorMsg = response.data.msg || "上传失败";
+  ElMessage.error(errorMsg);
+  throw new Error(errorMsg);
+}
 
 // 监听modelValue变化，同步到internalFileList
 watch(
@@ -210,6 +344,14 @@ function handleBeforeUpload(file: UploadRawFile) {
     ElMessage.warning(`上传图片不能大于 ${props.maxFileSize}MB`);
     return false;
   }
+
+  if (props.enableCrop) {
+    revokeCropUrl();
+    cropSourceUrl.value = URL.createObjectURL(file);
+    cropVisible.value = true;
+    return false;
+  }
+
   return true;
 }
 
@@ -218,28 +360,7 @@ function handleBeforeUpload(file: UploadRawFile) {
  */
 async function handleUpload(options: UploadRequestOptions) {
   try {
-    const file = options.file;
-    const formData = new FormData();
-
-    formData.append(props.name, file);
-
-    // 处理附加参数
-    for (const [key, value] of Object.entries(props.data)) {
-      formData.append(key, String(value));
-    }
-
-    const response = await ParamsAPI.uploadFile(formData);
-
-    if (response.data.code === 0 && response.data) {
-      const fileInfo: UploadFilePath = response.data.data;
-      // 调用成功回调
-      onSuccess(fileInfo);
-      return fileInfo;
-    } else {
-      const errorMsg = response.data.msg || "上传失败";
-      ElMessage.error(errorMsg);
-      throw new Error(errorMsg);
-    }
+    return await uploadFileInternal(options.file);
   } catch (error) {
     onError(error instanceof Error ? error : new Error(String(error)));
     throw error;

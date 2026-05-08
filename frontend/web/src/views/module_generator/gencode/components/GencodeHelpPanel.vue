@@ -1,18 +1,18 @@
 <template>
-  <el-collapse class="gencode-help-collapse mb-4" accordion>
-    <el-collapse-item name="rules">
+  <ElCollapse class="gencode-help-collapse mb-4" accordion>
+    <ElCollapseItem name="rules">
       <template #title>
         <span class="gencode-help-collapse__title">
-          <el-icon class="gencode-help-collapse__icon"><InfoFilled /></el-icon>
+          <ElIcon class="gencode-help-collapse__icon"><InfoFilled /></ElIcon>
           菜单、页面路由与接口路径对照（写入本地时）
         </span>
       </template>
-      <el-table :data="rows" border size="small" class="gencode-rules-table">
-        <el-table-column prop="parent" label="上级目录" min-width="88" />
-        <el-table-column prop="sidebar" label="侧栏结构（目录→菜单→按钮）" min-width="200" />
-        <el-table-column prop="page" label="浏览器地址（页面路由）" min-width="160" />
-        <el-table-column prop="api" label="前端请求的 HTTP 路径" min-width="160" />
-      </el-table>
+      <ElTable :data="rows" border size="small" class="gencode-rules-table">
+        <ElTableColumn prop="parent" label="上级目录" min-width="88" />
+        <ElTableColumn prop="sidebar" label="侧栏结构（目录→菜单→按钮）" min-width="200" />
+        <ElTableColumn prop="page" label="浏览器地址（页面路由）" min-width="160" />
+        <ElTableColumn prop="api" label="前端请求的 HTTP 路径" min-width="160" />
+      </ElTable>
       <p class="gencode-help-footnote">
         包名、模块名、业务名见下方表单（业务名对应 plugin 下功能目录，可与
         <code>module_example</code>
@@ -34,8 +34,8 @@
         <code>/xxx</code>
         ，故页面 URL 与 API 前缀可以不同。仅「下载 ZIP」不会创建菜单。
       </p>
-    </el-collapse-item>
-  </el-collapse>
+    </ElCollapseItem>
+  </ElCollapse>
 </template>
 
 <script setup lang="ts">

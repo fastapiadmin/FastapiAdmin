@@ -1,11 +1,11 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/monitor/online";
 
 const OnlineAPI = {
   // 查询在线用户列表
   listOnline(query: OnlineUserPageQuery) {
-    return request<ApiResponse<PageResult<OnlineUserTable[]>>>({
+    return request<ApiResponse<PageResult<OnlineUserTable>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,

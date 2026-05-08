@@ -1,14 +1,13 @@
 <template>
   <div @click="openSearchModal">
-    <!-- <div class="i-svg:search" /> -->
     <div class="command-palette-trigger" role="button" tabindex="0" aria-label="打开搜索面板">
       <div class="command-palette-trigger__left">
-        <div class="i-svg:search" />
+        <ArtSvgIcon :icon="resolveIconForArtSvgIcon('search')" />
         <span class="command-palette-trigger__text">搜索菜单</span>
       </div>
       <kbd class="command-palette-trigger__kbd">Ctrl K</kbd>
     </div>
-    <el-dialog
+    <ElDialog
       v-model="isModalVisible"
       width="30%"
       :append-to-body="true"
@@ -16,7 +15,7 @@
       @close="closeSearchModal"
     >
       <template #header>
-        <el-input
+        <ElInput
           ref="searchInputRef"
           v-model="searchKeyword"
           size="large"
@@ -29,9 +28,9 @@
           @keydown.esc="closeSearchModal"
         >
           <template #prepend>
-            <el-button icon="Search" />
+            <ElButton icon="Search" />
           </template>
-        </el-input>
+        </ElInput>
       </template>
 
       <div class="search-result">
@@ -40,15 +39,15 @@
           <div class="search-history">
             <div class="search-history__title">
               搜索历史
-              <el-button
+              <ElButton
                 type="primary"
                 text
                 size="small"
                 class="search-history__clear"
                 @click="clearHistory"
               >
-                <el-icon><Delete /></el-icon>
-              </el-button>
+                <ElIcon><Delete /></ElIcon>
+              </ElButton>
             </div>
             <ul class="search-history__list">
               <li
@@ -58,11 +57,11 @@
                 @click="navigateToRoute(item)"
               >
                 <div class="search-history__icon">
-                  <el-icon><Clock /></el-icon>
+                  <ElIcon><Clock /></ElIcon>
                 </div>
                 <span class="search-history__name">{{ item.title }}</span>
                 <div class="search-history__action">
-                  <el-icon @click.stop="removeHistoryItem(index)"><Close /></el-icon>
+                  <ElIcon @click.stop="removeHistoryItem(index)"><Close /></ElIcon>
                 </div>
               </li>
             </ul>
@@ -83,11 +82,8 @@
               ]"
               @click="navigateToRoute(item)"
             >
-              <el-icon v-if="item.icon && item.icon.startsWith('el-icon')">
-                <component :is="item.icon.replace('el-icon-', '')" />
-              </el-icon>
-              <div v-else-if="item.icon" :class="`i-svg:${item.icon}`" />
-              <div v-else class="i-svg:menu" />
+              <!-- 与 MenuRouteIcon / 旧版 MenuItemContent 一致：EP + 自定义 SVG + Iconify -->
+              <MenuRouteIcon :icon="item.icon || 'menu'" class="flex-shrink-0" />
               <span class="ml-2">{{ item.title }}</span>
             </li>
           </ul>
@@ -111,10 +107,10 @@
             <div class="arrow-box">
               <div class="arrow-up-down">
                 <div class="key-btn">
-                  <div class="i-svg:up" />
+                  <ArtSvgIcon :icon="resolveIconForArtSvgIcon('up')" />
                 </div>
                 <div class="key-btn ml-1">
-                  <div class="i-svg:down" />
+                  <ArtSvgIcon :icon="resolveIconForArtSvgIcon('down')" />
                 </div>
               </div>
               <span class="key-text">切换</span>
@@ -126,21 +122,27 @@
           </div>
         </div>
       </template>
-    </el-dialog>
+    </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import router from "@/router";
-import { usePermissionStore } from "@/store";
-import { isExternal } from "@/utils";
-import { RouteRecordRaw, LocationQueryRaw } from "vue-router";
-import { Clock, Close, Delete } from "@element-plus/icons-vue";
+import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
+import { router } from "@/router";
+import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
+import { useMenuStore } from "@stores";
+import type { AppRouteRecord } from "@/types/router";
+import { isExternal } from "@utils";
+import { LocationQueryRaw } from "vue-router";
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+
+const { Clock, Close, Delete } = ElementPlusIconsVue;
 
 const HISTORY_KEY = "menu_search_history";
 const MAX_HISTORY = 5;
 
-const permissionStore = usePermissionStore();
+const menuStore = useMenuStore();
 const isModalVisible = ref(false);
 const searchKeyword = ref("");
 const searchInputRef = ref();
@@ -219,9 +221,17 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
+watch(
+  () => menuStore.menuList,
+  (list) => {
+    menuItems.value = [];
+    loadRoutesFromMenu(list ?? []);
+  },
+  { deep: true, immediate: true }
+);
+
 // 添加键盘事件监听
 onMounted(() => {
-  loadRoutes(permissionStore.routes);
   loadSearchHistory();
   document.addEventListener("keydown", handleKeyDown);
 });
@@ -295,48 +305,41 @@ function navigateToRoute(item: SearchItem) {
   }
 }
 
-function loadRoutes(routes: RouteRecordRaw[], parentPath = "") {
+function loadRoutesFromMenu(routes: AppRouteRecord[], parentPath = "") {
   routes.forEach((route) => {
-    // 计算完整路径
-    const path = route.path.startsWith("/")
-      ? route.path
-      : `${parentPath}${parentPath.endsWith("/") ? "" : "/"}${route.path}`;
+    const rawPath = route.path ?? "";
+    const path = rawPath.startsWith("/")
+      ? rawPath
+      : `${parentPath}${parentPath.endsWith("/") ? "" : "/"}${rawPath}`;
 
-    // 检查是否需要排除
-    if (excludedRoutes.value.includes(route.path) || isExternal(route.path) || route.meta?.hidden)
-      return;
+    const meta = route.meta;
+    const hidden = meta?.hidden === true || meta?.isHide === true;
+    if (excludedRoutes.value.includes(route.path ?? "") || isExternal(path) || hidden) return;
 
-    // 处理有子路由的情况
-    if (route.children) {
-      // 如果父路由本身有title，也添加到menuItems中
-      if (route.meta?.title) {
-        const title = route.meta.title === "dashboard" ? "首页" : route.meta.title;
+    if (route.children?.length) {
+      if (meta?.title) {
+        const title = meta.title === "dashboard" ? "首页" : meta.title;
+        const params = (meta as { params?: unknown }).params;
         menuItems.value.push({
           title,
           path,
           name: typeof route.name === "string" ? route.name : undefined,
-          icon: route.meta.icon,
+          icon: meta.icon,
           redirect: typeof route.redirect === "string" ? route.redirect : undefined,
-          params: route.meta.params
-            ? JSON.parse(JSON.stringify(toRaw(route.meta.params)))
-            : undefined,
+          params: params ? JSON.parse(JSON.stringify(toRaw(params))) : undefined,
         });
       }
-      // 递归处理子路由
-      loadRoutes(route.children, path);
-    }
-    // 处理没有子路由但有title的情况
-    else if (route.meta?.title) {
-      const title = route.meta.title === "dashboard" ? "首页" : route.meta.title;
+      loadRoutesFromMenu(route.children, path);
+    } else if (meta?.title) {
+      const title = meta.title === "dashboard" ? "首页" : meta.title;
+      const params = (meta as { params?: unknown }).params;
       menuItems.value.push({
         title,
         path,
         name: typeof route.name === "string" ? route.name : undefined,
-        icon: route.meta.icon,
+        icon: meta.icon,
         redirect: typeof route.redirect === "string" ? route.redirect : undefined,
-        params: route.meta.params
-          ? JSON.parse(JSON.stringify(toRaw(route.meta.params)))
-          : undefined,
+        params: params ? JSON.parse(JSON.stringify(toRaw(params))) : undefined,
       });
     }
   });
@@ -363,7 +366,7 @@ function loadRoutes(routes: RouteRecordRaw[], parentPath = "") {
   align-items: center;
 }
 
-.command-palette-trigger__left :deep([class^="i-svg:"]) {
+.command-palette-trigger__left :deep(.art-svg-icon) {
   color: var(--el-text-color-secondary) !important;
 }
 
@@ -554,7 +557,7 @@ function loadRoutes(routes: RouteRecordRaw[], parentPath = "") {
 }
 
 .esc-btn {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 11px;
 }
 

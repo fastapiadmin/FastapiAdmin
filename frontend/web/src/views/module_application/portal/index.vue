@@ -1,145 +1,176 @@
-<!-- 我的应用管理 -->
+<!-- 我的应用管理：Art + useTable（卡片网格） -->
 <template>
-  <div class="app-container">
-    <PageSearch
-      ref="searchRef"
-      :search-config="searchConfig"
-      @query-click="handleQueryClick"
-      @reset-click="handleResetClick"
-    />
-
-    <PageContent ref="contentRef" class="flex-1 min-h-0" :content-config="contentConfig">
-      <template #header>
-        <div class="card-header">
-          <span class="market-title">应用市场</span>
-          <el-button
-            v-hasPerm="['module_application:portal:create']"
-            type="primary"
-            icon="plus"
-            @click="handleCreateApp"
-          >
-            创建应用
-          </el-button>
-        </div>
+  <div class="art-full-height portal-application-page flex flex-col min-h-0">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="portalSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      @search="handleSearchBarSearch"
+      @reset="onResetSearch"
+    >
+      <template #created_id>
+        <UserTableSelect
+          :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
+          @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
+          @confirm-click="afterUserSelectSearch"
+          @clear-click="afterUserSelectSearch"
+        />
       </template>
+      <template #updated_id>
+        <UserTableSelect
+          :model-value="searchForm.updated_id == null ? undefined : searchForm.updated_id"
+          @update:model-value="(v: number | undefined) => (searchForm.updated_id = v)"
+          @confirm-click="afterUserSelectSearch"
+          @clear-click="afterUserSelectSearch"
+        />
+      </template>
+    </ArtSearchBar>
 
-      <template #table="{ data, loading }">
-        <div v-loading="loading" class="app-grid-container">
-          <div v-if="!loading && data.length === 0" class="app-grid-empty">
-            <el-empty :image-size="88" description="暂无应用" />
-          </div>
-          <div v-else class="grid-wrapper">
-            <div
-              v-for="app in data"
-              :key="app.id"
-              class="app-grid-item"
-              @click="app.status && app.id && openAppInternal()"
+    <ElCard
+      class="flex flex-1 min-h-0 flex-col art-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        layout="search,refresh"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="market-title">应用市场</span>
+            <ElButton
+              v-hasPerm="['module_application:portal:create']"
+              type="primary"
+              :icon="Plus"
+              @click="handleCreateApp"
             >
-              <el-card shadow="never" class="app-card" :class="{ 'card-disabled': !app.status }">
-                <template #header>
-                  <div class="app-info-header">
-                    <el-avatar :size="40" :src="app.icon_url">
-                      <el-icon size="20"><Monitor /></el-icon>
-                    </el-avatar>
-                    <h3 class="app-name" :title="app.name">{{ app.name }}</h3>
-                    <el-tag
-                      :type="app.status ? 'success' : 'info'"
-                      size="small"
-                      effect="plain"
-                      class="app-status"
-                    >
-                      {{ app.status ? "启用" : "停用" }}
-                    </el-tag>
-                  </div>
-                </template>
+              创建应用
+            </ElButton>
+          </div>
+        </template>
+      </ArtTableHeader>
 
-                <template #default>
-                  <p v-if="app.description" class="app-description">{{ app.description }}</p>
-                </template>
+      <div v-loading="loading" class="app-grid-container min-h-0 flex-1 overflow-auto">
+        <div v-if="!loading && data.length === 0" class="app-grid-empty">
+          <ElEmpty :image-size="88" description="暂无应用" />
+        </div>
+        <div v-else class="grid-wrapper">
+          <div
+            v-for="app in data"
+            :key="app.id"
+            class="app-grid-item"
+            @click="app.status && app.id && openAppInternal()"
+          >
+            <ElCard shadow="never" class="app-card" :class="{ 'card-disabled': !app.status }">
+              <template #header>
+                <div class="app-info-header">
+                  <ElAvatar :size="40" :src="app.icon_url">
+                    <ElIcon :size="20"><Monitor /></ElIcon>
+                  </ElAvatar>
+                  <h3 class="app-name" :title="app.name">{{ app.name }}</h3>
+                  <ElTag
+                    :type="app.status ? 'success' : 'info'"
+                    size="small"
+                    effect="plain"
+                    class="app-status"
+                  >
+                    {{ app.status ? "启用" : "停用" }}
+                  </ElTag>
+                </div>
+              </template>
 
-                <template #footer>
-                  <div class="card-footer-row">
-                    <div class="card-meta">
-                      {{ app.created_by?.name || "—" }} · {{ formatTime(app.created_time) }}
-                    </div>
-                    <div class="card-actions" @click.stop>
-                      <el-button
-                        v-hasPerm="['module_application:portal:update']"
-                        type="primary"
-                        link
-                        icon="Edit"
-                        @click="handleAppAction('edit', app)"
-                      />
-                      <el-button
-                        v-hasPerm="['module_application:portal:delete']"
-                        type="danger"
-                        link
-                        icon="Delete"
-                        @click="handleAppAction('delete', app)"
-                      />
-                    </div>
+              <template #default>
+                <p v-if="app.description" class="app-description">{{ app.description }}</p>
+              </template>
+
+              <template #footer>
+                <div class="card-footer-row">
+                  <div class="card-meta">
+                    {{ app.created_by?.name || "—" }} · {{ formatTime(app.created_time) }}
                   </div>
-                </template>
-              </el-card>
-            </div>
+                  <div class="card-actions" @click.stop>
+                    <ElButton
+                      v-hasPerm="['module_application:portal:update']"
+                      type="primary"
+                      link
+                      :icon="Edit"
+                      @click="handleAppAction('edit', app)"
+                    />
+                    <ElButton
+                      v-hasPerm="['module_application:portal:delete']"
+                      type="danger"
+                      link
+                      :icon="Delete"
+                      @click="handleAppAction('delete', app)"
+                    />
+                  </div>
+                </div>
+              </template>
+            </ElCard>
           </div>
         </div>
-      </template>
-    </PageContent>
+      </div>
 
-    <!-- 应用创建/编辑抽屉 -->
-    <EnhancedDrawer
+      <div class="portal-pagination flex shrink-0 justify-end border-g-200 pt-3 mt-auto border-t">
+        <ElPagination
+          background
+          :current-page="paginationBind.current"
+          :page-size="paginationBind.size"
+          :total="paginationBind.total"
+          :page-sizes="[12, 24, 48]"
+          layout="total, sizes, prev, pager, next"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </ElCard>
+
+    <ArtDrawer
       v-model="dialogVisible"
       :title="dialogTitle"
       :size="drawerSize"
       direction="rtl"
       @close="handleCloseDialog"
     >
-      <el-form
+      <ArtForm
+        :key="portalFormRenderKey"
         ref="formRef"
-        :model="formData"
+        v-model="formData"
+        :items="portalDrawerFormItems"
         :rules="formRules"
         label-width="100px"
         label-position="right"
+        :span="24"
+        :gutter="16"
+        :show-reset="false"
+        :show-submit="false"
+        class="crud-dialog-art-form"
       >
-        <el-form-item label="应用名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入应用名称" />
-        </el-form-item>
-
-        <el-form-item label="访问地址" prop="access_url">
-          <el-input v-model="formData.access_url" placeholder="请输入访问地址" />
-        </el-form-item>
-
-        <el-form-item label="图标地址" prop="icon_url">
-          <el-input v-model="formData.icon_url" placeholder="请输入图标地址" />
-        </el-form-item>
-
-        <el-form-item label="应用状态" prop="status">
-          <el-radio-group v-model="formData.status">
-            <el-radio value="0">启用</el-radio>
-            <el-radio value="1">停用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-form-item label="应用描述" prop="description">
-          <el-input
-            v-model="formData.description"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入应用描述"
-            maxlength="200"
-            show-word-limit
-          />
-        </el-form-item>
-      </el-form>
+        <template #status>
+          <ElRadioGroup v-model="formData.status">
+            <ElRadio value="0">启用</ElRadio>
+            <ElRadio value="1">停用</ElRadio>
+          </ElRadioGroup>
+        </template>
+      </ArtForm>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确定</el-button>
+          <ElButton @click="handleCloseDialog">取消</ElButton>
+          <ElButton type="primary" @click="handleSubmit">确定</ElButton>
         </div>
       </template>
-    </EnhancedDrawer>
+    </ArtDrawer>
   </div>
 </template>
 
@@ -149,107 +180,184 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { useAppStore } from "@/store/modules/app.store";
+import { computed, nextTick, reactive, ref } from "vue";
+import { Delete, Edit, Monitor, Plus } from "@element-plus/icons-vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
-import { Monitor } from "@element-plus/icons-vue";
 import ApplicationAPI, {
   type ApplicationForm,
   type ApplicationInfo,
-  type ApplicationPageQuery,
 } from "@/api/module_application/portal";
-import { formatToDateTime } from "@/utils/dateUtil";
-import PageSearch from "@/components/CURD/PageSearch.vue";
-import PageContent from "@/components/CURD/PageContent.vue";
-import EnhancedDrawer from "@/components/CURD/EnhancedDrawer.vue";
-import UserTableSelect from "@/views/module_system/user/components/UserTableSelect.vue";
-import type { IContentConfig, ISearchConfig } from "@/components/CURD/types";
-import { useCrudList } from "@/components/CURD/useCrudList";
-import { computed, markRaw, nextTick, reactive, ref } from "vue";
+import { formatToDateTime } from "@utils/common";
+import { useTable } from "@/hooks/core/useTable";
+import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
+import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+import type { ColumnOption } from "@/types/component";
 
 const appStore = useAppStore();
 
-const { searchRef, contentRef, handleQueryClick, handleResetClick, refreshList } = useCrudList();
-const formRef = ref();
+type PortalSearchForm = {
+  name?: string;
+  status?: string;
+  created_id?: number;
+  updated_id?: number;
+};
+
+function buildPortalReplaceParams(u: PortalSearchForm): Record<string, unknown> {
+  return {
+    name: u.name,
+    status: u.status,
+    created_id: u.created_id,
+    updated_id: u.updated_id,
+  };
+}
+
+const searchForm = ref<PortalSearchForm>({
+  name: undefined,
+  status: undefined,
+  created_id: undefined,
+  updated_id: undefined,
+});
+
+const showSearchBar = ref(true);
+const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+const statusOptions = ref([
+  { label: "启用", value: "0" },
+  { label: "停用", value: "1" },
+]);
+
+const portalSearchItems = computed<SearchFormItem[]>(() => [
+  {
+    label: "应用名称",
+    key: "name",
+    type: "input",
+    placeholder: "请输入应用名称",
+    clearable: true,
+    span: 6,
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: statusOptions.value,
+      clearable: true,
+    },
+    span: 6,
+  },
+  {
+    label: "创建人",
+    key: "created_id",
+    type: "input",
+    span: 6,
+  },
+  {
+    label: "更新人",
+    key: "updated_id",
+    type: "input",
+    span: 6,
+  },
+]);
+
+const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const portalFormRenderKey = ref(0);
+
+const portalDrawerFormItems = computed<FormItem[]>(() => [
+  {
+    label: "应用名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入应用名称" },
+  },
+  {
+    label: "访问地址",
+    key: "access_url",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入访问地址" },
+  },
+  {
+    label: "图标地址",
+    key: "icon_url",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入图标地址" },
+  },
+  {
+    label: "应用状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "应用描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 200,
+      showWordLimit: true,
+      placeholder: "请输入应用描述",
+    },
+  },
+]);
+
 const dialogVisible = ref(false);
 const dialogType = ref<"create" | "edit">("create");
 const currentApp = ref<ApplicationInfo | null>(null);
 
-function triggerUserSearch() {
-  nextTick(() => refreshList());
-}
-
-const searchConfig = reactive<ISearchConfig>({
-  permPrefix: "module_application:portal",
-  colon: true,
-  isExpandable: true,
-  showNumber: 2,
-  form: { labelWidth: "auto" },
-  formItems: [
-    {
-      prop: "name",
-      label: "应用名称",
-      type: "input",
-      attrs: { placeholder: "请输入应用名称", clearable: true },
+const {
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+} = useTable({
+  core: {
+    apiFn: ApplicationAPI.listApp,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
     },
-    {
-      prop: "status",
-      label: "状态",
-      type: "select",
-      options: [
-        { label: "启用", value: true },
-        { label: "停用", value: false },
-      ],
-      attrs: { placeholder: "请选择状态", clearable: true, style: { width: "170px" } },
-    },
-    {
-      prop: "created_id",
-      label: "创建人",
-      type: "user-table-select",
-      initialValue: null,
-      events: {
-        "confirm-click": triggerUserSearch,
-        "clear-click": triggerUserSearch,
-      },
-    },
-    {
-      prop: "updated_id",
-      label: "更新人",
-      type: "user-table-select",
-      initialValue: null,
-      events: {
-        "confirm-click": triggerUserSearch,
-        "clear-click": triggerUserSearch,
-      },
-    },
-  ],
-  customComponents: {
-    "user-table-select": markRaw(UserTableSelect),
+    columnsFactory: (): ColumnOption<ApplicationInfo>[] => [],
   },
 });
 
-const contentConfig = reactive<IContentConfig<ApplicationPageQuery>>({
-  permPrefix: "module_application:portal",
-  cols: [],
-  hideColumnFilter: true,
-  showToolbar: false,
-  cardShadow: "hover",
-  toolbar: [],
-  defaultToolbar: [],
-  pagination: {
-    pageSize: 12,
-    pageSizes: [12, 24, 48],
-  },
-  request: { page_no: "page_no", page_size: "page_size" },
-  indexAction: async (params) => {
-    const res = await ApplicationAPI.listApp(params as ApplicationPageQuery);
-    return {
-      total: res.data.data.total,
-      list: res.data.data.items,
-    };
-  },
+const paginationBind = computed(() => {
+  const p = pagination as unknown as {
+    current?: number;
+    size?: number;
+    total?: number;
+    page_no?: number;
+    page_size?: number;
+  };
+  return {
+    current: p.current ?? p.page_no ?? 1,
+    size: p.size ?? p.page_size ?? 12,
+    total: p.total ?? 0,
+  };
 });
 
-// 表单数据
 const formData = reactive<ApplicationForm>({
   name: "",
   access_url: "",
@@ -258,7 +366,6 @@ const formData = reactive<ApplicationForm>({
   description: "",
 });
 
-// 表单验证规则
 const formRules = reactive({
   name: [
     { required: true, message: "请输入应用名称", trigger: "blur" },
@@ -275,32 +382,56 @@ const formRules = reactive({
   status: [{ required: true, message: "请选择应用状态", trigger: "change" }],
 });
 
-// 计算属性
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "500px" : "90%"));
 const dialogTitle = computed(() => (dialogType.value === "create" ? "创建应用" : "编辑应用"));
 
-// 格式化时间
 const formatTime = (time: string | undefined) => {
   if (!time) return "—";
   return formatToDateTime(time, "YYYY-MM-DD HH:mm:ss");
 };
 
-// 创建应用
+async function handleSearchBarSearch(params: PortalSearchForm) {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildPortalReplaceParams(params));
+  getData();
+}
+
+async function applyPortalSearchFromForm() {
+  await searchBarRef.value?.validate?.();
+  replaceSearchParams(buildPortalReplaceParams(searchForm.value));
+  getData();
+}
+
+async function afterUserSelectSearch() {
+  await nextTick();
+  await applyPortalSearchFromForm();
+}
+
+async function onResetSearch() {
+  searchForm.value = {
+    name: undefined,
+    status: undefined,
+    created_id: undefined,
+    updated_id: undefined,
+  };
+  await resetSearchParams();
+}
+
 function handleCreateApp() {
   dialogType.value = "create";
   resetForm();
+  portalFormRenderKey.value += 1;
   dialogVisible.value = true;
 }
 
-// 编辑应用
 function handleEditApp(app: ApplicationInfo) {
   dialogType.value = "edit";
   currentApp.value = app;
   Object.assign(formData, app);
+  portalFormRenderKey.value += 1;
   dialogVisible.value = true;
 }
 
-// 删除应用
 async function handleDeleteApp(app: ApplicationInfo) {
   try {
     await ElMessageBox.confirm("确认删除该应用？", "警告", {
@@ -310,7 +441,7 @@ async function handleDeleteApp(app: ApplicationInfo) {
     });
 
     await ApplicationAPI.deleteApp([app.id!]);
-    await refreshList();
+    await refreshData();
   } catch (error) {
     if (error !== "cancel") {
       console.error("删除应用失败:", error);
@@ -318,7 +449,6 @@ async function handleDeleteApp(app: ApplicationInfo) {
   }
 }
 
-// 应用操作
 async function handleAppAction(command: string, app: ApplicationInfo) {
   switch (command) {
     case "edit":
@@ -330,13 +460,10 @@ async function handleAppAction(command: string, app: ApplicationInfo) {
   }
 }
 
-// 内部打开应用
 function openAppInternal() {
   ElMessage.warning("插件应用点击，业务场景暂时开放中。。。");
-  return;
 }
 
-// 重置表单
 function resetForm() {
   Object.assign(formData, {
     name: "",
@@ -345,29 +472,29 @@ function resetForm() {
     status: "0",
     description: "",
   });
-  formRef.value?.resetFields();
+  formRef.value?.ref?.resetFields();
+  formRef.value?.ref?.clearValidate();
 }
 
-// 关闭弹窗
 function handleCloseDialog() {
   dialogVisible.value = false;
   resetForm();
 }
 
-// 提交表单
 async function handleSubmit() {
   try {
     await formRef.value?.validate();
 
     if (dialogType.value === "create") {
       await ApplicationAPI.createApp(formData);
+      await refreshCreate();
     } else {
       await ApplicationAPI.updateApp(currentApp.value!.id!, formData);
+      await refreshUpdate();
     }
 
     dialogVisible.value = false;
     resetForm();
-    await refreshList();
   } catch (error) {
     console.error("提交失败:", error);
   }
@@ -375,13 +502,6 @@ async function handleSubmit() {
 </script>
 
 <style lang="scss" scoped>
-/* 高度交给外层 flex：app-container + PageContent(flex-1 min-h-0)，勿再用 100vh 计算，否则会超出 app-main、底部 padding 不显 */
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .market-title {
   font-size: 15px;
   font-weight: 600;
@@ -389,7 +509,6 @@ async function handleSubmit() {
 }
 
 .app-grid-container {
-  flex: 1;
   min-height: 200px;
 }
 
@@ -428,7 +547,6 @@ async function handleSubmit() {
     opacity: 0.55;
   }
 
-  /* 仅保留底栏一条横线，避免与表头下边框重复成「双线」 */
   :deep(.el-card__header) {
     padding: 14px 14px 12px;
     border-bottom: none;
@@ -509,7 +627,7 @@ async function handleSubmit() {
   white-space: nowrap;
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .grid-wrapper {
     grid-template-columns: 1fr;
   }
@@ -529,5 +647,13 @@ async function handleSubmit() {
   .card-actions {
     margin-left: auto;
   }
+}
+
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+  display: none;
+}
+
+.crud-dialog-art-form :deep(.el-form-item__content) {
+  max-width: 100%;
 }
 </style>

@@ -1,8 +1,16 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/system/auth";
 
+/** 第三方 OAuth 登录渠道（与后端 `/system/auth/oauth/{provider}` 一致） */
+export type OAuthProvider = "wechat" | "qq" | "github" | "gitee";
+
 const AuthAPI = {
+  /**
+   * 登录
+   * @param body 登录参数
+   * @returns 登录响应
+   */
   login(body: LoginFormData) {
     return request<ApiResponse<LoginResult>>({
       url: `${API_PATH}/login`,

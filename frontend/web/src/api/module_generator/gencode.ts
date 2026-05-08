@@ -1,11 +1,11 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 const API_PATH = "/generator/gencode";
 
 const GencodeAPI = {
   // 查询生成表数据
   listTable(query: GenTablePageQuery) {
-    return request<ApiResponse<PageResult<GenTableSchema[]>>>({
+    return request<ApiResponse<PageResult<GenTableSchema>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,
@@ -14,7 +14,7 @@ const GencodeAPI = {
 
   // 查询db数据库列表
   listDbTable(query: DBTablePageQuery) {
-    return request<ApiResponse<PageResult<DBTableSchema[]>>>({
+    return request<ApiResponse<PageResult<DBTableSchema>>>({
       url: `${API_PATH}/db/list`,
       method: "get",
       params: query,
