@@ -24,7 +24,7 @@ frontend/__pycache__
 frontend/.vscode
 frontend/.idea
 frontend/.DS_Store
-frontend/node_modules
+frontend/web/node_modules
 frontend/dist
 frontend/.husky
 frontend/src/types/auto-imports.d.ts
