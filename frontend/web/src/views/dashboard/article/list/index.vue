@@ -21,7 +21,7 @@
         :md="6"
         :sm="10"
         :xs="6"
-        style="display: flex; justify-content: end; align-items: center; gap: 8px; flex-wrap: wrap"
+        style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: end"
       >
         <ElButton @click="commentWallOpen = true">
           <ArtSvgIcon icon="ri:message-3-line" class="mr-1" />

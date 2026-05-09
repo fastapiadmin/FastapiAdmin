@@ -504,6 +504,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizePositionQuery(sp) as unknown as Record<string, unknown>;
 });
 
@@ -741,10 +743,6 @@ function handleMoreClick(status: string) {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 .crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }

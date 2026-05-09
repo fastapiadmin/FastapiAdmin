@@ -386,7 +386,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   {
     path: "/login",
     name: "Login",
-    meta: { hidden: true, title: "menus.login.title" },
+    meta: { hidden: true, isHideTab: true, title: "menus.login.title" },
     component: () => import("@views/module_system/auth/login/index.vue"),
   },
   /** 无 Layout 全屏异常页；守卫与白名单跳转使用（勿再在 RootLayout 下重复挂载同组件） */

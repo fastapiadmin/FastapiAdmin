@@ -3,15 +3,17 @@
 <!-- 扩展功能：分页组件、渲染自定义列、loading、表格全局边框、斑马纹、表格尺寸、表头背景配置 -->
 <!-- 获取 ref：默认暴露了 elTableRef 外部通过 ref.value.elTableRef 可以调用 el-table 方法 -->
 <template>
-  <div class="art-table" :class="{ 'is-empty': isEmpty }" :style="containerHeight">
-    <VueDraggable
-      target="tbody"
-      v-model="dragModel"
-      :animation="150"
-      :disabled="rowDragDisabled"
-      @end="onRowDragEnd"
-    >
-      <ElTable ref="elTableRef" v-loading="!!loading" v-bind="mergedTableProps">
+  <div class="art-table">
+    <div class="art-table__main">
+      <VueDraggable
+        class="art-table__drag-wrap"
+        target="tbody"
+        v-model="dragModel"
+        :animation="150"
+        :disabled="rowDragDisabled"
+        @end="onRowDragEnd"
+      >
+        <ElTable ref="elTableRef" v-loading="!!loading" v-bind="mergedTableProps">
         <template v-for="col in columns" :key="col.prop || col.type">
           <!-- 渲染全局序号列 -->
           <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
@@ -62,16 +64,16 @@
 
         <template #empty>
           <div v-if="loading"></div>
-          <ElEmpty v-else :description="emptyText" :image-size="120" />
+          <ElEmpty v-else :description="emptyText" :image-size="ART_TABLE_EMPTY_IMAGE_SIZE" />
         </template>
       </ElTable>
-    </VueDraggable>
+      </VueDraggable>
+    </div>
 
     <div
       class="pagination custom-pagination"
       v-if="showPagination"
       :class="mergedPaginationOptions?.align"
-      ref="paginationRef"
     >
       <Pagination
         v-if="pagination"
@@ -96,7 +98,6 @@ import {
   ref,
   computed,
   nextTick,
-  watchEffect,
   getCurrentInstance,
   useAttrs,
   isVNode,
@@ -109,17 +110,17 @@ import { storeToRefs } from "pinia";
 import { ColumnOption } from "@/types";
 import { useTableStore } from "@stores/modules/table.store";
 import { useCommon } from "@/hooks/core/useCommon";
-import { useTableHeight } from "@/hooks/core/useTableHeight";
-import { useResizeObserver, useWindowSize } from "@vueuse/core";
+import { useWindowSize } from "@vueuse/core";
 import Pagination from "@/components/Pagination/index.vue";
 import { VueDraggable } from "vue-draggable-plus";
+
+/** 空数据插画尺寸（列表页统一，勿在各业务页随意覆盖） */
+const ART_TABLE_EMPTY_IMAGE_SIZE = 120;
 
 defineOptions({ name: "ArtTable" });
 
 const { width } = useWindowSize();
 const elTableRef = ref<InstanceType<typeof ElTable> | null>(null);
-const paginationRef = ref<HTMLElement>();
-const tableHeaderRef = ref<HTMLElement>();
 const tableStore = useTableStore();
 const { isBorder, isZebra, tableSize, isFullScreen, isHeaderBackground, isRowDrag } =
   storeToRefs(tableStore);
@@ -179,7 +180,8 @@ const props = withDefaults(defineProps<ArtTableProps>(), {
   stripe: undefined,
   border: undefined,
   size: undefined,
-  emptyHeight: "100%",
+  /** 空数据时表格区域高度：固定值避免各页「铺满卡片」导致缺省图位置不一致 */
+  emptyHeight: "320px",
   emptyText: "暂无数据",
   showTableHeader: true,
   disableRowDrag: false,
@@ -247,42 +249,6 @@ const size = computed(() => props.size ?? tableSize.value);
 // 数据是否为空
 const isEmpty = computed(() => props.data?.length === 0);
 
-const paginationHeight = ref(0);
-const tableHeaderHeight = ref(0);
-
-// 使用 useResizeObserver 监听分页器高度变化
-useResizeObserver(paginationRef, (entries) => {
-  const entry = entries[0];
-  if (entry) {
-    // 使用 requestAnimationFrame 避免 ResizeObserver loop 警告
-    requestAnimationFrame(() => {
-      paginationHeight.value = entry.contentRect.height;
-    });
-  }
-});
-
-// 使用 useResizeObserver 监听表格头部高度变化
-useResizeObserver(tableHeaderRef, (entries) => {
-  const entry = entries[0];
-  if (entry) {
-    // 使用 requestAnimationFrame 避免 ResizeObserver loop 警告
-    requestAnimationFrame(() => {
-      tableHeaderHeight.value = entry.contentRect.height;
-    });
-  }
-});
-
-// 分页器与表格之间的间距常量（计算属性，响应 showTableHeader 变化）
-const PAGINATION_SPACING = computed(() => (props.showTableHeader ? 6 : 15));
-
-// 使用表格高度计算 Hook
-const { containerHeight } = useTableHeight({
-  showTableHeader: computed(() => props.showTableHeader),
-  paginationHeight,
-  tableHeaderHeight,
-  paginationSpacing: PAGINATION_SPACING,
-});
-
 // 表格高度逻辑
 const height = computed(() => {
   // 全屏模式下占满全屏
@@ -349,8 +315,8 @@ const onRowDragEnd = () => {
   }
 };
 
-// 是否显示分页器
-const showPagination = computed(() => props.pagination && !isEmpty.value);
+// 有分页配置即渲染（含空列表 total=0，紧贴表格下方；勿仅在非空时渲染以免高度跳动）
+const showPagination = computed(() => !!props.pagination);
 
 // Element Plus 在部分场景会先用 $index = -1 进行预渲染。
 // 这对普通展示无影响，但会让 ElForm 错误注册出 lineList.-1.xxx 这类字段。
@@ -436,41 +402,6 @@ const getGlobalIndex = (index: number) => {
   const { current, size } = props.pagination;
   return (current - 1) * size + index + 1;
 };
-
-// 查找并绑定表格头部元素 - 使用 VueUse 优化
-const findTableHeader = () => {
-  if (!props.showTableHeader) {
-    tableHeaderRef.value = undefined;
-    return;
-  }
-
-  const tableHeader = document.getElementById("art-table-header");
-  if (tableHeader) {
-    tableHeaderRef.value = tableHeader;
-  } else {
-    // 如果找不到表格头部，设置为 undefined，useElementSize 会返回 0
-    tableHeaderRef.value = undefined;
-  }
-};
-
-watchEffect(
-  () => {
-    // 访问响应式数据以建立依赖追踪
-    void props.data?.length; // 追踪数据变化
-    const shouldShow = props.showTableHeader;
-
-    // 只有在需要显示表格头部时才查找
-    if (shouldShow) {
-      nextTick(() => {
-        findTableHeader();
-      });
-    } else {
-      // 不显示时清空引用
-      tableHeaderRef.value = undefined;
-    }
-  },
-  { flush: "post" }
-);
 
 defineExpose({
   scrollToTop,

@@ -1153,10 +1153,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 :deep(.menu-table-actions .inline-flex) {
   vertical-align: middle;
 }

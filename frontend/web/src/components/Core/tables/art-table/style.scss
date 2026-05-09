@@ -1,9 +1,31 @@
 .art-table {
   position: relative;
-  height: 100%;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+
+  /** 表格滚动区域：占据卡片内除分页外的剩余高度，分页紧贴表格底栏 */
+  &__main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  &__drag-wrap {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
 
   .el-table {
-    height: 100%;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
     margin-top: 10px;
   }
 
@@ -12,7 +34,6 @@
     background-color: var(--default-box-color) !important;
   }
 
-  // Loading 过渡动画 - 消失时淡出
   .loading-fade-leave-active {
     transition: opacity 0.3s ease-out;
   }
@@ -21,22 +42,15 @@
     opacity: 0;
   }
 
-  // 空状态垂直居中
-  &.is-empty {
-    :deep(.el-scrollbar__wrap) {
-      display: flex;
-    }
-  }
-
   .pagination {
     display: flex;
+    flex-shrink: 0;
     margin-top: 13px;
 
     :deep(.el-select) {
       width: 102px !important;
     }
 
-    // 分页对齐方式
     &.left {
       justify-content: flex-start;
     }
@@ -49,7 +63,6 @@
       justify-content: flex-end;
     }
 
-    // 自定义分页组件样式
     &.custom-pagination {
       :deep(.el-pagination) {
         .btn-prev,
@@ -87,7 +100,6 @@
   }
 }
 
-// 移动端分页
 @media (width <= 640px) {
   :deep(.el-pagination) {
     display: flex;

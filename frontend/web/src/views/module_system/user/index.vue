@@ -47,10 +47,7 @@
           </template>
         </ArtSearchBar>
 
-        <ElCard
-          class="flex flex-col flex-1 min-h-0 art-table-card"
-          :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
           <ArtTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
@@ -612,8 +609,8 @@ const {
   core: {
     apiFn: fetchUserTableList,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
     },
     columnsFactory: (): import("@/types/component").ColumnOption<UserInfo>[] => [
       { type: "selection", width: 48, fixed: "left" },
@@ -689,6 +686,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   if (
     deptFilterId.value !== undefined &&
     deptFilterId.value !== null &&
@@ -817,13 +816,13 @@ const initialFormData: UserForm = {
 async function handleSearchBarSearch(params: UserSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildUserReplaceParams(params));
-  getData();
+  await getData();
 }
 
 async function applyUserSearchFromForm() {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildUserReplaceParams(searchForm.value));
-  getData();
+  await getData();
 }
 
 async function afterUserSelectSearch() {
@@ -843,8 +842,8 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function handleDeptNodeClick() {
-  getData();
+async function handleDeptNodeClick() {
+  await getData();
 }
 
 function openImportModal() {

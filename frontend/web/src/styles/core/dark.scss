@@ -3,7 +3,7 @@
 * 单页面移除深色主题 document.getElementsByTagName("html")[0].removeAttribute('class')
 */
 
-$font-color: rgba(#ffffff, 0.85);
+$font-color: rgba(#fff, 0.85);
 
 /* 覆盖element-plus默认深色背景色 */
 html.dark {
@@ -44,6 +44,14 @@ html.dark {
     *:not(pre code *) {
       color: inherit !important;
     }
+
+    .w-e-text-container [data-slate-editor] .table-container th:last-of-type {
+      border-right: 1px solid var(--default-border-dashed) !important;
+    }
+
+    .w-e-modal {
+      background-color: var(--art-color);
+    }
   }
   // 分隔线
   .w-e-bar-divider {
@@ -71,23 +79,13 @@ html.dark {
 
   /* 代码块 */
   .w-e-text-container [data-slate-editor] pre > code {
-    background-color: #25262b !important;
     text-shadow: none !important;
+    background-color: #25262b !important;
   }
 
   /* 引用 */
   .w-e-text-container [data-slate-editor] blockquote {
-    border-left: 4px solid var(--default-border-dashed) !important;
     background-color: var(--art-color);
-  }
-
-  .editor-wrapper {
-    .w-e-text-container [data-slate-editor] .table-container th:last-of-type {
-      border-right: 1px solid var(--default-border-dashed) !important;
-    }
-
-    .w-e-modal {
-      background-color: var(--art-color);
-    }
+    border-left: 4px solid var(--default-border-dashed) !important;
   }
 }

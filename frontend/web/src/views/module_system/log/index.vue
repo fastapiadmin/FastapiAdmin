@@ -375,6 +375,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeLogQuery(sp);
 });
 
@@ -401,7 +403,7 @@ const paginationBind = computed(() => {
   };
   return {
     current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
+    size: p.size ?? p.page_size ?? 10,
     total: p.total ?? 0,
   };
 });
@@ -546,9 +548,3 @@ function openExportModal() {
   exportModalVisible.value = true;
 }
 </script>
-
-<style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-</style>

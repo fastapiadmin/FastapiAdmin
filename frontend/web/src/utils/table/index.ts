@@ -17,9 +17,10 @@ export const tableConfig = {
   totalFields: ["total", "count"],
   currentFields: ["current", "page", "pageNum", "page_no"],
   sizeFields: ["size", "pageSize", "limit", "page_size"],
+  /** 与全局 PageQuery（page_no / page_size）一致，避免出现 current+page_no 两套分页字段滞留、翻页只更新其一导致重复请求 */
   paginationKey: {
-    current: "current",
-    size: "size",
+    current: "page_no",
+    size: "page_size",
   },
 };
 

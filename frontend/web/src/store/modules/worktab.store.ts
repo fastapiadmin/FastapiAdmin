@@ -43,6 +43,7 @@ import { router } from "@/router";
 import { LocationQueryRaw, Router } from "vue-router";
 import { WorkTab } from "@/types";
 import { useCommon } from "@/hooks/core/useCommon";
+import { ROUTE_PATH_LOGIN_ALT } from "@/router/staticRoutes";
 
 interface WorktabState {
   current: Partial<WorkTab>;
@@ -454,16 +455,23 @@ export const useWorktabStore = defineStore(
           }
         };
 
+        /** 登录页不应出现在工作台标签（历史持久化可能残留） */
+        const isLoginWorktab = (tab: Partial<WorkTab>): boolean =>
+          tab.name === "Login" || tab.path === "/login" || tab.path === ROUTE_PATH_LOGIN_ALT;
+
         // 过滤出有效的标签页
-        const validTabs = opened.value.filter((tab) => isTabRouteValid(tab));
+        const validTabs = opened.value.filter(
+          (tab) => isTabRouteValid(tab) && !isLoginWorktab(tab)
+        );
 
         if (validTabs.length !== opened.value.length) {
           console.warn("发现无效的标签页路由，已自动清理");
           opened.value = validTabs;
         }
 
-        // 验证当前激活标签的有效性
-        const isCurrentValid = current.value && isTabRouteValid(current.value);
+        // 验证当前激活标签的有效性（登录页不应作为当前工作台标签）
+        const isCurrentValid =
+          current.value && isTabRouteValid(current.value) && !isLoginWorktab(current.value);
 
         if (!isCurrentValid && validTabs.length > 0) {
           console.warn("当前激活标签无效，已自动切换");

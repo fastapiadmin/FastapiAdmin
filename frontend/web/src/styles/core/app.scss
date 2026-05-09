@@ -17,7 +17,7 @@
 }
 
 // 处理移动端组件兼容性
-@media screen and (max-width: 640px) {
+@media screen and (width <= 640px) {
   * {
     cursor: default !important;
   }
@@ -40,8 +40,8 @@
 
 // 色弱模式
 .color-weak {
-  filter: invert(80%);
   -webkit-filter: invert(80%);
+  filter: invert(80%);
 }
 
 #noop {
@@ -58,8 +58,8 @@
   // 语言切换按钮菜单样式优化
   .lang-btn-item {
     .el-dropdown-menu__item {
-      padding-left: 13px !important;
       padding-right: 6px !important;
+      padding-left: 13px !important;
       margin-bottom: 3px !important;
     }
 
@@ -70,13 +70,13 @@
     }
 
     .menu-txt {
-      min-width: 60px;
       display: block;
+      min-width: 60px;
     }
 
     i {
-      font-size: 10px;
       margin-left: 10px;
+      font-size: 10px;
     }
   }
 }
@@ -102,7 +102,7 @@
 }
 
 // 盒子边框
-[data-box-mode='border-mode'] {
+[data-box-mode="border-mode"] {
   .page-content,
   .art-table-card {
     border: 1px solid var(--art-card-border) !important;
@@ -113,7 +113,7 @@
   }
 
   .art-card-sm {
-    @include art-card-base(var(--art-card-border), none, 0px);
+    @include art-card-base(var(--art-card-border), none, 0);
   }
 
   .art-card-xs {
@@ -122,11 +122,11 @@
 }
 
 // 盒子阴影
-[data-box-mode='shadow-mode'] {
+[data-box-mode="shadow-mode"] {
   .page-content,
   .art-table-card {
-    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.04) !important;
     border: 1px solid var(--art-gray-200) !important;
+    box-shadow: 0 0 4px 0 rgb(0 0 0 / 4%) !important;
   }
 
   .layout-sidebar {
@@ -162,31 +162,40 @@
 .el-full-screen {
   position: fixed;
   top: 0;
-  left: 0;
   right: 0;
+  left: 0;
+  z-index: 2300;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: 100vw !important;
   height: 100% !important;
-  z-index: 2300;
-  margin-top: 0;
   padding: 15px;
-  box-sizing: border-box;
+  margin-top: 0;
   background-color: var(--default-box-color);
-  display: flex;
-  flex-direction: column;
 }
 
-// 表格卡片
+// 表格卡片：与 ArtTableHeader + ArtTable 组成纵向 flex，表格区 flex 填满、分页在表格正下方
 .art-table-card {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   margin-top: 12px;
   border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
 
   .el-card__body {
-    height: 100%;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
     overflow: hidden;
+
+    /** 工具栏区不参与压缩，表格区 ArtTable 使用 flex:1 占满剩余高度 */
+    #art-table-header {
+      flex-shrink: 0;
+    }
   }
 }
 
@@ -196,14 +205,14 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-height: 0;
-  min-width: 0;
   width: 100%;
+  min-width: 0;
+  min-height: 0;
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     flex: 0 1 auto;
-    min-height: 0;
     height: auto;
+    min-height: 0;
   }
 }
 
@@ -229,8 +238,8 @@
   }
 
   &.art-badge-dual {
-    right: 5px;
     top: 5px;
+    right: 5px;
     bottom: auto;
   }
 }
@@ -243,10 +252,10 @@
   bottom: 0;
   min-width: 20px;
   height: 18px;
-  line-height: 17px;
   padding: 0 5px;
   margin: auto;
   font-size: 10px;
+  line-height: 17px;
   color: #fff;
   text-align: center;
   background: #fd4e4e;
@@ -273,15 +282,12 @@
 // 修复老机型 loading 定位问题
 .art-loading-fix {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
+  inset: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
 .art-loading-fix .el-loading-spinner {
@@ -292,7 +298,7 @@
 }
 
 // 去除移动端点击背景色
-@media screen and (max-width: 1180px) {
+@media screen and (width <= 1180px) {
   * {
     -webkit-tap-highlight-color: transparent;
   }

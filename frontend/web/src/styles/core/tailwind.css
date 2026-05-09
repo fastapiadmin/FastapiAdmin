@@ -1,20 +1,21 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ==================== Light Mode Variables ==================== */
 :root {
   /* Base Colors */
-  --art-color: #ffffff;
+  --art-color: #fff;
   --theme-color: var(--main-color);
 
   /* Theme Colors - OKLCH Format */
-  --art-primary: oklch(0.7 0.23 260);
-  --art-secondary: oklch(0.72 0.19 231.6);
-  --art-error: oklch(0.73 0.15 25.3);
-  --art-info: oklch(0.58 0.03 254.1);
-  --art-success: oklch(0.78 0.17 166.1);
-  --art-warning: oklch(0.78 0.14 75.5);
-  --art-danger: oklch(0.68 0.22 25.3);
+  --art-primary: oklch(70% 0.23 260deg);
+  --art-secondary: oklch(72% 0.19 231.6deg);
+  --art-error: oklch(73% 0.15 25.3deg);
+  --art-info: oklch(58% 0.03 254.1deg);
+  --art-success: oklch(78% 0.17 166.1deg);
+  --art-warning: oklch(78% 0.14 75.5deg);
+  --art-danger: oklch(68% 0.22 25.3deg);
 
   /* Gray Scale - Light Mode */
   --art-gray-100: #f9fafb;
@@ -28,14 +29,13 @@
   --art-gray-900: #323251;
 
   /* Border Colors */
-  --art-card-border: rgba(0, 0, 0, 0.08);
-
+  --art-card-border: rgb(0 0 0 / 8%);
   --default-border: #e2e8ee;
   --default-border-dashed: #dbdfe9;
 
   /* Background Colors */
   --default-bg-color: #fafbfc;
-  --default-box-color: #ffffff;
+  --default-box-color: #fff;
 
   /* Hover Color */
   --art-hover-color: #edeff0;
@@ -50,7 +50,7 @@
 /* ==================== Dark Mode Variables ==================== */
 .dark {
   /* Base Colors */
-  --art-color: #000000;
+  --art-color: #000;
 
   /* Gray Scale - Dark Mode */
   --art-gray-100: #110f0f;
@@ -64,9 +64,8 @@
   --art-gray-900: #e3e3e8;
 
   /* Border Colors */
-  --art-card-border: rgba(255, 255, 255, 0.08);
-
-  --default-border: rgba(255, 255, 255, 0.1);
+  --art-card-border: rgb(255 255 255 / 8%);
+  --default-border: rgb(255 255 255 / 10%);
   --default-border-dashed: #363843;
 
   /* Background Colors */

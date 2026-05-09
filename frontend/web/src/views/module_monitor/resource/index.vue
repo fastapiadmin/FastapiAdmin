@@ -353,8 +353,8 @@ const {
   core: {
     apiFn: fetchResourceTableList,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
     },
     columnsFactory: (): ColumnOption<ResourceItem>[] => [
       { type: "selection", width: 48, fixed: "left" },

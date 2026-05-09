@@ -683,10 +683,6 @@ function handleBatchDelete() {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 .crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }

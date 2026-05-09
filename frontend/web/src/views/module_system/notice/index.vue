@@ -411,6 +411,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeNoticeQuery(sp);
 });
 
@@ -759,10 +761,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 /* ArtForm 底部预留的操作栏列在弹窗内不需要占位 */
 .crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;

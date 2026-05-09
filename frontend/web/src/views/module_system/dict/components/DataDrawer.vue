@@ -439,8 +439,8 @@ const {
   core: {
     apiFn: fetchDictDataListMerged,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
       dict_type: props.dictType,
       dict_type_id: props.dictTypeId,
     },
@@ -509,6 +509,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeDictDataQuery({
     ...sp,
     dict_type: props.dictType,
