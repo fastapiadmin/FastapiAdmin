@@ -30,6 +30,9 @@ class ItineraryCreateSchema(BaseSchema):
     board_column: str | None = Field(default="todo", description="看板列(todo/doing/done)")
     task_type: str | None = Field(default="manual", description="任务类型(auto_register/manual)")
     auto_generated: bool = Field(default=False, description="是否自动生成")
+    consultation_ids: list | None = Field(default=None, description="关联咨询会ID列表")
+    consultation_details: list | None = Field(default=None, description="关联咨询会详情列表")
+    reminder_sent: bool = Field(default=False, description="是否已发送行程提醒")
 
 
 class ItineraryUpdateSchema(ItineraryCreateSchema):
@@ -48,6 +51,9 @@ class ItineraryOutSchema(ItineraryCreateSchema, BaseSchema, UserBySchema):
     board_column: str | None = Field(default="todo", description="看板列")
     task_type: str | None = Field(default="manual", description="任务类型")
     auto_generated: bool = Field(default=False, description="是否自动生成")
+    consultation_ids: list | None = Field(default=None, description="关联咨询会ID列表")
+    consultation_details: list | None = Field(default=None, description="关联咨询会详情列表")
+    reminder_sent: bool = Field(default=False, description="是否已发送行程提醒")
 
 
 class ItineraryQuerySchema(BaseSchema):

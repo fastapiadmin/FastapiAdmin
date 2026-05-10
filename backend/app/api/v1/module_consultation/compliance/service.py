@@ -142,14 +142,18 @@ class ComplianceDiagnosisService:
 
         compliance_score = max(0, 100 - deducted_score)
 
-        if compliance_score >= 80:
-            compliance_level = "low"
-        elif compliance_score >= 60:
-            compliance_level = "medium"
+        # 转换为0-10分制并映射A/B/C/D等级
+        score_10 = round(compliance_score / 10, 1)
+        if score_10 >= 8:
+            compliance_level = "A"
+        elif score_10 >= 5:
+            compliance_level = "B"
+        elif score_10 >= 3:
+            compliance_level = "C"
         else:
-            compliance_level = "high"
+            compliance_level = "D"
 
-        is_high_risk = compliance_level == "high" or compliance_score < 60
+        is_high_risk = compliance_level in ("C", "D") or score_10 < 5
 
         result_data = {
             "consultation_id": consultation_id,

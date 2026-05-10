@@ -7,7 +7,7 @@ from typing import Any
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_crud import CRUDBase
 
-from .model import ScreeningFilterModel
+from .model import ScreeningFilterModel, ScreeningResultModel
 from .schema import (
     ScreeningFilterCreateSchema,
     ScreeningFilterOutSchema,
@@ -139,3 +139,60 @@ class ScreeningCRUD(
         consultation_crud = InfoCollectionCRUD(self.auth)
         result = await consultation_crud.list_crud(search=filter_conditions, order_by=order_by_list)
         return result
+
+    async def toggle_favorite_crud(self, consultation_id: int) -> ScreeningResultModel | None:
+        """切换收藏状态"""
+        from sqlalchemy import select
+
+        from app.core.database import async_db_session
+
+        async with async_db_session() as session:
+            stmt = select(ScreeningResultModel).where(
+                ScreeningResultModel.consultation_id == consultation_id
+            )
+            result = await session.execute(stmt)
+            existing = result.scalar_one_or_none()
+
+            if existing:
+                existing.is_favorite = not existing.is_favorite
+                await session.commit()
+                await session.refresh(existing)
+                return existing
+            else:
+                new_result = ScreeningResultModel(
+                    consultation_id=consultation_id,
+                    is_favorite=True,
+                )
+                session.add(new_result)
+                await session.commit()
+                await session.refresh(new_result)
+                return new_result
+
+    async def get_favorites_crud(self) -> list[ScreeningResultModel]:
+        """获取收藏列表"""
+        from sqlalchemy import select
+
+        from app.core.database import async_db_session
+
+        async with async_db_session() as session:
+            stmt = select(ScreeningResultModel).where(
+                ScreeningResultModel.is_favorite == True  # noqa: E712
+            )
+            result = await session.execute(stmt)
+            return list(result.scalars().all())
+
+    async def compare_consultations_crud(self, consultation_ids: list[int]) -> list[dict]:
+        """对比分析多个咨询会"""
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+
+        consultation_crud = InfoCollectionCRUD(self.auth)
+        results = []
+        for cid in consultation_ids:
+            obj = await consultation_crud.get_by_id_crud(cid)
+            if obj:
+                from app.api.v1.module_consultation.info_collection.schema import (
+                    InfoCollectionOutSchema,
+                )
+
+                results.append(InfoCollectionOutSchema.model_validate(obj).model_dump())
+        return results

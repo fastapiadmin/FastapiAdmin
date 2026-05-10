@@ -4,7 +4,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -175,3 +175,49 @@ async def apply_filter_controller(
     result_list = await ScreeningService.apply_filter_service(auth=auth, filter_id=filter_id)
     log.info(f"应用筛选条件 {filter_id} 成功，找到 {len(result_list)} 条结果")
     return SuccessResponse(data=result_list, msg="应用筛选成功")
+
+
+@ScreeningRouter.post(
+    "/toggle-favorite/{consultation_id}",
+    summary="切换收藏状态",
+    description="收藏或取消收藏咨询会",
+)
+async def toggle_favorite_controller(
+    consultation_id: Annotated[int, Path(description="咨询会ID")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:screening:update"]))],
+) -> JSONResponse:
+    """切换收藏状态"""
+    result = await ScreeningService.toggle_favorite_service(
+        auth=auth, consultation_id=consultation_id
+    )
+    log.info(f"切换收藏状态 {consultation_id}")
+    return SuccessResponse(data=result, msg="操作成功")
+
+
+@ScreeningRouter.get(
+    "/favorites",
+    summary="获取收藏列表",
+    description="获取用户收藏的咨询会列表",
+)
+async def get_favorites_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:screening:query"]))],
+) -> JSONResponse:
+    """获取收藏列表"""
+    result = await ScreeningService.get_favorites_service(auth=auth)
+    log.info(f"获取收藏列表成功，共 {len(result)} 条")
+    return SuccessResponse(data=result, msg="获取成功")
+
+
+@ScreeningRouter.post(
+    "/compare",
+    summary="对比分析咨询会",
+    description="对比分析多个咨询会(2-5个)",
+)
+async def compare_controller(
+    consultation_ids: Annotated[list[int], Body(description="咨询会ID列表(2-5个)")],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:screening:query"]))],
+) -> JSONResponse:
+    """对比分析多个咨询会"""
+    result = await ScreeningService.compare_service(auth=auth, consultation_ids=consultation_ids)
+    log.info(f"对比分析咨询会成功，共 {len(result)} 个")
+    return SuccessResponse(data=result, msg="对比分析成功")

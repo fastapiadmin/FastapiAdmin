@@ -58,6 +58,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
             log.info("✅ Redis数据字典初始化完成")
             await SchedulerUtil.init_scheduler(redis=app.state.redis)
             log.info("✅ 定时任务调度器初始化完成")
+
+            # 注册招生咨询会管理系统的定时任务
+            from app.api.v1.module_consultation.cron_tasks import register_consultation_cron_jobs
+
+            register_consultation_cron_jobs()
+            log.info("✅ 招生咨询会定时任务注册完成")
+
             await FastAPILimiter.init(
                 redis=app.state.redis,
                 prefix=settings.REQUEST_LIMITER_REDIS_PREFIX,

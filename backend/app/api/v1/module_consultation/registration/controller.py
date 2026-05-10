@@ -15,6 +15,9 @@ from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
 from .schema import (
+    EmailTemplateCreateSchema,
+    EmailTemplateOutSchema,
+    EmailTemplateUpdateSchema,
     RegistrationApproveSchema,
     RegistrationCreateSchema,
     RegistrationOutSchema,
@@ -23,7 +26,7 @@ from .schema import (
     RegistrationRejectSchema,
     RegistrationUpdateSchema,
 )
-from .service import RegistrationService
+from .service import EmailTemplateService, RegistrationService
 
 RegistrationRouter = APIRouter(
     route_class=OperationLogRoute,
@@ -315,3 +318,90 @@ async def forward_to_team_controller(
     )
     log.info(f"转发行程到招生组成功 {id}")
     return SuccessResponse(data=result, msg="转发成功")
+
+
+# ====== 邮件模板管理接口 ======
+
+
+@RegistrationRouter.get(
+    "/email-template/list",
+    summary="获取邮件模板列表",
+    description="获取所有报名回执邮件模板",
+)
+async def list_email_templates_controller(
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:registration:query"]))
+    ],
+) -> JSONResponse:
+    """获取邮件模板列表"""
+    result = await EmailTemplateService.list_templates_service(auth=auth)
+    return SuccessResponse(data=result, msg="查询成功")
+
+
+@RegistrationRouter.post(
+    "/email-template/create",
+    summary="创建邮件模板",
+    description="创建报名回执邮件模板",
+    response_model=ResponseSchema[EmailTemplateOutSchema],
+)
+async def create_email_template_controller(
+    data: EmailTemplateCreateSchema,
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:registration:create"]))
+    ],
+) -> JSONResponse:
+    """创建邮件模板"""
+    result = await EmailTemplateService.create_template_service(auth=auth, data=data)
+    log.info("创建邮件模板成功")
+    return SuccessResponse(data=result, msg="创建成功")
+
+
+@RegistrationRouter.put(
+    "/email-template/update/{id}",
+    summary="更新邮件模板",
+    description="更新报名回执邮件模板",
+    response_model=ResponseSchema[EmailTemplateOutSchema],
+)
+async def update_email_template_controller(
+    id: Annotated[int, Path(description="模板ID")],
+    data: EmailTemplateUpdateSchema,
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:registration:update"]))
+    ],
+) -> JSONResponse:
+    """更新邮件模板"""
+    result = await EmailTemplateService.update_template_service(auth=auth, id=id, data=data)
+    log.info(f"更新邮件模板成功 {id}")
+    return SuccessResponse(data=result, msg="更新成功")
+
+
+@RegistrationRouter.delete(
+    "/email-template/delete/{id}",
+    summary="删除邮件模板",
+    description="删除报名回执邮件模板",
+)
+async def delete_email_template_controller(
+    id: Annotated[int, Path(description="模板ID")],
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:registration:delete"]))
+    ],
+) -> JSONResponse:
+    """删除邮件模板"""
+    await EmailTemplateService.delete_template_service(auth=auth, id=id)
+    log.info(f"删除邮件模板成功 {id}")
+    return SuccessResponse(msg="删除成功")
+
+
+@RegistrationRouter.get(
+    "/email-template/default",
+    summary="获取默认邮件模板",
+    description="获取默认的报名回执邮件模板",
+)
+async def get_default_email_template_controller(
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:registration:query"]))
+    ],
+) -> JSONResponse:
+    """获取默认邮件模板"""
+    result = await EmailTemplateService.get_default_template_service()
+    return SuccessResponse(data=result, msg="查询成功")

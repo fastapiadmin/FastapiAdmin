@@ -2,6 +2,8 @@
 行程方案管理 - 服务层
 """
 
+from datetime import date, timedelta
+
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
 from app.core.logger import log
@@ -285,3 +287,134 @@ class ItineraryService:
         obj = await ItineraryCRUD(auth).create_auto_generated_crud(create_data)
         log.info(f"自动创建行程待办项 {obj.id}，关联报名 {registration_id}")
         return ItineraryOutSchema.model_validate(obj).model_dump()
+
+    @classmethod
+    async def suggest_schedule_service(cls, auth: AuthSchema, team_id: int | None = None) -> dict:
+        """
+        智能排期建议 - 检测时间冲突，优化行程安排
+
+        参数:
+        - auth: 认证信息
+        - team_id: 招生组ID(可选，不传则检查所有)
+
+        返回:
+        - dict: 包含冲突列表和建议
+        """
+        search = {}
+        if team_id:
+            search["team_id"] = ("eq", team_id)
+
+        all_items = await ItineraryCRUD(auth).list_crud(
+            search=search if search else None, order_by=[{"start_date": "asc"}]
+        )
+
+        # 过滤非归档行程
+        active_items = [item for item in all_items if item.itinerary_status != "archived"]
+
+        # 检测时间冲突
+        conflicts = []
+        for i, item1 in enumerate(active_items):
+            for item2 in active_items[i + 1 :]:
+                if cls._has_date_conflict(item1, item2):
+                    conflicts.append({
+                        "itinerary_1": {
+                            "id": item1.id,
+                            "name": item1.itinerary_name,
+                            "start_date": str(item1.start_date),
+                            "end_date": str(item1.end_date) if item1.end_date else None,
+                            "city": item1.destination_city,
+                        },
+                        "itinerary_2": {
+                            "id": item2.id,
+                            "name": item2.itinerary_name,
+                            "start_date": str(item2.start_date),
+                            "end_date": str(item2.end_date) if item2.end_date else None,
+                            "city": item2.destination_city,
+                        },
+                        "conflict_type": "time_overlap",
+                    })
+
+        # 生成优化建议
+        suggestions = []
+        for conflict in conflicts:
+            suggestions.append(
+                f"行程「{conflict['itinerary_1']['name']}」与"
+                f"「{conflict['itinerary_2']['name']}」时间冲突，"
+                f"建议调整其中一项的日期或分配不同人员"
+            )
+
+        return {
+            "total_active": len(active_items),
+            "conflict_count": len(conflicts),
+            "conflicts": conflicts,
+            "suggestions": suggestions,
+        }
+
+    @classmethod
+    def _has_date_conflict(cls, item1, item2) -> bool:
+        """检测两个行程的日期是否冲突"""
+        if not item1.team_id or not item2.team_id:
+            return False
+        if item1.team_id != item2.team_id:
+            return False
+
+        start1 = item1.start_date
+        end1 = item1.end_date or item1.start_date
+        start2 = item2.start_date
+        end2 = item2.end_date or item2.start_date
+
+        return start1 <= end2 and start2 <= end1
+
+    @classmethod
+    async def send_reminders_service(cls, auth: AuthSchema, days_before: int = 1) -> dict:
+        """
+        发送行程提醒
+
+        参数:
+        - auth: 认证信息
+        - days_before: 提前几天提醒(默认1天)
+
+        返回:
+        - dict: 提醒发送结果
+        """
+        from app.common.enums import QueueEnum
+
+        target_date = date.today() + timedelta(days=days_before)
+        search = {
+            "start_date": (QueueEnum.eq.value, target_date.isoformat()),
+        }
+        items = await ItineraryCRUD(auth).list_crud(search=search, order_by=[{"id": "asc"}])
+
+        reminded_count = 0
+        for item in items:
+            if item.reminder_sent:
+                continue
+
+            # 创建站内通知
+            try:
+                from app.api.v1.module_system.notice.model import NoticeModel
+                from app.core.database import async_db_session
+
+                async with async_db_session() as session:
+                    notice = NoticeModel(
+                        title=f"【行程提醒】{item.itinerary_name or '未命名行程'}",
+                        content=(
+                            f"您有一个行程将于{target_date}开始。\n"
+                            f"目的城市: {item.destination_city or '未设置'}\n"
+                            f"交通方式: {item.transportation or '未设置'}\n"
+                            f"请提前做好准备。"
+                        ),
+                        notice_type="1",
+                        status="0",
+                    )
+                    session.add(notice)
+                    await session.commit()
+
+                # 标记已发送提醒
+                await ItineraryCRUD(auth).update_crud(item.id, {"reminder_sent": True})
+                reminded_count += 1
+            except Exception as e:
+                log.warning(f"发送行程提醒失败 {item.id}: {e}")
+
+        log.info(f"发送行程提醒完成: {reminded_count} 条")
+        return {"target_date": str(target_date), "reminded_count": reminded_count}

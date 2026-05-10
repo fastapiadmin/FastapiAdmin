@@ -124,3 +124,39 @@ class ScreeningService:
         if obj:
             return ScreeningFilterOutSchema.model_validate(obj).model_dump()
         return None
+
+    @classmethod
+    async def toggle_favorite_service(cls, auth: AuthSchema, consultation_id: int) -> dict:
+        """切换收藏状态"""
+        obj = await ScreeningCRUD(auth).toggle_favorite_crud(consultation_id)
+        if not obj:
+            raise CustomException(msg="操作失败")
+        return {"consultation_id": consultation_id, "is_favorite": obj.is_favorite}
+
+    @classmethod
+    async def get_favorites_service(cls, auth: AuthSchema) -> list[dict]:
+        """获取收藏列表"""
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+        from app.api.v1.module_consultation.info_collection.schema import (
+            InfoCollectionOutSchema,
+        )
+
+        favorites = await ScreeningCRUD(auth).get_favorites_crud()
+        results = []
+        for fav in favorites:
+            consultation = await InfoCollectionCRUD(auth).get_by_id_crud(fav.consultation_id)
+            if consultation:
+                item = InfoCollectionOutSchema.model_validate(consultation).model_dump()
+                item["is_favorite"] = True
+                results.append(item)
+        return results
+
+    @classmethod
+    async def compare_service(cls, auth: AuthSchema, consultation_ids: list[int]) -> list[dict]:
+        """对比分析多个咨询会"""
+        if len(consultation_ids) < 2:
+            raise CustomException(msg="至少需要2个咨询会进行对比")
+        if len(consultation_ids) > 5:
+            raise CustomException(msg="最多同时对比5个咨询会")
+
+        return await ScreeningCRUD(auth).compare_consultations_crud(consultation_ids)

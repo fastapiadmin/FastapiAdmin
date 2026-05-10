@@ -4,6 +4,7 @@
 利用现有通知公告系统，将咨询会行程信息推送给招生组
 """
 
+from datetime import datetime
 from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -96,6 +97,16 @@ class RegistrationPushService:
             notice_id = notice.id
 
         log.info(f"创建行程通知公告成功，通知ID: {notice_id}, 招生组组长ID: {team_leader_id}")
+
+        # 更新报名记录的转发状态
+        await RegistrationCRUD(auth).update_crud(
+            registration_id,
+            {
+                "forwarded": True,
+                "forwarded_time": datetime.now(),
+                "team_id": team_leader_id,
+            },
+        )
 
         return {
             "notice_id": notice_id,

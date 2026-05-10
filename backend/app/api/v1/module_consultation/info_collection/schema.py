@@ -93,6 +93,15 @@ class InfoCollectionCreateSchema(BaseModel):
     # 规模和费用
     estimated_visitors: int | None = Field(default=None, description="预计参观人数")
     booth_fee: float | None = Field(default=None, description="展位费用")
+    fee_description: str | None = Field(default=None, description="费用说明")
+
+    # 协办方
+    co_organizers: list | None = Field(default=None, description="协办方列表")
+
+    # 场馆和坐标
+    venue_name: str | None = Field(default=None, description="场馆名称", max_length=200)
+    longitude: float | None = Field(default=None, description="经度")
+    latitude: float | None = Field(default=None, description="纬度")
 
     # 来源信息
     source_type: str = Field(default="crawler", description="信息来源")
@@ -137,14 +146,21 @@ class InfoCollectionOutSchema(InfoCollectionCreateSchema, BaseSchema, UserBySche
     reviewed_time: DateTimeStr | None = Field(default=None, description="审核时间")
 
     # 合规评分
-    compliance_score: int | None = Field(default=None, description="合规评分")
-    compliance_level: str | None = Field(default=None, description="合规等级")
+    compliance_score: float | None = Field(default=None, description="合规评分(0-10)")
+    compliance_level: str | None = Field(default=None, description="合规等级(A/B/C/D)")
     risk_factors: list | None = Field(default=None, description="风险因素列表")
 
     # 归档信息
     is_archived: bool | None = Field(default=None, description="是否归档")
     archived_time: DateTimeStr | None = Field(default=None, description="归档时间")
     archived_by: int | None = Field(default=None, description="归档人ID")
+
+    # 去重信息
+    is_duplicate: bool | None = Field(default=None, description="是否为重复记录")
+    duplicate_of_id: int | None = Field(default=None, description="关联的原始记录ID")
+
+    # 搜索关键词
+    search_keywords: str | None = Field(default=None, description="搜索关键词")
 
 
 @dataclass

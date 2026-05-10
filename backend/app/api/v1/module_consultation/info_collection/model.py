@@ -8,6 +8,7 @@ from enum import Enum
 from sqlalchemy import (
     BIGINT,
     JSON,
+    Boolean,
     Date,
     DateTime,
     Float,
@@ -49,6 +50,7 @@ class InfoStatus(str, Enum):
     APPROVED = "approved"  # 已审核
     REJECTED = "rejected"  # 已拒绝
     EXPIRED = "expired"  # 已过期
+    ARCHIVED = "archived"  # 已归档
 
 
 class ConsultationInfoModel(ModelMixin, UserMixin):
@@ -108,6 +110,12 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
 
     address: Mapped[str | None] = mapped_column(String(500), nullable=True, comment="详细地址")
 
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True, comment="经度")
+
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True, comment="纬度")
+
+    venue_name: Mapped[str | None] = mapped_column(String(200), nullable=True, comment="场馆名称")
+
     # 参与高校信息
     participating_universities: Mapped[list | None] = mapped_column(
         JSON, nullable=True, comment="参与高校列表"
@@ -123,6 +131,10 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
     )
 
     booth_fee: Mapped[float | None] = mapped_column(Float, nullable=True, comment="展位费用")
+
+    fee_description: Mapped[str | None] = mapped_column(Text, nullable=True, comment="费用说明")
+
+    co_organizers: Mapped[list | None] = mapped_column(JSON, nullable=True, comment="协办方列表")
 
     # 来源和状态
     source_type: Mapped[str] = mapped_column(
@@ -151,14 +163,50 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
 
     # 合规评分
     compliance_score: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, comment="合规评分(0-100)"
+        Integer, nullable=True, comment="合规评分(0-10)"
     )
 
     compliance_level: Mapped[str | None] = mapped_column(
-        String(20), nullable=True, comment="合规等级(low/medium/high)"
+        String(10), nullable=True, comment="合规等级(A/B/C/D)"
     )
+
+    risk_factors: Mapped[list | None] = mapped_column(JSON, nullable=True, comment="风险因素列表")
 
     # 报名信息
     registration_email: Mapped[str | None] = mapped_column(
         String(100), nullable=True, comment="报名接收邮箱"
+    )
+
+    # 归档信息
+    is_archived: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否归档"
+    )
+
+    archived_time: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, comment="归档时间"
+    )
+
+    archived_by: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="归档人ID")
+
+    # 去重信息
+    is_duplicate: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否为重复记录"
+    )
+
+    duplicate_of_id: Mapped[int | None] = mapped_column(
+        BIGINT, nullable=True, comment="关联的原始记录ID"
+    )
+
+    # 搜索关键词(用于模糊检索和去重)
+    search_keywords: Mapped[str | None] = mapped_column(
+        String(500), nullable=True, comment="搜索关键词"
+    )
+
+    # 抓取来源信息
+    crawl_url: Mapped[str | None] = mapped_column(String(500), nullable=True, comment="抓取来源URL")
+
+    crawl_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, comment="抓取时间")
+
+    external_id: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, comment="外部系统ID(用于去重)"
     )

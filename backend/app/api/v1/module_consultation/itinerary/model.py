@@ -6,6 +6,7 @@ from datetime import date, datetime
 
 from sqlalchemy import (
     BIGINT,
+    JSON,
     Boolean,
     Date,
     DateTime,
@@ -66,4 +67,18 @@ class ItineraryModel(ModelMixin, UserMixin):
     )
     auto_generated: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False, comment="是否自动生成的待办项"
+    )
+
+    # 多咨询会关联(一个行程可包含多个咨询会)
+    consultation_ids: Mapped[list | None] = mapped_column(
+        JSON, nullable=True, comment="关联咨询会ID列表"
+    )
+
+    consultation_details: Mapped[list | None] = mapped_column(
+        JSON, nullable=True, comment="关联咨询会详情列表"
+    )
+
+    # 行程提醒
+    reminder_sent: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否已发送行程提醒"
     )

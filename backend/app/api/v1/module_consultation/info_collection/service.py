@@ -2,10 +2,14 @@
 咨询会信息聚合 - 服务层
 """
 
+from difflib import SequenceMatcher
+
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.exceptions import CustomException
+from app.core.logger import log
 
 from .crud import InfoCollectionCRUD
+from .model import InfoStatus
 from .schema import (
     InfoCollectionCreateSchema,
     InfoCollectionOutSchema,
@@ -195,6 +199,17 @@ class InfoCollectionService:
             raise CustomException(msg="该数据不存在")
 
         updated_obj = await InfoCollectionCRUD(auth).approve_crud(id, review_comment)
+
+        # 审核通过后自动触发合规诊断
+        try:
+            from ..compliance.scoring_service import ComplianceScoringServiceV1
+
+            result = await ComplianceScoringServiceV1.diagnose_consultation(updated_obj)
+            await ComplianceScoringServiceV1.save_diagnosis_result(updated_obj.id, result)
+            log.info(f"审核通过后自动合规诊断完成，咨询会ID: {id}, 评分: {result.score}")
+        except Exception as e:
+            log.warning(f"自动合规诊断失败: {e}")
+
         return InfoCollectionOutSchema.model_validate(updated_obj).model_dump()
 
     @classmethod
@@ -352,3 +367,181 @@ class InfoCollectionService:
             order_by=[{"id": "desc"}],
             search=search,
         )
+
+    @classmethod
+    async def deduplicate_service(cls, auth: AuthSchema, similarity_threshold: float = 0.8) -> dict:
+        """
+        自动去重 - 基于名称+时间+地点的相似度去重合并
+
+        参数:
+        - auth (AuthSchema): 认证信息
+        - similarity_threshold (float): 相似度阈值(0-1, 默认0.8)
+
+        返回:
+        - dict: 去重结果统计
+        """
+        all_items = await InfoCollectionCRUD(auth).list_crud(order_by=[{"id": "asc"}])
+        non_duplicate_items = [item for item in all_items if not item.is_duplicate]
+
+        duplicate_groups = []
+        processed_ids = set()
+
+        for i, item in enumerate(non_duplicate_items):
+            if item.id in processed_ids:
+                continue
+
+            group = [item]
+            for j in range(i + 1, len(non_duplicate_items)):
+                other = non_duplicate_items[j]
+                if other.id in processed_ids:
+                    continue
+
+                if cls._calculate_similarity(item, other) >= similarity_threshold:
+                    group.append(other)
+                    processed_ids.add(other.id)
+
+            if len(group) > 1:
+                duplicate_groups.append(group)
+                processed_ids.add(item.id)
+
+        # 标记重复记录(保留最早创建的作为原始记录)
+        marked_count = 0
+        for group in duplicate_groups:
+            original = min(group, key=lambda x: x.id)
+            for dup in group:
+                if dup.id != original.id and not dup.is_duplicate:
+                    await InfoCollectionCRUD(auth).update_crud(
+                        dup.id,
+                        {
+                            "is_duplicate": True,
+                            "duplicate_of_id": original.id,
+                        },
+                    )
+                    marked_count += 1
+
+        log.info(
+            f"自动去重完成: 检查 {len(non_duplicate_items)} 条，发现 {len(duplicate_groups)} 组重复，标记 {marked_count} 条"
+        )
+        return {
+            "total_checked": len(non_duplicate_items),
+            "duplicate_groups": len(duplicate_groups),
+            "marked_duplicates": marked_count,
+        }
+
+    @classmethod
+    def _calculate_similarity(cls, item1, item2) -> float:
+        """计算两条咨询会记录的相似度"""
+        title_sim = SequenceMatcher(None, item1.title or "", item2.title or "").ratio()
+
+        # 时间相同加分
+        time_match = 0.0
+        if item1.start_date and item2.start_date and item1.start_date == item2.start_date:
+            time_match = 1.0
+
+        # 地点相同加分
+        location_match = 0.0
+        if item1.city and item2.city and item1.city == item2.city:
+            location_match = 0.8
+        if item1.address and item2.address:
+            addr_sim = SequenceMatcher(None, item1.address, item2.address).ratio()
+            location_match = max(location_match, addr_sim)
+
+        # 加权平均: 标题权重0.5, 时间0.25, 地点0.25
+        return title_sim * 0.5 + time_match * 0.25 + location_match * 0.25
+
+    @classmethod
+    async def update_expired_service(cls, auth: AuthSchema) -> dict:
+        """
+        定时更新已过期的咨询会状态
+
+        将 end_date < 今天的 approved 状态咨询会自动更新为 expired
+
+        返回:
+        - dict: 更新结果统计
+        """
+        from datetime import date
+
+        from app.common.enums import QueueEnum
+
+        today = date.today()
+        search = {
+            "status": (QueueEnum.eq.value, InfoStatus.APPROVED.value),
+            "end_date": (QueueEnum.lt.value, today.isoformat()),
+        }
+        expired_items = await InfoCollectionCRUD(auth).list_crud(search=search)
+
+        updated_count = 0
+        for item in expired_items:
+            await InfoCollectionCRUD(auth).update_crud(
+                item.id, {"status": InfoStatus.EXPIRED.value}
+            )
+            updated_count += 1
+
+        log.info(f"定时更新过期咨询会: 更新 {updated_count} 条")
+        return {"updated_count": updated_count}
+
+    @classmethod
+    async def crawl_and_save_service(cls, auth: AuthSchema) -> dict:
+        """
+        执行爬虫抓取并保存到数据库
+
+        返回:
+        - dict: 抓取结果统计
+        """
+        from .crawler import CrawlerRegistry
+
+        all_results = await CrawlerRegistry.run_all()
+
+        total_fetched = 0
+        total_saved = 0
+        total_skipped = 0
+
+        for source_name, items in all_results.items():
+            total_fetched += len(items)
+            for item in items:
+                try:
+                    external_id = item.get("external_id")
+                    if external_id:
+                        existing = await InfoCollectionCRUD(auth).list_crud(
+                            search={"external_id": ("eq", external_id)}
+                        )
+                        if existing:
+                            total_skipped += 1
+                            continue
+
+                    create_data = {
+                        "title": item["title"],
+                        "organizer": item["organizer"],
+                        "organizer_nature": item.get("organizer_nature"),
+                        "start_date": item["start_date"],
+                        "end_date": item.get("end_date"),
+                        "province": item.get("province"),
+                        "city": item.get("city"),
+                        "address": item.get("address"),
+                        "venue_name": item.get("venue_name"),
+                        "booth_fee": item.get("booth_fee"),
+                        "fee_description": item.get("fee_description"),
+                        "registration_email": item.get("registration_email"),
+                        "source_type": item.get("source_type", "crawler"),
+                        "source_url": item.get("source_url"),
+                        "external_id": item.get("external_id"),
+                        "description": item.get("description"),
+                        "status": InfoStatus.PENDING.value,
+                        "search_keywords": (
+                            f"{item.get('title', '')} {item.get('organizer', '')} "
+                            f"{item.get('city', '')}"
+                        ),
+                    }
+                    await InfoCollectionCRUD(auth).create_crud(create_data)
+                    total_saved += 1
+                except Exception as e:
+                    log.warning(f"[{source_name}] 保存单条数据失败: {e}")
+
+        log.info(
+            f"爬虫抓取完成: 抓取 {total_fetched} 条，保存 {total_saved} 条，跳过 {total_skipped} 条"
+        )
+        return {
+            "total_fetched": total_fetched,
+            "total_saved": total_saved,
+            "total_skipped": total_skipped,
+        }

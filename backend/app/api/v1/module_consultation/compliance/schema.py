@@ -14,8 +14,8 @@ class ComplianceDiagnosisCreateSchema(BaseSchema):
     """新增诊断记录模型"""
 
     consultation_id: int = Field(..., description="咨询会ID")
-    compliance_score: int = Field(..., ge=0, le=100, description="合规评分(0-100)")
-    compliance_level: str = Field(..., description="合规等级(low/medium/high)")
+    compliance_score: float = Field(..., ge=0, le=10, description="合规评分(0-10)")
+    compliance_level: str = Field(..., description="合规等级(A/B/C/D)")
     risk_factors: list[str] | None = Field(default=None, description="风险因素")
     diagnosis_details: dict | None = Field(default=None, description="诊断详情")
     improvement_suggestions: list[str] | None = Field(default=None, description="改进建议")
@@ -92,8 +92,8 @@ class ComplianceCheckResultSchema(BaseSchema):
     """合规检查结果模型"""
 
     consultation_id: int = Field(..., description="咨询会ID")
-    compliance_score: int = Field(..., description="合规评分")
-    compliance_level: str = Field(..., description="合规等级")
+    compliance_score: float = Field(..., description="合规评分(0-10)")
+    compliance_level: str = Field(..., description="合规等级(A/B/C/D)")
     risk_factors: list[str] = Field(default_factory=list, description="风险因素")
     improvement_suggestions: list[str] = Field(default_factory=list, description="改进建议")
     is_high_risk: bool = Field(default=False, description="是否高风险")

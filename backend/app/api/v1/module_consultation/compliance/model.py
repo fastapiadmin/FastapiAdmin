@@ -9,6 +9,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     DateTime,
+    Float,
     Integer,
     String,
     Text,
@@ -36,11 +37,9 @@ class ComplianceDiagnosisModel(ModelMixin, UserMixin):
     diagnosis_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, comment="诊断时间")
 
     # 合规评分
-    compliance_score: Mapped[int] = mapped_column(
-        Integer, nullable=False, comment="合规评分(0-100)"
-    )
+    compliance_score: Mapped[float] = mapped_column(Float, nullable=False, comment="合规评分(0-10)")
     compliance_level: Mapped[str] = mapped_column(
-        String(20), nullable=False, comment="合规等级(low/medium/high)"
+        String(10), nullable=False, comment="合规等级(A/B/C/D)"
     )
 
     # 风险因素

@@ -55,3 +55,10 @@ class RegistrationModel(ModelMixin, UserMixin):
         Boolean, default=False, nullable=False, comment="是否已完成一键报名"
     )
     register_time: Mapped[datetime | None] = mapped_column(DateTime, comment="一键报名时间")
+
+    # 招生组关联和转发
+    team_id: Mapped[int | None] = mapped_column(BIGINT, comment="关联招生组ID")
+    forwarded: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, comment="是否已转发招生组"
+    )
+    forwarded_time: Mapped[datetime | None] = mapped_column(DateTime, comment="转发时间")

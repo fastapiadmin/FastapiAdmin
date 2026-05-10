@@ -17,8 +17,8 @@ from .model import ComplianceDiagnosisModel
 class ComplianceScoreResult:
     """合规评分结果"""
 
-    score: int  # 合规评分(0-100)
-    level: str  # 合规等级(low/medium/high)
+    score: float  # 合规评分(0-10)
+    level: str  # 合规等级(A/B/C/D)
     is_high_risk: bool  # 是否高风险
     risk_factors: list[str]  # 风险因素列表
     improvement_suggestions: list[str]  # 改进建议列表
@@ -91,6 +91,12 @@ class ComplianceScoringServiceV1:
             "description": "多家第三方机构",
         },
     }
+
+    # 合规等级映射(A/B/C/D)
+    LEVEL_A = "A"  # 低风险，推荐参加(8-10分)
+    LEVEL_B = "B"  # 中风险，谨慎参加(5-8分)
+    LEVEL_C = "C"  # 较高风险，需评估(3-6分)
+    LEVEL_D = "D"  # 高风险，不建议参加(0-3分)
 
     @classmethod
     async def diagnose_consultation(
@@ -235,42 +241,44 @@ class ComplianceScoringServiceV1:
         return risk_factors
 
     @classmethod
-    def _calculate_final_score(cls, base_score: float, risk_factors: list[str]) -> int:
-        """计算最终评分"""
-        # 每个风险因素扣1分
-        deduction = len(risk_factors) * 1.0
+    def _calculate_final_score(cls, base_score: float, risk_factors: list[str]) -> float:
+        """计算最终评分(0-10分制)"""
+        # 每个风险因素扣0.5分
+        deduction = len(risk_factors) * 0.5
 
-        final_score = base_score * 10 - deduction  # 转换为百分制
-        final_score = max(0, min(100, int(final_score)))  # 限制在0-100之间
+        final_score = base_score - deduction
+        final_score = max(0, min(10, round(final_score, 1)))  # 限制在0-10之间，保留1位小数
 
         return final_score
 
     @classmethod
-    def _determine_compliance_level(cls, score: int) -> str:
-        """确定合规等级"""
-        if score >= 80:
-            return "high"
-        elif score >= 60:
-            return "medium"
+    def _determine_compliance_level(cls, score: float) -> str:
+        """确定合规等级(A/B/C/D)"""
+        if score >= 8:
+            return cls.LEVEL_A
+        elif score >= 5:
+            return cls.LEVEL_B
+        elif score >= 3:
+            return cls.LEVEL_C
         else:
-            return "low"
+            return cls.LEVEL_D
 
     @classmethod
-    def _is_high_risk(cls, organizer_nature: OrganizerNature, score: int) -> bool:
+    def _is_high_risk(cls, organizer_nature: OrganizerNature, score: float) -> bool:
         """判断是否高风险"""
-        # 第三方机构且评分低于60分
+        # 第三方机构且评分为D级
         if (
             organizer_nature
             in [
                 OrganizerNature.THIRD_PARTY_SINGLE,
                 OrganizerNature.THIRD_PARTY_MULTIPLE,
             ]
-            and score < 60
+            and score < 3
         ):
             return True
 
-        # 评分低于40分
-        if score < 40:
+        # 评分低于3分
+        if score < 3:
             return True
 
         return False
@@ -362,7 +370,7 @@ class ComplianceScoringServiceV1:
         diagnosis = ComplianceDiagnosisModel(
             consultation_id=consultation_id,
             diagnosis_time=datetime.now(),
-            compliance_score=result.score,
+            compliance_score=float(result.score),
             compliance_level=result.level,
             risk_factors=result.risk_factors,
             diagnosis_details=result.diagnosis_details,
@@ -408,6 +416,7 @@ class ComplianceScoringServiceV1:
                 .values(
                     compliance_score=result.score,
                     compliance_level=result.level,
+                    risk_factors=result.risk_factors,
                 )
             )
             await session.commit()

@@ -4,7 +4,7 @@
 
 from datetime import datetime
 
-from pydantic import ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.base_schema import BaseSchema, UserBySchema
 from app.core.validator import DateTimeStr
@@ -22,6 +22,7 @@ class RegistrationCreateSchema(BaseSchema):
     booth_number: str | None = Field(default=None, description="展位号")
     booth_size: str | None = Field(default=None, description="展位大小")
     registration_email: str | None = Field(default=None, description="报名接收邮箱")
+    team_id: int | None = Field(default=None, description="关联招生组ID")
 
 
 class RegistrationUpdateSchema(RegistrationCreateSchema):
@@ -42,6 +43,8 @@ class RegistrationOutSchema(RegistrationCreateSchema, BaseSchema, UserBySchema):
     approval_comment: str | None = Field(default=None, description="审核意见")
     is_registered: bool = Field(default=False, description="是否已完成一键报名")
     register_time: datetime | None = Field(default=None, description="一键报名时间")
+    forwarded: bool = Field(default=False, description="是否已转发招生组")
+    forwarded_time: datetime | None = Field(default=None, description="转发时间")
 
 
 class RegistrationQuerySchema(BaseSchema):
@@ -74,3 +77,27 @@ class RegistrationPaySchema(BaseSchema):
     """支付确认模型"""
 
     payment_time: DateTimeStr = Field(..., description="支付时间")
+
+
+class EmailTemplateCreateSchema(BaseModel):
+    """新增邮件模板模型"""
+
+    template_name: str = Field(..., description="模板名称", min_length=2, max_length=100)
+    template_content: str = Field(..., description="模板内容")
+    is_default: bool = Field(default=False, description="是否默认模板")
+
+
+class EmailTemplateUpdateSchema(EmailTemplateCreateSchema):
+    """更新邮件模板模型"""
+
+    pass
+
+
+class EmailTemplateOutSchema(EmailTemplateCreateSchema):
+    """邮件模板响应模型"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_time: datetime | None = Field(default=None, description="创建时间")
+    updated_time: datetime | None = Field(default=None, description="更新时间")

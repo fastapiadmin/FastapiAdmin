@@ -300,3 +300,33 @@ async def move_task_controller(
     result = await ItineraryService.move_task_service(auth=auth, id=id, board_column=board_column)
     log.info(f"移动任务 {id} 到 {board_column}")
     return SuccessResponse(data=result, msg="移动成功")
+
+
+@ItineraryRouter.get(
+    "/suggest-schedule",
+    summary="智能排期建议",
+    description="检测行程时间冲突，生成优化建议",
+)
+async def suggest_schedule_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:itinerary:query"]))],
+    team_id: Annotated[int | None, Query(description="招生组ID(可选)")] = None,
+) -> JSONResponse:
+    """智能排期建议"""
+    result = await ItineraryService.suggest_schedule_service(auth=auth, team_id=team_id)
+    log.info("智能排期建议查询成功")
+    return SuccessResponse(data=result, msg="查询成功")
+
+
+@ItineraryRouter.post(
+    "/send-reminders",
+    summary="发送行程提醒",
+    description="为即将到来的行程发送提醒通知",
+)
+async def send_reminders_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:itinerary:update"]))],
+    days_before: Annotated[int, Query(description="提前几天提醒", ge=1, le=7)] = 1,
+) -> JSONResponse:
+    """发送行程提醒"""
+    result = await ItineraryService.send_reminders_service(auth=auth, days_before=days_before)
+    log.info(f"发送行程提醒完成: {result}")
+    return SuccessResponse(data=result, msg="提醒发送完成")

@@ -14,6 +14,7 @@ from app.core.dependencies import AuthPermission
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
+from .model import InfoStatus
 from .schema import (
     InfoCollectionCreateSchema,
     InfoCollectionOutSchema,
@@ -400,3 +401,97 @@ async def preview_list_controller(
     )
     log.info("全部咨询会预览列表查询成功")
     return SuccessResponse(data=result_dict, msg="查询成功")
+
+
+@InfoCollectionRouter.post(
+    "/deduplicate",
+    summary="手动触发去重",
+    description="基于名称+时间+地点的相似度自动去重合并",
+)
+async def deduplicate_controller(
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:update"]))
+    ],
+    similarity_threshold: Annotated[
+        float, Query(description="相似度阈值(0-1)", ge=0.5, le=1.0)
+    ] = 0.8,
+) -> JSONResponse:
+    """手动触发去重"""
+    result_dict = await InfoCollectionService.deduplicate_service(
+        auth=auth, similarity_threshold=similarity_threshold
+    )
+    log.info(f"手动去重完成: {result_dict}")
+    return SuccessResponse(data=result_dict, msg="去重完成")
+
+
+@InfoCollectionRouter.post(
+    "/update-expired",
+    summary="更新过期咨询会状态",
+    description="将已过期的咨询会状态自动更新为expired",
+)
+async def update_expired_controller(
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:update"]))
+    ],
+) -> JSONResponse:
+    """更新过期咨询会状态"""
+    result_dict = await InfoCollectionService.update_expired_service(auth=auth)
+    log.info(f"更新过期咨询会状态完成: {result_dict}")
+    return SuccessResponse(data=result_dict, msg="更新完成")
+
+
+@InfoCollectionRouter.post(
+    "/public-upload",
+    summary="第三方免登录上传咨询会信息",
+    description="支持第三方机构、高校、高中无需登录即可自助上传咨询会信息，上传后状态为待审核",
+    response_model=ResponseSchema[InfoCollectionOutSchema],
+)
+async def public_upload_controller(
+    data: ThirdPartyUploadSchema,
+    source_type: Annotated[
+        str, Query(description="上传来源(upload/high_school/university)")
+    ] = "upload",
+) -> JSONResponse:
+    """第三方免登录上传咨询会信息"""
+    from app.core.database import async_db_session
+
+    from .model import InfoSource
+
+    source_mapping = {
+        "upload": InfoSource.UPLOAD.value,
+        "high_school": InfoSource.HIGH_SCHOOL.value,
+        "university": InfoSource.UNIVERSITY.value,
+    }
+
+    create_data = data.model_dump()
+    create_data["source_type"] = source_mapping.get(source_type, InfoSource.UPLOAD.value)
+    create_data["status"] = InfoStatus.PENDING.value
+
+    # 免登录创建，使用系统session
+    async with async_db_session() as db:
+        from app.api.v1.module_system.auth.schema import AuthSchema as AuthSchemaType
+
+        system_auth = AuthSchemaType(db=db, check_data_scope=False)
+        create_schema = InfoCollectionCreateSchema(**create_data)
+        result_dict = await InfoCollectionService.create_service(
+            auth=system_auth, data=create_schema
+        )
+
+    log.info(f"第三方免登录上传咨询会信息成功，来源: {source_type}")
+    return SuccessResponse(data=result_dict, msg="上传成功，请等待审核")
+
+
+@InfoCollectionRouter.post(
+    "/crawl",
+    summary="手动触发爬虫抓取",
+    description="手动触发咨询会信息爬虫抓取并保存到数据库",
+)
+async def crawl_controller(
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:create"]))
+    ],
+) -> JSONResponse:
+    """手动触发爬虫抓取"""
+    result_dict = await InfoCollectionService.crawl_and_save_service(auth=auth)
+    log.info(f"手动触发爬虫抓取完成: {result_dict}")
+    return SuccessResponse(data=result_dict, msg="抓取完成")

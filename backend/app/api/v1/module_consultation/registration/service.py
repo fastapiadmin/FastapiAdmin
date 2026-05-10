@@ -10,6 +10,9 @@ from app.core.logger import log
 
 from .crud import RegistrationCRUD
 from .schema import (
+    EmailTemplateCreateSchema,
+    EmailTemplateOutSchema,
+    EmailTemplateUpdateSchema,
     RegistrationApproveSchema,
     RegistrationCreateSchema,
     RegistrationOutSchema,
@@ -251,3 +254,121 @@ class RegistrationService:
         log.info(f"一键报名成功，邮件已发送至 {registration_email}")
 
         return RegistrationOutSchema.model_validate(obj).model_dump()
+
+
+class EmailTemplateService:
+    """报名回执邮件模板服务层"""
+
+    @classmethod
+    async def list_templates_service(cls, auth: AuthSchema) -> list[dict]:
+        """获取所有邮件模板"""
+        from sqlalchemy import select
+
+        from app.core.database import async_db_session
+
+        from .email_template_model import RegistrationEmailTemplateModel
+
+        async with async_db_session() as session:
+            stmt = select(RegistrationEmailTemplateModel).order_by(
+                RegistrationEmailTemplateModel.is_default.desc(),
+                RegistrationEmailTemplateModel.id.asc(),
+            )
+            result = await session.execute(stmt)
+            templates = result.scalars().all()
+
+        return [EmailTemplateOutSchema.model_validate(t).model_dump() for t in templates]
+
+    @classmethod
+    async def create_template_service(
+        cls, auth: AuthSchema, data: EmailTemplateCreateSchema
+    ) -> dict:
+        """创建邮件模板"""
+        from app.core.database import async_db_session
+
+        from .email_template_model import RegistrationEmailTemplateModel
+
+        create_data = data.model_dump(exclude_unset=True)
+
+        if create_data.get("is_default"):
+            await cls._clear_default_templates()
+
+        async with async_db_session() as session:
+            template = RegistrationEmailTemplateModel(**create_data)
+            session.add(template)
+            await session.commit()
+            await session.refresh(template)
+
+        return EmailTemplateOutSchema.model_validate(template).model_dump()
+
+    @classmethod
+    async def update_template_service(
+        cls, auth: AuthSchema, id: int, data: EmailTemplateUpdateSchema
+    ) -> dict:
+        """更新邮件模板"""
+        from app.core.database import async_db_session
+
+        from .email_template_model import RegistrationEmailTemplateModel
+
+        update_data = data.model_dump(exclude_unset=True)
+
+        if update_data.get("is_default"):
+            await cls._clear_default_templates()
+
+        async with async_db_session() as session:
+            template = await session.get(RegistrationEmailTemplateModel, id)
+            if not template:
+                raise CustomException(msg="该邮件模板不存在")
+
+            for key, value in update_data.items():
+                setattr(template, key, value)
+            await session.commit()
+            await session.refresh(template)
+
+        return EmailTemplateOutSchema.model_validate(template).model_dump()
+
+    @classmethod
+    async def delete_template_service(cls, auth: AuthSchema, id: int) -> None:
+        """删除邮件模板"""
+        from app.core.database import async_db_session
+
+        from .email_template_model import RegistrationEmailTemplateModel
+
+        async with async_db_session() as session:
+            template = await session.get(RegistrationEmailTemplateModel, id)
+            if not template:
+                raise CustomException(msg="该邮件模板不存在")
+            await session.delete(template)
+            await session.commit()
+
+    @classmethod
+    async def get_default_template_service(cls) -> dict | None:
+        """获取默认模板"""
+        from sqlalchemy import select
+
+        from app.core.database import async_db_session
+
+        from .email_template_model import RegistrationEmailTemplateModel
+
+        async with async_db_session() as session:
+            stmt = select(RegistrationEmailTemplateModel).where(
+                RegistrationEmailTemplateModel.is_default == True  # noqa: E712
+            )
+            result = await session.execute(stmt)
+            template = result.scalar_one_or_none()
+
+        if template:
+            return EmailTemplateOutSchema.model_validate(template).model_dump()
+        return None
+
+    @classmethod
+    async def _clear_default_templates(cls) -> None:
+        """清除所有默认模板标记"""
+        from sqlalchemy import update
+
+        from app.core.database import async_db_session
+
+        from .email_template_model import RegistrationEmailTemplateModel
+
+        async with async_db_session() as session:
+            await session.execute(update(RegistrationEmailTemplateModel).values(is_default=False))
+            await session.commit()
