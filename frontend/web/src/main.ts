@@ -19,7 +19,7 @@ app.mount("#app");
 const setTitleAndFavicon = async () => {
   try {
     const configStore = useConfigStore();
-    await configStore.getConfig(true);
+    await configStore.getConfig();
 
     const webTitle = configStore.configData.sys_web_title?.config_value;
     const webFavicon = configStore.configData.sys_web_favicon?.config_value;

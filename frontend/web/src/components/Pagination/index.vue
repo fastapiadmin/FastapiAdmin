@@ -1,7 +1,11 @@
-<!-- 分页组件 -->
+<!--
+  分页：基于 ElPagination，统一 v-model page/limit 与父层的 `@pagination`。
+  - total 变化时清空「连续相同 page:limit」过滤，避免与列表首次请求叠在一起。
+  - 不在此 watch(total) 再次 emit（ElPagination 已按 total 钳页并触发 change）。
+-->
 <template>
   <ElScrollbar>
-    <div :class="{ hidden: hidden }" class="pagination">
+    <div :class="{ hidden: hidden }">
       <ElPagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
@@ -20,8 +24,12 @@
 </template>
 
 <script setup lang="ts">
-import { watch, type PropType } from "vue";
+import { ref, watch, type PropType } from "vue";
 
+/**
+ * Props：`page` / `limit` 为 defineModel；其余透传 EP。
+ * 事件：仅 `pagination`，载荷 `{ page, limit }`。
+ */
 const props = defineProps({
   total: {
     type: Number as PropType<number>,
@@ -55,10 +63,6 @@ const props = defineProps({
     type: String as PropType<"" | "default" | "small" | "large">,
     default: undefined,
   },
-  autoScroll: {
-    type: Boolean,
-    default: true,
-  },
   hidden: {
     type: Boolean,
     default: false,
@@ -66,6 +70,26 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["pagination"]);
+
+/** 上一次对外发出的 `page:limit`，用于过滤 EP 连续重复的 change */
+const lastEmittedSig = ref<string | null>(null);
+
+watch(
+  () => props.total,
+  () => {
+    lastEmittedSig.value = null;
+  }
+);
+
+/** 合并 EP 可能触发的重复事件，同一签名只 emit 一次 */
+function emitPagination(page: number, limit: number) {
+  const sig = `${page}:${limit}`;
+  if (lastEmittedSig.value === sig) {
+    return;
+  }
+  lastEmittedSig.value = sig;
+  emit("pagination", { page, limit });
+}
 
 const currentPage = defineModel("page", {
   type: Number,
@@ -79,33 +103,24 @@ const pageSize = defineModel("limit", {
   default: 10,
 });
 
-watch(
-  () => props.total,
-  (newVal: number) => {
-    const lastPage = Math.ceil(newVal / pageSize.value);
-    if (newVal > 0 && currentPage.value > lastPage) {
-      currentPage.value = lastPage;
-      emit("pagination", { page: currentPage.value, limit: pageSize.value });
-    }
-  }
-);
-
 function handleSizeChange(val: number) {
+  /** disabled 时仍可能收到 EP 事件，在此短路 */
+  if (props.disabled) {
+    return;
+  }
+  const nextSize = Number(val);
+  if (!Number.isFinite(nextSize) || nextSize <= 0) return;
+  if (nextSize === Number(pageSize.value)) return;
   currentPage.value = 1;
-  emit("pagination", { page: currentPage.value, limit: val });
+  emitPagination(Number(currentPage.value), nextSize);
 }
 
 function handleCurrentChange(val: number) {
-  emit("pagination", { page: val, limit: pageSize.value });
+  if (props.disabled) {
+    return;
+  }
+  const nextPage = Number(val);
+  if (!Number.isFinite(nextPage) || nextPage < 1) return;
+  emitPagination(nextPage, Number(pageSize.value));
 }
 </script>
-
-<style lang="scss" scoped>
-.pagination {
-  padding: 12px;
-
-  &.hidden {
-    display: none;
-  }
-}
-</style>

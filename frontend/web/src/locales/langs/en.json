@@ -14,6 +14,14 @@
     "requestFailed": "Request failed",
     "requestConfigError": "Request configuration error"
   },
+  "manualPage": {
+    "title": "User manual",
+    "intro": "Watch the walkthrough video and browse the built-in checklist mapped to implemented UI and permission codes (coverage / completeness, not a quality score). Replace the demo video URL with your own CDN in production.",
+    "videoTab": "Video",
+    "manualTab": "Acceptance checklist",
+    "videoHint": "Pause, change speed, or go fullscreen anytime.",
+    "manualHint": "Use the TOC, filter, and anchors. “Functional completeness” items mirror implemented search bars, toolbars, row actions, and dialogs for gap checking."
+  },
   "topBar": {
     "search": {
       "title": "Search"
@@ -542,7 +550,7 @@
       "ecommerce": "Ecommerce",
       "map": "Map",
       "pricing": "Pricing",
-      "tutorial": "Tutorial"
+      "tutorial": "User manual"
     },
     "article": {
       "title": "Article",

@@ -1,7 +1,8 @@
-<!-- 表格组件 -->
-<!-- 支持：el-table 全部属性、事件、插槽，同官方文档写法 -->
-<!-- 扩展功能：分页组件、渲染自定义列、loading、表格全局边框、斑马纹、表格尺寸、表头背景配置 -->
-<!-- 获取 ref：默认暴露了 elTableRef 外部通过 ref.value.elTableRef 可以调用 el-table 方法 -->
+<!--
+  ArtTable：ElTable 透传 + 分页 + 列渲染约定。
+  - 属性 / 事件 / 插槽与 EP 文档一致；样式可由 tableStore 与 props 覆盖。
+  - 暴露 `elTableRef`、`scrollToTop`；formatter 列见 TableFormatterOutlet 注释。
+-->
 <template>
   <div class="art-table">
     <div class="art-table__main">
@@ -14,59 +15,59 @@
         @end="onRowDragEnd"
       >
         <ElTable ref="elTableRef" v-loading="!!loading" v-bind="mergedTableProps">
-        <template v-for="col in columns" :key="col.prop || col.type">
-          <!-- 渲染全局序号列 -->
-          <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
-            <template #default="{ $index }">
-              <span>{{ getGlobalIndex($index) }}</span>
-            </template>
-          </ElTableColumn>
+          <template v-for="col in columns" :key="col.prop || col.type">
+            <!-- 渲染全局序号列 -->
+            <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
+              <template #default="{ $index }">
+                <span>{{ getGlobalIndex($index) }}</span>
+              </template>
+            </ElTableColumn>
 
-          <!-- 渲染展开行 -->
-          <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
-            <template #default="{ row: expandRow }">
-              <component :is="col.formatter ? col.formatter(expandRow) : null" />
-            </template>
-          </ElTableColumn>
+            <!-- 渲染展开行 -->
+            <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
+              <template #default="{ row: expandRow }">
+                <component :is="col.formatter ? col.formatter(expandRow) : null" />
+              </template>
+            </ElTableColumn>
 
-          <!-- 渲染普通列：default 插槽须紧凑书写，避免空白文本抢占 formatter（见 renderColumnFormatter 注释） -->
-          <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
-            <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
-              <slot
-                :name="col.headerSlotName || `${col.prop}-header`"
-                v-bind="{ ...headerScope, prop: col.prop, label: col.label }"
-              >
-                {{ col.label }}
-              </slot>
-            </template>
-            <!-- 整段单行：插槽内兄弟节点之间的空白文本会让 EP 误判单元格内容 -->
-            <!-- eslint-disable-next-line vue/max-attributes-per-line, prettier/prettier -->
-            <template #default="slotScope">
-              <slot
-                v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
-                :name="col.slotName || col.prop"
-                v-bind="{
-                  ...slotScope,
-                  prop: col.prop,
-                  value: col.prop ? slotScope.row[col.prop] : undefined,
-                }"
-              />
-              <TableFormatterOutlet
-                v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
-                :column="col"
-                :record="slotScope.row"
-              />
-            </template>
-          </ElTableColumn>
-        </template>
+            <!-- 渲染普通列：default 插槽须紧凑书写，避免空白文本抢占 formatter（见 renderColumnFormatter 注释） -->
+            <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
+              <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
+                <slot
+                  :name="col.headerSlotName || `${col.prop}-header`"
+                  v-bind="{ ...headerScope, prop: col.prop, label: col.label }"
+                >
+                  {{ col.label }}
+                </slot>
+              </template>
+              <!-- 整段单行：插槽内兄弟节点之间的空白文本会让 EP 误判单元格内容 -->
+              <!-- eslint-disable-next-line vue/max-attributes-per-line, prettier/prettier -->
+              <template #default="slotScope">
+                <slot
+                  v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
+                  :name="col.slotName || col.prop"
+                  v-bind="{
+                    ...slotScope,
+                    prop: col.prop,
+                    value: col.prop ? slotScope.row[col.prop] : undefined,
+                  }"
+                />
+                <TableFormatterOutlet
+                  v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
+                  :column="col"
+                  :record="slotScope.row"
+                />
+              </template>
+            </ElTableColumn>
+          </template>
 
-        <template v-if="$slots.default" #default><slot /></template>
+          <template v-if="$slots.default" #default><slot /></template>
 
-        <template #empty>
-          <div v-if="loading"></div>
-          <ElEmpty v-else :description="emptyText" :image-size="ART_TABLE_EMPTY_IMAGE_SIZE" />
-        </template>
-      </ElTable>
+          <template #empty>
+            <div v-if="loading"></div>
+            <ElEmpty v-else :description="emptyText" :image-size="ART_TABLE_EMPTY_IMAGE_SIZE" />
+          </template>
+        </ElTable>
       </VueDraggable>
     </div>
 
@@ -114,7 +115,7 @@ import { useWindowSize } from "@vueuse/core";
 import Pagination from "@/components/Pagination/index.vue";
 import { VueDraggable } from "vue-draggable-plus";
 
-/** 空数据插画尺寸（列表页统一，勿在各业务页随意覆盖） */
+/** 空状态插画高度（列表页统一常量） */
 const ART_TABLE_EMPTY_IMAGE_SIZE = 120;
 
 defineOptions({ name: "ArtTable" });
@@ -374,29 +375,43 @@ const cleanBodyColumnProps = (col: ColumnOption) => {
 
 const { scrollToTop: scrollPageToTop } = useCommon();
 
-// 滚动表格内容到顶部，并可以联动页面滚动到顶部
 const scrollToTop = () => {
   nextTick(() => {
-    elTableRef.value?.setScrollTop(0); // 滚动 ElTable 内部滚动条到顶部
-    scrollPageToTop(); // 调用公共 composable 滚动页面到顶部
+    elTableRef.value?.setScrollTop(0);
+    scrollPageToTop();
   });
 };
 
-/** 对接封装分页 @pagination，保持对外仍为 size-change / current-change 事件 */
+/**
+ * Pagination `@pagination` → 业务侧熟悉的 size-change / current-change。
+ * 数值统一转 Number，避免 EP / defineModel 传出字符串导致与 props.pagination 比较失真。
+ */
 const handlePaginationEvent = (payload: { page: number; limit: number }) => {
   const p = props.pagination;
   if (!p) return;
-  if (payload.limit !== p.size) {
-    emit("pagination:size-change", payload.limit);
+  const limit = Number(payload.limit);
+  const page = Number(payload.page);
+  const pSize = Number(p.size);
+  const pCurrent = Number(p.current);
+  if (
+    !Number.isFinite(limit) ||
+    !Number.isFinite(page) ||
+    !Number.isFinite(pSize) ||
+    !Number.isFinite(pCurrent)
+  ) {
     return;
   }
-  if (payload.page !== p.current) {
-    emit("pagination:current-change", payload.page);
+  if (limit !== pSize) {
+    emit("pagination:size-change", limit);
+    return;
+  }
+  if (page !== pCurrent) {
+    emit("pagination:current-change", page);
     scrollToTop();
+    return;
   }
 };
 
-// 全局序号
 const getGlobalIndex = (index: number) => {
   if (!props.pagination) return index + 1;
   const { current, size } = props.pagination;

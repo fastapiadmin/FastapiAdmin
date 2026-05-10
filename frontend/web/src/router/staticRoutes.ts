@@ -229,7 +229,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     component: () => import("@views/dashboard/tutorial/index.vue"),
     meta: {
       title: "menus.dashboard.tutorial",
-      icon: "ri:movie-2-line",
+      icon: "ri:book-2-line",
       keepAlive: true,
     },
   },

@@ -1,4 +1,7 @@
-/** Settings store. */
+/**
+ * 全局界面设置：布局、主题、页签、水印、工具栏显隐等；部分字段持久化（useStorage / persist）。
+ * `reload` 翻转 `refresh` 布尔值，触发 `ArtPageContent` 重建 RouterView（与 useCommon.refresh 一致）。
+ */
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { MenuThemeType } from "@/types/store";
@@ -47,6 +50,7 @@ export const useSettingsStore = defineStore(
     const autoClose = ref(SETTING_DEFAULT_CONFIG.autoClose);
     const uniqueOpened = ref(SETTING_DEFAULT_CONFIG.uniqueOpened);
     const colorWeak = ref(SETTING_DEFAULT_CONFIG.colorWeak);
+    /** 供布局监听：`reload()` 取反以触发主内容区整页刷新 */
     const refresh = ref(SETTING_DEFAULT_CONFIG.refresh);
     const holidayFireworksLoaded = ref(SETTING_DEFAULT_CONFIG.holidayFireworksLoaded);
 
@@ -285,6 +289,7 @@ export const useSettingsStore = defineStore(
       menuOpen.value = open;
     };
 
+    /** 切换 `refresh`，驱动 `layouts/art-page-content` 内 `v-if="isRefresh"` 重建视图 */
     const reload = () => {
       refresh.value = !refresh.value;
     };

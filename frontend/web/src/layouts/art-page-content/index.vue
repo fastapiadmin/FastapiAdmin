@@ -1,4 +1,8 @@
-<!-- 布局内容 -->
+<!--
+  主内容区：RouterView + Transition + KeepAlive。
+  keepAlive：后端菜单 keep_alive → meta.keepAlive；多标签开时用 worktab.opened 作 include，关时不限 include；关标签用 exclude。
+  子节点 key：routeLeafCacheKey（name+params / path / remountOnFullPath）；首屏无路由过渡；settings.refresh 可整体重建视图。
+-->
 <template>
   <div id="app-scroll-main" class="layout-content" :style="containerStyle">
     <div id="app-content-header">
@@ -15,21 +19,26 @@
     </div>
 
     <RouterView v-if="isRefresh" v-slot="{ Component, route: router }" :style="contentStyle">
-      <Transition :name="actualTransition" mode="out-in" appear>
-        <div class="route-view-shell flex min-h-0 min-w-0 w-full flex-1 flex-col">
-          <KeepAlive :max="10" :exclude="keepAliveExclude">
+      <Transition :name="actualTransition" mode="out-in">
+        <div v-if="Component" class="route-view-shell flex min-h-0 min-w-0 w-full flex-1 flex-col">
+          <!-- 是否缓存以后端菜单 keep_alive → meta.keepAlive 为准；此处 !== false 即包 KeepAlive（与 MenuProcessor 一致） -->
+          <KeepAlive
+            v-if="wrapPageWithKeepAlive"
+            :max="10"
+            :include="keepAliveInclude"
+            :exclude="keepAliveExclude"
+          >
             <component
-              v-if="router.meta.keepAlive === true"
               class="art-page-view min-h-0 min-w-0 w-full flex-1"
               :is="Component"
-              :key="router.fullPath"
+              :key="routeLeafCacheKey(router)"
             />
           </KeepAlive>
           <component
-            v-if="router.meta.keepAlive !== true"
+            v-else
             class="art-page-view min-h-0 min-w-0 w-full flex-1"
             :is="Component"
-            :key="router.fullPath"
+            :key="routeLeafCacheKey(router)"
           />
         </div>
       </Transition>
@@ -48,27 +57,62 @@
   </div>
 </template>
 <script setup lang="ts">
+/**
+ * 布局滚动容器 + 业务路由出口；与 settings.refresh 联动可整体重建 RouterView。
+ *
+ * 缓存开关数据源：后端菜单 `keep_alive` → MenuProcessor 写入 `meta.keepAlive`；工作栏 tab 随路由写入同一 meta。
+ * include / wrapPageWithKeepAlive 均用 `!== false`，与静态路由里显式 `keepAlive: false`、后端布尔字段对齐。
+ */
 import type { CSSProperties } from "vue";
 import { useMediaQuery } from "@vueuse/core";
-import { useRoute } from "vue-router";
+import { useRoute, type RouteLocationNormalizedLoaded } from "vue-router";
 import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
 import { useSettingsStore } from "@stores/modules/setting.store";
 import { useWorktabStore } from "@stores/modules/worktab.store";
 
 defineOptions({ name: "ArtPageContent" });
 
+/**
+ * KeepAlive / RouterView 子节点缓存键。
+ * - `meta.remountOnFullPath === true`：整 URL 参与键（依赖 query 初值或须随 query 重建的页）。
+ * - 有 `name`：`name` + `params`，同一路由仅 query 变化不换实例。
+ * - 无 `name`：`path`（勿用 fullPath，否则仅 query 变化也会反复挂载）。
+ */
+function routeLeafCacheKey(r: RouteLocationNormalizedLoaded): string {
+  if (r.meta.remountOnFullPath === true) {
+    return r.fullPath;
+  }
+  if (r.name != null) {
+    return `${String(r.name)}:${JSON.stringify(r.params ?? {})}`;
+  }
+  return r.path;
+}
+
 const route = useRoute();
+/** 动态菜单 meta.keepAlive（后端 keep_alive）；仅显式 false 时不包 KeepAlive */
+const wrapPageWithKeepAlive = computed(() => route.meta.keepAlive !== false);
+
 const isNarrowViewport = useMediaQuery("(max-width: 800px)");
 const backtopScrollTarget = computed(() => (isNarrowViewport.value ? "" : "#app-scroll-main"));
 const backtopTargetKey = computed(() => (isNarrowViewport.value ? "win" : "main"));
 
-const { pageTransition, containerWidth, refresh } = storeToRefs(useSettingsStore());
-const { keepAliveExclude } = storeToRefs(useWorktabStore());
+const { pageTransition, containerWidth, refresh, showWorkTab } = storeToRefs(useSettingsStore());
+const { keepAliveExclude, opened } = storeToRefs(useWorktabStore());
+
+/** 多标签开启时：仅已打开且允许缓存的标签组件名进入 include；关闭多标签时不传 include，避免 opened 过窄误伤缓存。 */
+const keepAliveInclude = computed(() => {
+  if (!showWorkTab.value) return undefined;
+  const names = new Set<string>();
+  for (const t of opened.value) {
+    if (t.name && t.keepAlive !== false) names.add(String(t.name));
+  }
+  return names.size ? Array.from(names) : undefined;
+});
 
 const isRefresh = shallowRef(true);
 const isOpenRouteInfo = import.meta.env.VITE_OPEN_ROUTE_INFO;
 
-// 标记是否是首次加载（浏览器刷新）
+/** 浏览器首次进入：关闭路由过渡动画，避免首屏闪动 */
 const isFirstLoad = ref(true);
 
 const actualTransition = computed(() => {
@@ -102,9 +146,7 @@ const reload = () => {
 
 watch(refresh, reload, { flush: "post" });
 
-// 组件挂载后标记首次加载完成
 onMounted(() => {
-  // 延迟一帧，确保首次渲染完成
   nextTick(() => {
     isFirstLoad.value = false;
   });

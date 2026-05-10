@@ -1,39 +1,6 @@
 /**
- * 路由全局前置守卫模块
- *
- * 提供完整的路由导航守卫功能
- *
- * ## 主要功能
- *
- * - 登录状态验证和重定向
- * - 动态路由注册和权限控制
- * - 菜单数据获取和处理（前端/后端模式）
- * - 用户信息获取和缓存
- * - 页面标题设置
- * - 工作标签页管理
- * - 进度条和加载动画控制
- * - 静态路由识别和处理
- * - 错误处理和异常跳转
- *
- * ## 使用场景
- *
- * - 路由跳转前的权限验证
- * - 动态菜单加载和路由注册
- * - 用户登录状态管理
- * - 页面访问控制
- * - 路由级别的加载状态管理
- *
- * ## 工作流程
- *
- * 1. 检查登录状态，未登录跳转到登录页
- * 2. 首次访问时获取用户信息和菜单数据
- * 3. 根据权限动态注册路由
- * 4. 设置页面标题和工作标签页
- * 5. 处理根路径重定向到首页
- * 6. 未匹配路由跳转到 404 页面
- *
- * @module router/beforeEach
- * @author FastapiAdmin Team
+ * 路由前置守卫：登录态、动态路由注册（菜单）、根路径重定向、进度条、标签页与标题。
+ * 入口 `setupBeforeEachGuard`；核心流程见 `handleRouteGuard`。
  */
 import type { AppRouteRecord } from "@/types/router";
 import type { Router, RouteLocationNormalized, NavigationGuardNext } from "vue-router";
@@ -53,56 +20,50 @@ import { ApiStatus, isHttpError } from "@utils/http";
 import { RouteRegistry } from "./dynamicRoutes";
 import { MenuProcessor } from "./MenuProcessor";
 
-// 路由注册器实例
-let routeRegistry: RouteRegistry | null = null;
+// --- 模块级单例与守卫状态 ---
 
-// 菜单处理器实例
+let routeRegistry: RouteRegistry | null = null;
 const menuProcessor = new MenuProcessor();
 
-// 跟踪是否需要关闭 loading
+/** 供 afterEach 关闭全局 loading */
 let pendingLoading = false;
 
-// 路由初始化失败标记，防止死循环
-// 一旦设置为 true，只有刷新页面或重新登录才能重置
+/** 动态路由拉取失败后为 true，避免反复请求造成死循环 */
 let routeInitFailed = false;
 
-// 路由初始化进行中标记，防止并发请求
+/** 并发导航时只允许一路执行动态路由初始化 */
 let routeInitInProgress = false;
 
-/**
- * 获取 pendingLoading 状态
- */
 export function getPendingLoading(): boolean {
   return pendingLoading;
 }
 
-/**
- * 重置 pendingLoading 状态
- */
 export function resetPendingLoading(): void {
   pendingLoading = false;
 }
 
-/**
- * 获取路由初始化失败状态
- */
 export function getRouteInitFailed(): boolean {
   return routeInitFailed;
 }
 
-/**
- * 重置路由初始化状态（用于重新登录场景）
- */
+/** 重新登录等场景重置初始化标记 */
 export function resetRouteInitState(): void {
   routeInitFailed = false;
   routeInitInProgress = false;
 }
 
-/**
- * 设置路由全局前置守卫
- */
+/** 防止 dev/HMR 或异常重复 init 导致多个 beforeEach 叠加（导航副作用与请求会成倍增长） */
+let beforeEachGuardRegistered = false;
+
 export function setupBeforeEachGuard(router: Router): void {
-  // 初始化路由注册器
+  if (beforeEachGuardRegistered) {
+    if (import.meta.env.DEV) {
+      console.warn("[Router] setupBeforeEachGuard 已注册，跳过重复调用");
+    }
+    return;
+  }
+  beforeEachGuardRegistered = true;
+
   routeRegistry = new RouteRegistry(router);
 
   router.beforeEach(
@@ -122,9 +83,6 @@ export function setupBeforeEachGuard(router: Router): void {
   );
 }
 
-/**
- * 关闭 loading 效果
- */
 function closeLoading(): void {
   if (pendingLoading) {
     nextTick(() => {
@@ -147,50 +105,40 @@ function applySafeTitleFromQuery(to: RouteLocationNormalized): void {
   }
 }
 
-/**
- * 处理路由守卫逻辑
- */
 async function handleRouteGuard(
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
   next: NavigationGuardNext,
   router: Router
 ): Promise<void> {
+  // 顺序：登录 → 动态路由初始化失败兜底 → 动态路由注册 → 根路径 → 已匹配页 → 404
   const settingStore = useSettingsStore();
   const userStore = useUserStore();
 
-  // 启动进度条
   if (settingStore.showNprogress) {
     NProgress.start();
   }
 
-  // 1. 检查登录状态
   if (!handleLoginStatus(to, userStore, next)) {
     return;
   }
 
-  // 2. 检查路由初始化是否已失败（防止死循环）
   if (routeInitFailed) {
-    // 已经失败过，直接放行到错误页面，不再重试
     if (to.matched.length > 0) {
       next();
     } else {
-      // 未匹配到路由，跳转到 500 页面
       next({ name: "500", replace: true });
     }
     return;
   }
 
-  // 3. 处理动态路由注册
   const menuStore = useMenuStore();
   /** 未注册动态路由，或菜单已被清空（登出延迟 reset 与再登录竞态下可能出现「已注册但 menuList 为空」） */
   const shouldInitRoutes =
     userStore.isLogin && (!routeRegistry?.isRegistered() || menuStore.menuList.length === 0);
 
   if (shouldInitRoutes) {
-    // 防止并发请求（快速连续导航场景）
     if (routeInitInProgress) {
-      // 正在初始化中，等待完成后重新导航
       next(false);
       return;
     }
@@ -198,12 +146,10 @@ async function handleRouteGuard(
     return;
   }
 
-  // 4. 处理根路径重定向
   if (handleRootPathRedirect(to, next)) {
     return;
   }
 
-  // 5. 处理已匹配的路由
   if (to.matched.length > 0) {
     applySafeTitleFromQuery(to);
     setWorktab(to);
@@ -212,27 +158,20 @@ async function handleRouteGuard(
     return;
   }
 
-  // 6. 未匹配到路由，跳转到 404
   next({ name: "404" });
 }
 
-/**
- * 处理登录状态
- * @returns true 表示可以继续，false 表示已处理跳转
- */
+/** @returns 是否继续守卫；false 表示已 `next` 跳转 */
 function handleLoginStatus(
   to: RouteLocationNormalized,
   userStore: ReturnType<typeof useUserStore>,
   next: NavigationGuardNext
 ): boolean {
-  // 已登录 / 登录相关路由 / 明确配置的匿名白名单，放行。
-  // 注意：不能使用「整条 staticRoutes 都算静态」——否则 `/`、`/` 重定向到的业务页也会被当成免登录，
-  // 未登录用户会先被放过再跳首页（见 issue：打开站点先进首页而非登录页）。
+  // 勿把「整条 staticRoutes」当匿名：否则 `/` 重定向到的业务页会被误放行（未登录先进首页）。
   if (userStore.isLogin || isLoginRoute(to) || isAnonymousPublicPath(to.path)) {
     return true;
   }
 
-  // 未登录且访问需要权限的页面，跳转到登录页并携带 redirect 参数
   userStore.resetAllState();
   next({
     name: "Login",

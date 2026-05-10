@@ -73,7 +73,7 @@
         :loading="tableLoading"
         :data="tableListData"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="handleTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -899,21 +899,6 @@ const {
 listRefresh.refreshData = refreshData;
 listRefresh.refreshCreate = refreshCreate;
 listRefresh.refreshRemove = refreshRemove;
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 10,
-    total: p.total ?? 0,
-  };
-});
 
 async function handleSearchBarSearch(params: GencodeSearchForm) {
   await searchBarRef.value?.validate?.();

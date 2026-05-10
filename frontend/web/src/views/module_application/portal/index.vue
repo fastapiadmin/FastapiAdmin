@@ -124,9 +124,9 @@
       <div class="portal-pagination flex shrink-0 justify-end border-g-200 pt-3 mt-auto border-t">
         <ElPagination
           background
-          :current-page="paginationBind.current"
-          :page-size="paginationBind.size"
-          :total="paginationBind.total"
+          :current-page="pagination.current"
+          :page-size="pagination.size"
+          :total="pagination.total"
           :page-sizes="[12, 24, 48]"
           layout="total, sizes, prev, pager, next"
           @size-change="handleSizeChange"
@@ -341,21 +341,6 @@ const {
     },
     columnsFactory: (): ColumnOption<ApplicationInfo>[] => [],
   },
-});
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 12,
-    total: p.total ?? 0,
-  };
 });
 
 const formData = reactive<ApplicationForm>({

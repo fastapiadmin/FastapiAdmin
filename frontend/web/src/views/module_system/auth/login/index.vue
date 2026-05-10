@@ -293,7 +293,6 @@ async function tryConsumeOAuthCallback() {
       Auth.setTokens(access, refresh, true);
       userStore.setToken(access, refresh);
       userStore.setLoginStatus(true);
-      await userStore.getUserInfo();
       ElNotification({
         title: t("login.oauthNoticeTitle"),
         message: t("login.oauthLoginSuccess"),
@@ -549,7 +548,7 @@ const showVoteNotification = () => {
 
 onMounted(async () => {
   setupAccount("super");
-  await configStore.getConfig(true);
+  await configStore.getConfig();
   await tryConsumeOAuthCallback();
   getCaptcha();
   setTimeout(showVoteNotification, 500);

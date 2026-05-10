@@ -89,6 +89,9 @@ import { ArrowDown, Delete, Download, Plus, Upload } from "@element-plus/icons-v
 import { computed } from "vue";
 import type { ArtTableHeaderLeftConfigButton } from "@/components/Core/modal/types";
 
+/**
+ * 列表左侧工具条：`configButtons` 与 CrudContent 对齐，或用 perm 预设；默认插槽可整块替换。
+ */
 const props = withDefaults(
   defineProps<{
     /** 与 CrudContent `toolbarLeftBtn` 一致时走配置驱动（与 handleToolbar 对齐） */

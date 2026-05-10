@@ -54,7 +54,7 @@
     </div>
 
     <!-- 解锁全屏（旧版 LockPage 样式） -->
-    <div v-else class="lockpage">
+    <div v-else class="lockpage" :style="lockPageBgStyle">
       <div v-show="showClock" class="unlock-container" @click="showUnlockForm">
         <ElIcon><Lock /></ElIcon>
         <span>{{ t("lock.unlock") }}</span>
@@ -148,8 +148,11 @@ import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import CryptoJS from "crypto-js";
 import { useUserStore } from "@stores/modules/user.store";
+import { useSettingsStore } from "@stores/modules/setting.store";
 import { mittBus } from "@utils/sys";
 import { useNow } from "@utils/common";
+import bgDark from "@imgs/lock/bg_dark.webp";
+import bgLight from "@imgs/lock/bg_light.webp";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -158,7 +161,20 @@ const router = useRouter();
 const ENCRYPT_KEY = import.meta.env.VITE_LOCK_ENCRYPT_KEY;
 
 const userStore = useUserStore();
+const settingsStore = useSettingsStore();
 const { info: userInfo, lockPassword, isLock } = storeToRefs(userStore);
+const { isDark } = storeToRefs(settingsStore);
+
+/** 锁屏全屏背景：随明暗主题切换壁纸，叠加半透明罩层保证时钟/文案可读 */
+const lockPageBgStyle = computed(() => {
+  const url = isDark.value ? bgDark : bgLight;
+  return {
+    backgroundImage: `linear-gradient(rgb(0 0 0 / 46%), rgb(0 0 0 / 46%)), url(${url})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  };
+});
 
 const { hour, month, minute, meridiem, year, day, week } = useNow(true);
 
@@ -525,8 +541,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   color: var(--el-color-white);
-  background-color: rgb(0 0 0 / 90%);
-  backdrop-filter: blur(8px);
 
   .unlock-container {
     position: absolute;

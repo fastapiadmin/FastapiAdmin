@@ -16,7 +16,7 @@ import type { MenuTable } from "@/api/module_system/menu";
 import { Auth } from "@utils/auth";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { ElNotification } from "element-plus";
-import { store, useTagsViewStore, useDictStore } from "@stores";
+import { store, useDictStore } from "@stores";
 import type { UserInfo } from "@/api/module_system/user";
 
 /** {@link useUserStore} 的 `logout` 可选参数 */
@@ -154,11 +154,9 @@ export const useUserStore = defineStore(
         return;
       }
 
-      // 不同用户登录，清空工作台标签页
-      if (String(currentUserId) !== lastUserId) {
-        const worktabStore = useWorktabStore();
-        worktabStore.opened = [];
-        worktabStore.keepAliveExclude = [];
+      // 不同用户登录：清空工作台标签（含 current，避免与路由脱节；并与持久化一致）
+      if (String(currentUserId) !== String(lastUserId)) {
+        useWorktabStore().clearAll();
       }
 
       // 清除临时存储
@@ -311,6 +309,8 @@ export const useUserStore = defineStore(
       accessToken.value = "";
       refreshToken.value = "";
       prems.value = [];
+      /** 登出 / 认证失效：会话结束，工作栏与 KeepAlive exclude 一并清空（pinia 持久化随之写入） */
+      useWorktabStore().clearAll();
     }
 
     /**
@@ -355,8 +355,7 @@ export const useUserStore = defineStore(
       Auth.clearAuth();
       // 重置用户信息
       clearUserInfo();
-      // 清除标签视图
-      useTagsViewStore().delAllViews();
+      useWorktabStore().clearAll();
       // 重置字典
       useDictStore(store).clearDictData();
 

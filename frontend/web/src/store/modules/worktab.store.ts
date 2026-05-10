@@ -23,7 +23,7 @@
  *
  * ## 核心特性
  *
- * - 智能标签页复用（同路由名称复用）
+ * - 标签以 path 标识；同一路由组件可对不同 path 多开
  * - 固定标签页保护（不可关闭）
  * - KeepAlive 缓存排除管理
  * - 路由有效性验证
@@ -110,6 +110,19 @@ export const useWorktabStore = defineStore(
     };
 
     /**
+     * 批量关标签后：若当前 URL 已不在 opened 中，则跳到 `current` 对应标签（避免路由与工作栏脱节）。
+     */
+    const ensureRouterMatchesOpenedTab = (): void => {
+      if (!opened.value.length) return;
+      const locPath = router.currentRoute.value.path;
+      if (opened.value.some((t) => t.path === locPath)) return;
+      const tab = current.value as Partial<WorkTab>;
+      if (tab.path) {
+        safeRouterPush(tab as WorkTab);
+      }
+    };
+
+    /**
      * 打开或激活一个选项卡
      */
     const openTab = (tab: WorkTab): void => {
@@ -123,14 +136,8 @@ export const useWorktabStore = defineStore(
         removeKeepAliveExclude(tab.name);
       }
 
-      // 先根据路由名称查找（应对动态路由参数导致的多开问题），找不到再根据路径查找
-      let existingIndex = -1;
-      if (tab.name) {
-        existingIndex = opened.value.findIndex((t) => t.name === tab.name);
-      }
-      if (existingIndex === -1) {
-        existingIndex = findTabIndex(tab.path);
-      }
+      // 仅以 path 识别标签：同一 route_name（同一组件）可对不同 path 同时保留多条标签
+      const existingIndex = findTabIndex(tab.path);
 
       if (existingIndex === -1) {
         // 新增标签页
@@ -256,6 +263,7 @@ export const useWorktabStore = defineStore(
       if (targetTab) {
         current.value = targetTab;
       }
+      ensureRouterMatchesOpenedTab();
     };
 
     /**
@@ -291,6 +299,7 @@ export const useWorktabStore = defineStore(
       if (targetTab) {
         current.value = targetTab;
       }
+      ensureRouterMatchesOpenedTab();
     };
 
     /**
@@ -321,6 +330,7 @@ export const useWorktabStore = defineStore(
 
       // 确保当前标签是激活状态
       current.value = targetTab;
+      ensureRouterMatchesOpenedTab();
     };
 
     /**
@@ -366,14 +376,28 @@ export const useWorktabStore = defineStore(
     };
 
     /**
-     * 将指定选项卡添加到 keepAlive 排除列表中
+     * KeepAlive 的 exclude 按「组件名」匹配，会一次性清掉所有同名实例。
+     * 仅当 remaining 中已无任何同名标签时，才把该组件名加入 exclude（支持同 route_name 多 path 并存）。
+     */
+    const pushExcludeIfLastSiblingOfName = (
+      name: string | undefined,
+      remaining: WorkTab[],
+      tab: Pick<WorkTab, "keepAlive">
+    ): void => {
+      if (!name || tab.keepAlive === false) return;
+      if (remaining.some((t) => t.name === name)) return;
+      if (!keepAliveExclude.value.includes(name)) {
+        keepAliveExclude.value.push(name);
+      }
+    };
+
+    /**
+     * 将指定选项卡添加到 keepAlive 排除列表中。
+     * 须与布局「keepAlive !== false 即缓存」一致：仅用 `=== false` 跳过（undefined/true 均应排除），
+     * 否则关标签时无法剔除原先 meta 未显式写 keepAlive 的页的缓存。
      */
     const addKeepAliveExclude = (tab: WorkTab): void => {
-      if (!tab.keepAlive || !tab.name) return;
-
-      if (!keepAliveExclude.value.includes(tab.name)) {
-        keepAliveExclude.value.push(tab.name);
-      }
+      pushExcludeIfLastSiblingOfName(tab.name, opened.value, tab);
     };
 
     /**
@@ -389,11 +413,13 @@ export const useWorktabStore = defineStore(
      * 将传入的一组选项卡的组件名称标记为排除缓存
      */
     const markTabsToRemove = (tabs: WorkTab[]): void => {
-      tabs.forEach((tab) => {
+      const removedPaths = new Set(tabs.map((t) => t.path));
+      const futureOpened = opened.value.filter((t) => !removedPaths.has(t.path));
+      for (const tab of tabs) {
         if (tab.name) {
-          addKeepAliveExclude(tab);
+          pushExcludeIfLastSiblingOfName(tab.name, futureOpened, tab);
         }
-      });
+      }
     };
 
     /**
@@ -466,6 +492,13 @@ export const useWorktabStore = defineStore(
 
         if (validTabs.length !== opened.value.length) {
           console.warn("发现无效的标签页路由，已自动清理");
+          const validPaths = new Set(validTabs.map((t) => t.path));
+          // 未走 removeTab 批量剔除的标签：须同步 exclude；同名多标签时仅最后一条删尽才 exclude
+          for (const tab of opened.value) {
+            if (!validPaths.has(tab.path) && tab.name && tab.keepAlive !== false) {
+              pushExcludeIfLastSiblingOfName(tab.name, validTabs, tab);
+            }
+          }
           opened.value = validTabs;
         }
 
@@ -532,6 +565,30 @@ export const useWorktabStore = defineStore(
       }
     };
 
+    /**
+     * 关闭「多标签栏」时：visited 不写入 `opened`（与 KeepAlive include 策略一致），
+     * 但路由每次完成导航后应更新 `current`，避免持久化/内部状态与 `router` 真值脱节。
+     */
+    const syncCurrentFromRoute = (tab: {
+      path: string;
+      name: string;
+      title: string;
+      icon?: string;
+      keepAlive: boolean;
+      params?: object;
+      query?: LocationQueryRaw;
+    }): void => {
+      current.value = {
+        path: tab.path,
+        name: tab.name,
+        title: tab.title,
+        icon: tab.icon,
+        keepAlive: tab.keepAlive,
+        params: tab.params,
+        query: tab.query,
+      };
+    };
+
     return {
       // 状态
       current,
@@ -565,6 +622,7 @@ export const useWorktabStore = defineStore(
       getTabTitle,
       updateTabTitle,
       resetTabTitle,
+      syncCurrentFromRoute,
     };
   },
   {

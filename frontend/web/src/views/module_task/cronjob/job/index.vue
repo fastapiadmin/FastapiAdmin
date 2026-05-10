@@ -1,4 +1,4 @@
-<!-- 调度任务：Art + useTable（主列表卡片；抽屉内表格） -->
+<!-- 调度任务：主区调度器状态 + 任务卡片列表（getSchedulerJobs 全量、前端筛选）；抽屉内执行日志表用 useTable 分页 -->
 <template>
   <div class="art-full-height job-page flex flex-col min-h-0">
     <ArtSearchBar
@@ -364,7 +364,7 @@ import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { Calendar, Clock, Timer } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
-import { computed, h, nextTick, ref } from "vue";
+import { computed, h, nextTick, onMounted, ref } from "vue";
 import { Terminal, TerminalApi } from "vue-web-terminal";
 
 const schedulerStatus = ref<SchedulerStatus>({
@@ -377,13 +377,6 @@ type JobSearchForm = {
   name?: string;
   status?: string;
 };
-
-function buildJobReplaceParams(u: JobSearchForm): Record<string, unknown> {
-  return {
-    name: u.name,
-    status: u.status,
-  };
-}
 
 const searchForm = ref<JobSearchForm>({
   name: undefined,
@@ -429,42 +422,52 @@ async function loadSchedulerStatus() {
   }
 }
 
-const {
-  data: jobList,
-  loading: jobLoading,
-  columnChecks: jobColumnChecks,
-  getData: getJobList,
-  replaceSearchParams: replaceJobSearchParams,
-  resetSearchParams: resetJobSearchParams,
-  refreshData: refreshJobList,
-} = useTable({
-  core: {
-    apiFn: JobAPI.getSchedulerJobs,
-    apiParams: {
-      page_no: 1,
-      page_size: 10,
-    },
-    columnsFactory: (): ColumnOption<SchedulerJob>[] => [
-      { type: "selection", width: 48, fixed: "left" },
-      { type: "globalIndex", width: 56, label: "序号" },
-      { prop: "id", label: "任务ID", minWidth: 80, showOverflowTooltip: true },
-      { prop: "name", label: "任务名称", minWidth: 140, showOverflowTooltip: true },
-      { prop: "trigger", label: "触发器", minWidth: 120, showOverflowTooltip: true },
-      { prop: "next_run_time", label: "下次执行时间", minWidth: 200, showOverflowTooltip: true },
-      { prop: "status", label: "状态", minWidth: 80, showOverflowTooltip: true },
-    ],
-  },
-  hooks: {
-    onSuccess: () => {
-      void loadSchedulerStatus();
-    },
-  },
-});
+/** 调度器任务列表为全量列表接口，无分页；筛选在前端完成 */
+const jobList = ref<SchedulerJob[]>([]);
+const jobLoading = ref(false);
+/** 主区域为卡片列表无表格列配置，仅占位满足 ArtTableHeader v-model */
+const jobColumnChecks = ref<ColumnOption<SchedulerJob>[]>([]);
 
-async function handleJobSearchBarSearch(params: JobSearchForm) {
+function matchesJobStatusFilter(jobStatus: string | undefined, filter?: string): boolean {
+  if (!filter) return true;
+  const map: Record<string, string[]> = {
+    运行中: ["运行中"],
+    暂停: ["暂停", "暂停中"],
+    停止: ["停止", "已停止"],
+  };
+  const aliases = map[filter];
+  if (!aliases) return true;
+  const s = jobStatus ?? "";
+  return aliases.some((a) => s === a || s.includes(a));
+}
+
+async function fetchSchedulerJobs() {
+  jobLoading.value = true;
+  try {
+    const res = await JobAPI.getSchedulerJobs();
+    const raw = res.data?.data;
+    const list: SchedulerJob[] = Array.isArray(raw) ? raw : [];
+    const nameQ = searchForm.value.name?.trim();
+    const statusQ = searchForm.value.status;
+    jobList.value = list.filter((j) => {
+      if (nameQ && !(j.name ?? "").includes(nameQ)) return false;
+      if (!matchesJobStatusFilter(j.status, statusQ)) return false;
+      return true;
+    });
+    await loadSchedulerStatus();
+  } catch (error: unknown) {
+    console.error(error);
+    jobList.value = [];
+  } finally {
+    jobLoading.value = false;
+  }
+}
+
+const refreshJobList = fetchSchedulerJobs;
+
+async function handleJobSearchBarSearch(_params: JobSearchForm) {
   await searchBarRef.value?.validate?.();
-  replaceJobSearchParams(buildJobReplaceParams(params));
-  getJobList();
+  await fetchSchedulerJobs();
 }
 
 async function onJobResetSearch() {
@@ -472,8 +475,12 @@ async function onJobResetSearch() {
     name: undefined,
     status: undefined,
   };
-  await resetJobSearchParams();
+  await fetchSchedulerJobs();
 }
+
+onMounted(() => {
+  void fetchSchedulerJobs();
+});
 
 type LogSearchForm = {
   status?: string;

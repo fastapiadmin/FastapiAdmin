@@ -1,4 +1,7 @@
-<!-- 表格头部，包含表格大小、刷新、全屏、列设置、其他设置 -->
+<!--
+  表格工具栏：搜索显隐、刷新、密度、全屏、列拖拽显隐、斑马纹等外观开关。
+  layout 逗号分隔子项；左侧 / 右侧插槽由列表页填充业务按钮。
+-->
 <template>
   <div class="flex-cb max-md:!block" id="art-table-header">
     <div class="flex-wrap">
@@ -155,6 +158,7 @@ import { VueDraggable } from "vue-draggable-plus";
 import { useI18n } from "vue-i18n";
 import type { ColumnOption } from "@/types/component";
 import { ElScrollbar } from "element-plus";
+import { getColumnVisibility } from "@/hooks/core/useTableColumns";
 
 defineOptions({ name: "ArtTableHeader" });
 
@@ -188,21 +192,7 @@ const emit = defineEmits<{
   (e: "update:showSearchBar", value: boolean): void;
 }>();
 
-/**
- * 获取列的显示状态
- * 优先使用 visible 字段，如果不存在则使用 checked 字段
- */
-const getColumnVisibility = (col: ColumnOption): boolean => {
-  if (col.visible !== undefined) {
-    return col.visible;
-  }
-  return col.checked ?? true;
-};
-
-/**
- * 更新列的显示状态
- * 同时更新 checked 和 visible 字段以保持兼容性
- */
+/** 与 `useTableColumns` 规则一致：写入 checked + visible 双字段 */
 const updateColumnVisibility = (col: ColumnOption, value: boolean | string | number): void => {
   const boolValue = !!value;
   col.checked = boolValue;
@@ -223,52 +213,29 @@ const toggleRowDrag = () => {
   tableStore.setIsRowDrag(!isRowDrag.value);
 };
 
-/** 解析 layout 属性，转换为数组 */
-const layoutItems = computed(() => {
-  return props.layout.split(",").map((item) => item.trim());
-});
+const layoutItems = computed(() => props.layout.split(",").map((item) => item.trim()));
 
-/**
- * 检查组件是否应该显示
- * @param componentName 组件名称
- * @returns 是否显示
- */
-const shouldShow = (componentName: string) => {
-  return layoutItems.value.includes(componentName);
-};
+const shouldShow = (componentName: string) => layoutItems.value.includes(componentName);
 
-/**
- * 拖拽移动事件处理 - 防止固定列位置改变
- * @param evt move事件对象
- * @returns 是否允许移动
- */
+/** 禁止拖入固定列区域 */
 const checkColumnMove = (event: any) => {
-  // 拖拽进入的目标 DOM 元素
   const toElement = event.related as HTMLElement;
-  // 如果目标位置是 fixed 列，则不允许移动
   if (toElement && toElement.classList.contains("fixed-column")) {
     return false;
   }
   return true;
 };
 
-/** 搜索事件处理 */
 const search = () => {
-  // 切换搜索栏显示状态
   emit("update:showSearchBar", !props.showSearchBar);
   emit("search");
 };
 
-/** 刷新事件处理 */
 const refresh = () => {
   isManualRefresh.value = true;
   emit("refresh");
 };
 
-/**
- * 表格大小变化处理
- * @param command 表格大小枚举值
- */
 const handleTableSizeChange = (command: TableSizeEnum) => {
   useTableStore().setTableSize(command);
 };

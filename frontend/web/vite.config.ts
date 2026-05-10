@@ -237,7 +237,8 @@ export default ({ mode }: { mode: string }) => {
         threshold: 10240,
         deleteOriginFile: false,
       }),
-      vueDevTools(),
+      /** 仅开发启用：避免生产包体积膨胀与运行期 DevTools 开销 */
+      ...(isProduction ? [] : [vueDevTools()]),
     ],
     optimizeDeps: {
       include: buildOptimizeDepsInclude(root),
