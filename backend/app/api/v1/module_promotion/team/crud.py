@@ -75,5 +75,4 @@ class TeamCRUD(CRUDBase[PromotionTeamModel, TeamCreateSchema, TeamUpdateSchema])
 
     async def get_by_team_code_crud(self, team_code: str) -> PromotionTeamModel | None:
         """根据编码获取招生组"""
-        result = await self.get(row_key="team_code", row_value=team_code)
-        return result
+        return await self.get(team_code=team_code)

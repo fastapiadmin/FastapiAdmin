@@ -60,6 +60,7 @@ class RegistrationApproveSchema(BaseSchema):
 
     booth_number: str | None = Field(default=None, description="展位号")
     booth_size: str | None = Field(default=None, description="展位大小")
+    booth_fee: float | None = Field(default=None, description="展位费用")
     comment: str | None = Field(default=None, description="审核意见")
 
 
