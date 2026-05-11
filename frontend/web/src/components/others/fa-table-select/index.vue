@@ -1,0 +1,369 @@
+<template>
+  <div ref="tableSelectRef" :style="'width:' + width">
+    <ElPopover
+      :visible="popoverVisible"
+      :width="selectConfig.popover?.width ?? popoverWidth"
+      placement="bottom-end"
+      v-bind="selectConfig.popover"
+      @show="handleShow"
+    >
+      <template #reference>
+        <div @click="popoverVisible = !popoverVisible">
+          <slot>
+            <ElInput
+              class="reference"
+              style="width: 100%"
+              :model-value="text"
+              :readonly="true"
+              :placeholder="placeholder"
+              :clearable="true"
+              @clear="handleClear"
+            >
+              <template #suffix>
+                <ElIcon
+                  :style="{
+                    transform: popoverVisible ? 'rotate(180deg)' : 'rotate(0)',
+                    transition: 'transform .5s',
+                  }"
+                >
+                  <ArrowDown />
+                </ElIcon>
+              </template>
+            </ElInput>
+          </slot>
+        </div>
+      </template>
+      <!-- 弹出框内容 -->
+      <div ref="popoverContentRef">
+        <!-- 表单 -->
+        <ElForm ref="formRef" :model="queryParams" :inline="true">
+          <template v-for="item in selectConfig.formItems" :key="item.prop">
+            <ElFormItem :label="item.label" :prop="item.prop">
+              <!-- Input 输入框 -->
+              <template v-if="item.type === 'input'">
+                <template v-if="item.attrs?.type === 'number'">
+                  <ElInput
+                    v-model.number="queryParams[item.prop]"
+                    v-bind="item.attrs"
+                    @keyup.enter="handleQuery"
+                  />
+                </template>
+                <template v-else>
+                  <ElInput
+                    v-model="queryParams[item.prop]"
+                    v-bind="item.attrs"
+                    @keyup.enter="handleQuery"
+                  />
+                </template>
+              </template>
+              <!-- Select 选择器 -->
+              <template v-else-if="item.type === 'select'">
+                <ElSelect v-model="queryParams[item.prop]" v-bind="item.attrs">
+                  <template v-for="option in item.options" :key="option.value">
+                    <ElOption :label="option.label" :value="option.value" />
+                  </template>
+                </ElSelect>
+              </template>
+              <!-- TreeSelect 树形选择 -->
+              <template v-else-if="item.type === 'tree-select'">
+                <ElTreeSelect v-model="queryParams[item.prop]" v-bind="item.attrs" />
+              </template>
+              <!-- DatePicker 日期选择器 -->
+              <template v-else-if="item.type === 'date-picker'">
+                <ElDatePicker v-model="queryParams[item.prop]" v-bind="item.attrs" />
+              </template>
+              <!-- Input 输入框 -->
+              <template v-else>
+                <template v-if="item.attrs?.type === 'number'">
+                  <ElInput
+                    v-model.number="queryParams[item.prop]"
+                    v-bind="item.attrs"
+                    @keyup.enter="handleQuery"
+                  />
+                </template>
+                <template v-else>
+                  <ElInput
+                    v-model="queryParams[item.prop]"
+                    v-bind="item.attrs"
+                    @keyup.enter="handleQuery"
+                  />
+                </template>
+              </template>
+            </ElFormItem>
+          </template>
+          <ElFormItem>
+            <ElButton type="primary" icon="search" @click="handleQuery">搜索</ElButton>
+            <ElButton icon="refresh" @click="handleReset">重置</ElButton>
+          </ElFormItem>
+        </ElForm>
+        <!-- 列表 -->
+        <ElTable
+          ref="tableRef"
+          v-loading="loading"
+          :data="pageData"
+          :border="true"
+          :max-height="250"
+          :row-key="pk"
+          :class="{ radio: !isMultiple }"
+          @select="handleSelect"
+          @select-all="handleSelectAll"
+        >
+          <template v-for="col in selectConfig.tableColumns" :key="col.prop">
+            <!-- 自定义 -->
+            <template v-if="col.templet === 'custom'">
+              <ElTableColumn v-bind="col">
+                <template #default="scope">
+                  <slot :name="col.slotName ?? col.prop" :prop="col.prop" v-bind="scope" />
+                </template>
+              </ElTableColumn>
+            </template>
+            <!-- 其他 -->
+            <template v-else>
+              <ElTableColumn v-bind="col" />
+            </template>
+          </template>
+        </ElTable>
+        <!-- 分页 -->
+        <pagination
+          v-model:total="total"
+          v-model:page="queryParams.page_no"
+          v-model:limit="queryParams.page_size"
+          @pagination="handlePagination"
+        />
+        <div class="feedback">
+          <ElButton type="primary" size="small" @click="handleConfirm">
+            {{ confirmText }}
+          </ElButton>
+          <ElButton size="small" @click="handleClear">清 空</ElButton>
+          <ElButton size="small" @click="handleClose">关 闭</ElButton>
+        </div>
+      </div>
+    </ElPopover>
+  </div>
+</template>
+
+<script lang="ts" setup>
+defineOptions({ name: "FaTableSelect" });
+
+// 显式声明插槽类型（支持动态列插槽）
+defineSlots<{
+  [slotName: string]: (props: Record<string, any>) => void;
+}>();
+
+import { ref, reactive, computed } from "vue";
+import { useResizeObserver } from "@vueuse/core";
+import type { FormInstance, PopoverProps, TableInstance } from "element-plus";
+
+// 对象类型
+export type IObject = Record<string, any>;
+// 定义接收的属性
+export interface ISelectConfig<T = any> {
+  // 宽度
+  width?: string;
+  // 占位符
+  placeholder?: string;
+  // popover组件属性
+  popover?: Partial<Omit<PopoverProps, "visible" | "v-model:visible">> & {
+    width?: number | string;
+  };
+  // 列表的网络请求函数(需返回promise)
+  indexAction: (_queryParams: T) => Promise<any>;
+  // 主键名(跨页选择必填,默认为id)
+  pk?: string;
+  // 多选
+  multiple?: boolean;
+  // 表单项
+  formItems: Array<{
+    // 组件类型(如input,select等)
+    type?: "input" | "select" | "tree-select" | "date-picker";
+    // 标签文本
+    label: string;
+    // 键名
+    prop: string;
+    // 组件属性
+    attrs?: IObject;
+    // 初始值
+    initialValue?: any;
+    // 可选项(适用于select组件)
+    options?: { label: string; value: any }[];
+  }>;
+  // 列选项
+  tableColumns: Array<{
+    type?: "default" | "selection" | "index" | "expand";
+    label?: string;
+    prop?: string;
+    width?: string | number;
+    [key: string]: any;
+  }>;
+}
+const props = withDefaults(
+  defineProps<{
+    selectConfig: ISelectConfig;
+    text?: string;
+  }>(),
+  {
+    text: "",
+  }
+);
+
+// 自定义事件
+const emit = defineEmits<{
+  confirmClick: [selection: any[]];
+  clearClick: [];
+}>();
+
+// 主键
+const pk = props.selectConfig.pk ?? "id";
+// 是否多选
+const isMultiple = props.selectConfig.multiple === true;
+// 宽度
+const width = props.selectConfig.width ?? "100%";
+// 占位符
+const placeholder = props.selectConfig.placeholder ?? "请选择";
+// 是否显示弹出框
+const popoverVisible = ref(false);
+// 加载状态
+const loading = ref(false);
+// 数据总数
+const total = ref(0);
+// 列表数据
+const pageData = ref<IObject[]>([]);
+// 每页条数
+const page_size = 10;
+// 搜索参数
+const queryParams = reactive<{
+  page_no: number;
+  page_size: number;
+  [key: string]: any;
+}>({
+  page_no: 1,
+  page_size,
+});
+
+// 计算popover的宽度
+const tableSelectRef = ref();
+const popoverWidth = ref(width);
+useResizeObserver(tableSelectRef, (entries) => {
+  popoverWidth.value = `${entries[0].contentRect.width}px`;
+});
+
+// 表单操作
+const formRef = ref<FormInstance>();
+// 初始化搜索条件
+for (const item of props.selectConfig.formItems) {
+  queryParams[item.prop] = item.initialValue ?? "";
+}
+// 重置操作
+function handleReset() {
+  formRef.value?.resetFields();
+  fetchPageData(true);
+}
+// 查询操作
+function handleQuery() {
+  fetchPageData(true);
+}
+
+// 获取分页数据
+function fetchPageData(isRestart = false) {
+  loading.value = true;
+  if (isRestart) {
+    queryParams.page_no = 1;
+    queryParams.page_size = page_size;
+  }
+  props.selectConfig
+    .indexAction(queryParams)
+    .then((data) => {
+      total.value = data.total;
+      pageData.value = data.list;
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
+
+// 列表操作
+const tableRef = ref<TableInstance>();
+// 数据刷新后是否保留选项
+for (const item of props.selectConfig.tableColumns) {
+  if (item.type === "selection") {
+    item.reserveSelection = true;
+    break;
+  }
+}
+// 选择
+const selectedItems = ref<IObject[]>([]);
+const confirmText = computed(() => {
+  return selectedItems.value.length > 0 ? `已选(${selectedItems.value.length})` : "确 定";
+});
+function handleSelect(selection: any[]) {
+  if (isMultiple || selection.length === 0) {
+    // 多选
+    selectedItems.value = selection;
+  } else {
+    // 单选
+    selectedItems.value = [selection[selection.length - 1]];
+    tableRef.value?.clearSelection();
+    tableRef.value?.toggleRowSelection(selectedItems.value[0], true);
+    tableRef.value?.setCurrentRow(selectedItems.value[0]);
+  }
+}
+function handleSelectAll(selection: any[]) {
+  if (isMultiple) {
+    selectedItems.value = selection;
+  }
+}
+// 分页
+function handlePagination() {
+  fetchPageData();
+}
+
+// 弹出框
+const isInit = ref(false);
+// 显示
+function handleShow() {
+  if (isInit.value === false) {
+    isInit.value = true;
+    fetchPageData();
+  }
+}
+// 确定
+function handleConfirm() {
+  if (selectedItems.value.length === 0) {
+    ElMessage.error("请选择数据");
+    return;
+  }
+  popoverVisible.value = false;
+  emit("confirmClick", selectedItems.value);
+}
+// 清空
+function handleClear() {
+  tableRef.value?.clearSelection();
+  selectedItems.value = [];
+  emit("clearClick");
+}
+// 关闭
+function handleClose() {
+  popoverVisible.value = false;
+}
+const popoverContentRef = ref();
+/* onClickOutside(tableSelectRef, () => (popoverVisible.value = false), {
+  ignore: [popoverContentRef],
+}); */
+</script>
+
+<style scoped lang="scss">
+.reference :deep(.el-input__wrapper),
+.reference :deep(.el-input__inner) {
+  cursor: pointer;
+}
+
+.feedback {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+// 隐藏全选按钮
+.radio :deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
+  visibility: hidden;
+}
+</style>

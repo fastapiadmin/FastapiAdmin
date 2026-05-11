@@ -263,8 +263,8 @@ import { Camera } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import { redirectToLogin } from "@utils/auth";
-import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
-import ArtCutterImg from "@/components/Core/media/art-cutter-img/index.vue";
+import ArtSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+import ArtCutterImg from "@/components/media/fa-cutter-img/index.vue";
 import { dataURLToFile } from "@utils/file/dataUrl";
 
 defineOptions({ name: "UserProfile" });

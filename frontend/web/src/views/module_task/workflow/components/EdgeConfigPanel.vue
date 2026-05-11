@@ -8,7 +8,7 @@
     </div>
 
     <div class="panel-content">
-      <ArtForm
+      <FaForm
         v-model="formData"
         :items="edgeFormItems"
         label-width="80px"
@@ -23,7 +23,7 @@
         <template #color>
           <ElColorPicker v-model="formData.color" />
         </template>
-      </ArtForm>
+      </FaForm>
 
       <div class="panel-actions">
         <ElButton type="primary" size="small" @click="handleSave">保存</ElButton>
@@ -37,7 +37,7 @@
 import { ref, watch, computed } from "vue";
 import { ElButton, ElColorPicker, ElMessage, ElIcon } from "element-plus";
 import { Close } from "@element-plus/icons-vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
 
 const props = defineProps({
   edge: {

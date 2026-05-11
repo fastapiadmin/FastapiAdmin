@@ -1,5 +1,5 @@
 <template>
-  <ArtDrawer
+  <FaDrawer
     v-model="drawerVisible"
     title="配置中心"
     :size="drawerSize"
@@ -281,7 +281,7 @@
         保存
       </ElButton>
     </template>
-  </ArtDrawer>
+  </FaDrawer>
 </template>
 
 <script lang="ts" setup>
@@ -290,7 +290,7 @@ import ParamsAPI, { type ConfigTable } from "@/api/module_system/params";
 import { useConfigStore } from "@stores";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
 import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
 import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";

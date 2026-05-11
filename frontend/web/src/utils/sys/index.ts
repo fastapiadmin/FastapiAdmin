@@ -185,7 +185,7 @@ class VersionManager {
   private buildUpgradeMessage(requireReLogin: boolean): string {
     const { title: content } = upgradeLogList.value[0];
     const messageParts = [
-      `<p style="color: var(--art-gray-800) !important; padding-bottom: 5px;">`,
+      `<p style="color: var(--fa-gray-800) !important; padding-bottom: 5px;">`,
       `系统已升级到 ${StorageConfig.CURRENT_VERSION} 版本，此次更新带来了以下改进：`,
       `</p>`,
       content,

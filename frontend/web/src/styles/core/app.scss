@@ -175,7 +175,7 @@
   flex-direction: column;
 }
 
-// 表格卡片
+// 表格卡片：与 FaTableHeader + FaTable 组成纵向 flex，表格区 flex 填满、分页在表格正下方
 .art-table-card {
   flex: 1;
   display: flex;
@@ -187,6 +187,11 @@
   .el-card__body {
     height: 100%;
     overflow: hidden;
+
+    /** 工具栏区不参与压缩，表格区 FaTable 使用 flex:1 占满剩余高度 */
+    #art-table-header {
+      flex-shrink: 0;
+    }
   }
 }
 

@@ -1,30 +1,6 @@
 /**
- * 表格状态管理模块
- *
- * 提供表格显示配置的状态管理
- *
- * ## 主要功能
- *
- * - 表格尺寸配置（紧凑、默认、宽松）
- * - 斑马纹显示开关
- * - 边框显示开关
- * - 表头背景显示开关
- * - 全屏模式开关
- * - 表格行拖拽排序（仅当前页数据，需数据为可变数组）
- *
- * ## 使用场景
- * - 表格组件样式配置
- * - 用户表格偏好设置
- * - 表格工具栏功能控制
- *
- * ## 持久化
- *
- * - 使用 localStorage 存储
- * - 存储键：sys-v{version}-table
- * - 用户配置跨页面保持
- *
- * @module store/modules/table.store
- * @author FastapiAdmin Team
+ * 表格全局外观与交互：`FaTable` / `FaTableHeader` 通过 store 同步密度、斑马纹、边框、表头背景、全屏、行拖拽。
+ * 持久化见 options.persist；跨页面保持用户偏好。
  */
 import { defineStore } from "pinia";
 import { ref } from "vue";

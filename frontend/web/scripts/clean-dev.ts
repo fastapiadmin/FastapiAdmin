@@ -165,7 +165,7 @@ const targets = [
   "src/assets/images/cover",
   "src/assets/images/safeguard",
   "src/assets/images/3d",
-  "src/components/core/charts/art-map-chart",
+  "src/components/charts/fa-map-chart",
   "src/components/business/comment-widget",
 ];
 

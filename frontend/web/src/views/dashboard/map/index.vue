@@ -14,6 +14,6 @@ defineOptions({ name: "DashboardMap" });
  * 减少初始加载体积
  */
 const ArtMapChart = defineAsyncComponent(
-  () => import("@/components/Core/charts/art-map-chart/index.vue")
+  () => import("@/components/charts/fa-map-chart/index.vue")
 );
 </script>

@@ -13,7 +13,7 @@ export const HOME_MENU_META: RouteMeta = {
 
 export const DASHBOARD_PARENT_META: RouteMeta = {
   title: "menus.dashboard.title",
-  icon: "ri:pie-chart-line",
+  icon: "ri:pie-chfa-line",
   alwaysShow: true,
 };
 
@@ -92,7 +92,7 @@ export const ROUTE_COMPONENT_NESTED_PARENT = "/nested/router-view-parent";
 export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
 
 /**
- * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。
+ * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/fa-*` 组件）。
  * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
  */
 export const Layout = () => import("@/layouts/index.vue");
@@ -172,7 +172,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     component: () => import("@views/dashboard/ecommerce/index.vue"),
     meta: {
       title: "menus.dashboard.ecommerce",
-      icon: "ri:bar-chart-box-line",
+      icon: "ri:bar-chfa-box-line",
       keepAlive: false,
     },
   },

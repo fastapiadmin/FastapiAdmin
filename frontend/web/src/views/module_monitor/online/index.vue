@@ -1,7 +1,7 @@
 <!-- 在线用户：Art + useTable -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,7 +18,7 @@
     />
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -35,9 +35,9 @@
             强退所有
           </ElButton>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
+      <FaTable
         row-key="session_id"
         :loading="loading"
         :data="data"
@@ -58,11 +58,11 @@ defineOptions({
 
 import { h, ref, computed } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
 import CopyButton from "@/components/CopyButton/index.vue";
 import OnlineAPI, { type OnlineUserTable } from "@/api/module_monitor/online";
 import type { ColumnOption } from "@/types/component";
@@ -92,7 +92,7 @@ const searchForm = ref<OnlineSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const onlineSearchItems = computed<SearchFormItem[]>(() => [

@@ -24,7 +24,7 @@
 
 #### 新增
 
-- ArtForm 和 ArtSearchBar 组件的 label 支持自定义渲染函数，可实现带 tooltip 等复杂标签
+- FaForm 和 FaSearchBar 组件的 label 支持自定义渲染函数，可实现带 tooltip 等复杂标签
 - 菜单管理表单关键字段新增 Tooltip 提示，降低用户配置门槛
 - iconify 新增离线图标加载模式
 - 退出登录新增 redirect 属性，用于重新登录后跳转到对应页面
@@ -58,16 +58,16 @@
 - 注释优化：统一模块注释规范，完善每一个组件介绍、功能说明与使用示例，降低用户理解成本与上手难度
 - 性能提升：优化核心代码逻辑，提升系统运行效率
 - 菜单优化：细化菜单样式，优化交互体验与视觉呈现
-- 响应式优化：优化 ArtForm、ArtSearchBar 栅格布局，适配多种屏幕尺寸
+- 响应式优化：优化 FaForm、FaSearchBar 栅格布局，适配多种屏幕尺寸
 - 配置管理优化：新增 setting.ts 配置文件，支持一键复制与重置系统默认设置
 
 #### 修复
 
-- 修复 ArtForm、ArtSearchBar 自定义组件渲染异常
+- 修复 FaForm、FaSearchBar 自定义组件渲染异常
 
 #### 新增
 
-- ArtForm、ArtSearchBar 新增 render 属性，支持自定义组件渲染
+- FaForm、FaSearchBar 新增 render 属性，支持自定义组件渲染
 - 节日功能增强：礼花配置支持跨日期范围设置与自定义播放次数
 
 #### 升级
@@ -168,7 +168,7 @@
 
 #### 新增
 
-- 新增 ArtForm 组件
+- 新增 FaForm 组件
 
 #### 修复
 
@@ -185,7 +185,7 @@
 
 #### 新增
 
-- ArtTableHeader 新增搜索按钮，用于控制顶部搜索栏的显示与隐藏
+- FaTableHeader 新增搜索按钮，用于控制顶部搜索栏的显示与隐藏
 - 新增权限演示示例
 - 添加全局错误处理基础框架
 
@@ -196,11 +196,11 @@
 - useTable 自动识别响应体支持自定义配置 (src/utils/table/tableConfig.ts)
 - useTable 空数据浏览器警告优化
 - api 接口请求代码优化、api.d.ts 类型优化
-- 优化 ArtTable 顶部按钮换行无法自适应问题（示例：功能示例 / 左右布局表格）
-- ArtTable 分页组件选中样式优化
-- ArtTable 空状态高度默认撑满
+- 优化 FaTable 顶部按钮换行无法自适应问题（示例：功能示例 / 左右布局表格）
+- FaTable 分页组件选中样式优化
+- FaTable 空状态高度默认撑满
 - ArtButtonMore 组件新增图标、颜色配置
-- ArtSearchBar label 为空时不占空间
+- FaSearchBar label 为空时不占空间
 - 表格操作栏拖拽禁止固定列拖拽
 - 角色管理页面接口对接、代码优化
 - 菜单管理页面优化
@@ -225,12 +225,12 @@
 
 #### 新增
 
-- 新增 ArtSearchBar 组件示例
+- 新增 FaSearchBar 组件示例
 - useTable 新增 excludeParams，用于排除某些参数不参与请求
 
 #### 重构
 
-- 重构 ArtSearchBar 组件，支持更多组件、表单校验等能力
+- 重构 FaSearchBar 组件，支持更多组件、表单校验等能力
 
 #### 优化
 
@@ -276,7 +276,7 @@
 - 修复获取用户信息接口时序问题导致路由注册菜单渲染错误bug
 - 修复动态路由校验问题导致的 iframe 不显示bug
 - 修复 reset 文件语法错误
-- 修复 ArtTable 数据类型错误
+- 修复 FaTable 数据类型错误
 - 修复地图滚轮滚动放大问题
 
 ---
@@ -289,7 +289,7 @@
 
 #### 重构
 
-- ArtTable 组件重构
+- FaTable 组件重构
 
 #### 升级
 
@@ -308,7 +308,7 @@
 
 #### 修复
 
-- 修复 ArtTable 切换分页大小时执行两次请求bug
+- 修复 FaTable 切换分页大小时执行两次请求bug
 
 ---
 
@@ -363,7 +363,7 @@
 
 #### 重构
 
-- 重构 ArtTable、ArtTableHeader、ArtNotification 组件
+- 重构 FaTable、FaTableHeader、ArtNotification 组件
 
 #### 升级
 
@@ -441,7 +441,7 @@
 
 #### 重构
 
-- 重构 components/core/forms 文件夹下的表单相关组件，提升可维护性与一致性
+- 重构 components/forms 文件夹下的表单相关组件，提升可维护性与一致性
 - 重构 ArtBreadcrumb 面包屑导航组件，优化逻辑结构与样式
 - 重构 ArtFireworksEffect 烟花效果组件，显著提升渲染性能与动画流畅度
 
@@ -469,7 +469,7 @@
 #### 重构
 
 - ArtMenuRight 组件重构
-- components/core/cards 下面的组件重构，代码优化
+- components/cards 下面的组件重构，代码优化
 
 #### 优化
 

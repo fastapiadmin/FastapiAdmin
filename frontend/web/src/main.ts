@@ -4,14 +4,13 @@ import "@styles/core/tailwind.css";
 import "@styles/index.scss";
 import "element-plus/theme-chalk/dark/css-vars.css";
 import "animate.css";
-import { printConsoleBanner } from "@utils/sys";
+
 import { initPlugins } from "@/plugins";
 import { useConfigStore } from "./store/modules/config.store";
 
 document.addEventListener("touchstart", function () {}, { passive: false });
 
 const app = createApp(App);
-printConsoleBanner();
 initPlugins(app);
 app.mount("#app");
 

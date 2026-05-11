@@ -1,6 +1,6 @@
 <!-- 角色授权 -->
 <template>
-  <ArtDrawer
+  <FaDrawer
     v-model="drawerVisible"
     :title="'【' + props.roleName + '】权限分配'"
     :size="drawerSize"
@@ -143,14 +143,14 @@
         <ElButton type="primary" :loading="loading" @click.stop="handleDrawerSave">确 定</ElButton>
       </div>
     </template>
-  </ArtDrawer>
+  </FaDrawer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from "vue";
 import { QuestionFilled, Switch as SwitchIcon } from "@element-plus/icons-vue";
 import type { TreeInstance } from "element-plus";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
 import { listToTree, formatTree } from "@utils/common";
 import RoleAPI, {
   permissionDataType,

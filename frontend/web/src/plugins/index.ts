@@ -19,8 +19,11 @@ import { initCodeMirror } from "./codemirror";
 import { initElementPlus } from "./element-plus";
 import { initElIcons } from "./icons";
 import { initTerminal } from "./terminal";
+import { printConsoleBanner } from "@utils/sys";
 
 export function initPlugins(app: App<Element>): void {
+  // 打印欢迎使用信息
+  printConsoleBanner();
   initElIcons(app);
   initStore(app);
   initRouter(app);

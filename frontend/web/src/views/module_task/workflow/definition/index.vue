@@ -1,7 +1,7 @@
 <!-- 工作流定义：Art + useTable -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,14 +18,14 @@
     />
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_task:workflow:definition:create']"
             :perm-delete="['module_task:workflow:definition:delete']"
@@ -34,10 +34,10 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="FaTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
@@ -97,7 +97,7 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTable>
+      </FaTable>
     </ElCard>
 
     <WorkflowDesignDrawer
@@ -115,11 +115,11 @@ defineOptions({
 });
 
 import WorkflowDefinitionAPI, { type WorkflowTable } from "@/api/module_task/workflow/definition";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { ArrowDown } from "@element-plus/icons-vue";
@@ -150,7 +150,7 @@ const searchForm = ref<WorkflowSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const workflowSearchItems = computed<SearchFormItem[]>(() => [
@@ -187,7 +187,7 @@ const workflowSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<WorkflowTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
@@ -208,7 +208,7 @@ function deleteWorkflowRow(id: number | undefined) {
     .then(async () => {
       await WorkflowDefinitionAPI.deleteWorkflow([id]);
       ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});

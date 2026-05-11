@@ -88,7 +88,7 @@ const appConfig: SystemConfig = {
     {
       theme: MenuThemeEnum.DESIGN,
       background: "#FFFFFF",
-      systemNameColor: "var(--art-gray-800)",
+      systemNameColor: "var(--fa-gray-800)",
       iconColor: "#6B6B6B",
       textColor: "#29343D",
       img: configImages.menuStyles.design,
@@ -104,7 +104,7 @@ const appConfig: SystemConfig = {
     {
       theme: MenuThemeEnum.LIGHT,
       background: "#ffffff",
-      systemNameColor: "var(--art-gray-800)",
+      systemNameColor: "var(--fa-gray-800)",
       iconColor: "#6B6B6B",
       textColor: "#29343D",
       img: configImages.menuStyles.light,

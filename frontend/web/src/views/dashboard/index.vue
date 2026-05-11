@@ -149,7 +149,7 @@
                       class="workplace-quick-row__icon"
                       :style="{ color: getQuickLinkColor(getQuickLinkStableIndex(item)) }"
                     >
-                      <MenuRouteIcon :icon="item.icon || 'menu'" />
+                      <FaMenuRouteIcon :icon="item.icon || 'menu'" />
                     </div>
                     <div class="workplace-quick-row__text">
                       <span class="workplace-quick-row__title">{{ item.title }}</span>
@@ -348,7 +348,7 @@
               </div>
             </template>
             <div class="workplace-ops-card__body workplace-ops-card__body--calendar">
-              <Calendar />
+              <FaCalendar />
             </div>
           </ElCard>
         </ElCol>
@@ -364,8 +364,8 @@ defineOptions({
 });
 
 import { useUserStore } from "@stores/index";
-import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
-import Calendar from "@/components/Calendar/index.vue";
+import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
+import FaCalendar from "@/components/others/fa-calendar/index.vue";
 import { greetings } from "@utils/common";
 import type { MenuTable } from "@/api/module_system/menu";
 import { ref, onMounted, onUnmounted, computed } from "vue";

@@ -1,5 +1,5 @@
 <template>
-  <ArtDialog ref="dialogRef" v-model="open" title="导入表" width="min(960px, 96vw)" append-to-body>
+  <FaDialog ref="dialogRef" v-model="open" title="导入表" width="min(960px, 96vw)" append-to-body>
     <ElForm ref="importQueryRef" :model="query" :inline="true">
       <ElFormItem label="表名称" prop="table_name">
         <ElInput
@@ -86,14 +86,14 @@
         <ElButton @click="open = false">取 消</ElButton>
       </div>
     </template>
-  </ArtDialog>
+  </FaDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { FormInstance, TableInstance } from "element-plus";
 import type { DBTableSchema, GenTablePageQuery } from "@/api/module_generator/gencode";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
 
 defineOptions({ name: "ImportDbTableDialog" });
 

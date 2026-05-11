@@ -1,7 +1,7 @@
 <!-- 菜单管理：Art + 树形表格；操作列最多 3 个外露，其余「更多」 -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -27,7 +27,7 @@
     </ElTabs>
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -35,7 +35,7 @@
       >
         <template #left>
           <div class="inline-flex flex-wrap items-center gap-2">
-            <ArtTableHeaderLeft
+            <FaTableHeaderLeft
               :remove-ids="selectedIds"
               :perm-create="['module_system:menu:create']"
               :perm-delete="['module_system:menu:delete']"
@@ -48,9 +48,9 @@
             <ElButton @click="toggleExpand">{{ isExpanded ? "收起" : "展开" }}</ElButton>
           </div>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
+      <FaTable
         ref="tableRef"
         row-key="id"
         :loading="loading"
@@ -63,7 +63,7 @@
       />
     </ElCard>
 
-    <ArtDrawer
+    <FaDrawer
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       :size="drawerSize"
@@ -497,7 +497,7 @@
           <ElButton @click="handleCloseDialog">取消</ElButton>
         </div>
       </template>
-    </ArtDrawer>
+    </FaDrawer>
   </div>
 </template>
 
@@ -521,12 +521,12 @@ import MenuAPI, {
 import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@utils/common";
 import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
 import { ElMessage, ElMessageBox, ElTag, ElTooltip } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -628,7 +628,7 @@ const searchForm = ref<MenuSearchForm>({
   created_time: undefined,
 });
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -692,7 +692,7 @@ const createParentLocked = ref(false);
 
 const detailFormData = ref<MenuTable>({});
 
-const formData = reactive<MenuForm>({
+const formData = ref<MenuForm>({
   id: undefined,
   name: undefined,
   type: MenuTypeEnum.CATALOG,

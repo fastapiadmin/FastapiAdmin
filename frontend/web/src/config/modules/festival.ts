@@ -22,7 +22,7 @@
  * - `image` 为红包碎屑 hb、雪花 sd、礼花筒 yd 等时，须在下方 import，勿手写路径字符串。
  * - 全局快捷键：**Ctrl + Shift + P**（Windows / Linux）或 **⌘ + Shift + P**（macOS）立即触发一发礼花；
  *   若当天命中某条「带礼花」的节日配置则使用该配置的 `image`，否则为几何礼花。
- * - 实现：`src/layouts/art-fireworks-effect/index.vue`（键盘）、`src/hooks/core/useCeremony.ts`（自动连发）。
+ * - 实现：`src/layouts/fa-fireworks-effect/index.vue`（键盘）、`src/hooks/core/useCeremony.ts`（自动连发）。
  *
  * ## 自动公历节日
  *

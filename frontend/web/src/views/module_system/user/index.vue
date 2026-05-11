@@ -22,7 +22,7 @@
       </div>
 
       <div class="user-main-panel flex flex-col flex-grow min-w-0 min-h-0">
-        <ArtSearchBar
+        <FaSearchBar
           v-show="showSearchBar"
           ref="searchBarRef"
           v-model="searchForm"
@@ -45,20 +45,17 @@
               @clear-click="afterUserSelectSearch"
             />
           </template>
-        </ArtSearchBar>
+        </FaSearchBar>
 
-        <ElCard
-          class="flex flex-col flex-1 min-h-0 art-table-card"
-          :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-        >
-          <ArtTableHeader
+        <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+          <FaTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
             :loading="loading"
             @refresh="refreshData"
           >
             <template #left>
-              <ArtTableHeaderLeft
+              <FaTableHeaderLeft
                 :remove-ids="selectedIds"
                 :perm-create="['module_system:user:create']"
                 :perm-import="['module_system:user:import']"
@@ -74,10 +71,10 @@
                 @more="handleMoreClick"
               />
             </template>
-          </ArtTableHeader>
+          </FaTableHeader>
 
-          <ArtTable
-            ref="artTableRef"
+          <FaTable
+            ref="FaTableRef"
             row-key="id"
             :loading="loading"
             :data="data"
@@ -91,7 +88,7 @@
       </div>
     </div>
 
-    <ArtDrawer
+    <FaDrawer
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       append-to-body
@@ -294,7 +291,7 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDrawer>
+    </FaDrawer>
 
     <ArtImportDialog
       v-model="importModalVisible"
@@ -304,7 +301,7 @@
       @upload="handleImportUpload"
     />
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="userExportContentConfig"
       :query-params="exportQueryParams"
@@ -326,15 +323,15 @@ import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
-import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import type { IContentConfig, IObject } from "@/components/Core/modal/types";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import ArtImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { IContentConfig, IObject } from "@/components/modal/types";
 import UserAPI, {
   type UserForm,
   type UserInfo,
@@ -479,7 +476,7 @@ const searchForm = ref<UserSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -538,7 +535,7 @@ const userSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<UserInfo[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -579,7 +576,7 @@ function deleteUserRow(id: number) {
       } else {
         ElMessage.success("删除成功");
       }
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -732,22 +729,7 @@ const userExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
-const formData = reactive<UserForm>({
+const formData = ref<UserForm>({
   id: undefined,
   username: undefined,
   name: undefined,

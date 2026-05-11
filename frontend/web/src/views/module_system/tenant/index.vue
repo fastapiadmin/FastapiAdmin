@@ -1,7 +1,7 @@
 <!-- 租户管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,14 +18,14 @@
     />
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_system:tenant:create']"
             :perm-delete="['module_system:tenant:delete']"
@@ -34,10 +34,10 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="FaTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -48,7 +48,7 @@
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="640px"
@@ -87,7 +87,7 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ArtForm
+          <FaForm
             :key="tenantFormRenderKey"
             ref="dataFormRef"
             v-model="formData"
@@ -119,22 +119,22 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
   type TenantCreateForm,
@@ -300,7 +300,7 @@ const searchForm = ref<TenantSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -353,7 +353,7 @@ const tenantSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<TenantTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -373,7 +373,7 @@ function deleteTenantRow(id: number) {
     .then(async () => {
       await TenantAPI.deleteTenant([id]);
       ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -455,7 +455,7 @@ const detailFormData = ref<TenantTable>({ code: "", name: "", status: "0" });
 
 const currentEditId = ref<number | null>(null);
 
-const formData = reactive<TenantForm>({
+const formData = ref<TenantForm>({
   name: "",
   code: "",
   status: "0",
@@ -502,7 +502,7 @@ const initialFormData: TenantForm = {
   end_time: undefined,
 };
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const submitLoading = ref(false);
 const tenantFormRenderKey = ref(0);
 
@@ -672,7 +672,7 @@ function handleBatchDelete() {
         batchDeleting.value = true;
         await TenantAPI.deleteTenant(ids);
         ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
+        FaTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;

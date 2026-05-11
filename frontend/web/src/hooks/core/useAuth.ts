@@ -54,7 +54,7 @@ export const useAuth = () => {
     : [];
 
   /**
-   * 检查是否拥有某权限标识（与 v-hasPerm / 表格内 ArtButtonMore 全码一致）
+   * 检查是否拥有某权限标识（与 v-hasPerm / 表格内 FaButtonMore 全码一致）
    * @param auth 权限标识（多为后端菜单 permission 全码，如 module_system:role:update）
    */
   const hasAuth = (auth: string): boolean => {

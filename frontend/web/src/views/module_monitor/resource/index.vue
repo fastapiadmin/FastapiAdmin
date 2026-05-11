@@ -1,7 +1,7 @@
 <!-- 资源管理：Art + useTable -->
 <template>
   <div class="art-full-height resource-monitor-page">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <ArtTableHeader
+      <FaTableHeader
         class="resource-toolbar shrink-0"
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -89,11 +89,11 @@
             </ElCheckbox>
           </ElSpace>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
       <!-- 面包屑与表头已占用高度：表格高度须在独立 flex 子项内计算，否则分页会被挤出卡片 -->
       <div class="resource-table-region min-h-0 flex flex-1 flex-col overflow-hidden pb-3">
-        <ArtTable
+        <FaTable
           row-key="file_url"
           :show-table-header="false"
           :loading="loading"
@@ -107,7 +107,7 @@
       </div>
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="uploadDialogVisible"
       title="上传文件"
       width="500px"
@@ -143,9 +143,9 @@
           确定上传
         </ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtDialog v-model="createDirDialogVisible" title="新建文件夹" width="400px">
+    <FaDialog v-model="createDirDialogVisible" title="新建文件夹" width="400px">
       <ElForm :model="createDirForm" label-width="80px">
         <ElFormItem label="文件夹名" required>
           <ElInput
@@ -165,9 +165,9 @@
           确定
         </ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtDialog v-model="renameDialogVisible" title="重命名" width="400px">
+    <FaDialog v-model="renameDialogVisible" title="重命名" width="400px">
       <ElForm :model="renameForm" label-width="80px">
         <ElFormItem label="新名称" required>
           <ElInput
@@ -187,7 +187,7 @@
           确定
         </ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -218,12 +218,12 @@ import {
   UploadFilled,
 } from "@element-plus/icons-vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { ResourceAPI, type ResourceItem } from "@/api/module_monitor/resource";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
@@ -253,7 +253,7 @@ const searchForm = ref<ResourceSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const resourceSearchItems = computed<SearchFormItem[]>(() => [

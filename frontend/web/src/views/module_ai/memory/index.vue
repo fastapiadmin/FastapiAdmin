@@ -1,7 +1,7 @@
 <!-- AI 会话记录：Art + useTable -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,14 +18,14 @@
     />
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_ai:chat:create']"
             :perm-delete="['module_ai:chat:delete']"
@@ -34,10 +34,10 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="FaTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
@@ -61,10 +61,10 @@
             <ElIcon class="edit-icon"><Edit /></ElIcon>
           </span>
         </template>
-      </ArtTable>
+      </FaTable>
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="920px"
@@ -138,7 +138,7 @@
         </ElScrollbar>
       </template>
       <template v-else>
-        <ArtForm
+        <FaForm
           :key="memoryFormRenderKey"
           ref="dataFormRef"
           v-model="formData"
@@ -164,7 +164,7 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -180,14 +180,14 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
 import { formatToDateTime } from "@utils/common";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -213,7 +213,7 @@ const searchForm = ref<MemorySearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const { hasAuth } = useAuth();
@@ -259,7 +259,7 @@ const memorySearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const memoryFormRenderKey = ref(0);
 
 const memoryDialogFormItems = computed<FormItem[]>(() => [
@@ -275,7 +275,7 @@ const titleInputRef = ref();
 const editingRowId = ref<string | null>(null);
 const editingTitle = ref("");
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<ChatSession[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is string => Boolean(id))
@@ -295,7 +295,7 @@ function deleteSessionRow(id: string) {
     .then(async () => {
       await AiChatAPI.deleteSession([id]);
       ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -422,22 +422,7 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
-const formData = reactive({
+const formData = ref({
   id: undefined as string | undefined,
   title: "",
 });

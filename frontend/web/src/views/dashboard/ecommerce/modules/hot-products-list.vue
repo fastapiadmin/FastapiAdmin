@@ -8,7 +8,7 @@
     </div>
 
     <ElScrollbar style="height: 21.55rem" class="w-full">
-      <ArtTable
+      <FaTable
         :data="tableData"
         style="margin-top: 0 !important"
         :border="false"
@@ -49,7 +49,7 @@
             </template>
           </ElTableColumn>
         </template>
-      </ArtTable>
+      </FaTable>
     </ElScrollbar>
   </div>
 </template>

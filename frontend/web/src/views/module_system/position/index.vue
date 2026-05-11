@@ -1,7 +1,7 @@
 <!-- 岗位管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -24,17 +24,17 @@
           @clear-click="afterUserSelectSearch"
         />
       </template>
-    </ArtSearchBar>
+    </FaSearchBar>
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_system:position:create']"
             :perm-export="['module_system:position:export']"
@@ -47,10 +47,10 @@
             @more="handleMoreClick"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="FaTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -61,7 +61,7 @@
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="720px"
@@ -102,7 +102,7 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ArtForm
+          <FaForm
             :key="positionFormRenderKey"
             ref="dataFormRef"
             v-model="formData"
@@ -123,7 +123,7 @@
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
             </template>
-          </ArtForm>
+          </FaForm>
         </ElScrollbar>
       </template>
 
@@ -141,9 +141,9 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="positionExportContentConfig"
       :query-params="exportQueryParams"
@@ -156,17 +156,17 @@
 <script setup lang="ts">
 import { h, computed, ref, reactive, nextTick } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
-import type { IObject } from "@/components/Core/modal/types";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import type { IObject } from "@/components/modal/types";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import PositionAPI, {
   type PositionForm,
@@ -341,7 +341,7 @@ const searchForm = ref<PositionSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -392,7 +392,7 @@ const positionSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<PositionTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -413,7 +413,7 @@ function deletePositionRow(id: number) {
       await PositionAPI.deletePosition([id]);
       await userStore.getUserInfo();
       ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -537,7 +537,7 @@ const paginationBind = computed(() => {
 
 const detailFormData = ref<PositionTable>({});
 
-const formData = reactive<PositionForm>({
+const formData = ref<PositionForm>({
   id: undefined,
   name: undefined,
   order: 1,
@@ -565,7 +565,7 @@ const initialFormData: PositionForm = {
   description: undefined,
 };
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const positionFormRenderKey = ref(0);
 
 const positionDialogFormItems = computed<FormItem[]>(() => [
@@ -707,7 +707,7 @@ function handleBatchDelete() {
         await PositionAPI.deletePosition(ids);
         await userStore.getUserInfo();
         ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
+        FaTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;

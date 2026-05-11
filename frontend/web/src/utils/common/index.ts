@@ -549,7 +549,7 @@ export interface QuickLink {
  */
 class QuickStartManager {
   /** 本地存储键名 */
-  private storageKey = "quick-start-links";
+  private storageKey = "quick-stfa-links";
 
   /** 监听器列表 */
   private listeners: Array<(links: QuickLink[]) => void> = [];

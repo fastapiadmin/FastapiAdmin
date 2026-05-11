@@ -1,7 +1,7 @@
-<!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（ArtDialog + crud-embed-dialog） -->
+<!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBarWithAudit
+    <FaSearchBarWithAudit
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,14 +18,14 @@
     />
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_example:demo:create']"
             :perm-import="['module_example:demo:import']"
@@ -40,10 +40,10 @@
             @more="runBatchStatus"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="FaTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -54,7 +54,7 @@
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="920px"
@@ -248,7 +248,7 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
     <ArtImportDialog
       v-model="importModalVisible"
@@ -257,7 +257,7 @@
       @upload="handleCrudImportUpload"
     />
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="demoExportContentConfig"
       :query-params="exportQueryParams"
@@ -272,13 +272,13 @@ import { h, computed, ref } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import type { IContentConfig, IObject } from "@/components/Core/modal/types";
-import ArtSearchBarWithAudit from "@/components/Core/forms/art-search-bar/ArtSearchBarWithAudit.vue";
-import type { AuditSearchFormParams } from "@/components/Core/forms/art-search-bar/auditSearchFormItems";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import ArtImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { IContentConfig, IObject } from "@/components/modal/types";
+import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
+import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import JsonPretty from "@/components/JsonPretty/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DemoAPI, {
@@ -317,13 +317,13 @@ const searchForm = ref<DemoSearchFormParams>({
 /** 搜索区域默认展开展示 */
 const showSearchBar = ref(true);
 
-const searchBarRef = ref<InstanceType<typeof ArtSearchBarWithAudit> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBarWithAudit> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 const statusOptions = ref([
   { label: "启用", value: "0" },
   { label: "停用", value: "1" },
 ]);
-/** 名称、状态；创建人/更新人/时间由 ArtSearchBarWithAudit 追加 */
+/** 名称、状态；创建人/更新人/时间由 FaSearchBarWithAudit 追加 */
 const demoBusinessSearchItems = computed(() => [
   {
     label: "名称",
@@ -346,7 +346,7 @@ const demoBusinessSearchItems = computed(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<DemoTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -510,7 +510,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DemoTable>({});
 
-const formData = reactive<DemoForm>({
+const formData = ref<DemoForm>({
   id: undefined,
   name: "",
   status: "0",
@@ -708,7 +708,7 @@ const deleteDemoRow = (row: DemoTable) => {
     .then(async () => {
       await DemoAPI.deleteDemo([row.id!]);
       ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {
@@ -729,7 +729,7 @@ function handleBatchDelete() {
         batchDeleting.value = true;
         await DemoAPI.deleteDemo(ids);
         ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
+        FaTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;
@@ -754,7 +754,7 @@ function runBatchStatus(status: string) {
     .then(async () => {
       await DemoAPI.batchDemo({ ids, status });
       ElMessage.success("操作成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshData();
     })
     .catch(() => {});

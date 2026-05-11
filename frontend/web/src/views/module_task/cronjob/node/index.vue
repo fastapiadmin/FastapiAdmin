@@ -1,7 +1,7 @@
 <!-- 定时任务节点：Art + useTable -->
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,14 +18,14 @@
     />
 
     <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_task:cronjob:node:create']"
             :perm-delete="['module_task:cronjob:node:delete']"
@@ -34,10 +34,10 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="FaTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
@@ -49,7 +49,7 @@
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="1000px"
@@ -59,7 +59,7 @@
       <ElSplitter direction="horizontal" style="height: 500px">
         <ElSplitterPanel size="300px" :min="200" :max="400">
           <ElScrollbar style="height: 100%">
-            <ArtForm
+            <FaForm
               :key="nodeFormRenderKey"
               ref="dataFormRef"
               v-model="formData"
@@ -144,7 +144,7 @@
                   :max="10"
                 />
               </template>
-            </ArtForm>
+            </FaForm>
           </ElScrollbar>
         </ElSplitterPanel>
 
@@ -172,15 +172,15 @@
           <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtDialog
+    <FaDialog
       v-model="executeDialogVisible"
       title="调试节点"
       width="700px"
       @close="handleCloseExecuteDialog"
     >
-      <ArtForm
+      <FaForm
         :key="executeFormRenderKey"
         ref="executeFormRef"
         v-model="executeFormData"
@@ -255,13 +255,13 @@
             />
           </template>
         </template>
-      </ArtForm>
+      </FaForm>
 
       <template #footer>
         <ElButton @click="handleCloseExecuteDialog">取消</ElButton>
         <ElButton type="primary" :loading="submitLoading" @click="handleExecuteNode">确认</ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -273,14 +273,14 @@ defineOptions({
 
 import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
 import { useDictStore } from "@stores/index";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -321,7 +321,7 @@ const searchForm = ref<NodeSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const nodeSearchItems = computed<SearchFormItem[]>(() => [
@@ -343,7 +343,7 @@ const nodeSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<NodeTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
@@ -364,7 +364,7 @@ function deleteNodeRow(id: number | undefined) {
     .then(async () => {
       await NodeAPI.deleteNode([id]);
       ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
+      FaTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -539,8 +539,8 @@ const codeEditorOptions: EditorConfiguration = {
   autofocus: false,
 };
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
-const executeFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const executeFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const nodeFormRenderKey = ref(0);
 const executeFormRenderKey = ref(0);
 const submitLoading = ref(false);
@@ -598,7 +598,7 @@ const defaultCodeBlock = `def handler(*args, **kwargs):
     }
 `;
 
-const formData = reactive<NodeForm>({
+const formData = ref<NodeForm>({
   id: undefined,
   name: "",
   code: undefined,

@@ -29,10 +29,7 @@ export function useCommon() {
    */
   const homePath = computed(() => menuStore.getHomePath());
 
-  /**
-   * 刷新当前页面
-   * 通过切换 setting store 中的 refresh 状态触发页面重新渲染
-   */
+  /** 触发 `FaPageContent` 级重建（与布局 settings 联动） */
   const refresh = () => {
     settingStore.reload();
   };

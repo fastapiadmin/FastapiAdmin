@@ -2,20 +2,20 @@
 <template>
   <div class="app-layout">
     <aside id="app-sidebar">
-      <ArtSidebarMenu />
+      <FaSidebarMenu />
     </aside>
 
     <main id="app-main">
       <div id="app-header">
-        <ArtHeaderBar />
+        <FaHeaderBar />
       </div>
       <div id="app-content">
-        <ArtPageContent />
+        <FaPageContent />
       </div>
     </main>
 
     <div id="app-global">
-      <ArtGlobalComponent />
+      <FaGlobalComponent />
       <Guide v-if="guideVisible" v-model="guideVisible" @skip="onGuideFinished" />
     </div>
   </div>
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import Guide from "@/components/Guide/index.vue";
+import Guide from "@/components/others/fa-guide/index.vue";
 import { useAppStore } from "@stores/modules/app.store";
 import { useSettingsStore } from "@stores/modules/setting.store";
 

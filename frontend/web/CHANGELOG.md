@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- ArtForm and ArtSearchBar component labels support custom render functions, enabling complex labels with tooltips
+- FaForm and FaSearchBar component labels support custom render functions, enabling complex labels with tooltips
 - Menu management form key fields added Tooltip hints, lowering user configuration threshold
 - Iconify added offline icon loading mode
 - Logout added redirect property for redirecting to corresponding page after re-login
@@ -58,16 +58,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Comment optimization: Unified module comment standards, improved component descriptions, feature explanations and usage examples, reducing user understanding cost and onboarding difficulty
 - Performance improvement: Optimized core code logic, improving system runtime efficiency
 - Menu optimization: Refined menu styles, optimized interaction experience and visual presentation
-- Responsive optimization: Optimized ArtForm and ArtSearchBar grid layout, adapting to various screen sizes
+- Responsive optimization: Optimized FaForm and FaSearchBar grid layout, adapting to various screen sizes
 - Configuration management optimization: Added setting.ts configuration file, supporting one-click copy and reset of system default settings
 
 #### Fixed
 
-- Fixed ArtForm and ArtSearchBar custom component rendering issues
+- Fixed FaForm and FaSearchBar custom component rendering issues
 
 #### Added
 
-- ArtForm and ArtSearchBar added render property, supporting custom component rendering
+- FaForm and FaSearchBar added render property, supporting custom component rendering
 - Festival feature enhancement: Fireworks configuration supports cross-date range settings and custom playback counts
 
 #### Upgraded
@@ -168,7 +168,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- Added ArtForm component
+- Added FaForm component
 
 #### Fixed
 
@@ -185,7 +185,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- ArtTableHeader added search button to control top search bar visibility
+- FaTableHeader added search button to control top search bar visibility
 - Added permission demonstration examples
 - Added global error handling framework
 
@@ -196,11 +196,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - useTable auto-recognizes response body with custom configuration (src/utils/table/tableConfig.ts)
 - useTable empty data browser warning optimization
 - API request code optimization, api.d.ts type optimization
-- Optimized ArtTable top button wrapping adaptive issue
-- ArtTable pagination component selection style optimization
-- ArtTable empty state height fills by default
+- Optimized FaTable top button wrapping adaptive issue
+- FaTable pagination component selection style optimization
+- FaTable empty state height fills by default
 - ArtButtonMore component added icon and color configuration
-- ArtSearchBar label doesn't occupy space when empty
+- FaSearchBar label doesn't occupy space when empty
 - Table operation column drag prohibits fixed column dragging
 - Role management page API integration and code optimization
 - Menu management page optimization
@@ -225,12 +225,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- Added ArtSearchBar component examples
+- Added FaSearchBar component examples
 - useTable added excludeParams to exclude certain parameters from requests
 
 #### Refactored
 
-- Refactored ArtSearchBar component, supports more components and form validation
+- Refactored FaSearchBar component, supports more components and form validation
 
 #### Optimized
 
@@ -276,7 +276,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed user info API timing issue causing route registration menu rendering error
 - Fixed dynamic route validation issue causing iframe not to display
 - Fixed reset file syntax error
-- Fixed ArtTable data type error
+- Fixed FaTable data type error
 - Fixed map scroll wheel zoom issue
 
 ---
@@ -289,7 +289,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- ArtTable component refactored
+- FaTable component refactored
 
 #### Upgraded
 
@@ -308,7 +308,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Fixed
 
-- Fixed ArtTable switching page size executing two requests bug
+- Fixed FaTable switching page size executing two requests bug
 
 ---
 
@@ -363,7 +363,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- Refactored ArtTable, ArtTableHeader, ArtNotification components
+- Refactored FaTable, FaTableHeader, ArtNotification components
 
 #### Upgraded
 
@@ -441,7 +441,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- Refactored form-related components in components/core/forms folder, improved maintainability and consistency
+- Refactored form-related components in components/forms folder, improved maintainability and consistency
 - Refactored ArtBreadcrumb breadcrumb navigation component, optimized logic structure and styles
 - Refactored ArtFireworksEffect fireworks effect component, significantly improved rendering performance and animation smoothness
 
@@ -469,7 +469,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 #### Refactored
 
 - ArtMenuRight component refactored
-- Components under components/core/cards refactored, code optimized
+- Components under components/cards refactored, code optimized
 
 #### Optimized
 

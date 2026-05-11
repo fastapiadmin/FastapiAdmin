@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="overflow-auto h-full">
-      <ArtTable
+      <FaTable
         :data="products"
         style="width: 100%"
         size="large"
@@ -41,7 +41,7 @@
             </span>
           </template>
         </ElTableColumn>
-      </ArtTable>
+      </FaTable>
     </div>
   </div>
 </template>

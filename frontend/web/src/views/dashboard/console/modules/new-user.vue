@@ -14,7 +14,7 @@
         <ElRadioButton value="今年" label="今年"></ElRadioButton>
       </ElRadioGroup>
     </div>
-    <ArtTable
+    <FaTable
       class="w-full"
       :data="tableData"
       style="width: 100%"
@@ -51,7 +51,7 @@
           </template>
         </ElTableColumn>
       </template>
-    </ArtTable>
+    </FaTable>
   </div>
 </template>
 

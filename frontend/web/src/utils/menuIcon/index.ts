@@ -4,7 +4,7 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 /**
  * 菜单 / IconSelect 共用的图标存值约定（与 `components/IconSelect` 一致）：
  * - Element Plus：`el-icon-{组件名}`，或与 `@element-plus/icons-vue` 导出键一致的裸名（如 `PieChart`，兼容旧库手写）
- * - 历史自定义 SVG 文件名：原 `assets/images/svg` + `i-svg:` 展示，现由 `menuIcon/remix` 的 `resolveIconForArtSvgIcon` 映射为 Iconify（默认 Remix `ri:`）
+ * - 历史自定义 SVG 文件名：原 `assets/images/svg` + `i-svg:` 展示，现由 `menuIcon/remix` 的 `resolveIconForFaSvgIcon` 映射为 Iconify（默认 Remix `ri:`）
  * - Iconify：`collection:name`（含冒号，如 `ri:home-line`）
  */
 
@@ -49,7 +49,7 @@ export function resolveElementPlusIconComponent(icon?: string | null): Component
   return null;
 }
 
-/** Iconify 完整 id（侧栏 ArtSvgIcon 使用） */
+/** Iconify 完整 id（侧栏 FaSvgIcon 使用） */
 export function isIconifyStoredIcon(icon?: string | null): boolean {
   const s = icon?.trim();
   return !!s && s.includes(":");
@@ -80,7 +80,7 @@ export function elementMenuIconToEpIconify(icon: string): string {
 
 /**
  * 历史：本地 `assets/images/svg/*.svg` 文件名作菜单存值，配合 `i-svg:` 类展示。
- * 现统一映射为 Iconify Remix Icon（`ri:`），由 `ArtSvgIcon` 渲染。
+ * 现统一映射为 Iconify Remix Icon（`ri:`），由 `FaSvgIcon` 渲染。
  */
 
 const FILE_SUFFIX: Record<string, string> = {
@@ -171,7 +171,7 @@ const REMIX_BY_NAME: Record<string, string> = {
   upload_folder: "ri:folder-upload-line",
   "upload-folder": "ri:folder-upload-line",
   user: "ri:user-line",
-  visitor: "ri:user-heart-line",
+  visitor: "ri:user-hefa-line",
   vite: "ri:rocket-line",
   vue: "ri:vuejs-line",
   wechat: "ri:wechat-fill",
@@ -179,7 +179,7 @@ const REMIX_BY_NAME: Record<string, string> = {
   people: "ri:team-line",
 
   "menu-about": "ri:information-line",
-  "menu-analyse": "ri:line-chart-line",
+  "menu-analyse": "ri:line-chfa-line",
   "menu-crud": "ri:database-2-line",
   "menu-detail": "ri:file-list-line",
   "menu-document": "ri:file-text-line",
@@ -191,7 +191,7 @@ const REMIX_BY_NAME: Record<string, string> = {
   "menu-home": "ri:home-4-line",
   "menu-layout": "ri:layout-line",
   "menu-multi": "ri:layout-grid-line",
-  "menu-result": "ri:bar-chart-box-line",
+  "menu-result": "ri:bar-chfa-box-line",
   "menu-system": "ri:settings-3-line",
   "menu-table": "ri:table-line",
   "menu-test": "ri:test-tube-line",
@@ -248,7 +248,7 @@ export function localSvgNameToRemixIcon(name: string): string {
 /**
  * 菜单 / 表格等场景：存值可能是 EP、Iconify、或历史 SVG 文件名 → 统一为 Iconify id。
  */
-export function resolveIconForArtSvgIcon(stored?: string | null): string {
+export function resolveIconForFaSvgIcon(stored?: string | null): string {
   const s = stored?.trim() ?? "";
   if (!s) return "ri:file-3-line";
 

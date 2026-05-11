@@ -40,7 +40,7 @@
                   href="https://blog.csdn.net/weixin_46768253/article/details/149569141?spm=1001.2014.3001.5502"
                   target="_blank"
                 >
-                  <ArtSvgIcon :icon="resolveIconForArtSvgIcon('csdn')" class="text-lg" />
+                  <ArtSvgIcon :icon="resolveIconForFaSvgIcon('csdn')" class="text-lg" />
                 </ElLink>
               </div>
             </div>
@@ -55,21 +55,21 @@
               <div class="mt-3 whitespace-nowrap">
                 <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
                   <ArtSvgIcon
-                    :icon="resolveIconForArtSvgIcon('gitee')"
+                    :icon="resolveIconForFaSvgIcon('gitee')"
                     class="text-lg text-[#F76560]"
                   />
                 </ElLink>
                 <ElDivider direction="vertical" />
                 <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
                   <ArtSvgIcon
-                    :icon="resolveIconForArtSvgIcon('github')"
+                    :icon="resolveIconForFaSvgIcon('github')"
                     class="text-lg text-[#4080FF]"
                   />
                 </ElLink>
                 <ElDivider direction="vertical" />
                 <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
                   <ArtSvgIcon
-                    :icon="resolveIconForArtSvgIcon('gitcode')"
+                    :icon="resolveIconForFaSvgIcon('gitcode')"
                     class="text-lg text-[#FF9A2E]"
                   />
                 </ElLink>
@@ -83,22 +83,19 @@
           <div class="flex justify-end space-x-4 overflow-x-auto">
             <!-- 仓库图标 -->
             <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
-              <ArtSvgIcon
-                :icon="resolveIconForArtSvgIcon('gitee')"
-                class="text-lg text-[#F76560]"
-              />
+              <ArtSvgIcon :icon="resolveIconForFaSvgIcon('gitee')" class="text-lg text-[#F76560]" />
             </ElLink>
             <ElDivider direction="vertical" />
             <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
               <ArtSvgIcon
-                :icon="resolveIconForArtSvgIcon('github')"
+                :icon="resolveIconForFaSvgIcon('github')"
                 class="text-lg text-[#4080FF]"
               />
             </ElLink>
             <ElDivider direction="vertical" />
             <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
               <ArtSvgIcon
-                :icon="resolveIconForArtSvgIcon('gitcode')"
+                :icon="resolveIconForFaSvgIcon('gitcode')"
                 class="text-lg text-[#FF9A2E]"
               />
             </ElLink>
@@ -136,7 +133,7 @@
               </span>
             </div>
             <ArtSvgIcon
-              :icon="resolveIconForArtSvgIcon('people')"
+              :icon="resolveIconForFaSvgIcon('people')"
               class="size-8 animate-[pulse_2s_infinite]"
             />
           </div>
@@ -196,7 +193,7 @@
                     {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
                   </span>
                 </div>
-                <ArtSvgIcon :icon="resolveIconForArtSvgIcon('visitor')" class="size-8" />
+                <ArtSvgIcon :icon="resolveIconForFaSvgIcon('visitor')" class="size-8" />
               </div>
 
               <div class="flex items-center justify-between mt-2 text-sm text-g-600">
@@ -256,7 +253,7 @@
                     {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
                   </span>
                 </div>
-                <ArtSvgIcon :icon="resolveIconForArtSvgIcon('browser')" class="size-8" />
+                <ArtSvgIcon :icon="resolveIconForFaSvgIcon('browser')" class="size-8" />
               </div>
 
               <div class="flex items-center justify-between mt-2 text-sm text-g-600">
@@ -369,9 +366,9 @@ import {
   TopRight,
   UserFilled,
 } from "@element-plus/icons-vue";
-import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import ArtSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import { greetings } from "@utils/common";
-import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
+import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
 
 const timefix = greetings();
 const welcome = "祝你开心每一天！";

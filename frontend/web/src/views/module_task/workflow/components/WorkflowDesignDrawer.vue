@@ -13,7 +13,7 @@
           <ElScrollbar style="height: 100%">
             <div class="panel-section">
               <div class="section-title">基础信息</div>
-              <ArtForm
+              <FaForm
                 ref="formRef"
                 v-model="formData"
                 :items="workflowBaseFormItems"
@@ -201,8 +201,8 @@ import "element-plus/dist/index.css";
 import DynamicNode from "./DynamicNode.vue";
 import NodeConfigPanel from "./NodeConfigPanel.vue";
 import EdgeConfigPanel from "./EdgeConfigPanel.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import WorkflowDefinitionAPI, {
   type WorkflowTable,
   type WorkflowForm,
@@ -227,10 +227,10 @@ const props = defineProps({
 
 const emit = defineEmits(["update:visible", "refresh"]);
 
-const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const formRef = ref<InstanceType<typeof FaForm> | null>(null);
 const workflowId = ref<number>();
 
-const formData = reactive<Partial<WorkflowForm>>({
+const formData = ref<Partial<WorkflowForm>>({
   code: "",
   name: "",
   description: "",
