@@ -33,7 +33,7 @@
       padding: 20px;
       overflow: auto;
 
-      ::deep(.layout-content) {
+      :deep(.layout-content) {
         box-sizing: border-box;
         width: 100%;
         min-width: 0;
@@ -80,7 +80,7 @@
       overflow: visible;
 
       #app-content {
-        ::deep(.layout-content) {
+        :deep(.layout-content) {
           width: calc(100% - 40px);
         }
       }
@@ -92,7 +92,7 @@
   .app-layout {
     #app-main {
       #app-content {
-        ::deep(.layout-content) {
+        :deep(.layout-content) {
           width: calc(100% - 30px);
         }
       }

@@ -248,13 +248,13 @@ onMounted(initScrollState);
 </style>
 
 <style scoped>
-::deep(.el-scrollbar__bar.is-horizontal) {
+::v-deep(.el-scrollbar__bar.is-horizontal) {
   bottom: 5px;
   display: none;
   height: 2px;
 }
 
-::deep(.scrollbar-wrapper) {
+::v-deep(.scrollbar-wrapper) {
   flex: 1;
   min-width: 0;
   margin: 0 50px 0 30px;
@@ -273,7 +273,7 @@ onMounted(initScrollState);
 }
 
 @media (width <= 1440px) {
-  ::deep(.scrollbar-wrapper) {
+  ::v-deep(.scrollbar-wrapper) {
     margin: 0 45px;
   }
 }

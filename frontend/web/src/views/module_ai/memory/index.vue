@@ -422,7 +422,7 @@ const {
   },
 });
 
-const formData = reactive({
+const formData = ref({
   id: undefined as string | undefined,
   title: "",
 });
@@ -486,7 +486,7 @@ async function handleOpenDialog(type: "create" | "detail", id?: string) {
     }
   } else {
     dialogVisible.title = "新增会话";
-    formData.id = undefined;
+    formData.value.id = undefined;
   }
   memoryFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -560,7 +560,7 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     try {
-      await AiChatAPI.createSession({ title: formData.title });
+      await AiChatAPI.createSession({ title: formData.value.title });
       dialogVisible.visible = false;
       await resetForm();
       await refreshCreate();
@@ -625,17 +625,17 @@ pre {
   border-radius: 4px;
 }
 
-::deep(.session-detail-dialog .el-dialog__body) {
+::v-deep(.session-detail-dialog .el-dialog__body) {
   max-height: 60vh;
   padding: 20px;
   overflow-y: auto;
 }
 
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

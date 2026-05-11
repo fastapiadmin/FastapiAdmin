@@ -10,11 +10,11 @@
   }
 
   // 自定义滚动条宽度
-  ::deep(.el-scrollbar__bar.is-vertical) {
+  :deep(.el-scrollbar__bar.is-vertical) {
     width: 4px;
   }
 
-  ::deep(.el-scrollbar__thumb) {
+  :deep(.el-scrollbar__thumb) {
     right: -2px;
     background-color: #ccc;
     border-radius: 2px;
@@ -240,7 +240,7 @@
   .layout-sidebar {
     border-right: 1px solid rgb(255 255 255 / 13%);
 
-    ::deep(.el-scrollbar__thumb) {
+    :deep(.el-scrollbar__thumb) {
       background-color: #777;
     }
 

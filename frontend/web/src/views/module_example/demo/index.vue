@@ -497,7 +497,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DemoTable>({});
 
-const formData = reactive<DemoForm>({
+const formData = ref<DemoForm>({
   id: undefined,
   name: "",
   status: "0",
@@ -620,15 +620,15 @@ async function openEditDialog(type: "add" | "edit", row?: DemoTable) {
   dialogVisible.type = type === "add" ? "create" : "update";
   if (type === "add") {
     dialogVisible.title = "新增示例";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
     metadataList.value = [];
   } else if (row?.id) {
     dialogVisible.title = "修改";
     const response = await DemoAPI.getDemoDetail(row.id);
-    Object.assign(formData, response.data.data);
-    if (formData.i && typeof formData.i === "object") {
-      metadataList.value = Object.entries(formData.i).map(([key, value]) => ({
+    Object.assign(formData.value, response.data.data);
+    if (formData.value.i && typeof formData.value.i === "object") {
+      metadataList.value = Object.entries(formData.value.i).map(([key, value]) => ({
         key,
         value: String(value),
       }));
@@ -644,7 +644,7 @@ async function resetForm() {
     dataFormRef.value.resetFields();
     dataFormRef.value.clearValidate();
   }
-  Object.assign(formData, initialFormData);
+  Object.assign(formData.value, initialFormData);
   metadataList.value = [];
 }
 
@@ -656,7 +656,7 @@ async function handleCloseDialog() {
 async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
-    const submitData = { ...formData };
+    const submitData = { ...formData.value };
     if (metadataList.value.length > 0) {
       const metadataObj: Record<string, string> = {};
       metadataList.value.forEach((item) => {
@@ -668,7 +668,7 @@ async function handleSubmit() {
     } else {
       submitData.i = undefined;
     }
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
         await DemoAPI.updateDemo(id, { id, ...submitData });

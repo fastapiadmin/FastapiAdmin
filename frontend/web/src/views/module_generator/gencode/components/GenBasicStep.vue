@@ -352,15 +352,15 @@ onUnmounted(() => {
   min-width: 0;
 }
 
-.gen-basic-step ::deep(.el-col) {
+.gen-basic-step ::v-deep(.el-col) {
   min-width: 0;
 }
 
-.gen-basic-step ::deep(.el-form-item__content) {
+.gen-basic-step ::v-deep(.el-form-item__content) {
   min-width: 0;
 }
 
-.gen-basic-step ::deep(.el-input-group) {
+.gen-basic-step ::v-deep(.el-input-group) {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -383,11 +383,11 @@ onUnmounted(() => {
   border: 1px solid var(--el-border-color-lighter);
 }
 
-.master-sub-card ::deep(.el-card__header) {
+.master-sub-card ::v-deep(.el-card__header) {
   padding: 8px 10px;
 }
 
-.master-sub-card ::deep(.el-card__body) {
+.master-sub-card ::v-deep(.el-card__body) {
   padding: 10px;
 }
 
@@ -396,7 +396,7 @@ onUnmounted(() => {
   border: 1px solid var(--el-border-color-lighter);
 }
 
-.gen-form-card ::deep(.el-card__body) {
+.gen-form-card ::v-deep(.el-card__body) {
   overflow-x: hidden;
 }
 
@@ -425,7 +425,7 @@ onUnmounted(() => {
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
-.gen-echo-card ::deep(.el-card__body) {
+.gen-echo-card ::v-deep(.el-card__body) {
   padding: 6px 8px;
 }
 

@@ -400,7 +400,7 @@ defineExpose({
       .search-section {
         margin-bottom: 16px;
 
-        ::deep(.el-input__wrapper) {
+        ::v-deep(.el-input__wrapper) {
           border-radius: 20px;
           box-shadow: 0 0 0 1px var(--el-border-color) inset;
           transition: all 0.2s ease;
@@ -414,7 +414,7 @@ defineExpose({
           }
         }
 
-        ::deep(.el-input__inner) {
+        ::v-deep(.el-input__inner) {
           font-size: 13px;
         }
       }

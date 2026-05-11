@@ -203,7 +203,7 @@ const unlockLoading = ref(false);
 
 const formRef = ref<FormInstance>();
 
-const formData = reactive({
+const formData = ref({
   password: "",
 });
 
@@ -388,11 +388,14 @@ const handleLock = async () => {
 
   await formRef.value.validate((valid, fields) => {
     if (valid) {
-      const encryptedPassword = CryptoJS.AES.encrypt(formData.password, ENCRYPT_KEY).toString();
+      const encryptedPassword = CryptoJS.AES.encrypt(
+        formData.value.password,
+        ENCRYPT_KEY
+      ).toString();
       userStore.setLockStatus(true);
       userStore.setLockPassword(encryptedPassword);
       visible.value = false;
-      formData.password = "";
+      formData.value.password = "";
       showClock.value = true;
       unlockPwd.value = "";
       unlockErrMsg.value = false;

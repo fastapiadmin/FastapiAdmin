@@ -362,7 +362,7 @@ const { columnChecks, columns } = useTableColumns<DeptTable>(() => [
 
 const detailFormData = ref<DeptTable>({ code: "" });
 
-const formData = reactive<DeptForm>({
+const formData = ref<DeptForm>({
   id: undefined,
   name: undefined,
   code: "",
@@ -515,10 +515,10 @@ async function handleOpenDialog(
     }
   } else {
     dialogVisible.title = "新增部门";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
     if (parentId) {
-      formData.parent_id = parentId;
+      formData.value.parent_id = parentId;
     }
   }
   deptFormRenderKey.value += 1;
@@ -528,12 +528,12 @@ async function handleOpenDialog(
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await DeptAPI.updateDept(id, { id, ...formData });
+        await DeptAPI.updateDept(id, { id, ...formData.value });
       } else {
-        await DeptAPI.createDept(formData);
+        await DeptAPI.createDept(formData.value);
       }
       dialogVisible.visible = false;
       await resetForm();
@@ -614,15 +614,15 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-::deep(.dept-table-actions .inline-flex) {
+::v-deep(.dept-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

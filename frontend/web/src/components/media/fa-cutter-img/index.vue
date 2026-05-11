@@ -283,11 +283,11 @@ function downloadImg() {
     }
   }
 
-  ::deep(.toolBoxControl) {
+  ::v-deep(.toolBoxControl) {
     z-index: 100;
   }
 
-  ::deep(.dockMain) {
+  ::v-deep(.dockMain) {
     right: 0;
     bottom: -40px;
     left: 0;
@@ -297,15 +297,15 @@ function downloadImg() {
     opacity: 1;
   }
 
-  ::deep(.copyright) {
+  ::v-deep(.copyright) {
     display: none !important;
   }
 
-  ::deep(.i-dialog-footer) {
+  ::v-deep(.i-dialog-footer) {
     margin-top: 60px !important;
   }
 
-  ::deep(.dockBtn) {
+  ::v-deep(.dockBtn) {
     height: 26px;
     padding: 0 10px;
     font-size: 12px;
@@ -315,31 +315,31 @@ function downloadImg() {
     border: 1px solid var(--el-color-primary-light-4) !important;
   }
 
-  ::deep(.dockBtnScrollBar) {
+  ::v-deep(.dockBtnScrollBar) {
     margin: 0 10px 0 6px;
     background-color: var(--el-color-primary-light-1);
   }
 
-  ::deep(.scrollBarControl) {
+  ::v-deep(.scrollBarControl) {
     border-color: var(--el-color-primary);
   }
 
-  ::deep(.closeIcon) {
+  ::v-deep(.closeIcon) {
     line-height: 15px !important;
   }
 }
 
 .dark {
   .cutter-container {
-    ::deep(.toolBox) {
+    ::v-deep(.toolBox) {
       border: transparent;
     }
 
-    ::deep(.dialogMain) {
+    ::v-deep(.dialogMain) {
       background-color: transparent !important;
     }
 
-    ::deep(.i-dialog-footer) {
+    ::v-deep(.i-dialog-footer) {
       .btn {
         background-color: var(--el-color-primary) !important;
         border: transparent;

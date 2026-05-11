@@ -145,7 +145,7 @@ const toggleSidebar = () => {
     align-items: center;
 
     /* EP 相邻按钮自带 margin-left，叠在 flex gap 上会导致间距忽大忽小 */
-    ::deep(.el-button) {
+    ::v-deep(.el-button) {
       margin: 0;
     }
 
@@ -159,7 +159,7 @@ const toggleSidebar = () => {
       font-size: 14px;
       line-height: 1;
 
-      ::deep(.el-tag__content) {
+      ::v-deep(.el-tag__content) {
         display: inline-flex;
         gap: 6px;
         align-items: center;

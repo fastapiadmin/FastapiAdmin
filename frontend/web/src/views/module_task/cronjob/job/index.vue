@@ -1039,7 +1039,7 @@ function handleViewJobState(row: JobLogTable) {
 </script>
 
 <style scoped>
-.job-page ::deep(.data-table) {
+.job-page ::v-deep(.data-table) {
   height: 100%;
 }
 
@@ -1151,7 +1151,7 @@ function handleViewJobState(row: JobLogTable) {
   min-height: 0;
 }
 
-.execution-log-drawer ::deep(.el-card.data-table) {
+.execution-log-drawer ::v-deep(.el-card.data-table) {
   flex: 1;
   min-height: 0;
 }

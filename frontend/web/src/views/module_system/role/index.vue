@@ -547,7 +547,7 @@ const roleExportContentConfig = computed(() => ({
 
 const detailFormData = ref<RoleTable>({} as RoleTable);
 
-const formData = reactive<RoleForm>({
+const formData = ref<RoleForm>({
   id: undefined,
   name: undefined,
   order: 1,
@@ -684,8 +684,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增角色";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
   }
   roleFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -695,13 +695,13 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await RoleAPI.updateRole(id, { id, ...formData });
+        await RoleAPI.updateRole(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await RoleAPI.createRole(formData);
+        await RoleAPI.createRole(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
@@ -766,15 +766,15 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-::deep(.role-table-actions .inline-flex) {
+::v-deep(.role-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

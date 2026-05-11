@@ -440,7 +440,7 @@ const detailFormData = ref<TenantTable>({ code: "", name: "", status: "0" });
 
 const currentEditId = ref<number | null>(null);
 
-const formData = reactive<TenantForm>({
+const formData = ref<TenantForm>({
   name: "",
   code: "",
   status: "0",
@@ -458,7 +458,11 @@ const dialogVisible = reactive({
 const CODE_PATTERN = /^[A-Za-z0-9]+$/;
 
 const validateTimeRange = (rule: unknown, value: unknown, callback: (e?: Error) => void) => {
-  if (formData.start_time && formData.end_time && formData.start_time > formData.end_time) {
+  if (
+    formData.value.start_time &&
+    formData.value.end_time &&
+    formData.value.start_time > formData.value.end_time
+  ) {
     callback(new Error("结束时间不能早于开始时间"));
   } else {
     callback();
@@ -618,18 +622,18 @@ async function handleSubmit() {
     try {
       if (id) {
         const payload: TenantUpdateForm = {
-          name: formData.name,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
+          name: formData.value.name,
+          start_time: formData.value.start_time,
+          end_time: formData.value.end_time,
         };
         await TenantAPI.updateTenant(id, payload);
         await refreshUpdate();
       } else {
         const payload: TenantCreateForm = {
-          name: formData.name as string,
-          code: formData.code as string,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
+          name: formData.value.name as string,
+          code: formData.value.code as string,
+          start_time: formData.value.start_time,
+          end_time: formData.value.end_time,
         };
         await TenantAPI.createTenant(payload);
         await refreshCreate();
@@ -668,15 +672,15 @@ function handleBatchDelete() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-::deep(.tenant-table-actions .inline-flex) {
+::v-deep(.tenant-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

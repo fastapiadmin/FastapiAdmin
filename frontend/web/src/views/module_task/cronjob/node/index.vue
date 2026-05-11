@@ -583,7 +583,7 @@ const defaultCodeBlock = `def handler(*args, **kwargs):
     }
 `;
 
-const formData = reactive<NodeForm>({
+const formData = ref<NodeForm>({
   id: undefined,
   name: "",
   code: undefined,
@@ -603,7 +603,7 @@ const kwargsList = ref<{ key: string; value: string }[]>([]);
 
 const executeDialogVisible = ref(false);
 const currentExecuteNode = ref<NodeTable | null>(null);
-const executeFormData = reactive<{
+const executeFormData = ref<{
   node_display_name: string;
   trigger: TriggerType;
   trigger_args?: string;
@@ -618,7 +618,7 @@ const executeFormData = reactive<{
 });
 
 const executeDialogFormItems = computed<FormItem[]>(() => {
-  const trig = executeFormData.trigger;
+  const trig = executeFormData.value.trigger;
   const showRange = !!trig && trig !== "now" && trig !== "date";
   let triggerArgsLabel = "执行参数";
   if (trig === "cron") triggerArgsLabel = "Cron表达式";
@@ -802,7 +802,7 @@ async function handleOpenDialog(type: "create" | "update", id?: number) {
       : [];
   } else {
     dialogVisible.title = "新增节点";
-    formData.id = undefined;
+    formData.value.id = undefined;
     argsList.value = [];
     kwargsList.value = [];
   }
@@ -822,10 +822,10 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: any) => {
     if (valid) {
       submitLoading.value = true;
-      const id = formData.id;
+      const id = formData.value.id;
       try {
         const submitData = {
-          ...formData,
+          ...formData.value,
           args: argsList.value.filter((v) => v.trim()).join(",") || undefined,
           kwargs:
             kwargsList.value.filter((v) => v.key.trim()).length > 0
@@ -859,22 +859,22 @@ async function handleSubmit() {
 
 const handlechangeCron = (cronStr: string) => {
   if (typeof cronStr == "string") {
-    executeFormData.trigger_args = cronStr;
+    executeFormData.value.trigger_args = cronStr;
   }
 };
 
 const handleIntervalConfirm = (value: string) => {
-  executeFormData.trigger_args = value;
+  executeFormData.value.trigger_args = value;
   openInterval.value = false;
 };
 
 function handleOpenExecuteDialog(row: NodeTable) {
   currentExecuteNode.value = row;
-  executeFormData.node_display_name = row.name ?? "";
-  executeFormData.trigger = "now";
-  executeFormData.trigger_args = undefined;
-  executeFormData.start_date = undefined;
-  executeFormData.end_date = undefined;
+  executeFormData.value.node_display_name = row.name ?? "";
+  executeFormData.value.trigger = "now";
+  executeFormData.value.trigger_args = undefined;
+  executeFormData.value.start_date = undefined;
+  executeFormData.value.end_date = undefined;
   executeFormRenderKey.value += 1;
   executeDialogVisible.value = true;
 }
@@ -886,7 +886,7 @@ function handleCloseExecuteDialog() {
 }
 
 async function handleExecuteNode() {
-  if (executeFormData.trigger !== "now") {
+  if (executeFormData.value.trigger !== "now") {
     const execForm = executeFormRef.value;
     const elForm = execForm?.ref;
     if (!elForm) return;
@@ -897,13 +897,13 @@ async function handleExecuteNode() {
   try {
     submitLoading.value = true;
     const params: any = {
-      trigger: executeFormData.trigger,
+      trigger: executeFormData.value.trigger,
     };
 
-    if (executeFormData.trigger !== "now") {
-      params.trigger_args = executeFormData.trigger_args;
-      params.start_date = executeFormData.start_date;
-      params.end_date = executeFormData.end_date;
+    if (executeFormData.value.trigger !== "now") {
+      params.trigger_args = executeFormData.value.trigger_args;
+      params.start_date = executeFormData.value.start_date;
+      params.end_date = executeFormData.value.end_date;
     }
 
     await NodeAPI.executeNode(currentExecuteNode.value?.id as number, params);
@@ -986,17 +986,17 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
-.node-splitter-art-form ::deep(.el-row > .el-col:last-child),
-.execute-debug-art-form ::deep(.el-row > .el-col:last-child) {
+.node-splitter-art-form ::v-deep(.el-row > .el-col:last-child),
+.execute-debug-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.node-splitter-art-form ::deep(.el-form-item__content),
-.execute-debug-art-form ::deep(.el-form-item__content) {
+.node-splitter-art-form ::v-deep(.el-form-item__content),
+.execute-debug-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-.node-splitter-art-form ::deep(section) {
+.node-splitter-art-form ::v-deep(section) {
   padding-right: 10px;
   padding-left: 10px;
 }

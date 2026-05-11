@@ -357,7 +357,7 @@ const paramExportContentConfig = computed(() => ({
 
 const detailFormData = ref<ConfigTable>({} as ConfigTable);
 
-const formData = reactive<ConfigForm>({
+const formData = ref<ConfigForm>({
   id: undefined,
   config_name: "",
   config_key: "",
@@ -478,8 +478,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增系统配置";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
   }
   paramFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -489,13 +489,13 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await ParamsAPI.updateParams(id, { id, ...formData });
+        await ParamsAPI.updateParams(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await ParamsAPI.createParams(formData);
+        await ParamsAPI.createParams(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
@@ -598,11 +598,11 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

@@ -567,7 +567,7 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 0;
 
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -607,7 +607,7 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 0;
 
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;

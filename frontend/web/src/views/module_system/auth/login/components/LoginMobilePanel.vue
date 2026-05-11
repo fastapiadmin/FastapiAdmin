@@ -246,11 +246,11 @@ html.dark {
 
 /* EP 全局规则：相邻 .el-button { margin-left: 12px }，纵向叠放时仍会命中，导致第二颗按钮横向错位 */
 .login-mobile-actions {
-  ::deep(.el-button + .el-button) {
+  ::v-deep(.el-button + .el-button) {
     margin-left: 0 !important;
   }
 
-  ::deep(.el-button) {
+  ::v-deep(.el-button) {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;

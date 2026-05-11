@@ -633,14 +633,14 @@ async function handleBatchDelete() {
 </script>
 
 <style lang="scss" scoped>
-.resource-monitor-page ::deep(.resource-monitor-card.el-card > .el-card__body) {
+.resource-monitor-page ::v-deep(.resource-monitor-card.el-card > .el-card__body) {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
 }
 
-::deep(.el-breadcrumb__item) {
+::v-deep(.el-breadcrumb__item) {
   &.is-link {
     color: var(--el-color-primary);
     cursor: pointer;

@@ -247,7 +247,7 @@ function closeUserMenu(): void {
 }
 
 /* ElPopover 基于 Tooltip：触发层默认 inline-block，与顶栏 flex 图标中线对齐 */
-.fa-user-menu ::deep(.el-tooltip__trigger) {
+.fa-user-menu .el-tooltip__trigger {
   display: inline-flex !important;
   align-items: center;
   line-height: 1;

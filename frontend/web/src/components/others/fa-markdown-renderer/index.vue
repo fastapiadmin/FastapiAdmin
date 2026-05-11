@@ -70,7 +70,7 @@ const renderedContent = computed(() => {
   color: var(--el-text-color-primary);
   word-wrap: break-word;
 
-  ::deep(pre) {
+  ::v-deep(pre) {
     padding: 12px;
     margin: 12px 0;
     overflow-x: auto;
@@ -83,7 +83,7 @@ const renderedContent = computed(() => {
     }
   }
 
-  ::deep(code) {
+  ::v-deep(code) {
     padding: 2px 6px;
     font-family: "Courier New", Courier, monospace;
     font-size: 13px;
@@ -91,21 +91,21 @@ const renderedContent = computed(() => {
     border-radius: 3px;
   }
 
-  ::deep(p) {
+  ::v-deep(p) {
     margin: 8px 0;
   }
 
-  ::deep(ul),
-  ::deep(ol) {
+  ::v-deep(ul),
+  ::v-deep(ol) {
     padding-left: 24px;
     margin: 8px 0;
   }
 
-  ::deep(li) {
+  ::v-deep(li) {
     margin: 4px 0;
   }
 
-  ::deep(a) {
+  ::v-deep(a) {
     color: var(--el-color-primary);
     text-decoration: none;
 
@@ -114,14 +114,14 @@ const renderedContent = computed(() => {
     }
   }
 
-  ::deep(blockquote) {
+  ::v-deep(blockquote) {
     padding: 8px 16px;
     margin: 12px 0;
     background: var(--el-fill-color-light);
     border-left: 4px solid var(--el-color-primary);
   }
 
-  ::deep(table) {
+  ::v-deep(table) {
     width: 100%;
     margin: 12px 0;
     border-collapse: collapse;

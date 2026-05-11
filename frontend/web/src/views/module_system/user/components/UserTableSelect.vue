@@ -1,6 +1,6 @@
 <!-- 列表选择器 -->
 <template>
-  <table-select
+  <FaTableSelect
     :text="text"
     :select-config="selectConfig"
     @confirm-click="handleConfirm"
@@ -11,7 +11,7 @@
         {{ scope.row[scope.prop] === "0" ? "启用" : "停用" }}
       </ElTag>
     </template>
-  </table-select>
+  </FaTableSelect>
 </template>
 
 <script setup lang="ts">

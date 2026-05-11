@@ -90,7 +90,7 @@
     <ImportDbTableDialog
       ref="importDbDialogRef"
       v-model="importVisible"
-      v-model:query="importQueryFormData"
+      v-model:query="formData"
       :data="dbTableList"
       :total="importTotal"
       :confirm-loading="importLoading"
@@ -216,7 +216,7 @@ const tableNames = ref<string[]>([]);
 // 导入弹窗专用状态
 const importLoading = ref(false);
 const importTotal = ref<number>(0);
-const importQueryFormData = ref<GenTablePageQuery>({
+const formData = ref<GenTablePageQuery>({
   page_no: 1,
   page_size: 10,
   table_name: undefined,
@@ -1009,7 +1009,7 @@ async function handleImportTable(): Promise<void> {
 async function getDbList(): Promise<void> {
   importLoading.value = true;
   try {
-    const res = await GencodeAPI.listDbTable(importQueryFormData.value);
+    const res = await GencodeAPI.listDbTable(formData.value);
     if (res.data && res.data.data) {
       dbTableList.value = res.data.data.items;
       importTotal.value = res.data.data.total;
@@ -1023,7 +1023,7 @@ async function getDbList(): Promise<void> {
 
 /** 导入弹窗搜索按钮操作 */
 async function handleImportQuery(): Promise<void> {
-  importQueryFormData.value.page_no = 1;
+  formData.value.page_no = 1;
   await getDbList();
 }
 

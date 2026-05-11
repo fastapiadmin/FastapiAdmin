@@ -541,7 +541,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DictDataTable>({});
 
-const formData = reactive<DictDataForm>({
+const formData = ref<DictDataForm>({
   id: undefined,
   dict_sort: 1,
   dict_label: "",
@@ -715,11 +715,11 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增字典数据";
-    Object.assign(formData, initialFormData);
-    formData.dict_type = props.dictType;
-    formData.dict_type_id = props.dictTypeId;
-    formData.status = "0";
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.dict_type = props.dictType;
+    formData.value.dict_type_id = props.dictTypeId;
+    formData.value.status = "0";
+    formData.value.id = undefined;
   }
   dictDataFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -728,20 +728,20 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await DictAPI.updateDictData(id, { id, ...formData });
+        await DictAPI.updateDictData(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await DictAPI.createDictData(formData);
+        await DictAPI.createDictData(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
       await resetForm();
       dictStore.clearDictData();
-      if (formData.dict_type) {
-        await dictStore.getDict([formData.dict_type]);
+      if (formData.value.dict_type) {
+        await dictStore.getDict([formData.value.dict_type]);
       }
     } catch (error: unknown) {
       console.error(error);
@@ -890,11 +890,11 @@ function openExportModal() {
   border-color: var(--el-border-color-lighter);
 }
 
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

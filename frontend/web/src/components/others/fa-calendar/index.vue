@@ -205,45 +205,45 @@ const handleDeleteEvent = () => {
   min-width: 0;
 }
 
-::deep(.el-calendar__header) {
+::v-deep(.el-calendar__header) {
   padding: 6px 4px;
   border-bottom: none;
 }
 
-::deep(.el-calendar__title) {
+::v-deep(.el-calendar__title) {
   font-size: 14px;
   font-weight: 600;
 }
 
-::deep(.el-calendar__header .el-button) {
+::v-deep(.el-calendar__header .el-button) {
   padding: 4px 8px;
 }
 
-::deep(.el-calendar__body) {
+::v-deep(.el-calendar__body) {
   padding: 2px 0 4px;
 }
 
-::deep(.el-calendar-table thead th) {
+::v-deep(.el-calendar-table thead th) {
   padding: 4px 0;
   font-size: 11px;
   font-weight: 500;
 }
 
-::deep(.is-selected) {
+::v-deep(.is-selected) {
   background-color: var(--el-color-warning-light-9) !important;
 }
 
-::deep(.el-calendar-day) {
+::v-deep(.el-calendar-day) {
   height: auto;
   min-height: 3rem;
   padding: 0;
 }
 
-::deep(.el-calendar-day:hover) {
+::v-deep(.el-calendar-day:hover) {
   background-color: transparent !important;
 }
 
-::deep(.el-dialog__body) {
+::v-deep(.el-dialog__body) {
   padding-top: 20px;
 }
 </style>

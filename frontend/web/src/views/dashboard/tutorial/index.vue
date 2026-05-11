@@ -1012,7 +1012,7 @@ function handleAnchorClick(ev: MouseEvent) {
   &__tabs {
     width: 100%;
 
-    ::deep(.el-tab-pane) {
+    ::v-deep(.el-tab-pane) {
       box-sizing: border-box;
     }
   }

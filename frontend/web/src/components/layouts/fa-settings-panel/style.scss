@@ -80,7 +80,7 @@
 }
 
 // 去除火狐浏览器滚动条
-::deep(.el-drawer__body) {
+:deep(.el-drawer__body) {
   scrollbar-width: none;
 }
 

@@ -368,7 +368,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<Demo01Table>({});
 
-const formData = reactive<Demo01Form>({
+const formData = ref<Demo01Form>({
   id: undefined,
   name: "",
   status: "0",
@@ -499,12 +499,12 @@ async function openEditDialog(type: "add" | "edit", row?: Demo01Table) {
   dialogVisible.type = type === "add" ? "create" : "update";
   if (type === "add") {
     dialogVisible.title = "新增示例01";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
   } else if (row?.id) {
     dialogVisible.title = "修改";
     const response = await Demo01API.getDemo01Detail(row.id);
-    Object.assign(formData, response.data.data);
+    Object.assign(formData.value, response.data.data);
   }
   demo01FormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -513,7 +513,7 @@ async function openEditDialog(type: "add" | "edit", row?: Demo01Table) {
 async function resetForm() {
   dataFormRef.value?.ref?.resetFields();
   dataFormRef.value?.ref?.clearValidate();
-  Object.assign(formData, initialFormData);
+  Object.assign(formData.value, initialFormData);
 }
 
 async function handleCloseDialog() {
@@ -524,13 +524,13 @@ async function handleCloseDialog() {
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await Demo01API.updateDemo01(id, { id, ...formData });
+        await Demo01API.updateDemo01(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await Demo01API.createDemo01(formData);
+        await Demo01API.createDemo01(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
@@ -627,11 +627,11 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

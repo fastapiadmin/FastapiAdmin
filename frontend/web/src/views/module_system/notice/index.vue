@@ -450,7 +450,7 @@ const detailHasRenderableContent = computed(() => {
   return plain.length > 0;
 });
 
-const formData = reactive<NoticeForm>({
+const formData = ref<NoticeForm>({
   id: undefined,
   notice_title: "",
   notice_type: "",
@@ -606,8 +606,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增公告通知";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
   }
   noticeFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -617,13 +617,13 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await NoticeAPI.updateNotice(id, { id, ...formData });
+        await NoticeAPI.updateNotice(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await NoticeAPI.createNotice(formData);
+        await NoticeAPI.createNotice(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
@@ -747,11 +747,11 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 /* FaForm 底部预留的操作栏列在弹窗内不需要占位 */
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 
@@ -773,27 +773,27 @@ onMounted(async () => {
   color: var(--el-text-color-placeholder);
 }
 
-.notice-html-preview ::deep(h1),
-.notice-html-preview ::deep(h2),
-.notice-html-preview ::deep(h3) {
+.notice-html-preview ::v-deep(h1),
+.notice-html-preview ::v-deep(h2),
+.notice-html-preview ::v-deep(h3) {
   margin: 12px 0 8px;
 }
 
-.notice-html-preview ::deep(p) {
+.notice-html-preview ::v-deep(p) {
   margin: 8px 0;
   line-height: 1.6;
 }
 
-.notice-html-preview ::deep(table) {
+.notice-html-preview ::v-deep(table) {
   margin: 12px 0;
 }
 
-.notice-html-preview ::deep(table th),
-.notice-html-preview ::deep(table td) {
+.notice-html-preview ::v-deep(table th),
+.notice-html-preview ::v-deep(table td) {
   padding: 8px 12px;
 }
 
-.notice-html-preview ::deep(pre) {
+.notice-html-preview ::v-deep(pre) {
   padding: 12px;
   margin: 12px 0;
   overflow-x: auto;
@@ -801,14 +801,14 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
-.notice-html-preview ::deep(blockquote) {
+.notice-html-preview ::v-deep(blockquote) {
   padding-left: 16px;
   margin: 12px 0;
   color: var(--el-text-color-regular);
   border-left: 4px solid var(--el-color-primary);
 }
 
-.notice-html-preview ::deep(img) {
+.notice-html-preview ::v-deep(img) {
   max-width: 100%;
   height: auto;
 }

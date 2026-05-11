@@ -78,7 +78,7 @@ const qrPayload = computed(() => {
 
 /* EP：相邻按钮横向间距；单列返回按钮无需处理 */
 .login-mobile-actions {
-  ::deep(.el-button) {
+  ::v-deep(.el-button) {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;

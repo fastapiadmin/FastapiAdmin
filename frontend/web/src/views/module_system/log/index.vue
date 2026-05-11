@@ -446,7 +446,7 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  formData.value = {};
+  Object.assign(formData, {});
 }
 
 async function handleCloseDialog() {
@@ -457,7 +457,7 @@ async function handleCloseDialog() {
 async function handleOpenDialog(id: number) {
   dialogVisible.value.title = "日志详情";
   const response = await LogAPI.detailLog(id);
-  Object.assign(formData.value, response.data.data ?? {});
+  Object.assign(formData, response.data.data ?? {});
   dialogVisible.value.visible = true;
 }
 

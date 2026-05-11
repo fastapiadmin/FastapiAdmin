@@ -84,7 +84,7 @@
       <FaForm
         :key="nodeTypeFormRenderKey"
         ref="formRef"
-        v-model="form"
+        v-model="formData"
         :items="nodeTypeDialogFormItems"
         :rules="rules"
         label-width="100px"
@@ -125,7 +125,7 @@ import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import type { FormRules } from "element-plus";
-import { computed, h, reactive, ref } from "vue";
+import { computed, h, ref } from "vue";
 
 const BATCH_DELETE_MSG = "确认删除选中的编排节点类型吗？";
 
@@ -438,7 +438,7 @@ const defaultForm = (): WorkflowNodeTypeForm => ({
   is_active: true,
 });
 
-const form = reactive<WorkflowNodeTypeForm>(defaultForm());
+const formData = ref<WorkflowNodeTypeForm>(defaultForm());
 
 const rules: FormRules = {
   name: [{ required: true, message: "请输入名称", trigger: "blur" }],
@@ -448,7 +448,7 @@ const rules: FormRules = {
 };
 
 function resetForm() {
-  Object.assign(form, defaultForm());
+  Object.assign(formData.value, defaultForm());
   editingId.value = null;
   formRef.value?.ref?.resetFields();
   formRef.value?.ref?.clearValidate();
@@ -467,14 +467,14 @@ async function openDialog(id?: number) {
       const res = await WorkflowNodeTypeAPI.getWorkflowNodeTypeDetail(id);
       const d = res.data?.data as WorkflowNodeTypeTable | undefined;
       if (d) {
-        form.name = d.name || "";
-        form.code = d.code || "";
-        form.category = (d.category as WorkflowNodeTypeForm["category"]) || "action";
-        form.func = d.func || "";
-        form.args = d.args || "";
-        form.kwargs = d.kwargs || "{}";
-        form.sort_order = d.sort_order ?? 0;
-        form.is_active = d.is_active ?? true;
+        formData.value.name = d.name || "";
+        formData.value.code = d.code || "";
+        formData.value.category = (d.category as WorkflowNodeTypeForm["category"]) || "action";
+        formData.value.func = d.func || "";
+        formData.value.args = d.args || "";
+        formData.value.kwargs = d.kwargs || "{}";
+        formData.value.sort_order = d.sort_order ?? 0;
+        formData.value.is_active = d.is_active ?? true;
       }
     } catch {
       ElMessage.error("加载详情失败");
@@ -488,9 +488,9 @@ async function openDialog(id?: number) {
 async function submitForm() {
   if (!formRef.value) return;
   await formRef.value.validate();
-  if (form.kwargs?.trim()) {
+  if (formData.value.kwargs?.trim()) {
     try {
-      JSON.parse(form.kwargs);
+      JSON.parse(formData.value.kwargs);
     } catch {
       ElMessage.error("关键字参数须为合法 JSON");
       return;
@@ -499,12 +499,12 @@ async function submitForm() {
   submitting.value = true;
   try {
     if (editingId.value) {
-      await WorkflowNodeTypeAPI.updateWorkflowNodeType(editingId.value, form);
+      await WorkflowNodeTypeAPI.updateWorkflowNodeType(editingId.value, formData.value);
       ElMessage.success("更新成功");
       dialogVisible.value = false;
       await refreshUpdate();
     } else {
-      await WorkflowNodeTypeAPI.createWorkflowNodeType(form);
+      await WorkflowNodeTypeAPI.createWorkflowNodeType(formData.value);
       ElMessage.success("创建成功");
       dialogVisible.value = false;
       await refreshCreate();
@@ -518,11 +518,11 @@ async function submitForm() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

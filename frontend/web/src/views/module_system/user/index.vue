@@ -731,7 +731,7 @@ const userExportContentConfig = computed(() => ({
   },
 }));
 
-const formData = reactive<UserForm>({
+const formData = ref<UserForm>({
   id: undefined,
   username: undefined,
   name: undefined,
@@ -882,13 +882,15 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改用户";
-      Object.assign(formData, response.data.data);
-      formData.role_ids = (response.data.data.roles || []).map((item) => item.id as number);
-      formData.position_ids = (response.data.data.positions || []).map((item) => item.id as number);
+      Object.assign(formData.value, response.data.data);
+      formData.value.role_ids = (response.data.data.roles || []).map((item) => item.id as number);
+      formData.value.position_ids = (response.data.data.positions || []).map(
+        (item) => item.id as number
+      );
     }
   } else {
     dialogVisible.title = "新增用户";
-    formData.id = undefined;
+    formData.value.id = undefined;
   }
   dialogVisible.visible = true;
   await nextTick();
@@ -926,13 +928,13 @@ async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await UserAPI.updateUser(id, { id, ...formData });
+        await UserAPI.updateUser(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await UserAPI.createUser(formData);
+        await UserAPI.createUser(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
@@ -1002,7 +1004,7 @@ function handleMoreClick(status: string) {
 
 <style lang="scss" scoped>
 /* 左侧部门树内容区：card body 纵向 flex + 滚动条占满剩余高度（布局在 index，内边距在 DeptTree） */
-.tree-card ::deep(.el-card__body) {
+.tree-card ::v-deep(.el-card__body) {
   display: flex;
   flex: 1;
   flex-direction: column;

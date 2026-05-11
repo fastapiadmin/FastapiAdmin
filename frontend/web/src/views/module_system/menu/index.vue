@@ -692,7 +692,7 @@ const createParentLocked = ref(false);
 
 const detailFormData = ref<MenuTable>({});
 
-const formData = reactive<MenuForm>({
+const formData = ref<MenuForm>({
   id: undefined,
   name: undefined,
   type: MenuTypeEnum.CATALOG,
@@ -959,7 +959,7 @@ const rules = reactive({
   redirect: [
     {
       validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
-        if (formData.type === MenuTypeEnum.CATALOG) {
+        if (formData.value.type === MenuTypeEnum.CATALOG) {
           if (value === undefined || value === null || String(value).trim() === "") {
             callback(new Error("目录类型必须填写重定向地址"));
             return;
@@ -1012,7 +1012,7 @@ async function handleRowClick(row: MenuTable) {
 }
 
 const allowedMenuTypeValues = computed(() => {
-  const pid = formData.parent_id;
+  const pid = formData.value.parent_id;
   const parentNode = findMenuNodeById(pid);
   if (!parentNode?.type) {
     return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
@@ -1046,28 +1046,28 @@ async function handleOpenDialog(
     dialogVisible.title = "新增菜单";
     Object.assign(formData, initialFormData);
     if (parentRow?.id != null) {
-      formData.parent_id = parentRow.id;
-      formData.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
+      formData.value.parent_id = parentRow.id;
+      formData.value.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
       if (parentRow.type === MenuTypeEnum.MENU) {
         createParentLocked.value = true;
-        formData.type = MenuTypeEnum.BUTTON;
+        formData.value.type = MenuTypeEnum.BUTTON;
       } else if (parentRow.type === MenuTypeEnum.CATALOG) {
-        formData.type = MenuTypeEnum.MENU;
+        formData.value.type = MenuTypeEnum.MENU;
       }
     } else {
-      formData.client = menuClientTab.value;
+      formData.value.client = menuClientTab.value;
     }
   }
   dialogVisible.visible = true;
 }
 
 function handleMenuTypeChange() {
-  if (formData.type === MenuTypeEnum.MENU) {
-    formData.component_path = "";
+  if (formData.value.type === MenuTypeEnum.MENU) {
+    formData.value.component_path = "";
   }
   nextTick(() => {
     dataFormRef.value?.clearValidate("redirect");
-    if (formData.type === MenuTypeEnum.CATALOG) {
+    if (formData.value.type === MenuTypeEnum.CATALOG) {
       dataFormRef.value?.validateField("redirect").catch(() => {});
     }
   });
@@ -1076,19 +1076,19 @@ function handleMenuTypeChange() {
 async function handleSubmit() {
   const allowed = allowedMenuTypeValues.value;
   if (!allowed.length) return;
-  const t = formData.type as MenuTypeEnum;
+  const t = formData.value.type as MenuTypeEnum;
   if (!allowed.includes(t)) {
-    formData.type = allowed[0] as MenuForm["type"];
+    formData.value.type = allowed[0] as MenuForm["type"];
   }
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await MenuAPI.updateMenu(id, { id, ...formData });
+        await MenuAPI.updateMenu(id, { id, ...formData.value });
       } else {
-        await MenuAPI.createMenu(formData);
+        await MenuAPI.createMenu(formData.value);
       }
       dialogVisible.visible = false;
       await resetForm();
@@ -1153,7 +1153,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-::deep(.menu-table-actions .inline-flex) {
+::v-deep(.menu-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

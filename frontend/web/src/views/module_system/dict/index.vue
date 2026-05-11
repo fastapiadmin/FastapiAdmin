@@ -359,7 +359,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DictTable>({});
 
-const formData = reactive<DictForm>({
+const formData = ref<DictForm>({
   id: undefined,
   dict_name: "",
   dict_type: "",
@@ -529,8 +529,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增字典";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
   }
   dictFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -539,20 +539,20 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await DictAPI.updateDictType(id, { id, ...formData });
+        await DictAPI.updateDictType(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await DictAPI.createDictType(formData);
+        await DictAPI.createDictType(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
       await resetForm();
       dictStore.clearDictData();
-      if (formData.dict_type) {
-        await dictStore.getDict([formData.dict_type]);
+      if (formData.value.dict_type) {
+        await dictStore.getDict([formData.value.dict_type]);
       }
     } catch (error: unknown) {
       console.error(error);
@@ -636,11 +636,11 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

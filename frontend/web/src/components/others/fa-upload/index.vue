@@ -464,7 +464,7 @@ const onError = (error: any) => {
   }
 }
 
-::deep(.el-upload--picture-card) {
+::v-deep(.el-upload--picture-card) {
   position: relative;
   width: v-bind("props.style.width ?? '150px'");
   height: v-bind("props.style.height ?? '150px'");

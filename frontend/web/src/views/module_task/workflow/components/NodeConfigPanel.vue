@@ -159,13 +159,13 @@ watch(
         }
       }
 
-      formData.value = {
+      Object.assign(formData, {
         type: newNode.type || "",
         label: newNode.data?.label || "",
         args: newNode.data?.args || "",
         kwargsStr,
         description: newNode.data?.description || "",
-      };
+      });
     }
   },
   { deep: true, immediate: true }
@@ -250,15 +250,15 @@ onMounted(() => {
   flex: 1;
 }
 
-.panel-art-form ::deep(.el-row > .el-col:last-child) {
+.panel-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.panel-art-form ::deep(.el-form-item__content) {
+.panel-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-.panel-art-form ::deep(section) {
+.panel-art-form ::v-deep(section) {
   padding: 0;
 }
 </style>

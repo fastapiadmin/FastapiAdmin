@@ -727,13 +727,13 @@ const currentUser = {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: var(--workplace-radius);
 
-  ::deep(.el-card__header) {
+  ::v-deep(.el-card__header) {
     border-bottom-color: var(--el-border-color-extra-light);
   }
 }
 
 .workplace-calendar-card {
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     padding: 8px 10px 10px;
   }
 }
@@ -756,7 +756,7 @@ const currentUser = {
 
 /* —— 顶栏 —— */
 .workplace-hero-card {
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     padding: 20px 22px;
   }
 }
@@ -841,7 +841,7 @@ const currentUser = {
 }
 
 .workplace-modules-card {
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -857,7 +857,7 @@ const currentUser = {
 }
 
 .workplace-bookmarks-card {
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -937,7 +937,7 @@ const currentUser = {
 }
 
 .workplace-section-card {
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     padding: 12px 18px 18px;
   }
 }
@@ -976,7 +976,7 @@ const currentUser = {
   width: 100%;
   min-width: 0;
 
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;

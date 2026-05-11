@@ -343,7 +343,7 @@ const {
   },
 });
 
-const formData = reactive<ApplicationForm>({
+const formData = ref<ApplicationForm>({
   name: "",
   access_url: "",
   icon_url: "",
@@ -471,10 +471,10 @@ async function handleSubmit() {
     await formRef.value?.validate();
 
     if (dialogType.value === "create") {
-      await ApplicationAPI.createApp(formData);
+      await ApplicationAPI.createApp(formData.value);
       await refreshCreate();
     } else {
-      await ApplicationAPI.updateApp(currentApp.value!.id!, formData);
+      await ApplicationAPI.updateApp(currentApp.value!.id!, formData.value);
       await refreshUpdate();
     }
 
@@ -532,12 +532,12 @@ async function handleSubmit() {
     opacity: 0.55;
   }
 
-  ::deep(.el-card__header) {
+  ::v-deep(.el-card__header) {
     padding: 14px 14px 12px;
     border-bottom: none;
   }
 
-  ::deep(.el-card__body) {
+  ::v-deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -546,7 +546,7 @@ async function handleSubmit() {
     padding: 12px 14px;
   }
 
-  ::deep(.el-card__footer) {
+  ::v-deep(.el-card__footer) {
     padding: 10px 14px 14px;
     margin-top: auto;
   }
@@ -634,11 +634,11 @@ async function handleSubmit() {
   }
 }
 
-.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::deep(.el-form-item__content) {
+.crud-dialog-art-form ::v-deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>
