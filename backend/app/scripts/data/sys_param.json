@@ -90,7 +90,7 @@
   {
     "config_name": "项目版本",
     "config_key": "sys_web_version",
-    "config_value": "2.0.0",
+    "config_value": "3.0.0",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
