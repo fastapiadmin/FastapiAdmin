@@ -1,10 +1,21 @@
 /** LocalStorage compatibility checks + recovery helpers.
  *
- * 禁止在此文件顶层 `import "@/router"` / user store：会触发
- * router → guards → navigation → locales → storage 的循环依赖，
- * 并在 locales 同步导入 storage 时出现 StorageKeyManager TDZ。
- * 登出逻辑在 `performSystemLogout` 内动态 import。
+ * 存储健康检查：检测到异常时设置标志位，由路由守卫统一处理登出。
+ * 本模块不执行登出逻辑，避免循环依赖。
  */
+
+/** 存储是否已失效（由路由守卫检查并处理登出） */
+let invalidated = false;
+
+/** 标记存储已失效（供路由守卫检查） */
+export function markStorageInvalidated(): void {
+  invalidated = true;
+}
+
+/** 检查存储是否已失效 */
+export function checkStorageInvalidated(): boolean {
+  return invalidated;
+}
 
 /** Storage config + versioned key helpers. */
 export class StorageConfig {
@@ -173,24 +184,19 @@ class StorageCompatibilityManager {
   }
 
   /**
-   * 执行系统登出
+   * 标记存储失效并强制跳转登录页（由路由守卫完成登出清理）
    */
   private performSystemLogout(): void {
     setTimeout(() => {
-      void (async () => {
-        try {
-          localStorage.clear();
-          const [{ router }, { useUserStore }] = await Promise.all([
-            import("@/router"),
-            import("@stores/modules/user.store"),
-          ]);
-          useUserStore().logout();
-          await router.push({ name: "Login" });
-          console.info("[Storage] 已执行系统登出");
-        } catch (error) {
-          console.error("[Storage] 系统登出失败:", error);
-        }
-      })();
+      try {
+        localStorage.clear();
+        markStorageInvalidated();
+        console.info("[Storage] 已标记存储失效，跳转到登录页");
+        // 强制刷新触发路由守卫中的存储检查
+        window.location.href = window.location.origin + "/login";
+      } catch (error) {
+        console.error("[Storage] 标记存储失效失败:", error);
+      }
     }, StorageConfig.LOGOUT_DELAY);
   }
 

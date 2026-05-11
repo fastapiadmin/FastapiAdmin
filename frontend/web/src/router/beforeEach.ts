@@ -19,6 +19,7 @@ import { UserAPI } from "@/api/module_system/user";
 import { ApiStatus, isHttpError } from "@utils/http";
 import { RouteRegistry } from "./dynamicRoutes";
 import { MenuProcessor } from "./MenuProcessor";
+import { checkStorageInvalidated } from "@utils/storage";
 
 // --- 模块级单例与守卫状态 ---
 
@@ -117,6 +118,14 @@ async function handleRouteGuard(
 
   if (settingStore.showNprogress) {
     NProgress.start();
+  }
+
+  // 检查存储是否已失效（storage/index.ts 检测到异常时标记）
+  if (checkStorageInvalidated()) {
+    console.info("[RouteGuard] 检测到存储已失效，执行登出");
+    await userStore.logout();
+    next({ name: "Login", replace: true });
+    return;
   }
 
   if (!handleLoginStatus(to, userStore, next)) {
