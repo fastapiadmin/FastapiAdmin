@@ -96,6 +96,14 @@ const ConsultationInfoAPI = {
       data,
     });
   },
+
+  /** 手动触发爬虫抓取 */
+  crawl() {
+    return request<ApiResponse<CrawlResult>>({
+      url: `${API_PATH}/crawl`,
+      method: "post",
+    });
+  },
 };
 
 export default ConsultationInfoAPI;
@@ -122,6 +130,8 @@ export interface ConsultationInfoQuery extends PageQuery {
   is_archived?: boolean;
   /** 创建时间范围 */
   created_time?: string[];
+  /** 开始日期范围（前端搜索用） */
+  start_date_range?: string[];
 }
 
 /** 咨询会信息表单 */
@@ -200,4 +210,14 @@ export interface ConsultationInfoItem extends ConsultationInfoForm, BaseType {
   created_time: string;
   /** 更新时间 */
   updated_time: string;
+}
+
+/** 爬虫抓取结果 */
+export interface CrawlResult {
+  /** 抓取总数 */
+  total_fetched: number;
+  /** 保存成功数 */
+  total_saved: number;
+  /** 跳过重复数 */
+  total_skipped: number;
 }

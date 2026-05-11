@@ -92,6 +92,15 @@
               新增
             </el-button>
             <el-button
+              v-permission="['module_consultation:info_collection:create']"
+              type="success"
+              :loading="crawlLoading"
+              @click="handleCrawl"
+            >
+              <i-ep-refresh />
+              全网抓取
+            </el-button>
+            <el-button
               v-permission="['module_consultation:info_collection:delete']"
               type="danger"
               :disabled="!selectedIds.length"
@@ -127,6 +136,15 @@
         <el-table-column prop="organizer" label="主办方" min-width="150" show-overflow-tooltip />
         <el-table-column prop="city" label="城市" width="100" />
         <el-table-column prop="start_date" label="开始日期" width="120" />
+        <el-table-column prop="end_date" label="结束日期" width="120" />
+        <el-table-column prop="booth_fee" label="展位费用" width="100" align="right">
+          <template #default="{ row }">
+            <span v-if="row.booth_fee !== null && row.booth_fee !== undefined">
+              {{ row.booth_fee.toFixed(2) }}
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="source_type" label="信息来源" width="100">
           <template #default="{ row }">
             <el-tag :type="getSourceTypeType(row.source_type)">
@@ -144,7 +162,7 @@
         <el-table-column prop="compliance_score" label="合规评分" width="100" align="center">
           <template #default="{ row }">
             <el-tag
-              v-if="row.compliance_score !== null"
+              v-if="row.compliance_score !== null && row.compliance_score !== undefined"
               :type="getComplianceType(row.compliance_score)"
             >
               {{ row.compliance_score }}
@@ -251,7 +269,16 @@ import ReviewDialog from "./components/ReviewDialog.vue";
 import DetailDialog from "./components/DetailDialog.vue";
 
 // 搜索表单
-const searchForm = reactive<ConsultationInfoQuery>({
+interface SearchForm {
+  title?: string;
+  organizer?: string;
+  city?: string;
+  status?: string;
+  source_type?: string;
+  start_date_range?: string[];
+}
+
+const searchForm = reactive<SearchForm>({
   title: undefined,
   organizer: undefined,
   city: undefined,
@@ -262,6 +289,7 @@ const searchForm = reactive<ConsultationInfoQuery>({
 
 // 表格数据
 const loading = ref(false);
+const crawlLoading = ref(false);
 const tableData = ref<ConsultationInfoItem[]>([]);
 const selectedIds = ref<number[]>([]);
 
@@ -297,7 +325,13 @@ const fetchList = async () => {
     const params: ConsultationInfoQuery = {
       page_no: pagination.page,
       page_size: pagination.pageSize,
-      ...searchForm,
+      title: searchForm.title,
+      organizer: searchForm.organizer,
+      city: searchForm.city,
+      status: searchForm.status,
+      source_type: searchForm.source_type,
+      start_date_begin: searchForm.start_date_range?.[0],
+      start_date_end: searchForm.start_date_range?.[1],
     };
 
     const res = await ConsultationInfoAPI.getList(params);
@@ -346,8 +380,10 @@ const handlePageChange = (page: number) => {
 };
 
 // 状态相关
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = {
+type TagType = "primary" | "success" | "warning" | "info" | "danger";
+
+const getStatusType = (status: string): TagType => {
+  const map: Record<string, TagType> = {
     pending: "warning",
     approved: "success",
     rejected: "danger",
@@ -356,7 +392,7 @@ const getStatusType = (status: string) => {
   return map[status] || "info";
 };
 
-const getStatusLabel = (status: string) => {
+const getStatusLabel = (status: string): string => {
   const map: Record<string, string> = {
     pending: "待审核",
     approved: "已审核",
@@ -366,8 +402,8 @@ const getStatusLabel = (status: string) => {
   return map[status] || status;
 };
 
-const getSourceTypeType = (type: string) => {
-  const map: Record<string, string> = {
+const getSourceTypeType = (type: string): TagType => {
+  const map: Record<string, TagType> = {
     crawler: "primary",
     upload: "success",
     manual: "warning",
@@ -375,7 +411,7 @@ const getSourceTypeType = (type: string) => {
   return map[type] || "info";
 };
 
-const getSourceTypeLabel = (type: string) => {
+const getSourceTypeLabel = (type: string): string => {
   const map: Record<string, string> = {
     crawler: "全网抓取",
     upload: "第三方上传",
@@ -384,7 +420,7 @@ const getSourceTypeLabel = (type: string) => {
   return map[type] || type;
 };
 
-const getComplianceType = (score: number) => {
+const getComplianceType = (score: number): TagType => {
   if (score >= 80) return "success";
   if (score >= 60) return "warning";
   return "danger";
@@ -472,6 +508,25 @@ const handleArchive = (row: ConsultationInfoItem) => {
 
 const handleExport = () => {
   ElMessage.info("导出功能开发中...");
+};
+
+// 全网抓取
+const handleCrawl = async () => {
+  crawlLoading.value = true;
+  try {
+    const res = await ConsultationInfoAPI.crawl();
+    if (res.data?.data) {
+      const result = res.data.data;
+      ElMessage.success(
+        `抓取完成：共抓取 ${result.total_fetched} 条，保存 ${result.total_saved} 条，跳过重复 ${result.total_skipped} 条`
+      );
+      fetchList();
+    }
+  } catch (error) {
+    console.error("抓取失败:", error);
+  } finally {
+    crawlLoading.value = false;
+  }
 };
 
 // 表单成功回调

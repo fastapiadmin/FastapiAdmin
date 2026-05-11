@@ -273,7 +273,7 @@
           <el-input v-model="form.contact_phone" placeholder="请输入联系电话" />
         </el-form-item>
         <el-form-item label="联系邮箱" prop="contact_email">
-          <el-input v-model="form.contact_email" placeholder="请输入联系邮箱" />
+          <el-input v-model="form.contact_email" :min="1" placeholder="请输入联系邮箱" />
         </el-form-item>
         <el-form-item label="展位号" prop="booth_number">
           <el-input v-model="form.booth_number" placeholder="请输入展位号" />
@@ -432,6 +432,7 @@ const rejectForm = reactive({ comment: "" });
 const formRules: FormRules = {
   consultation_id: [{ required: true, message: "请输入咨询会ID", trigger: "blur" }],
   university_id: [{ required: true, message: "请输入高校ID", trigger: "blur" }],
+  contact_email: [{ required: true, message: "请输入联系邮箱", trigger: "blur" }],
 };
 
 const fetchList = async () => {
