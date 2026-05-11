@@ -1,27 +1,5 @@
 declare global {
   /**
-   * 页签对象
-   */
-  interface TagView {
-    /** 页签名称 */
-    name: string;
-    /** 页签标题 */
-    title: string;
-    /** 页签路由路径 */
-    path: string;
-    /** 页签路由完整路径 */
-    fullPath: string;
-    /** 页签图标 */
-    icon?: string;
-    /** 是否固定页签 */
-    affix?: boolean;
-    /** 是否开启缓存 */
-    keepAlive?: boolean;
-    /** 路由查询参数 */
-    query?: any;
-  }
-
-  /**
    * 系统设置
    */
   interface AppSettings {
@@ -133,7 +111,8 @@ declare global {
   }
 
   /**
-   * 分页响应对象
+   * 分页响应对象（列表接口 `data` 统一为该结构）
+   * 前端 `useTable` 仅通过 `@utils/table` 的 `defaultResponseAdapter` 解析该形状（及 ApiResponse 包装）
    */
   interface PageResult<T = any> {
     items: T[];

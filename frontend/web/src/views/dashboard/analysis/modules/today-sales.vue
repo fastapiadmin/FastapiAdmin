@@ -1,12 +1,12 @@
 <template>
-  <div class="art-card h-82 p-5 mb-5 overflow-hidden max-lg:h-auto max-sm:mb-4">
-    <div class="art-card-header pr-0">
+  <div class="fa-card h-82 p-5 mb-5 overflow-hidden max-lg:h-auto max-sm:mb-4">
+    <div class="fa-card-header pr-0">
       <div class="title">
         <h4>今日销售</h4>
         <p>销售总结</p>
       </div>
       <div class="flex-cc h-7.5 min-w-17 border border-g-300 rounded-lg text-g-500 c-p">
-        <ArtSvgIcon icon="ri:arrow-up-line" class="text-base mr-1.5" />
+        <FaSvgIcon icon="ri:arrow-up-line" class="text-base mr-1.5" />
         <span class="text-xs">导出</span>
       </div>
     </div>
@@ -18,11 +18,11 @@
             class="flex px-5 flex-col justify-center h-55 border border-g-300/85 rounded-xl max-lg:mb-4 max-sm:flex-row max-sm:justify-between max-sm:items-center max-sm:h-40"
           >
             <div class="size-12 rounded-lg flex-cc bg-theme/10">
-              <ArtSvgIcon :icon="item.icon" class="text-xl text-theme" />
+              <FaSvgIcon :icon="item.icon" class="text-xl text-theme" />
             </div>
 
             <div class="max-sm:ml-4 mt-3.5 max-sm:mt-0 max-sm:text-end">
-              <ArtCountTo class="text-2xl font-medium" :target="item.value" :duration="1500" />
+              <FaCountTo class="text-2xl font-medium" :target="item.value" :duration="1500" />
               <p class="mt-2 text-base text-g-600 max-sm:mt-1">{{ item.label }}</p>
               <small class="text-g-500 mt-1 max-sm:mt-0.5">
                 较昨天

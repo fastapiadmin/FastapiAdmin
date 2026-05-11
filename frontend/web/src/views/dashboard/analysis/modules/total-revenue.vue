@@ -1,11 +1,11 @@
 <template>
-  <div class="art-card h-100 p-5 mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card h-100 p-5 mb-5 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>总收入</h4>
       </div>
     </div>
-    <ArtBarChart
+    <FaBarChart
       height="calc(100% - 30px)"
       :data="revenueData"
       :xAxisData="weekDays"

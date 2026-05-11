@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <!-- github 角标 -->
-    <GithubCorner class="github-corner" />
+    <FaGithubCorner class="github-corner" />
 
     <ElCard shadow="hover">
       <div class="flex flex-wrap items-center gap-y-3">
@@ -40,7 +40,7 @@
                   href="https://blog.csdn.net/weixin_46768253/article/details/149569141?spm=1001.2014.3001.5502"
                   target="_blank"
                 >
-                  <ArtSvgIcon :icon="resolveIconForArtSvgIcon('csdn')" class="text-lg" />
+                  <FaSvgIcon :icon="resolveIconForFaSvgIcon('csdn')" class="text-lg" />
                 </ElLink>
               </div>
             </div>
@@ -54,22 +54,22 @@
               </div>
               <div class="mt-3 whitespace-nowrap">
                 <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
-                  <ArtSvgIcon
-                    :icon="resolveIconForArtSvgIcon('gitee')"
+                  <FaSvgIcon
+                    :icon="resolveIconForFaSvgIcon('gitee')"
                     class="text-lg text-[#F76560]"
                   />
                 </ElLink>
                 <ElDivider direction="vertical" />
                 <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
-                  <ArtSvgIcon
-                    :icon="resolveIconForArtSvgIcon('github')"
+                  <FaSvgIcon
+                    :icon="resolveIconForFaSvgIcon('github')"
                     class="text-lg text-[#4080FF]"
                   />
                 </ElLink>
                 <ElDivider direction="vertical" />
                 <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
-                  <ArtSvgIcon
-                    :icon="resolveIconForArtSvgIcon('gitcode')"
+                  <FaSvgIcon
+                    :icon="resolveIconForFaSvgIcon('gitcode')"
                     class="text-lg text-[#FF9A2E]"
                   />
                 </ElLink>
@@ -83,22 +83,16 @@
           <div class="flex justify-end space-x-4 overflow-x-auto">
             <!-- 仓库图标 -->
             <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
-              <ArtSvgIcon
-                :icon="resolveIconForArtSvgIcon('gitee')"
-                class="text-lg text-[#F76560]"
-              />
+              <FaSvgIcon :icon="resolveIconForFaSvgIcon('gitee')" class="text-lg text-[#F76560]" />
             </ElLink>
             <ElDivider direction="vertical" />
             <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
-              <ArtSvgIcon
-                :icon="resolveIconForArtSvgIcon('github')"
-                class="text-lg text-[#4080FF]"
-              />
+              <FaSvgIcon :icon="resolveIconForFaSvgIcon('github')" class="text-lg text-[#4080FF]" />
             </ElLink>
             <ElDivider direction="vertical" />
             <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
-              <ArtSvgIcon
-                :icon="resolveIconForArtSvgIcon('gitcode')"
+              <FaSvgIcon
+                :icon="resolveIconForFaSvgIcon('gitcode')"
                 class="text-lg text-[#FF9A2E]"
               />
             </ElLink>
@@ -135,8 +129,8 @@
                 未连接
               </span>
             </div>
-            <ArtSvgIcon
-              :icon="resolveIconForArtSvgIcon('people')"
+            <FaSvgIcon
+              :icon="resolveIconForFaSvgIcon('people')"
               class="size-8 animate-[pulse_2s_infinite]"
             />
           </div>
@@ -196,7 +190,7 @@
                     {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
                   </span>
                 </div>
-                <ArtSvgIcon :icon="resolveIconForArtSvgIcon('visitor')" class="size-8" />
+                <FaSvgIcon :icon="resolveIconForFaSvgIcon('visitor')" class="size-8" />
               </div>
 
               <div class="flex items-center justify-between mt-2 text-sm text-g-600">
@@ -256,7 +250,7 @@
                     {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
                   </span>
                 </div>
-                <ArtSvgIcon :icon="resolveIconForArtSvgIcon('browser')" class="size-8" />
+                <FaSvgIcon :icon="resolveIconForFaSvgIcon('browser')" class="size-8" />
               </div>
 
               <div class="flex items-center justify-between mt-2 text-sm text-g-600">
@@ -306,7 +300,7 @@
           </template>
 
           <ElScrollbar height="calc(100vh - 550px)">
-            <ElTimeline class="p-3">
+            <ElTimeline class="p-2">
               <ElTimelineItem
                 v-for="(item, index) in vesionList"
                 :key="index"
@@ -314,7 +308,6 @@
                 placement="top"
                 :color="index === 0 ? '#67C23A' : '#909399'"
                 :hollow="index !== 0"
-                size="large"
               >
                 <div class="version-item" :class="{ 'latest-item': index === 0 }">
                   <div class="flex items-center justify-between">
@@ -369,9 +362,9 @@ import {
   TopRight,
   UserFilled,
 } from "@element-plus/icons-vue";
-import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import { greetings } from "@utils/common";
-import { resolveIconForArtSvgIcon } from "@utils/menuIcon/remix";
+import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
 
 const timefix = greetings();
 const welcome = "祝你开心每一天！";
@@ -598,7 +591,7 @@ onMounted(() => {
   }
 
   .version-item {
-    padding: 16px;
+    padding: 10px 12px;
     background: var(--el-fill-color-lighter);
     border-radius: 8px;
     transition: all 0.2s;
@@ -613,9 +606,11 @@ onMounted(() => {
     }
 
     .version-content {
-      margin-bottom: 12px;
+      display: block;
+      margin-top: 6px;
+      margin-bottom: 8px;
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.4;
       color: var(--el-text-color-secondary);
     }
   }

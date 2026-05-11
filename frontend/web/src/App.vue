@@ -22,19 +22,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, onMounted } from "vue";
+import { computed, onBeforeMount, onMounted, onUnmounted } from "vue";
 import { useAppStore, useUserStore } from "./store";
 import { useSettingsStore } from "./store/modules/setting.store";
 import { defaultSettings } from "./config/setting";
 import { ComponentSize } from "./enums/settings/layout.enum";
-import AiAssistant from "./components/AiAssistant/index.vue";
+import AiAssistant from "./components/others/fa-ai-assistant/index.vue";
 import { hexToRgba, toggleTransition } from "./utils/ui";
-import { checkStorageCompatibility } from "./utils/storage";
 import { initializeTheme } from "./hooks/core/useTheme";
-import { systemUpgrade } from "./utils/sys";
+import { useAppBootstrap } from "@/hooks/core/useAppBootstrap";
 import { ThemeMode } from "./enums";
 import en from "element-plus/es/locale/lang/en";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
+import { router } from "@/router";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
@@ -67,14 +67,37 @@ const fontColor = computed(() => {
   }
 });
 
+/**
+ * 应用根组件生命周期：
+ *
+ * onBeforeMount
+ *   1. toggleTransition(true)  —— 临时禁用页面过渡，避免主题切换时的闪烁
+ *   2. initializeTheme()       —— 加载主题配色(CSS 变量)、暗色模式 class、auto 监听
+ *
+ * onMounted
+ *   1. bootstrap()                                —— 存储检查 → 过渡恢复 → 版本升级 → 站点配置
+ *   2. 监听 "app:storage-invalidated" 事件        —— 存储异常时由 storage 模块派发
+ */
 onBeforeMount(() => {
   toggleTransition(true);
   initializeTheme();
 });
 
+// 存储失效时跳转登录页（由 storage 模块 detect 到异常后派发）
+const handleStorageInvalidated = () => {
+  router.push({ name: "Login" });
+};
+
+const { bootstrap } = useAppBootstrap();
+
 onMounted(() => {
-  checkStorageCompatibility();
-  toggleTransition(false);
-  systemUpgrade();
+  bootstrap();
+
+  // 存储检测到异常并已清除数据 → 由路由守卫完成登出清理
+  window.addEventListener("app:storage-invalidated", handleStorageInvalidated);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("app:storage-invalidated", handleStorageInvalidated);
 });
 </script>

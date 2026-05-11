@@ -1,5 +1,6 @@
+<!-- 参数配置 -->
 <template>
-  <ArtDrawer
+  <FaDrawer
     v-model="drawerVisible"
     title="配置中心"
     :size="drawerSize"
@@ -281,7 +282,7 @@
         保存
       </ElButton>
     </template>
-  </ArtDrawer>
+  </FaDrawer>
 </template>
 
 <script lang="ts" setup>
@@ -290,8 +291,8 @@ import ParamsAPI, { type ConfigTable } from "@/api/module_system/params";
 import { useConfigStore } from "@stores";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
-import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import SingleImageUpload from "@/components/others/fa-upload/index.vue";
 import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 
@@ -716,12 +717,12 @@ const logoConfigs = computed(() => ({
 const handleUploadSuccess = (fileInfo: UploadFilePath, type: string) => {
   const fileUrl = fileInfo.file_url;
   if (type in configStore.configData) {
-    (configStore.configData as any)[type].config_value = fileUrl;
+    (configStore.configData as Record<string, ConfigTable>)[type].config_value = fileUrl;
   }
   if (type in systemConfigs.value) {
-    (systemConfigs.value as any)[type].config_value = fileUrl;
+    (systemConfigs.value as Record<string, { config_value: string }>)[type].config_value = fileUrl;
   } else if (type in logoConfigs.value) {
-    (logoConfigs.value as any)[type].config_value = fileUrl;
+    (logoConfigs.value as Record<string, { config_value: string }>)[type].config_value = fileUrl;
   }
   markModified(type);
 };

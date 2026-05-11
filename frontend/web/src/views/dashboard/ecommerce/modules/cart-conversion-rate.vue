@@ -1,5 +1,5 @@
 <template>
-  <ArtLineChartCard
+  <FaLineChartCard
     class="mb-5 max-sm:mb-4"
     :value="2545"
     label="购物车转化率"

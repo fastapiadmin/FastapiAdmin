@@ -1,4 +1,7 @@
-/** Settings store. */
+/**
+ * 全局界面设置：布局、主题、页签、水印、工具栏显隐等；部分字段持久化（useStorage / persist）。
+ * `reload` 翻转 `refresh` 布尔值，触发 `ArtPageContent` 重建 RouterView（与 useCommon.refresh 一致）。
+ */
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { MenuThemeType } from "@/types/store";
@@ -47,6 +50,7 @@ export const useSettingsStore = defineStore(
     const autoClose = ref(SETTING_DEFAULT_CONFIG.autoClose);
     const uniqueOpened = ref(SETTING_DEFAULT_CONFIG.uniqueOpened);
     const colorWeak = ref(SETTING_DEFAULT_CONFIG.colorWeak);
+    /** 供布局监听：`reload()` 取反以触发主内容区整页刷新 */
     const refresh = ref(SETTING_DEFAULT_CONFIG.refresh);
     const holidayFireworksLoaded = ref(SETTING_DEFAULT_CONFIG.holidayFireworksLoaded);
 
@@ -138,11 +142,11 @@ export const useSettingsStore = defineStore(
     });
 
     const getMenuOpenWidth = computed((): string => {
-      return menuOpenWidth.value + "px" || SETTING_DEFAULT_CONFIG.menuOpenWidth + "px";
+      return (menuOpenWidth.value ?? SETTING_DEFAULT_CONFIG.menuOpenWidth) + "px";
     });
 
     const getCustomRadius = computed((): string => {
-      return customRadius.value + "rem" || SETTING_DEFAULT_CONFIG.customRadius + "rem";
+      return (customRadius.value ?? SETTING_DEFAULT_CONFIG.customRadius) + "rem";
     });
 
     /** festivalDate 存「上次完成烟花播放」的自然日 YYYY-MM-DD，与今天相同则当天不再播 */
@@ -171,9 +175,13 @@ export const useSettingsStore = defineStore(
     watch(
       [theme, themeColor],
       ([newTheme, newThemeColor]) => {
-        toggleDarkMode(newTheme === ThemeMode.DARK);
-        const colors = generateThemeColors(newThemeColor, newTheme);
-        applyTheme(colors);
+        try {
+          toggleDarkMode(newTheme === ThemeMode.DARK);
+          const colors = generateThemeColors(newThemeColor, newTheme);
+          applyTheme(colors);
+        } catch (error) {
+          console.error("[SettingStore] 主题初始化失败:", error);
+        }
       },
       { immediate: true }
     );
@@ -285,6 +293,7 @@ export const useSettingsStore = defineStore(
       menuOpen.value = open;
     };
 
+    /** 切换 `refresh`，驱动 `layouts/art-page-content` 内 `v-if="isRefresh"` 重建视图 */
     const reload = () => {
       refresh.value = !refresh.value;
     };

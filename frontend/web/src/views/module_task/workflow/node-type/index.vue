@@ -1,7 +1,7 @@
 <!-- 工作流节点类型：Art + useTable -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,15 +17,15 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_task:workflow:node-type:create']"
             :perm-delete="['module_task:workflow:node-type:delete']"
@@ -34,15 +34,15 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -71,20 +71,20 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTable>
+      </FaTable>
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible"
       :title="dialogTitle"
       width="720px"
       destroy-on-close
       @close="handleCloseDialog"
     >
-      <ArtForm
+      <FaForm
         :key="nodeTypeFormRenderKey"
         ref="formRef"
-        v-model="form"
+        v-model="formData"
         :items="nodeTypeDialogFormItems"
         :rules="rules"
         label-width="100px"
@@ -99,7 +99,7 @@
         <ElButton @click="dialogVisible = false">取消</ElButton>
         <ElButton type="primary" :loading="submitting" @click="submitForm">保存</ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -113,19 +113,19 @@ import WorkflowNodeTypeAPI, {
   type WorkflowNodeTypeForm,
   type WorkflowNodeTypeTable,
 } from "@/api/module_task/workflow/node-type";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import type { FormRules } from "element-plus";
-import { computed, h, reactive, ref } from "vue";
+import { computed, h, ref } from "vue";
 
 const BATCH_DELETE_MSG = "确认删除选中的编排节点类型吗？";
 
@@ -150,7 +150,7 @@ const searchForm = ref<NodeTypeSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const nodeTypeSearchItems = computed<SearchFormItem[]>(() => [
@@ -188,7 +188,7 @@ const nodeTypeSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<WorkflowNodeTypeTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
@@ -209,42 +209,42 @@ function categoryLabel(c?: string) {
   return c ? m[c] || c : "-";
 }
 
-function deleteNodeTypeRow(id: number | undefined) {
+async function deleteNodeTypeRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该节点类型吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await WorkflowNodeTypeAPI.deleteWorkflowNodeType([id]);
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该节点类型吗？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await WorkflowNodeTypeAPI.deleteWorkflowNodeType([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await WorkflowNodeTypeAPI.deleteWorkflowNodeType(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await WorkflowNodeTypeAPI.deleteWorkflowNodeType(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 const {
@@ -331,21 +331,6 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 10,
-    total: p.total ?? 0,
-  };
-});
-
 async function handleSearchBarSearch(params: NodeTypeSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildNodeTypeReplaceParams(params));
@@ -365,7 +350,7 @@ const dialogVisible = ref(false);
 const dialogTitle = ref("新增节点类型");
 const editingId = ref<number | null>(null);
 const submitting = ref(false);
-const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const formRef = ref<InstanceType<typeof FaForm> | null>(null);
 const nodeTypeFormRenderKey = ref(0);
 
 const nodeTypeDialogFormItems = computed<FormItem[]>(() => [
@@ -453,7 +438,7 @@ const defaultForm = (): WorkflowNodeTypeForm => ({
   is_active: true,
 });
 
-const form = reactive<WorkflowNodeTypeForm>(defaultForm());
+const formData = ref<WorkflowNodeTypeForm>(defaultForm());
 
 const rules: FormRules = {
   name: [{ required: true, message: "请输入名称", trigger: "blur" }],
@@ -463,7 +448,7 @@ const rules: FormRules = {
 };
 
 function resetForm() {
-  Object.assign(form, defaultForm());
+  Object.assign(formData.value, defaultForm());
   editingId.value = null;
   formRef.value?.ref?.resetFields();
   formRef.value?.ref?.clearValidate();
@@ -482,14 +467,14 @@ async function openDialog(id?: number) {
       const res = await WorkflowNodeTypeAPI.getWorkflowNodeTypeDetail(id);
       const d = res.data?.data as WorkflowNodeTypeTable | undefined;
       if (d) {
-        form.name = d.name || "";
-        form.code = d.code || "";
-        form.category = (d.category as WorkflowNodeTypeForm["category"]) || "action";
-        form.func = d.func || "";
-        form.args = d.args || "";
-        form.kwargs = d.kwargs || "{}";
-        form.sort_order = d.sort_order ?? 0;
-        form.is_active = d.is_active ?? true;
+        formData.value.name = d.name || "";
+        formData.value.code = d.code || "";
+        formData.value.category = (d.category as WorkflowNodeTypeForm["category"]) || "action";
+        formData.value.func = d.func || "";
+        formData.value.args = d.args || "";
+        formData.value.kwargs = d.kwargs || "{}";
+        formData.value.sort_order = d.sort_order ?? 0;
+        formData.value.is_active = d.is_active ?? true;
       }
     } catch {
       ElMessage.error("加载详情失败");
@@ -503,9 +488,9 @@ async function openDialog(id?: number) {
 async function submitForm() {
   if (!formRef.value) return;
   await formRef.value.validate();
-  if (form.kwargs?.trim()) {
+  if (formData.value.kwargs?.trim()) {
     try {
-      JSON.parse(form.kwargs);
+      JSON.parse(formData.value.kwargs);
     } catch {
       ElMessage.error("关键字参数须为合法 JSON");
       return;
@@ -514,12 +499,12 @@ async function submitForm() {
   submitting.value = true;
   try {
     if (editingId.value) {
-      await WorkflowNodeTypeAPI.updateWorkflowNodeType(editingId.value, form);
+      await WorkflowNodeTypeAPI.updateWorkflowNodeType(editingId.value, formData.value);
       ElMessage.success("更新成功");
       dialogVisible.value = false;
       await refreshUpdate();
     } else {
-      await WorkflowNodeTypeAPI.createWorkflowNodeType(form);
+      await WorkflowNodeTypeAPI.createWorkflowNodeType(formData.value);
       ElMessage.success("创建成功");
       dialogVisible.value = false;
       await refreshCreate();

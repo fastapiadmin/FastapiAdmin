@@ -1,33 +1,34 @@
 @charset "UTF-8";
 
-/*滚动条*/
-/*滚动条整体部分,必须要设置*/
+/* 滚动条 */
+
+/* 滚动条整体部分,必须要设置 */
 ::-webkit-scrollbar {
   width: 8px !important;
   height: 0 !important;
 }
 
-/*滚动条的轨道*/
+/* 滚动条的轨道 */
 ::-webkit-scrollbar-track {
-  background-color: var(--art-gray-200);
+  background-color: var(--fa-gray-200);
 }
 
-/*滚动条的滑块按钮*/
+/* 滚动条的滑块按钮 */
 ::-webkit-scrollbar-thumb {
+  background-color: #ccc !important;
   border-radius: 5px;
-  background-color: #cccccc !important;
-  transition: all 0.2s;
   -webkit-transition: all 0.2s;
+  transition: all 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: #b0abab !important;
 }
 
-/*滚动条的上下两端的按钮*/
+/* 滚动条的上下两端的按钮 */
 ::-webkit-scrollbar-button {
-  height: 0px;
   width: 0;
+  height: 0;
 }
 
 .dark {
@@ -36,6 +37,6 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--art-gray-300) !important;
+    background-color: var(--fa-gray-300) !important;
   }
 }

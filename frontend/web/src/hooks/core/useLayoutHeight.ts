@@ -27,12 +27,12 @@ interface LayoutHeightOptions {
   extraSpacing?: number;
   /** 是否自动更新 CSS 变量（默认 true） */
   updateCssVar?: boolean;
-  /** CSS 变量名称（默认 '--art-full-height'） */
+  /** CSS 变量名称（默认 '--fa-full-height'） */
   cssVarName?: string;
 }
 
 export function useLayoutHeight(options: LayoutHeightOptions = {}) {
-  const { extraSpacing = 15, updateCssVar = true, cssVarName = "--art-full-height" } = options;
+  const { extraSpacing = 15, updateCssVar = true, cssVarName = "--fa-full-height" } = options;
 
   // 元素引用
   const headerRef = ref<HTMLElement>();
@@ -78,16 +78,14 @@ export function useLayoutHeight(options: LayoutHeightOptions = {}) {
  * 通过 ID 自动查找元素的布局高度管理
  * 适用于无法直接获取元素引用的场景
  *
- * @param headerIds 头部元素的 ID 数组
+ * @param headerIds 头部元素的 ID 数组（默认 ["app-header", "app-content-header"]）
  * @param options 配置选项
- *
- * ```
  */
 export function useAutoLayoutHeight(
   headerIds: string[] = ["app-header", "app-content-header"],
   options: LayoutHeightOptions = {}
 ) {
-  const { extraSpacing = 15, updateCssVar = true, cssVarName = "--art-full-height" } = options;
+  const { extraSpacing = 15, updateCssVar = true, cssVarName = "--fa-full-height" } = options;
 
   // 创建元素引用
   const headerRef = ref<HTMLElement>();
@@ -120,8 +118,8 @@ export function useAutoLayoutHeight(
     if (typeof document !== "undefined") {
       // 使用 nextTick 确保 DOM 完全渲染
       requestAnimationFrame(() => {
-        const header = document.getElementById(headerIds[0]);
-        const contentHeader = document.getElementById(headerIds[1]);
+        const header = headerIds.length > 0 ? document.getElementById(headerIds[0]) : null;
+        const contentHeader = headerIds.length > 1 ? document.getElementById(headerIds[1]) : null;
 
         if (header) {
           headerRef.value = header;

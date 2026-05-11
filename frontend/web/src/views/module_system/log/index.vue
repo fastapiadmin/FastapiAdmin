@@ -1,7 +1,7 @@
 <!-- 日志管理：Art 布局 + useTable，与 dict 页一致 -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -24,17 +24,17 @@
           @clear-click="afterUserSelectSearch"
         />
       </template>
-    </ArtSearchBar>
+    </FaSearchBar>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-export="['module_system:log:export']"
             :perm-delete="['module_system:log:delete']"
@@ -43,21 +43,21 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="960px"
@@ -130,9 +130,9 @@
           <ElButton type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="logExportContentConfig"
       :query-params="exportQueryParams"
@@ -145,16 +145,16 @@
 <script setup lang="ts">
 import { h, computed, ref, nextTick } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import type { IObject } from "@/components/Core/modal/types";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import JsonPretty from "@/components/JsonPretty/index.vue";
-import CopyButton from "@/components/CopyButton/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { IObject } from "@/components/modal/types";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
+import CopyButton from "@/components/others/fa-copy-button/index.vue";
 import type { ColumnOption } from "@/types/component";
 import LogAPI, { type LogPageQuery, type LogTable } from "@/api/module_system/log";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
@@ -204,7 +204,7 @@ const searchForm = ref<LogSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const logTypeOptions = ref([
@@ -255,7 +255,7 @@ const logSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<LogTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -375,6 +375,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeLogQuery(sp);
 });
 
@@ -390,21 +392,6 @@ const logExportContentConfig = computed(() => ({
     return res.data as Blob;
   },
 }));
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
 
 const formData = ref<LogTable>({});
 
@@ -459,7 +446,7 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  formData.value = {};
+  Object.assign(formData, {});
 }
 
 async function handleCloseDialog() {
@@ -470,23 +457,24 @@ async function handleCloseDialog() {
 async function handleOpenDialog(id: number) {
   dialogVisible.value.title = "日志详情";
   const response = await LogAPI.detailLog(id);
-  Object.assign(formData.value, response.data.data ?? {});
+  Object.assign(formData, response.data.data ?? {});
   dialogVisible.value.visible = true;
 }
 
-function deleteLogRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await LogAPI.deleteLog([id]);
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteLogRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await LogAPI.deleteLog([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 function buildLogRowActions(row: LogTable): TableOperationAction[] {
@@ -520,35 +508,28 @@ function formatLogOperationCell(row: LogTable) {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await LogAPI.deleteLog(ids);
-        ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await LogAPI.deleteLog(ids);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 function openExportModal() {
   exportModalVisible.value = true;
 }
 </script>
-
-<style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-</style>

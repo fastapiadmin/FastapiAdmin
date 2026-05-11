@@ -1,10 +1,34 @@
-/** LocalStorage compatibility checks + recovery helpers.
+/**
+ * LocalStorage 兼容性检查 + 异常恢复。
  *
- * 禁止在此文件顶层 `import "@/router"` / user store：会触发
- * router → guards → navigation → locales → storage 的循环依赖，
- * 并在 locales 同步导入 storage 时出现 StorageKeyManager TDZ。
- * 登出逻辑在 `performSystemLogout` 内动态 import。
+ * ── 职责边界 ──
+ * - `markStorageInvalidated` / `checkStorageInvalidated` / `resetStorageInvalidated`
+ *   构成轻量标志位机制，由路由守卫消费，避免本模块直接操作 Pinia/router（循环依赖）。
+ * - `checkStorageCompatibility()` / `validateStorageData()`  存储健康检查。
+ * - `StorageKeyManager` / `Storage`  版本化键值存取工具。
  */
+
+// ---------------------------------------------------------------------------
+// 存储失效标志位（路由守卫消费）
+// ---------------------------------------------------------------------------
+
+/** 标志：存储数据已因异常而被清除，等待路由守卫处理登出 */
+let invalidated = false;
+
+/** 标记存储已失效，路由守卫将在下次导航时执行登出 */
+export function markStorageInvalidated(): void {
+  invalidated = true;
+}
+
+/** 查询存储是否已失效 */
+export function checkStorageInvalidated(): boolean {
+  return invalidated;
+}
+
+/** 守卫处理完毕后重置标志位，避免同一会话内重复拦截 */
+export function resetStorageInvalidated(): void {
+  invalidated = false;
+}
 
 /** Storage config + versioned key helpers. */
 export class StorageConfig {
@@ -124,27 +148,27 @@ class StorageCompatibilityManager {
   }
 
   /**
-   * 检查当前版本是否有存储数据
+   * 单次遍历 localStorage key，同时判定「是否有当前版本数据」「是否有任意版本数据」。
+   * 替代分别调用 hasCurrentVersionStorage / hasAnyVersionStorage 造成的重复遍历。
    */
-  private hasCurrentVersionStorage(): boolean {
-    const storageKeys = Object.keys(localStorage);
-    const currentVersionPattern = StorageConfig.createCurrentVersionPattern();
+  private analyzeStorageKeys(): { hasCurrent: boolean; hasAny: boolean } {
+    const keys = Object.keys(localStorage);
+    const currentPtrn = StorageConfig.createCurrentVersionPattern();
+    const anyPtrn = StorageConfig.createVersionPattern();
+    let hasCurrent = false;
+    let hasAny = false;
 
-    return storageKeys.some(
-      (key) => currentVersionPattern.test(key) && localStorage.getItem(key) !== null
-    );
-  }
-
-  /**
-   * 检查是否存在任何版本的存储数据
-   */
-  private hasAnyVersionStorage(): boolean {
-    const storageKeys = Object.keys(localStorage);
-    const versionPattern = StorageConfig.createVersionPattern();
-
-    return storageKeys.some(
-      (key) => versionPattern.test(key) && localStorage.getItem(key) !== null
-    );
+    for (const key of keys) {
+      if (!hasCurrent && currentPtrn.test(key) && localStorage.getItem(key) !== null) {
+        hasCurrent = true;
+        if (hasAny) break;
+      }
+      if (!hasAny && anyPtrn.test(key) && localStorage.getItem(key) !== null) {
+        hasAny = true;
+        if (hasCurrent) break;
+      }
+    }
+    return { hasCurrent, hasAny };
   }
 
   /**
@@ -173,24 +197,27 @@ class StorageCompatibilityManager {
   }
 
   /**
-   * 执行系统登出
+   * 标记存储失效并触发路由守卫登出流程。
+   *
+   * 流程：
+   *   1. 清除 localStorage（Pinia 持久化数据）
+   *   2. 设置标志位，供路由守卫检查
+   *   3. 派发自定义事件 → App.vue 监听后执行 router.push()
+   *   4. 路由守卫检测到标志位 → 调用 userStore.logout() 重置内存状态
+   *
+   * 使用 CustomEvent 而非 window.location.href 可避免全量页面刷新，
+   * 保留 Pinia 和 Vue 实例，仅通过路由导航完成登出。
    */
   private performSystemLogout(): void {
     setTimeout(() => {
-      void (async () => {
-        try {
-          localStorage.clear();
-          const [{ router }, { useUserStore }] = await Promise.all([
-            import("@/router"),
-            import("@stores/modules/user.store"),
-          ]);
-          useUserStore().logout();
-          await router.push({ name: "Login" });
-          console.info("[Storage] 已执行系统登出");
-        } catch (error) {
-          console.error("[Storage] 系统登出失败:", error);
-        }
-      })();
+      try {
+        localStorage.clear();
+        markStorageInvalidated();
+        console.info("[Storage] 已标记存储失效，触发路由守卫登出流程");
+        window.dispatchEvent(new CustomEvent("app:storage-invalidated"));
+      } catch (error) {
+        console.error("[Storage] 标记存储失效失败:", error);
+      }
     }, StorageConfig.LOGOUT_DELAY);
   }
 
@@ -203,88 +230,50 @@ class StorageCompatibilityManager {
   }
 
   /**
-   * 验证存储数据完整性
-   * @param requireAuth 是否需要验证登录状态（默认 false）
+   * 验证存储数据完整性。
+   *
+   * 检测策略（按优先级）：
+   *   1. 存在当前版本数据 → 正常
+   *   2. 存在其他版本数据 → 可迁移，正常
+   *   3. 存在旧格式（无 storeId）数据 → 正常
+   *   4. 完全无数据：
+   *      - requireAuth=false（首次访问 / 静态路由）→  正常
+   *      - requireAuth=true                        →  触发系统登出
+   *
+   * @param requireAuth  为 true 时，空存储将触发 performSystemLogout
    */
   validateStorageData(requireAuth: boolean = false): boolean {
     try {
-      // 优先检查新版本存储结构
-      if (this.hasCurrentVersionStorage()) {
-        // console.debug('[Storage] 发现当前版本存储数据')
-        return true;
-      }
+      const { hasCurrent, hasAny } = this.analyzeStorageKeys();
 
-      // 检查是否有任何版本的存储数据
-      if (this.hasAnyVersionStorage()) {
-        // console.debug('[Storage] 发现其他版本存储数据，可能需要迁移')
-        return true;
-      }
+      // 1. 当前版本 → 一切正常
+      if (hasCurrent) return true;
 
-      // 检查旧版本存储结构
+      // 2. 其他版本 → 待迁移，暂时也能用
+      if (hasAny) return true;
+
+      // 3. 旧格式（无 storeId 的老系统）
       const legacyData = this.getLegacyStorageData();
-      if (Object.keys(legacyData).length === 0) {
-        // 只有在需要验证登录状态时才执行登出操作
-        if (requireAuth) {
-          console.warn("[Storage] 未发现任何存储数据，需要重新登录");
-          this.performSystemLogout();
-          return false;
-        }
-        // 首次访问或访问静态路由，不需要登出
-        // console.debug('[Storage] 未发现存储数据，首次访问或访问静态路由')
+      if (Object.keys(legacyData).length > 0) {
+        console.debug("[Storage] 发现旧版本存储数据");
         return true;
       }
 
-      console.debug("[Storage] 发现旧版本存储数据");
+      // 4. 完全空存储
+      if (requireAuth) {
+        console.warn("[Storage] 未发现任何存储数据，需要重新登录");
+        this.performSystemLogout();
+        return false;
+      }
+      // 首次访问或静态路由无需登出
       return true;
     } catch (error) {
       console.error("[Storage] 存储数据验证失败:", error);
-      // 只有在需要验证登录状态时才处理错误
       if (requireAuth) {
         this.handleStorageError();
         return false;
       }
       return true;
-    }
-  }
-
-  /**
-   * 检查存储是否为空
-   */
-  isStorageEmpty(): boolean {
-    // 检查新版本存储结构
-    if (this.hasCurrentVersionStorage()) {
-      return false;
-    }
-
-    // 检查是否有任何版本的存储数据
-    if (this.hasAnyVersionStorage()) {
-      return false;
-    }
-
-    // 检查旧版本存储结构
-    const legacyData = this.getLegacyStorageData();
-    return Object.keys(legacyData).length === 0;
-  }
-
-  /**
-   * 检查存储兼容性
-   * @param requireAuth 是否需要验证登录状态（默认 false）
-   */
-  checkCompatibility(requireAuth: boolean = false): boolean {
-    try {
-      const isValid = this.validateStorageData(requireAuth);
-      const isEmpty = this.isStorageEmpty();
-
-      if (isValid || isEmpty) {
-        // console.debug('[Storage] 存储兼容性检查通过')
-        return true;
-      }
-
-      console.warn("[Storage] 存储兼容性检查失败");
-      return false;
-    } catch (error) {
-      console.error("[Storage] 兼容性检查异常:", error);
-      return false;
     }
   }
 }
@@ -315,11 +304,18 @@ export function validateStorageData(requireAuth: boolean = false): boolean {
 }
 
 /**
- * 检查存储兼容性
- * @param requireAuth 是否需要验证登录状态（默认 false）
+ * 检查存储兼容性（带 try-catch 的 validateStorageData 包装）。
+ *
+ * @param requireAuth  是否需要验证登录状态（默认 false）
+ *                     为 true 时，空存储将触发系统登出
  */
 export function checkStorageCompatibility(requireAuth: boolean = false): boolean {
-  return storageManager.checkCompatibility(requireAuth);
+  try {
+    return storageManager.validateStorageData(requireAuth);
+  } catch (error) {
+    console.error("[Storage] 兼容性检查异常:", error);
+    return false;
+  }
 }
 
 export class StorageKeyManager {
@@ -356,155 +352,5 @@ export class StorageKeyManager {
     const existingKey = this.findExistingKey(storeId);
     if (existingKey) this.migrateData(existingKey, currentKey);
     return currentKey;
-  }
-}
-
-export class Storage {
-  /**
-   * localStorage 存储数据
-   *
-   * 将数据序列化为 JSON 字符串后存储到 localStorage
-   *
-   * @param {string} key - 存储键名
-   * @param {any} value - 要存储的数据
-   *
-   * @example
-   * ```typescript
-   * Storage.set('user', { name: 'John', age: 25 });
-   * ```
-   */
-  static set(key: string, value: any): void {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  /**
-   * localStorage 读取数据
-   *
-   * 从 localStorage 读取数据并反序列化为指定类型
-   * 如果解析失败，返回原始字符串
-   *
-   * @param {string} key - 存储键名
-   * @param {T} [defaultValue] - 默认值，当键不存在时返回
-   * @returns {T} 解析后的数据或默认值
-   *
-   * @example
-   * ```typescript
-   * const user = Storage.get<User>('user', { name: '', age: 0 });
-   * ```
-   */
-  static get<T>(key: string, defaultValue?: T): T {
-    const value = localStorage.getItem(key);
-    if (!value) return defaultValue as T;
-
-    try {
-      return JSON.parse(value);
-    } catch {
-      // 如果解析失败，返回原始字符串
-      return value as unknown as T;
-    }
-  }
-
-  /**
-   * localStorage 删除数据
-   *
-   * 从 localStorage 中删除指定键的数据
-   *
-   * @param {string} key - 要删除的键名
-   *
-   * @example
-   * ```typescript
-   * Storage.remove('user');
-   * ```
-   */
-  static remove(key: string): void {
-    localStorage.removeItem(key);
-  }
-
-  /**
-   * localStorage 清空所有数据
-   *
-   * 清除 localStorage 中的所有数据
-   *
-   * @example
-   * ```typescript
-   * Storage.clear();
-   * ```
-   */
-  static clear(): void {
-    localStorage.clear();
-  }
-
-  /**
-   * sessionStorage 存储数据
-   *
-   * 将数据序列化为 JSON 字符串后存储到 sessionStorage
-   *
-   * @param {string} key - 存储键名
-   * @param {any} value - 要存储的数据
-   *
-   * @example
-   * ```typescript
-   * Storage.sessionSet('temp', { token: 'abc123' });
-   * ```
-   */
-  static sessionSet(key: string, value: any): void {
-    sessionStorage.setItem(key, JSON.stringify(value));
-  }
-
-  /**
-   * sessionStorage 读取数据
-   *
-   * 从 sessionStorage 读取数据并反序列化为指定类型
-   * 如果解析失败，返回原始字符串
-   *
-   * @param {string} key - 存储键名
-   * @param {T} [defaultValue] - 默认值，当键不存在时返回
-   * @returns {T} 解析后的数据或默认值
-   *
-   * @example
-   * ```typescript
-   * const temp = Storage.sessionGet<string>('temp', '');
-   * ```
-   */
-  static sessionGet<T>(key: string, defaultValue?: T): T {
-    const value = sessionStorage.getItem(key);
-    if (!value) return defaultValue as T;
-
-    try {
-      return JSON.parse(value);
-    } catch {
-      // 如果解析失败，返回原始字符串
-      return value as unknown as T;
-    }
-  }
-
-  /**
-   * sessionStorage 删除数据
-   *
-   * 从 sessionStorage 中删除指定键的数据
-   *
-   * @param {string} key - 要删除的键名
-   *
-   * @example
-   * ```typescript
-   * Storage.sessionRemove('temp');
-   * ```
-   */
-  static sessionRemove(key: string): void {
-    sessionStorage.removeItem(key);
-  }
-
-  /**
-   * sessionStorage 清空所有数据
-   *
-   * 清除 sessionStorage 中的所有数据
-   *
-   * @example
-   * ```typescript
-   * Storage.sessionClear();
-   * ```
-   */
-  static sessionClear(): void {
-    sessionStorage.clear();
   }
 }

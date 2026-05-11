@@ -1,7 +1,7 @@
-<!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（ArtDialog + crud-embed-dialog） -->
+<!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBarWithAudit
+  <div class="fa-full-height">
+    <FaSearchBarWithAudit
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,15 +17,15 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_example:demo:create']"
             :perm-import="['module_example:demo:import']"
@@ -40,21 +40,21 @@
             @more="runBatchStatus"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="920px"
@@ -248,16 +248,16 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtImportDialog
+    <FaImportDialog
       v-model="importModalVisible"
       :content-config="demoImportContentConfig"
       default-template-file-name="demo_import_template.xlsx"
       @upload="handleCrudImportUpload"
     />
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="demoExportContentConfig"
       :query-params="exportQueryParams"
@@ -272,14 +272,14 @@ import { h, computed, ref } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import type { IContentConfig, IObject } from "@/components/Core/modal/types";
-import ArtSearchBarWithAudit from "@/components/Core/forms/art-search-bar/ArtSearchBarWithAudit.vue";
-import type { AuditSearchFormParams } from "@/components/Core/forms/art-search-bar/auditSearchFormItems";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import JsonPretty from "@/components/JsonPretty/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { IContentConfig, IObject } from "@/components/modal/types";
+import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
+import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DemoAPI, {
   type DemoForm,
@@ -317,13 +317,13 @@ const searchForm = ref<DemoSearchFormParams>({
 /** 搜索区域默认展开展示 */
 const showSearchBar = ref(true);
 
-const searchBarRef = ref<InstanceType<typeof ArtSearchBarWithAudit> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBarWithAudit> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 const statusOptions = ref([
   { label: "启用", value: "0" },
   { label: "停用", value: "1" },
 ]);
-/** 名称、状态；创建人/更新人/时间由 ArtSearchBarWithAudit 追加 */
+/** 名称、状态；创建人/更新人/时间由 FaSearchBarWithAudit 追加 */
 const demoBusinessSearchItems = computed(() => [
   {
     label: "名称",
@@ -346,7 +346,7 @@ const demoBusinessSearchItems = computed(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<DemoTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -464,13 +464,15 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeDemoQuery(sp);
 });
 
 const demoImportContentConfig = computed<IContentConfig>(() => ({
   permPrefix: "module_example:demo",
   cols: demoCrudCols.value,
-  indexAction: async () => ({}) as any,
+  indexAction: async () => ({}),
   importTemplate: () => DemoAPI.downloadTemplateDemo(),
 }));
 
@@ -487,21 +489,6 @@ const demoExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 const dialogVisible = reactive({
   title: "",
   visible: false,
@@ -510,7 +497,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DemoTable>({});
 
-const formData = reactive<DemoForm>({
+const formData = ref<DemoForm>({
   id: undefined,
   name: "",
   status: "0",
@@ -633,15 +620,15 @@ async function openEditDialog(type: "add" | "edit", row?: DemoTable) {
   dialogVisible.type = type === "add" ? "create" : "update";
   if (type === "add") {
     dialogVisible.title = "新增示例";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
     metadataList.value = [];
   } else if (row?.id) {
     dialogVisible.title = "修改";
     const response = await DemoAPI.getDemoDetail(row.id);
-    Object.assign(formData, response.data.data);
-    if (formData.i && typeof formData.i === "object") {
-      metadataList.value = Object.entries(formData.i).map(([key, value]) => ({
+    Object.assign(formData.value, response.data.data);
+    if (formData.value.i && typeof formData.value.i === "object") {
+      metadataList.value = Object.entries(formData.value.i).map(([key, value]) => ({
         key,
         value: String(value),
       }));
@@ -657,7 +644,7 @@ async function resetForm() {
     dataFormRef.value.resetFields();
     dataFormRef.value.clearValidate();
   }
-  Object.assign(formData, initialFormData);
+  Object.assign(formData.value, initialFormData);
   metadataList.value = [];
 }
 
@@ -669,7 +656,7 @@ async function handleCloseDialog() {
 async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
-    const submitData = { ...formData };
+    const submitData = { ...formData.value };
     if (metadataList.value.length > 0) {
       const metadataObj: Record<string, string> = {};
       metadataList.value.forEach((item) => {
@@ -681,7 +668,7 @@ async function handleSubmit() {
     } else {
       submitData.i = undefined;
     }
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
         await DemoAPI.updateDemo(id, { id, ...submitData });
@@ -698,84 +685,91 @@ async function handleSubmit() {
   });
 }
 
-const deleteDemoRow = (row: DemoTable) => {
+const deleteDemoRow = async (row: DemoTable) => {
   if (!row.id) return;
-  ElMessageBox.confirm(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`, "删除确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DemoAPI.deleteDemo([row.id!]);
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+  try {
+    await ElMessageBox.confirm(
+      `确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`,
+      "删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+    await DemoAPI.deleteDemo([row.id!]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    ElMessage.info("已取消删除");
+  }
 };
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await DemoAPI.deleteDemo(ids);
-        ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
+  try {
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`,
+      "批量删除",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       }
-    })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+    );
+    batchDeleting.value = true;
+    await DemoAPI.deleteDemo(ids);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    ElMessage.info("已取消删除");
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function runBatchStatus(status: string) {
+async function runBatchStatus(status: string) {
   const ids = selectedIds.value;
   if (ids.length === 0) {
     ElMessage.warning("请先在列表中勾选数据");
     return;
   }
-  ElMessageBox.confirm(
-    `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
-    "批量设置",
-    { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
-  )
-    .then(async () => {
-      await DemoAPI.batchDemo({ ids, status });
-      ElMessage.success("操作成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshData();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(
+      `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
+      "批量设置",
+      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+    );
+    await DemoAPI.batchDemo({ ids, status });
+    ElMessage.success("操作成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshData();
+  } catch {
+    // 用户取消
+  }
 }
 
 function openImportModal() {
   importModalVisible.value = true;
 }
 
-function handleCrudImportUpload(formData: FormData) {
-  DemoAPI.importDemo(formData)
-    .then((res) => {
-      if (res.data.code !== ResultEnum.SUCCESS) {
-        ElMessage.error(res.data.msg || "导入失败");
-        return;
-      }
-      ElMessage.success(res.data.msg || "导入成功");
-      importModalVisible.value = false;
-      return refreshData();
-    })
-    .catch(console.error);
+async function handleCrudImportUpload(formData: FormData) {
+  try {
+    const res = await DemoAPI.importDemo(formData);
+    if (res.data.code !== ResultEnum.SUCCESS) {
+      ElMessage.error(res.data.msg || "导入失败");
+      return;
+    }
+    ElMessage.success(res.data.msg || "导入成功");
+    importModalVisible.value = false;
+    await refreshData();
+  } catch (error) {
+    console.error("[Import]", error);
+    ElMessage.error("导入失败");
+  }
 }
 
 function openExportModal() {

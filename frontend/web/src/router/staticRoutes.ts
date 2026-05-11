@@ -1,3 +1,11 @@
+/**
+ * 静态路由定义 + IframeRouteManager。
+ *
+ * 静态路由 = 首屏即注册的路由（Layout、登录页、404/500、iframe 占位等），
+ * 不依赖菜单权限，用户未登录时即可访问。
+ *
+ * 动态路由由 `beforeEach.ts` → `RouteRegistry` 在登录后根据不同角色的菜单列表动态 `addRoute`。
+ */
 import type { AppRouteRecordRaw } from "@utils/navigation";
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import { defineComponent, h, onMounted, ref } from "vue";
@@ -95,7 +103,7 @@ export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
  * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。
  * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
  */
-export const Layout = () => import("@/layouts/index.vue");
+export const Layout = () => import("@/components/layouts/index.vue");
 
 /** iframe 内跳页面：内联组件（无需 views/outside/Iframe.vue） */
 const IframeView = defineComponent({
@@ -109,7 +117,7 @@ const IframeView = defineComponent({
     onMounted(() => {
       const iframeRoute = IframeRouteManager.getInstance().findByPath(route.path);
       if (iframeRoute?.meta) {
-        iframeUrl.value = (iframeRoute.meta as any).link || "";
+        iframeUrl.value = iframeRoute.meta.link || "";
       }
     });
 
@@ -229,7 +237,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     component: () => import("@views/dashboard/tutorial/index.vue"),
     meta: {
       title: "menus.dashboard.tutorial",
-      icon: "ri:movie-2-line",
+      icon: "ri:book-2-line",
       keepAlive: true,
     },
   },
@@ -386,7 +394,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   {
     path: "/login",
     name: "Login",
-    meta: { hidden: true, title: "menus.login.title" },
+    meta: { hidden: true, isHideTab: true, title: "menus.login.title" },
     component: () => import("@views/module_system/auth/login/index.vue"),
   },
   /** 无 Layout 全屏异常页；守卫与白名单跳转使用（勿再在 RootLayout 下重复挂载同组件） */

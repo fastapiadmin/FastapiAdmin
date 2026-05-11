@@ -9,9 +9,7 @@
     destroy-on-close
     class="article-comment-wall-drawer"
   >
-    <p class="mt-0 mb-8 text-g-600">
-      每一份留言都记录了您的想法，也为我们提供了珍贵的回忆
-    </p>
+    <p class="mt-0 mb-8 text-g-600">每一份留言都记录了您的想法，也为我们提供了珍贵的回忆</p>
 
     <ul
       class="grid grid-cols-5 gap-5 max-2xl:grid-cols-4 max-xl:grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 mb-5 list-none p-0 m-0"
@@ -28,11 +26,11 @@
         <div class="absolute bottom-4 left-0 px-4 flex-cb w-full">
           <div class="flex-c">
             <div class="flex-c mr-5 text-xs text-g-600">
-              <ArtSvgIcon icon="ri:heart-line" class="mr-1 text-base" />
+              <FaSvgIcon icon="ri:heart-line" class="mr-1 text-base" />
               <span>{{ item.collection }}</span>
             </div>
             <div class="flex-c mr-5 text-xs text-g-600">
-              <ArtSvgIcon icon="ri:message-3-line" class="mr-1 text-base" />
+              <FaSvgIcon icon="ri:message-3-line" class="mr-1 text-base" />
               <span>{{ item.comment }}</span>
             </div>
           </div>
@@ -55,25 +53,26 @@
       </template>
       <template #default>
         <div class="drawer-default">
-          <div class="relative p-4 aspect-16/12 rounded-md" :style="{ background: clickItem.color }">
+          <div
+            class="relative p-4 aspect-16/12 rounded-md"
+            :style="{ background: clickItem.color }"
+          >
             <p class="text-g-500 text-sm">{{ clickItem.date }}</p>
             <p class="mt-4 text-sm text-gray-800">{{ clickItem.content }}</p>
             <div class="absolute bottom-4 left-0 px-4 flex-cb w-full">
               <div class="flex-c">
                 <div class="flex-c mr-5 text-xs text-g-600">
-                  <ArtSvgIcon icon="ri:heart-line" class="mr-1 text-base" />
+                  <FaSvgIcon icon="ri:heart-line" class="mr-1 text-base" />
                   <span>{{ clickItem.collection }}</span>
                 </div>
                 <div class="flex-c mr-5 text-xs text-g-600">
-                  <ArtSvgIcon icon="ri:message-3-line" class="mr-1 text-base" />
+                  <FaSvgIcon icon="ri:message-3-line" class="mr-1 text-base" />
                   <span>{{ clickItem.comment }}</span>
                 </div>
               </div>
               <span class="text-sm text-gray-700">{{ clickItem.userName }}</span>
             </div>
           </div>
-
-          <CommentWidget />
         </div>
       </template>
     </ElDrawer>

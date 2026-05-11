@@ -152,15 +152,14 @@ const queryFormData = reactive<DeptPageQuery>({
 
 const loading = ref(true);
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   loading.value = true;
-  DeptAPI.listDept(queryFormData)
-    .then((response) => {
-      deptOptions.value = formatTree(response.data.data);
-    })
-    .finally(() => {
-      loading.value = false;
-    });
+  try {
+    const response = await DeptAPI.listDept(queryFormData);
+    deptOptions.value = formatTree(response.data.data);
+  } finally {
+    loading.value = false;
+  }
 });
 </script>
 

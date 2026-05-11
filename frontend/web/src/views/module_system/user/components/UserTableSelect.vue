@@ -1,6 +1,6 @@
 <!-- 列表选择器 -->
 <template>
-  <table-select
+  <FaTableSelect
     :text="text"
     :select-config="selectConfig"
     @confirm-click="handleConfirm"
@@ -11,12 +11,12 @@
         {{ scope.row[scope.prop] === "0" ? "启用" : "停用" }}
       </ElTag>
     </template>
-  </table-select>
+  </FaTableSelect>
 </template>
 
 <script setup lang="ts">
-import type { ISelectConfig } from "@/components/TableSelect/index.vue";
-import UserAPI from "@/api/module_system/user";
+import type { ISelectConfig } from "@/components/others/fa-table-select/index.vue";
+import UserAPI, { UserPageQuery } from "@/api/module_system/user";
 
 // 父组件双向绑定的值（选中用户ID）
 const props = defineProps<{ modelValue?: number }>();
@@ -29,7 +29,7 @@ const emit = defineEmits<{
 
 const selectConfig: ISelectConfig = {
   pk: "id",
-  /** 与 ArtSearchBar 栅格内 ElInput 一致，占满表单项内容区 */
+  /** 与 FaSearchBar 栅格内 ElInput 一致，占满表单项内容区 */
   width: "100%",
   placeholder: "请选择用户",
   popover: {
@@ -54,7 +54,7 @@ const selectConfig: ISelectConfig = {
       ],
     },
   ],
-  indexAction(params) {
+  async indexAction(params: UserPageQuery) {
     // 映射查询参数到后端接口
     const query: any = { ...params };
     // 清理空字符串/空值，避免后端 422
@@ -70,12 +70,11 @@ const selectConfig: ISelectConfig = {
       else if (query.status === "false") query.status = false;
     }
     // 请求用户分页列表并适配 TableSelect 需要的结构
-    return UserAPI.listUser(query).then((res: any) => {
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    });
+    const res = await UserAPI.listUser(query);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
   },
   tableColumns: [
     { type: "selection", width: 50, align: "center" },

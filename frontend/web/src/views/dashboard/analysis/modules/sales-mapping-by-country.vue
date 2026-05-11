@@ -1,12 +1,12 @@
 <template>
-  <div class="art-card h-82 p-5 mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card h-82 p-5 mb-5 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>全国销售分布</h4>
       </div>
     </div>
 
-    <ArtRingChart
+    <FaRingChart
       :data="[
         { value: 30, name: '北京' },
         { value: 25, name: '上海' },

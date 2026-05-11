@@ -8,7 +8,7 @@
     </div>
 
     <div class="panel-content">
-      <ArtForm
+      <FaForm
         v-model="formData"
         :items="nodePanelFormItems"
         label-width="80px"
@@ -45,7 +45,7 @@
             <div class="field-hint">JSON 格式的关键字参数</div>
           </div>
         </template>
-      </ArtForm>
+      </FaForm>
 
       <div class="panel-actions">
         <ElButton type="primary" size="small" @click="handleSave">保存</ElButton>
@@ -59,8 +59,8 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { ElButton, ElInput, ElSelect, ElOption, ElMessage, ElIcon } from "element-plus";
 import { Close } from "@element-plus/icons-vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import WorkflowNodeTypeAPI, {
   type WorkflowNodeTypeOption,
 } from "@/api/module_task/workflow/node-type";
@@ -159,13 +159,13 @@ watch(
         }
       }
 
-      formData.value = {
+      Object.assign(formData, {
         type: newNode.type || "",
         label: newNode.data?.label || "",
         args: newNode.data?.args || "",
         kwargsStr,
         description: newNode.data?.description || "",
-      };
+      });
     }
   },
   { deep: true, immediate: true }

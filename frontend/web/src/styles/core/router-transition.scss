@@ -1,4 +1,4 @@
-@use 'sass:map';
+@use "sass:map";
 
 // === 变量区域 ===
 $transition: (
@@ -18,10 +18,10 @@ $transition: (
 }
 
 // 变量简写
-$duration: transition-config('duration');
-$distance: transition-config('distance');
-$easing: transition-config('easing');
-$fade-easing: transition-config('fade-easing');
+$duration: transition-config("duration");
+$distance: transition-config("distance");
+$easing: transition-config("easing");
+$fade-easing: transition-config("fade-easing");
 
 // === 动画类 ===
 
@@ -49,13 +49,13 @@ $fade-easing: transition-config('fade-easing');
   $distance-x: 0;
   $distance-y: 0;
 
-  @if $direction == 'left' {
+  @if $direction == "left" {
     $distance-x: -$distance;
-  } @else if $direction == 'right' {
+  } @else if $direction == "right" {
     $distance-x: $distance;
-  } @else if $direction == 'top' {
+  } @else if $direction == "top" {
     $distance-y: -$distance;
-  } @else if $direction == 'bottom' {
+  } @else if $direction == "bottom" {
     $distance-y: $distance;
   }
 
@@ -91,14 +91,17 @@ $fade-easing: transition-config('fade-easing');
 
 // 滑动动画方向类
 .slide-left {
-  @include slide-transition('left');
+  @include slide-transition("left");
 }
+
 .slide-right {
-  @include slide-transition('right');
+  @include slide-transition("right");
 }
+
 .slide-top {
-  @include slide-transition('top');
+  @include slide-transition("top");
 }
+
 .slide-bottom {
-  @include slide-transition('bottom');
+  @include slide-transition("bottom");
 }

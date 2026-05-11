@@ -1,13 +1,13 @@
 <!-- 用户管理：左部门树 + 右 Art 表格 -->
 <template>
-  <div class="art-full-height user-manage-page">
+  <div class="fa-full-height user-manage-page">
     <div
       class="user-manage-body box-border flex gap-4 h-full max-md:block max-md:gap-0 max-md:h-auto"
     >
       <div
         class="user-dept-panel flex-shrink-0 w-58 h-full max-md:w-full max-md:h-auto max-md:mb-5"
       >
-        <ElCard class="tree-card art-card-xs flex flex-col h-full mt-0" shadow="hover">
+        <ElCard class="tree-card fa-card-xs flex flex-col h-full mt-0" shadow="hover">
           <template #header>
             <b>部门</b>
           </template>
@@ -22,7 +22,7 @@
       </div>
 
       <div class="user-main-panel flex flex-col flex-grow min-w-0 min-h-0">
-        <ArtSearchBar
+        <FaSearchBar
           v-show="showSearchBar"
           ref="searchBarRef"
           v-model="searchForm"
@@ -45,20 +45,17 @@
               @clear-click="afterUserSelectSearch"
             />
           </template>
-        </ArtSearchBar>
+        </FaSearchBar>
 
-        <ElCard
-          class="flex flex-col flex-1 min-h-0 art-table-card"
-          :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-        >
-          <ArtTableHeader
+        <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+          <FaTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
             :loading="loading"
             @refresh="refreshData"
           >
             <template #left>
-              <ArtTableHeaderLeft
+              <FaTableHeaderLeft
                 :remove-ids="selectedIds"
                 :perm-create="['module_system:user:create']"
                 :perm-import="['module_system:user:import']"
@@ -74,15 +71,15 @@
                 @more="handleMoreClick"
               />
             </template>
-          </ArtTableHeader>
+          </FaTableHeader>
 
-          <ArtTable
-            ref="artTableRef"
+          <FaTable
+            ref="faTableRef"
             row-key="id"
             :loading="loading"
             :data="data"
             :columns="columns"
-            :pagination="paginationBind"
+            :pagination="pagination"
             @selection-change="onTableSelectionChange"
             @pagination:size-change="handleSizeChange"
             @pagination:current-change="handleCurrentChange"
@@ -91,7 +88,7 @@
       </div>
     </div>
 
-    <ArtDrawer
+    <FaDrawer
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       append-to-body
@@ -294,9 +291,9 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDrawer>
+    </FaDrawer>
 
-    <ArtImportDialog
+    <FaImportDialog
       v-model="importModalVisible"
       :content-config="userImportContentConfig"
       default-template-file-name="user_import_template.xlsx"
@@ -304,7 +301,7 @@
       @upload="handleImportUpload"
     />
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="userExportContentConfig"
       :query-params="exportQueryParams"
@@ -326,15 +323,15 @@ import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
-import ArtImportDialog from "@/components/Core/modal/art-import-dialog/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import type { IContentConfig, IObject } from "@/components/Core/modal/types";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { IContentConfig, IObject } from "@/components/modal/types";
 import UserAPI, {
   type UserForm,
   type UserInfo,
@@ -479,7 +476,7 @@ const searchForm = ref<UserSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -538,7 +535,7 @@ const userSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<UserInfo[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -548,41 +545,43 @@ function onTableSelectionChange(rows: UserInfo[]) {
   selectedRows.value = rows;
 }
 
-function handleResetPassword(row: UserInfo) {
-  ElMessageBox.prompt(`请输入用户【${row.username ?? ""}】的新密码`, "重置密码", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-  }).then(
-    async ({ value }) => {
-      if (!value || value.length < 6) {
-        ElMessage.warning("密码至少需要6位字符，请重新输入");
-        return;
-      }
-      await UserAPI.resetUserPassword({ id: row.id!, password: value });
-      ElMessage.success("密码已重置");
-    },
-    () => {}
-  );
+async function handleResetPassword(row: UserInfo) {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `请输入用户【${row.username ?? ""}】的新密码`,
+      "重置密码",
+      { confirmButtonText: "确定", cancelButtonText: "取消" }
+    );
+    if (!value || value.length < 6) {
+      ElMessage.warning("密码至少需要6位字符，请重新输入");
+      return;
+    }
+    await UserAPI.resetUserPassword({ id: row.id!, password: value });
+    ElMessage.success("密码已重置");
+  } catch {
+    // 用户取消
+  }
 }
 
-function deleteUserRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await UserAPI.deleteUser([id]);
-      const idSet = [id];
-      if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
-        userStore.clearUserInfo();
-      } else {
-        ElMessage.success("删除成功");
-      }
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteUserRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await UserAPI.deleteUser([id]);
+    const idSet = [id];
+    if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
+      userStore.clearUserInfo();
+    } else {
+      ElMessage.success("删除成功");
+    }
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -612,8 +611,8 @@ const {
   core: {
     apiFn: fetchUserTableList,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
     },
     columnsFactory: (): import("@/types/component").ColumnOption<UserInfo>[] => [
       { type: "selection", width: 48, fixed: "left" },
@@ -689,6 +688,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   if (
     deptFilterId.value !== undefined &&
     deptFilterId.value !== null &&
@@ -709,7 +710,7 @@ const exportQueryParams = computed(() => {
 const userImportContentConfig = computed<IContentConfig>(() => ({
   permPrefix: "module_system:user",
   cols: userCrudCols.value,
-  indexAction: async () => ({}) as any,
+  indexAction: async () => ({}),
   importTemplate: () => UserAPI.downloadTemplateUser(),
 }));
 
@@ -732,22 +733,7 @@ const userExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
-const formData = reactive<UserForm>({
+const formData = ref<UserForm>({
   id: undefined,
   username: undefined,
   name: undefined,
@@ -817,13 +803,13 @@ const initialFormData: UserForm = {
 async function handleSearchBarSearch(params: UserSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildUserReplaceParams(params));
-  getData();
+  await getData();
 }
 
 async function applyUserSearchFromForm() {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildUserReplaceParams(searchForm.value));
-  getData();
+  await getData();
 }
 
 async function afterUserSelectSearch() {
@@ -843,8 +829,8 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function handleDeptNodeClick() {
-  getData();
+async function handleDeptNodeClick() {
+  await getData();
 }
 
 function openImportModal() {
@@ -855,25 +841,23 @@ function openExportModal() {
   exportModalVisible.value = true;
 }
 
-function handleImportUpload(formDataUpload: FormData) {
+async function handleImportUpload(formDataUpload: FormData) {
   uploadLoading.value = true;
-  UserAPI.importUser(formDataUpload)
-    .then(async (response) => {
-      if (response.data.code === ResultEnum.SUCCESS) {
-        ElMessage.success(`${response.data.msg}，${response.data.data}`);
-        importModalVisible.value = false;
-        await refreshData();
-      } else {
-        ElMessage.error(response.data.msg || "导入失败");
-      }
-    })
-    .catch((error: unknown) => {
-      console.error(error);
-      ElMessage.error("上传失败");
-    })
-    .finally(() => {
-      uploadLoading.value = false;
-    });
+  try {
+    const response = await UserAPI.importUser(formDataUpload);
+    if (response.data.code === ResultEnum.SUCCESS) {
+      ElMessage.success(`${response.data.msg}，${response.data.data}`);
+      importModalVisible.value = false;
+      await refreshData();
+    } else {
+      ElMessage.error(response.data.msg || "导入失败");
+    }
+  } catch (error: unknown) {
+    console.error(error);
+    ElMessage.error("上传失败");
+  } finally {
+    uploadLoading.value = false;
+  }
 }
 
 async function resetForm() {
@@ -898,13 +882,15 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改用户";
-      Object.assign(formData, response.data.data);
-      formData.role_ids = (response.data.data.roles || []).map((item) => item.id as number);
-      formData.position_ids = (response.data.data.positions || []).map((item) => item.id as number);
+      Object.assign(formData.value, response.data.data);
+      formData.value.role_ids = (response.data.data.roles || []).map((item) => item.id as number);
+      formData.value.position_ids = (response.data.data.positions || []).map(
+        (item) => item.id as number
+      );
     }
   } else {
     dialogVisible.title = "新增用户";
-    formData.id = undefined;
+    formData.value.id = undefined;
   }
   dialogVisible.visible = true;
   await nextTick();
@@ -942,13 +928,13 @@ async function handleSubmit() {
   dataFormRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await UserAPI.updateUser(id, { id, ...formData });
+        await UserAPI.updateUser(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await UserAPI.createUser(formData);
+        await UserAPI.createUser(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
@@ -964,55 +950,51 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await UserAPI.deleteUser(ids);
-        if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
-          userStore.clearUserInfo();
-        } else {
-          ElMessage.success("删除成功");
-        }
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await UserAPI.deleteUser(ids);
+    if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
+      userStore.clearUserInfo();
+    } else {
+      ElMessage.success("删除成功");
+    }
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await UserAPI.batchUser({ ids, status });
-        await refreshData();
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await UserAPI.batchUser({ ids, status });
+    await refreshData();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 </script>
 

@@ -225,7 +225,7 @@ const DEFAULT_LOADING_CONFIG = {
   },
   svg: fourDotsSpinnerSvg,
   svgViewBox: "0 0 40 40",
-  customClass: "art-loading-fix",
+  customClass: "fa-loading-fix",
 } as const;
 
 interface LoadingInstance {

@@ -1,6 +1,6 @@
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -16,8 +16,8 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="tableLoading"
@@ -65,15 +65,15 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         row-key="id"
         :loading="tableLoading"
         :data="tableListData"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="handleTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -90,7 +90,7 @@
     <ImportDbTableDialog
       ref="importDbDialogRef"
       v-model="importVisible"
-      v-model:query="importQueryFormData"
+      v-model:query="formData"
       :data="dbTableList"
       :total="importTotal"
       :confirm-loading="importLoading"
@@ -156,10 +156,10 @@ import { MenuTypeEnum } from "@/enums";
 import { useSettingsStore } from "@stores";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -181,8 +181,8 @@ interface FileData {
 const cmRef = ref<CmComponentRef>();
 const basicInfo = ref<FormInstance>();
 const importDbDialogRef = ref<InstanceType<typeof ImportDbTableDialog>>();
-/** ArtTable：勾选清空（删除后） */
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+/** FaTable：勾选清空（删除后） */
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 
 /** useTable 初始化前的占位，供同步/删除/导入等在文件中靠前定义的函数调用 */
 const listRefresh = {
@@ -216,7 +216,7 @@ const tableNames = ref<string[]>([]);
 // 导入弹窗专用状态
 const importLoading = ref(false);
 const importTotal = ref<number>(0);
-const importQueryFormData = ref<GenTablePageQuery>({
+const formData = ref<GenTablePageQuery>({
   page_no: 1,
   page_size: 10,
   table_name: undefined,
@@ -619,7 +619,7 @@ async function handleSynchDb(row: GenTableSchema): Promise<void> {
   try {
     loading.value = true;
     const previewRes = await GencodeAPI.syncDbPreview(tableName);
-    const preview = previewRes.data?.data as any;
+    const preview = previewRes.data?.data as Record<string, any>;
     const mainHtml = renderHtml(`主表：${tableName}`, preview);
     const subHtml =
       preview?.sub_table_name && preview?.sub
@@ -750,7 +750,7 @@ async function handleDelete(row?: GenTableSchema): Promise<void> {
     });
 
     await GencodeAPI.deleteTable(tableIds);
-    artTableRef.value?.elTableRef?.clearSelection();
+    faTableRef.value?.elTableRef?.clearSelection();
     await listRefresh.refreshRemove();
   } catch (error) {
     if (error !== "cancel") {
@@ -808,7 +808,7 @@ const searchForm = ref<GencodeSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const gencodeSearchItems = computed<SearchFormItem[]>(() => [
@@ -899,21 +899,6 @@ const {
 listRefresh.refreshData = refreshData;
 listRefresh.refreshCreate = refreshCreate;
 listRefresh.refreshRemove = refreshRemove;
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 10,
-    total: p.total ?? 0,
-  };
-});
 
 async function handleSearchBarSearch(params: GencodeSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -1024,7 +1009,7 @@ async function handleImportTable(): Promise<void> {
 async function getDbList(): Promise<void> {
   importLoading.value = true;
   try {
-    const res = await GencodeAPI.listDbTable(importQueryFormData.value);
+    const res = await GencodeAPI.listDbTable(formData.value);
     if (res.data && res.data.data) {
       dbTableList.value = res.data.data.items;
       importTotal.value = res.data.data.total;
@@ -1038,7 +1023,7 @@ async function getDbList(): Promise<void> {
 
 /** 导入弹窗搜索按钮操作 */
 async function handleImportQuery(): Promise<void> {
-  importQueryFormData.value.page_no = 1;
+  formData.value.page_no = 1;
   await getDbList();
 }
 

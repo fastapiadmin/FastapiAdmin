@@ -1,29 +1,41 @@
+/**
+ * 路由后置守卫：滚动置顶、结束 NProgress、关闭 beforeEach 开启的全局 loading。
+ */
 import { nextTick } from "vue";
 import { useSettingsStore } from "@stores/modules/setting.store";
 import { Router } from "vue-router";
 import { NProgress } from "@utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
 import { loadingService } from "@utils/ui";
-import { getPendingLoading, resetPendingLoading } from "./beforeEach";
 
-/** 路由全局后置守卫 */
-export function setupAfterEachGuard(router: Router) {
+/** 防止重复注册 afterEach（与 beforeEach 同理） */
+let afterEachGuardRegistered = false;
+
+export async function setupAfterEachGuard(router: Router) {
+  if (afterEachGuardRegistered) {
+    if (import.meta.env.DEV) {
+      console.warn("[Router] setupAfterEachGuard 已注册，跳过重复调用");
+    }
+    return;
+  }
+  afterEachGuardRegistered = true;
+
   const { scrollToTop } = useCommon();
+
+  // 延迟加载 beforeEach 中导出的守卫状态函数，避免静态循环依赖
+  const { getPendingLoading, resetPendingLoading } = await import("./beforeEach");
 
   router.afterEach(() => {
     scrollToTop();
 
-    // 关闭进度条
     const settingStore = useSettingsStore();
     if (settingStore.showNprogress) {
       NProgress.done();
-      // 确保进度条完全移除，避免残影
       setTimeout(() => {
         NProgress.remove();
       }, 600);
     }
 
-    // 关闭 loading 效果
     if (getPendingLoading()) {
       nextTick(() => {
         loadingService.hideLoading();

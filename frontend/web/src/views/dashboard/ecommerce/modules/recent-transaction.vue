@@ -1,5 +1,5 @@
 <template>
-  <ArtTimelineListCard
+  <FaTimelineListCard
     :list="timelineData"
     title="最近交易"
     subtitle="今日订单动态"

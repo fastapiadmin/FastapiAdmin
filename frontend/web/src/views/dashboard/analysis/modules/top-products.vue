@@ -1,12 +1,12 @@
 <template>
-  <div class="art-card h-82 p-5 mb-5 overflow-hidden max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card h-82 p-5 mb-5 overflow-hidden max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>热门产品</h4>
       </div>
     </div>
     <div class="overflow-auto h-full">
-      <ArtTable
+      <FaTable
         :data="products"
         style="width: 100%"
         size="large"
@@ -41,7 +41,7 @@
             </span>
           </template>
         </ElTableColumn>
-      </ArtTable>
+      </FaTable>
     </div>
   </div>
 </template>

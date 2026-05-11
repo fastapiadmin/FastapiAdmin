@@ -1,6 +1,6 @@
 <template>
-  <div class="art-card p-5 h-128 overflow-hidden mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card p-5 h-128 overflow-hidden mb-5 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>新用户</h4>
         <p>
@@ -14,7 +14,7 @@
         <ElRadioButton value="今年" label="今年"></ElRadioButton>
       </ElRadioGroup>
     </div>
-    <ArtTable
+    <FaTable
       class="w-full"
       :data="tableData"
       style="width: 100%"
@@ -51,7 +51,7 @@
           </template>
         </ElTableColumn>
       </template>
-    </ArtTable>
+    </FaTable>
   </div>
 </template>
 
@@ -90,7 +90,7 @@ const tableData = reactive<UserTableItem[]>([
     age: 22,
     percentage: 60,
     pro: 0,
-    color: "var(--art-primary)",
+    color: "var(--fa-primary)",
     avatar: avatar1,
   },
   {
@@ -100,7 +100,7 @@ const tableData = reactive<UserTableItem[]>([
     age: 21,
     percentage: 20,
     pro: 0,
-    color: "var(--art-secondary)",
+    color: "var(--fa-secondary)",
     avatar: avatar2,
   },
   {
@@ -110,7 +110,7 @@ const tableData = reactive<UserTableItem[]>([
     age: 23,
     percentage: 60,
     pro: 0,
-    color: "var(--art-warning)",
+    color: "var(--fa-warning)",
     avatar: avatar3,
   },
   {
@@ -120,7 +120,7 @@ const tableData = reactive<UserTableItem[]>([
     age: 28,
     percentage: 50,
     pro: 0,
-    color: "var(--art-info)",
+    color: "var(--fa-info)",
     avatar: avatar4,
   },
   {
@@ -130,7 +130,7 @@ const tableData = reactive<UserTableItem[]>([
     age: 26,
     percentage: 70,
     pro: 0,
-    color: "var(--art-error)",
+    color: "var(--fa-error)",
     avatar: avatar5,
   },
   {
@@ -140,7 +140,7 @@ const tableData = reactive<UserTableItem[]>([
     age: 25,
     percentage: 90,
     pro: 0,
-    color: "var(--art-success)",
+    color: "var(--fa-success)",
     avatar: avatar6,
   },
 ]);
@@ -163,7 +163,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.art-card {
+.fa-card {
   :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
     color: var(--el-color-primary) !important;
     background: transparent !important;

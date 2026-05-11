@@ -21,10 +21,10 @@
         :md="6"
         :sm="10"
         :xs="6"
-        style="display: flex; justify-content: end; align-items: center; gap: 8px; flex-wrap: wrap"
+        style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: end"
       >
         <ElButton @click="commentWallOpen = true">
-          <ArtSvgIcon icon="ri:message-3-line" class="mr-1" />
+          <FaSvgIcon icon="ri:message-3-line" class="mr-1" />
           留言墙
         </ElButton>
         <ElButton type="primary" @click="toAddArticle" v-auth="'add'">新增文章</ElButton>
@@ -57,10 +57,10 @@
             <h2 class="text-base text-g-800 font-medium">{{ item.title }}</h2>
             <div class="flex-b w-full h-6 mt-1">
               <div class="flex-c text-g-500">
-                <ArtSvgIcon icon="ri:time-line" class="mr-1 text-sm" />
+                <FaSvgIcon icon="ri:time-line" class="mr-1 text-sm" />
                 <span class="text-sm">{{ useDateFormat(item.create_time, "YYYY-MM-DD") }}</span>
                 <div class="w-px h-3 bg-g-400 mx-3.5"></div>
-                <ArtSvgIcon icon="ri:eye-line" class="mr-1 text-sm" />
+                <FaSvgIcon icon="ri:eye-line" class="mr-1 text-sm" />
                 <span class="text-sm">{{ item.count }}</span>
               </div>
               <ElButton

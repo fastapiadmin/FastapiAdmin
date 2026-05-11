@@ -1,9 +1,9 @@
 <template>
   <ElRow :gutter="20" class="flex">
     <ElCol v-for="(item, index) in dataList" :key="index" :sm="12" :md="6" :lg="6">
-      <div class="art-card relative flex flex-col justify-center h-35 px-5 mb-5 max-sm:mb-4">
+      <div class="fa-card relative flex flex-col justify-center h-35 px-5 mb-5 max-sm:mb-4">
         <span class="text-g-700 text-sm">{{ item.des }}</span>
-        <ArtCountTo class="text-[26px] font-medium mt-2" :target="item.num" :duration="1300" />
+        <FaCountTo class="text-[26px] font-medium mt-2" :target="item.num" :duration="1300" />
         <div class="flex-c mt-1">
           <span class="text-xs text-g-600">较上周</span>
           <span
@@ -16,7 +16,7 @@
         <div
           class="absolute top-0 bottom-0 right-5 m-auto size-12.5 rounded-xl flex-cc bg-theme/10"
         >
-          <ArtSvgIcon :icon="item.icon" class="text-xl text-theme" />
+          <FaSvgIcon :icon="item.icon" class="text-xl text-theme" />
         </div>
       </div>
     </ElCol>

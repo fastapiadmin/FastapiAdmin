@@ -1,5 +1,6 @@
+<!-- 缓存监控 -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <el-tabs>
       <!-- 监控信息 Tab -->
       <ElTabPane label="监控信息">
@@ -72,7 +73,7 @@
           <!-- 监控图表：单独一行并占满剩余高度 -->
           <ElRow :gutter="16" class="monitor-charts-row">
             <ElCol :span="12" class="cache-chart-col">
-              <ElCard shadow="hover" class="cache-chart-card">
+              <ElCard shadow="hover" class="cache-chfa-card">
                 <template #header>
                   <div class="flex items-center gap-2">
                     <ElIcon>
@@ -91,7 +92,7 @@
             </ElCol>
 
             <ElCol :span="12" class="cache-chart-col">
-              <ElCard shadow="hover" class="cache-chart-card">
+              <ElCard shadow="hover" class="cache-chfa-card">
                 <template #header>
                   <div class="flex items-center gap-2">
                     <ElIcon>
@@ -143,44 +144,46 @@
                     </div>
                   </div>
                 </template>
-                <ElTable :loading="loading" :data="cacheNames" row-key="cache_name">
-                  <template #empty>
-                    <ElEmpty :image-size="80" description="暂无数据" />
-                  </template>
-                  <ElTableColumn prop="cache_name" label="缓存名称" show-overflow-tooltip>
-                    <template #default="{ row }">
-                      <ElButton
-                        v-hasPerm="['module_monitor:cache:query']"
-                        type="primary"
-                        link
-                        @click="getCacheKeyList(row)"
-                      >
-                        {{ row.cache_name }}
-                      </ElButton>
+                <div class="cache-table-wrap">
+                  <ElTable :loading="loading" :data="cacheNames" row-key="cache_name" height="100%">
+                    <template #empty>
+                      <ElEmpty :image-size="80" description="暂无数据" />
                     </template>
-                  </ElTableColumn>
-                  <ElTableColumn prop="remark" label="备注" show-overflow-tooltip />
-                  <ElTableColumn label="操作" width="60" align="center">
-                    <template #default="{ row }">
-                      <ElPopconfirm
-                        class="box-item"
-                        :title="`确认删除缓存 ${row.cache_name} 吗？`"
-                        placement="top"
-                        @confirm="handleClearCacheName(row)"
-                      >
-                        <template #reference>
-                          <ElButton
-                            v-hasPerm="['module_monitor:cache:delete']"
-                            type="danger"
-                            size="small"
-                            link
-                            icon="delete"
-                          />
-                        </template>
-                      </ElPopconfirm>
-                    </template>
-                  </ElTableColumn>
-                </ElTable>
+                    <ElTableColumn prop="cache_name" label="缓存名称" show-overflow-tooltip>
+                      <template #default="{ row }">
+                        <ElButton
+                          v-hasPerm="['module_monitor:cache:query']"
+                          type="primary"
+                          link
+                          @click="getCacheKeyList(row)"
+                        >
+                          {{ row.cache_name }}
+                        </ElButton>
+                      </template>
+                    </ElTableColumn>
+                    <ElTableColumn prop="remark" label="备注" show-overflow-tooltip />
+                    <ElTableColumn label="操作" width="60" align="center">
+                      <template #default="{ row }">
+                        <ElPopconfirm
+                          class="box-item"
+                          :title="`确认删除缓存 ${row.cache_name} 吗？`"
+                          placement="top"
+                          @confirm="handleClearCacheName(row)"
+                        >
+                          <template #reference>
+                            <ElButton
+                              v-hasPerm="['module_monitor:cache:delete']"
+                              type="danger"
+                              size="small"
+                              link
+                              icon="delete"
+                            />
+                          </template>
+                        </ElPopconfirm>
+                      </template>
+                    </ElTableColumn>
+                  </ElTable>
+                </div>
               </ElCard>
             </ElCol>
 
@@ -211,53 +214,56 @@
                     </div>
                   </div>
                 </template>
-                <ElTable
-                  :loading="subLoading"
-                  :data="cacheKeys.map((key) => ({ cacheKey: key }))"
-                  row-key="cacheKey"
-                >
-                  <template #empty>
-                    <ElEmpty :image-size="80" description="暂无数据" />
-                  </template>
-                  <ElTableColumn prop="cacheKey" label="缓存键名" show-overflow-tooltip>
-                    <template #default="{ row }">
-                      <ElButton
-                        v-hasPerm="['module_monitor:cache:detail']"
-                        type="primary"
-                        link
-                        @click="handleCacheValue(row.cacheKey)"
-                      >
-                        {{ row.cacheKey }}
-                      </ElButton>
+                <div class="cache-table-wrap">
+                  <ElTable
+                    :loading="subLoading"
+                    :data="cacheKeys.map((key) => ({ cacheKey: key }))"
+                    row-key="cacheKey"
+                    height="100%"
+                  >
+                    <template #empty>
+                      <ElEmpty :image-size="80" description="暂无数据" />
                     </template>
-                  </ElTableColumn>
-                  <ElTableColumn label="操作" width="60" align="center">
-                    <template #default="{ row }">
-                      <ElPopconfirm
-                        class="box-item"
-                        :title="`确认删除键 ${row.cacheKey} 吗？`"
-                        placement="top"
-                        @confirm="handleClearCacheKey(row.cacheKey)"
-                      >
-                        <template #reference>
-                          <ElButton
-                            v-hasPerm="['module_monitor:cache:delete']"
-                            type="danger"
-                            size="small"
-                            link
-                            icon="delete"
-                          />
-                        </template>
-                      </ElPopconfirm>
-                    </template>
-                  </ElTableColumn>
-                </ElTable>
+                    <ElTableColumn prop="cacheKey" label="缓存键名" show-overflow-tooltip>
+                      <template #default="{ row }">
+                        <ElButton
+                          v-hasPerm="['module_monitor:cache:detail']"
+                          type="primary"
+                          link
+                          @click="handleCacheValue(row.cacheKey)"
+                        >
+                          {{ row.cacheKey }}
+                        </ElButton>
+                      </template>
+                    </ElTableColumn>
+                    <ElTableColumn label="操作" width="60" align="center">
+                      <template #default="{ row }">
+                        <ElPopconfirm
+                          class="box-item"
+                          :title="`确认删除键 ${row.cacheKey} 吗？`"
+                          placement="top"
+                          @confirm="handleClearCacheKey(row.cacheKey)"
+                        >
+                          <template #reference>
+                            <ElButton
+                              v-hasPerm="['module_monitor:cache:delete']"
+                              type="danger"
+                              size="small"
+                              link
+                              icon="delete"
+                            />
+                          </template>
+                        </ElPopconfirm>
+                      </template>
+                    </ElTableColumn>
+                  </ElTable>
+                </div>
               </ElCard>
             </ElCol>
 
             <!-- 缓存内容 -->
-            <ElCol :span="8">
-              <ElCard :loading="loading" shadow="hover">
+            <ElCol :span="8" class="cache-mgmt-col">
+              <ElCard :loading="loading" shadow="hover" class="cache-mgmt-card">
                 <template #header>
                   <div class="flex justify-between items-center">
                     <div class="flex items-center gap-2">
@@ -284,23 +290,29 @@
                     </div>
                   </div>
                 </template>
-                <ElForm :model="cacheForm" label-suffix=":" label-width="auto" label-position="top">
-                  <ElFormItem label="缓存名称">
-                    <ElInput v-model="cacheForm.cache_name" readonly placeholder="缓存名称" />
-                  </ElFormItem>
-                  <ElFormItem label="缓存键名">
-                    <ElInput v-model="cacheForm.cache_key" readonly placeholder="缓存键名" />
-                  </ElFormItem>
-                  <ElFormItem label="缓存内容">
-                    <ElInput
-                      v-model="cacheForm.cache_value"
-                      type="textarea"
-                      :rows="20"
-                      readonly
-                      placeholder="缓存内容"
-                    />
-                  </ElFormItem>
-                </ElForm>
+                <div class="cache-form-wrap">
+                  <ElForm
+                    :model="cacheForm"
+                    label-suffix=":"
+                    label-width="auto"
+                    label-position="top"
+                  >
+                    <ElFormItem label="缓存名称">
+                      <ElInput v-model="cacheForm.cache_name" readonly placeholder="缓存名称" />
+                    </ElFormItem>
+                    <ElFormItem label="缓存键名">
+                      <ElInput v-model="cacheForm.cache_key" readonly placeholder="缓存键名" />
+                    </ElFormItem>
+                    <ElFormItem label="缓存内容" class="cache-value-item">
+                      <ElInput
+                        v-model="cacheForm.cache_value"
+                        type="textarea"
+                        readonly
+                        placeholder="缓存内容"
+                      />
+                    </ElFormItem>
+                  </ElForm>
+                </div>
               </ElCard>
             </ElCol>
           </ElRow>
@@ -311,6 +323,7 @@
 </template>
 
 <script lang="ts" setup>
+import { ElMessageBox } from "element-plus";
 import CacheAPI, {
   type CacheInfo,
   type CacheForm,
@@ -431,22 +444,19 @@ async function handleCacheValue(cacheKey: string) {
 
 // 清理全部缓存
 const handleClearCacheAll = async () => {
-  ElMessageBox.confirm("确定要清理全部缓存吗？", "危险！", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      return await CacheAPI.deleteCacheAll();
-    })
-    .then(() => {
-      getCacheNameList();
-    })
-    .catch((error) => {
-      if (error !== "cancel") {
-        console.error("清理全部缓存失败:", error);
-      }
+  try {
+    await ElMessageBox.confirm("确定要清理全部缓存吗？", "危险！", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     });
+    await CacheAPI.deleteCacheAll();
+    getCacheNameList();
+  } catch (error: unknown) {
+    if (error !== "cancel") {
+      console.error("清理全部缓存失败:", error);
+    }
+  }
 };
 
 // 监控数据获取
@@ -560,7 +570,7 @@ onUnmounted(() => {
   min-height: 0;
 }
 
-.cache-chart-card {
+.cache-chfa-card {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -607,6 +617,29 @@ onUnmounted(() => {
   min-height: 0;
 
   :deep(.el-card__body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    > .cache-table-wrap,
+    > .cache-form-wrap {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+}
+
+.cache-table-wrap {
+  overflow: hidden;
+}
+
+.cache-form-wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .el-form {
     display: flex;
     flex: 1;
     flex-direction: column;

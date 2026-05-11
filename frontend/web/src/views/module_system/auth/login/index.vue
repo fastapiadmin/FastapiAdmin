@@ -293,7 +293,6 @@ async function tryConsumeOAuthCallback() {
       Auth.setTokens(access, refresh, true);
       userStore.setToken(access, refresh);
       userStore.setLoginStatus(true);
-      await userStore.getUserInfo();
       ElNotification({
         title: t("login.oauthNoticeTitle"),
         message: t("login.oauthLoginSuccess"),
@@ -312,7 +311,7 @@ async function tryConsumeOAuthCallback() {
 }
 
 const dragVerifyTextColor = computed(() =>
-  isDark.value ? "rgba(255, 255, 255, 0.45)" : "var(--art-gray-700)"
+  isDark.value ? "rgba(255, 255, 255, 0.45)" : "var(--fa-gray-700)"
 );
 const formKey = ref(0);
 
@@ -547,12 +546,14 @@ const showVoteNotification = () => {
   });
 };
 
+let voteTimer: ReturnType<typeof setTimeout> | null = null;
+
 onMounted(async () => {
   setupAccount("super");
-  await configStore.getConfig(true);
+  await configStore.getConfig();
   await tryConsumeOAuthCallback();
   getCaptcha();
-  setTimeout(showVoteNotification, 500);
+  voteTimer = setTimeout(showVoteNotification, 500);
 });
 
 onActivated(() => {
@@ -562,6 +563,7 @@ onActivated(() => {
 });
 
 onBeforeUnmount(() => {
+  if (voteTimer !== null) clearTimeout(voteTimer);
   notificationInstance?.close();
   notificationInstance = null;
 });

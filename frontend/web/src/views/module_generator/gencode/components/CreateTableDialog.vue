@@ -1,5 +1,5 @@
 <template>
-  <ArtDialog
+  <FaDialog
     v-model="visible"
     title="创建数据表"
     width="min(800px, 94vw)"
@@ -165,7 +165,7 @@
         <ElButton @click="handleCancel">取消</ElButton>
       </div>
     </template>
-  </ArtDialog>
+  </FaDialog>
 </template>
 
 <script setup lang="ts">
@@ -178,7 +178,7 @@ import type { CmComponentRef } from "codemirror-editor-vue3";
 import { ElMessage } from "element-plus";
 import { ArrowDown, CopyDocument } from "@element-plus/icons-vue";
 import { useClipboard } from "@vueuse/core";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { useSettingsStore } from "@stores";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { buildSqlFromVisual } from "../utils/buildCreateTableSql";

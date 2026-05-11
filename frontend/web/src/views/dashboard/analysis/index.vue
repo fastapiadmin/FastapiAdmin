@@ -40,11 +40,11 @@
         <h2 class="page-title">图表</h2>
         <ElRow :gutter="20">
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">柱状图（单数据）</span>
               </div>
-              <ArtBarChart
+              <FaBarChart
                 :data="singleBarData"
                 :xAxisData="xAxisData"
                 :showLegend="true"
@@ -53,11 +53,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">柱状图（多组数据）</span>
               </div>
-              <ArtBarChart
+              <FaBarChart
                 :data="multiBarData"
                 :xAxisData="xAxisData"
                 :showLegend="true"
@@ -66,11 +66,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">柱状图（堆叠）</span>
               </div>
-              <ArtBarChart
+              <FaBarChart
                 :data="stackBarData"
                 :xAxisData="stackXAxisData"
                 :showLegend="true"
@@ -80,11 +80,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">折线图</span>
               </div>
-              <ArtLineChart
+              <FaLineChart
                 :data="[58, 15, 82, 35, 120, 62, 45]"
                 :xAxisData="['一月', '二月', '三月', '四月', '五月', '六月', '七月']"
                 symbol="none"
@@ -93,11 +93,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">折线图（渐变背景）</span>
               </div>
-              <ArtLineChart
+              <FaLineChart
                 :data="[28, 45, 82, 35, 100, 32, 55]"
                 :xAxisData="['一月', '二月', '三月', '四月', '五月', '六月', '七月']"
                 :showAreaColor="true"
@@ -105,11 +105,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">折线图（多组数据）</span>
               </div>
-              <ArtLineChart
+              <FaLineChart
                 :data="multiLineData"
                 :xAxisData="['1月', '2月', '3月', '4月', '5月', '6月']"
                 :showLegend="true"
@@ -118,23 +118,23 @@
           </ElCol>
 
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">柱状图（水平）</span>
               </div>
-              <ArtHBarChart
+              <FaHBarChart
                 :data="[50, 80, 120, 90, 60]"
                 :xAxisData="['产品A', '产品B', '产品C', '产品D', '产品E']"
               />
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">柱状图（水平）</span>
               </div>
 
-              <ArtHBarChart
+              <FaHBarChart
                 :data="[
                   { name: '系列1', data: [10, 20, 30] },
                   { name: '系列2', data: [15, 25, 35] },
@@ -146,11 +146,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">柱状图（水平堆叠）</span>
               </div>
-              <ArtHBarChart
+              <FaHBarChart
                 :data="[
                   { name: '系列1', data: [10, 20, 30] },
                   { name: '系列2', data: [15, 25, 35] },
@@ -164,11 +164,11 @@
           </ElCol>
 
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">环形图</span>
               </div>
-              <ArtRingChart
+              <FaRingChart
                 :data="[
                   { value: 35, name: '分类A' },
                   { value: 28, name: '分类B' },
@@ -181,11 +181,11 @@
           </ElCol>
 
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">环形图</span>
               </div>
-              <ArtRingChart
+              <FaRingChart
                 :data="[
                   { value: 35, name: '分类A' },
                   { value: 28, name: '分类B' },
@@ -203,11 +203,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">饼图</span>
               </div>
-              <ArtRingChart
+              <FaRingChart
                 :data="[
                   { value: 30, name: '分类A' },
                   { value: 25, name: '分类B' },
@@ -220,11 +220,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">散点图</span>
               </div>
-              <ArtScatterChart
+              <FaScatterChart
                 :data="[
                   { value: [1, 3] },
                   { value: [2, 4] },
@@ -244,11 +244,11 @@
           </ElCol>
 
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">雷达图</span>
               </div>
-              <ArtRadarChart
+              <FaRadarChart
                 :indicator="[
                   { name: '销售', max: 100 },
                   { name: '管理', max: 100 },
@@ -270,11 +270,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">k线图</span>
               </div>
-              <ArtKLineChart
+              <FaKLineChart
                 :data="[
                   { time: '2024-01-01', open: 20, close: 23, high: 25, low: 18 },
                   { time: '2024-01-02', open: 23, close: 21, high: 24, low: 20 },
@@ -287,11 +287,11 @@
             </div>
           </ElCol>
           <ElCol :xs="24" :md="12" :lg="8" class="mb-5">
-            <div class="art-card">
+            <div class="fa-card">
               <div class="pb-3.5">
                 <span class="text-base font-medium">双向堆叠柱状图</span>
               </div>
-              <ArtDualBarCompareChart
+              <FaDualBarCompareChart
                 :positiveData="[50, 28, 80, 65, 68, 70, 60, 55]"
                 :negativeData="[50, 28, 40, 45, 38, 50, 42, 48]"
                 :xAxisData="[
@@ -373,7 +373,7 @@ const stackXAxisData = ref(["产品A", "产品B", "产品C", "产品D", "产品E
   @apply my-5 text-xl font-medium first:mt-0;
 }
 
-.art-card {
+.fa-card {
   @apply p-5;
 }
 </style>

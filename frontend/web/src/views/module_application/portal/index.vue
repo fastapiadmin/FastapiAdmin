@@ -1,7 +1,7 @@
 <!-- 我的应用管理：Art + useTable（卡片网格） -->
 <template>
-  <div class="art-full-height portal-application-page flex flex-col min-h-0">
-    <ArtSearchBar
+  <div class="fa-full-height portal-application-page flex flex-col min-h-0">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -32,13 +32,13 @@
           @clear-click="afterUserSelectSearch"
         />
       </template>
-    </ArtSearchBar>
+    </FaSearchBar>
 
     <ElCard
-      class="flex flex-1 min-h-0 flex-col art-table-card"
+      class="flex flex-1 min-h-0 flex-col fa-table-card"
       :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
     >
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         layout="search,refresh"
@@ -58,7 +58,7 @@
             </ElButton>
           </div>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
       <div v-loading="loading" class="app-grid-container min-h-0 flex-1 overflow-auto">
         <div v-if="!loading && data.length === 0" class="app-grid-empty">
@@ -124,9 +124,9 @@
       <div class="portal-pagination flex shrink-0 justify-end border-g-200 pt-3 mt-auto border-t">
         <ElPagination
           background
-          :current-page="paginationBind.current"
-          :page-size="paginationBind.size"
-          :total="paginationBind.total"
+          :current-page="pagination.current"
+          :page-size="pagination.size"
+          :total="pagination.total"
           :page-sizes="[12, 24, 48]"
           layout="total, sizes, prev, pager, next"
           @size-change="handleSizeChange"
@@ -135,14 +135,14 @@
       </div>
     </ElCard>
 
-    <ArtDrawer
+    <FaDrawer
       v-model="dialogVisible"
       :title="dialogTitle"
       :size="drawerSize"
       direction="rtl"
       @close="handleCloseDialog"
     >
-      <ArtForm
+      <FaForm
         :key="portalFormRenderKey"
         ref="formRef"
         v-model="formData"
@@ -162,7 +162,7 @@
             <ElRadio value="1">停用</ElRadio>
           </ElRadioGroup>
         </template>
-      </ArtForm>
+      </FaForm>
 
       <template #footer>
         <div class="dialog-footer">
@@ -170,7 +170,7 @@
           <ElButton type="primary" @click="handleSubmit">确定</ElButton>
         </div>
       </template>
-    </ArtDrawer>
+    </FaDrawer>
   </div>
 </template>
 
@@ -191,12 +191,12 @@ import ApplicationAPI, {
 } from "@/api/module_application/portal";
 import { formatToDateTime } from "@utils/common";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
 import type { ColumnOption } from "@/types/component";
 
@@ -226,7 +226,7 @@ const searchForm = ref<PortalSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -268,7 +268,7 @@ const portalSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const formRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const formRef = ref<InstanceType<typeof FaForm> | null>(null);
 const portalFormRenderKey = ref(0);
 
 const portalDrawerFormItems = computed<FormItem[]>(() => [
@@ -343,22 +343,7 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 12,
-    total: p.total ?? 0,
-  };
-});
-
-const formData = reactive<ApplicationForm>({
+const formData = ref<ApplicationForm>({
   name: "",
   access_url: "",
   icon_url: "",
@@ -486,10 +471,10 @@ async function handleSubmit() {
     await formRef.value?.validate();
 
     if (dialogType.value === "create") {
-      await ApplicationAPI.createApp(formData);
+      await ApplicationAPI.createApp(formData.value);
       await refreshCreate();
     } else {
-      await ApplicationAPI.updateApp(currentApp.value!.id!, formData);
+      await ApplicationAPI.updateApp(currentApp.value!.id!, formData.value);
       await refreshUpdate();
     }
 

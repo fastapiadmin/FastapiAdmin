@@ -44,9 +44,9 @@
                 alt=""
                 aria-hidden="true"
               />
-              <ArtSvgIcon
+              <FaSvgIcon
                 v-else
-                :icon="resolveIconForArtSvgIcon(getFileTreeNodeIcon(data.label))"
+                :icon="resolveIconForFaSvgIcon(getFileTreeNodeIcon(data.label))"
                 class="inline shrink-0 text-base"
               />
               <span class="ml-1" :title="data.full_path || data.label">
@@ -91,9 +91,9 @@ import { computed, inject, onUnmounted, ref, watch } from "vue";
 import Codemirror from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
-import ArtSvgIcon from "@/components/Core/base/art-svg-icon/index.vue";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import { resolveLocalIconUrl } from "@utils/icons";
-import { resolveIconForArtSvgIcon } from "@utils/menuIcon/index";
+import { resolveIconForFaSvgIcon } from "@utils/menuIcon/index";
 import { CopyDocument } from "@element-plus/icons-vue";
 import { GENCODE_CM_KEY } from "../gencodeInjectionKeys";
 import type { TreeNode } from "../types";

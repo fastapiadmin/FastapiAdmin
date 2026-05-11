@@ -198,10 +198,15 @@ export function useChart(options: UseChartOptions = {}) {
   });
 
   // 缓存样式配置以减少重复计算
-  const styleCache = {
-    axisLine: null as any,
-    splitLine: null as any,
-    axisLabel: null as any,
+  const styleCache: {
+    axisLine: Record<string, any> | null;
+    splitLine: Record<string, any> | null;
+    axisLabel: Record<string, any> | null;
+    lastDarkValue: boolean;
+  } = {
+    axisLine: null,
+    splitLine: null,
+    axisLabel: null,
     lastDarkValue: isDark.value,
   };
 

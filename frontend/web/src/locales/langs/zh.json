@@ -14,6 +14,14 @@
     "requestFailed": "请求失败",
     "requestConfigError": "请求配置错误"
   },
+  "manualPage": {
+    "title": "操作手册",
+    "intro": "视频演示常用操作流程；「功能验收」正文按模块列出已实现界面与权限，用于核对功能是否覆盖完整（非评价好坏）。正式环境可将演示视频替换为自有 CDN / 静态资源地址。",
+    "videoTab": "视频演示",
+    "manualTab": "功能验收",
+    "videoHint": "可随时暂停、调速与全屏观看。",
+    "manualHint": "支持目录锚点与筛选；正文「功能完整性验收」与代码已实现的检索、工具栏、行操作、弹层等逐项对应，便于漏项检查。"
+  },
   "topBar": {
     "search": {
       "title": "搜索"
@@ -542,7 +550,7 @@
       "ecommerce": "电子商务",
       "map": "地图",
       "pricing": "定价",
-      "tutorial": "操作教程"
+      "tutorial": "操作手册"
     },
     "article": {
       "title": "文章管理",

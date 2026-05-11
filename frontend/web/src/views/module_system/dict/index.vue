@@ -1,7 +1,7 @@
 <!-- 字典类型：Art 布局；操作列最多 3 个外露 +「更多」 -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,15 +17,15 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_system:dict_type:create']"
             :perm-export="['module_system:dict_type:export']"
@@ -38,21 +38,21 @@
             @more="handleMoreClick"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="640px"
@@ -87,7 +87,7 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ArtForm
+          <FaForm
             :key="dictFormRenderKey"
             ref="dataFormRef"
             v-model="formData"
@@ -108,7 +108,7 @@
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
             </template>
-          </ArtForm>
+          </FaForm>
         </ElScrollbar>
       </template>
 
@@ -121,9 +121,9 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtExportDialog
+    <FaExportDialog
       v-model="exportModalVisible"
       :content-config="dictTypeExportContentConfig"
       :query-params="exportQueryParams"
@@ -144,14 +144,14 @@
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtExportDialog from "@/components/Core/modal/art-export-dialog/index.vue";
-import type { IObject } from "@/components/Core/modal/types";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { IObject } from "@/components/modal/types";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DictAPI, {
   type DictForm,
@@ -194,7 +194,7 @@ const searchForm = ref<DictTypeSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -247,7 +247,7 @@ const dictTypeSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<DictTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -333,6 +333,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeDictTypeQuery(sp);
 });
 
@@ -349,21 +351,6 @@ const dictTypeExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 const dialogVisible = reactive({
   title: "",
   visible: false,
@@ -372,7 +359,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DictTable>({});
 
-const formData = reactive<DictForm>({
+const formData = ref<DictForm>({
   id: undefined,
   dict_name: "",
   dict_type: "",
@@ -386,7 +373,7 @@ const rules = reactive({
   status: [{ required: true, message: "请选择字典状态", trigger: "blur" }],
 });
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const dictFormRenderKey = ref(0);
 
 const dictDialogFormItems = computed<FormItem[]>(() => [
@@ -542,8 +529,8 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增字典";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
   }
   dictFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -552,20 +539,20 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await DictAPI.updateDictType(id, { id, ...formData });
+        await DictAPI.updateDictType(id, { id, ...formData.value });
         await refreshUpdate();
       } else {
-        await DictAPI.createDictType(formData);
+        await DictAPI.createDictType(formData.value);
         await refreshCreate();
       }
       dialogVisible.visible = false;
       await resetForm();
       dictStore.clearDictData();
-      if (formData.dict_type) {
-        await dictStore.getDict([formData.dict_type]);
+      if (formData.value.dict_type) {
+        await dictStore.getDict([formData.value.dict_type]);
       }
     } catch (error: unknown) {
       console.error(error);
@@ -573,74 +560,69 @@ async function handleSubmit() {
   });
 }
 
-function deleteDictTypeRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DictAPI.deleteDictType([id]);
-      dictStore.clearDictData();
-      const dictTypes = Object.keys(dictStore.dictData);
-      if (dictTypes.length > 0) {
-        await dictStore.getDict(dictTypes);
-      }
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteDictTypeRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DictAPI.deleteDictType([id]);
+    dictStore.clearDictData();
+    const dictTypes = Object.keys(dictStore.dictData);
+    if (dictTypes.length > 0) await dictStore.getDict(dictTypes);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await DictAPI.deleteDictType(ids);
-        dictStore.clearDictData();
-        const dictTypes = Object.keys(dictStore.dictData);
-        if (dictTypes.length > 0) {
-          await dictStore.getDict(dictTypes);
-        }
-        ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await DictAPI.deleteDictType(ids);
+    dictStore.clearDictData();
+    const dictTypes = Object.keys(dictStore.dictData);
+    if (dictTypes.length > 0) await dictStore.getDict(dictTypes);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DictAPI.batchDictType({ ids, status });
-      await refreshData();
-      dictStore.clearDictData();
-      const dictTypes = Object.keys(dictStore.dictData);
-      if (dictTypes.length > 0) {
-        await dictStore.getDict(dictTypes);
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DictAPI.batchDictType({ ids, status });
+    await refreshData();
+    dictStore.clearDictData();
+    const dictTypes = Object.keys(dictStore.dictData);
+    if (dictTypes.length > 0) await dictStore.getDict(dictTypes);
+  } catch {
+    // 用户取消
+  }
 }
 
 function openExportModal() {
@@ -649,10 +631,6 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 .crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }

@@ -1,7 +1,7 @@
 <!-- 部门配置：Art + 树形表格（对齐 system/menu 模版） -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,8 +17,8 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -26,7 +26,7 @@
       >
         <template #left>
           <div class="inline-flex flex-wrap items-center gap-2">
-            <ArtTableHeaderLeft
+            <FaTableHeaderLeft
               :remove-ids="selectedIds"
               :perm-create="['module_system:dept:create']"
               :perm-delete="['module_system:dept:delete']"
@@ -39,9 +39,9 @@
             <ElButton @click="toggleExpand">{{ isExpanded ? "收起" : "展开" }}</ElButton>
           </div>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
+      <FaTable
         ref="tableRef"
         row-key="id"
         :loading="loading"
@@ -53,7 +53,7 @@
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="640px"
@@ -95,7 +95,7 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ArtForm
+          <FaForm
             :key="deptFormRenderKey"
             ref="dataFormRef"
             v-model="formData"
@@ -116,7 +116,7 @@
                 <ElRadio value="1">停用</ElRadio>
               </ElRadioGroup>
             </template>
-          </ArtForm>
+          </FaForm>
         </ElScrollbar>
       </template>
 
@@ -129,7 +129,7 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -141,14 +141,14 @@ import DeptAPI, {
   type DeptPageQuery,
   type DeptTable,
 } from "@/api/module_system/dept";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
@@ -234,7 +234,7 @@ const searchForm = ref<DeptSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -310,20 +310,21 @@ async function loadDeptData() {
   }
 }
 
-function deleteDeptRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DeptAPI.deleteDept([id]);
-      await userStore.getUserInfo();
-      ElMessage.success("删除成功");
-      selectedRows.value = [];
-      await loadDeptData();
-    })
-    .catch(() => {});
+async function deleteDeptRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DeptAPI.deleteDept([id]);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadDeptData();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -362,7 +363,7 @@ const { columnChecks, columns } = useTableColumns<DeptTable>(() => [
 
 const detailFormData = ref<DeptTable>({ code: "" });
 
-const formData = reactive<DeptForm>({
+const formData = ref<DeptForm>({
   id: undefined,
   name: undefined,
   code: "",
@@ -404,7 +405,7 @@ const initialFormData: DeptForm = {
   description: undefined,
 };
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const deptFormRenderKey = ref(0);
 
 const deptDialogFormItems = computed<FormItem[]>(() => [
@@ -515,10 +516,10 @@ async function handleOpenDialog(
     }
   } else {
     dialogVisible.title = "新增部门";
-    Object.assign(formData, initialFormData);
-    formData.id = undefined;
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
     if (parentId) {
-      formData.parent_id = parentId;
+      formData.value.parent_id = parentId;
     }
   }
   deptFormRenderKey.value += 1;
@@ -528,12 +529,12 @@ async function handleOpenDialog(
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await DeptAPI.updateDept(id, { id, ...formData });
+        await DeptAPI.updateDept(id, { id, ...formData.value });
       } else {
-        await DeptAPI.createDept(formData);
+        await DeptAPI.createDept(formData.value);
       }
       dialogVisible.visible = false;
       await resetForm();
@@ -545,50 +546,46 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await DeptAPI.deleteDept(ids);
-        await userStore.getUserInfo();
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await loadDeptData();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await DeptAPI.deleteDept(ids);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadDeptData();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        await DeptAPI.batchDept({ ids, status });
-        await loadDeptData();
-        await userStore.getUserInfo();
-      } catch (error: unknown) {
-        console.error(error);
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DeptAPI.batchDept({ ids, status });
+    await loadDeptData();
+    await userStore.getUserInfo();
+  } catch {
+    // 用户取消或操作失败
+  }
 }
 
 function toggleExpand() {
@@ -614,10 +611,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 .crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }

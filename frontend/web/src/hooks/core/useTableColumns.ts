@@ -1,72 +1,30 @@
 /**
- * useTableColumns - 表格列配置管理
- *
- * 提供动态的表格列配置管理能力，支持运行时灵活控制列的显示、隐藏、排序等操作。
- * 通常与 useTable 配合使用，为表格提供完整的列管理功能。
- *
- * ## 主要功能
- *
- * 1. 列显示控制 - 动态显示/隐藏列，支持批量操作
- * 2. 列排序 - 拖拽或编程方式重新排列列顺序
- * 3. 列配置管理 - 新增、删除、更新列配置
- * 4. 特殊列支持 - 自动处理 selection、expand、index 等特殊列
- * 5. 状态持久化 - 保持列的显示状态，支持重置到初始状态
- *
- * ## 使用示例
- *
- * ```typescript
- * const { columns, columnChecks, toggleColumn, reorderColumns } = useTableColumns(() => [
- *   { prop: 'name', label: '姓名', visible: true },
- *   { prop: 'email', label: '邮箱', visible: true },
- *   { prop: 'status', label: '状态', visible: false }
- * ])
- *
- * // 切换列显示
- * toggleColumn('email', false)
- *
- * // 重新排序
- * reorderColumns(0, 2)
- * ```
- *
- * @module useTableColumns
- * @author FastapiAdmin Team
+ * 表格列配置：显隐、拖拽排序、增删改；与 `useTable` 的 `columnsFactory` 配合。
+ * 导出 `getColumnVisibility` / `getColumnChecks` 供表头等处复用同一套 visible/checked 规则。
  */
 
 import { ref, computed, watch } from "vue";
 import { $t } from "@/locales";
 import type { ColumnOption } from "@/types/component";
 
-/**
- * 特殊列类型
- */
+/** selection / expand / index 等占位 prop，避免与业务列冲突 */
 const SPECIAL_COLUMNS: Record<string, { prop: string; label: string }> = {
   selection: { prop: "__selection__", label: $t("table.column.selection") },
   expand: { prop: "__expand__", label: $t("table.column.expand") },
   index: { prop: "__index__", label: $t("table.column.index") },
 };
 
-/**
- * 获取列的唯一标识
- */
 export const getColumnKey = <T>(col: ColumnOption<T>) =>
   SPECIAL_COLUMNS[col.type as keyof typeof SPECIAL_COLUMNS]?.prop ?? (col.prop as string);
 
-/**
- * 获取列的显示状态
- * 优先使用 visible 字段，如果不存在则使用 checked 字段
- */
+/** `visible` 优先；否则回退 `checked`，默认展示 */
 export const getColumnVisibility = <T>(col: ColumnOption<T>): boolean => {
-  // visible 优先级高于 checked
   if (col.visible !== undefined) {
     return col.visible;
   }
-  // 如果 visible 未定义，使用 checked，默认为 true
   return col.checked ?? true;
 };
 
-/**
- * 获取列的检查状态
- */
 export const getColumnChecks = <T>(columns: ColumnOption<T>[]) =>
   columns.map((col) => {
     const special = col.type && SPECIAL_COLUMNS[col.type];

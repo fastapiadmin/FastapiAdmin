@@ -1,7 +1,7 @@
-<!-- 调度任务：Art + useTable（主列表卡片；抽屉内表格） -->
+<!-- 调度任务：主区调度器状态 + 任务卡片列表（getSchedulerJobs 全量、前端筛选）；抽屉内执行日志表用 useTable 分页 -->
 <template>
-  <div class="art-full-height job-page flex flex-col min-h-0">
-    <ArtSearchBar
+  <div class="fa-full-height job-page flex flex-col min-h-0">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,10 +18,10 @@
     />
 
     <ElCard
-      class="flex flex-1 min-h-0 flex-col art-table-card"
+      class="flex flex-1 min-h-0 flex-col fa-table-card"
       :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
     >
-      <ArtTableHeader
+      <FaTableHeader
         v-model:columns="jobColumnChecks"
         v-model:showSearchBar="showSearchBar"
         layout="search,refresh"
@@ -120,7 +120,7 @@
             </div>
           </div>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
       <div v-loading="jobLoading" class="job-cards-container min-h-0 flex-1 overflow-auto">
         <ElEmpty
@@ -254,7 +254,7 @@
       </div>
     </ElCard>
 
-    <ArtDialog v-model="consoleVisible" title="调度器控制台" width="900px">
+    <FaDialog v-model="consoleVisible" title="调度器控制台" width="900px">
       <div class="terminal-wrapper">
         <Terminal name="scheduler-console" :show-header="false" theme="dark" />
       </div>
@@ -263,11 +263,11 @@
         <ElButton @click="handleClearConsole">清空</ElButton>
         <ElButton type="primary" @click="consoleVisible = false">关闭</ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtDrawer v-model="executionLogDrawerVisible" title="执行记录" direction="rtl" size="80%">
+    <FaDrawer v-model="executionLogDrawerVisible" title="执行记录" direction="rtl" size="80%">
       <div class="execution-log-drawer flex flex-col min-h-0">
-        <ArtSearchBar
+        <FaSearchBar
           ref="logSearchBarRef"
           v-model="logSearchForm"
           :items="logSearchItems"
@@ -281,24 +281,24 @@
           @search="handleLogSearchBarSearch"
           @reset="onLogResetSearch"
         />
-        <ElCard class="art-table-card log-table-card mt-3 flex flex-1 min-h-0 flex-col">
-          <ArtTableHeader
+        <ElCard class="fa-table-card log-table-card mt-3 flex flex-1 min-h-0 flex-col">
+          <FaTableHeader
             v-model:columns="logColumnChecks"
             layout="search,refresh"
             :loading="logLoading"
             @refresh="refreshLogData"
           >
             <template #left>
-              <ArtTableHeaderLeft
+              <FaTableHeaderLeft
                 :remove-ids="logSelectedIds"
                 :perm-delete="['module_task:cronjob:job:delete']"
                 :delete-loading="logBatchDeleting"
                 @delete="handleLogBatchDelete"
               />
             </template>
-          </ArtTableHeader>
-          <ArtTable
-            ref="logArtTableRef"
+          </FaTableHeader>
+          <FaTable
+            ref="logfaTableRef"
             row-key="id"
             :loading="logLoading"
             :data="logTableData"
@@ -331,17 +331,17 @@
                 删除
               </ElButton>
             </template>
-          </ArtTable>
+          </FaTable>
         </ElCard>
       </div>
-    </ArtDrawer>
+    </FaDrawer>
 
-    <ArtDialog v-model="jobStateVisible" title="执行元数据" width="800px">
+    <FaDialog v-model="jobStateVisible" title="执行元数据" width="800px">
       <JsonPretty :value="jobStateData" height="400px" />
       <template #footer>
         <ElButton type="primary" @click="jobStateVisible = false">关闭</ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -352,19 +352,19 @@ defineOptions({
 });
 
 import JobAPI, { SchedulerStatus, SchedulerJob, JobLogTable } from "@/api/module_task/cronjob/job";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import JsonPretty from "@/components/JsonPretty/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { Calendar, Clock, Timer } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
-import { computed, h, nextTick, ref } from "vue";
+import { computed, h, nextTick, onMounted, ref } from "vue";
 import { Terminal, TerminalApi } from "vue-web-terminal";
 
 const schedulerStatus = ref<SchedulerStatus>({
@@ -378,20 +378,13 @@ type JobSearchForm = {
   status?: string;
 };
 
-function buildJobReplaceParams(u: JobSearchForm): Record<string, unknown> {
-  return {
-    name: u.name,
-    status: u.status,
-  };
-}
-
 const searchForm = ref<JobSearchForm>({
   name: undefined,
   status: undefined,
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const jobSearchItems = computed<SearchFormItem[]>(() => [
@@ -429,42 +422,52 @@ async function loadSchedulerStatus() {
   }
 }
 
-const {
-  data: jobList,
-  loading: jobLoading,
-  columnChecks: jobColumnChecks,
-  getData: getJobList,
-  replaceSearchParams: replaceJobSearchParams,
-  resetSearchParams: resetJobSearchParams,
-  refreshData: refreshJobList,
-} = useTable({
-  core: {
-    apiFn: JobAPI.getSchedulerJobs,
-    apiParams: {
-      page_no: 1,
-      page_size: 10,
-    },
-    columnsFactory: (): ColumnOption<SchedulerJob>[] => [
-      { type: "selection", width: 48, fixed: "left" },
-      { type: "globalIndex", width: 56, label: "序号" },
-      { prop: "id", label: "任务ID", minWidth: 80, showOverflowTooltip: true },
-      { prop: "name", label: "任务名称", minWidth: 140, showOverflowTooltip: true },
-      { prop: "trigger", label: "触发器", minWidth: 120, showOverflowTooltip: true },
-      { prop: "next_run_time", label: "下次执行时间", minWidth: 200, showOverflowTooltip: true },
-      { prop: "status", label: "状态", minWidth: 80, showOverflowTooltip: true },
-    ],
-  },
-  hooks: {
-    onSuccess: () => {
-      void loadSchedulerStatus();
-    },
-  },
-});
+/** 调度器任务列表为全量列表接口，无分页；筛选在前端完成 */
+const jobList = ref<SchedulerJob[]>([]);
+const jobLoading = ref(false);
+/** 主区域为卡片列表无表格列配置，仅占位满足 FaTableHeader v-model */
+const jobColumnChecks = ref<ColumnOption<SchedulerJob>[]>([]);
 
-async function handleJobSearchBarSearch(params: JobSearchForm) {
+function matchesJobStatusFilter(jobStatus: string | undefined, filter?: string): boolean {
+  if (!filter) return true;
+  const map: Record<string, string[]> = {
+    运行中: ["运行中"],
+    暂停: ["暂停", "暂停中"],
+    停止: ["停止", "已停止"],
+  };
+  const aliases = map[filter];
+  if (!aliases) return true;
+  const s = jobStatus ?? "";
+  return aliases.some((a) => s === a || s.includes(a));
+}
+
+async function fetchSchedulerJobs() {
+  jobLoading.value = true;
+  try {
+    const res = await JobAPI.getSchedulerJobs();
+    const raw = res.data?.data;
+    const list: SchedulerJob[] = Array.isArray(raw) ? raw : [];
+    const nameQ = searchForm.value.name?.trim();
+    const statusQ = searchForm.value.status;
+    jobList.value = list.filter((j) => {
+      if (nameQ && !(j.name ?? "").includes(nameQ)) return false;
+      if (!matchesJobStatusFilter(j.status, statusQ)) return false;
+      return true;
+    });
+    await loadSchedulerStatus();
+  } catch (error: unknown) {
+    console.error(error);
+    jobList.value = [];
+  } finally {
+    jobLoading.value = false;
+  }
+}
+
+const refreshJobList = fetchSchedulerJobs;
+
+async function handleJobSearchBarSearch() {
   await searchBarRef.value?.validate?.();
-  replaceJobSearchParams(buildJobReplaceParams(params));
-  getJobList();
+  await fetchSchedulerJobs();
 }
 
 async function onJobResetSearch() {
@@ -472,8 +475,12 @@ async function onJobResetSearch() {
     name: undefined,
     status: undefined,
   };
-  await resetJobSearchParams();
+  await fetchSchedulerJobs();
 }
+
+onMounted(() => {
+  void fetchSchedulerJobs();
+});
 
 type LogSearchForm = {
   status?: string;
@@ -492,7 +499,7 @@ const logSearchForm = ref<LogSearchForm>({
   trigger_type: undefined,
 });
 
-const logSearchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const logSearchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const logSearchBarRules: Record<string, unknown> = {};
 
 const logSearchItems = computed<SearchFormItem[]>(() => [
@@ -533,7 +540,7 @@ const logSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const currentLogJobId = ref<string | undefined>(undefined);
-const logArtTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const logfaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const logSelectedRows = ref<JobLogTable[]>([]);
 const logSelectedIds = computed(() =>
   logSelectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
@@ -649,42 +656,42 @@ const {
   },
 });
 
-function deleteLogRow(id: number | undefined) {
+async function deleteLogRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该执行记录？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await JobAPI.deleteJobLog([id]);
-      ElMessage.success("删除成功");
-      logArtTableRef.value?.elTableRef?.clearSelection();
-      await refreshLogRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该执行记录？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await JobAPI.deleteJobLog([id]);
+    ElMessage.success("删除成功");
+    logfaTableRef.value?.elTableRef?.clearSelection();
+    await refreshLogRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleLogBatchDelete() {
+async function handleLogBatchDelete() {
   const ids = logSelectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm("确认删除选中的执行记录？", "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        logBatchDeleting.value = true;
-        await JobAPI.deleteJobLog(ids);
-        ElMessage.success("删除成功");
-        logSelectedRows.value = [];
-        await refreshLogRemove();
-      } finally {
-        logBatchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除选中的执行记录？", "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    logBatchDeleting.value = true;
+    await JobAPI.deleteJobLog(ids);
+    ElMessage.success("删除成功");
+    logSelectedRows.value = [];
+    await refreshLogRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    logBatchDeleting.value = false;
+  }
 }
 
 const logPaginationBind = computed(() => {
@@ -950,22 +957,17 @@ async function handleRunJobNow(jobId: string) {
 }
 
 async function handleRemoveJob(jobId: string) {
-  ElMessageBox.confirm("确认移除该任务?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        await JobAPI.removeJob(jobId);
-        await refreshJobList();
-      } catch (error: any) {
-        console.error(error);
-      }
-    })
-    .catch(() => {
-      ElMessageBox.close();
+  try {
+    await ElMessageBox.confirm("确认移除该任务?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     });
+    await JobAPI.removeJob(jobId);
+    await refreshJobList();
+  } catch {
+    ElMessageBox.close();
+  }
 }
 
 async function handleOpenExecutionLogDrawer(job: SchedulerJob) {

@@ -1,7 +1,7 @@
 <!-- 租户管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,15 +17,15 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_system:tenant:create']"
             :perm-delete="['module_system:tenant:delete']"
@@ -34,21 +34,21 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="640px"
@@ -87,7 +87,7 @@
       </template>
       <template v-else>
         <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ArtForm
+          <FaForm
             :key="tenantFormRenderKey"
             ref="dataFormRef"
             v-model="formData"
@@ -119,22 +119,22 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
   type TenantCreateForm,
@@ -300,7 +300,7 @@ const searchForm = ref<TenantSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -353,7 +353,7 @@ const tenantSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<TenantTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -364,19 +364,21 @@ function onTableSelectionChange(rows: TenantTable[]) {
   selectedRows.value = rows;
 }
 
-function deleteTenantRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await TenantAPI.deleteTenant([id]);
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteTenantRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    await TenantAPI.deleteTenant([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -436,26 +438,11 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 const detailFormData = ref<TenantTable>({ code: "", name: "", status: "0" });
 
 const currentEditId = ref<number | null>(null);
 
-const formData = reactive<TenantForm>({
+const formData = ref<TenantForm>({
   name: "",
   code: "",
   status: "0",
@@ -473,7 +460,11 @@ const dialogVisible = reactive({
 const CODE_PATTERN = /^[A-Za-z0-9]+$/;
 
 const validateTimeRange = (rule: unknown, value: unknown, callback: (e?: Error) => void) => {
-  if (formData.start_time && formData.end_time && formData.start_time > formData.end_time) {
+  if (
+    formData.value.start_time &&
+    formData.value.end_time &&
+    formData.value.start_time > formData.value.end_time
+  ) {
     callback(new Error("结束时间不能早于开始时间"));
   } else {
     callback();
@@ -502,7 +493,7 @@ const initialFormData: TenantForm = {
   end_time: undefined,
 };
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const submitLoading = ref(false);
 const tenantFormRenderKey = ref(0);
 
@@ -633,18 +624,18 @@ async function handleSubmit() {
     try {
       if (id) {
         const payload: TenantUpdateForm = {
-          name: formData.name,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
+          name: formData.value.name,
+          start_time: formData.value.start_time,
+          end_time: formData.value.end_time,
         };
         await TenantAPI.updateTenant(id, payload);
         await refreshUpdate();
       } else {
         const payload: TenantCreateForm = {
-          name: formData.name as string,
-          code: formData.code as string,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
+          name: formData.value.name as string,
+          code: formData.value.code as string,
+          start_time: formData.value.start_time,
+          end_time: formData.value.end_time,
         };
         await TenantAPI.createTenant(payload);
         await refreshCreate();
@@ -659,34 +650,29 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await TenantAPI.deleteTenant(ids);
-        ElMessage.success("删除成功");
-        artTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await TenantAPI.deleteTenant(ids);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 .crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }

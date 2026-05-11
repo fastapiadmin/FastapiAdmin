@@ -1,3 +1,4 @@
+<!-- 仪表盘首页：快捷入口 + 收藏夹 + 数据概览卡片 -->
 <template>
   <div class="workplace-page">
     <!-- 顶栏放入 gutter 行，与下方栅格列边缘对齐 -->
@@ -190,13 +191,13 @@
       <h2 class="workplace-banners-showcase__title">基础 & 自定义按钮+背景色</h2>
       <ElRow :gutter="20">
         <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
-          <ArtBasicBanner
+          <FaBasicBanner
             title="数据中心运行状态"
             subtitle="系统访问量同比增长 23%，所有服务运行稳定，数据监控正常。"
           />
         </ElCol>
         <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
-          <ArtBasicBanner
+          <FaBasicBanner
             title="欢迎使用 Art Design Pro"
             subtitle="基于 Vue 3 + TypeScript + Element Plus 构建的现代化管理系统。"
             titleColor="#333"
@@ -205,7 +206,7 @@
             :buttonConfig="{
               show: true,
               text: '开始探索',
-              color: 'var(--art-success)',
+              color: 'var(--fa-success)',
               textColor: '#fff',
               radius: '6px',
             }"
@@ -218,7 +219,7 @@
 
       <ElRow :gutter="20">
         <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
-          <ArtBasicBanner
+          <FaBasicBanner
             title="探索星空计划"
             subtitle="加入我们的天文观测活动，发现宇宙的奥秘"
             boxStyle="!bg-[#FF8AAB]"
@@ -234,7 +235,7 @@
           />
         </ElCol>
         <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
-          <ArtBasicBanner
+          <FaBasicBanner
             boxStyle="!bg-[#70B1FF]"
             :imageConfig="{
               src: bannerIcon5,
@@ -257,56 +258,56 @@
                 <ElButton type="primary" color="#04A1FF">查看文档</ElButton>
               </div>
             </template>
-          </ArtBasicBanner>
+          </FaBasicBanner>
         </ElCol>
       </ElRow>
 
       <h2 class="workplace-banners-showcase__title">抽象配置方案（Preset 模式）</h2>
       <ElRow :gutter="20">
         <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
-          <ArtBasicBanner v-bind="presetBanners.marketing" />
+          <FaBasicBanner v-bind="presetBanners.marketing" />
         </ElCol>
         <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
-          <ArtBasicBanner v-bind="presetBanners.info" />
+          <FaBasicBanner v-bind="presetBanners.info" />
         </ElCol>
       </ElRow>
 
       <h2 class="workplace-banners-showcase__title">卡片横幅</h2>
       <ElRow :gutter="20">
         <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
-          <ArtCardBanner
+          <FaCardBanner
             title="系统运行正常"
             description="所有核心服务运行稳定，响应时间在正常范围内。"
           />
         </ElCol>
         <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
-          <ArtCardBanner
+          <FaCardBanner
             :image="bannerIcon2"
             title="重要消息通知"
             description="您有 3 条待处理的重要消息，请及时查看。"
             :button="{
               show: true,
               text: '查看详情',
-              color: 'var(--art-warning)',
+              color: 'var(--fa-warning)',
               textColor: '#fff',
             }"
           />
         </ElCol>
         <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
-          <ArtCardBanner
+          <FaCardBanner
             :image="bannerIcon3"
             title="数据分析报告"
             description="本周业务数据分析报告已完成，请查看关键指标。"
             :button="{
               show: true,
               text: '下载报告',
-              color: 'var(--art-error)',
+              color: 'var(--fa-error)',
               textColor: '#fff',
             }"
           />
         </ElCol>
         <ElCol :xs="24" :sm="12" :md="12" :lg="6" class="mb-5">
-          <ArtCardBanner
+          <FaCardBanner
             :image="bannerIcon4"
             title="版本更新提醒"
             description="Art Design Pro v2.1.0 已发布，包含性能优化和新功能。"
@@ -364,8 +365,8 @@ defineOptions({
 });
 
 import { useUserStore } from "@stores/index";
-import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
-import Calendar from "@/components/Calendar/index.vue";
+import MenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
+import Calendar from "@/components/others/fa-calendar/index.vue";
 import { greetings } from "@utils/common";
 import type { MenuTable } from "@/api/module_system/menu";
 import { ref, onMounted, onUnmounted, computed } from "vue";
@@ -528,28 +529,28 @@ const presetBanners = {
   marketing: {
     title: "限时优惠活动",
     subtitle: "精选商品 48 小时闪购，最高享受 7 折优惠，数量有限！",
-    titleColor: "var(--art-gray-900)",
-    subtitleColor: "var(--art-gray-900)",
+    titleColor: "var(--fa-gray-900)",
+    subtitleColor: "var(--fa-gray-900)",
     boxStyle: "!bg-success/15",
     meteorConfig: { enabled: true, count: 15 },
     buttonConfig: {
       show: true,
       text: "立即抢购",
-      color: "var(--art-success)",
+      color: "var(--fa-success)",
       textColor: "#fff",
     },
   },
   info: {
     title: "服务到期提醒",
     subtitle: "您的高级服务将在 7 天后到期，请及时续费以继续享受完整功能。",
-    titleColor: "var(--art-gray-900)",
-    subtitleColor: "var(--art-gray-900)",
+    titleColor: "var(--fa-gray-900)",
+    subtitleColor: "var(--fa-gray-900)",
     boxStyle: "!bg-theme/15",
     meteorConfig: { enabled: true, count: 15 },
     buttonConfig: {
       show: true,
       text: "立即续费",
-      color: "var(--art-secondary)",
+      color: "var(--fa-secondary)",
       textColor: "#fff",
     },
   },
@@ -627,39 +628,39 @@ function getQuickLinkStableIndex(item: QuickLink): number {
 }
 
 // 处理删除链接
-const handleDeleteLink = (item: QuickLink) => {
-  ElMessageBox.confirm(`确定要取消收藏"${item.title}"吗？`, "取消收藏确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(() => {
-      if (item.id) {
-        quickStartManager.removeQuickLink(item.id);
-      } else if (item.href) {
-        quickStartManager.removeQuickLinkByHref(item.href);
-      } else {
-        ElMessage.warning("无法移除：缺少标识");
-        return;
-      }
-      ElMessage.success(`已取消收藏：${item.title}`);
-    })
-    .catch(() => {
-      // 用户取消删除
+const handleDeleteLink = async (item: QuickLink) => {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏"${item.title}"吗？`, "取消收藏确认", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     });
+    if (item.id) {
+      quickStartManager.removeQuickLink(item.id);
+    } else if (item.href) {
+      quickStartManager.removeQuickLinkByHref(item.href);
+    } else {
+      ElMessage.warning("无法移除：缺少标识");
+      return;
+    }
+    ElMessage.success(`已取消收藏：${item.title}`);
+  } catch {
+    // 用户取消
+  }
 };
 
-const clearBookmarks = () => {
-  ElMessageBox.confirm("确定要清空收藏吗？", "清空收藏确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(() => {
-      quickStartManager.clearQuickLinks();
-      ElMessage.success("已清空收藏");
-    })
-    .catch(() => {});
+const clearBookmarks = async () => {
+  try {
+    await ElMessageBox.confirm("确定要清空收藏吗？", "清空收藏确认", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    quickStartManager.clearQuickLinks();
+    ElMessage.success("已清空收藏");
+  } catch {
+    // 用户取消
+  }
 };
 
 // 监听快速链接变化

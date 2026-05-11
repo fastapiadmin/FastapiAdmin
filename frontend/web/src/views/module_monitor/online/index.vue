@@ -1,7 +1,7 @@
 <!-- 在线用户：Art + useTable -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,8 +17,8 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -35,14 +35,14 @@
             强退所有
           </ElButton>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
+      <FaTable
         row-key="session_id"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
@@ -58,12 +58,12 @@ defineOptions({
 
 import { h, ref, computed } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtButtonTable from "@/components/Core/forms/art-button-table/index.vue";
-import CopyButton from "@/components/CopyButton/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import CopyButton from "@/components/others/fa-copy-button/index.vue";
 import OnlineAPI, { type OnlineUserTable } from "@/api/module_monitor/online";
 import type { ColumnOption } from "@/types/component";
 import { ElMessage, ElMessageBox, ElTooltip } from "element-plus";
@@ -92,7 +92,7 @@ const searchForm = ref<OnlineSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const onlineSearchItems = computed<SearchFormItem[]>(() => [
@@ -125,21 +125,20 @@ const onlineSearchItems = computed<SearchFormItem[]>(() => [
 const clearAllLoading = ref(false);
 
 function kickSession(sessionId: string) {
-  ElMessageBox.confirm(`确认强制退出会话 ${sessionId}?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        await OnlineAPI.deleteOnline(sessionId);
-        ElMessage.success("操作成功");
-        await refreshData();
-      } catch (error: unknown) {
-        console.error(error);
-      }
-    })
-    .catch(() => {});
+  (async () => {
+    try {
+      await ElMessageBox.confirm(`确认强制退出会话 ${sessionId}?`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+      await OnlineAPI.deleteOnline(sessionId);
+      ElMessage.success("操作成功");
+      await refreshData();
+    } catch {
+      // 用户取消或操作失败
+    }
+  })();
 }
 
 const {
@@ -243,21 +242,6 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 async function handleSearchBarSearch(params: OnlineSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildOnlineReplaceParams(params));
@@ -274,24 +258,23 @@ async function onResetSearch() {
 }
 
 function handleClearAll() {
-  ElMessageBox.confirm("确认强制退出所有用户?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        clearAllLoading.value = true;
-        await OnlineAPI.clearOnline();
-        ElMessage.success("操作成功");
-        await refreshData();
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        clearAllLoading.value = false;
-      }
-    })
-    .catch(() => {});
+  (async () => {
+    try {
+      await ElMessageBox.confirm("确认强制退出所有用户?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+      clearAllLoading.value = true;
+      await OnlineAPI.clearOnline();
+      ElMessage.success("操作成功");
+      await refreshData();
+    } catch {
+      // 用户取消
+    } finally {
+      clearAllLoading.value = false;
+    }
+  })();
 }
 </script>
 

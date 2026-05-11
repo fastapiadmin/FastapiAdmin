@@ -1,7 +1,7 @@
 <!-- 菜单管理：Art + 树形表格；操作列最多 3 个外露，其余「更多」 -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -26,8 +26,8 @@
       <ElTabPane label="APP 移动端菜单管理" name="app" />
     </ElTabs>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -35,7 +35,7 @@
       >
         <template #left>
           <div class="inline-flex flex-wrap items-center gap-2">
-            <ArtTableHeaderLeft
+            <FaTableHeaderLeft
               :remove-ids="selectedIds"
               :perm-create="['module_system:menu:create']"
               :perm-delete="['module_system:menu:delete']"
@@ -48,9 +48,9 @@
             <ElButton @click="toggleExpand">{{ isExpanded ? "收起" : "展开" }}</ElButton>
           </div>
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
+      <FaTable
         ref="tableRef"
         row-key="id"
         :loading="loading"
@@ -63,7 +63,7 @@
       />
     </ElCard>
 
-    <ArtDrawer
+    <FaDrawer
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       :size="drawerSize"
@@ -436,7 +436,7 @@
 
           <ElFormItem v-if="formData.type !== MenuTypeEnum.BUTTON" label="图标" prop="icon">
             <!-- 图标选择器 -->
-            <icon-select v-model="formData.icon" />
+            <FaIconSelect v-model="formData.icon" />
           </ElFormItem>
 
           <ElFormItem
@@ -497,7 +497,7 @@
           <ElButton @click="handleCloseDialog">取消</ElButton>
         </div>
       </template>
-    </ArtDrawer>
+    </FaDrawer>
   </div>
 </template>
 
@@ -520,13 +520,14 @@ import MenuAPI, {
 } from "@/api/module_system/menu";
 import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@utils/common";
-import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDrawer from "@/components/Core/modal/art-drawer/index.vue";
+import MenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import FaIconSelect from "@/components/others/fa-icon-select/index.vue";
 import { ElMessage, ElMessageBox, ElTag, ElTooltip } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -628,7 +629,7 @@ const searchForm = ref<MenuSearchForm>({
   created_time: undefined,
 });
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const statusOptions = ref([
@@ -692,7 +693,7 @@ const createParentLocked = ref(false);
 
 const detailFormData = ref<MenuTable>({});
 
-const formData = reactive<MenuForm>({
+const formData = ref<MenuForm>({
   id: undefined,
   name: undefined,
   type: MenuTypeEnum.CATALOG,
@@ -820,20 +821,22 @@ function toggleExpand() {
   });
 }
 
-function deleteMenuRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await MenuAPI.deleteMenu([id]);
-      await userStore.getUserInfo();
-      ElMessage.success("删除成功");
-      selectedRows.value = [];
-      await loadMenuData();
-    })
-    .catch(() => {});
+async function deleteMenuRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    await MenuAPI.deleteMenu([id]);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadMenuData();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -959,7 +962,7 @@ const rules = reactive({
   redirect: [
     {
       validator: (_rule: unknown, value: string | undefined, callback: (e?: Error) => void) => {
-        if (formData.type === MenuTypeEnum.CATALOG) {
+        if (formData.value.type === MenuTypeEnum.CATALOG) {
           if (value === undefined || value === null || String(value).trim() === "") {
             callback(new Error("目录类型必须填写重定向地址"));
             return;
@@ -1012,7 +1015,7 @@ async function handleRowClick(row: MenuTable) {
 }
 
 const allowedMenuTypeValues = computed(() => {
-  const pid = formData.parent_id;
+  const pid = formData.value.parent_id;
   const parentNode = findMenuNodeById(pid);
   if (!parentNode?.type) {
     return [MenuTypeEnum.CATALOG, MenuTypeEnum.MENU, MenuTypeEnum.EXTLINK];
@@ -1040,34 +1043,34 @@ async function handleOpenDialog(
       Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改菜单";
-      Object.assign(formData, response.data.data);
+      Object.assign(formData.value, response.data.data);
     }
   } else {
     dialogVisible.title = "新增菜单";
-    Object.assign(formData, initialFormData);
+    formData.value = { ...initialFormData };
     if (parentRow?.id != null) {
-      formData.parent_id = parentRow.id;
-      formData.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
+      formData.value.parent_id = parentRow.id;
+      formData.value.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
       if (parentRow.type === MenuTypeEnum.MENU) {
         createParentLocked.value = true;
-        formData.type = MenuTypeEnum.BUTTON;
+        formData.value.type = MenuTypeEnum.BUTTON;
       } else if (parentRow.type === MenuTypeEnum.CATALOG) {
-        formData.type = MenuTypeEnum.MENU;
+        formData.value.type = MenuTypeEnum.MENU;
       }
     } else {
-      formData.client = menuClientTab.value;
+      formData.value.client = menuClientTab.value;
     }
   }
   dialogVisible.visible = true;
 }
 
 function handleMenuTypeChange() {
-  if (formData.type === MenuTypeEnum.MENU) {
-    formData.component_path = "";
+  if (formData.value.type === MenuTypeEnum.MENU) {
+    formData.value.component_path = "";
   }
   nextTick(() => {
     dataFormRef.value?.clearValidate("redirect");
-    if (formData.type === MenuTypeEnum.CATALOG) {
+    if (formData.value.type === MenuTypeEnum.CATALOG) {
       dataFormRef.value?.validateField("redirect").catch(() => {});
     }
   });
@@ -1076,19 +1079,19 @@ function handleMenuTypeChange() {
 async function handleSubmit() {
   const allowed = allowedMenuTypeValues.value;
   if (!allowed.length) return;
-  const t = formData.type as MenuTypeEnum;
+  const t = formData.value.type as MenuTypeEnum;
   if (!allowed.includes(t)) {
-    formData.type = allowed[0] as MenuForm["type"];
+    formData.value.type = allowed[0] as MenuForm["type"];
   }
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
-    const id = formData.id;
+    const id = formData.value.id;
     try {
       if (id) {
-        await MenuAPI.updateMenu(id, { id, ...formData });
+        await MenuAPI.updateMenu(id, { id, ...formData.value });
       } else {
-        await MenuAPI.createMenu(formData);
+        await MenuAPI.createMenu(formData.value);
       }
       dialogVisible.visible = false;
       await resetForm();
@@ -1102,27 +1105,26 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await MenuAPI.deleteMenu(ids);
-        await userStore.getUserInfo();
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await loadMenuData();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await MenuAPI.deleteMenu(ids);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadMenuData();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 async function handleMoreClick(status: string) {
@@ -1135,16 +1137,18 @@ async function handleMoreClick(status: string) {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
-  })
-    .then(async () => {
-      try {
-        await MenuAPI.batchMenu({ ids, status });
-        await loadMenuData();
-      } catch (error: unknown) {
-        console.error(error);
-      }
-    })
-    .catch(() => {});
+  });
+  try {
+    await ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await MenuAPI.batchMenu({ ids, status });
+    await loadMenuData();
+  } catch {
+    // 用户取消
+  }
 }
 
 onMounted(() => {
@@ -1153,10 +1157,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
 :deep(.menu-table-actions .inline-flex) {
   vertical-align: middle;
 }

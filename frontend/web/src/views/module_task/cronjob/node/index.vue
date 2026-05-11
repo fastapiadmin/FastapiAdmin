@@ -1,7 +1,7 @@
 <!-- 定时任务节点：Art + useTable -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,15 +17,15 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_task:cronjob:node:create']"
             :perm-delete="['module_task:cronjob:node:delete']"
@@ -34,22 +34,22 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="1000px"
@@ -59,7 +59,7 @@
       <ElSplitter direction="horizontal" style="height: 500px">
         <ElSplitterPanel size="300px" :min="200" :max="400">
           <ElScrollbar style="height: 100%">
-            <ArtForm
+            <FaForm
               :key="nodeFormRenderKey"
               ref="dataFormRef"
               v-model="formData"
@@ -144,7 +144,7 @@
                   :max="10"
                 />
               </template>
-            </ArtForm>
+            </FaForm>
           </ElScrollbar>
         </ElSplitterPanel>
 
@@ -172,15 +172,15 @@
           <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
 
-    <ArtDialog
+    <FaDialog
       v-model="executeDialogVisible"
       title="调试节点"
       width="700px"
       @close="handleCloseExecuteDialog"
     >
-      <ArtForm
+      <FaForm
         :key="executeFormRenderKey"
         ref="executeFormRef"
         v-model="executeFormData"
@@ -255,13 +255,13 @@
             />
           </template>
         </template>
-      </ArtForm>
+      </FaForm>
 
       <template #footer>
         <ElButton @click="handleCloseExecuteDialog">取消</ElButton>
         <ElButton type="primary" :loading="submitLoading" @click="handleExecuteNode">确认</ElButton>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -273,14 +273,14 @@ defineOptions({
 
 import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
 import { useDictStore } from "@stores/index";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -289,7 +289,7 @@ import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { vue3CronPlus } from "vue3-cron-plus";
 import "vue3-cron-plus/dist/index.css";
-import IntervalTab from "@/components/IntervalTab/index.vue";
+import IntervalTab from "@/components/others/fa-interval-tab/index.vue";
 import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import "codemirror/mode/python/python.js";
@@ -321,7 +321,7 @@ const searchForm = ref<NodeSearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const nodeSearchItems = computed<SearchFormItem[]>(() => [
@@ -343,7 +343,7 @@ const nodeSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<NodeTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
@@ -354,20 +354,21 @@ function onTableSelectionChange(rows: NodeTable[]) {
   selectedRows.value = rows;
 }
 
-function deleteNodeRow(id: number | undefined) {
+async function deleteNodeRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该节点吗？将从调度器移除相关任务。", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await NodeAPI.deleteNode([id]);
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该节点吗？将从调度器移除相关任务。", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await NodeAPI.deleteNode([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 function buildNodeRowActions(row: NodeTable): TableOperationAction[] {
@@ -411,26 +412,25 @@ function formatNodeOperationCell(row: NodeTable) {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(BATCH_DELETE_NODE_MSG, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await NodeAPI.deleteNode(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(BATCH_DELETE_NODE_MSG, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await NodeAPI.deleteNode(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 const {
@@ -499,21 +499,6 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 10,
-    total: p.total ?? 0,
-  };
-});
-
 async function handleSearchBarSearch(params: NodeSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildNodeReplaceParams(params));
@@ -539,8 +524,8 @@ const codeEditorOptions: EditorConfiguration = {
   autofocus: false,
 };
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
-const executeFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const executeFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const nodeFormRenderKey = ref(0);
 const executeFormRenderKey = ref(0);
 const submitLoading = ref(false);
@@ -551,45 +536,45 @@ const codeEditorRef = ref<CmComponentRef>();
 const defaultCodeBlock = `def handler(*args, **kwargs):
     """
     Demo: 调用工程中的方法处理数据
-    
+
     演示如何:
     1. 从工程中导入方法
     2. 调用处理器处理数据
     3. 返回处理结果
     """
-    
+
     # 从工程中导入方法
     from app.plugin.module_task.cronjob.node.handlers.demo_handler import (
         demo_handler,
         process_data
     )
-    
+
     print("=" * 50)
     print("Demo 任务开始执行")
     print("=" * 50)
-    
+
     # 1. 调用 demo_handler
     print("1. 调用 demo_handler:")
     result1 = demo_handler("参数1", "参数2", key="value")
     print(f"   返回: {result1}")
-    
+
     # 2. 调用 process_data 计算平均值
     print("2. 数据处理 - 计算平均值:")
     numbers = [10, 20, 30, 40, 50]
     result2 = process_data(numbers, operation="avg")
     print(f"   输入: {numbers}")
     print(f"   结果: {result2}")
-    
+
     # 3. 调用 process_data 计算总和
     print("3. 数据处理 - 计算总和:")
     result3 = process_data(numbers, operation="sum")
     print(f"   输入: {numbers}")
     print(f"   结果: {result3}")
-    
+
     print("=" * 50)
     print("Demo 任务执行完成")
     print("=" * 50)
-    
+
     return {
         "status": "success",
         "demo_result": result1,
@@ -598,7 +583,7 @@ const defaultCodeBlock = `def handler(*args, **kwargs):
     }
 `;
 
-const formData = reactive<NodeForm>({
+const formData = ref<NodeForm>({
   id: undefined,
   name: "",
   code: undefined,
@@ -618,7 +603,7 @@ const kwargsList = ref<{ key: string; value: string }[]>([]);
 
 const executeDialogVisible = ref(false);
 const currentExecuteNode = ref<NodeTable | null>(null);
-const executeFormData = reactive<{
+const executeFormData = ref<{
   node_display_name: string;
   trigger: TriggerType;
   trigger_args?: string;
@@ -633,7 +618,7 @@ const executeFormData = reactive<{
 });
 
 const executeDialogFormItems = computed<FormItem[]>(() => {
-  const trig = executeFormData.trigger;
+  const trig = executeFormData.value.trigger;
   const showRange = !!trig && trig !== "now" && trig !== "date";
   let triggerArgsLabel = "执行参数";
   if (trig === "cron") triggerArgsLabel = "Cron表达式";
@@ -817,7 +802,7 @@ async function handleOpenDialog(type: "create" | "update", id?: number) {
       : [];
   } else {
     dialogVisible.title = "新增节点";
-    formData.id = undefined;
+    formData.value.id = undefined;
     argsList.value = [];
     kwargsList.value = [];
   }
@@ -837,10 +822,10 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: any) => {
     if (valid) {
       submitLoading.value = true;
-      const id = formData.id;
+      const id = formData.value.id;
       try {
         const submitData = {
-          ...formData,
+          ...formData.value,
           args: argsList.value.filter((v) => v.trim()).join(",") || undefined,
           kwargs:
             kwargsList.value.filter((v) => v.key.trim()).length > 0
@@ -874,22 +859,22 @@ async function handleSubmit() {
 
 const handlechangeCron = (cronStr: string) => {
   if (typeof cronStr == "string") {
-    executeFormData.trigger_args = cronStr;
+    executeFormData.value.trigger_args = cronStr;
   }
 };
 
 const handleIntervalConfirm = (value: string) => {
-  executeFormData.trigger_args = value;
+  executeFormData.value.trigger_args = value;
   openInterval.value = false;
 };
 
 function handleOpenExecuteDialog(row: NodeTable) {
   currentExecuteNode.value = row;
-  executeFormData.node_display_name = row.name ?? "";
-  executeFormData.trigger = "now";
-  executeFormData.trigger_args = undefined;
-  executeFormData.start_date = undefined;
-  executeFormData.end_date = undefined;
+  executeFormData.value.node_display_name = row.name ?? "";
+  executeFormData.value.trigger = "now";
+  executeFormData.value.trigger_args = undefined;
+  executeFormData.value.start_date = undefined;
+  executeFormData.value.end_date = undefined;
   executeFormRenderKey.value += 1;
   executeDialogVisible.value = true;
 }
@@ -901,7 +886,7 @@ function handleCloseExecuteDialog() {
 }
 
 async function handleExecuteNode() {
-  if (executeFormData.trigger !== "now") {
+  if (executeFormData.value.trigger !== "now") {
     const execForm = executeFormRef.value;
     const elForm = execForm?.ref;
     if (!elForm) return;
@@ -912,13 +897,13 @@ async function handleExecuteNode() {
   try {
     submitLoading.value = true;
     const params: any = {
-      trigger: executeFormData.trigger,
+      trigger: executeFormData.value.trigger,
     };
 
-    if (executeFormData.trigger !== "now") {
-      params.trigger_args = executeFormData.trigger_args;
-      params.start_date = executeFormData.start_date;
-      params.end_date = executeFormData.end_date;
+    if (executeFormData.value.trigger !== "now") {
+      params.trigger_args = executeFormData.value.trigger_args;
+      params.start_date = executeFormData.value.start_date;
+      params.end_date = executeFormData.value.end_date;
     }
 
     await NodeAPI.executeNode(currentExecuteNode.value?.id as number, params);

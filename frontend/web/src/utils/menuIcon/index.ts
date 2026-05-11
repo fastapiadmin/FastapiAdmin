@@ -4,7 +4,7 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 /**
  * 菜单 / IconSelect 共用的图标存值约定（与 `components/IconSelect` 一致）：
  * - Element Plus：`el-icon-{组件名}`，或与 `@element-plus/icons-vue` 导出键一致的裸名（如 `PieChart`，兼容旧库手写）
- * - 历史自定义 SVG 文件名：原 `assets/images/svg` + `i-svg:` 展示，现由 `menuIcon/remix` 的 `resolveIconForArtSvgIcon` 映射为 Iconify（默认 Remix `ri:`）
+ * - 历史自定义 SVG 文件名：原 `assets/images/svg` + `i-svg:` 展示，现由 `menuIcon/remix` 的 `resolveIconForFaSvgIcon` 映射为 Iconify（默认 Remix `ri:`）
  * - Iconify：`collection:name`（含冒号，如 `ri:home-line`）
  */
 
@@ -13,7 +13,7 @@ export function isElementPlusStoredIcon(icon?: string | null): boolean {
   return !!s && s.startsWith("el-icon");
 }
 
-/** 与历史 `MenuSearch` 中 `resolveEpMenuIcon` 一致：`pie-chart` → `PieChart` */
+/** `el-icon-*` 主体转 PascalCase，与侧栏 / 搜索里 Element Plus 图标解析一致：`pie-chart` → `PieChart` */
 function kebabSnakeBodyToPascalKey(body: string): string {
   return body
     .split(/[-_]/)
@@ -25,7 +25,7 @@ function kebabSnakeBodyToPascalKey(body: string): string {
 /**
  * 解析为 Element Plus 图标组件；否则 null（再走 Iconify / Remix 映射）。
  * 对齐旧版 `layouts/old/components/Menu/components/MenuItemContent.vue`（el-icon / 自定义文件名）
- * 及 `MenuSearch` 里对 `el-icon-*` 主体的 Pascal 推导。
+ * 及对 `el-icon-*` 主体的 Pascal 推导。
  */
 export function resolveElementPlusIconComponent(icon?: string | null): Component | null {
   const ic = icon?.trim();
@@ -37,19 +37,28 @@ export function resolveElementPlusIconComponent(icon?: string | null): Component
 
   const mod = ElementPlusIconsVue as Record<string, Component | undefined>;
 
+  // 1. 精确匹配（如 PieChart）
   let comp = mod[body];
   if (comp) return comp;
 
+  // 2. kebab/snake → Pascal（如 pie-chart → PieChart）
   if (/[-_]/.test(body)) {
     const pascal = kebabSnakeBodyToPascalKey(body);
     comp = mod[pascal];
     if (comp) return comp;
   }
 
+  // 3. 首字母大写（旧版存值全小写如 delete → Delete）
+  const capitalized = body.charAt(0).toUpperCase() + body.slice(1);
+  if (capitalized !== body) {
+    comp = mod[capitalized];
+    if (comp) return comp;
+  }
+
   return null;
 }
 
-/** Iconify 完整 id（侧栏 ArtSvgIcon 使用） */
+/** Iconify 完整 id（侧栏 FaSvgIcon 使用） */
 export function isIconifyStoredIcon(icon?: string | null): boolean {
   const s = icon?.trim();
   return !!s && s.includes(":");
@@ -80,7 +89,7 @@ export function elementMenuIconToEpIconify(icon: string): string {
 
 /**
  * 历史：本地 `assets/images/svg/*.svg` 文件名作菜单存值，配合 `i-svg:` 类展示。
- * 现统一映射为 Iconify Remix Icon（`ri:`），由 `ArtSvgIcon` 渲染。
+ * 现统一映射为 Iconify Remix Icon（`ri:`），由 `FaSvgIcon` 渲染。
  */
 
 const FILE_SUFFIX: Record<string, string> = {
@@ -248,7 +257,7 @@ export function localSvgNameToRemixIcon(name: string): string {
 /**
  * 菜单 / 表格等场景：存值可能是 EP、Iconify、或历史 SVG 文件名 → 统一为 Iconify id。
  */
-export function resolveIconForArtSvgIcon(stored?: string | null): string {
+export function resolveIconForFaSvgIcon(stored?: string | null): string {
   const s = stored?.trim() ?? "";
   if (!s) return "ri:file-3-line";
 

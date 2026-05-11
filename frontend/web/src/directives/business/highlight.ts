@@ -46,6 +46,14 @@ import hljs from "highlight.js";
 
 export type HighlightDirective = Directive<HTMLElement>;
 
+/** 扩展 HTMLElement 类型，消除指令内部 _highlightActive / _highlightObserver 的 as any 断言 */
+declare global {
+  interface HTMLElement {
+    _highlightActive?: boolean;
+    _highlightObserver?: MutationObserver;
+  }
+}
+
 // 高亮代码
 function highlightCode(block: HTMLElement) {
   hljs.highlightElement(block);
@@ -68,12 +76,15 @@ function addCopyButton(block: HTMLElement) {
   copyButton.className = "copy-button";
   copyButton.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7 6V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3v3c0 .552-.45 1-1.007 1H4.007A1 1 0 0 1 3 21l.003-14c0-.552.45-1 1.006-1zM5.002 8L5 20h10V8zM9 6h8v10h2V4H9z"/></svg>';
-  copyButton.onclick = () => {
+  copyButton.onclick = async () => {
     // 过滤掉行号，只复制代码内容
     const codeContent = block.innerText.replace(/^\d+\s+/gm, "");
-    navigator.clipboard.writeText(codeContent).then(() => {
+    try {
+      await navigator.clipboard.writeText(codeContent);
       ElMessage.success("复制成功");
-    });
+    } catch {
+      // 剪贴板写入被拒绝时静默失败（浏览器权限限制）
+    }
   };
 
   const preElement = block.parentElement;
@@ -125,6 +136,7 @@ function processBlock(block: HTMLElement) {
 
 // 查找并处理所有代码块
 function processAllCodeBlocks(el: HTMLElement) {
+  if (!el._highlightActive) return;
   const blocks = Array.from(el.querySelectorAll<HTMLElement>("pre code"));
   const unprocessedBlocks = blocks.filter((block) => !isBlockProcessed(block));
 
@@ -141,6 +153,7 @@ function processAllCodeBlocks(el: HTMLElement) {
     let currentIndex = 0;
 
     const processBatch = () => {
+      if (!el._highlightActive) return; // 组件已卸载则跳过
       const batch = unprocessedBlocks.slice(currentIndex, currentIndex + batchSize);
 
       batch.forEach((block) => {
@@ -165,6 +178,7 @@ function retryProcessing(el: HTMLElement, maxRetries: number = 3, delay: number 
   let retryCount = 0;
 
   const tryProcess = () => {
+    if (!el._highlightActive) return; // 组件已卸载则跳过
     processAllCodeBlocks(el);
 
     // 检查是否还有未处理的代码块
@@ -172,7 +186,7 @@ function retryProcessing(el: HTMLElement, maxRetries: number = 3, delay: number 
       (block) => !isBlockProcessed(block)
     );
 
-    if (remainingBlocks.length > 0 && retryCount < maxRetries) {
+    if (remainingBlocks.length > 0 && retryCount < maxRetries && el._highlightActive) {
       retryCount++;
       setTimeout(tryProcess, delay * retryCount); // 递增延迟
     }
@@ -184,11 +198,15 @@ function retryProcessing(el: HTMLElement, maxRetries: number = 3, delay: number 
 // 代码高亮、插入行号、复制按钮
 const highlightDirective: HighlightDirective = {
   mounted(el: HTMLElement) {
+    // 标记元素活跃，用于 unmounted 时阻止 pending 回调执行
+    el._highlightActive = true;
+
     // 立即尝试处理一次
     processAllCodeBlocks(el);
 
     // 延迟处理，确保 v-html 内容已经渲染
     setTimeout(() => {
+      if (!el._highlightActive) return;
       retryProcessing(el);
     }, 100);
 
@@ -213,6 +231,7 @@ const highlightDirective: HighlightDirective = {
       if (hasNewCodeBlocks) {
         // 延迟处理新添加的代码块
         setTimeout(() => {
+          if (!el._highlightActive) return;
           processAllCodeBlocks(el);
         }, 50);
       }
@@ -225,22 +244,25 @@ const highlightDirective: HighlightDirective = {
     });
 
     // 将 observer 存储到元素上，以便在 unmounted 时清理
-    (el as any)._highlightObserver = observer;
+    el._highlightObserver = observer;
   },
 
   updated(el: HTMLElement) {
     // 当组件更新时，重新处理代码块
     setTimeout(() => {
+      if (!el._highlightActive) return;
       processAllCodeBlocks(el);
     }, 50);
   },
 
   unmounted(el: HTMLElement) {
+    // 标记失活，阻止所有 pending timeout/rAF 回调执行
+    el._highlightActive = false;
     // 清理 MutationObserver
-    const observer = (el as any)._highlightObserver;
+    const observer = el._highlightObserver;
     if (observer) {
       observer.disconnect();
-      delete (el as any)._highlightObserver;
+      delete el._highlightObserver;
     }
   },
 };

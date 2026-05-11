@@ -68,6 +68,12 @@ declare module "vue-router" {
     keepAlive?: boolean;
 
     /**
+     * 为 true 时 KeepAlive 子组件 `:key` 使用 `fullPath`（query/hash 变化会整页重挂载）。
+     * 默认用 `name + params`，减轻 query 微调导致的重复 onMounted / useTable immediate。
+     */
+    remountOnFullPath?: boolean;
+
+    /**
      * 静态壳层路由（路由已在 router 注册，菜单项仅用于跳转，无 component 字段）
      */
     shellRoute?: boolean;
@@ -125,6 +131,8 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   parentPath?: string;
   /** 静态壳层菜单（侧边栏可点，组件由静态路由提供） */
   shellRoute?: boolean;
+  /** @see RouteMeta（vue-router 模块扩展） */
+  remountOnFullPath?: boolean;
 }
 
 /**

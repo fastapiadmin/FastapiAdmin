@@ -1,16 +1,16 @@
 <template>
-  <div class="art-card p-5 pt-3.5 mb-5 h-46 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card p-5 pt-3.5 mb-5 h-46 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4 class="text-2xl">
           <span>14.5k</span>
-          <ArtSvgIcon icon="ri:arrow-right-up-line" class="text-success text-lg ml-1" />
+          <FaSvgIcon icon="ri:arrow-right-up-line" class="text-success text-lg ml-1" />
         </h4>
         <p>销售量</p>
       </div>
     </div>
 
-    <ArtBarChart
+    <FaBarChart
       :showAxisLabel="false"
       :showAxisLine="false"
       :showSplitLine="false"

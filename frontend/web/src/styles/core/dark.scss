@@ -3,7 +3,7 @@
 * 单页面移除深色主题 document.getElementsByTagName("html")[0].removeAttribute('class')
 */
 
-$font-color: rgba(#ffffff, 0.85);
+$font-color: rgba(#fff, 0.85);
 
 /* 覆盖element-plus默认深色背景色 */
 html.dark {
@@ -17,7 +17,7 @@ html.dark {
   // 输入区域背景颜色
   --w-e-textarea-bg-color: #090909;
   // 工具栏文字颜色
-  --w-e-toolbar-color: var(--art-gray-600);
+  --w-e-toolbar-color: var(--fa-gray-600);
   // 选中菜单颜色
   --w-e-toolbar-active-bg-color: #25262b;
   // 弹窗边框颜色
@@ -31,7 +31,7 @@ html.dark {
   // 按钮背景颜色
   --w-e-modal-button-bg-color: #090909;
   // hover toolbar 背景颜色
-  --w-e-toolbar-active-color: var(--art-gray-800);
+  --w-e-toolbar-active-color: var(--fa-gray-800);
 }
 
 .dark {
@@ -44,10 +44,18 @@ html.dark {
     *:not(pre code *) {
       color: inherit !important;
     }
+
+    .w-e-text-container [data-slate-editor] .table-container th:last-of-type {
+      border-right: 1px solid var(--default-border-dashed) !important;
+    }
+
+    .w-e-modal {
+      background-color: var(--fa-color);
+    }
   }
   // 分隔线
   .w-e-bar-divider {
-    background-color: var(--art-gray-300) !important;
+    background-color: var(--fa-gray-300) !important;
   }
 
   .w-e-select-list,
@@ -71,23 +79,13 @@ html.dark {
 
   /* 代码块 */
   .w-e-text-container [data-slate-editor] pre > code {
-    background-color: #25262b !important;
     text-shadow: none !important;
+    background-color: #25262b !important;
   }
 
   /* 引用 */
   .w-e-text-container [data-slate-editor] blockquote {
+    background-color: var(--fa-color);
     border-left: 4px solid var(--default-border-dashed) !important;
-    background-color: var(--art-color);
-  }
-
-  .editor-wrapper {
-    .w-e-text-container [data-slate-editor] .table-container th:last-of-type {
-      border-right: 1px solid var(--default-border-dashed) !important;
-    }
-
-    .w-e-modal {
-      background-color: var(--art-color);
-    }
   }
 }

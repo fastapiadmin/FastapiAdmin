@@ -21,7 +21,7 @@
     <template #footer>
       <div class="flex flex-wrap justify-end gap-2">
         <ElButton v-if="articleId != null" @click="emitOpenCommentWall">
-          <ArtSvgIcon icon="ri:message-3-line" class="mr-1" />
+          <FaSvgIcon icon="ri:message-3-line" class="mr-1" />
           留言讨论
         </ElButton>
         <ElButton @click="visible = false">关闭</ElButton>
@@ -129,7 +129,7 @@ watch(
 
   :deep(img) {
     width: 100%;
-    border: 1px solid var(--art-gray-200);
+    border: 1px solid var(--fa-gray-200);
   }
 
   :deep(pre) {

@@ -1,12 +1,12 @@
 <template>
-  <div class="art-card h-100 p-5 mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card h-100 p-5 mb-5 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>目标与实际</h4>
       </div>
     </div>
 
-    <ArtBarChart
+    <FaBarChart
       class="p-5"
       height="12rem"
       :data="revenueData"
@@ -19,7 +19,7 @@
       <div v-for="item in totalItems" :key="item.label" class="flex-c mb-5 last:mb-0">
         <div class="flex-c justify-start w-3/5 text-sm">
           <div class="w-10 h-10 mr-3 text-lg rounded-md flex-cc" :class="item.iconClass">
-            <ArtSvgIcon :icon="item.icon" />
+            <FaSvgIcon :icon="item.icon" />
           </div>
 
           <div class="flex flex-col items-start">

@@ -237,7 +237,7 @@ const props = defineProps<{
 
 function findOptionByValue(options: OptionType[], value: number | string): any | null {
   for (const opt of options) {
-    if (String(opt.value) === String(value)) return opt as any;
+    if (String(opt.value) === String(value)) return opt;
     if (opt.children?.length) {
       const hit = findOptionByValue(opt.children, value);
       if (hit) return hit;

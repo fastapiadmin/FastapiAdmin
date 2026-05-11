@@ -1,12 +1,12 @@
 <template>
-  <div class="art-card h-82 p-5 mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card h-82 p-5 mb-5 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>业务量与服务水平</h4>
       </div>
     </div>
 
-    <ArtBarChart
+    <FaBarChart
       class="mt-6"
       height="14.3rem"
       :data="volumeServiceData"

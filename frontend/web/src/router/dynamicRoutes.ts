@@ -1,6 +1,6 @@
 /**
- * 动态路由一站式：菜单 → 组件解析 → 挂到 RootLayout 下注册。
- *（老 web 里分散在 permission / transform 的职责，这里收进一个文件，少跳类、少找文件。）
+ * 动态路由：`AppRouteRecord` → `RouteTransformer`（字符串路径 → import.glob）→ `router.addRoute(RootLayout)`。
+ * 含校验（RouteValidator）、组件加载（ComponentLoader）、注册表（RouteRegistry）。
  */
 import { defineComponent, h, onMounted, ref } from "vue";
 import type { RouteRecordRaw, Router } from "vue-router";
@@ -20,7 +20,12 @@ export interface ValidationResult {
   warnings: string[];
 }
 
+/**
+ * 菜单注册前校验：重名、缺少 component、深层误用 layout 占位等。
+ * 校验结果分 errors（阻止注册）和 warnings（仅控制台提醒）两级。
+ */
 export class RouteValidator {
+  /** 已警告过的路由集合，避免重复打印校验警告 */
   private warnedRoutes = new Set<string>();
 
   validate(routes: AppRouteRecord[]): ValidationResult {
@@ -150,7 +155,7 @@ export class RouteValidator {
   }
 }
 
-// ----------------------------------------------------------------------------- ComponentLoader
+// --- ComponentLoader：菜单字符串路径 → views 懒加载 ---
 export class ComponentLoader {
   private modules: Record<string, () => Promise<any>>;
 
@@ -203,7 +208,7 @@ export class ComponentLoader {
             onMounted(() => {
               const iframeRoute = IframeRouteManager.getInstance().findByPath(route.path);
               if (iframeRoute?.meta) {
-                iframeUrl.value = (iframeRoute.meta as any).link || "";
+                iframeUrl.value = iframeRoute.meta.link || "";
               }
             });
 
@@ -249,7 +254,7 @@ export class ComponentLoader {
   }
 }
 
-// ----------------------------------------------------------------------------- RouteTransformer
+// --- RouteTransformer：菜单树 → vue-router 记录 ---
 interface ConvertedRoute extends Omit<RouteRecordRaw, "children"> {
   id?: number;
   children?: ConvertedRoute[];
@@ -370,8 +375,8 @@ export class RouteTransformer {
   }
 }
 
-// ----------------------------------------------------------------------------- RouteRegistry
-/** 与静态壳层冲突的一级 path 段，后端动态挂载时跳过以免覆盖首页/仪表盘等 */
+// --- RouteRegistry：校验通过后批量 addRoute ---
+/** 与静态壳层冲突的一级 path 段，动态注册时跳过以免覆盖首页 / 仪表盘等 */
 const RESERVED_SHELL_SEGMENTS = new Set(["home", "profile", "changelog", "dashboard"]);
 
 function pathFirstSegment(path: string): string {

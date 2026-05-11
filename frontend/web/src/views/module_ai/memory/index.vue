@@ -1,7 +1,7 @@
 <!-- AI 会话记录：Art + useTable -->
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="fa-full-height">
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -17,15 +17,15 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
       >
         <template #left>
-          <ArtTableHeaderLeft
+          <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_ai:chat:create']"
             :perm-delete="['module_ai:chat:delete']"
@@ -34,15 +34,15 @@
             @delete="handleBatchDelete"
           />
         </template>
-      </ArtTableHeader>
+      </FaTableHeader>
 
-      <ArtTable
-        ref="artTableRef"
+      <FaTable
+        ref="faTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -61,10 +61,10 @@
             <ElIcon class="edit-icon"><Edit /></ElIcon>
           </span>
         </template>
-      </ArtTable>
+      </FaTable>
     </ElCard>
 
-    <ArtDialog
+    <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       width="920px"
@@ -138,7 +138,7 @@
         </ElScrollbar>
       </template>
       <template v-else>
-        <ArtForm
+        <FaForm
           :key="memoryFormRenderKey"
           ref="dataFormRef"
           v-model="formData"
@@ -164,7 +164,7 @@
           <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>
       </template>
-    </ArtDialog>
+    </FaDialog>
   </div>
 </template>
 
@@ -180,14 +180,14 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
 import { formatToDateTime } from "@utils/common";
 import { useTable } from "@/hooks/core/useTable";
-import ArtTable from "@/components/Core/tables/art-table/index.vue";
-import ArtTableHeader from "@/components/Core/tables/art-table-header/index.vue";
-import ArtTableHeaderLeft from "@/components/Core/tables/art-table-header-left/index.vue";
-import ArtSearchBar from "@/components/Core/forms/art-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/Core/forms/art-search-bar/index.vue";
-import ArtDialog from "@/components/Core/modal/art-dialog/index.vue";
-import ArtForm from "@/components/Core/forms/art-form/index.vue";
-import type { FormItem } from "@/components/Core/forms/art-form/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -213,7 +213,7 @@ const searchForm = ref<MemorySearchForm>({
 });
 
 const showSearchBar = ref(true);
-const searchBarRef = ref<InstanceType<typeof ArtSearchBar> | null>(null);
+const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const { hasAuth } = useAuth();
@@ -259,7 +259,7 @@ const memorySearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const dataFormRef = ref<InstanceType<typeof ArtForm> | null>(null);
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const memoryFormRenderKey = ref(0);
 
 const memoryDialogFormItems = computed<FormItem[]>(() => [
@@ -275,7 +275,7 @@ const titleInputRef = ref();
 const editingRowId = ref<string | null>(null);
 const editingTitle = ref("");
 
-const artTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<ChatSession[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is string => Boolean(id))
@@ -286,41 +286,41 @@ function onTableSelectionChange(rows: ChatSession[]) {
   selectedRows.value = rows;
 }
 
-function deleteSessionRow(id: string) {
-  ElMessageBox.confirm("确认删除该项数据？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await AiChatAPI.deleteSession([id]);
-      ElMessage.success("删除成功");
-      artTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteSessionRow(id: string) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await AiChatAPI.deleteSession([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await AiChatAPI.deleteSession(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await AiChatAPI.deleteSession(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 const {
@@ -422,22 +422,7 @@ const {
   },
 });
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
-const formData = reactive({
+const formData = ref({
   id: undefined as string | undefined,
   title: "",
 });
@@ -501,7 +486,7 @@ async function handleOpenDialog(type: "create" | "detail", id?: string) {
     }
   } else {
     dialogVisible.title = "新增会话";
-    formData.id = undefined;
+    formData.value.id = undefined;
   }
   memoryFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -575,7 +560,7 @@ async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     try {
-      await AiChatAPI.createSession({ title: formData.title });
+      await AiChatAPI.createSession({ title: formData.value.title });
       dialogVisible.visible = false;
       await resetForm();
       await refreshCreate();
