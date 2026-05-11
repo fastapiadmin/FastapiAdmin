@@ -1,3 +1,4 @@
+<!-- 参数配置 -->
 <template>
   <FaDrawer
     v-model="drawerVisible"
@@ -716,12 +717,12 @@ const logoConfigs = computed(() => ({
 const handleUploadSuccess = (fileInfo: UploadFilePath, type: string) => {
   const fileUrl = fileInfo.file_url;
   if (type in configStore.configData) {
-    (configStore.configData as any)[type].config_value = fileUrl;
+    (configStore.configData as Record<string, ConfigTable>)[type].config_value = fileUrl;
   }
   if (type in systemConfigs.value) {
-    (systemConfigs.value as any)[type].config_value = fileUrl;
+    (systemConfigs.value as Record<string, { config_value: string }>)[type].config_value = fileUrl;
   } else if (type in logoConfigs.value) {
-    (logoConfigs.value as any)[type].config_value = fileUrl;
+    (logoConfigs.value as Record<string, { config_value: string }>)[type].config_value = fileUrl;
   }
   markModified(type);
 };

@@ -310,20 +310,21 @@ async function loadDeptData() {
   }
 }
 
-function deleteDeptRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DeptAPI.deleteDept([id]);
-      await userStore.getUserInfo();
-      ElMessage.success("删除成功");
-      selectedRows.value = [];
-      await loadDeptData();
-    })
-    .catch(() => {});
+async function deleteDeptRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DeptAPI.deleteDept([id]);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadDeptData();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -545,50 +546,46 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await DeptAPI.deleteDept(ids);
-        await userStore.getUserInfo();
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await loadDeptData();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await DeptAPI.deleteDept(ids);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadDeptData();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        await DeptAPI.batchDept({ ids, status });
-        await loadDeptData();
-        await userStore.getUserInfo();
-      } catch (error: unknown) {
-        console.error(error);
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DeptAPI.batchDept({ ids, status });
+    await loadDeptData();
+    await userStore.getUserInfo();
+  } catch {
+    // 用户取消或操作失败
+  }
 }
 
 function toggleExpand() {
@@ -614,15 +611,15 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::v-deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-::v-deep(.dept-table-actions .inline-flex) {
+:deep(.dept-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <!-- github 角标 -->
-    <GithubCorner class="github-corner" />
+    <FaGithubCorner class="github-corner" />
 
     <ElCard shadow="hover">
       <div class="flex flex-wrap items-center gap-y-3">
@@ -300,7 +300,7 @@
           </template>
 
           <ElScrollbar height="calc(100vh - 550px)">
-            <ElTimeline class="p-3">
+            <ElTimeline class="p-2">
               <ElTimelineItem
                 v-for="(item, index) in vesionList"
                 :key="index"
@@ -308,7 +308,6 @@
                 placement="top"
                 :color="index === 0 ? '#67C23A' : '#909399'"
                 :hollow="index !== 0"
-                size="large"
               >
                 <div class="version-item" :class="{ 'latest-item': index === 0 }">
                   <div class="flex items-center justify-between">
@@ -592,7 +591,7 @@ onMounted(() => {
   }
 
   .version-item {
-    padding: 16px;
+    padding: 10px 12px;
     background: var(--el-fill-color-lighter);
     border-radius: 8px;
     transition: all 0.2s;
@@ -607,9 +606,11 @@ onMounted(() => {
     }
 
     .version-content {
-      margin-bottom: 12px;
+      display: block;
+      margin-top: 6px;
+      margin-bottom: 8px;
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.4;
       color: var(--el-text-color-secondary);
     }
   }

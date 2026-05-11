@@ -375,18 +375,18 @@ const useTabManagement = (
 // 业务逻辑处理
 const useBusinessLogic = () => {
   const handleNoticeAll = () => {
-    // 处理查看全部通知
-    console.log("查看全部通知");
+    // TODO: 实现查看全部通知逻辑
+    console.info("[TODO] 查看全部通知");
   };
 
   const handleMsgAll = () => {
-    // 处理查看全部消息
-    console.log("查看全部消息");
+    // TODO: 实现查看全部消息逻辑
+    console.info("[TODO] 查看全部消息");
   };
 
   const handlePendingAll = () => {
-    // 处理查看全部待办
-    console.log("查看全部待办");
+    // TODO: 实现查看全部待办逻辑
+    console.info("[TODO] 查看全部待办");
   };
 
   return {

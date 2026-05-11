@@ -28,18 +28,16 @@ const props = defineProps({
   },
 });
 
-function handleClipboard() {
+async function handleClipboard() {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     // 使用 Clipboard API
-    navigator.clipboard
-      .writeText(props.text)
-      .then(() => {
-        ElMessage.success(t("common.copySuccess"));
-      })
-      .catch((error) => {
-        ElMessage.warning(t("common.copyFailed"));
-        console.log("[CopyButton] Copy failed", error);
-      });
+    try {
+      await navigator.clipboard.writeText(props.text);
+      ElMessage.success(t("common.copySuccess"));
+    } catch (error) {
+      ElMessage.warning(t("common.copyFailed"));
+      console.warn("[CopyButton] Copy failed:", error);
+    }
   } else {
     // 兼容性处理（useClipboard 有兼容性问题）
     const input = document.createElement("input");
@@ -57,7 +55,7 @@ function handleClipboard() {
       }
     } catch (err) {
       ElMessage.warning(t("common.copyFailed"));
-      console.log("[CopyButton] Copy failed.", err);
+      console.warn("[CopyButton] Copy failed:", err);
     } finally {
       document.body.removeChild(input);
     }

@@ -37,12 +37,21 @@ export function resolveElementPlusIconComponent(icon?: string | null): Component
 
   const mod = ElementPlusIconsVue as Record<string, Component | undefined>;
 
+  // 1. 精确匹配（如 PieChart）
   let comp = mod[body];
   if (comp) return comp;
 
+  // 2. kebab/snake → Pascal（如 pie-chart → PieChart）
   if (/[-_]/.test(body)) {
     const pascal = kebabSnakeBodyToPascalKey(body);
     comp = mod[pascal];
+    if (comp) return comp;
+  }
+
+  // 3. 首字母大写（旧版存值全小写如 delete → Delete）
+  const capitalized = body.charAt(0).toUpperCase() + body.slice(1);
+  if (capitalized !== body) {
+    comp = mod[capitalized];
     if (comp) return comp;
   }
 

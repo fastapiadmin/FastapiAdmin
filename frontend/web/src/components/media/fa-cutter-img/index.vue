@@ -243,7 +243,6 @@ function handleClearAll() {
 
 // 下载图片
 function downloadImg() {
-  console.log("下载图片");
   const a = document.createElement("a");
   a.href = temImgPath.value;
   a.download = "image.png";
@@ -283,11 +282,11 @@ function downloadImg() {
     }
   }
 
-  ::v-deep(.toolBoxControl) {
+  :deep(.toolBoxControl) {
     z-index: 100;
   }
 
-  ::v-deep(.dockMain) {
+  :deep(.dockMain) {
     right: 0;
     bottom: -40px;
     left: 0;
@@ -297,15 +296,15 @@ function downloadImg() {
     opacity: 1;
   }
 
-  ::v-deep(.copyright) {
+  :deep(.copyright) {
     display: none !important;
   }
 
-  ::v-deep(.i-dialog-footer) {
+  :deep(.i-dialog-footer) {
     margin-top: 60px !important;
   }
 
-  ::v-deep(.dockBtn) {
+  :deep(.dockBtn) {
     height: 26px;
     padding: 0 10px;
     font-size: 12px;
@@ -315,31 +314,31 @@ function downloadImg() {
     border: 1px solid var(--el-color-primary-light-4) !important;
   }
 
-  ::v-deep(.dockBtnScrollBar) {
+  :deep(.dockBtnScrollBar) {
     margin: 0 10px 0 6px;
     background-color: var(--el-color-primary-light-1);
   }
 
-  ::v-deep(.scrollBarControl) {
+  :deep(.scrollBarControl) {
     border-color: var(--el-color-primary);
   }
 
-  ::v-deep(.closeIcon) {
+  :deep(.closeIcon) {
     line-height: 15px !important;
   }
 }
 
 .dark {
   .cutter-container {
-    ::v-deep(.toolBox) {
+    :deep(.toolBox) {
       border: transparent;
     }
 
-    ::v-deep(.dialogMain) {
+    :deep(.dialogMain) {
       background-color: transparent !important;
     }
 
-    ::v-deep(.i-dialog-footer) {
+    :deep(.i-dialog-footer) {
       .btn {
         background-color: var(--el-color-primary) !important;
         border: transparent;

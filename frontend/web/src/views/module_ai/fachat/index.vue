@@ -450,4 +450,8 @@ onMounted(() => {
   mittBus.on("openChat", openChat);
   selectedPerson.value = personList.value[0];
 });
+
+onUnmounted(() => {
+  mittBus.off("openChat", openChat);
+});
 </script>

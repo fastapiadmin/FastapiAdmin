@@ -119,7 +119,7 @@ const dialogAttrs = computed(() => {
   align-items: center;
   margin-left: auto;
 
-  ::v-deep(.core-overlay-icon-btn.el-button) {
+  :deep(.core-overlay-icon-btn.el-button) {
     min-width: 32px;
     padding: 6px;
     border-radius: var(--el-border-radius-base);

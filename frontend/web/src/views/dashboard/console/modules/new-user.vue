@@ -164,7 +164,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .fa-card {
-  ::v-deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
     color: var(--el-color-primary) !important;
     background: transparent !important;
   }

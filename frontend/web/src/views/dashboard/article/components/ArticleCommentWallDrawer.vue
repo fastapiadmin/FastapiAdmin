@@ -73,8 +73,6 @@
               <span class="text-sm text-gray-700">{{ clickItem.userName }}</span>
             </div>
           </div>
-
-          <CommentWidget />
         </div>
       </template>
     </ElDrawer>

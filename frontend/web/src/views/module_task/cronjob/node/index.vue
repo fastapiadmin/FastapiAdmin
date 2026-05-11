@@ -354,20 +354,21 @@ function onTableSelectionChange(rows: NodeTable[]) {
   selectedRows.value = rows;
 }
 
-function deleteNodeRow(id: number | undefined) {
+async function deleteNodeRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该节点吗？将从调度器移除相关任务。", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await NodeAPI.deleteNode([id]);
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该节点吗？将从调度器移除相关任务。", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await NodeAPI.deleteNode([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 function buildNodeRowActions(row: NodeTable): TableOperationAction[] {
@@ -411,26 +412,25 @@ function formatNodeOperationCell(row: NodeTable) {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(BATCH_DELETE_NODE_MSG, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await NodeAPI.deleteNode(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(BATCH_DELETE_NODE_MSG, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await NodeAPI.deleteNode(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 const {
@@ -536,45 +536,45 @@ const codeEditorRef = ref<CmComponentRef>();
 const defaultCodeBlock = `def handler(*args, **kwargs):
     """
     Demo: 调用工程中的方法处理数据
-    
+
     演示如何:
     1. 从工程中导入方法
     2. 调用处理器处理数据
     3. 返回处理结果
     """
-    
+
     # 从工程中导入方法
     from app.plugin.module_task.cronjob.node.handlers.demo_handler import (
         demo_handler,
         process_data
     )
-    
+
     print("=" * 50)
     print("Demo 任务开始执行")
     print("=" * 50)
-    
+
     # 1. 调用 demo_handler
     print("1. 调用 demo_handler:")
     result1 = demo_handler("参数1", "参数2", key="value")
     print(f"   返回: {result1}")
-    
+
     # 2. 调用 process_data 计算平均值
     print("2. 数据处理 - 计算平均值:")
     numbers = [10, 20, 30, 40, 50]
     result2 = process_data(numbers, operation="avg")
     print(f"   输入: {numbers}")
     print(f"   结果: {result2}")
-    
+
     # 3. 调用 process_data 计算总和
     print("3. 数据处理 - 计算总和:")
     result3 = process_data(numbers, operation="sum")
     print(f"   输入: {numbers}")
     print(f"   结果: {result3}")
-    
+
     print("=" * 50)
     print("Demo 任务执行完成")
     print("=" * 50)
-    
+
     return {
         "status": "success",
         "demo_result": result1,
@@ -986,17 +986,17 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
-.node-splitter-art-form ::v-deep(.el-row > .el-col:last-child),
-.execute-debug-art-form ::v-deep(.el-row > .el-col:last-child) {
+.node-splitter-art-form :deep(.el-row > .el-col:last-child),
+.execute-debug-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.node-splitter-art-form ::v-deep(.el-form-item__content),
-.execute-debug-art-form ::v-deep(.el-form-item__content) {
+.node-splitter-art-form :deep(.el-form-item__content),
+.execute-debug-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-.node-splitter-art-form ::v-deep(section) {
+.node-splitter-art-form :deep(section) {
   padding-right: 10px;
   padding-left: 10px;
 }

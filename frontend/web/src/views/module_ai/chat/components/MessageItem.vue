@@ -371,7 +371,7 @@ const formatFileSize = (bytes: number): string => {
           }
         }
 
-        ::v-deep(pre) {
+        :deep(pre) {
           padding: 12px;
           margin: 12px 0;
           overflow-x: auto;
@@ -384,7 +384,7 @@ const formatFileSize = (bytes: number): string => {
           }
         }
 
-        ::v-deep(code) {
+        :deep(code) {
           padding: 2px 6px;
           font-family: "Courier New", Courier, monospace;
           font-size: 13px;
@@ -392,21 +392,21 @@ const formatFileSize = (bytes: number): string => {
           border-radius: 3px;
         }
 
-        ::v-deep(p) {
+        :deep(p) {
           margin: 8px 0;
         }
 
-        ::v-deep(ul),
-        ::v-deep(ol) {
+        :deep(ul),
+        :deep(ol) {
           padding-left: 24px;
           margin: 8px 0;
         }
 
-        ::v-deep(li) {
+        :deep(li) {
           margin: 4px 0;
         }
 
-        ::v-deep(a) {
+        :deep(a) {
           color: var(--el-color-primary);
           text-decoration: none;
 
@@ -415,14 +415,14 @@ const formatFileSize = (bytes: number): string => {
           }
         }
 
-        ::v-deep(blockquote) {
+        :deep(blockquote) {
           padding: 8px 16px;
           margin: 12px 0;
           background: var(--el-fill-color-light);
           border-left: 4px solid var(--el-color-primary);
         }
 
-        ::v-deep(table) {
+        :deep(table) {
           width: 100%;
           margin: 12px 0;
           border-collapse: collapse;
@@ -501,11 +501,11 @@ const formatFileSize = (bytes: number): string => {
           background: linear-gradient(transparent, var(--el-color-primary-light-9));
         }
 
-        ::v-deep(pre) {
+        :deep(pre) {
           border: 1px solid var(--el-border-color-lighter);
         }
 
-        ::v-deep(code:not(pre code)) {
+        :deep(code:not(pre code)) {
           border: 1px solid var(--el-border-color-lighter);
         }
       }

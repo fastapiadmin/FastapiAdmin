@@ -185,7 +185,7 @@ function handleCloseExportsModal() {
 }
 
 // 导出
-function handleExports() {
+async function handleExports() {
   try {
     const filename = exportsFormData.filename
       ? exportsFormData.filename
@@ -204,64 +204,29 @@ function handleExports() {
     if (exportsFormData.origin === ExportsOriginEnum.REMOTE) {
       const lastFormData = props.queryParams ?? {};
       if (props.contentConfig.exportsBlobAction) {
-        props.contentConfig
-          .exportsBlobAction(lastFormData)
-          .then((blob) => {
-            saveBlobDownload(blob, filename as string);
-            ElMessage.success("导出成功");
-          })
-          .catch((error) => {
-            console.error("导出远程文件失败:", error);
-            ElMessage.error("导出远程文件失败");
-          });
+        const blob = await props.contentConfig.exportsBlobAction(lastFormData);
+        saveBlobDownload(blob, filename as string);
+        ElMessage.success("导出成功");
         return;
       }
       if (props.contentConfig.exportsAction) {
-        props.contentConfig
-          .exportsAction(lastFormData)
-          .then((res) => {
-            worksheet.addRows(res);
-            workbook.xlsx
-              .writeBuffer()
-              .then((buffer) => {
-                saveXlsx(buffer, filename as string);
-              })
-              .catch((error) => {
-                console.error("导出远程数据失败:", error);
-                ElMessage.error("导出远程数据失败");
-              });
-          })
-          .catch((error) => {
-            console.error("获取远程数据失败:", error);
-            ElMessage.error("获取远程数据失败");
-          });
+        const res = await props.contentConfig.exportsAction(lastFormData);
+        worksheet.addRows(res);
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveXlsx(buffer, filename as string);
       } else {
         ElMessage.error("未配置 exportsAction 或 exportsBlobAction");
       }
     } else if (exportsFormData.origin === ExportsOriginEnum.SELECTED) {
       const rows = props.selectionData ?? [];
       worksheet.addRows(rows);
-      workbook.xlsx
-        .writeBuffer()
-        .then((buffer) => {
-          saveXlsx(buffer, filename as string);
-        })
-        .catch((error) => {
-          console.error("导出选中数据失败:", error);
-          ElMessage.error("导出选中数据失败");
-        });
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveXlsx(buffer, filename as string);
     } else {
       const rows = props.pageData ?? [];
       worksheet.addRows(rows);
-      workbook.xlsx
-        .writeBuffer()
-        .then((buffer) => {
-          saveXlsx(buffer, filename as string);
-        })
-        .catch((error) => {
-          console.error("导出当前数据失败:", error);
-          ElMessage.error("导出当前数据失败");
-        });
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveXlsx(buffer, filename as string);
     }
   } catch (error) {
     console.error("导出失败:", error);

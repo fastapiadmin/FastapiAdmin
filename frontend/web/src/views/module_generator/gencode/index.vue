@@ -619,7 +619,7 @@ async function handleSynchDb(row: GenTableSchema): Promise<void> {
   try {
     loading.value = true;
     const previewRes = await GencodeAPI.syncDbPreview(tableName);
-    const preview = previewRes.data?.data as any;
+    const preview = previewRes.data?.data as Record<string, any>;
     const mainHtml = renderHtml(`主表：${tableName}`, preview);
     const subHtml =
       preview?.sub_table_name && preview?.sub

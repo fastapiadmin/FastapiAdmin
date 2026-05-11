@@ -209,42 +209,42 @@ function categoryLabel(c?: string) {
   return c ? m[c] || c : "-";
 }
 
-function deleteNodeTypeRow(id: number | undefined) {
+async function deleteNodeTypeRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该节点类型吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await WorkflowNodeTypeAPI.deleteWorkflowNodeType([id]);
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该节点类型吗？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await WorkflowNodeTypeAPI.deleteWorkflowNodeType([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await WorkflowNodeTypeAPI.deleteWorkflowNodeType(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await WorkflowNodeTypeAPI.deleteWorkflowNodeType(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 const {
@@ -518,11 +518,11 @@ async function submitForm() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::v-deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

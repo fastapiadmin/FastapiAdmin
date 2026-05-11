@@ -8,7 +8,6 @@ import { useWorktabStore } from "./worktab.store";
 import { useMenuStore } from "./menu.store";
 import { AppRouteRecord } from "@/types/router";
 import { setPageTitle } from "@utils/navigation";
-import { resetRouterState, resetRouteInitState } from "@/router/beforeEach";
 import { StorageConfig } from "@utils/storage";
 import AuthAPI from "@/api/module_system/auth";
 import UserAPI from "@/api/module_system/user";
@@ -18,6 +17,13 @@ import { ResultEnum } from "@/enums/api/result.enum";
 import { ElNotification } from "element-plus";
 import { store, useDictStore } from "@stores";
 import type { UserInfo } from "@/api/module_system/user";
+
+/** 延迟加载 beforeEach 工具函数，避免 user.store 与 beforeEach 的循环依赖 */
+let _routerUtilsPromise: Promise<typeof import("@/router/beforeEach")> | null = null;
+const getRouterUtils = () => {
+  if (!_routerUtilsPromise) _routerUtilsPromise = import("@/router/beforeEach");
+  return _routerUtilsPromise;
+};
 
 /** {@link useUserStore} 的 `logout` 可选参数 */
 export interface LogoutOptions {
@@ -59,14 +65,17 @@ export const useUserStore = defineStore(
     const hasGetRoute = ref(false);
     // 记住我状态
     const rememberMe = ref(Auth.getRememberMe());
-    // 计算属性：基础用户信息（兼容 web 原有结构）
-    const basicInfo = computed(() => info.value as any);
+    /** info 扩展类型：兼容 API 返回 `user_id`（非标准 UserInfo 字段） */
+    type UserInfoLike = Partial<UserInfo> & Record<string, any>;
+
+    // 计算属性：基础用户信息
+    const basicInfo = computed(() => info.value as UserInfoLike);
     // 计算属性：获取设置状态
     const getSettingState = computed(() => useSettingsStore().$state);
     // 计算属性：获取工作台状态
     const getWorktabState = computed(() => useWorktabStore().$state);
-    // 计算属性：获取基础信息（兼容 web 项目）
-    const getBasicInfo = computed(() => info.value as any);
+    // 计算属性：获取基础信息
+    const getBasicInfo = computed(() => info.value as UserInfoLike);
     // 计算属性：获取路由列表
     const getRouteList = computed(() => routeList.value);
     // 计算属性：获取权限列表
@@ -144,7 +153,8 @@ export const useUserStore = defineStore(
      */
     const checkAndClearWorktabs = () => {
       const lastUserId = localStorage.getItem(StorageConfig.LAST_USER_ID_KEY);
-      const currentUserId = (info.value as any).id || (info.value as any).user_id;
+      const ui = info.value as UserInfoLike;
+      const currentUserId = ui.id || ui.user_id;
 
       // 无法获取当前用户 ID，跳过检查
       if (!currentUserId) return;
@@ -241,7 +251,7 @@ export const useUserStore = defineStore(
       }
       rememberMe.value = loginForm.remember;
       // 清除上次会话里「动态路由初始化失败」标记，避免重新登录后侧栏/菜单不注册
-      resetRouteInitState();
+      (await getRouterUtils()).resetRouteInitState();
       Auth.setTokens(data.access_token, data.refresh_token, rememberMe.value);
       setToken(data.access_token, data.refresh_token);
       setLoginStatus(true);
@@ -254,7 +264,8 @@ export const useUserStore = defineStore(
     async function logout(options?: LogoutOptions) {
       const shouldNavigate = options?.navigate !== false;
 
-      const currentUserId = (info.value as any).id || (info.value as any).user_id;
+      const ui = info.value as UserInfoLike;
+      const currentUserId = ui.id || ui.user_id;
       if (currentUserId) {
         localStorage.setItem(StorageConfig.LAST_USER_ID_KEY, String(currentUserId));
       }
@@ -279,7 +290,7 @@ export const useUserStore = defineStore(
       resetAllState();
       sessionStorage.removeItem("iframeRoutes");
       useMenuStore().setHomePath("");
-      resetRouterState(500);
+      (await getRouterUtils()).resetRouterState(500);
 
       if (shouldNavigate) {
         const currentRoute = router.currentRoute.value;
@@ -325,26 +336,18 @@ export const useUserStore = defineStore(
     /**
      * 刷新token
      */
-    function refreshTokenFn() {
+    async function refreshTokenFn() {
       const currentRefreshToken = Auth.getRefreshToken();
 
       if (!currentRefreshToken) {
-        return Promise.reject(new Error("没有有效的刷新令牌"));
+        throw new Error("没有有效的刷新令牌");
       }
 
-      return new Promise<void>((resolve, reject) => {
-        AuthAPI.refreshToken({ refresh_token: currentRefreshToken })
-          .then((response: any) => {
-            const data = response.data.data;
-            // 更新令牌，保持当前记住我状态
-            Auth.setTokens(data.access_token, data.refresh_token, Auth.getRememberMe());
-            setToken(data.access_token, data.refresh_token);
-            resolve();
-          })
-          .catch((error: any) => {
-            reject(error);
-          });
-      });
+      const response = await AuthAPI.refreshToken({ refresh_token: currentRefreshToken });
+      const data = response.data.data;
+      // 更新令牌，保持当前记住我状态
+      Auth.setTokens(data.access_token, data.refresh_token, Auth.getRememberMe());
+      setToken(data.access_token, data.refresh_token);
     }
 
     /**

@@ -545,41 +545,43 @@ function onTableSelectionChange(rows: UserInfo[]) {
   selectedRows.value = rows;
 }
 
-function handleResetPassword(row: UserInfo) {
-  ElMessageBox.prompt(`请输入用户【${row.username ?? ""}】的新密码`, "重置密码", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-  }).then(
-    async ({ value }) => {
-      if (!value || value.length < 6) {
-        ElMessage.warning("密码至少需要6位字符，请重新输入");
-        return;
-      }
-      await UserAPI.resetUserPassword({ id: row.id!, password: value });
-      ElMessage.success("密码已重置");
-    },
-    () => {}
-  );
+async function handleResetPassword(row: UserInfo) {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `请输入用户【${row.username ?? ""}】的新密码`,
+      "重置密码",
+      { confirmButtonText: "确定", cancelButtonText: "取消" }
+    );
+    if (!value || value.length < 6) {
+      ElMessage.warning("密码至少需要6位字符，请重新输入");
+      return;
+    }
+    await UserAPI.resetUserPassword({ id: row.id!, password: value });
+    ElMessage.success("密码已重置");
+  } catch {
+    // 用户取消
+  }
 }
 
-function deleteUserRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await UserAPI.deleteUser([id]);
-      const idSet = [id];
-      if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
-        userStore.clearUserInfo();
-      } else {
-        ElMessage.success("删除成功");
-      }
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteUserRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await UserAPI.deleteUser([id]);
+    const idSet = [id];
+    if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
+      userStore.clearUserInfo();
+    } else {
+      ElMessage.success("删除成功");
+    }
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -708,7 +710,7 @@ const exportQueryParams = computed(() => {
 const userImportContentConfig = computed<IContentConfig>(() => ({
   permPrefix: "module_system:user",
   cols: userCrudCols.value,
-  indexAction: async () => ({}) as any,
+  indexAction: async () => ({}),
   importTemplate: () => UserAPI.downloadTemplateUser(),
 }));
 
@@ -839,25 +841,23 @@ function openExportModal() {
   exportModalVisible.value = true;
 }
 
-function handleImportUpload(formDataUpload: FormData) {
+async function handleImportUpload(formDataUpload: FormData) {
   uploadLoading.value = true;
-  UserAPI.importUser(formDataUpload)
-    .then(async (response) => {
-      if (response.data.code === ResultEnum.SUCCESS) {
-        ElMessage.success(`${response.data.msg}，${response.data.data}`);
-        importModalVisible.value = false;
-        await refreshData();
-      } else {
-        ElMessage.error(response.data.msg || "导入失败");
-      }
-    })
-    .catch((error: unknown) => {
-      console.error(error);
-      ElMessage.error("上传失败");
-    })
-    .finally(() => {
-      uploadLoading.value = false;
-    });
+  try {
+    const response = await UserAPI.importUser(formDataUpload);
+    if (response.data.code === ResultEnum.SUCCESS) {
+      ElMessage.success(`${response.data.msg}，${response.data.data}`);
+      importModalVisible.value = false;
+      await refreshData();
+    } else {
+      ElMessage.error(response.data.msg || "导入失败");
+    }
+  } catch (error: unknown) {
+    console.error(error);
+    ElMessage.error("上传失败");
+  } finally {
+    uploadLoading.value = false;
+  }
 }
 
 async function resetForm() {
@@ -950,61 +950,57 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await UserAPI.deleteUser(ids);
-        if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
-          userStore.clearUserInfo();
-        } else {
-          ElMessage.success("删除成功");
-        }
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await UserAPI.deleteUser(ids);
+    if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
+      userStore.clearUserInfo();
+    } else {
+      ElMessage.success("删除成功");
+    }
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await UserAPI.batchUser({ ids, status });
-        await refreshData();
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await UserAPI.batchUser({ ids, status });
+    await refreshData();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 /* 左侧部门树内容区：card body 纵向 flex + 滚动条占满剩余高度（布局在 index，内边距在 DeptTree） */
-.tree-card ::v-deep(.el-card__body) {
+.tree-card :deep(.el-card__body) {
   display: flex;
   flex: 1;
   flex-direction: column;

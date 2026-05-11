@@ -124,7 +124,7 @@
           </template>
         </ElTable>
         <!-- 分页 -->
-        <pagination
+        <FaPagination
           v-model:total="total"
           v-model:page="queryParams.page_no"
           v-model:limit="queryParams.page_size"
@@ -153,6 +153,7 @@ defineSlots<{
 import { ref, reactive, computed } from "vue";
 import { useResizeObserver } from "@vueuse/core";
 import type { FormInstance, PopoverProps, TableInstance } from "element-plus";
+import FaPagination from "@/components/others/fa-pagination/index.vue";
 
 // 对象类型
 export type IObject = Record<string, any>;
@@ -264,21 +265,19 @@ function handleQuery() {
 }
 
 // 获取分页数据
-function fetchPageData(isRestart = false) {
+async function fetchPageData(isRestart = false) {
   loading.value = true;
   if (isRestart) {
     queryParams.page_no = 1;
     queryParams.page_size = page_size;
   }
-  props.selectConfig
-    .indexAction(queryParams)
-    .then((data) => {
-      total.value = data.total;
-      pageData.value = data.list;
-    })
-    .finally(() => {
-      loading.value = false;
-    });
+  try {
+    const data = await props.selectConfig.indexAction(queryParams);
+    total.value = data.total;
+    pageData.value = data.list;
+  } finally {
+    loading.value = false;
+  }
 }
 
 // 列表操作
@@ -352,8 +351,8 @@ const popoverContentRef = ref();
 </script>
 
 <style scoped lang="scss">
-.reference ::v-deep(.el-input__wrapper),
-.reference ::v-deep(.el-input__inner) {
+.reference :deep(.el-input__wrapper),
+.reference :deep(.el-input__inner) {
   cursor: pointer;
 }
 
@@ -363,7 +362,7 @@ const popoverContentRef = ref();
   margin-top: 6px;
 }
 // 隐藏全选按钮
-.radio ::v-deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
+.radio :deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
   visibility: hidden;
 }
 </style>

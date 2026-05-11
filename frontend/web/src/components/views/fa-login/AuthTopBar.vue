@@ -256,7 +256,7 @@ const changeThemeColor = (color: string) => {
   transform: translateY(-2px);
 }
 
-.auth-top-bar__action:hover ::v-deep(.fa-svg-icon) {
+.auth-top-bar__action:hover :deep(.fa-svg-icon) {
   color: var(--el-color-primary);
 }
 
@@ -314,15 +314,15 @@ const changeThemeColor = (color: string) => {
 }
 
 /* 调色盘：图标颜色与当前主题主色一致（含单独悬浮、整块调色区悬浮） */
-.palette-btn ::v-deep(.fa-svg-icon) {
+.palette-btn :deep(.fa-svg-icon) {
   color: v-bind("themeColorForCss");
 }
 
-.auth-top-bar__action.palette-btn:hover ::v-deep(.fa-svg-icon) {
+.auth-top-bar__action.palette-btn:hover :deep(.fa-svg-icon) {
   color: v-bind("themeColorForCss");
 }
 
-.color-picker-expandable:hover .palette-btn ::v-deep(.fa-svg-icon) {
+.color-picker-expandable:hover .palette-btn :deep(.fa-svg-icon) {
   color: v-bind("themeColorForCss");
 }
 </style>

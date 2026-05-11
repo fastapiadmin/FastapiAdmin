@@ -125,6 +125,16 @@ export function initErrorHandle(app: App) {
 // Upgrade
 // -----------------------------
 
+/**
+ * 版本升级管理器。
+ *
+ * ── 检测逻辑 ──
+ * 1. 跳过 1.0.0 版本（无需升级的基版本）
+ * 2. 首次访问 → 写入当前版本号，不升级
+ * 3. 版本相同 → 无需升级
+ * 4. 版本不同 + 存在旧数据 → 执行升级（展示通知、清理旧 key、按需登出）
+ * 5. 版本不同 + 无旧数据 → 仅更新版本号
+ */
 class VersionManager {
   private normalizeVersion(version: string): string {
     return version.replace(/^v/, "");

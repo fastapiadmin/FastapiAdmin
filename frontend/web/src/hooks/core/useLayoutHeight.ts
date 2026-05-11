@@ -78,10 +78,8 @@ export function useLayoutHeight(options: LayoutHeightOptions = {}) {
  * 通过 ID 自动查找元素的布局高度管理
  * 适用于无法直接获取元素引用的场景
  *
- * @param headerIds 头部元素的 ID 数组
+ * @param headerIds 头部元素的 ID 数组（默认 ["app-header", "app-content-header"]）
  * @param options 配置选项
- *
- * ```
  */
 export function useAutoLayoutHeight(
   headerIds: string[] = ["app-header", "app-content-header"],
@@ -120,8 +118,8 @@ export function useAutoLayoutHeight(
     if (typeof document !== "undefined") {
       // 使用 nextTick 确保 DOM 完全渲染
       requestAnimationFrame(() => {
-        const header = document.getElementById(headerIds[0]);
-        const contentHeader = document.getElementById(headerIds[1]);
+        const header = headerIds.length > 0 ? document.getElementById(headerIds[0]) : null;
+        const contentHeader = headerIds.length > 1 ? document.getElementById(headerIds[1]) : null;
 
         if (header) {
           headerRef.value = header;

@@ -4,7 +4,7 @@
   - 暴露 `elTableRef`、`scrollToTop`；formatter 列见 TableFormatterOutlet 注释。
 -->
 <template>
-  <div class="fa-table">
+  <div class="fa-table" :class="{ 'is-empty': isEmpty }">
     <div class="fa-table__main">
       <VueDraggable
         class="fa-table__drag-wrap"
@@ -270,7 +270,7 @@ useResizeObserver(tableHeaderRef, (entries) => {
 // 分页器与表格之间的间距常量（计算属性，响应 showTableHeader 变化）
 const PAGINATION_SPACING = computed(() => (props.showTableHeader ? 6 : 15));
 
-// 使用表格高度计算 Hook
+// 使用表格高度计算 Hook（返回含分页、表头偏移的精确高度）
 useTableHeight({
   showTableHeader: computed(() => props.showTableHeader),
   paginationHeight,
@@ -286,7 +286,7 @@ const height = computed(() => {
   if (isEmpty.value && !props.loading) return props.emptyHeight;
   // 使用传入的高度
   if (props.height) return props.height;
-  // 默认占满容器高度
+  // flex 布局下 .fa-table__main 已扣除分页空间，ElTable 用 100% 填满即可
   return "100%";
 });
 
@@ -345,7 +345,7 @@ const onRowDragEnd = () => {
 };
 
 // 是否显示分页器
-const showPagination = computed(() => props.pagination && !isEmpty.value);
+const showPagination = computed(() => !!props.pagination);
 
 // Element Plus 在部分场景会先用 $index = -1 进行预渲染。
 // 这对普通展示无影响，但会让 ElForm 错误注册出 lineList.-1.xxx 这类字段。

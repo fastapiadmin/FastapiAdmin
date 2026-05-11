@@ -15,10 +15,11 @@ import { ResultEnum } from "@/enums/api/result.enum";
 import { Auth } from "@/utils/auth";
 import { redirectToLogin } from "@/utils/auth";
 import { $t } from "@/locales";
+import AuthAPI from "@/api/module_system/auth";
 
 // --- 配置常量 -----------------------------------------------------------------
 
-/** 跳过鉴权：与单接口 `headers.Authorization` 约定一致 */
+/** 跳过鉴权标记：接口 headers.Authorization 设为该值时不带 token 请求 */
 export const NO_AUTH_FLAG = "no-auth";
 
 export interface ExtendedRequestConfig extends AxiosRequestConfig {
@@ -153,6 +154,33 @@ export const isHttpError = (error: unknown): error is HttpError => {
   return error instanceof HttpError;
 };
 
+// --- Token 刷新去重 -----------------------------------------------------------
+
+/**
+ * token 刷新进行中标识，避免并发 401 触发多次 refresh 请求。
+ * 配合 pendingRequests 队列，刷新成功后统一重放等待中的请求。
+ */
+let isRefreshing = false;
+let pendingRequests: Array<{
+  config: InternalAxiosRequestConfig;
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+function onRefreshed(newToken: string) {
+  const list = pendingRequests;
+  pendingRequests = [];
+  list.forEach(({ config, resolve }) => {
+    config.headers.Authorization = `Bearer ${newToken}`;
+    resolve(request(config));
+  });
+}
+
+function onRefreshFailed() {
+  pendingRequests.forEach(({ reject }) => reject(new Error("Token refresh failed")));
+  pendingRequests = [];
+}
+
 // --- Axios 实例 ---------------------------------------------------------------
 
 const request: AxiosInstance = axios.create({
@@ -185,6 +213,22 @@ request.interceptors.request.use(
   }
 );
 
+/**
+ * 响应拦截器 —— 三层处理逻辑：
+ *
+ * 1. 成功响应（response）
+ *    - blob 直通（文件下载不经过 JSON 解析）
+ *    - 检查业务 code，非 SUCCESS 时报错
+ *    - 非 GET 且非 login/logout 接口成功时显示成功消息
+ *
+ * 2. 网络错误（无 response）
+ *    - 区分 ECONNREFUSED / timeout / Network Error，给出中文提示
+ *
+ * 3. 业务/鉴权错误（有 response）
+ *    - Blob 响应错误 → 尝试解析 JSON 提取 msg
+ *    - 401 / TOKEN_EXPIRED → 静默刷新 token，成功后重放待处理请求
+ *    - 其他业务错误 → 按 code 分类提示
+ */
 request.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
     if (response.config.responseType === "blob") {
@@ -209,6 +253,7 @@ request.interceptors.response.use(
     return response;
   },
   async (error: AxiosError<ApiResponse>) => {
+    // ── 网络错误（无响应体） ──
     if (!error.response) {
       let errorMessage = "网络连接异常";
 
@@ -227,6 +272,7 @@ request.interceptors.response.use(
 
     const data = error.response?.data;
 
+    // ── Blob 响应错误（文件下载场景） ──
     if (error.response?.config.responseType === "blob" && error.response.data instanceof Blob) {
       try {
         const text = await new Response(error.response.data).text();
@@ -246,6 +292,7 @@ request.interceptors.response.use(
       }
     }
 
+    // ── 鉴权错误（401 / TOKEN_EXPIRED）：静默续期 ──
     const status = error.response.status;
 
     const hasApiCode =
@@ -255,16 +302,50 @@ request.interceptors.response.use(
       "code" in data &&
       typeof (data as ApiResponse).code === "number";
 
-    if (status === 401 && !hasApiCode) {
-      await redirectToLogin("登录已失效，请重新登录");
-      return Promise.reject(new HttpError("Unauthorized", ApiStatus.unauthorized));
+    if ((status === 401 && !hasApiCode) || data?.code === ResultEnum.TOKEN_EXPIRED) {
+      const config = error.config as InternalAxiosRequestConfig | undefined;
+
+      // 若 refresh 接口自身返回 401，不再递归续期，直接跳转登录
+      if (!config || config.url?.includes("auth/token/refresh")) {
+        await redirectToLogin("登录状态异常，请重新登录");
+        return Promise.reject(new HttpError("Unauthorized", ApiStatus.unauthorized));
+      }
+
+      // 首次 401：发起 refresh；后续并发 401 入队等待
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          // 直接请求刷新令牌接口，避免动态导入 user.store 造成循环依赖
+          const refreshResp = await AuthAPI.refreshToken({
+            refresh_token: Auth.getRefreshToken(),
+          });
+          const tokenData = refreshResp.data.data;
+          Auth.setTokens(tokenData.access_token, tokenData.refresh_token, Auth.getRememberMe());
+          isRefreshing = false;
+          const newToken = Auth.getAccessToken();
+          // 重放等待队列中的所有请求
+          onRefreshed(newToken);
+          // 用新 token 重试当前请求
+          config.headers.Authorization = `Bearer ${newToken}`;
+          return request(config);
+        } catch {
+          isRefreshing = false;
+          // refresh 失败：拒绝队列中所有等待请求 + 跳转登录
+          onRefreshFailed();
+          const msg = data?.msg || "登录已失效，请重新登录";
+          await redirectToLogin(msg);
+          return Promise.reject(new HttpError(msg, ApiStatus.unauthorized));
+        }
+      } else {
+        // 已有 refresh 进行中，将当前请求加入等待队列，刷新完成后自动重放
+        return new Promise((resolve, reject) => {
+          pendingRequests.push({ config: config!, resolve, reject });
+        });
+      }
     }
 
-    if (data?.code === ResultEnum.TOKEN_EXPIRED) {
-      await redirectToLogin("登录已过期，请重新登录");
-      const msg = data.msg || "登录已过期，请重新登录";
-      return Promise.reject(new HttpError(msg, ApiStatus.unauthorized));
-    } else if (data?.code === ResultEnum.ERROR) {
+    // ── 业务错误（按 code 分类） ──
+    if (data?.code === ResultEnum.ERROR) {
       ElMessage.error(data.msg || "请求错误");
       return Promise.reject(new Error(data.msg || "请求错误"));
     } else if (data?.code === ResultEnum.UNAUTHORIZED) {

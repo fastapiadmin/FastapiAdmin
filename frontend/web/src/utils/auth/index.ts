@@ -1,4 +1,14 @@
-/** Auth utilities (web-style, flat module). */
+/**
+ * Auth 认证令牌管理。
+ *
+ * 注意：令牌存储直接操作 localStorage / sessionStorage，而非经过 @utils/storage 的
+ * Storage 工具类。这是因为：
+ * 1. 令牌使用固定键名（access_token / refresh_token），不需要版本化键名前缀
+ * 2. rememberMe 机制需要在两端（localStorage / sessionStorage）间切换
+ * 3. 令牌值已是字符串，无需 JSON 序列化/反序列化
+ *
+ * @module Auth
+ */
 
 const AUTH_KEYS = {
   ACCESS_TOKEN: "access_token",

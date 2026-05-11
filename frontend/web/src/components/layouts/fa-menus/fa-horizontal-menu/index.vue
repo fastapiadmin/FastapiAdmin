@@ -92,18 +92,18 @@ const filterMenuItems = (items: AppRouteRecord[]): AppRouteRecord[] => {
 
 <style scoped>
 /* Remove el-menu bottom border */
-::v-deep(.el-menu) {
+:deep(.el-menu) {
   border-bottom: none !important;
 }
 
 /* Remove default styles for first-level menu items */
-::v-deep(.el-menu-item[tabindex="0"]) {
+:deep(.el-menu-item[tabindex="0"]) {
   background-color: transparent !important;
   border: none !important;
 }
 
 /* Remove bottom border from submenu titles */
-::v-deep(.el-menu--horizontal .el-sub-menu__title) {
+:deep(.el-menu--horizontal .el-sub-menu__title) {
   padding: 0 30px 0 10px !important;
   border: 0 !important;
 }

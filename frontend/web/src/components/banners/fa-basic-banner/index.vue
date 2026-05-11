@@ -53,13 +53,12 @@
       <!-- default slot -->
       <slot></slot>
 
-      <!-- background image -->
+      <!-- background image：首屏横幅不使用懒加载，避免浏览器干预警告 -->
       <img
         v-if="imageConfig.src"
         class="basic-banner__background-image"
         :src="imageConfig.src"
         :style="{ width: imageConfig.width, bottom: imageConfig.bottom, right: imageConfig.right }"
-        loading="lazy"
         alt="背景图片"
       />
     </div>

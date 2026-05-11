@@ -222,8 +222,6 @@ const handleMapClick = (params: Record<string, unknown>) => {
       level: (data?.level as string) || "",
     };
 
-    console.log(`选中区域: ${params.name}`, params);
-
     // 高亮选中区域
     chartInstance.value?.dispatchAction({
       type: "select",
@@ -240,8 +238,14 @@ const resizeChart = () => {
   chartInstance.value?.resize();
 };
 
+let initTimer: ReturnType<typeof setTimeout> | null = null;
+
 // 处理组件销毁
 const cleanupChart = () => {
+  if (initTimer !== null) {
+    clearTimeout(initTimer);
+    initTimer = null;
+  }
   if (chartInstance.value) {
     chartInstance.value.off("click", handleMapClick);
     chartInstance.value.dispose();
@@ -253,9 +257,10 @@ const cleanupChart = () => {
 // 生命周期钩子
 onMounted(() => {
   if (!isEmpty.value) {
-    initMap().then(() => {
-      setTimeout(resizeChart, 100);
-    });
+    (async () => {
+      await initMap();
+      initTimer = setTimeout(resizeChart, 100);
+    })();
   }
   window.addEventListener("resize", resizeChart);
 });

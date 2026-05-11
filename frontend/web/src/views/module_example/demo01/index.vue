@@ -541,84 +541,83 @@ async function handleSubmit() {
   });
 }
 
-const deleteDemo01Row = (row: Demo01Table) => {
+const deleteDemo01Row = async (row: Demo01Table) => {
   if (!row.id) return;
-  ElMessageBox.confirm(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`, "删除确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await Demo01API.deleteDemo01([row.id!]);
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+  try {
+    await ElMessageBox.confirm(
+      `确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`,
+      "删除确认",
+      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+    );
+    await Demo01API.deleteDemo01([row.id!]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    ElMessage.info("已取消删除");
+  }
 };
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await Demo01API.deleteDemo01(ids);
-        ElMessage.success("删除成功");
-        faTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+  try {
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`,
+      "批量删除",
+      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+    );
+    batchDeleting.value = true;
+    await Demo01API.deleteDemo01(ids);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    ElMessage.info("已取消删除");
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function runBatchStatus(status: string) {
+async function runBatchStatus(status: string) {
   const ids = selectedIds.value;
   if (ids.length === 0) {
     ElMessage.warning("请先在列表中勾选数据");
     return;
   }
-  ElMessageBox.confirm(
-    `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
-    "批量设置",
-    { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
-  )
-    .then(async () => {
-      await Demo01API.batchDemo01({ ids, status });
-      ElMessage.success("操作成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshData();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(
+      `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
+      "批量设置",
+      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+    );
+    await Demo01API.batchDemo01({ ids, status });
+    ElMessage.success("操作成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshData();
+  } catch {
+    // 用户取消操作，无需处理
+  }
 }
 
 function openImportModal() {
   importModalVisible.value = true;
 }
 
-function handleCrudImportUpload(formDataUpload: FormData) {
-  Demo01API.importDemo01(formDataUpload)
-    .then((res) => {
-      if (res.data.code !== ResultEnum.SUCCESS) {
-        ElMessage.error(res.data.msg || "导入失败");
-        return;
-      }
-      ElMessage.success(res.data.msg || "导入成功");
-      importModalVisible.value = false;
-      return refreshData();
-    })
-    .catch(console.error);
+async function handleCrudImportUpload(formDataUpload: FormData) {
+  try {
+    const res = await Demo01API.importDemo01(formDataUpload);
+    if (res.data.code !== ResultEnum.SUCCESS) {
+      ElMessage.error(res.data.msg || "导入失败");
+      return;
+    }
+    ElMessage.success(res.data.msg || "导入成功");
+    importModalVisible.value = false;
+    await refreshData();
+  } catch (error) {
+    console.error("[Import]", error);
+    ElMessage.error("导入失败");
+  }
 }
 
 function openExportModal() {
@@ -627,11 +626,11 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::v-deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

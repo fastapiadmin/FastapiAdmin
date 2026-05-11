@@ -1,10 +1,24 @@
 .fa-table {
   position: relative;
-  height: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+
+  .fa-table__main {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding-top: 10px;
+
+    // VueDraggable 透传高度，确保 ElTable height: 100% 能正确解析
+    > * {
+      height: 100%;
+    }
+  }
 
   .el-table {
     height: 100%;
-    margin-top: 10px;
   }
 
   :deep(.el-loading-mask) {
@@ -23,14 +37,17 @@
 
   // 空状态垂直居中
   &.is-empty {
-    :deep(.el-scrollbar__wrap) {
+    :deep(.el-table__body-wrapper) {
       display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 
   .pagination {
     display: flex;
-    margin-top: 13px;
+    flex-shrink: 0;
+    padding-top: 13px;
 
     :deep(.el-select) {
       width: 102px !important;

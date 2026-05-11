@@ -196,14 +196,17 @@ watch(
 
 function handleLogout(): void {
   closeUserMenu();
-  setTimeout(() => {
-    ElMessageBox.confirm(t("common.logoutTips"), t("common.tips"), {
-      confirmButtonText: t("common.confirm"),
-      cancelButtonText: t("common.cancel"),
-      customClass: "login-out-dialog",
-    }).then(() => {
-      userStore.logout();
-    });
+  setTimeout(async () => {
+    try {
+      await ElMessageBox.confirm(t("common.logoutTips"), t("common.tips"), {
+        confirmButtonText: t("common.confirm"),
+        cancelButtonText: t("common.cancel"),
+        customClass: "login-out-dialog",
+      });
+      await userStore.logout();
+    } catch {
+      // 用户取消
+    }
   }, 200);
 }
 

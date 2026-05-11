@@ -7,12 +7,11 @@ import { Router } from "vue-router";
 import { NProgress } from "@utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
 import { loadingService } from "@utils/ui";
-import { getPendingLoading, resetPendingLoading } from "./beforeEach";
 
 /** 防止重复注册 afterEach（与 beforeEach 同理） */
 let afterEachGuardRegistered = false;
 
-export function setupAfterEachGuard(router: Router) {
+export async function setupAfterEachGuard(router: Router) {
   if (afterEachGuardRegistered) {
     if (import.meta.env.DEV) {
       console.warn("[Router] setupAfterEachGuard 已注册，跳过重复调用");
@@ -22,6 +21,9 @@ export function setupAfterEachGuard(router: Router) {
   afterEachGuardRegistered = true;
 
   const { scrollToTop } = useCommon();
+
+  // 延迟加载 beforeEach 中导出的守卫状态函数，避免静态循环依赖
+  const { getPendingLoading, resetPendingLoading } = await import("./beforeEach");
 
   router.afterEach(() => {
     scrollToTop();

@@ -156,7 +156,7 @@ if (uploadConfig?.isCustomUpload && uploadConfig.server && editorConfig.MENU_CON
         },
       });
 
-      const { url, alt = "", href = "" } = response.data.data ?? ({} as any);
+      const { url, alt = "", href = "" } = response.data.data ?? ({} as Record<string, string>);
 
       if (!url) {
         throw new Error("上传失败，请检查服务端配置");
@@ -177,7 +177,7 @@ const onCreateEditor = (editor: IDomEditor) => {
 
   // 监听全屏事件
   editor.on("fullScreen", () => {
-    console.log("编辑器进入全屏模式");
+    // 全屏状态由 wangEditor 内部管理
   });
 
   // 确保在编辑器创建后应用自定义图标

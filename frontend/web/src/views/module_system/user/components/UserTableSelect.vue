@@ -54,7 +54,7 @@ const selectConfig: ISelectConfig = {
       ],
     },
   ],
-  indexAction(params: UserPageQuery) {
+  async indexAction(params: UserPageQuery) {
     // 映射查询参数到后端接口
     const query: any = { ...params };
     // 清理空字符串/空值，避免后端 422
@@ -70,12 +70,11 @@ const selectConfig: ISelectConfig = {
       else if (query.status === "false") query.status = false;
     }
     // 请求用户分页列表并适配 TableSelect 需要的结构
-    return UserAPI.listUser(query).then((res: any) => {
-      return {
-        total: res.data.data.total,
-        list: res.data.data.items,
-      };
-    });
+    const res = await UserAPI.listUser(query);
+    return {
+      total: res.data.data.total,
+      list: res.data.data.items,
+    };
   },
   tableColumns: [
     { type: "selection", width: 50, align: "center" },

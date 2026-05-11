@@ -436,7 +436,7 @@
 
           <ElFormItem v-if="formData.type !== MenuTypeEnum.BUTTON" label="图标" prop="icon">
             <!-- 图标选择器 -->
-            <icon-select v-model="formData.icon" />
+            <FaIconSelect v-model="formData.icon" />
           </ElFormItem>
 
           <ElFormItem
@@ -527,6 +527,7 @@ import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vu
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import FaDrawer from "@/components/modal/fa-drawer/index.vue";
+import FaIconSelect from "@/components/others/fa-icon-select/index.vue";
 import { ElMessage, ElMessageBox, ElTag, ElTooltip } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -820,20 +821,22 @@ function toggleExpand() {
   });
 }
 
-function deleteMenuRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await MenuAPI.deleteMenu([id]);
-      await userStore.getUserInfo();
-      ElMessage.success("删除成功");
-      selectedRows.value = [];
-      await loadMenuData();
-    })
-    .catch(() => {});
+async function deleteMenuRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    await MenuAPI.deleteMenu([id]);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadMenuData();
+  } catch {
+    // 用户取消
+  }
 }
 
 const opCtx = {
@@ -1040,11 +1043,11 @@ async function handleOpenDialog(
       Object.assign(detailFormData.value, response.data.data ?? {});
     } else if (type === "update") {
       dialogVisible.title = "修改菜单";
-      Object.assign(formData, response.data.data);
+      Object.assign(formData.value, response.data.data);
     }
   } else {
     dialogVisible.title = "新增菜单";
-    Object.assign(formData, initialFormData);
+    formData.value = { ...initialFormData };
     if (parentRow?.id != null) {
       formData.value.parent_id = parentRow.id;
       formData.value.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
@@ -1102,27 +1105,26 @@ async function handleSubmit() {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await MenuAPI.deleteMenu(ids);
-        await userStore.getUserInfo();
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await loadMenuData();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await MenuAPI.deleteMenu(ids);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await loadMenuData();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 async function handleMoreClick(status: string) {
@@ -1135,16 +1137,18 @@ async function handleMoreClick(status: string) {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
-  })
-    .then(async () => {
-      try {
-        await MenuAPI.batchMenu({ ids, status });
-        await loadMenuData();
-      } catch (error: unknown) {
-        console.error(error);
-      }
-    })
-    .catch(() => {});
+  });
+  try {
+    await ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await MenuAPI.batchMenu({ ids, status });
+    await loadMenuData();
+  } catch {
+    // 用户取消
+  }
 }
 
 onMounted(() => {
@@ -1153,7 +1157,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-::v-deep(.menu-table-actions .inline-flex) {
+:deep(.menu-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

@@ -286,41 +286,41 @@ function onTableSelectionChange(rows: ChatSession[]) {
   selectedRows.value = rows;
 }
 
-function deleteSessionRow(id: string) {
-  ElMessageBox.confirm("确认删除该项数据？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await AiChatAPI.deleteSession([id]);
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteSessionRow(id: string) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await AiChatAPI.deleteSession([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await AiChatAPI.deleteSession(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await AiChatAPI.deleteSession(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 const {
@@ -625,17 +625,17 @@ pre {
   border-radius: 4px;
 }
 
-::v-deep(.session-detail-dialog .el-dialog__body) {
+:deep(.session-detail-dialog .el-dialog__body) {
   max-height: 60vh;
   padding: 20px;
   overflow-y: auto;
 }
 
-.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::v-deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

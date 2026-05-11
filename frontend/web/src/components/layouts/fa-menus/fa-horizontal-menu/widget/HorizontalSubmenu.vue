@@ -106,7 +106,7 @@ const closeMenu = () => {
 </script>
 
 <style scoped>
-::v-deep(.el-sub-menu__title .el-sub-menu__icon-arrow) {
+:deep(.el-sub-menu__title .el-sub-menu__icon-arrow) {
   right: 10px !important;
 }
 </style>

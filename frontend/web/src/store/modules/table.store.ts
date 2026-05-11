@@ -1,6 +1,11 @@
 /**
  * 表格全局外观与交互：`FaTable` / `FaTableHeader` 通过 store 同步密度、斑马纹、边框、表头背景、全屏、行拖拽。
- * 持久化见 options.persist；跨页面保持用户偏好。
+ *
+ * ── 设计意图 ──
+ * 将「表格显示偏好」提升到 Pinia store 层，而非每个页面各自维护。
+ * 用户在一个页面调整密度/斑马纹后，其他页面也同步生效。
+ *
+ * 持久化：options.persist → localStorage "tableStore"，刷新后保留。
  */
 import { defineStore } from "pinia";
 import { ref } from "vue";

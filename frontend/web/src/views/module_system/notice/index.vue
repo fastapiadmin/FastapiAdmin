@@ -637,20 +637,22 @@ async function handleSubmit() {
   });
 }
 
-function deleteNoticeRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await NoticeAPI.deleteNotice([id]);
-      await noticeStore.getNotice();
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteNoticeRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    await NoticeAPI.deleteNotice([id]);
+    await noticeStore.getNotice();
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
 function buildNoticeRowActions(row: NoticeTable): TableOperationAction[] {
@@ -694,30 +696,29 @@ function formatNoticeOperationCell(row: NoticeTable) {
   });
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await NoticeAPI.deleteNotice(ids);
-        await noticeStore.getNotice();
-        ElMessage.success("删除成功");
-        faTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await NoticeAPI.deleteNotice(ids);
+    await noticeStore.getNotice();
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -727,13 +728,14 @@ function handleMoreClick(status: string) {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
-  })
-    .then(async () => {
-      await NoticeAPI.batchNotice({ ids, status });
-      await refreshData();
-      await noticeStore.getNotice();
-    })
-    .catch(() => {});
+  });
+  try {
+    await NoticeAPI.batchNotice({ ids, status });
+    await refreshData();
+    await noticeStore.getNotice();
+  } catch {
+    // 用户取消
+  }
 }
 
 function openExportModal() {
@@ -747,11 +749,11 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 /* FaForm 底部预留的操作栏列在弹窗内不需要占位 */
-.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::v-deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 
@@ -773,27 +775,27 @@ onMounted(async () => {
   color: var(--el-text-color-placeholder);
 }
 
-.notice-html-preview ::v-deep(h1),
-.notice-html-preview ::v-deep(h2),
-.notice-html-preview ::v-deep(h3) {
+.notice-html-preview :deep(h1),
+.notice-html-preview :deep(h2),
+.notice-html-preview :deep(h3) {
   margin: 12px 0 8px;
 }
 
-.notice-html-preview ::v-deep(p) {
+.notice-html-preview :deep(p) {
   margin: 8px 0;
   line-height: 1.6;
 }
 
-.notice-html-preview ::v-deep(table) {
+.notice-html-preview :deep(table) {
   margin: 12px 0;
 }
 
-.notice-html-preview ::v-deep(table th),
-.notice-html-preview ::v-deep(table td) {
+.notice-html-preview :deep(table th),
+.notice-html-preview :deep(table td) {
   padding: 8px 12px;
 }
 
-.notice-html-preview ::v-deep(pre) {
+.notice-html-preview :deep(pre) {
   padding: 12px;
   margin: 12px 0;
   overflow-x: auto;
@@ -801,14 +803,14 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
-.notice-html-preview ::v-deep(blockquote) {
+.notice-html-preview :deep(blockquote) {
   padding-left: 16px;
   margin: 12px 0;
   color: var(--el-text-color-regular);
   border-left: 4px solid var(--el-color-primary);
 }
 
-.notice-html-preview ::v-deep(img) {
+.notice-html-preview :deep(img) {
   max-width: 100%;
   height: auto;
 }

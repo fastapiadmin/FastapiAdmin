@@ -656,42 +656,42 @@ const {
   },
 });
 
-function deleteLogRow(id: number | undefined) {
+async function deleteLogRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该执行记录？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await JobAPI.deleteJobLog([id]);
-      ElMessage.success("删除成功");
-      logfaTableRef.value?.elTableRef?.clearSelection();
-      await refreshLogRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该执行记录？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await JobAPI.deleteJobLog([id]);
+    ElMessage.success("删除成功");
+    logfaTableRef.value?.elTableRef?.clearSelection();
+    await refreshLogRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleLogBatchDelete() {
+async function handleLogBatchDelete() {
   const ids = logSelectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm("确认删除选中的执行记录？", "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        logBatchDeleting.value = true;
-        await JobAPI.deleteJobLog(ids);
-        ElMessage.success("删除成功");
-        logSelectedRows.value = [];
-        await refreshLogRemove();
-      } finally {
-        logBatchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除选中的执行记录？", "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    logBatchDeleting.value = true;
+    await JobAPI.deleteJobLog(ids);
+    ElMessage.success("删除成功");
+    logSelectedRows.value = [];
+    await refreshLogRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    logBatchDeleting.value = false;
+  }
 }
 
 const logPaginationBind = computed(() => {
@@ -957,22 +957,17 @@ async function handleRunJobNow(jobId: string) {
 }
 
 async function handleRemoveJob(jobId: string) {
-  ElMessageBox.confirm("确认移除该任务?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        await JobAPI.removeJob(jobId);
-        await refreshJobList();
-      } catch (error: any) {
-        console.error(error);
-      }
-    })
-    .catch(() => {
-      ElMessageBox.close();
+  try {
+    await ElMessageBox.confirm("确认移除该任务?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     });
+    await JobAPI.removeJob(jobId);
+    await refreshJobList();
+  } catch {
+    ElMessageBox.close();
+  }
 }
 
 async function handleOpenExecutionLogDrawer(job: SchedulerJob) {
@@ -1039,7 +1034,7 @@ function handleViewJobState(row: JobLogTable) {
 </script>
 
 <style scoped>
-.job-page ::v-deep(.data-table) {
+.job-page :deep(.data-table) {
   height: 100%;
 }
 
@@ -1151,7 +1146,7 @@ function handleViewJobState(row: JobLogTable) {
   min-height: 0;
 }
 
-.execution-log-drawer ::v-deep(.el-card.data-table) {
+.execution-log-drawer :deep(.el-card.data-table) {
   flex: 1;
   min-height: 0;
 }

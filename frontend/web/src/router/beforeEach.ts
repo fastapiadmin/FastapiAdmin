@@ -1,6 +1,23 @@
 /**
- * 路由前置守卫：登录态、动态路由注册（菜单）、根路径重定向、进度条、标签页与标题。
- * 入口 `setupBeforeEachGuard`；核心流程见 `handleRouteGuard`。
+ * 路由前置守卫 —— 导航生命周期中的核心编排器。
+ *
+ * ── 职责 ──
+ * 1. 存储失效检测（storage 异常时登出）
+ * 2. 登录态校验 & 未登录重定向
+ * 3. 动态路由延迟注册（fetch 菜单 → addRoute → 保存）
+ * 4. 根路径 `/` → 首页重定向
+ * 5. 工作标签同步、页面标题设置
+ * 6. 404 / 500 降级兜底
+ *
+ * ── 核心流程 ──
+ * setupBeforeEachGuard() → 注册 `router.beforeEach`
+ *   └─ handleRouteGuard()   ← 单一编排入口，按优先级顺序执行
+ *        ├─ checkStorageInvalidated()
+ *        ├─ handleLoginStatus()
+ *        ├─ routeInitFailed 兜底
+ *        ├─ handleDynamicRoutes()  ← 按需拉菜单 + addRoute
+ *        ├─ handleRootPathRedirect()
+ *        └─ setWorktab / setPageTitle / 404
  */
 import type { AppRouteRecord } from "@/types/router";
 import type { Router, RouteLocationNormalized, NavigationGuardNext } from "vue-router";
@@ -19,20 +36,33 @@ import { UserAPI } from "@/api/module_system/user";
 import { ApiStatus, isHttpError } from "@utils/http";
 import { RouteRegistry } from "./dynamicRoutes";
 import { MenuProcessor } from "./MenuProcessor";
-import { checkStorageInvalidated } from "@utils/storage";
+import { resetStorageInvalidated, checkStorageInvalidated } from "@utils/storage";
 
 // --- 模块级单例与守卫状态 ---
 
+/** 动态路由注册表（惰性创建，首次导航时生成） */
 let routeRegistry: RouteRegistry | null = null;
+
+/** 菜单数据处理器（不含注册逻辑，只做列表拉取 + 树形组装） */
 const menuProcessor = new MenuProcessor();
 
-/** 供 afterEach 关闭全局 loading */
+/**
+ * 全局 loading 开关 —— 动态路由初始化时由 beforeEach 开启，
+ * afterEach 收到标志后关闭。
+ */
 let pendingLoading = false;
 
-/** 动态路由拉取失败后为 true，避免反复请求造成死循环 */
+/**
+ * 路由初始化失败标记 —— 动态路由拉取/注册抛出异常后置为 true，
+ * 随后所有导航直接走 500 兜底，避免反复请求造成死循环。
+ * `resetRouteInitState()` 可在重新登录后重置。
+ */
 let routeInitFailed = false;
 
-/** 并发导航时只允许一路执行动态路由初始化 */
+/**
+ * 路由初始化进行中标记 —— 防止并发导航下多次拉取菜单。
+ * 第二次导航 `next(false)` 取消，由首次初始化完成后重新恢复。
+ */
 let routeInitInProgress = false;
 
 export function getPendingLoading(): boolean {
@@ -123,7 +153,10 @@ async function handleRouteGuard(
   // 检查存储是否已失效（storage/index.ts 检测到异常时标记）
   if (checkStorageInvalidated()) {
     console.info("[RouteGuard] 检测到存储已失效，执行登出");
-    await userStore.logout();
+    // 传 { navigate: false } 防止 logout 内部调用 router.push() 造成重复导航，
+    // 导航由本守卫通过 next() 统一控制
+    await userStore.logout({ navigate: false });
+    resetStorageInvalidated();
     next({ name: "Login", replace: true });
     return;
   }

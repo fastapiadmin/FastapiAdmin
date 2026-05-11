@@ -609,7 +609,7 @@ onMounted(async () => {
   bottom: 0;
   z-index: 2;
 
-  ::v-deep(.el-upload) {
+  :deep(.el-upload) {
     display: inline-flex;
   }
 

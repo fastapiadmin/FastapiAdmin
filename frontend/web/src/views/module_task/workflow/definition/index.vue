@@ -198,42 +198,42 @@ function onTableSelectionChange(rows: WorkflowTable[]) {
   selectedRows.value = rows;
 }
 
-function deleteWorkflowRow(id: number | undefined) {
+async function deleteWorkflowRow(id: number | undefined) {
   if (id == null) return;
-  ElMessageBox.confirm("确认删除该工作流吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await WorkflowDefinitionAPI.deleteWorkflow([id]);
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确认删除该工作流吗？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await WorkflowDefinitionAPI.deleteWorkflow([id]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await WorkflowDefinitionAPI.deleteWorkflow(ids);
-        ElMessage.success("删除成功");
-        selectedRows.value = [];
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await WorkflowDefinitionAPI.deleteWorkflow(ids);
+    ElMessage.success("删除成功");
+    selectedRows.value = [];
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
 function getStatusType(status: string): "success" | "warning" | "info" | "danger" | "primary" {
@@ -363,55 +363,49 @@ function onDrawerRefresh() {
   void refreshUpdate();
 }
 
-function handlePublish(record: WorkflowTable) {
-  ElMessageBox.confirm("确定要发布此工作流吗？发布后可执行。", "确认发布", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        if (!record.id) {
-          ElMessage.error("工作流ID不存在");
-          return;
-        }
-        await WorkflowDefinitionAPI.publishWorkflow(record.id, {});
-        ElMessage.success("发布成功");
-        await refreshUpdate();
-      } catch {
-        ElMessage.error("发布失败");
-      }
-    })
-    .catch(() => {});
+async function handlePublish(record: WorkflowTable) {
+  try {
+    await ElMessageBox.confirm("确定要发布此工作流吗？发布后可执行。", "确认发布", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    if (!record.id) {
+      ElMessage.error("工作流ID不存在");
+      return;
+    }
+    await WorkflowDefinitionAPI.publishWorkflow(record.id, {});
+    ElMessage.success("发布成功");
+    await refreshUpdate();
+  } catch {
+    ElMessage.error("发布失败");
+  }
 }
 
-function handleExecute(action: string, record: WorkflowTable) {
+async function handleExecute(action: string, record: WorkflowTable) {
   if (action !== "execute") return;
-  ElMessageBox.confirm("确定要立即执行此工作流吗？", "确认执行", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        if (!record.id) {
-          ElMessage.error("工作流ID不存在");
-          return;
-        }
-        const res = await WorkflowDefinitionAPI.executeWorkflow({
-          workflow_id: record.id,
-          variables: {},
-        });
-        if (res.data?.data) {
-          const result = res.data.data;
-          ElMessage.success(`工作流执行${result.status === "completed" ? "成功" : "失败"}`);
-        }
-        await refreshUpdate();
-      } catch {
-        ElMessage.error("执行失败");
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm("确定要立即执行此工作流吗？", "确认执行", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    if (!record.id) {
+      ElMessage.error("工作流ID不存在");
+      return;
+    }
+    const res = await WorkflowDefinitionAPI.executeWorkflow({
+      workflow_id: record.id,
+      variables: {},
+    });
+    if (res.data?.data) {
+      const result = res.data.data;
+      ElMessage.success(`工作流执行${result.status === "completed" ? "成功" : "失败"}`);
+    }
+    await refreshUpdate();
+  } catch {
+    ElMessage.error("执行失败");
+  }
 }
 </script>
 

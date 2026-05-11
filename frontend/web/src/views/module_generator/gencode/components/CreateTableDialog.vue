@@ -426,7 +426,7 @@ function handleCancel() {
   position: relative;
 }
 
-.visual-pane ::v-deep(.el-textarea__inner) {
+.visual-pane :deep(.el-textarea__inner) {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -437,20 +437,20 @@ function handleCancel() {
 /* 表结构：描述列表表格化，标签列对齐、内容区可伸缩 */
 .visual-structure {
   .visual-desc {
-    ::v-deep(.el-descriptions__label) {
+    :deep(.el-descriptions__label) {
       width: 108px;
       vertical-align: middle;
     }
 
-    ::v-deep(.el-descriptions__cell) {
+    :deep(.el-descriptions__cell) {
       vertical-align: middle;
     }
 
-    ::v-deep(.el-descriptions__content) {
+    :deep(.el-descriptions__content) {
       min-width: 0;
     }
 
-    ::v-deep(.el-descriptions__title) {
+    :deep(.el-descriptions__title) {
       margin-bottom: 8px;
     }
   }

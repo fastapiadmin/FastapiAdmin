@@ -127,12 +127,12 @@ watch(
 .article-detail-markdown {
   margin-top: 8px;
 
-  ::v-deep(img) {
+  :deep(img) {
     width: 100%;
     border: 1px solid var(--fa-gray-200);
   }
 
-  ::v-deep(pre) {
+  :deep(pre) {
     position: relative;
 
     &:hover {
@@ -152,11 +152,11 @@ watch(
     }
   }
 
-  ::v-deep(.code-wrapper) {
+  :deep(.code-wrapper) {
     overflow-x: auto;
   }
 
-  ::v-deep(.line-number) {
+  :deep(.line-number) {
     position: sticky;
     left: 0;
     z-index: 2;
@@ -169,7 +169,7 @@ watch(
     text-align: center;
   }
 
-  ::v-deep(.copy-button) {
+  :deep(.copy-button) {
     position: absolute;
     top: 6px;
     right: 6px;

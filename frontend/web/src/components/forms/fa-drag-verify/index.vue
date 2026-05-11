@@ -147,10 +147,6 @@ const onTouchMove = (e: any) => {
   }
 };
 
-// 全局事件监听器添加
-document.addEventListener("touchstart", onTouchStart);
-document.addEventListener("touchmove", onTouchMove, { passive: false });
-
 // 获取数值形式的宽度
 const getNumericWidth = (): number => {
   if (typeof props.width === "string") {
@@ -180,7 +176,7 @@ onMounted(() => {
     dragVerify.value?.style.setProperty("--pwidth", -Math.floor(numericWidth / 2) + "px");
   });
 
-  // 重复添加事件监听器（确保事件绑定）
+  // 注册 touch 事件监听器，由 onBeforeUnmount 统一清理
   document.addEventListener("touchstart", onTouchStart);
   document.addEventListener("touchmove", onTouchMove, { passive: false });
 });

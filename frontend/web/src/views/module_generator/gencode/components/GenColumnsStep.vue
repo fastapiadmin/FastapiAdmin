@@ -249,7 +249,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import { useDraggable } from "vue-draggable-plus";
-import type { GenTableSchema } from "@/api/module_generator/gencode";
+import type { GenTableSchema, GenTableColumnSchema } from "@/api/module_generator/gencode";
 import type { DictTable } from "@/api/module_system/dict";
 
 defineOptions({ name: "GenColumnsStep" });
@@ -276,7 +276,7 @@ const columnsModel = computed({
   get: () => props.info.columns || [],
   set: (v) => {
     // props.info 是父组件传入的 reactive 对象，可以直接回写
-    props.info.columns = v as any;
+    props.info.columns = v as GenTableColumnSchema[];
   },
 });
 

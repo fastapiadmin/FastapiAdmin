@@ -169,23 +169,17 @@ export default ({ mode }: { mode: string }) => {
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
-              if (id.includes("echarts")) {
-                return "echarts";
-              }
-              if (id.includes("element-plus")) {
-                return "element-plus";
-              }
-              if (id.includes("@wangeditor-next")) {
-                return "wangeditor";
-              }
-              if (id.includes("codemirror")) {
-                return "codemirror";
-              }
-              if (id.includes("exceljs")) {
-                return "exceljs";
-              }
+              if (id.includes("echarts")) return "echarts";
+              if (id.includes("element-plus")) return "element-plus";
+              if (id.includes("@wangeditor-next")) return "wangeditor";
+              if (id.includes("codemirror")) return "codemirror";
+              if (id.includes("exceljs")) return "exceljs";
+              if (id.includes("@vue-flow")) return "vue-flow";
+              if (id.includes("highlight.js") || id.includes("highlightjs")) return "highlight";
+              if (id.includes("xgplayer")) return "xgplayer";
+              if (id.includes("markdown-it")) return "markdown";
               const module = id.toString().split("node_modules/")[1].split("/")[0];
-              if (["birpc", "hookable"].includes(module)) return;
+              if (["birpc", "hookable", "tslib", "copy-anything"].includes(module)) return;
               return module;
             }
           },

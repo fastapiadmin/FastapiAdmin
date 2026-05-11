@@ -1,4 +1,4 @@
-<!-- 三种模式与 art-design-pro 一致：tab-default / tab-card / tab-google（参考 art-design-pro/src/components/core/layouts/art-work-tab） -->
+<!-- 三种模式：tab-default / tab-card / tab-google -->
 <template>
   <div
     v-if="showWorkTab"
@@ -156,6 +156,17 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 工作栏标签页组件：多标签导航 + 右键菜单 + KeepAlive 缓存管理。
+ *
+ * 三种模式（通过 settingStore.tabStyle 切换）：
+ *   tab-default  —— 默认模式，独立标签卡
+ *   tab-card     —— 卡片模式，标签有圆角边框
+ *   tab-google   —— 谷歌模式，连体标签
+ *
+ * 核心流程：路由切换 → setWorktab (utils/navigation) 同步 → 本组件响应式渲染。
+ * 关闭/切换/Pin 操作全部通过 worktabStore 管理。
+ */
 import { computed, onMounted, ref, watch, nextTick, onUnmounted } from "vue";
 import { LocationQueryRaw, useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";

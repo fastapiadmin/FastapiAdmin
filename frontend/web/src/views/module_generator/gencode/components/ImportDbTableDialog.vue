@@ -73,7 +73,7 @@
         ></ElTableColumn>
         <ElTableColumn prop="table_type" label="表类型"></ElTableColumn>
       </ElTable>
-      <pagination
+      <FaPagination
         v-model:page="query.page_no"
         v-model:limit="query.page_size"
         :total="total"
@@ -94,6 +94,7 @@ import { ref, computed } from "vue";
 import type { FormInstance, TableInstance } from "element-plus";
 import type { DBTableSchema, GenTablePageQuery } from "@/api/module_generator/gencode";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaPagination from "@/components/others/fa-pagination/index.vue";
 
 defineOptions({ name: "ImportDbTableDialog" });
 

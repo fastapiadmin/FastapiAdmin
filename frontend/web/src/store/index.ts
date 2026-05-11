@@ -2,7 +2,6 @@ import type { App } from "vue";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import { router } from "@/router";
-import { resetDynamicRoutesSync } from "@/router/beforeEach";
 import { useUserStore } from "./modules/user.store";
 import { useDictStore } from "./modules/dict.store";
 import { useNoticeStore } from "./modules/notice.store";
@@ -28,7 +27,6 @@ export * from "./modules/user.store";
 export * from "./modules/worktab.store";
 
 export { store };
-export { useUserStore, useDictStore, useNoticeStore, useConfigStore, useWorktabStore };
 
 export interface RefreshCacheOptions {
   dictTypes?: string[];
@@ -75,6 +73,7 @@ export async function refreshAppCaches(opts: RefreshCacheOptions = {}) {
   await Promise.allSettled(tasks);
 
   if (refreshRoutes) {
+    const { resetDynamicRoutesSync } = await import("@/router/beforeEach");
     resetDynamicRoutesSync();
     await router.replace({
       path: router.currentRoute.value.path,

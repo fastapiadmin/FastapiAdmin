@@ -62,7 +62,7 @@ export function setupWebSocket() {
 
   try {
     isInitialized = true;
-    console.log("[WebSocket] 初始化成功");
+    console.info("[WebSocket] 初始化成功");
   } catch (error) {
     console.error("[WebSocket] 初始化失败:", error);
   }
@@ -72,7 +72,7 @@ export function setupWebSocket() {
  * 清理所有 WebSocket 连接
  */
 export function cleanupWebSocket() {
-  console.log("[WebSocket] 开始清理连接...");
+  console.info("[WebSocket] 开始清理连接...");
 
   websocketInstances.forEach((instance, key) => {
     try {
@@ -83,7 +83,7 @@ export function cleanupWebSocket() {
       } else if (instance.cleanup) {
         instance.cleanup();
       }
-      console.log(`[WebSocket] ${key} 已断开`);
+      console.info(`[WebSocket] ${key} 已断开`);
     } catch (error) {
       console.error(`[WebSocket] ${key} 清理失败:`, error);
     }
@@ -91,7 +91,7 @@ export function cleanupWebSocket() {
 
   websocketInstances.clear();
   isInitialized = false;
-  console.log("[WebSocket] 清理完成");
+  console.info("[WebSocket] 清理完成");
 }
 
 /**
@@ -192,7 +192,7 @@ export default class WebSocketClient {
   private connect(resetReconnectAttempts: boolean = false): void {
     // 如果正在连接中，不重复连接
     if (this.isConnecting) {
-      console.log("正在建立WebSocket连接中...");
+      console.info("正在建立WebSocket连接中...");
       return;
     }
 
@@ -267,7 +267,7 @@ export default class WebSocketClient {
 
     // 如果未连接且不要求立即发送，则加入消息队列
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.log("WebSocket未连接，消息已加入队列等待发送");
+      console.info("WebSocket未连接，消息已加入队列等待发送");
       this.messageQueue.push(data);
       // 如果未在重连中，则尝试重连
       if (!this.isConnecting && !this.stopReconnect) {
@@ -289,7 +289,7 @@ export default class WebSocketClient {
   // 发送队列中的消息
   private flushMessageQueue(): void {
     if (this.messageQueue.length > 0 && this.ws?.readyState === WebSocket.OPEN) {
-      console.log(`发送队列中的${this.messageQueue.length}条消息`);
+      console.info(`发送队列中的${this.messageQueue.length}条消息`);
       while (this.messageQueue.length > 0) {
         const data = this.messageQueue.shift();
         if (data) {
@@ -308,7 +308,7 @@ export default class WebSocketClient {
 
   // 处理连接打开
   private handleOpen(event: Event): void {
-    console.log("WebSocket连接成功", event);
+    console.info("WebSocket连接成功", event);
     this.clearTimer("connectionTimer"); // 清除连接超时定时器
     this.isConnected = true;
     this.isConnecting = false;
@@ -322,14 +322,14 @@ export default class WebSocketClient {
 
   // 处理收到的消息
   private handleMessage(event: MessageEvent): void {
-    console.log("收到WebSocket消息:", event);
+    console.debug("收到WebSocket消息:", event);
     this.resetHeartbeat();
     this.messageHandler(event);
   }
 
   // 处理连接关闭
   private handleClose(event: CloseEvent): void {
-    console.log(
+    console.info(
       `WebSocket断开: 代码=${event.code}, 原因=${event.reason}, 干净关闭=${event.wasClean}`
     );
 
@@ -440,7 +440,7 @@ export default class WebSocketClient {
 
       try {
         this.ws.send("ping");
-        console.log("发送ping消息");
+        console.debug("发送ping消息");
       } catch (error) {
         console.error("发送ping消息失败:", error);
         this.clearTimer("pingTimer");
@@ -467,13 +467,13 @@ export default class WebSocketClient {
     this.closeCurrentSocketForReconnect();
 
     const delay = this.calculateReconnectDelay();
-    console.log(
+    console.info(
       `将在${delay / 1000}秒后尝试重新连接（第${this.reconnectAttempts}/${this.maxReconnectAttempts}次）`
     );
 
     this.clearTimer("reconnectTimer");
     this.reconnectTimer = setTimeout(() => {
-      console.log(`尝试重新连接WebSocket（第${this.reconnectAttempts}次）`);
+      console.info(`尝试重新连接WebSocket（第${this.reconnectAttempts}次）`);
       this.connect(false);
     }, delay);
   }

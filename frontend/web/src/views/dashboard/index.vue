@@ -1,3 +1,4 @@
+<!-- 仪表盘首页：快捷入口 + 收藏夹 + 数据概览卡片 -->
 <template>
   <div class="workplace-page">
     <!-- 顶栏放入 gutter 行，与下方栅格列边缘对齐 -->
@@ -627,39 +628,39 @@ function getQuickLinkStableIndex(item: QuickLink): number {
 }
 
 // 处理删除链接
-const handleDeleteLink = (item: QuickLink) => {
-  ElMessageBox.confirm(`确定要取消收藏"${item.title}"吗？`, "取消收藏确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(() => {
-      if (item.id) {
-        quickStartManager.removeQuickLink(item.id);
-      } else if (item.href) {
-        quickStartManager.removeQuickLinkByHref(item.href);
-      } else {
-        ElMessage.warning("无法移除：缺少标识");
-        return;
-      }
-      ElMessage.success(`已取消收藏：${item.title}`);
-    })
-    .catch(() => {
-      // 用户取消删除
+const handleDeleteLink = async (item: QuickLink) => {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏"${item.title}"吗？`, "取消收藏确认", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     });
+    if (item.id) {
+      quickStartManager.removeQuickLink(item.id);
+    } else if (item.href) {
+      quickStartManager.removeQuickLinkByHref(item.href);
+    } else {
+      ElMessage.warning("无法移除：缺少标识");
+      return;
+    }
+    ElMessage.success(`已取消收藏：${item.title}`);
+  } catch {
+    // 用户取消
+  }
 };
 
-const clearBookmarks = () => {
-  ElMessageBox.confirm("确定要清空收藏吗？", "清空收藏确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(() => {
-      quickStartManager.clearQuickLinks();
-      ElMessage.success("已清空收藏");
-    })
-    .catch(() => {});
+const clearBookmarks = async () => {
+  try {
+    await ElMessageBox.confirm("确定要清空收藏吗？", "清空收藏确认", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    quickStartManager.clearQuickLinks();
+    ElMessage.success("已清空收藏");
+  } catch {
+    // 用户取消
+  }
 };
 
 // 监听快速链接变化
@@ -727,13 +728,13 @@ const currentUser = {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: var(--workplace-radius);
 
-  ::v-deep(.el-card__header) {
+  :deep(.el-card__header) {
     border-bottom-color: var(--el-border-color-extra-light);
   }
 }
 
 .workplace-calendar-card {
-  ::v-deep(.el-card__body) {
+  :deep(.el-card__body) {
     padding: 8px 10px 10px;
   }
 }
@@ -756,7 +757,7 @@ const currentUser = {
 
 /* —— 顶栏 —— */
 .workplace-hero-card {
-  ::v-deep(.el-card__body) {
+  :deep(.el-card__body) {
     padding: 20px 22px;
   }
 }
@@ -841,7 +842,7 @@ const currentUser = {
 }
 
 .workplace-modules-card {
-  ::v-deep(.el-card__body) {
+  :deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -857,7 +858,7 @@ const currentUser = {
 }
 
 .workplace-bookmarks-card {
-  ::v-deep(.el-card__body) {
+  :deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -937,7 +938,7 @@ const currentUser = {
 }
 
 .workplace-section-card {
-  ::v-deep(.el-card__body) {
+  :deep(.el-card__body) {
     padding: 12px 18px 18px;
   }
 }
@@ -976,7 +977,7 @@ const currentUser = {
   width: 100%;
   min-width: 0;
 
-  ::v-deep(.el-card__body) {
+  :deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;

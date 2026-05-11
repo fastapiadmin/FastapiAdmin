@@ -209,6 +209,7 @@ export function useSettingsPanel() {
 
     const cleanupSettings = () => {
       stopWatch();
+      mittBus.off("openSetting", openSetting);
       themeCleanup?.();
       cleanup();
     };

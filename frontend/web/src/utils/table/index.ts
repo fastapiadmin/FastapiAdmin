@@ -1,8 +1,18 @@
 /**
- * 表格列表工具：`useTable`、缓存与分页响应适配。
+ * 表格列表工具：`useTable` 组合式函数、`TableCache` 缓存、分页响应适配。
  *
- * - 接口约定：分页列表返回体须符合全局 `PageResult`（或包在标准 `data` 内），见 `defaultResponseAdapter`。
- * - 缓存：`TableCache` 按参数 hash + 标签失效；策略枚举供 `useTable.clearCache` 使用。
+ * ── 数据流约定 ──
+ * 分页列表 API 返回体须符合全局 `PageResult` 结构（total + items），
+ * 或包在标准 `data` 字段内 —— `defaultResponseAdapter` 负责此解包。
+ *
+ * ── TableCache 缓存策略 ──
+ * 按查询参数 hash 作为 key，绑定 CacheInvalidationStrategy 标签控制失效：
+ *   Timestamp  → 指定时间后过期
+ *   Tag        → 手动通过标签名清除一组缓存
+ *   None       → 不过期（需手动 clearCache）
+ *
+ * @see useTable (src/hooks/core/useTable.ts)
+ * @see TableCache 实现
  */
 
 import { h } from "vue";
@@ -10,7 +20,7 @@ import type { VNode } from "vue";
 import { ElTooltip } from "element-plus";
 import { hash } from "ohash";
 import ArtButtonMore from "@/components/forms/fa-button-more/index.vue";
-import type { ButtonMoreItem } from "@/components/forms/fa-button-more/index.vue";
+import type { ButtonMoreItem } from "@/components/forms/fa-button-more/types";
 import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
 
 // --- 全局分页字段名（与 PageQuery 对齐） ---

@@ -254,29 +254,28 @@ function saveXlsx(fileData: any, fileName: string) {
 }
 
 // 下载导入模板
-function handleDownloadTemplate() {
+async function handleDownloadTemplate() {
   try {
     const importTemplate = props.contentConfig.importTemplate;
     if (typeof importTemplate === "string") {
       window.open(importTemplate);
     } else if (typeof importTemplate === "function") {
-      importTemplate().then((response) => {
-        const fileData = response.data;
-        const cd = response.headers?.["content-disposition"] as string | undefined;
-        let fileName = props.defaultTemplateFileName || "template.xlsx";
-        if (cd) {
-          try {
-            const part = cd.split(";").find((s) => s.trim().startsWith("filename"));
-            if (part) {
-              const raw = part.split("=")[1]?.replace(/^"|"$/g, "");
-              if (raw) fileName = decodeURI(raw);
-            }
-          } catch {
-            /* 使用 defaultTemplateFileName */
+      const response = await importTemplate();
+      const fileData = response.data;
+      const cd = response.headers?.["content-disposition"] as string | undefined;
+      let fileName = props.defaultTemplateFileName || "template.xlsx";
+      if (cd) {
+        try {
+          const part = cd.split(";").find((s) => s.trim().startsWith("filename"));
+          if (part) {
+            const raw = part.split("=")[1]?.replace(/^"|"$/g, "");
+            if (raw) fileName = decodeURI(raw);
           }
+        } catch {
+          /* 使用 defaultTemplateFileName */
         }
-        saveXlsx(fileData, fileName);
-      });
+      }
+      saveXlsx(fileData, fileName);
     } else {
       ElMessage.error("未配置importTemplate");
     }

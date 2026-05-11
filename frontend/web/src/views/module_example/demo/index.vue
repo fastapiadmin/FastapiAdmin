@@ -472,7 +472,7 @@ const exportQueryParams = computed(() => {
 const demoImportContentConfig = computed<IContentConfig>(() => ({
   permPrefix: "module_example:demo",
   cols: demoCrudCols.value,
-  indexAction: async () => ({}) as any,
+  indexAction: async () => ({}),
   importTemplate: () => DemoAPI.downloadTemplateDemo(),
 }));
 
@@ -685,84 +685,91 @@ async function handleSubmit() {
   });
 }
 
-const deleteDemoRow = (row: DemoTable) => {
+const deleteDemoRow = async (row: DemoTable) => {
   if (!row.id) return;
-  ElMessageBox.confirm(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`, "删除确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DemoAPI.deleteDemo([row.id!]);
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+  try {
+    await ElMessageBox.confirm(
+      `确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`,
+      "删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+    await DemoAPI.deleteDemo([row.id!]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    ElMessage.info("已取消删除");
+  }
 };
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await DemoAPI.deleteDemo(ids);
-        ElMessage.success("删除成功");
-        faTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
+  try {
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`,
+      "批量删除",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       }
-    })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+    );
+    batchDeleting.value = true;
+    await DemoAPI.deleteDemo(ids);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    ElMessage.info("已取消删除");
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function runBatchStatus(status: string) {
+async function runBatchStatus(status: string) {
   const ids = selectedIds.value;
   if (ids.length === 0) {
     ElMessage.warning("请先在列表中勾选数据");
     return;
   }
-  ElMessageBox.confirm(
-    `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
-    "批量设置",
-    { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
-  )
-    .then(async () => {
-      await DemoAPI.batchDemo({ ids, status });
-      ElMessage.success("操作成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshData();
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(
+      `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
+      "批量设置",
+      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+    );
+    await DemoAPI.batchDemo({ ids, status });
+    ElMessage.success("操作成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshData();
+  } catch {
+    // 用户取消
+  }
 }
 
 function openImportModal() {
   importModalVisible.value = true;
 }
 
-function handleCrudImportUpload(formData: FormData) {
-  DemoAPI.importDemo(formData)
-    .then((res) => {
-      if (res.data.code !== ResultEnum.SUCCESS) {
-        ElMessage.error(res.data.msg || "导入失败");
-        return;
-      }
-      ElMessage.success(res.data.msg || "导入成功");
-      importModalVisible.value = false;
-      return refreshData();
-    })
-    .catch(console.error);
+async function handleCrudImportUpload(formData: FormData) {
+  try {
+    const res = await DemoAPI.importDemo(formData);
+    if (res.data.code !== ResultEnum.SUCCESS) {
+      ElMessage.error(res.data.msg || "导入失败");
+      return;
+    }
+    ElMessage.success(res.data.msg || "导入成功");
+    importModalVisible.value = false;
+    await refreshData();
+  } catch (error) {
+    console.error("[Import]", error);
+    ElMessage.error("导入失败");
+  }
 }
 
 function openExportModal() {

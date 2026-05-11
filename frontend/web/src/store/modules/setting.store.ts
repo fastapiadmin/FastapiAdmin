@@ -142,11 +142,11 @@ export const useSettingsStore = defineStore(
     });
 
     const getMenuOpenWidth = computed((): string => {
-      return menuOpenWidth.value + "px" || SETTING_DEFAULT_CONFIG.menuOpenWidth + "px";
+      return (menuOpenWidth.value ?? SETTING_DEFAULT_CONFIG.menuOpenWidth) + "px";
     });
 
     const getCustomRadius = computed((): string => {
-      return customRadius.value + "rem" || SETTING_DEFAULT_CONFIG.customRadius + "rem";
+      return (customRadius.value ?? SETTING_DEFAULT_CONFIG.customRadius) + "rem";
     });
 
     /** festivalDate 存「上次完成烟花播放」的自然日 YYYY-MM-DD，与今天相同则当天不再播 */
@@ -175,9 +175,13 @@ export const useSettingsStore = defineStore(
     watch(
       [theme, themeColor],
       ([newTheme, newThemeColor]) => {
-        toggleDarkMode(newTheme === ThemeMode.DARK);
-        const colors = generateThemeColors(newThemeColor, newTheme);
-        applyTheme(colors);
+        try {
+          toggleDarkMode(newTheme === ThemeMode.DARK);
+          const colors = generateThemeColors(newThemeColor, newTheme);
+          applyTheme(colors);
+        } catch (error) {
+          console.error("[SettingStore] 主题初始化失败:", error);
+        }
       },
       { immediate: true }
     );

@@ -22,8 +22,8 @@ defineEmits<{ link: [] }>();
 
 <style scoped lang="scss">
 .login-auth-link-row {
-  ::v-deep(.el-link),
-  ::v-deep(.el-link__inner) {
+  :deep(.el-link),
+  :deep(.el-link__inner) {
     line-height: inherit;
   }
 }

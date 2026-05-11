@@ -534,19 +534,20 @@ onMounted(() => {
 onInit((vueFlowInstance) => {
   vueFlowInstance.fitView();
   if (workflowId.value) {
-    WorkflowDefinitionAPI.getWorkflowDetail(workflowId.value)
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await WorkflowDefinitionAPI.getWorkflowDetail(workflowId.value!);
         if (res.data && res.data.data) {
           nodes.value = res.data.data.nodes || [];
           edges.value = res.data.data.edges || [];
-          saveToHistory(nodes.value as any, edges.value as any);
+          saveToHistory(nodes.value, edges.value);
         }
-      })
-      .catch(() => {
+      } catch {
         ElMessage.error("流程加载失败");
-      });
+      }
+    })();
   } else {
-    saveToHistory(nodes.value as any, edges.value as any);
+    saveToHistory(nodes.value, edges.value);
   }
 });
 
@@ -556,7 +557,7 @@ onConnect((connection) => {
     type: edgeStyle.value,
     animated: edgeAnimated.value,
   });
-  saveToHistory(nodes.value as any, edges.value as any);
+  saveToHistory(nodes.value, edges.value);
 });
 
 function handleValidate() {
@@ -662,7 +663,7 @@ function handleSaveNode(data: any) {
   if (!selectedNode.value) return;
   const nodeId = selectedNode.value!.id;
   if (nodeId && updateNodeData(nodeId, data, getNodes, setNodes)) {
-    saveToHistory(nodes.value as any, edges.value as any);
+    saveToHistory(nodes.value, edges.value);
   }
 }
 
@@ -671,23 +672,28 @@ function handleDeleteNode() {
   const nodeId = selectedNode.value!.id;
   if (!nodeId) return;
 
-  ElMessageBox.confirm("确定要删除该节点吗？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  }).then(() => {
-    deleteNode(nodeId, getNodes, setNodes, getEdges, setEdges);
-    ElMessage.success("节点删除成功");
-    handleClosePanel();
-    saveToHistory(nodes.value as any, edges.value as any);
-  });
+  (async () => {
+    try {
+      await ElMessageBox.confirm("确定要删除该节点吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+      deleteNode(nodeId, getNodes, setNodes, getEdges, setEdges);
+      ElMessage.success("节点删除成功");
+      handleClosePanel();
+      saveToHistory(nodes.value, edges.value);
+    } catch {
+      // 用户取消
+    }
+  })();
 }
 
 function handleSaveEdge(data: any) {
   if (!selectedEdge.value) return;
   const edgeId = selectedEdge.value!.id;
   if (edgeId && updateEdgeData(edgeId, data, getEdges, setEdges)) {
-    saveToHistory(nodes.value as any, edges.value as any);
+    saveToHistory(nodes.value, edges.value);
   }
 }
 
@@ -696,16 +702,21 @@ function handleDeleteEdge() {
   const edgeId = selectedEdge.value!.id;
   if (!edgeId) return;
 
-  ElMessageBox.confirm("确定要删除该连线吗？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  }).then(() => {
-    deleteEdge(edgeId, getEdges, setEdges);
-    ElMessage.success("连线删除成功");
-    handleClosePanel();
-    saveToHistory(nodes.value as any, edges.value as any);
-  });
+  (async () => {
+    try {
+      await ElMessageBox.confirm("确定要删除该连线吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+      deleteEdge(edgeId, getEdges, setEdges);
+      ElMessage.success("连线删除成功");
+      handleClosePanel();
+      saveToHistory(nodes.value, edges.value);
+    } catch {
+      // 用户取消
+    }
+  })();
 }
 
 function handleSave() {
@@ -723,11 +734,12 @@ function handleSave() {
   if (workflowId.value) {
     return WorkflowDefinitionAPI.updateWorkflow(workflowId.value, saveData as WorkflowForm);
   } else {
-    return WorkflowDefinitionAPI.createWorkflow(saveData as WorkflowForm).then((res) => {
+    return (async () => {
+      const res = await WorkflowDefinitionAPI.createWorkflow(saveData as WorkflowForm);
       if (res.data && res.data.data) {
         workflowId.value = res.data.data.id;
       }
-    });
+    })();
   }
 }
 
@@ -904,7 +916,7 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
 
 <style scoped lang="scss">
 .workflow-drawer {
-  ::v-deep(.el-drawer__body) {
+  :deep(.el-drawer__body) {
     display: flex;
     flex-direction: column;
   }
@@ -916,11 +928,11 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   height: 100%;
 }
 
-::v-deep(.el-splitter) {
+:deep(.el-splitter) {
   flex: 1;
 }
 
-::v-deep(.el-splitter-panel) {
+:deep(.el-splitter-panel) {
   overflow: hidden;
 }
 
@@ -961,12 +973,12 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   overflow: hidden;
 }
 
-::v-deep(.vue-flow__controls) {
+:deep(.vue-flow__controls) {
   display: flex;
   flex-direction: column;
 }
 
-::v-deep(.vue-flow__controls-button) {
+:deep(.vue-flow__controls-button) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -978,7 +990,7 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   border: none;
 }
 
-::v-deep(.el-dropdown) {
+:deep(.el-dropdown) {
   display: flex;
 }
 
@@ -996,15 +1008,15 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   justify-content: flex-end;
 }
 
-.workflow-base-art-form ::v-deep(.el-row > .el-col:last-child) {
+.workflow-base-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.workflow-base-art-form ::v-deep(.el-form-item__content) {
+.workflow-base-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-.workflow-base-art-form ::v-deep(section) {
+.workflow-base-art-form :deep(section) {
   padding: 0;
 }
 </style>

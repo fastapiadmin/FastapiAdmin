@@ -92,7 +92,7 @@
       </FaTableHeader>
 
       <!-- 面包屑与表头已占用高度：表格高度须在独立 flex 子项内计算，否则分页会被挤出卡片 -->
-      <div class="resource-table-region min-h-0 flex flex-1 flex-col overflow-hidden pb-3">
+      <div class="resource-table-region min-h-0 flex flex-1 flex-col overflow-hidden">
         <FaTable
           row-key="file_url"
           :show-table-header="false"
@@ -633,14 +633,14 @@ async function handleBatchDelete() {
 </script>
 
 <style lang="scss" scoped>
-.resource-monitor-page ::v-deep(.resource-monitor-card.el-card > .el-card__body) {
+.resource-monitor-page :deep(.resource-monitor-card.el-card > .el-card__body) {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
 }
 
-::v-deep(.el-breadcrumb__item) {
+:deep(.el-breadcrumb__item) {
   &.is-link {
     color: var(--el-color-primary);
     cursor: pointer;

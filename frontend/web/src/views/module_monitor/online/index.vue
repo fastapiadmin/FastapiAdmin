@@ -125,21 +125,20 @@ const onlineSearchItems = computed<SearchFormItem[]>(() => [
 const clearAllLoading = ref(false);
 
 function kickSession(sessionId: string) {
-  ElMessageBox.confirm(`确认强制退出会话 ${sessionId}?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        await OnlineAPI.deleteOnline(sessionId);
-        ElMessage.success("操作成功");
-        await refreshData();
-      } catch (error: unknown) {
-        console.error(error);
-      }
-    })
-    .catch(() => {});
+  (async () => {
+    try {
+      await ElMessageBox.confirm(`确认强制退出会话 ${sessionId}?`, "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+      await OnlineAPI.deleteOnline(sessionId);
+      ElMessage.success("操作成功");
+      await refreshData();
+    } catch {
+      // 用户取消或操作失败
+    }
+  })();
 }
 
 const {
@@ -259,24 +258,23 @@ async function onResetSearch() {
 }
 
 function handleClearAll() {
-  ElMessageBox.confirm("确认强制退出所有用户?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        clearAllLoading.value = true;
-        await OnlineAPI.clearOnline();
-        ElMessage.success("操作成功");
-        await refreshData();
-      } catch (error: unknown) {
-        console.error(error);
-      } finally {
-        clearAllLoading.value = false;
-      }
-    })
-    .catch(() => {});
+  (async () => {
+    try {
+      await ElMessageBox.confirm("确认强制退出所有用户?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+      clearAllLoading.value = true;
+      await OnlineAPI.clearOnline();
+      ElMessage.success("操作成功");
+      await refreshData();
+    } catch {
+      // 用户取消
+    } finally {
+      clearAllLoading.value = false;
+    }
+  })();
 }
 </script>
 

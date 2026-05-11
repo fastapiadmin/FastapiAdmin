@@ -786,71 +786,66 @@ function formatDictDataOperationCell(row: DictDataTable) {
   });
 }
 
-function deleteDictDataRow(id: number) {
-  ElMessageBox.confirm("确认删除该项数据?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DictAPI.deleteDictData([id]);
-      dictStore.clearDictData();
-      if (props.dictType) {
-        await dictStore.getDict([props.dictType]);
-      }
-      ElMessage.success("删除成功");
-      faTableRef.value?.elTableRef?.clearSelection();
-      await refreshRemove();
-    })
-    .catch(() => {});
+async function deleteDictDataRow(id: number) {
+  try {
+    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DictAPI.deleteDictData([id]);
+    dictStore.clearDictData();
+    if (props.dictType) await dictStore.getDict([props.dictType]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
 }
 
-function handleBatchDelete() {
+async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
-  ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      try {
-        batchDeleting.value = true;
-        await DictAPI.deleteDictData(ids);
-        dictStore.clearDictData();
-        if (props.dictType) {
-          await dictStore.getDict([props.dictType]);
-        }
-        ElMessage.success("删除成功");
-        faTableRef.value?.elTableRef?.clearSelection();
-        await refreshRemove();
-      } finally {
-        batchDeleting.value = false;
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    batchDeleting.value = true;
+    await DictAPI.deleteDictData(ids);
+    dictStore.clearDictData();
+    if (props.dictType) await dictStore.getDict([props.dictType]);
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
 }
 
-function handleMoreClick(status: string) {
+async function handleMoreClick(status: string) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      await DictAPI.batchDictData({ ids, status });
-      await refreshData();
-      dictStore.clearDictData();
-      if (props.dictType) {
-        await dictStore.getDict([props.dictType]);
-      }
-    })
-    .catch(() => {});
+  try {
+    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await DictAPI.batchDictData({ ids, status });
+    await refreshData();
+    dictStore.clearDictData();
+    if (props.dictType) await dictStore.getDict([props.dictType]);
+  } catch {
+    // 用户取消
+  }
 }
 
 function openExportModal() {
@@ -890,11 +885,11 @@ function openExportModal() {
   border-color: var(--el-border-color-lighter);
 }
 
-.crud-dialog-art-form ::v-deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form ::v-deep(.el-form-item__content) {
+.crud-dialog-art-form :deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

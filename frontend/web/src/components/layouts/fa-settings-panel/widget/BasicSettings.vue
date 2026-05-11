@@ -83,7 +83,7 @@ const getSettingValue = (key: string) => {
 
 // 统一的设置变更处理
 const handleSettingChange = (handlerName: string, value: any) => {
-  const handler = (basicHandlers as any)[handlerName];
+  const handler = (basicHandlers as Record<string, (...args: any[]) => any>)[handlerName];
   if (typeof handler === "function") {
     handler(value);
   } else {

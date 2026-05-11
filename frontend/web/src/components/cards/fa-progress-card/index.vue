@@ -51,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const animationDuration = 500;
 const currentPercentage = ref(0);
+let animFrameId: number | null = null;
 
 const animateProgress = () => {
   const startTime = Date.now();
@@ -65,15 +66,24 @@ const animateProgress = () => {
     currentPercentage.value = startValue + (endValue - startValue) * progress;
 
     if (progress < 1) {
-      requestAnimationFrame(animate);
+      animFrameId = requestAnimationFrame(animate);
     }
   };
 
-  requestAnimationFrame(animate);
+  // 取消旧动画后启动新动画
+  if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+  animFrameId = requestAnimationFrame(animate);
 };
 
 onMounted(() => {
   animateProgress();
+});
+
+onBeforeUnmount(() => {
+  if (animFrameId !== null) {
+    cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+  }
 });
 
 // 当 percentage 属性变化时重新执行动画

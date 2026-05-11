@@ -9,7 +9,13 @@ import { IframeRouteManager } from "@/router";
 import { useCommon } from "@/hooks/core/useCommon";
 
 /**
- * 导航辅助：菜单标题、外链与路由跳转、工作标签（`setWorktab`）、文档标题（`setPageTitle`）。
+ * 导航辅助：菜单标题格式化、外链与路由跳转、工作标签同步（`setWorktab`）、文档标题设置（`setPageTitle`）。
+ *
+ * 核心函数：
+ * - `setPageTitle`     → 设置浏览器标题 `meta.title - 站点名`
+ * - `formatMenuTitle`  → 菜单标题 i18n 解析（`menus.xxx` 键 → 翻译文本）
+ * - `handleMenuJump`   → 菜单点击跳转（支持外链、iframe、子菜单递归）
+ * - `setWorktab`       → 与路由同步工作栏标签页
  */
 export type AppRouteRecordRaw = RouteRecordRaw & { hidden?: boolean };
 

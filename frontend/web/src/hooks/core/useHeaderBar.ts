@@ -123,7 +123,7 @@ export function useHeaderBar() {
   // 获取快速入口的最小宽度
   const fastEnterMinWidth = computed(() => {
     const config = getFeatureConfig("fastEnter");
-    return (config as any)?.minWidth || 1200;
+    return (config as Record<string, any>)?.minWidth || 1200;
   });
 
   /**

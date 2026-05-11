@@ -97,14 +97,22 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * FaForm —— 动态表单组件。
+ *
+ * 渲染策略：items 配置项数组 → componentMap[type] 映射组件 → 动态 :is 渲染。
+ * 支持所有 Element Plus 表单组件类型、自定义 render、插槽插写。
+ *
+ * @see SearchFormItem 接口定义
+ */
 import { useWindowSize } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import { toRaw, type Component } from "vue";
+import DatePicker from "@/components/DatePicker/index.vue";
 import {
   ElCascader,
   ElCheckbox,
   ElCheckboxGroup,
-  ElDatePicker,
   ElInput,
   ElInputTag,
   ElInputNumber,
@@ -131,10 +139,10 @@ const componentMap = {
   checkbox: ElCheckbox, // 复选框
   checkboxgroup: ElCheckboxGroup, // 复选框组
   radiogroup: ElRadioGroup, // 单选框组
-  date: ElDatePicker, // 日期选择器
-  daterange: ElDatePicker, // 日期范围选择器
-  datetime: ElDatePicker, // 日期时间选择器
-  datetimerange: ElDatePicker, // 日期时间范围选择器
+  date: DatePicker, // 日期选择器
+  daterange: DatePicker, // 日期范围选择器
+  datetime: DatePicker, // 日期时间选择器
+  datetimerange: DatePicker, // 日期时间范围选择器
   rate: ElRate, // 评分
   slider: ElSlider, // 滑块
   cascader: ElCascader, // 级联选择器

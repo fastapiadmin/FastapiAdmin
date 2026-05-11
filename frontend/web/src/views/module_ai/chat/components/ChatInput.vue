@@ -225,7 +225,7 @@ defineExpose({
         flex: 1;
         min-width: 0;
 
-        ::v-deep(.el-textarea__inner) {
+        :deep(.el-textarea__inner) {
           padding: 0;
           line-height: 1.6;
           color: var(--el-text-color-primary);
@@ -235,7 +235,7 @@ defineExpose({
           box-shadow: none;
         }
 
-        ::v-deep(.el-textarea) {
+        :deep(.el-textarea) {
           padding: 0;
         }
       }

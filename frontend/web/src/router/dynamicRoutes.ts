@@ -20,8 +20,12 @@ export interface ValidationResult {
   warnings: string[];
 }
 
-/** 菜单注册前校验：重名、缺少 component、深层误用 layout 占位等 */
+/**
+ * 菜单注册前校验：重名、缺少 component、深层误用 layout 占位等。
+ * 校验结果分 errors（阻止注册）和 warnings（仅控制台提醒）两级。
+ */
 export class RouteValidator {
+  /** 已警告过的路由集合，避免重复打印校验警告 */
   private warnedRoutes = new Set<string>();
 
   validate(routes: AppRouteRecord[]): ValidationResult {
@@ -204,7 +208,7 @@ export class ComponentLoader {
             onMounted(() => {
               const iframeRoute = IframeRouteManager.getInstance().findByPath(route.path);
               if (iframeRoute?.meta) {
-                iframeUrl.value = (iframeRoute.meta as any).link || "";
+                iframeUrl.value = iframeRoute.meta.link || "";
               }
             });
 

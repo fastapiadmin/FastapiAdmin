@@ -2,6 +2,24 @@
 
 基于 **Vue 3 + Vite + TypeScript + Element Plus** 的后台管理前端，与 FastAPI Admin 后端配套使用。状态管理为 **Pinia**，样式以 **Tailwind CSS 4** 与 **SCSS** 为主，接口请求使用 **Axios**。
 
+## 架构概览
+
+```
+main.ts 启动
+  └─ initPlugins(app)  ← 插件注册（Pinia → Router → 指令 → i18n → Element Plus）
+      └─ mount("#app")
+          └─ App.vue
+              ├─ onBeforeMount: 主题初始化
+              └─ onMounted: bootstrap() → 存储检查/版本升级/站点配置
+                  └─ 路由守卫 beforeEach
+                      ├─ 存储失效检测
+                      ├─ 登录态校验
+                      ├─ 动态路由注册（菜单 → addRoute）
+                      └─ 标签/标题同步
+```
+
+路由采用 **Hash 模式**，静态路由（Layout/登录/404）首屏注册，业务路由由守卫根据菜单权限延迟 `addRoute`。HTTP 拦截器支持 **Token 静默续期**（401 时自动 refresh，失败后跳转登录）。
+
 ---
 
 ## 第一次运行（最快上手）
