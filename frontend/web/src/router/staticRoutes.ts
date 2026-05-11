@@ -95,7 +95,7 @@ export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
  * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/fa-*` 组件）。
  * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
  */
-export const Layout = () => import("@/layouts/index.vue");
+export const Layout = () => import("@/components/layouts/index.vue");
 
 /** iframe 内跳页面：内联组件（无需 views/outside/Iframe.vue） */
 const IframeView = defineComponent({
@@ -458,7 +458,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   },
   {
     path: "/outside",
-    component: () => import("@/layouts/index.vue"),
+    component: () => import("@/components/layouts/index.vue"),
     name: "Outside",
     meta: { title: "menus.outside.title" },
     children: [
