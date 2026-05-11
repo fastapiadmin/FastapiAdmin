@@ -1,0 +1,674 @@
+{
+  "httpMsg": {
+    "unauthorized": "Unauthorized access, please login again",
+    "forbidden": "Access to this resource is forbidden",
+    "notFound": "The requested resource does not exist",
+    "methodNotAllowed": "Request method not allowed",
+    "requestTimeout": "Request timeout, please try again later",
+    "internalServerError": "Internal server error, please try again later",
+    "badGateway": "Bad gateway error, please try again later",
+    "serviceUnavailable": "Service temporarily unavailable, please try again later",
+    "gatewayTimeout": "Gateway timeout, please try again later",
+    "requestCancelled": "Request cancelled",
+    "networkError": "Network connection error, please check your connection",
+    "requestFailed": "Request failed",
+    "requestConfigError": "Request configuration error"
+  },
+  "manualPage": {
+    "title": "User manual",
+    "intro": "Watch the walkthrough video and browse the built-in checklist mapped to implemented UI and permission codes (coverage / completeness, not a quality score). Replace the demo video URL with your own CDN in production.",
+    "videoTab": "Video",
+    "manualTab": "Acceptance checklist",
+    "videoHint": "Pause, change speed, or go fullscreen anytime.",
+    "manualHint": "Use the TOC, filter, and anchors. “Functional completeness” items mirror implemented search bars, toolbars, row actions, and dialogs for gap checking."
+  },
+  "topBar": {
+    "search": {
+      "title": "Search"
+    },
+    "user": {
+      "userCenter": "User center",
+      "changeLog": "Release notes",
+      "paramConfig": "Config center",
+      "docs": "Document",
+      "github": "Github",
+      "gitee": "Gitee",
+      "tour": "Guided tour",
+      "lockScreen": "Lock screen",
+      "logout": "Log out"
+    },
+    "guide": {
+      "title": "Click here to view",
+      "theme": "Theme style",
+      "menu": "Open top menu",
+      "description": "More configurations"
+    }
+  },
+  "common": {
+    "tips": "Prompt",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "logoutTips": "Do you want to log out?",
+    "reset": "Reset",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "clear": "Clear",
+    "export": "Export",
+    "import": "Import",
+    "query": "Query",
+    "resetQuery": "Reset Query",
+    "back": "Back",
+    "close": "Close",
+    "refresh": "Refresh",
+    "inputText": "Please enter",
+    "selectText": "Please select",
+    "startTimeText": "Start Time",
+    "endTimeText": "End Time",
+    "login": "Login",
+    "required": "This field is required",
+    "loginOut": "Logout",
+    "document": "Project Documentation",
+    "reminder": "Reminder",
+    "loginOutMessage": "Are you sure you want to log out?",
+    "ok": "OK",
+    "reload": "Reload",
+    "closeTab": "Close Tab",
+    "closeTheLeftTab": "Close Left Tabs",
+    "closeTheRightTab": "Close Right Tabs",
+    "closeOther": "Close Other Tabs",
+    "closeAll": "Close All Tabs",
+    "prevLabel": "Previous",
+    "nextLabel": "Next",
+    "skipLabel": "Skip",
+    "doneLabel": "Done",
+    "menu": "Menu",
+    "menuDes": "Menu rendered based on route structure",
+    "collapse": "Collapse/Expand",
+    "collapseDes": "Expand and collapse the menu bar",
+    "tagsView": "Tags View",
+    "tagsViewDes": "Used to record route history",
+    "tool": "Tool",
+    "toolDes": "Used to customize system settings",
+    "shrink": "Collapse",
+    "expand": "Expand",
+    "delMessage": "Delete selected data?",
+    "delWarning": "Warning",
+    "delOk": "OK",
+    "delCancel": "Cancel",
+    "delNoData": "Please select data to delete",
+    "delSuccess": "Deleted successfully",
+    "fullscreen": "Fullscreen",
+    "size": "Size",
+    "columnSetting": "Column Settings",
+    "lengthRange": "Length must be between {min} and {max} characters",
+    "notSpace": "Cannot contain spaces",
+    "notSpecialCharacters": "Cannot contain special characters",
+    "isEqual": "The two inputs are inconsistent",
+    "setting": "Settings",
+    "copySuccess": "Copy successfully",
+    "copyFailed": "Copy failed"
+  },
+  "search": {
+    "placeholder": "Search page",
+    "historyTitle": "Search history",
+    "switchKeydown": "Navigate",
+    "selectKeydown": "Select",
+    "exitKeydown": "Close"
+  },
+  "setting": {
+    "menuType": {
+      "title": "Menu Layout",
+      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+    },
+    "theme": {
+      "title": "Theme Style",
+      "list": ["Light", "Dark", "System"]
+    },
+    "menu": {
+      "title": "Menu Style"
+    },
+    "color": {
+      "title": "Theme Color"
+    },
+    "box": {
+      "title": "Box Style",
+      "list": ["Border", "Shadow"]
+    },
+    "container": {
+      "title": "Container Width",
+      "list": ["Full", "Boxed"]
+    },
+    "basics": {
+      "title": "Basic Config",
+      "list": {
+        "multiTab": "Show work tab",
+        "accordion": "Sidebar opens accordion",
+        "collapseSidebar": "Show sidebar button",
+        "reloadPage": "Show reload page button",
+        "fastEnter": "Show fast enter",
+        "breadcrumb": "Show crumb navigation",
+        "language": "Show multilingual selection",
+        "menuSearch": "Show global menu search",
+        "fullscreenTool": "Show fullscreen toggle",
+        "layoutSize": "Show component size selector",
+        "notificationTool": "Show notification entry",
+        "progressBar": "Show top progress bar",
+        "weakMode": "Color Weakness Mode",
+        "watermark": "Global watermark",
+        "appLogo": "Show app logo & system title",
+        "loginGuide": "Show onboarding guide after login",
+        "grayMode": "Grayscale mode",
+        "aiAssistant": "Enable AI assistant entry",
+        "menuWidth": "Menu width",
+        "tabStyle": "Tab style",
+        "pageTransition": "Page animation",
+        "borderRadius": "Custom radius"
+      }
+    },
+    "tabStyle": {
+      "default": "Pill",
+      "card": "Card",
+      "google": "Chrome"
+    },
+    "transition": {
+      "list": {
+        "none": "None",
+        "fade": "Fade",
+        "slideLeft": "Slide Left",
+        "slideBottom": "Slide Bottom",
+        "slideTop": "Slide Top"
+      }
+    },
+    "actions": {
+      "resetConfig": "Reset Config",
+      "copyConfig": "Copy Config",
+      "copySuccess": "Configuration copied to clipboard, paste it into src/config/setting.ts file",
+      "copyFailed": "Copy failed, please try again",
+      "resetFailed": "Reset failed, please refresh the page and try again"
+    }
+  },
+  "settings": {
+    "menuType": {
+      "title": "Menu Layout",
+      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+    },
+    "theme": {
+      "title": "Theme Style",
+      "list": ["Light", "Dark", "System"]
+    },
+    "menu": {
+      "title": "Menu Style"
+    },
+    "color": {
+      "title": "Theme Color"
+    },
+    "box": {
+      "title": "Box Style",
+      "list": ["Border", "Shadow"]
+    },
+    "container": {
+      "title": "Container Width",
+      "list": ["Full", "Boxed"]
+    },
+    "basics": {
+      "title": "Basic Config",
+      "list": {
+        "multiTab": "Show work tab",
+        "accordion": "Sidebar opens accordion",
+        "collapseSidebar": "Show sidebar button",
+        "reloadPage": "Show reload page button",
+        "fastEnter": "Show fast enter",
+        "breadcrumb": "Show crumb navigation",
+        "language": "Show multilingual selection",
+        "progressBar": "Show top progress bar",
+        "weakMode": "Color Weakness Mode",
+        "watermark": "Global watermark",
+        "appLogo": "Show app logo & system title",
+        "loginGuide": "Show onboarding guide after login",
+        "grayMode": "Grayscale mode",
+        "aiAssistant": "Enable AI assistant entry",
+        "menuWidth": "Menu width",
+        "tabStyle": "Tab style",
+        "pageTransition": "Page animation",
+        "borderRadius": "Custom radius"
+      }
+    },
+    "tabStyle": {
+      "default": "Pill",
+      "card": "Card",
+      "google": "Chrome"
+    },
+    "transition": {
+      "list": {
+        "none": "None",
+        "fade": "Fade",
+        "slideLeft": "Slide Left",
+        "slideBottom": "Slide Bottom",
+        "slideTop": "Slide Top"
+      }
+    },
+    "actions": {
+      "resetConfig": "Reset Config",
+      "copyConfig": "Copy Config",
+      "copySuccess": "Configuration copied to clipboard, paste it into src/config/setting.ts file",
+      "copyFailed": "Copy failed, please try again",
+      "resetFailed": "Reset failed, please refresh the page and try again"
+    },
+    "project": "Project Settings",
+    "themeSetting": "Theme Settings",
+    "themeColor": "Theme Color",
+    "themeColorTip": "Theme Color",
+    "customColor": "Custom Color",
+    "darkMode": "Dark Mode",
+    "layoutSetting": "Layout Settings",
+    "sidebarColorScheme": "Sidebar Color Scheme",
+    "showTagsView": "Show Tags View",
+    "showAppLogo": "Show App Logo",
+    "showWatermark": "Show Watermark",
+    "grayMode": "Gray Mode",
+    "userEnableAi": "Enable AI Assistant",
+    "pageSwitchingAnimation": "Page Switching Animation",
+    "showDesktopTools": "Tools Settings",
+    "showMenuSearch": "Show Menu Search",
+    "showFullscreen": "Show Fullscreen Toggle",
+    "showSizeSelect": "Show Layout Size",
+    "showLangSelect": "Show Language Select",
+    "showNotification": "Show Notification",
+    "classicBlue": "Classic Blue",
+    "minimalWhite": "Minimal White",
+    "leftLayout": "Left Mode",
+    "topLayout": "Top Mode",
+    "mixLayout": "Mix Mode",
+    "configManagement": "Config Management",
+    "copyConfigDescription": "Generate current settings code and copy to clipboard, then merge into src/config/setting.ts",
+    "resetConfigDescription": "Restore all settings to system default values",
+    "systemTheme": "System Theme",
+    "showGuide": "Show Guide",
+    "showSettings": "Show Settings",
+    "interface": "Interface",
+    "navigation": "Navigation",
+    "copySuccess": "Copy Success",
+    "resetSuccess": "Reset Success",
+    "none": "None",
+    "fade": "Fade",
+    "fade-slide": "Fade Slide",
+    "fade-scale": "Fade Scale",
+    "slide-left-right": "Slide Left Right",
+    "zoom-in-out": "Zoom In Out",
+    "slide-up-down": "Slide Up Down",
+    "bounce": "Bounce"
+  },
+  "notice": {
+    "title": "Notice",
+    "btnRead": "Mark as read",
+    "bar": ["Notice", "Message", "Todo"],
+    "text": ["No"],
+    "viewAll": "View all"
+  },
+  "worktab": {
+    "scrollLeft": "Scroll tabs left",
+    "scrollRight": "Scroll tabs right",
+    "menuMore": "Tab menu",
+    "bookmarkAdd": "Add to workplace favorites",
+    "bookmarkRemove": "Remove from favorites",
+    "bookmarkAdded": "Added to favorites",
+    "bookmarkRemoved": "Removed from favorites",
+    "bookmarkFail": "Favorite action failed",
+    "refreshCacheDone": "Cache refreshed and page reloaded",
+    "refreshCacheFail": "Failed to refresh cache",
+    "btn": {
+      "refresh": "Refresh",
+      "fixed": "Fixed",
+      "unfixed": "Unfixed",
+      "closeCurrent": "Close current",
+      "closeLeft": "Close left",
+      "closeRight": "Close right",
+      "closeOther": "Close other",
+      "closeAll": "Close all"
+    }
+  },
+  "login": {
+    "leftView": {
+      "title": "A backend system of beauty and efficiency",
+      "subTitle": "Provide secure, efficient, and scalable management solutions to help enterprises digitalize and grow their businesses."
+    },
+    "title": "Welcome back 👋",
+    "subTitle": "Enter your account details to start managing your project",
+    "versionLabel": "Version",
+    "quickSelectAccount": "Quick select account",
+    "mobileLogin": "Mobile login",
+    "mobileLoginSubTitle": "Enter your mobile number to start managing your projects",
+    "mobilePhonePlaceholder": "Mobile number",
+    "getSmsCode": "Get code",
+    "smsCodeSentMock": "Verification code sent (demo only)",
+    "smsCodeRequired": "Enter the 6-digit SMS code",
+    "mobileLoginPending": "Mobile login API is not connected yet — UI preview only",
+    "backToAccountLogin": "Back",
+    "qrLogin": "QR code login",
+    "qrLoginTitle": "Welcome back 📱",
+    "qrLoginSubTitle": "Scan the QR code with your phone to sign in",
+    "qrLoginHint": "After scanning, tap Confirm on your phone to finish signing in",
+    "oauthNoticeTitle": "Notice",
+    "oauthLoginSuccess": "Signed in with your social account",
+    "oauthLoginFailed": "Social sign-in failed. Try username and password.",
+    "comingSoon": "Coming soon",
+    "accountLoginTab": "Account",
+    "quickLoginTab": "Quick login",
+    "roles": {
+      "super": "Super Admin",
+      "admin": "Admin",
+      "user": "User"
+    },
+    "placeholder": {
+      "username": "Please enter username",
+      "password": "Please enter password",
+      "slider": "Please slide to verify"
+    },
+    "sliderText": "Please slide to verify",
+    "sliderSuccessText": "Verification successful",
+    "rememberPwd": "Remember password",
+    "forgetPwd": "Forgot password",
+    "btnText": "Login",
+    "backLoginBtnText": "Back to Login",
+    "noAccount": "No account yet?",
+    "register": "Register",
+    "success": {
+      "title": "Login successful",
+      "message": "Welcome back"
+    },
+    "themeToggle": "Theme Switch",
+    "languageToggle": "Language Switch",
+    "dark": "Dark",
+    "light": "Light",
+    "auto": "Auto",
+    "newPassword": "Please enter new Password",
+    "captchaCode": "Please enter Verify Code",
+    "captchaClickHint": "Click to refresh captcha",
+    "capsLock": "Caps Lock is On",
+    "message": {
+      "username": {
+        "required": "Please enter Username"
+      },
+      "password": {
+        "required": "Please enter Password",
+        "currentRequired": "Please enter your current password",
+        "min": "The password cannot be less than 6 characters",
+        "confirm": "Please confirm the password again",
+        "inconformity": "The two password entries are inconsistent"
+      },
+      "captchaCode": {
+        "required": "Please enter Verify Code"
+      },
+      "mobile": {
+        "required": "Please enter mobile number",
+        "invalid": "Invalid mobile number format",
+        "exist": "Mobile number already exists"
+      },
+      "email": {
+        "required": "Please enter email",
+        "invalid": "Invalid email format",
+        "exist": "Email already exists"
+      },
+      "name": {
+        "required": "Please enter account",
+        "invalid": "Invalid account format",
+        "min": "Account cannot be less than 2 characters"
+      },
+      "agree": {
+        "required": "Please agree to the User Agreement"
+      }
+    },
+    "oauthTooltip": {
+      "wechat": "WeChat",
+      "qq": "QQ",
+      "github": "GitHub",
+      "gitee": "Gitee"
+    },
+    "otherLoginMethods": "Other",
+    "resetPassword": "Reset password",
+    "thinkOfPasswd": "Remember your password?",
+    "agree": "I have read and agree to the",
+    "userAgreement": "User Agreement",
+    "haveAccount": "Already have an account?",
+    "noAccountText": "Don't have an account?",
+    "quickFill": "Quick fill",
+    "quickLoginTip": "Click user avatar to login quickly",
+    "selectUser": "Select a user",
+    "reg": "Register",
+    "panelAlign": {
+      "label": "Column layout",
+      "left": "Wide illustration",
+      "center": "Balanced",
+      "right": "Wide form"
+    }
+  },
+  "loginForm": {
+    "remember": "Remember me"
+  },
+  "forgetPassword": {
+    "title": "Forgot password?",
+    "subTitle": "Enter your username and set a new password",
+    "placeholder": "Please enter your email",
+    "submitBtnText": "Submit",
+    "backBtnText": "Back"
+  },
+  "register": {
+    "title": "Create account",
+    "subTitle": "Welcome to join us, please fill in the following information to complete the registration",
+    "placeholder": {
+      "username": "Please enter account",
+      "password": "Please enter password",
+      "confirmPassword": "Please enter password again"
+    },
+    "rule": {
+      "confirmPasswordRequired": "Please enter your password again",
+      "passwordMismatch": "The two passwords are inconsistent!",
+      "usernameLength": "Length is 3 to 20 characters",
+      "passwordLength": "Password length cannot be less than 6 digits",
+      "agreementRequired": "Please agree to privacy policy"
+    },
+    "agreeText": "I agree",
+    "privacyPolicy": "Privacy policy",
+    "submitBtnText": "Register",
+    "hasAccount": "Already have an account?",
+    "toLogin": "To login"
+  },
+  "lock": {
+    "unlock": "Click to unlock",
+    "placeholder": "Please enter lock screen password",
+    "message": "Password error",
+    "backToLogin": "Back to login",
+    "entrySystem": "Enter system",
+    "lockScreen": "Lock screen",
+    "required": "Please enter password"
+  },
+  "lockScreen": {
+    "pwdError": "Password error",
+    "lock": {
+      "inputPlaceholder": "Please input lock screen password",
+      "btnText": "Lock"
+    },
+    "unlock": {
+      "inputPlaceholder": "Please input unlock password",
+      "btnText": "Unlock",
+      "backBtnText": "Back to login"
+    },
+    "lockScreen": "Lock screen",
+    "lockPassword": "Lock screen password",
+    "unlockText": "Click to unlock",
+    "backToLogin": "Back to login",
+    "entrySystem": "Entry the system",
+    "placeholder": "Please enter the lock screen password",
+    "required": "Please enter the lock screen password",
+    "message": "Lock screen password error"
+  },
+  "greeting": {
+    "dawn": "Good morning!",
+    "morning": "Good morning!",
+    "afternoon": "Good afternoon!",
+    "evening": "Good evening!"
+  },
+  "exceptionPage": {
+    "401": "Sorry, you don't have permission to access this page.",
+    "403": "Sorry, you do not have permission to access this page",
+    "404": "Sorry, the page you are trying to access does not exist",
+    "500": "Sorry, there was an error on the server",
+    "gohome": "Go Home",
+    "noPermission": "Sorry, you don't have permission to access this page.",
+    "pageError": "Sorry, the page you visited does not exist.",
+    "networkError": "Sorry, the server reported an error.",
+    "returnToHome": "Return to home"
+  },
+  "menus": {
+    "login": {
+      "title": "Login"
+    },
+    "register": {
+      "title": "Register"
+    },
+    "forgetPassword": {
+      "title": "Forget Password"
+    },
+    "outside": {
+      "title": "Outside"
+    },
+    "home": {
+      "title": "Home"
+    },
+    "workplace": {
+      "title": "Workbench"
+    },
+    "changelog": {
+      "title": "Release notes"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "console": "Console",
+      "analysis": "Analysis",
+      "ecommerce": "Ecommerce",
+      "map": "Map",
+      "pricing": "Pricing",
+      "tutorial": "User manual"
+    },
+    "article": {
+      "title": "Article",
+      "articleList": "Article List",
+      "articleDetail": "Article Detail",
+      "comment": "Comment",
+      "articlePublish": "Article Publish"
+    },
+    "exception": {
+      "title": "Exception",
+      "forbidden": "403",
+      "notFound": "404",
+      "serverError": "500"
+    },
+    "system": {
+      "title": "Template System",
+      "user": "User Manage",
+      "role": "Role Manage",
+      "userCenter": "User Center",
+      "menu": "Menu Manage",
+      "nested": "Nested Menu",
+      "menu1": "Menu 1",
+      "menu2": "Menu 2",
+      "menu21": "Menu 2-1",
+      "menu3": "Menu 3",
+      "menu31": "Menu 3-1",
+      "menu32": "Menu 3-2",
+      "menu321": "Menu 3-2-1"
+    },
+    "safeguard": {
+      "title": "Safeguard",
+      "server": "Server"
+    },
+    "plan": {
+      "title": "Version Plan",
+      "log": "Change Log"
+    },
+    "help": {
+      "title": "Help Center",
+      "document": "Document",
+      "liteVersion": "Lite Version",
+      "oldVersion": "v2.6.1 Version"
+    }
+  },
+  "table": {
+    "form": {
+      "reset": "Reset",
+      "submit": "Submit"
+    },
+    "searchBar": {
+      "reset": "Reset",
+      "search": "Search",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "searchInputPlaceholder": "Please enter",
+      "searchSelectPlaceholder": "Please select"
+    },
+    "selection": "Select",
+    "sizeOptions": {
+      "small": "Compact",
+      "default": "Default",
+      "large": "Loose"
+    },
+    "column": {
+      "selection": "Select",
+      "expand": "Expand",
+      "index": "Index"
+    },
+    "zebra": "Zebra",
+    "border": "Border",
+    "headerBackground": "Header BG",
+    "toolbar": {
+      "hideSearch": "Hide search area",
+      "showSearch": "Show search area",
+      "enableRowDrag": "Enable row drag sort (current page)",
+      "disableRowDrag": "Disable row drag sort"
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "document": "Document",
+    "gitee": "Gitee",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "profile": "User Profile",
+    "config": "Config Center",
+    "tour": "Project Tour",
+    "refresh": "Refresh",
+    "close": "Close",
+    "closeLeft": "Close Left",
+    "closeRight": "Close Right",
+    "closeOther": "Close Other",
+    "closeAll": "Close All",
+    "refreshCache": "Refresh Cache"
+  },
+  "route": {
+    "dashboard": "Dashboard",
+    "document": "Document"
+  },
+  "sizeSelect": {
+    "tooltip": "Layout Size",
+    "default": "Default",
+    "large": "Large",
+    "small": "Small",
+    "message": {
+      "success": "Switch Layout Size Successful!"
+    }
+  },
+  "langSelect": {
+    "message": {
+      "success": "Switch Language Successful!"
+    }
+  },
+  "error": {
+    "noPermission": "Sorry, you don't have permission to access this page.",
+    "pageError": "Sorry, the page you visited does not exist.",
+    "networkError": "Sorry, the server reported an error.",
+    "returnToHome": "Return to home"
+  }
+}

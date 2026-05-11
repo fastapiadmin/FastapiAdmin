@@ -126,6 +126,7 @@ class DictTypeService:
             await RedisCURD(redis).set(
                 key=redis_key,
                 value="",
+                expire=None,
             )
             log.info(f"创建字典类型成功: {new_obj_dict}")
         except Exception as e:
@@ -203,6 +204,7 @@ class DictTypeService:
             await RedisCURD(redis).set(
                 key=redis_key,
                 value=value,
+                expire=None,
             )
             log.info(f"更新字典类型成功并刷新缓存: {new_obj_dict}")
         except Exception as e:
@@ -408,6 +410,7 @@ class DictDataService:
                             await RedisCURD(redis).set(
                                 key=redis_key,
                                 value=value,
+                                expire=None,
                             )
                         except Exception as e:
                             log.error(f"❌ 初始化字典数据失败 [{dict_type}]: {e}")
@@ -507,6 +510,7 @@ class DictDataService:
             await RedisCURD(redis).set(
                 key=redis_key,
                 value=value,
+                expire=None,
             )
             log.info(f"创建字典数据写入缓存成功: {obj}")
         except Exception as e:
@@ -577,6 +581,7 @@ class DictDataService:
                     await RedisCURD(redis).set(
                         key=redis_key,
                         value=value,
+                        expire=None,
                     )
                 except Exception as e:
                     log.error(f"更新字典数据类型变更时刷新旧缓存失败: {e}")
@@ -596,6 +601,7 @@ class DictDataService:
             await RedisCURD(redis).set(
                 key=redis_key,
                 value=value,
+                expire=None,
             )
             log.info(f"更新字典数据写入缓存成功: {obj}")
         except Exception as e:

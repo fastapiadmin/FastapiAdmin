@@ -1,0 +1,28 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+.cursorrules
+.history
+
+# Auto-generated files
+src/types/import/auto-imports.d.ts
+src/types/import/components.d.ts
+.auto-import.json
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.local
+
+stats.html
+pnpm-lock.yaml
+package-lock.json
+.stylelintcache
+.eslintcache
+
+# docs and app directories are at frontend root, managed by frontend/.gitignore

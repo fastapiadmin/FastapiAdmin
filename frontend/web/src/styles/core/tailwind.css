@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==================== Light Mode Variables ==================== */
+:root {
+  /* Base Colors */
+  --fa-color: #fff;
+  --theme-color: var(--main-color);
+
+  /* Theme Colors - OKLCH Format */
+  --fa-primary: oklch(70% 0.23 260deg);
+  --fa-secondary: oklch(72% 0.19 231.6deg);
+  --fa-error: oklch(73% 0.15 25.3deg);
+  --fa-info: oklch(58% 0.03 254.1deg);
+  --fa-success: oklch(78% 0.17 166.1deg);
+  --fa-warning: oklch(78% 0.14 75.5deg);
+  --fa-danger: oklch(68% 0.22 25.3deg);
+
+  /* Gray Scale - Light Mode */
+  --fa-gray-100: #f9fafb;
+  --fa-gray-200: #f2f4f5;
+  --fa-gray-300: #e6eaeb;
+  --fa-gray-400: #dbdfe1;
+  --fa-gray-500: #949eb7;
+  --fa-gray-600: #7987a1;
+  --fa-gray-700: #4d5875;
+  --fa-gray-800: #383853;
+  --fa-gray-900: #323251;
+
+  /* Border Colors */
+  --fa-card-border: rgb(0 0 0 / 8%);
+  --default-border: #e2e8ee;
+  --default-border-dashed: #dbdfe9;
+
+  /* Background Colors */
+  --default-bg-color: #fafbfc;
+  --default-box-color: #fff;
+
+  /* Hover Color */
+  --fa-hover-color: #edeff0;
+
+  /* Active Color */
+  --fa-active-color: #f2f4f5;
+
+  /* Element Component Active Color */
+  --fa-el-active-color: #f2f4f5;
+}
+
+/* ==================== Dark Mode Variables ==================== */
+.dark {
+  /* Base Colors */
+  --fa-color: #000;
+
+  /* Gray Scale - Dark Mode */
+  --fa-gray-100: #110f0f;
+  --fa-gray-200: #17171c;
+  --fa-gray-300: #393946;
+  --fa-gray-400: #505062;
+  --fa-gray-500: #73738c;
+  --fa-gray-600: #8f8fa3;
+  --fa-gray-700: #ababba;
+  --fa-gray-800: #c7c7d1;
+  --fa-gray-900: #e3e3e8;
+
+  /* Border Colors */
+  --fa-card-border: rgb(255 255 255 / 8%);
+  --default-border: rgb(255 255 255 / 10%);
+  --default-border-dashed: #363843;
+
+  /* Background Colors */
+  --default-bg-color: #070707;
+  --default-box-color: #161618;
+
+  /* Hover Color */
+  --fa-hover-color: #252530;
+
+  /* Active Color */
+  --fa-active-color: #202226;
+
+  /* Element Component Active Color */
+  --fa-el-active-color: #2e2e38;
+}
+
+/* ==================== Tailwind Theme Configuration ==================== */
+@theme {
+  /* Box Color (Light: white / Dark: black) */
+  --color-box: var(--default-box-color);
+
+  /* System Theme Color */
+  --color-theme: var(--theme-color);
+
+  /* Hover Color */
+  --color-hover-color: var(--fa-hover-color);
+
+  /* Active Color */
+  --color-active-color: var(--fa-active-color);
+
+  /* Active Color */
+  --color-el-active-color: var(--fa-active-color);
+
+  /* ElementPlus Theme Colors */
+  --color-primary: var(--fa-primary);
+  --color-secondary: var(--fa-secondary);
+  --color-error: var(--fa-error);
+  --color-info: var(--fa-info);
+  --color-success: var(--fa-success);
+  --color-warning: var(--fa-warning);
+  --color-danger: var(--fa-danger);
+
+  /* Gray Scale Colors (Auto-adapts to dark mode) */
+  --color-g-100: var(--fa-gray-100);
+  --color-g-200: var(--fa-gray-200);
+  --color-g-300: var(--fa-gray-300);
+  --color-g-400: var(--fa-gray-400);
+  --color-g-500: var(--fa-gray-500);
+  --color-g-600: var(--fa-gray-600);
+  --color-g-700: var(--fa-gray-700);
+  --color-g-800: var(--fa-gray-800);
+  --color-g-900: var(--fa-gray-900);
+}
+
+/* ==================== Custom Border Radius Utilities ==================== */
+@utility rounded-custom-xs {
+  border-radius: calc(var(--custom-radius) / 2);
+}
+
+@utility rounded-custom-sm {
+  border-radius: calc(var(--custom-radius) / 2 + 2px);
+}
+
+/* ==================== Custom Utility Classes ==================== */
+@layer utilities {
+  /* Flexbox Layout Utilities */
+  .flex-c {
+    @apply flex items-center;
+  }
+
+  .flex-b {
+    @apply flex justify-between;
+  }
+
+  .flex-cc {
+    @apply flex items-center justify-center;
+  }
+
+  .flex-cb {
+    @apply flex items-center justify-between;
+  }
+
+  /* Transition Utilities */
+  .tad-200 {
+    @apply transition-all duration-200;
+  }
+
+  .tad-300 {
+    @apply transition-all duration-300;
+  }
+
+  /* Border Utilities */
+  .border-full-d {
+    @apply border border-[var(--default-border)];
+  }
+
+  .border-b-d {
+    @apply border-b border-[var(--default-border)];
+  }
+
+  .border-t-d {
+    @apply border-t border-[var(--default-border)];
+  }
+
+  .border-l-d {
+    @apply border-l border-[var(--default-border)];
+  }
+
+  .border-r-d {
+    @apply border-r border-[var(--default-border)];
+  }
+
+  /* Cursor Utilities */
+  .c-p {
+    @apply cursor-pointer;
+  }
+}
+
+/* ==================== Custom Component Classes ==================== */
+@layer components {
+  /* Fa Card Header Component */
+  .fa-card-header {
+    @apply flex justify-between pr-6 pb-1;
+
+    .title {
+      h4 {
+        @apply text-lg font-medium text-g-900;
+      }
+
+      p {
+        @apply mt-1 text-sm text-g-600;
+
+        span {
+          @apply ml-2 font-medium;
+        }
+      }
+    }
+  }
+}

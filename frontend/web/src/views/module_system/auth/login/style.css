@@ -1,0 +1,189 @@
+@reference '@styles/core/tailwind.css';
+
+/**
+ * 登录根布局
+ * - 顶栏 fixed 透明叠在页面上（不占一条实体顶区）；仅插画列 / 表单区随布局切换
+ * - left / right：插画列与表单列横向排列（约 65% / 35%）
+ * - center：全宽 + 视口级背景；登录卡居中、阴影高亮
+ */
+.login-auth-split {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.login-auth-split__col--illustration {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+.login-auth-split__col--form {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 横向：插画 ~65%，表单列占剩余 */
+.login-auth-split--left,
+.login-auth-split--right {
+  flex-direction: row;
+}
+
+.login-auth-split--left .login-auth-split__col--illustration,
+.login-auth-split--right .login-auth-split__col--illustration {
+  flex: 0 0 65%;
+}
+
+.login-auth-split--left .login-auth-split__col--form,
+.login-auth-split--right .login-auth-split__col--form {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.login-auth-split--left {
+  flex-direction: row-reverse;
+}
+
+@media only screen and (width <= 1600px) {
+  .login-auth-split--left .login-auth-split__col--illustration,
+  .login-auth-split--right .login-auth-split__col--illustration {
+    flex: 0 0 60%;
+  }
+}
+
+/* 居中模式：仅一列表单壳占满屏宽 */
+.login-auth-split--center {
+  flex-direction: column;
+}
+
+.login-auth-split--center .login-auth-split__col--form {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  background-color: transparent;
+}
+
+/* 顶栏与页脚之间的区域：纵向居中承载登录卡 */
+.login-auth-split--center .login-page-panel__scroll.login-page-panel__scroll--centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding-bottom: 0;
+
+  /* 盖过 Tailwind overflow-y-auto：仅卡片内滚动，外层不出滚动条 */
+  overflow: hidden;
+}
+
+.login-page-panel__scroll--centered .login-panel-align-row {
+  flex: 0 1 auto;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  max-height: 100%;
+}
+
+/* 悬浮卡片：居中模式尺寸与原先一致（520 宽、720/视口上限），无边框 + 主色高亮阴影 */
+.login-auth-split--center .auth-right-wrap {
+  width: min(520px, calc(100vw - 2rem)) !important;
+  max-width: min(520px, calc(100vw - 2rem));
+  height: auto;
+  max-height: calc(100dvh - 6.5rem);
+  padding: 1.75rem 2rem 2rem;
+  overflow: hidden auto;
+  background-color: var(--el-bg-color);
+  border: none;
+  border-radius: 16px;
+  box-shadow:
+    0 6px 20px rgb(15 23 42 / 9%),
+    0 14px 36px rgb(15 23 42 / 10%),
+    0 0 18px color-mix(in srgb, var(--el-color-primary) 16%, transparent),
+    0 0 32px color-mix(in srgb, var(--el-color-primary) 7%, transparent);
+}
+
+.login-auth-split--center .auth-right-wrap .form {
+  height: auto;
+  min-height: 0;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+html.dark .login-auth-split--center .auth-right-wrap {
+  border: none;
+  box-shadow:
+    0 8px 28px rgb(0 0 0 / 42%),
+    0 16px 44px rgb(0 0 0 / 46%),
+    0 0 22px color-mix(in srgb, var(--el-color-primary) 20%, transparent),
+    0 0 36px color-mix(in srgb, var(--el-color-primary) 9%, transparent);
+}
+
+/* 居中模式下页脚弱化，减少「分区后台」感 */
+.login-page-footer--floating-layout {
+  border-top-color: color-mix(in srgb, var(--el-border-color-lighter) 55%, transparent);
+}
+
+html.dark .login-page-footer--floating-layout {
+  border-top-color: rgb(255 255 255 / 8%);
+}
+
+@media only screen and (width <= 1180px) {
+  .login-auth-split {
+    flex-direction: column !important;
+  }
+
+  .login-auth-split__col--illustration {
+    flex: 0 0 auto !important;
+    width: 100%;
+  }
+
+  .login-auth-split__col--form {
+    flex: 1 1 auto !important;
+    width: 100%;
+    min-height: 0;
+  }
+
+  /* 窄屏横排切竖排：恢复插画；居中模式本身无插画，不受影响 */
+  .login-auth-split--center .auth-right-wrap {
+    width: min(520px, calc(100vw - 1.5rem)) !important;
+    max-width: min(520px, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 6rem);
+  }
+}
+
+/* 授权页表单区域（左右分栏时） */
+.auth-right-wrap {
+  @apply relative w-[440px] shrink-0 h-[720px] py-[5px] overflow-hidden
+    max-sm:px-7 max-sm:w-full max-sm:h-auto max-sm:max-h-[calc(100vh-10rem)]
+    animate-[slideInRight_0.6s_cubic-bezier(0.25,0.46,0.45,0.94)_forwards]
+    max-md:animate-none;
+
+  .form {
+    @apply h-full py-[40px];
+  }
+
+  .title {
+    @apply text-g-900 text-4xl font-semibold max-md:text-3xl max-sm:pt-10;
+  }
+
+  .sub-title {
+    @apply mt-[10px] text-g-600 text-sm;
+  }
+
+  .custom-height {
+    @apply !h-[40px];
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

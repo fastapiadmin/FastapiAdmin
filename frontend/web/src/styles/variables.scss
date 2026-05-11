@@ -1,0 +1,8 @@
+/**
+ * 全局 SCSS 变量（由 vite.config.ts → css.preprocessorOptions.scss.additionalData 注入到每个 `.vue` 的 `lang="scss"`）
+ *
+ * 默认主色请与 `src/config/setting.ts` 中 `themeColorPresets` 首项、主题切换逻辑保持一致。
+ */
+
+// 供组件内 `$primary-base` 等引用（可选）
+$primary-base: #4080ff !default;

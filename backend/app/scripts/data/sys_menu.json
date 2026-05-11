@@ -1,71 +1,31 @@
 [
   {
-    "name": "仪表盘",
+    "name": "平台管理",
     "type": 1,
-    "icon": "client",
+    "icon": "ri:building-4-line",
     "order": 1,
-    "permission": "",
-    "route_name": "Dashboard",
-    "route_path": "/dashboard",
+    "permission": null,
+    "route_name": "Platform",
+    "route_path": "/platform",
     "component_path": null,
     "status": "0",
     "keep_alive": true,
     "hidden": false,
     "always_show": true,
-    "title": "仪表盘",
+    "title": "平台管理",
     "params": null,
     "affix": false,
-    "redirect": "/dashboard/workplace",
-    "description": "初始化数据",
-    "children": [
-      {
-        "name": "工作台",
-        "type": 2,
-        "icon": "el-icon-PieChart",
-        "order": 1,
-        "permission": "dashboard:workplace:query",
-        "route_name": "Workplace",
-        "route_path": "/dashboard/workplace",
-        "component_path": "dashboard/workplace",
-        "status": "0",
-        "keep_alive": true,
-        "hidden": false,
-        "always_show": false,
-        "title": "工作台",
-        "params": null,
-        "affix": false,
-        "redirect": null,
-        "description": "初始化数据"
-      }
-    ]
-  },
-  {
-    "name": "系统管理",
-    "type": 1,
-    "icon": "system",
-    "order": 2,
-    "permission": null,
-    "route_name": "System",
-    "route_path": "/system",
-    "component_path": null,
-    "status": "0",
-    "keep_alive": true,
-    "hidden": false,
-    "always_show": false,
-    "title": "系统管理",
-    "params": null,
-    "affix": false,
-    "redirect": "/system/menu",
+    "redirect": "/platform/menu",
     "description": "初始化数据",
     "children": [
       {
         "name": "菜单管理",
         "type": 2,
-        "icon": "menu",
+        "icon": "ri:menu-line",
         "order": 1,
         "permission": "module_system:menu:query",
         "route_name": "Menu",
-        "route_path": "/system/menu",
+        "route_path": "menu",
         "component_path": "module_system/menu/index",
         "status": "0",
         "keep_alive": true,
@@ -94,7 +54,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改菜单",
@@ -113,7 +74,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除菜单",
@@ -132,7 +94,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改菜单状态",
@@ -151,7 +114,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情菜单",
@@ -170,7 +134,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询菜单",
@@ -189,14 +154,644 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
+      {
+        "name": "租户管理",
+        "type": 2,
+        "icon": "ri:presentation-line",
+        "order": 2,
+        "permission": "module_system:tenant:query",
+        "route_name": "Tenant",
+        "route_path": "tenant",
+        "component_path": "module_system/tenant/index",
+        "status": "0",
+        "keep_alive": true,
+        "hidden": false,
+        "always_show": false,
+        "title": "租户管理",
+        "params": null,
+        "affix": false,
+        "redirect": null,
+        "description": "初始化数据",
+        "children": [
+          {
+            "name": "创建租户",
+            "type": 3,
+            "icon": null,
+            "order": 1,
+            "permission": "module_system:tenant:create",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "创建租户",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "修改租户",
+            "type": 3,
+            "icon": null,
+            "order": 2,
+            "permission": "module_system:tenant:update",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "修改租户",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "删除租户",
+            "type": 3,
+            "icon": null,
+            "order": 3,
+            "permission": "module_system:tenant:delete",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "删除租户",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "批量修改租户状态",
+            "type": 3,
+            "icon": null,
+            "order": 4,
+            "permission": "module_system:tenant:patch",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "批量修改租户状态",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "租户详情",
+            "type": 3,
+            "icon": null,
+            "order": 5,
+            "permission": "module_system:tenant:query",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "租户详情",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "查询租户",
+            "type": 3,
+            "icon": null,
+            "order": 6,
+            "permission": "module_system:tenant:query",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "查询租户",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          }
+        ],
+        "client": "pc"
+      },
+      {
+        "name": "字典管理",
+        "type": 2,
+        "icon": "ri:book-2-line",
+        "order": 3,
+        "permission": "module_system:dict_type:query",
+        "route_name": "Dict",
+        "route_path": "dict",
+        "component_path": "module_system/dict/index",
+        "status": "0",
+        "keep_alive": true,
+        "hidden": false,
+        "always_show": false,
+        "title": "字典管理",
+        "params": null,
+        "affix": false,
+        "redirect": null,
+        "description": "初始化数据",
+        "children": [
+          {
+            "name": "创建字典类型",
+            "type": 3,
+            "icon": null,
+            "order": 1,
+            "permission": "module_system:dict_type:create",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "创建字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "修改字典类型",
+            "type": 3,
+            "icon": null,
+            "order": 2,
+            "permission": "module_system:dict_type:update",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "修改字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "删除字典类型",
+            "type": 3,
+            "icon": null,
+            "order": 3,
+            "permission": "module_system:dict_type:delete",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "删除字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "导出字典类型",
+            "type": 3,
+            "icon": null,
+            "order": 4,
+            "permission": "module_system:dict_type:export",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "导出字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "批量修改字典状态",
+            "type": 3,
+            "icon": null,
+            "order": 5,
+            "permission": "module_system:dict_type:patch",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "导出字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "字典数据查询",
+            "type": 3,
+            "icon": null,
+            "order": 6,
+            "permission": "module_system:dict_data:query",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "字典数据查询",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "创建字典数据",
+            "type": 3,
+            "icon": null,
+            "order": 7,
+            "permission": "module_system:dict_data:create",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "创建字典数据",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "修改字典数据",
+            "type": 3,
+            "icon": null,
+            "order": 8,
+            "permission": "module_system:dict_data:update",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "修改字典数据",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "删除字典数据",
+            "type": 3,
+            "icon": null,
+            "order": 9,
+            "permission": "module_system:dict_data:delete",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "删除字典数据",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "导出字典数据",
+            "type": 3,
+            "icon": null,
+            "order": 10,
+            "permission": "module_system:dict_data:export",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "导出字典数据",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "批量修改字典数据状态",
+            "type": 3,
+            "icon": null,
+            "order": 11,
+            "permission": "module_system:dict_data:patch",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "批量修改字典数据状态",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "详情字典类型",
+            "type": 3,
+            "icon": null,
+            "order": 12,
+            "permission": "module_system:dict_type:detail",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "详情字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "查询字典类型",
+            "type": 3,
+            "icon": null,
+            "order": 13,
+            "permission": "module_system:dict_type:query",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "查询字典类型",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "详情字典数据",
+            "type": 3,
+            "icon": null,
+            "order": 14,
+            "permission": "module_system:dict_data:detail",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "详情字典数据",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          }
+        ],
+        "client": "pc"
+      },
+      {
+        "name": "参数管理",
+        "type": 2,
+        "icon": "ri:settings-3-line",
+        "order": 4,
+        "permission": "module_system:param:query",
+        "route_name": "Params",
+        "route_path": "param",
+        "component_path": "module_system/param/index",
+        "status": "0",
+        "keep_alive": true,
+        "hidden": false,
+        "always_show": false,
+        "title": "参数管理",
+        "params": null,
+        "affix": false,
+        "redirect": null,
+        "description": "初始化数据",
+        "children": [
+          {
+            "name": "创建参数",
+            "type": 3,
+            "icon": null,
+            "order": 1,
+            "permission": "module_system:param:create",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "创建参数",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "修改参数",
+            "type": 3,
+            "icon": null,
+            "order": 2,
+            "permission": "module_system:param:update",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "修改参数",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "删除参数",
+            "type": 3,
+            "icon": null,
+            "order": 3,
+            "permission": "module_system:param:delete",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "删除参数",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "导出参数",
+            "type": 3,
+            "icon": null,
+            "order": 4,
+            "permission": "module_system:param:export",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "导出参数",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "参数上传",
+            "type": 3,
+            "icon": null,
+            "order": 5,
+            "permission": "module_system:param:upload",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "参数上传",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "参数详情",
+            "type": 3,
+            "icon": null,
+            "order": 6,
+            "permission": "module_system:param:detail",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "参数详情",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          },
+          {
+            "name": "查询参数",
+            "type": 3,
+            "icon": null,
+            "order": 7,
+            "permission": "module_system:param:query",
+            "route_name": null,
+            "route_path": null,
+            "component_path": null,
+            "status": "0",
+            "keep_alive": true,
+            "hidden": false,
+            "always_show": false,
+            "title": "查询参数",
+            "params": null,
+            "affix": false,
+            "redirect": null,
+            "description": "初始化数据",
+            "client": "pc"
+          }
+        ],
+        "client": "pc"
+      }
+    ],
+    "client": "pc"
+  },
+  {
+    "name": "系统管理",
+    "type": 1,
+    "icon": "ri:settings-2-line",
+    "order": 2,
+    "permission": null,
+    "route_name": "System",
+    "route_path": "/system",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": false,
+    "title": "系统管理",
+    "params": null,
+    "affix": false,
+    "redirect": "/system/dept",
+    "description": "初始化数据",
+    "children": [
       {
         "name": "部门管理",
         "type": 2,
-        "icon": "tree",
+        "icon": "ri:node-tree",
         "order": 2,
         "permission": "module_system:dept:query",
         "route_name": "Dept",
@@ -229,7 +824,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改部门",
@@ -248,7 +844,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除部门",
@@ -267,7 +864,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改部门状态",
@@ -286,7 +884,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情部门",
@@ -305,7 +904,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询部门",
@@ -324,14 +924,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "岗位管理",
         "type": 2,
-        "icon": "el-icon-Coordinate",
+        "icon": "ri:map-pin-line",
         "order": 3,
         "permission": "module_system:position:query",
         "route_name": "Position",
@@ -364,7 +966,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改岗位",
@@ -383,7 +986,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除岗位",
@@ -402,7 +1006,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改岗位状态",
@@ -421,7 +1026,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "岗位导出",
@@ -440,7 +1046,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情岗位",
@@ -459,7 +1066,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询岗位",
@@ -478,14 +1086,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "角色管理",
         "type": 2,
-        "icon": "role",
+        "icon": "ri:admin-line",
         "order": 4,
         "permission": "module_system:role:query",
         "route_name": "Role",
@@ -518,7 +1128,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改角色",
@@ -537,7 +1148,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除角色",
@@ -556,7 +1168,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改角色状态",
@@ -575,7 +1188,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "角色导出",
@@ -594,7 +1208,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情角色",
@@ -613,7 +1228,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询角色",
@@ -632,7 +1248,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "分配权限",
@@ -651,14 +1268,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "用户管理",
         "type": 2,
-        "icon": "el-icon-User",
+        "icon": "ri:user-line",
         "order": 5,
         "permission": "module_system:user:query",
         "route_name": "User",
@@ -691,7 +1310,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改用户",
@@ -710,7 +1330,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除用户",
@@ -729,7 +1350,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改用户状态",
@@ -748,7 +1370,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出用户",
@@ -767,7 +1390,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导入用户",
@@ -786,7 +1410,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "下载用户导入模板",
@@ -805,7 +1430,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情用户",
@@ -824,7 +1450,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询用户",
@@ -843,14 +1470,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "日志管理",
         "type": 2,
-        "icon": "el-icon-Aim",
+        "icon": "ri:focus-3-line",
         "order": 6,
         "permission": "module_system:log:query",
         "route_name": "Log",
@@ -883,7 +1512,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "日志导出",
@@ -902,7 +1532,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "日志详情",
@@ -921,7 +1552,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询日志",
@@ -940,14 +1572,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "公告管理",
         "type": 2,
-        "icon": "bell",
+        "icon": "ri:notification-3-line",
         "order": 7,
         "permission": "module_system:notice:query",
         "route_name": "Notice",
@@ -980,7 +1614,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告修改",
@@ -999,7 +1634,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告删除",
@@ -1018,7 +1654,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告导出",
@@ -1037,7 +1674,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告批量修改状态",
@@ -1056,7 +1694,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "公告详情",
@@ -1075,7 +1714,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询公告",
@@ -1094,592 +1734,19 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
-      },
-      {
-        "name": "参数管理",
-        "type": 2,
-        "icon": "setting",
-        "order": 8,
-        "permission": "module_system:param:query",
-        "route_name": "Params",
-        "route_path": "/system/param",
-        "component_path": "module_system/param/index",
-        "status": "0",
-        "keep_alive": true,
-        "hidden": false,
-        "always_show": false,
-        "title": "参数管理",
-        "params": null,
-        "affix": false,
-        "redirect": null,
-        "description": "初始化数据",
-        "children": [
-          {
-            "name": "创建参数",
-            "type": 3,
-            "icon": null,
-            "order": 1,
-            "permission": "module_system:param:create",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "创建参数",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "修改参数",
-            "type": 3,
-            "icon": null,
-            "order": 2,
-            "permission": "module_system:param:update",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "修改参数",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "删除参数",
-            "type": 3,
-            "icon": null,
-            "order": 3,
-            "permission": "module_system:param:delete",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "删除参数",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "导出参数",
-            "type": 3,
-            "icon": null,
-            "order": 4,
-            "permission": "module_system:param:export",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "导出参数",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "参数上传",
-            "type": 3,
-            "icon": null,
-            "order": 5,
-            "permission": "module_system:param:upload",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "参数上传",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "参数详情",
-            "type": 3,
-            "icon": null,
-            "order": 6,
-            "permission": "module_system:param:detail",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "参数详情",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "查询参数",
-            "type": 3,
-            "icon": null,
-            "order": 7,
-            "permission": "module_system:param:query",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "查询参数",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          }
-        ]
-      },
-      {
-        "name": "字典管理",
-        "type": 2,
-        "icon": "dict",
-        "order": 9,
-        "permission": "module_system:dict_type:query",
-        "route_name": "Dict",
-        "route_path": "/system/dict",
-        "component_path": "module_system/dict/index",
-        "status": "0",
-        "keep_alive": true,
-        "hidden": false,
-        "always_show": false,
-        "title": "字典管理",
-        "params": null,
-        "affix": false,
-        "redirect": null,
-        "description": "初始化数据",
-        "children": [
-          {
-            "name": "创建字典类型",
-            "type": 3,
-            "icon": null,
-            "order": 1,
-            "permission": "module_system:dict_type:create",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "创建字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "修改字典类型",
-            "type": 3,
-            "icon": null,
-            "order": 2,
-            "permission": "module_system:dict_type:update",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "修改字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "删除字典类型",
-            "type": 3,
-            "icon": null,
-            "order": 3,
-            "permission": "module_system:dict_type:delete",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "删除字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "导出字典类型",
-            "type": 3,
-            "icon": null,
-            "order": 4,
-            "permission": "module_system:dict_type:export",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "导出字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "批量修改字典状态",
-            "type": 3,
-            "icon": null,
-            "order": 5,
-            "permission": "module_system:dict_type:patch",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "导出字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "字典数据查询",
-            "type": 3,
-            "icon": null,
-            "order": 6,
-            "permission": "module_system:dict_data:query",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "字典数据查询",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "创建字典数据",
-            "type": 3,
-            "icon": null,
-            "order": 7,
-            "permission": "module_system:dict_data:create",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "创建字典数据",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "修改字典数据",
-            "type": 3,
-            "icon": null,
-            "order": 8,
-            "permission": "module_system:dict_data:update",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "修改字典数据",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "删除字典数据",
-            "type": 3,
-            "icon": null,
-            "order": 9,
-            "permission": "module_system:dict_data:delete",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "删除字典数据",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "导出字典数据",
-            "type": 3,
-            "icon": null,
-            "order": 10,
-            "permission": "module_system:dict_data:export",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "导出字典数据",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "批量修改字典数据状态",
-            "type": 3,
-            "icon": null,
-            "order": 11,
-            "permission": "module_system:dict_data:patch",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "批量修改字典数据状态",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "详情字典类型",
-            "type": 3,
-            "icon": null,
-            "order": 12,
-            "permission": "module_system:dict_type:detail",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "详情字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "查询字典类型",
-            "type": 3,
-            "icon": null,
-            "order": 13,
-            "permission": "module_system:dict_type:query",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "查询字典类型",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "详情字典数据",
-            "type": 3,
-            "icon": null,
-            "order": 14,
-            "permission": "module_system:dict_data:detail",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "详情字典数据",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          }
-        ]
-      },
-      {
-        "name": "租户管理",
-        "type": 2,
-        "icon": "el-icon-DataBoard",
-        "order": 10,
-        "permission": "module_system:tenant:query",
-        "route_name": "Tenant",
-        "route_path": "/system/tenant",
-        "component_path": "module_system/tenant/index",
-        "status": "0",
-        "keep_alive": true,
-        "hidden": false,
-        "always_show": false,
-        "title": "租户管理",
-        "params": null,
-        "affix": false,
-        "redirect": null,
-        "description": "初始化数据",
-        "children": [
-          {
-            "name": "创建租户",
-            "type": 3,
-            "icon": null,
-            "order": 1,
-            "permission": "module_system:tenant:create",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "创建租户",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "修改租户",
-            "type": 3,
-            "icon": null,
-            "order": 2,
-            "permission": "module_system:tenant:update",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "修改租户",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "删除租户",
-            "type": 3,
-            "icon": null,
-            "order": 3,
-            "permission": "module_system:tenant:delete",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "删除租户",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "批量修改租户状态",
-            "type": 3,
-            "icon": null,
-            "order": 4,
-            "permission": "module_system:tenant:patch",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "批量修改租户状态",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "租户详情",
-            "type": 3,
-            "icon": null,
-            "order": 5,
-            "permission": "module_system:tenant:query",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "租户详情",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          },
-          {
-            "name": "查询租户",
-            "type": 3,
-            "icon": null,
-            "order": 6,
-            "permission": "module_system:tenant:query",
-            "route_name": null,
-            "route_path": null,
-            "component_path": null,
-            "status": "0",
-            "keep_alive": true,
-            "hidden": false,
-            "always_show": false,
-            "title": "查询租户",
-            "params": null,
-            "affix": false,
-            "redirect": null,
-            "description": "初始化数据"
-          }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "监控管理",
     "type": 1,
-    "icon": "monitor",
+    "icon": "ri:computer-line",
     "order": 3,
     "permission": null,
     "route_name": "Monitor",
@@ -1698,7 +1765,7 @@
       {
         "name": "在线用户",
         "type": 2,
-        "icon": "el-icon-Headset",
+        "icon": "ri:customer-service-2-line",
         "order": 1,
         "permission": "module_monitor:online:query",
         "route_name": "MonitorOnline",
@@ -1731,14 +1798,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "服务器监控",
         "type": 2,
-        "icon": "el-icon-Odometer",
+        "icon": "ri:dashboard-3-line",
         "order": 2,
         "permission": "module_monitor:server:query",
         "route_name": "MonitorServer",
@@ -1752,12 +1821,13 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       },
       {
         "name": "缓存监控",
         "type": 2,
-        "icon": "el-icon-Stopwatch",
+        "icon": "ri:timer-flash-line",
         "order": 3,
         "permission": "module_monitor:cache:query",
         "route_name": "MonitorCache",
@@ -1790,14 +1860,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "文件管理",
         "type": 2,
-        "icon": "el-icon-Files",
+        "icon": "ri:folder-5-line",
         "order": 4,
         "permission": "module_monitor:resource:query",
         "route_name": "Resource",
@@ -1830,7 +1902,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件下载",
@@ -1849,7 +1922,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件删除",
@@ -1868,7 +1942,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件移动",
@@ -1887,7 +1962,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件复制",
@@ -1906,7 +1982,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "文件重命名",
@@ -1925,7 +2002,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "创建目录",
@@ -1944,7 +2022,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出文件列表",
@@ -1963,20 +2042,23 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "接口管理",
     "type": 1,
-    "icon": "document",
+    "icon": "ri:file-text-line",
     "order": 4,
     "permission": null,
-    "route_name": "Common",
-    "route_path": "/common",
+    "route_name": "Swagger",
+    "route_path": "/swagger",
     "component_path": null,
     "status": "0",
     "keep_alive": true,
@@ -1985,18 +2067,18 @@
     "title": "接口管理",
     "params": null,
     "affix": false,
-    "redirect": "/common/docs",
+    "redirect": "/swagger/docs",
     "description": "初始化数据",
     "children": [
       {
         "name": "Swagger文档",
         "type": 4,
-        "icon": "api",
+        "icon": "ri:plug-line",
         "order": 1,
-        "permission": "module_common:docs:query",
+        "permission": "module_swagger:docs:query",
         "route_name": "Docs",
-        "route_path": "/common/docs",
-        "component_path": "module_common/docs/index",
+        "route_path": "/swagger/docs",
+        "component_path": "module_swagger/docs/index",
         "status": "0",
         "keep_alive": true,
         "hidden": false,
@@ -2005,17 +2087,18 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       },
       {
         "name": "Redoc文档",
         "type": 4,
-        "icon": "el-icon-Document",
+        "icon": "ri:file-text-line",
         "order": 2,
-        "permission": "module_common:redoc:query",
+        "permission": "module_swagger:redoc:query",
         "route_name": "Redoc",
-        "route_path": "/common/redoc",
-        "component_path": "module_common/redoc/index",
+        "route_path": "/swagger/redoc",
+        "component_path": "module_swagger/redoc/index",
         "status": "0",
         "keep_alive": true,
         "hidden": false,
@@ -2024,17 +2107,18 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       },
       {
         "name": "LangJin文档",
         "type": 4,
-        "icon": "el-icon-Document",
+        "icon": "ri:file-text-line",
         "order": 3,
-        "permission": "module_common:ljdoc:query",
+        "permission": "module_swagger:ljdoc:query",
         "route_name": "Ljdoc",
-        "route_path": "/common/ljdoc",
-        "component_path": "module_common/ljdoc/index",
+        "route_path": "/swagger/ljdoc",
+        "component_path": "module_swagger/ljdoc/index",
         "status": "0",
         "keep_alive": true,
         "hidden": false,
@@ -2043,14 +2127,16 @@
         "params": null,
         "affix": false,
         "redirect": null,
-        "description": "初始化数据"
+        "description": "初始化数据",
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "代码管理",
     "type": 1,
-    "icon": "code",
+    "icon": "ri:code-s-slash-line",
     "order": 5,
     "permission": null,
     "route_name": "Generator",
@@ -2069,7 +2155,7 @@
       {
         "name": "代码生成",
         "type": 2,
-        "icon": "code",
+        "icon": "ri:code-s-slash-line",
         "order": 1,
         "permission": "module_generator:gencode:query",
         "route_name": "GenCode",
@@ -2102,7 +2188,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询代码生成业务表列表"
+            "description": "查询代码生成业务表列表",
+            "client": "pc"
           },
           {
             "name": "创建表结构",
@@ -2121,7 +2208,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "创建表结构"
+            "description": "创建表结构",
+            "client": "pc"
           },
           {
             "name": "编辑业务表信息",
@@ -2140,7 +2228,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "编辑业务表信息"
+            "description": "编辑业务表信息",
+            "client": "pc"
           },
           {
             "name": "删除业务表信息",
@@ -2159,7 +2248,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "删除业务表信息"
+            "description": "删除业务表信息",
+            "client": "pc"
           },
           {
             "name": "导入表结构",
@@ -2178,7 +2268,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "导入表结构"
+            "description": "导入表结构",
+            "client": "pc"
           },
           {
             "name": "批量生成代码",
@@ -2197,7 +2288,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "批量生成代码"
+            "description": "批量生成代码",
+            "client": "pc"
           },
           {
             "name": "生成代码到指定路径",
@@ -2216,7 +2308,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "生成代码到指定路径"
+            "description": "生成代码到指定路径",
+            "client": "pc"
           },
           {
             "name": "查询数据库表列表",
@@ -2235,7 +2328,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询数据库表列表"
+            "description": "查询数据库表列表",
+            "client": "pc"
           },
           {
             "name": "同步数据库",
@@ -2254,16 +2348,19 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "同步数据库"
+            "description": "同步数据库",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
-    "name": "应用管理",
+    "name": "应用门户",
     "type": 1,
-    "icon": "el-icon-ShoppingBag",
+    "icon": "ri:shopping-bag-3-line",
     "order": 6,
     "permission": null,
     "route_name": "Application",
@@ -2273,7 +2370,7 @@
     "keep_alive": true,
     "hidden": false,
     "always_show": false,
-    "title": "应用管理",
+    "title": "应用门户",
     "params": null,
     "affix": false,
     "redirect": "/application/portal",
@@ -2282,7 +2379,7 @@
       {
         "name": "插件市场",
         "type": 2,
-        "icon": "el-icon-ShoppingCartFull",
+        "icon": "ri:shopping-cart-2-line",
         "order": 1,
         "permission": "module_application:portal:query",
         "route_name": "PortalApp",
@@ -2315,7 +2412,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "修改插件",
@@ -2334,7 +2432,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除插件",
@@ -2353,7 +2452,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改插件状态",
@@ -2372,7 +2472,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情插件",
@@ -2391,7 +2492,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询插件",
@@ -2410,16 +2512,19 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询插件"
+            "description": "查询插件",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "AI管理",
     "type": 1,
-    "icon": "el-icon-ChatLineSquare",
+    "icon": "ri:chat-3-line",
     "order": 7,
     "permission": null,
     "route_name": "AI",
@@ -2438,7 +2543,7 @@
       {
         "name": "AI智能助手",
         "type": 2,
-        "icon": "el-icon-ChatDotRound",
+        "icon": "ri:message-2-line",
         "order": 1,
         "permission": "module_ai:chat:query",
         "route_name": "Chat",
@@ -2471,7 +2576,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "AI对话"
+            "description": "AI对话",
+            "client": "pc"
           },
           {
             "name": "查询会话",
@@ -2490,7 +2596,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询会话"
+            "description": "查询会话",
+            "client": "pc"
           },
           {
             "name": "会话详情",
@@ -2509,7 +2616,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "会话详情"
+            "description": "会话详情",
+            "client": "pc"
           },
           {
             "name": "创建会话",
@@ -2528,7 +2636,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "创建会话"
+            "description": "创建会话",
+            "client": "pc"
           },
           {
             "name": "更新会话",
@@ -2547,7 +2656,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "更新会话"
+            "description": "更新会话",
+            "client": "pc"
           },
           {
             "name": "删除会话",
@@ -2566,15 +2676,38 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "删除会话"
+            "description": "删除会话",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
+      },
+      {
+        "name": "会话聊天",
+        "type": 2,
+        "icon": "ri:message-3-line",
+        "order": 2,
+        "permission": "module_ai:chat:query",
+        "route_name": "FaChat",
+        "route_path": "/ai/fachat",
+        "component_path": "module_ai/fachat/index",
+        "status": "0",
+        "keep_alive": true,
+        "hidden": false,
+        "always_show": false,
+        "title": "会话聊天",
+        "params": null,
+        "affix": false,
+        "redirect": null,
+        "description": "会话聊天（FaChat）",
+        "children": [],
+        "client": "pc"
       },
       {
         "name": "会话记忆",
         "type": 2,
-        "icon": "el-icon-ChatLineSquare",
-        "order": 2,
+        "icon": "ri:chat-3-line",
+        "order": 3,
         "permission": "module_ai:chat:query",
         "route_name": "Memory",
         "route_path": "/ai/memory",
@@ -2606,7 +2739,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "查询会话记忆"
+            "description": "查询会话记忆",
+            "client": "pc"
           },
           {
             "name": "会话记忆详情",
@@ -2625,7 +2759,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "会话记忆详情"
+            "description": "会话记忆详情",
+            "client": "pc"
           },
           {
             "name": "删除会话记忆",
@@ -2644,16 +2779,19 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "删除会话记忆"
+            "description": "删除会话记忆",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "任务管理",
     "type": 1,
-    "icon": "el-icon-SetUp",
+    "icon": "ri:tools-line",
     "order": 8,
     "permission": null,
     "route_name": "Task",
@@ -2672,7 +2810,7 @@
       {
         "name": "定时任务",
         "type": 1,
-        "icon": "el-icon-Timer",
+        "icon": "ri:timer-line",
         "order": 1,
         "permission": null,
         "route_name": "Cronjob",
@@ -2691,7 +2829,7 @@
           {
             "name": "调度器监控",
             "type": 2,
-            "icon": "el-icon-DataLine",
+            "icon": "ri:line-chart-line",
             "order": 1,
             "permission": "module_task:cronjob:job:query",
             "route_name": "Job",
@@ -2724,7 +2862,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询调度器"
+                "description": "查询调度器",
+                "client": "pc"
               },
               {
                 "name": "控制调度器",
@@ -2743,7 +2882,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "控制调度器"
+                "description": "控制调度器",
+                "client": "pc"
               },
               {
                 "name": "操作任务",
@@ -2762,7 +2902,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "操作任务"
+                "description": "操作任务",
+                "client": "pc"
               },
               {
                 "name": "删除执行日志",
@@ -2781,7 +2922,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除执行日志"
+                "description": "删除执行日志",
+                "client": "pc"
               },
               {
                 "name": "详情执行日志",
@@ -2800,14 +2942,16 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情执行日志"
+                "description": "详情执行日志",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           },
           {
             "name": "节点管理",
             "type": 2,
-            "icon": "el-icon-Postcard",
+            "icon": "ri:mail-send-line",
             "order": 2,
             "permission": "module_task:cronjob:node:query",
             "route_name": "Node",
@@ -2840,7 +2984,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "创建节点"
+                "description": "创建节点",
+                "client": "pc"
               },
               {
                 "name": "调试节点",
@@ -2859,7 +3004,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "调试节点"
+                "description": "调试节点",
+                "client": "pc"
               },
               {
                 "name": "修改节点",
@@ -2878,7 +3024,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "修改节点"
+                "description": "修改节点",
+                "client": "pc"
               },
               {
                 "name": "删除节点",
@@ -2897,7 +3044,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除节点"
+                "description": "删除节点",
+                "client": "pc"
               },
               {
                 "name": "详情节点",
@@ -2916,7 +3064,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情节点"
+                "description": "详情节点",
+                "client": "pc"
               },
               {
                 "name": "查询节点",
@@ -2935,16 +3084,19 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询节点"
+                "description": "查询节点",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "工作流",
         "type": 1,
-        "icon": "el-icon-SetUp",
+        "icon": "ri:tools-line",
         "order": 2,
         "permission": null,
         "route_name": "WorkflowMgr",
@@ -2963,7 +3115,7 @@
           {
             "name": "流程编排",
             "type": 2,
-            "icon": "el-icon-SetUp",
+            "icon": "ri:tools-line",
             "order": 1,
             "permission": "module_task:workflow:definition:query",
             "route_name": "Workflow",
@@ -2996,7 +3148,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "创建流程"
+                "description": "创建流程",
+                "client": "pc"
               },
               {
                 "name": "执行流程",
@@ -3015,7 +3168,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "执行流程"
+                "description": "执行流程",
+                "client": "pc"
               },
               {
                 "name": "修改流程",
@@ -3034,7 +3188,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "修改流程"
+                "description": "修改流程",
+                "client": "pc"
               },
               {
                 "name": "删除流程",
@@ -3053,7 +3208,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除流程"
+                "description": "删除流程",
+                "client": "pc"
               },
               {
                 "name": "详情流程",
@@ -3072,7 +3228,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情流程"
+                "description": "详情流程",
+                "client": "pc"
               },
               {
                 "name": "查询流程",
@@ -3091,14 +3248,16 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询流程"
+                "description": "查询流程",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           },
           {
             "name": "编排节点类型",
             "type": 2,
-            "icon": "el-icon-Grid",
+            "icon": "ri:layout-grid-line",
             "order": 2,
             "permission": "module_task:workflow:node-type:query",
             "route_name": "WorkflowNodeType",
@@ -3131,7 +3290,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "创建编排节点类型"
+                "description": "创建编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "修改编排节点类型",
@@ -3150,7 +3310,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "修改编排节点类型"
+                "description": "修改编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "删除编排节点类型",
@@ -3169,7 +3330,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "删除编排节点类型"
+                "description": "删除编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "详情编排节点类型",
@@ -3188,7 +3350,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "详情编排节点类型"
+                "description": "详情编排节点类型",
+                "client": "pc"
               },
               {
                 "name": "查询编排节点类型",
@@ -3207,18 +3370,22 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "查询编排节点类型"
+                "description": "查询编排节点类型",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
   },
   {
     "name": "案例管理",
     "type": 1,
-    "icon": "menu",
+    "icon": "ri:menu-line",
     "order": 9,
     "permission": null,
     "route_name": "Example",
@@ -3237,7 +3404,7 @@
       {
         "name": "示例管理",
         "type": 2,
-        "icon": "menu",
+        "icon": "ri:menu-line",
         "order": 1,
         "permission": "module_example:demo:query",
         "route_name": "Demo",
@@ -3270,7 +3437,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "更新示例",
@@ -3289,7 +3457,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "删除示例",
@@ -3308,7 +3477,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "批量修改示例状态",
@@ -3327,7 +3497,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导出示例",
@@ -3346,7 +3517,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "导入示例",
@@ -3365,7 +3537,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "下载导入示例模版",
@@ -3384,7 +3557,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "详情示例",
@@ -3403,7 +3577,8 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           },
           {
             "name": "查询示例",
@@ -3422,14 +3597,16 @@
             "params": null,
             "affix": false,
             "redirect": null,
-            "description": "初始化数据"
+            "description": "初始化数据",
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       },
       {
         "name": "二级目录",
         "type": 1,
-        "icon": "menu",
+        "icon": "ri:menu-line",
         "order": 2,
         "permission": null,
         "route_name": "DemoDir",
@@ -3448,7 +3625,7 @@
           {
             "name": "三级菜单",
             "type": 2,
-            "icon": "menu",
+            "icon": "ri:menu-line",
             "order": 1,
             "permission": "module_example:demo01:query",
             "route_name": "Demo01",
@@ -3481,7 +3658,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "更新示例01",
@@ -3500,7 +3678,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "删除示例01",
@@ -3519,7 +3698,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "批量修改示例01状态",
@@ -3538,7 +3718,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "导出示例01",
@@ -3557,7 +3738,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "导入示例01",
@@ -3576,7 +3758,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "下载导入示例01模版",
@@ -3595,7 +3778,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "详情示例01",
@@ -3614,7 +3798,8 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               },
               {
                 "name": "查询示例01",
@@ -3633,12 +3818,121 @@
                 "params": null,
                 "affix": false,
                 "redirect": null,
-                "description": "初始化数据"
+                "description": "初始化数据",
+                "client": "pc"
               }
-            ]
+            ],
+            "client": "pc"
           }
-        ]
+        ],
+        "client": "pc"
       }
-    ]
+    ],
+    "client": "pc"
+  },
+  {
+    "name": "首页",
+    "type": 1,
+    "icon": "ri:home-4-line",
+    "order": 90,
+    "permission": "",
+    "route_name": "AppHome",
+    "route_path": "/app/home",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "首页",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/home",
+    "description": "APP 移动端-首页",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "同事",
+    "type": 1,
+    "icon": "ri:user-heart-line",
+    "order": 91,
+    "permission": "",
+    "route_name": "AppColleague",
+    "route_path": "/app/colleague",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "同事",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/colleague",
+    "description": "APP 移动端-同事",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "打卡",
+    "type": 1,
+    "icon": "ri:time-line",
+    "order": 92,
+    "permission": "",
+    "route_name": "AppAttendance",
+    "route_path": "/app/attendance",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "打卡",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/attendance",
+    "description": "APP 移动端-打卡",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "消息",
+    "type": 1,
+    "icon": "ri:message-3-line",
+    "order": 93,
+    "permission": "",
+    "route_name": "AppMessage",
+    "route_path": "/app/message",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "消息",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/message",
+    "description": "APP 移动端-消息",
+    "children": [],
+    "client": "app"
+  },
+  {
+    "name": "我的",
+    "type": 1,
+    "icon": "ri:user-line",
+    "order": 94,
+    "permission": "",
+    "route_name": "AppMine",
+    "route_path": "/app/mine",
+    "component_path": null,
+    "status": "0",
+    "keep_alive": true,
+    "hidden": false,
+    "always_show": true,
+    "title": "我的",
+    "params": null,
+    "affix": false,
+    "redirect": "/app/mine",
+    "description": "APP 移动端-我的",
+    "children": [],
+    "client": "app"
   }
 ]

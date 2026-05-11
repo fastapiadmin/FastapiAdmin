@@ -1,0 +1,31 @@
+.DS_Store
+coverage/
+node_modules/
+unpackage/
+dist/
+lib/
+website/
+.temp
+.cache
+
+# .vitepress/cache/* - 只忽略 cache 目录下的文件，但不忽略子目录
+# .vitepress/cache/ - 忽略整个 cache 目录及其所有内容（推荐）
+**/.vitepress/cache/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.project
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+.history
+tags.json
+attributes.json
+web-types.json

@@ -1,0 +1,31 @@
+{
+  "name": "fastdocs",
+  "description": "FastapiAdmin 项目文档",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev || true",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "medium-zoom": "^1.1.0",
+    "vitepress": "1.6.4"
+  },
+  "packageManager": "pnpm@9.15.3",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/fastapiadmin/FastapiAdmin.git"
+  },
+  "bugs": {
+    "url": "https://gitee.com/fastapiadmin/FastapiAdmin/issues"
+  },
+  "author": "fastapiadmin <948080782@qq.com>",
+  "license": "MIT",
+  "homepage": "https://gitee.com/fastapiadmin/FastapiAdmin"
+}

@@ -121,6 +121,22 @@ class Settings(BaseSettings):
     CAPTCHA_FONT_PATH: str = "static/assets/font/Arial.ttf"  # 字体路径
 
     # ================================================= #
+    # ***************** 第三方 OAuth 登录（可选）********* #
+    # ================================================= #
+    # 自动注册用户的默认角色 ID 列表（须与库中角色主键一致）
+    OAUTH_DEFAULT_ROLE_IDS: list[int] = [2]
+    # 回调异常时回跳的前端地址（与前端实际 /login 一致，含协议与端口）
+    OAUTH_FRONTEND_FALLBACK: str = "http://127.0.0.1:5173/login"
+    OAUTH_GITHUB_CLIENT_ID: str = ""
+    OAUTH_GITHUB_CLIENT_SECRET: str = ""
+    OAUTH_GITEE_CLIENT_ID: str = ""
+    OAUTH_GITEE_CLIENT_SECRET: str = ""
+    OAUTH_WECHAT_OPEN_APP_ID: str = ""
+    OAUTH_WECHAT_OPEN_APP_SECRET: str = ""
+    OAUTH_QQ_APP_ID: str = ""
+    OAUTH_QQ_APP_SECRET: str = ""
+
+    # ================================================= #
     # ******************* 外部 HTTP（httpx）******************* #
     # ================================================= #
     HTTPX_DEFAULT_TIMEOUT: float = 10.0  # 对外请求默认超时（秒），见 app/common/httpx_defaults.py
