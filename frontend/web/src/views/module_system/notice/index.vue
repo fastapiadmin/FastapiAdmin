@@ -1,6 +1,6 @@
 <!-- 公告通知：Art 布局 + useTable，与 dict 页一致 -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -26,7 +26,7 @@
       </template>
     </FaSearchBar>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -50,11 +50,11 @@
       </FaTableHeader>
 
       <FaTable
-        ref="FaTableRef"
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -136,7 +136,7 @@
               </ElRadioGroup>
             </template>
             <template #notice_content>
-              <ArtWangEditor
+              <FaWangEditor
                 :model-value="formData.notice_content ?? ''"
                 height="min(38vh, 280px)"
                 placeholder="请输入公告内容，支持完整排版与插入..."
@@ -196,7 +196,7 @@ import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useDictStore, useNoticeStore } from "@stores/index";
 import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
-import ArtWangEditor from "@/components/forms/fa-wang-editor/index.vue";
+import FaWangEditor from "@/components/forms/fa-wang-editor/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 
@@ -309,7 +309,7 @@ const noticeSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<NoticeTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -411,6 +411,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeNoticeQuery(sp);
 });
 
@@ -426,21 +428,6 @@ const noticeExportContentConfig = computed(() => ({
     return res.data as Blob;
   },
 }));
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
 
 const detailFormData = ref<NoticeTable>({});
 
@@ -463,7 +450,7 @@ const detailHasRenderableContent = computed(() => {
   return plain.length > 0;
 });
 
-const formData = ref<NoticeForm>({
+const formData = reactive<NoticeForm>({
   id: undefined,
   notice_title: "",
   notice_type: "",
@@ -660,7 +647,7 @@ function deleteNoticeRow(id: number) {
       await NoticeAPI.deleteNotice([id]);
       await noticeStore.getNotice();
       ElMessage.success("删除成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -721,7 +708,7 @@ function handleBatchDelete() {
         await NoticeAPI.deleteNotice(ids);
         await noticeStore.getNotice();
         ElMessage.success("删除成功");
-        FaTableRef.value?.elTableRef?.clearSelection();
+        faTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;
@@ -760,15 +747,15 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 /* FaForm 底部预留的操作栏列在弹窗内不需要占位 */
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-/* 富文本预览区域阅读样式（与 ArtWangEditor 输出 HTML 展示一致） */
+/* 富文本预览区域阅读样式（与 FaWangEditor 输出 HTML 展示一致） */
 .notice-html-preview {
   box-sizing: border-box;
   min-height: 120px;
@@ -786,27 +773,27 @@ onMounted(async () => {
   color: var(--el-text-color-placeholder);
 }
 
-.notice-html-preview :deep(h1),
-.notice-html-preview :deep(h2),
-.notice-html-preview :deep(h3) {
+.notice-html-preview ::deep(h1),
+.notice-html-preview ::deep(h2),
+.notice-html-preview ::deep(h3) {
   margin: 12px 0 8px;
 }
 
-.notice-html-preview :deep(p) {
+.notice-html-preview ::deep(p) {
   margin: 8px 0;
   line-height: 1.6;
 }
 
-.notice-html-preview :deep(table) {
+.notice-html-preview ::deep(table) {
   margin: 12px 0;
 }
 
-.notice-html-preview :deep(table th),
-.notice-html-preview :deep(table td) {
+.notice-html-preview ::deep(table th),
+.notice-html-preview ::deep(table td) {
   padding: 8px 12px;
 }
 
-.notice-html-preview :deep(pre) {
+.notice-html-preview ::deep(pre) {
   padding: 12px;
   margin: 12px 0;
   overflow-x: auto;
@@ -814,14 +801,14 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
-.notice-html-preview :deep(blockquote) {
+.notice-html-preview ::deep(blockquote) {
   padding-left: 16px;
   margin: 12px 0;
   color: var(--el-text-color-regular);
   border-left: 4px solid var(--el-color-primary);
 }
 
-.notice-html-preview :deep(img) {
+.notice-html-preview ::deep(img) {
   max-width: 100%;
   height: auto;
 }

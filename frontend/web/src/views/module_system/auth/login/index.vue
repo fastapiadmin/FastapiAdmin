@@ -293,7 +293,6 @@ async function tryConsumeOAuthCallback() {
       Auth.setTokens(access, refresh, true);
       userStore.setToken(access, refresh);
       userStore.setLoginStatus(true);
-      await userStore.getUserInfo();
       ElNotification({
         title: t("login.oauthNoticeTitle"),
         message: t("login.oauthLoginSuccess"),
@@ -312,7 +311,7 @@ async function tryConsumeOAuthCallback() {
 }
 
 const dragVerifyTextColor = computed(() =>
-  isDark.value ? "rgba(255, 255, 255, 0.45)" : "var(--art-gray-700)"
+  isDark.value ? "rgba(255, 255, 255, 0.45)" : "var(--fa-gray-700)"
 );
 const formKey = ref(0);
 
@@ -549,7 +548,7 @@ const showVoteNotification = () => {
 
 onMounted(async () => {
   setupAccount("super");
-  await configStore.getConfig(true);
+  await configStore.getConfig();
   await tryConsumeOAuthCallback();
   getCaptcha();
   setTimeout(showVoteNotification, 500);
@@ -662,68 +661,68 @@ async function submitForget() {
 
 <style lang="scss" scoped>
 .login-page-panel {
-  :deep(.btn) {
+  ::deep(.btn) {
     border-radius: 8px;
   }
 }
 
 html.dark .login-page-panel {
-  :deep(.text-g-800) {
+  ::deep(.text-g-800) {
     color: rgb(255 255 255 / 78%) !important;
   }
 }
 
 /* 副标题与表单块间距（login-page-form 在子组件内，须 :deep） */
-:deep(.login-page-form) {
+::deep(.login-page-form) {
   margin-top: 1rem;
 }
 
-:deep(.login-page-form .el-form-item) {
+::deep(.login-page-form .el-form-item) {
   margin-bottom: 1.1rem;
 }
 
-:deep(.el-select__wrapper) {
+::deep(.el-select__wrapper) {
   min-height: 42px !important;
 }
 
 /* 仅账号登录底部「手机号 / 扫码」双列按钮需要 42px；手机号登录页的返回钮与主按钮同为 h-11，勿全局压高度 */
-:deep(.login-secondary-actions .login-secondary-btn) {
+::deep(.login-secondary-actions .login-secondary-btn) {
   height: 42px;
   border-radius: 8px;
 }
 
 html.dark {
-  :deep(.login-page-form .el-input__wrapper) {
+  ::deep(.login-page-form .el-input__wrapper) {
     background-color: rgb(255 255 255 / 6%) !important;
     box-shadow: 0 0 0 1px rgb(255 255 255 / 10%) inset !important;
   }
 
-  :deep(.login-page-form .el-input__inner) {
+  ::deep(.login-page-form .el-input__inner) {
     color: rgb(255 255 255 / 92%);
   }
 
-  :deep(.login-page-form .el-input__inner::placeholder) {
+  ::deep(.login-page-form .el-input__inner::placeholder) {
     color: rgb(255 255 255 / 35%);
   }
 
-  :deep(.login-page-form .el-select .el-select__wrapper) {
+  ::deep(.login-page-form .el-select .el-select__wrapper) {
     background-color: rgb(255 255 255 / 6%) !important;
     box-shadow: 0 0 0 1px rgb(255 255 255 / 10%) inset !important;
   }
 
-  :deep(.login-page-form .el-select__placeholder) {
+  ::deep(.login-page-form .el-select__placeholder) {
     color: rgb(255 255 255 / 40%);
   }
 
-  :deep(.login-page-form .el-select__selected-item) {
+  ::deep(.login-page-form .el-select__selected-item) {
     color: rgb(255 255 255 / 92%);
   }
 
-  :deep(.login-remember .el-checkbox__label) {
+  ::deep(.login-remember .el-checkbox__label) {
     color: rgb(255 255 255 / 65%);
   }
 
-  :deep(.login-secondary-btn) {
+  ::deep(.login-secondary-btn) {
     color: rgb(255 255 255 / 85%) !important;
     background: transparent !important;
     border-color: rgb(255 255 255 / 22%) !important;
@@ -736,7 +735,7 @@ html.dark {
     }
   }
 
-  :deep(.login-secondary-actions .login-secondary-btn) {
+  ::deep(.login-secondary-actions .login-secondary-btn) {
     height: 42px;
   }
 }

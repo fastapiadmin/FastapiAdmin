@@ -463,35 +463,35 @@ const openChat = (): void => {
 }
 
 /* Hover animation classes */
-.refresh-btn:hover :deep(.fa-svg-icon) {
+.refresh-btn:hover ::deep(.fa-svg-icon) {
   animation: rotate180 0.5s;
 }
 
-.language-btn:hover :deep(.fa-svg-icon) {
+.language-btn:hover ::deep(.fa-svg-icon) {
   animation: moveUp 0.4s;
 }
 
-.setting-btn:hover :deep(.fa-svg-icon) {
+.setting-btn:hover ::deep(.fa-svg-icon) {
   animation: rotate180 0.5s;
 }
 
-.full-screen-btn:hover :deep(.fa-svg-icon) {
+.full-screen-btn:hover ::deep(.fa-svg-icon) {
   animation: expand 0.6s forwards;
 }
 
-:deep(.size-select-btn:hover .fa-svg-icon) {
+::deep(.size-select-btn:hover .fa-svg-icon) {
   animation: expand 0.6s forwards;
 }
 
-.exit-full-screen-btn:hover :deep(.fa-svg-icon) {
+.exit-full-screen-btn:hover ::deep(.fa-svg-icon) {
   animation: shrink 0.6s forwards;
 }
 
-.notice-button:hover :deep(.fa-svg-icon) {
+.notice-button:hover ::deep(.fa-svg-icon) {
   animation: shake 0.5s ease-in-out;
 }
 
-.chat-button:hover :deep(.fa-svg-icon) {
+.chat-button:hover ::deep(.fa-svg-icon) {
   animation: shake 0.5s ease-in-out;
 }
 

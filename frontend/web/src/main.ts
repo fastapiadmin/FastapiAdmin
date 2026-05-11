@@ -4,13 +4,14 @@ import "@styles/core/tailwind.css";
 import "@styles/index.scss";
 import "element-plus/theme-chalk/dark/css-vars.css";
 import "animate.css";
-
+import { printConsoleBanner } from "@utils/sys";
 import { initPlugins } from "@/plugins";
 import { useConfigStore } from "./store/modules/config.store";
 
 document.addEventListener("touchstart", function () {}, { passive: false });
 
 const app = createApp(App);
+printConsoleBanner();
 initPlugins(app);
 app.mount("#app");
 
@@ -18,7 +19,7 @@ app.mount("#app");
 const setTitleAndFavicon = async () => {
   try {
     const configStore = useConfigStore();
-    await configStore.getConfig(true);
+    await configStore.getConfig();
 
     const webTitle = configStore.configData.sys_web_title?.config_value;
     const webFavicon = configStore.configData.sys_web_favicon?.config_value;

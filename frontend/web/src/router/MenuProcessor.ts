@@ -1,14 +1,9 @@
-/**
- * 菜单处理器（含后端菜单 → AppRouteRecord 转换）
- *
- * @module router/MenuProcessor
- */
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import type { UserInfo } from "@/api/module_system/user";
 import type { MenuTable } from "@/api/module_system/menu";
 import { useUserStore } from "@stores/modules/user.store";
 import { useAppMode } from "@/hooks/core/useAppMode";
-import MenuAPI from "@/api/module_system/menu";
+
 import {
   mergeAppRouteRecords,
   ROUTE_COMPONENT_LAYOUT,
@@ -16,6 +11,11 @@ import {
 } from "./staticRoutes";
 import { formatMenuTitle } from "@utils";
 import { MenuTypeEnum } from "@/enums/system/menu.enum";
+
+/**
+ * 菜单 → `AppRouteRecord`：后端 `MenuTable`、前端内置路由、混合模式合并；供守卫注册动态路由。
+ * `getMenuList` 依 `useAppMode` 分支；meta 对齐后端 keep_alive、目录占位组件。
+ */
 
 /** 前端模式并入菜单的内置路由（扩展点，默认空） */
 export const builtinFrontendRoutes: AppRouteRecord[] = [];
@@ -122,6 +122,7 @@ function mapMenuNode(item: MenuTable, depth = 0): AppRouteRecord {
     title: item.title ?? "",
     icon: item.icon || undefined,
     hidden: !!item.hidden,
+    /** 与菜单 API `keep_alive` 一致；缺省 true 仅在后端未下发该字段时兜底 */
     keepAlive: item.keep_alive ?? true,
     affix: !!item.affix,
     fixedTab: !!item.affix,
@@ -148,9 +149,6 @@ function backendMenusToAppRoutes(menus: MenuTable[]): AppRouteRecord[] {
 }
 
 export class MenuProcessor {
-  /**
-   * 获取菜单数据
-   */
   async getMenuList(): Promise<AppRouteRecord[]> {
     const { isFrontendMode, isMixedMenuMode } = useAppMode();
 
@@ -212,11 +210,15 @@ export class MenuProcessor {
     return this.filterEmptyMenus(merged);
   }
 
+  /** 优先用用户信息里附带的 `menus`，与守卫拉用户信息顺序一致，避免重复打菜单树接口 */
   private async processBackendMenu(): Promise<AppRouteRecord[]> {
-    const response = await MenuAPI.listMenu({ menu_client: "pc" });
-    const list = response.data.data || [];
-    const routes = backendMenusToAppRoutes(list);
-    return this.filterEmptyMenus(routes);
+    const userStore = useUserStore();
+    const fromUser = userStore.routeList;
+    if (Array.isArray(fromUser) && fromUser.length > 0) {
+      const routes = backendMenusToAppRoutes(fromUser);
+      return this.filterEmptyMenus(routes);
+    }
+    return [];
   }
 
   private filterMenuByRoles(menu: AppRouteRecord[], roleCodes: string[]): AppRouteRecord[] {

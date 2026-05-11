@@ -1,13 +1,13 @@
 <!-- 用户管理：左部门树 + 右 Art 表格 -->
 <template>
-  <div class="art-full-height user-manage-page">
+  <div class="fa-full-height user-manage-page">
     <div
       class="user-manage-body box-border flex gap-4 h-full max-md:block max-md:gap-0 max-md:h-auto"
     >
       <div
         class="user-dept-panel flex-shrink-0 w-58 h-full max-md:w-full max-md:h-auto max-md:mb-5"
       >
-        <ElCard class="tree-card art-card-xs flex flex-col h-full mt-0" shadow="hover">
+        <ElCard class="tree-card fa-card-xs flex flex-col h-full mt-0" shadow="hover">
           <template #header>
             <b>部门</b>
           </template>
@@ -47,7 +47,7 @@
           </template>
         </FaSearchBar>
 
-        <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+        <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
@@ -74,12 +74,12 @@
           </FaTableHeader>
 
           <FaTable
-            ref="FaTableRef"
+            ref="faTableRef"
             row-key="id"
             :loading="loading"
             :data="data"
             :columns="columns"
-            :pagination="paginationBind"
+            :pagination="pagination"
             @selection-change="onTableSelectionChange"
             @pagination:size-change="handleSizeChange"
             @pagination:current-change="handleCurrentChange"
@@ -293,7 +293,7 @@
       </template>
     </FaDrawer>
 
-    <ArtImportDialog
+    <FaImportDialog
       v-model="importModalVisible"
       :content-config="userImportContentConfig"
       default-template-file-name="user_import_template.xlsx"
@@ -329,7 +329,7 @@ import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vu
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import ArtImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
 import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import UserAPI, {
@@ -535,7 +535,7 @@ const userSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<UserInfo[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -576,7 +576,7 @@ function deleteUserRow(id: number) {
       } else {
         ElMessage.success("删除成功");
       }
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -609,8 +609,8 @@ const {
   core: {
     apiFn: fetchUserTableList,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
     },
     columnsFactory: (): import("@/types/component").ColumnOption<UserInfo>[] => [
       { type: "selection", width: 48, fixed: "left" },
@@ -686,6 +686,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   if (
     deptFilterId.value !== undefined &&
     deptFilterId.value !== null &&
@@ -729,7 +731,7 @@ const userExportContentConfig = computed(() => ({
   },
 }));
 
-const formData = ref<UserForm>({
+const formData = reactive<UserForm>({
   id: undefined,
   username: undefined,
   name: undefined,
@@ -799,13 +801,13 @@ const initialFormData: UserForm = {
 async function handleSearchBarSearch(params: UserSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildUserReplaceParams(params));
-  getData();
+  await getData();
 }
 
 async function applyUserSearchFromForm() {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildUserReplaceParams(searchForm.value));
-  getData();
+  await getData();
 }
 
 async function afterUserSelectSearch() {
@@ -825,8 +827,8 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-function handleDeptNodeClick() {
-  getData();
+async function handleDeptNodeClick() {
+  await getData();
 }
 
 function openImportModal() {
@@ -1000,7 +1002,7 @@ function handleMoreClick(status: string) {
 
 <style lang="scss" scoped>
 /* 左侧部门树内容区：card body 纵向 flex + 滚动条占满剩余高度（布局在 index，内边距在 DeptTree） */
-.tree-card :deep(.el-card__body) {
+.tree-card ::deep(.el-card__body) {
   display: flex;
   flex: 1;
   flex-direction: column;

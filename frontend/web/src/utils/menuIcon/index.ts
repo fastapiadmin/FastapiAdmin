@@ -13,7 +13,7 @@ export function isElementPlusStoredIcon(icon?: string | null): boolean {
   return !!s && s.startsWith("el-icon");
 }
 
-/** 与历史 `MenuSearch` 中 `resolveEpMenuIcon` 一致：`pie-chart` → `PieChart` */
+/** `el-icon-*` 主体转 PascalCase，与侧栏 / 搜索里 Element Plus 图标解析一致：`pie-chart` → `PieChart` */
 function kebabSnakeBodyToPascalKey(body: string): string {
   return body
     .split(/[-_]/)
@@ -25,7 +25,7 @@ function kebabSnakeBodyToPascalKey(body: string): string {
 /**
  * 解析为 Element Plus 图标组件；否则 null（再走 Iconify / Remix 映射）。
  * 对齐旧版 `layouts/old/components/Menu/components/MenuItemContent.vue`（el-icon / 自定义文件名）
- * 及 `MenuSearch` 里对 `el-icon-*` 主体的 Pascal 推导。
+ * 及对 `el-icon-*` 主体的 Pascal 推导。
  */
 export function resolveElementPlusIconComponent(icon?: string | null): Component | null {
   const ic = icon?.trim();
@@ -171,7 +171,7 @@ const REMIX_BY_NAME: Record<string, string> = {
   upload_folder: "ri:folder-upload-line",
   "upload-folder": "ri:folder-upload-line",
   user: "ri:user-line",
-  visitor: "ri:user-hefa-line",
+  visitor: "ri:user-heart-line",
   vite: "ri:rocket-line",
   vue: "ri:vuejs-line",
   wechat: "ri:wechat-fill",
@@ -179,7 +179,7 @@ const REMIX_BY_NAME: Record<string, string> = {
   people: "ri:team-line",
 
   "menu-about": "ri:information-line",
-  "menu-analyse": "ri:line-chfa-line",
+  "menu-analyse": "ri:line-chart-line",
   "menu-crud": "ri:database-2-line",
   "menu-detail": "ri:file-list-line",
   "menu-document": "ri:file-text-line",
@@ -191,7 +191,7 @@ const REMIX_BY_NAME: Record<string, string> = {
   "menu-home": "ri:home-4-line",
   "menu-layout": "ri:layout-line",
   "menu-multi": "ri:layout-grid-line",
-  "menu-result": "ri:bar-chfa-box-line",
+  "menu-result": "ri:bar-chart-box-line",
   "menu-system": "ri:settings-3-line",
   "menu-table": "ri:table-line",
   "menu-test": "ri:test-tube-line",

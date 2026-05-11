@@ -250,15 +250,15 @@ onMounted(() => {
   flex: 1;
 }
 
-.panel-art-form :deep(.el-row > .el-col:last-child) {
+.panel-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.panel-art-form :deep(.el-form-item__content) {
+.panel-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-.panel-art-form :deep(section) {
+.panel-art-form ::deep(section) {
   padding: 0;
 }
 </style>

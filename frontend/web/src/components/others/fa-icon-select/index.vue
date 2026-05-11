@@ -181,8 +181,8 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.reference :deep(.el-input__wrapper),
-.reference :deep(.el-input__inner) {
+.reference ::deep(.el-input__wrapper),
+.reference ::deep(.el-input__inner) {
   cursor: pointer;
 }
 

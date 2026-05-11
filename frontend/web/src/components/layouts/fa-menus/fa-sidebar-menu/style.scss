@@ -3,18 +3,18 @@
   height: 100vh;
   user-select: none;
   scrollbar-width: none;
-  border-right: 1px solid var(--art-card-border);
+  border-right: 1px solid var(--fa-card-border);
 
   &.no-border {
     border-right: none !important;
   }
 
   // 自定义滚动条宽度
-  :deep(.el-scrollbar__bar.is-vertical) {
+  ::deep(.el-scrollbar__bar.is-vertical) {
     width: 4px;
   }
 
-  :deep(.el-scrollbar__thumb) {
+  ::deep(.el-scrollbar__thumb) {
     right: -2px;
     background-color: #ccc;
     border-radius: 2px;
@@ -24,7 +24,7 @@
     position: relative;
     width: 80px;
     height: 100%;
-    border-right: 1px solid var(--art-card-border) !important;
+    border-right: 1px solid var(--fa-card-border) !important;
     transition: width 0.25s;
 
     .logo {
@@ -114,7 +114,7 @@
       height: 50px;
       cursor: pointer;
       background-color: var(--default-box-color);
-      border: 1px solid var(--art-card-border);
+      border: 1px solid var(--fa-card-border);
       border-radius: 0 15px 15px 0;
       opacity: 0;
       transform: translateY(-50%);
@@ -122,7 +122,7 @@
 
       &:hover {
         .art-svg-icon {
-          color: var(--art-gray-800) !important;
+          color: var(--fa-gray-800) !important;
         }
       }
 
@@ -240,7 +240,7 @@
   .layout-sidebar {
     border-right: 1px solid rgb(255 255 255 / 13%);
 
-    :deep(.el-scrollbar__thumb) {
+    ::deep(.el-scrollbar__thumb) {
       background-color: #777;
     }
 

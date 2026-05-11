@@ -230,7 +230,7 @@ const emit = defineEmits(["update:visible", "refresh"]);
 const formRef = ref<InstanceType<typeof FaForm> | null>(null);
 const workflowId = ref<number>();
 
-const formData = ref<Partial<WorkflowForm>>({
+const formData = reactive<Partial<WorkflowForm>>({
   code: "",
   name: "",
   description: "",
@@ -904,7 +904,7 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
 
 <style scoped lang="scss">
 .workflow-drawer {
-  :deep(.el-drawer__body) {
+  ::deep(.el-drawer__body) {
     display: flex;
     flex-direction: column;
   }
@@ -916,11 +916,11 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   height: 100%;
 }
 
-:deep(.el-splitter) {
+::deep(.el-splitter) {
   flex: 1;
 }
 
-:deep(.el-splitter-panel) {
+::deep(.el-splitter-panel) {
   overflow: hidden;
 }
 
@@ -961,12 +961,12 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   overflow: hidden;
 }
 
-:deep(.vue-flow__controls) {
+::deep(.vue-flow__controls) {
   display: flex;
   flex-direction: column;
 }
 
-:deep(.vue-flow__controls-button) {
+::deep(.vue-flow__controls-button) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -978,7 +978,7 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   border: none;
 }
 
-:deep(.el-dropdown) {
+::deep(.el-dropdown) {
   display: flex;
 }
 
@@ -996,15 +996,15 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
   justify-content: flex-end;
 }
 
-.workflow-base-art-form :deep(.el-row > .el-col:last-child) {
+.workflow-base-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.workflow-base-art-form :deep(.el-form-item__content) {
+.workflow-base-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-.workflow-base-art-form :deep(section) {
+.workflow-base-art-form ::deep(section) {
   padding: 0;
 }
 </style>

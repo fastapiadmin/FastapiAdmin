@@ -24,7 +24,7 @@
       />
 
       <ElCard
-        class="art-table-card drawer-table-card"
+        class="fa-table-card drawer-table-card"
         :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
       >
         <FaTableHeader
@@ -50,11 +50,11 @@
         </FaTableHeader>
 
         <FaTable
-          ref="FaTableRef"
+          ref="faTableRef"
           :loading="loading"
           :data="data"
           :columns="columns"
-          :pagination="paginationBind"
+          :pagination="pagination"
           @selection-change="onTableSelectionChange"
           @pagination:size-change="handleSizeChange"
           @pagination:current-change="handleCurrentChange"
@@ -408,7 +408,7 @@ const dictDataSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<DictDataTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -439,8 +439,8 @@ const {
   core: {
     apiFn: fetchDictDataListMerged,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
       dict_type: props.dictType,
       dict_type_id: props.dictTypeId,
     },
@@ -509,6 +509,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeDictDataQuery({
     ...sp,
     dict_type: props.dictType,
@@ -531,21 +533,6 @@ const dictDataExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 const dialogVisible = reactive({
   title: "",
   visible: false,
@@ -554,7 +541,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DictDataTable>({});
 
-const formData = ref<DictDataForm>({
+const formData = reactive<DictDataForm>({
   id: undefined,
   dict_sort: 1,
   dict_label: "",
@@ -728,11 +715,11 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增字典数据";
-    Object.assign(formData.value, initialFormData);
-    formData.value.dict_type = props.dictType;
-    formData.value.dict_type_id = props.dictTypeId;
-    formData.value.status = "0";
-    formData.value.id = undefined;
+    Object.assign(formData, initialFormData);
+    formData.dict_type = props.dictType;
+    formData.dict_type_id = props.dictTypeId;
+    formData.status = "0";
+    formData.id = undefined;
   }
   dictDataFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -741,20 +728,20 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.value.id;
+    const id = formData.id;
     try {
       if (id) {
         await DictAPI.updateDictData(id, { id, ...formData });
         await refreshUpdate();
       } else {
-        await DictAPI.createDictData(formData.value);
+        await DictAPI.createDictData(formData);
         await refreshCreate();
       }
       dialogVisible.visible = false;
       await resetForm();
       dictStore.clearDictData();
-      if (formData.value.dict_type) {
-        await dictStore.getDict([formData.value.dict_type]);
+      if (formData.dict_type) {
+        await dictStore.getDict([formData.dict_type]);
       }
     } catch (error: unknown) {
       console.error(error);
@@ -812,7 +799,7 @@ function deleteDictDataRow(id: number) {
         await dictStore.getDict([props.dictType]);
       }
       ElMessage.success("删除成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -835,7 +822,7 @@ function handleBatchDelete() {
           await dictStore.getDict([props.dictType]);
         }
         ElMessage.success("删除成功");
-        FaTableRef.value?.elTableRef?.clearSelection();
+        faTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;
@@ -903,11 +890,11 @@ function openExportModal() {
   border-color: var(--el-border-color-lighter);
 }
 
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

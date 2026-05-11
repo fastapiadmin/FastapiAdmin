@@ -7,7 +7,7 @@
       <div
         v-for="item in upgradeLogList"
         :key="item.version"
-        class="art-card-sm rounded-lg p-6 transition-shadow max-md:p-4"
+        class="fa-card-sm rounded-lg p-6 transition-shadow max-md:p-4"
       >
         <div class="flex-cb gap-3 mb-4 flex-wrap">
           <span class="px-3 py-1 bg-theme/10 text-theme text-sm font-medium rounded-full">

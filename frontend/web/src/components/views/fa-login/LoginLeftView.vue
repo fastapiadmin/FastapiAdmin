@@ -78,10 +78,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import AppConfig from "@/config";
 import loginIcon from "@imgs/svg/login_icon.svg";
 import { useConfigStore } from "@stores/modules/config.store";
 import { themeAnimation } from "@utils/ui";
+import FaLogo from "@/components/base/fa-logo/index.vue";
 import FaThemeSvg from "@/components/theme/fa-theme-svg/index.vue";
 
 defineProps<{
@@ -233,17 +235,11 @@ $bg-mix-light-7: color-mix(in srgb, $primary-light-7 80%, $main-bg);
 
         @if $direction == "up" {
           transform: translateY(30px) rotate($rotation);
-        }
-
- @else if $direction == "down" {
+        } @else if $direction == "down" {
           transform: translateY(-30px) rotate($rotation);
-        }
-
- @else if $direction == "left" {
+        } @else if $direction == "left" {
           transform: translateX(-30px) rotate($rotation);
-        }
-
- @else if $direction == "right" {
+        } @else if $direction == "right" {
           transform: translateX(30px) rotate($rotation);
         }
       }
@@ -253,9 +249,7 @@ $bg-mix-light-7: color-mix(in srgb, $primary-light-7 80%, $main-bg);
 
         @if $direction == "up" or $direction == "down" {
           transform: translateY(0) rotate($rotation);
-        }
-
- @else {
+        } @else {
           transform: translateX(0) rotate($rotation);
         }
       }

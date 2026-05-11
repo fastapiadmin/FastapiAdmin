@@ -1,6 +1,6 @@
 <!-- 示例01 CRUD：与 demo 同一套 Art 布局；权限与接口为 module_example:demo01 / Demo01API -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBarWithAudit
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -43,11 +43,11 @@
       </FaTableHeader>
 
       <FaTable
-        ref="FaTableRef"
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -132,7 +132,7 @@
       </template>
     </FaDialog>
 
-    <ArtImportDialog
+    <FaImportDialog
       v-model="importModalVisible"
       :content-config="demo01ImportContentConfig"
       default-template-file-name="demo01_import_template.xlsx"
@@ -155,7 +155,7 @@ import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useTable } from "@/hooks/core/useTable";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import ArtImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
 import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
@@ -242,7 +242,7 @@ const demo01BusinessSearchItems = computed(() => [
   },
 ]);
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<Demo01Table[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -335,6 +335,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeDemo01Query(sp);
 });
 
@@ -358,21 +360,6 @@ const demo01ExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 const dialogVisible = reactive({
   title: "",
   visible: false,
@@ -381,7 +368,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<Demo01Table>({});
 
-const formData = ref<Demo01Form>({
+const formData = reactive<Demo01Form>({
   id: undefined,
   name: "",
   status: "0",
@@ -564,7 +551,7 @@ const deleteDemo01Row = (row: Demo01Table) => {
     .then(async () => {
       await Demo01API.deleteDemo01([row.id!]);
       ElMessage.success("删除成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {
@@ -585,7 +572,7 @@ function handleBatchDelete() {
         batchDeleting.value = true;
         await Demo01API.deleteDemo01(ids);
         ElMessage.success("删除成功");
-        FaTableRef.value?.elTableRef?.clearSelection();
+        faTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;
@@ -610,7 +597,7 @@ function runBatchStatus(status: string) {
     .then(async () => {
       await Demo01API.batchDemo01({ ids, status });
       ElMessage.success("操作成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshData();
     })
     .catch(() => {});
@@ -640,11 +627,11 @@ function openExportModal() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

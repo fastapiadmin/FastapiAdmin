@@ -1,5 +1,5 @@
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -16,7 +16,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -68,12 +68,12 @@
       </FaTableHeader>
 
       <FaTable
-        ref="FaTableRef"
+        ref="faTableRef"
         row-key="id"
         :loading="tableLoading"
         :data="tableListData"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="handleTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -182,7 +182,7 @@ const cmRef = ref<CmComponentRef>();
 const basicInfo = ref<FormInstance>();
 const importDbDialogRef = ref<InstanceType<typeof ImportDbTableDialog>>();
 /** FaTable：勾选清空（删除后） */
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 
 /** useTable 初始化前的占位，供同步/删除/导入等在文件中靠前定义的函数调用 */
 const listRefresh = {
@@ -750,7 +750,7 @@ async function handleDelete(row?: GenTableSchema): Promise<void> {
     });
 
     await GencodeAPI.deleteTable(tableIds);
-    FaTableRef.value?.elTableRef?.clearSelection();
+    faTableRef.value?.elTableRef?.clearSelection();
     await listRefresh.refreshRemove();
   } catch (error) {
     if (error !== "cancel") {
@@ -899,21 +899,6 @@ const {
 listRefresh.refreshData = refreshData;
 listRefresh.refreshCreate = refreshCreate;
 listRefresh.refreshRemove = refreshRemove;
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 10,
-    total: p.total ?? 0,
-  };
-});
 
 async function handleSearchBarSearch(params: GencodeSearchForm) {
   await searchBarRef.value?.validate?.();

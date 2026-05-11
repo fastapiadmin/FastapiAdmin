@@ -1,6 +1,6 @@
 <!-- 部门配置：Art + 树形表格（对齐 system/menu 模版） -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -362,7 +362,7 @@ const { columnChecks, columns } = useTableColumns<DeptTable>(() => [
 
 const detailFormData = ref<DeptTable>({ code: "" });
 
-const formData = ref<DeptForm>({
+const formData = reactive<DeptForm>({
   id: undefined,
   name: undefined,
   code: "",
@@ -515,10 +515,10 @@ async function handleOpenDialog(
     }
   } else {
     dialogVisible.title = "新增部门";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
+    Object.assign(formData, initialFormData);
+    formData.id = undefined;
     if (parentId) {
-      formData.value.parent_id = parentId;
+      formData.parent_id = parentId;
     }
   }
   deptFormRenderKey.value += 1;
@@ -528,12 +528,12 @@ async function handleOpenDialog(
 async function handleSubmit() {
   dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
-    const id = formData.value.id;
+    const id = formData.id;
     try {
       if (id) {
-        await DeptAPI.updateDept(id, { id, ...formData.value });
+        await DeptAPI.updateDept(id, { id, ...formData });
       } else {
-        await DeptAPI.createDept(formData.value);
+        await DeptAPI.createDept(formData);
       }
       dialogVisible.visible = false;
       await resetForm();
@@ -614,19 +614,15 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 
-:deep(.dept-table-actions .inline-flex) {
+::deep(.dept-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

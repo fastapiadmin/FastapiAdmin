@@ -291,7 +291,7 @@ import { useConfigStore } from "@stores";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
 import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
+import SingleImageUpload from "@/components/others/fa-upload/index.vue";
 import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 

@@ -14,7 +14,7 @@
  *
  * ## 手动礼花快捷键
  *
- * 全局 **Ctrl+Shift+P** / **⌘+Shift+P** 由 `fa-fireworks-effect` 监听；礼花图与当天节日配置一致，
+ * 全局 **Ctrl+Shift+P** / **⌘+Shift+P** 由 `art-fireworks-effect` 监听；礼花图与当天节日配置一致，
  * 详见 `src/config/modules/festival.ts` 文件头说明。
  *
  * ## 使用示例

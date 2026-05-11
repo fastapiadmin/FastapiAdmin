@@ -24,13 +24,17 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
   {
     name: "设置面板",
     key: "settings-panel",
-    component: defineAsyncComponent(() => import("@/components/layouts/fa-settings-panel/index.vue")),
+    component: defineAsyncComponent(
+      () => import("@/components/layouts/fa-settings-panel/index.vue")
+    ),
     enabled: true,
   },
   {
     name: "全局搜索",
     key: "global-search",
-    component: defineAsyncComponent(() => import("@/components/layouts/fa-global-search/index.vue")),
+    component: defineAsyncComponent(
+      () => import("@/components/layouts/fa-global-search/index.vue")
+    ),
     enabled: true,
   },
   {
@@ -48,7 +52,9 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
   {
     name: "礼花效果",
     key: "fireworks-effect",
-    component: defineAsyncComponent(() => import("@/components/layouts/fa-fireworks-effect/index.vue")),
+    component: defineAsyncComponent(
+      () => import("@/components/layouts/fa-fireworks-effect/index.vue")
+    ),
     enabled: true,
   },
   {

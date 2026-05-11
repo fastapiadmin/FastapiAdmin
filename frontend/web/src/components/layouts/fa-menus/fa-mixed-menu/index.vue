@@ -59,6 +59,7 @@ import { useThrottleFn } from "@vueuse/core";
 import { formatMenuTitle } from "@utils/navigation";
 import { handleMenuJump } from "@utils/navigation";
 import type { AppRouteRecord } from "@/types/router";
+import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
 
 defineOptions({ name: "FaMixedMenu" });
 
@@ -247,13 +248,13 @@ onMounted(initScrollState);
 </style>
 
 <style scoped>
-:deep(.el-scrollbar__bar.is-horizontal) {
+::deep(.el-scrollbar__bar.is-horizontal) {
   bottom: 5px;
   display: none;
   height: 2px;
 }
 
-:deep(.scrollbar-wrapper) {
+::deep(.scrollbar-wrapper) {
   flex: 1;
   min-width: 0;
   margin: 0 50px 0 30px;
@@ -272,7 +273,7 @@ onMounted(initScrollState);
 }
 
 @media (width <= 1440px) {
-  :deep(.scrollbar-wrapper) {
+  ::deep(.scrollbar-wrapper) {
     margin: 0 45px;
   }
 }

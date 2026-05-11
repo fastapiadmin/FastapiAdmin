@@ -1,72 +1,71 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ==================== Light Mode Variables ==================== */
 :root {
   /* Base Colors */
-  --art-color: #ffffff;
+  --fa-color: #fff;
   --theme-color: var(--main-color);
 
   /* Theme Colors - OKLCH Format */
-  --art-primary: oklch(0.7 0.23 260);
-  --art-secondary: oklch(0.72 0.19 231.6);
-  --art-error: oklch(0.73 0.15 25.3);
-  --art-info: oklch(0.58 0.03 254.1);
-  --art-success: oklch(0.78 0.17 166.1);
-  --art-warning: oklch(0.78 0.14 75.5);
-  --art-danger: oklch(0.68 0.22 25.3);
+  --fa-primary: oklch(70% 0.23 260deg);
+  --fa-secondary: oklch(72% 0.19 231.6deg);
+  --fa-error: oklch(73% 0.15 25.3deg);
+  --fa-info: oklch(58% 0.03 254.1deg);
+  --fa-success: oklch(78% 0.17 166.1deg);
+  --fa-warning: oklch(78% 0.14 75.5deg);
+  --fa-danger: oklch(68% 0.22 25.3deg);
 
   /* Gray Scale - Light Mode */
-  --art-gray-100: #f9fafb;
-  --art-gray-200: #f2f4f5;
-  --art-gray-300: #e6eaeb;
-  --art-gray-400: #dbdfe1;
-  --art-gray-500: #949eb7;
-  --art-gray-600: #7987a1;
-  --art-gray-700: #4d5875;
-  --art-gray-800: #383853;
-  --art-gray-900: #323251;
+  --fa-gray-100: #f9fafb;
+  --fa-gray-200: #f2f4f5;
+  --fa-gray-300: #e6eaeb;
+  --fa-gray-400: #dbdfe1;
+  --fa-gray-500: #949eb7;
+  --fa-gray-600: #7987a1;
+  --fa-gray-700: #4d5875;
+  --fa-gray-800: #383853;
+  --fa-gray-900: #323251;
 
   /* Border Colors */
-  --art-card-border: rgba(0, 0, 0, 0.08);
-
+  --fa-card-border: rgb(0 0 0 / 8%);
   --default-border: #e2e8ee;
   --default-border-dashed: #dbdfe9;
 
   /* Background Colors */
   --default-bg-color: #fafbfc;
-  --default-box-color: #ffffff;
+  --default-box-color: #fff;
 
   /* Hover Color */
-  --art-hover-color: #edeff0;
+  --fa-hover-color: #edeff0;
 
   /* Active Color */
-  --art-active-color: #f2f4f5;
+  --fa-active-color: #f2f4f5;
 
   /* Element Component Active Color */
-  --art-el-active-color: #f2f4f5;
+  --fa-el-active-color: #f2f4f5;
 }
 
 /* ==================== Dark Mode Variables ==================== */
 .dark {
   /* Base Colors */
-  --art-color: #000000;
+  --fa-color: #000;
 
   /* Gray Scale - Dark Mode */
-  --art-gray-100: #110f0f;
-  --art-gray-200: #17171c;
-  --art-gray-300: #393946;
-  --art-gray-400: #505062;
-  --art-gray-500: #73738c;
-  --art-gray-600: #8f8fa3;
-  --art-gray-700: #ababba;
-  --art-gray-800: #c7c7d1;
-  --art-gray-900: #e3e3e8;
+  --fa-gray-100: #110f0f;
+  --fa-gray-200: #17171c;
+  --fa-gray-300: #393946;
+  --fa-gray-400: #505062;
+  --fa-gray-500: #73738c;
+  --fa-gray-600: #8f8fa3;
+  --fa-gray-700: #ababba;
+  --fa-gray-800: #c7c7d1;
+  --fa-gray-900: #e3e3e8;
 
   /* Border Colors */
-  --art-card-border: rgba(255, 255, 255, 0.08);
-
-  --default-border: rgba(255, 255, 255, 0.1);
+  --fa-card-border: rgb(255 255 255 / 8%);
+  --default-border: rgb(255 255 255 / 10%);
   --default-border-dashed: #363843;
 
   /* Background Colors */
@@ -74,13 +73,13 @@
   --default-box-color: #161618;
 
   /* Hover Color */
-  --art-hover-color: #252530;
+  --fa-hover-color: #252530;
 
   /* Active Color */
-  --art-active-color: #202226;
+  --fa-active-color: #202226;
 
   /* Element Component Active Color */
-  --art-el-active-color: #2e2e38;
+  --fa-el-active-color: #2e2e38;
 }
 
 /* ==================== Tailwind Theme Configuration ==================== */
@@ -92,33 +91,33 @@
   --color-theme: var(--theme-color);
 
   /* Hover Color */
-  --color-hover-color: var(--art-hover-color);
+  --color-hover-color: var(--fa-hover-color);
 
   /* Active Color */
-  --color-active-color: var(--art-active-color);
+  --color-active-color: var(--fa-active-color);
 
   /* Active Color */
-  --color-el-active-color: var(--art-active-color);
+  --color-el-active-color: var(--fa-active-color);
 
   /* ElementPlus Theme Colors */
-  --color-primary: var(--art-primary);
-  --color-secondary: var(--art-secondary);
-  --color-error: var(--art-error);
-  --color-info: var(--art-info);
-  --color-success: var(--art-success);
-  --color-warning: var(--art-warning);
-  --color-danger: var(--art-danger);
+  --color-primary: var(--fa-primary);
+  --color-secondary: var(--fa-secondary);
+  --color-error: var(--fa-error);
+  --color-info: var(--fa-info);
+  --color-success: var(--fa-success);
+  --color-warning: var(--fa-warning);
+  --color-danger: var(--fa-danger);
 
   /* Gray Scale Colors (Auto-adapts to dark mode) */
-  --color-g-100: var(--art-gray-100);
-  --color-g-200: var(--art-gray-200);
-  --color-g-300: var(--art-gray-300);
-  --color-g-400: var(--art-gray-400);
-  --color-g-500: var(--art-gray-500);
-  --color-g-600: var(--art-gray-600);
-  --color-g-700: var(--art-gray-700);
-  --color-g-800: var(--art-gray-800);
-  --color-g-900: var(--art-gray-900);
+  --color-g-100: var(--fa-gray-100);
+  --color-g-200: var(--fa-gray-200);
+  --color-g-300: var(--fa-gray-300);
+  --color-g-400: var(--fa-gray-400);
+  --color-g-500: var(--fa-gray-500);
+  --color-g-600: var(--fa-gray-600);
+  --color-g-700: var(--fa-gray-700);
+  --color-g-800: var(--fa-gray-800);
+  --color-g-900: var(--fa-gray-900);
 }
 
 /* ==================== Custom Border Radius Utilities ==================== */
@@ -187,8 +186,8 @@
 
 /* ==================== Custom Component Classes ==================== */
 @layer components {
-  /* Art Card Header Component */
-  .art-card-header {
+  /* Fa Card Header Component */
+  .fa-card-header {
     @apply flex justify-between pr-6 pb-1;
 
     .title {

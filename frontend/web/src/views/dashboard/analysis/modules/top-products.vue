@@ -1,6 +1,6 @@
 <template>
-  <div class="art-card h-82 p-5 mb-5 overflow-hidden max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card h-82 p-5 mb-5 overflow-hidden max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>热门产品</h4>
       </div>

@@ -352,8 +352,8 @@ const popoverContentRef = ref();
 </script>
 
 <style scoped lang="scss">
-.reference :deep(.el-input__wrapper),
-.reference :deep(.el-input__inner) {
+.reference ::deep(.el-input__wrapper),
+.reference ::deep(.el-input__inner) {
   cursor: pointer;
 }
 
@@ -363,7 +363,7 @@ const popoverContentRef = ref();
   margin-top: 6px;
 }
 // 隐藏全选按钮
-.radio :deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
+.radio ::deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
   visibility: hidden;
 }
 </style>

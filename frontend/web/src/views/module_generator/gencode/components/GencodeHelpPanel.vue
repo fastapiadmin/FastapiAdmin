@@ -66,18 +66,18 @@ const rows = [
   border-radius: var(--el-border-radius-base);
 }
 
-.gencode-help-collapse :deep(.el-collapse-item__header) {
+.gencode-help-collapse ::deep(.el-collapse-item__header) {
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 500;
   background: var(--el-fill-color-light);
 }
 
-.gencode-help-collapse :deep(.el-collapse-item__wrap) {
+.gencode-help-collapse ::deep(.el-collapse-item__wrap) {
   border-top: 1px solid var(--el-border-color-lighter);
 }
 
-.gencode-help-collapse :deep(.el-collapse-item__content) {
+.gencode-help-collapse ::deep(.el-collapse-item__content) {
   padding: 10px 12px 12px;
 }
 
@@ -91,7 +91,7 @@ const rows = [
   flex-shrink: 0;
 }
 
-.gencode-rules-table :deep(.el-table__cell) {
+.gencode-rules-table ::deep(.el-table__cell) {
   font-size: 12px;
 }
 

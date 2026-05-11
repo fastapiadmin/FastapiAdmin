@@ -1,13 +1,13 @@
 <template>
-  <div class="art-card p-5 mb-5 h-105 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card p-5 mb-5 h-105 max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>销售分类</h4>
         <p>按产品类别</p>
       </div>
     </div>
 
-    <ArtRingChart
+    <FaRingChart
       :data="[
         { value: 30, name: '电子产品' },
         { value: 55, name: '服装鞋包' },
@@ -23,7 +23,7 @@
     <div class="flex justify-around">
       <div class="flex-c">
         <div class="flex-cc size-10.5 mr-2.5 text-theme bg-theme/10 rounded-lg">
-          <ArtSvgIcon icon="ri:money-cny-circle-line" class="text-xl" />
+          <FaSvgIcon icon="ri:money-cny-circle-line" class="text-xl" />
         </div>
         <div>
           <p class="text-lg">¥500,458</p>
@@ -32,7 +32,7 @@
       </div>
       <div class="flex-c">
         <div class="flex-cc size-10.5 mr-2.5 text-theme bg-theme/10 rounded-lg">
-          <ArtSvgIcon icon="ri:heart-3-line" class="text-xl" />
+          <FaSvgIcon icon="ri:heart-3-line" class="text-xl" />
         </div>
         <div>
           <p class="text-lg">¥130,580</p>

@@ -32,9 +32,9 @@
             </ElCol>
           </ElRow>
 
-          <ArtWangEditor class="mt-2.5" v-model="editorHtml" />
+          <FaWangEditor class="mt-2.5" v-model="editorHtml" />
 
-          <div class="p-5 mt-5 art-card-xs">
+          <div class="p-5 mt-5 fa-card-xs">
             <h2 class="mb-5 text-xl font-medium">发布设置</h2>
             <ElForm>
               <ElFormItem label="封面">
@@ -73,7 +73,7 @@
         </div>
       </template>
 
-      <ArtResultPage
+      <FaResultPage
         v-else-if="resultPhase === 'success'"
         type="success"
         :title="successTitle"
@@ -91,9 +91,9 @@
             新建一篇
           </ElButton>
         </template>
-      </ArtResultPage>
+      </FaResultPage>
 
-      <ArtResultPage
+      <FaResultPage
         v-else
         type="fail"
         :title="failTitle"
@@ -103,11 +103,11 @@
         <template #content>
           <p>本次提交未成功，可能原因如下：</p>
           <p>
-            <ArtSvgIcon icon="ri:close-circle-line" class="text-red-500 mr-1" />
+            <FaSvgIcon icon="ri:close-circle-line" class="text-red-500 mr-1" />
             <span>网络或服务暂时不可用，请稍后重试</span>
           </p>
           <p>
-            <ArtSvgIcon icon="ri:close-circle-line" class="text-red-500 mr-1" />
+            <FaSvgIcon icon="ri:close-circle-line" class="text-red-500 mr-1" />
             <span>请确认必填项与封面已正确填写</span>
           </p>
         </template>
@@ -115,7 +115,7 @@
           <ElButton type="primary" v-ripple @click="backToForm">返回修改</ElButton>
           <ElButton v-ripple @click="finishAndClose">关闭并返回列表</ElButton>
         </template>
-      </ArtResultPage>
+      </FaResultPage>
     </div>
   </ElDrawer>
 </template>

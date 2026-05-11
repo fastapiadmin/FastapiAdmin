@@ -1,6 +1,6 @@
 <!-- 日志管理：Art 布局 + useTable，与 dict 页一致 -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -26,7 +26,7 @@
       </template>
     </FaSearchBar>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -46,11 +46,11 @@
       </FaTableHeader>
 
       <FaTable
-        ref="FaTableRef"
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -153,8 +153,8 @@ import type { IObject } from "@/components/modal/types";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import JsonPretty from "@/components/JsonPretty/index.vue";
-import CopyButton from "@/components/CopyButton/index.vue";
+import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
+import CopyButton from "@/components/others/fa-copy-button/index.vue";
 import type { ColumnOption } from "@/types/component";
 import LogAPI, { type LogPageQuery, type LogTable } from "@/api/module_system/log";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
@@ -255,7 +255,7 @@ const logSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<LogTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -375,6 +375,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeLogQuery(sp);
 });
 
@@ -390,21 +392,6 @@ const logExportContentConfig = computed(() => ({
     return res.data as Blob;
   },
 }));
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
 
 const formData = ref<LogTable>({});
 
@@ -483,7 +470,7 @@ function deleteLogRow(id: number) {
     .then(async () => {
       await LogAPI.deleteLog([id]);
       ElMessage.success("删除成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -533,7 +520,7 @@ function handleBatchDelete() {
         batchDeleting.value = true;
         await LogAPI.deleteLog(ids);
         ElMessage.success("删除成功");
-        FaTableRef.value?.elTableRef?.clearSelection();
+        faTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;
@@ -546,9 +533,3 @@ function openExportModal() {
   exportModalVisible.value = true;
 }
 </script>
-
-<style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-</style>

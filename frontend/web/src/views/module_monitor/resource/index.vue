@@ -1,6 +1,6 @@
 <!-- 资源管理：Art + useTable -->
 <template>
-  <div class="art-full-height resource-monitor-page">
+  <div class="fa-full-height resource-monitor-page">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -18,7 +18,7 @@
     />
 
     <ElCard
-      class="resource-monitor-card flex flex-col flex-1 min-h-0 art-table-card"
+      class="resource-monitor-card flex flex-col flex-1 min-h-0 fa-table-card"
       :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
     >
       <div
@@ -99,7 +99,7 @@
           :loading="loading"
           :data="data"
           :columns="columns"
-          :pagination="paginationBind"
+          :pagination="pagination"
           @selection-change="onTableSelectionChange"
           @pagination:size-change="handleSizeChange"
           @pagination:current-change="handleCurrentChange"
@@ -353,8 +353,8 @@ const {
   core: {
     apiFn: fetchResourceTableList,
     apiParams: {
-      current: 1,
-      size: 20,
+      page_no: 1,
+      page_size: 20,
     },
     columnsFactory: (): ColumnOption<ResourceItem>[] => [
       { type: "selection", width: 48, fixed: "left" },
@@ -460,21 +460,6 @@ function handleFileNameClick(row: ResourceItem) {
     handleFilePreview(row);
   }
 }
-
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
 
 async function handleSearchBarSearch(params: ResourceSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -648,14 +633,14 @@ async function handleBatchDelete() {
 </script>
 
 <style lang="scss" scoped>
-.resource-monitor-page :deep(.resource-monitor-card.el-card > .el-card__body) {
+.resource-monitor-page ::deep(.resource-monitor-card.el-card > .el-card__body) {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
 }
 
-:deep(.el-breadcrumb__item) {
+::deep(.el-breadcrumb__item) {
   &.is-link {
     color: var(--el-color-primary);
     cursor: pointer;

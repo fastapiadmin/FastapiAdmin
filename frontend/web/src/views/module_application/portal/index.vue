@@ -1,6 +1,6 @@
 <!-- 我的应用管理：Art + useTable（卡片网格） -->
 <template>
-  <div class="art-full-height portal-application-page flex flex-col min-h-0">
+  <div class="fa-full-height portal-application-page flex flex-col min-h-0">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -35,7 +35,7 @@
     </FaSearchBar>
 
     <ElCard
-      class="flex flex-1 min-h-0 flex-col art-table-card"
+      class="flex flex-1 min-h-0 flex-col fa-table-card"
       :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
     >
       <FaTableHeader
@@ -124,9 +124,9 @@
       <div class="portal-pagination flex shrink-0 justify-end border-g-200 pt-3 mt-auto border-t">
         <ElPagination
           background
-          :current-page="paginationBind.current"
-          :page-size="paginationBind.size"
-          :total="paginationBind.total"
+          :current-page="pagination.current"
+          :page-size="pagination.size"
+          :total="pagination.total"
           :page-sizes="[12, 24, 48]"
           layout="total, sizes, prev, pager, next"
           @size-change="handleSizeChange"
@@ -343,7 +343,7 @@ const {
   },
 });
 
-const formData = ref<ApplicationForm>({
+const formData = reactive<ApplicationForm>({
   name: "",
   access_url: "",
   icon_url: "",
@@ -532,12 +532,12 @@ async function handleSubmit() {
     opacity: 0.55;
   }
 
-  :deep(.el-card__header) {
+  ::deep(.el-card__header) {
     padding: 14px 14px 12px;
     border-bottom: none;
   }
 
-  :deep(.el-card__body) {
+  ::deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -546,7 +546,7 @@ async function handleSubmit() {
     padding: 12px 14px;
   }
 
-  :deep(.el-card__footer) {
+  ::deep(.el-card__footer) {
     padding: 10px 14px 14px;
     margin-top: auto;
   }
@@ -634,11 +634,11 @@ async function handleSubmit() {
   }
 }
 
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

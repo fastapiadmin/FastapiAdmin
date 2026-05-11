@@ -108,7 +108,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
+import FaLogo from "@/components/base/fa-logo/index.vue";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import { useSettingsStore } from "@stores/modules/setting.store";
 import { useUserStore } from "@stores/modules/user.store";
 import { useHeaderBar } from "@/hooks/core/useHeaderBar";
@@ -252,7 +256,7 @@ const changeThemeColor = (color: string) => {
   transform: translateY(-2px);
 }
 
-.auth-top-bar__action:hover :deep(.fa-svg-icon) {
+.auth-top-bar__action:hover ::deep(.fa-svg-icon) {
   color: var(--el-color-primary);
 }
 
@@ -310,15 +314,15 @@ const changeThemeColor = (color: string) => {
 }
 
 /* 调色盘：图标颜色与当前主题主色一致（含单独悬浮、整块调色区悬浮） */
-.palette-btn :deep(.fa-svg-icon) {
+.palette-btn ::deep(.fa-svg-icon) {
   color: v-bind("themeColorForCss");
 }
 
-.auth-top-bar__action.palette-btn:hover :deep(.fa-svg-icon) {
+.auth-top-bar__action.palette-btn:hover ::deep(.fa-svg-icon) {
   color: v-bind("themeColorForCss");
 }
 
-.color-picker-expandable:hover .palette-btn :deep(.fa-svg-icon) {
+.color-picker-expandable:hover .palette-btn ::deep(.fa-svg-icon) {
   color: v-bind("themeColorForCss");
 }
 </style>

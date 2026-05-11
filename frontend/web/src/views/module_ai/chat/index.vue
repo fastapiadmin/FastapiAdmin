@@ -1,5 +1,5 @@
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <ElContainer class="main-chat">
       <ElAside class="sidebar-container" :class="{ collapsed: isSidebarCollapsed }">
         <Sidebar

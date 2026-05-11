@@ -1,4 +1,4 @@
-.art-table {
+.fa-table {
   position: relative;
   height: 100%;
 
@@ -7,7 +7,7 @@
     margin-top: 10px;
   }
 
-  :deep(.el-loading-mask) {
+  ::deep(.el-loading-mask) {
     z-index: 100;
     background-color: var(--default-box-color) !important;
   }
@@ -23,7 +23,7 @@
 
   // 空状态垂直居中
   &.is-empty {
-    :deep(.el-scrollbar__wrap) {
+    ::deep(.el-scrollbar__wrap) {
       display: flex;
     }
   }
@@ -32,7 +32,7 @@
     display: flex;
     margin-top: 13px;
 
-    :deep(.el-select) {
+    ::deep(.el-select) {
       width: 102px !important;
     }
 
@@ -51,11 +51,11 @@
 
     // 自定义分页组件样式
     &.custom-pagination {
-      :deep(.el-pagination) {
+      ::deep(.el-pagination) {
         .btn-prev,
         .btn-next {
           background-color: transparent;
-          border: 1px solid var(--art-gray-300);
+          border: 1px solid var(--fa-gray-300);
           transition: border-color 0.15s;
 
           &:hover:not(.is-disabled) {
@@ -68,7 +68,7 @@
           box-sizing: border-box;
           font-weight: 400 !important;
           background-color: transparent;
-          border: 1px solid var(--art-gray-300);
+          border: 1px solid var(--fa-gray-300);
           transition: border-color 0.15s;
 
           &.is-active {
@@ -89,7 +89,7 @@
 
 // 移动端分页
 @media (width <= 640px) {
-  :deep(.el-pagination) {
+  ::deep(.el-pagination) {
     display: flex;
     flex-wrap: wrap;
     gap: 15px 0;

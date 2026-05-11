@@ -13,7 +13,7 @@ export const HOME_MENU_META: RouteMeta = {
 
 export const DASHBOARD_PARENT_META: RouteMeta = {
   title: "menus.dashboard.title",
-  icon: "ri:pie-chfa-line",
+  icon: "ri:pie-chart-line",
   alwaysShow: true,
 };
 
@@ -92,7 +92,7 @@ export const ROUTE_COMPONENT_NESTED_PARENT = "/nested/router-view-parent";
 export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
 
 /**
- * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/fa-*` 组件）。
+ * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。
  * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
  */
 export const Layout = () => import("@/components/layouts/index.vue");
@@ -172,7 +172,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     component: () => import("@views/dashboard/ecommerce/index.vue"),
     meta: {
       title: "menus.dashboard.ecommerce",
-      icon: "ri:bar-chfa-box-line",
+      icon: "ri:bar-chart-box-line",
       keepAlive: false,
     },
   },
@@ -229,7 +229,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     component: () => import("@views/dashboard/tutorial/index.vue"),
     meta: {
       title: "menus.dashboard.tutorial",
-      icon: "ri:movie-2-line",
+      icon: "ri:book-2-line",
       keepAlive: true,
     },
   },
@@ -386,7 +386,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   {
     path: "/login",
     name: "Login",
-    meta: { hidden: true, title: "menus.login.title" },
+    meta: { hidden: true, isHideTab: true, title: "menus.login.title" },
     component: () => import("@views/module_system/auth/login/index.vue"),
   },
   /** 无 Layout 全屏异常页；守卫与白名单跳转使用（勿再在 RootLayout 下重复挂载同组件） */
@@ -458,7 +458,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   },
   {
     path: "/outside",
-    component: () => import("@/components/layouts/index.vue"),
+    component: () => import("@/layouts/index.vue"),
     name: "Outside",
     meta: { title: "menus.outside.title" },
     children: [

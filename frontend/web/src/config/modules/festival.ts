@@ -22,7 +22,7 @@
  * - `image` 为红包碎屑 hb、雪花 sd、礼花筒 yd 等时，须在下方 import，勿手写路径字符串。
  * - 全局快捷键：**Ctrl + Shift + P**（Windows / Linux）或 **⌘ + Shift + P**（macOS）立即触发一发礼花；
  *   若当天命中某条「带礼花」的节日配置则使用该配置的 `image`，否则为几何礼花。
- * - 实现：`src/layouts/fa-fireworks-effect/index.vue`（键盘）、`src/hooks/core/useCeremony.ts`（自动连发）。
+ * - 实现：`src/layouts/art-fireworks-effect/index.vue`（键盘）、`src/hooks/core/useCeremony.ts`（自动连发）。
  *
  * ## 自动公历节日
  *
@@ -47,9 +47,6 @@
  */
 
 import { FestivalConfig } from "@/types/config";
-import hb from "@imgs/ceremony/hb.png";
-import sd from "@imgs/ceremony/sd.png";
-import yd from "@imgs/ceremony/yd.png";
 
 export const festivalConfigList: FestivalConfig[] = [
   /**
@@ -65,46 +62,6 @@ export const festivalConfigList: FestivalConfig[] = [
     count: 3,
     scrollText:
       '🎉 {{version}}版本正式上线！能力全面提升，配套完整交付方案，助力高效开发与商业落地。 <a href="{{introduceUrl}}" target="_blank" rel="noopener noreferrer">👉 立即体验演示</a>',
-  },
-
-  /**
-   * 春节示例：红包碎屑图 + 略快节奏（上线前请改为真实农历档期的 start/end）
-   */
-  {
-    name: "春节祝福",
-    date: "2026-02-15",
-    endDate: "2026-02-23",
-    image: hb,
-    count: 6,
-    fireworkInterval: 850,
-    scrollText:
-      "🧧 新春快乐！FastAPI Admin 祝您阖家安康、迭代顺利，新的一年代码零告警、上线零事故。",
-  },
-
-  /**
-   * 初夏示例（含 5 月）：礼花筒图案，标准间隔
-   */
-  {
-    name: "初夏有礼",
-    date: "2026-05-01",
-    endDate: "2026-05-31",
-    image: yd,
-    count: 4,
-    fireworkInterval: 1000,
-    scrollText: "🎆 五月愉快！感谢使用本系统，记得关注备份与安全策略，遇到问题先查文档或联系运维。",
-  },
-
-  /**
-   * 冬日示例：雪花图 + 更短间隔，视觉上更接近连续飘落
-   */
-  {
-    name: "冬日暖心",
-    date: "2026-12-20",
-    endDate: "2026-12-26",
-    image: sd,
-    count: 8,
-    fireworkInterval: 700,
-    scrollText: "❄️ 岁末将至，敬颂冬绥。感谢一路相伴，祝交付顺利、心情像雪花一样轻盈～",
   },
 
   /**

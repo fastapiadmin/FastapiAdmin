@@ -21,6 +21,8 @@
 </template>
 
 <script setup lang="ts">
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+
 defineOptions({ name: "FaResultPage" });
 
 // 显式声明插槽类型

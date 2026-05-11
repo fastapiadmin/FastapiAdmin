@@ -19,6 +19,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@stores/modules/setting.store";
 import { useCeremony } from "@/hooks/core/useCeremony";
 import { WEB_LINKS } from "@utils/constants";

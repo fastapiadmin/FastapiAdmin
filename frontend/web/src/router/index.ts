@@ -6,29 +6,27 @@ import { setupAfterEachGuard } from "./afterEach";
 import "@utils/ui";
 
 /**
- * 路由分层：`staticRoutes` 一次性注册（登录页、首页、仪表盘、异常页等）；
- * 业务菜单来自后端或壳层合并后再由守卫动态 `addRoute`。
+ * 路由入口：`staticRoutes` 首屏注册；业务路由由 `beforeEach` 内 `RouteRegistry` 动态挂载。
+ * `initRouter` 注册前置/后置守卫并 `app.use(router)`。
  */
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: staticRoutes,
-  // 刷新时，滚动条位置还原
   scrollBehavior: () => ({ left: 0, top: 0 }),
 });
 
-// 初始化路由
 export function initRouter(app: App<Element>): void {
-  setupBeforeEachGuard(router); // 路由前置守卫
-  setupAfterEachGuard(router); // 路由后置守卫
+  setupBeforeEachGuard(router);
+  setupAfterEachGuard(router);
   app.use(router);
 }
 
-// 主页路径；须与 `staticRoutes` 中首页子路由一致（当前为 `/home`）
+/** 须与 `staticRoutes` 首页子路由 path 一致 */
 export const HOME_PAGE_PATH = "/home";
 
 export { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME };
 
-/** 供 `@/router` 一处导入的运行时模块 */
+/** 动态路由注册与菜单转换（一般从 `@/router` 按需导入） */
 export { RouteRegistry, ComponentLoader, RouteTransformer, RouteValidator } from "./dynamicRoutes";
 export type { ValidationResult } from "./dynamicRoutes";
 export { IframeRouteManager } from "./staticRoutes";

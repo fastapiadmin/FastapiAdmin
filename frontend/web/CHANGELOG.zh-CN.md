@@ -371,7 +371,7 @@
 
 #### 移除
 
-- 移除 CountTo 插件，替换为 ArtCountTo 组件
+- 移除 CountTo 插件，替换为 FaCountTo 组件
 
 #### 修复
 
@@ -431,7 +431,7 @@
 
 #### 修复
 
-- 修复登录页面拖拽组件 ArtDragVerify 宽度、颜色异常bug
+- 修复登录页面拖拽组件 FaDragVerify 宽度、颜色异常bug
 - 修复 iframe 页面混合模式、双列模式异常bug
 - 优化锁屏页面被 el-loading 穿透bug
 
@@ -441,7 +441,7 @@
 
 #### 重构
 
-- 重构 components/forms 文件夹下的表单相关组件，提升可维护性与一致性
+- 重构 components/core/forms 文件夹下的表单相关组件，提升可维护性与一致性
 - 重构 ArtBreadcrumb 面包屑导航组件，优化逻辑结构与样式
 - 重构 ArtFireworksEffect 烟花效果组件，显著提升渲染性能与动画流畅度
 
@@ -468,8 +468,8 @@
 
 #### 重构
 
-- ArtMenuRight 组件重构
-- components/cards 下面的组件重构，代码优化
+- FaMenuRight 组件重构
+- components/core/cards 下面的组件重构，代码优化
 
 #### 优化
 
@@ -481,14 +481,14 @@
 
 #### 重构
 
-- ArtResultPage 组件重构
+- FaResultPage 组件重构
 
 #### 优化
 
 - ArtTextScroll 组件代码优化
-- ArtException 组件增加类型提示
-- ArtCutterImg 组件样式优化、增加类型定义
-- ArtVideoPlayer 组件增加类型定义
+- FaException 组件增加类型提示
+- FaCutterImg 组件样式优化、增加类型定义
+- FaVideoPlayer 组件增加类型定义
 
 ---
 

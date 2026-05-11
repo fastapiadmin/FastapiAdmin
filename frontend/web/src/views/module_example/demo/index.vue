@@ -1,6 +1,6 @@
 <!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBarWithAudit
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -43,11 +43,11 @@
       </FaTableHeader>
 
       <FaTable
-        ref="FaTableRef"
+        ref="faTableRef"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -250,7 +250,7 @@
       </template>
     </FaDialog>
 
-    <ArtImportDialog
+    <FaImportDialog
       v-model="importModalVisible"
       :content-config="demoImportContentConfig"
       default-template-file-name="demo_import_template.xlsx"
@@ -273,13 +273,13 @@ import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useTable } from "@/hooks/core/useTable";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import ArtImportDialog from "@/components/modal/fa-import-dialog/index.vue";
+import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
 import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import JsonPretty from "@/components/JsonPretty/index.vue";
+import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DemoAPI, {
   type DemoForm,
@@ -346,7 +346,7 @@ const demoBusinessSearchItems = computed(() => [
   },
 ]);
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<DemoTable[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
@@ -464,6 +464,8 @@ const exportQueryParams = computed(() => {
   const sp = { ...(searchParams as object) } as Record<string, unknown>;
   delete sp.current;
   delete sp.size;
+  delete sp.page_no;
+  delete sp.page_size;
   return normalizeDemoQuery(sp);
 });
 
@@ -487,21 +489,6 @@ const demoExportContentConfig = computed(() => ({
   },
 }));
 
-const paginationBind = computed(() => {
-  const p = pagination as unknown as {
-    current?: number;
-    size?: number;
-    total?: number;
-    page_no?: number;
-    page_size?: number;
-  };
-  return {
-    current: p.current ?? p.page_no ?? 1,
-    size: p.size ?? p.page_size ?? 20,
-    total: p.total ?? 0,
-  };
-});
-
 const dialogVisible = reactive({
   title: "",
   visible: false,
@@ -510,7 +497,7 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DemoTable>({});
 
-const formData = ref<DemoForm>({
+const formData = reactive<DemoForm>({
   id: undefined,
   name: "",
   status: "0",
@@ -708,7 +695,7 @@ const deleteDemoRow = (row: DemoTable) => {
     .then(async () => {
       await DemoAPI.deleteDemo([row.id!]);
       ElMessage.success("删除成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {
@@ -729,7 +716,7 @@ function handleBatchDelete() {
         batchDeleting.value = true;
         await DemoAPI.deleteDemo(ids);
         ElMessage.success("删除成功");
-        FaTableRef.value?.elTableRef?.clearSelection();
+        faTableRef.value?.elTableRef?.clearSelection();
         await refreshRemove();
       } finally {
         batchDeleting.value = false;
@@ -754,7 +741,7 @@ function runBatchStatus(status: string) {
     .then(async () => {
       await DemoAPI.batchDemo({ ids, status });
       ElMessage.success("操作成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshData();
     })
     .catch(() => {});

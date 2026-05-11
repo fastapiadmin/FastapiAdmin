@@ -1,6 +1,6 @@
-<!-- 调度任务：Art + useTable（主列表卡片；抽屉内表格） -->
+<!-- 调度任务：主区调度器状态 + 任务卡片列表（getSchedulerJobs 全量、前端筛选）；抽屉内执行日志表用 useTable 分页 -->
 <template>
-  <div class="art-full-height job-page flex flex-col min-h-0">
+  <div class="fa-full-height job-page flex flex-col min-h-0">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -18,7 +18,7 @@
     />
 
     <ElCard
-      class="flex flex-1 min-h-0 flex-col art-table-card"
+      class="flex flex-1 min-h-0 flex-col fa-table-card"
       :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
     >
       <FaTableHeader
@@ -281,7 +281,7 @@
           @search="handleLogSearchBarSearch"
           @reset="onLogResetSearch"
         />
-        <ElCard class="art-table-card log-table-card mt-3 flex flex-1 min-h-0 flex-col">
+        <ElCard class="fa-table-card log-table-card mt-3 flex flex-1 min-h-0 flex-col">
           <FaTableHeader
             v-model:columns="logColumnChecks"
             layout="search,refresh"
@@ -298,7 +298,7 @@
             </template>
           </FaTableHeader>
           <FaTable
-            ref="logFaTableRef"
+            ref="logfaTableRef"
             row-key="id"
             :loading="logLoading"
             :data="logTableData"
@@ -359,12 +359,12 @@ import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue"
 import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import JsonPretty from "@/components/JsonPretty/index.vue";
+import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { Calendar, Clock, Timer } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
-import { computed, h, nextTick, ref } from "vue";
+import { computed, h, nextTick, onMounted, ref } from "vue";
 import { Terminal, TerminalApi } from "vue-web-terminal";
 
 const schedulerStatus = ref<SchedulerStatus>({
@@ -377,13 +377,6 @@ type JobSearchForm = {
   name?: string;
   status?: string;
 };
-
-function buildJobReplaceParams(u: JobSearchForm): Record<string, unknown> {
-  return {
-    name: u.name,
-    status: u.status,
-  };
-}
 
 const searchForm = ref<JobSearchForm>({
   name: undefined,
@@ -474,8 +467,7 @@ const refreshJobList = fetchSchedulerJobs;
 
 async function handleJobSearchBarSearch() {
   await searchBarRef.value?.validate?.();
-  replaceJobSearchParams(buildJobReplaceParams(params));
-  getJobList();
+  await fetchSchedulerJobs();
 }
 
 async function onJobResetSearch() {
@@ -483,8 +475,12 @@ async function onJobResetSearch() {
     name: undefined,
     status: undefined,
   };
-  await resetJobSearchParams();
+  await fetchSchedulerJobs();
 }
+
+onMounted(() => {
+  void fetchSchedulerJobs();
+});
 
 type LogSearchForm = {
   status?: string;
@@ -544,7 +540,7 @@ const logSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const currentLogJobId = ref<string | undefined>(undefined);
-const logFaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const logfaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const logSelectedRows = ref<JobLogTable[]>([]);
 const logSelectedIds = computed(() =>
   logSelectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
@@ -670,7 +666,7 @@ function deleteLogRow(id: number | undefined) {
     .then(async () => {
       await JobAPI.deleteJobLog([id]);
       ElMessage.success("删除成功");
-      logFaTableRef.value?.elTableRef?.clearSelection();
+      logfaTableRef.value?.elTableRef?.clearSelection();
       await refreshLogRemove();
     })
     .catch(() => {});
@@ -1043,7 +1039,7 @@ function handleViewJobState(row: JobLogTable) {
 </script>
 
 <style scoped>
-.job-page :deep(.data-table) {
+.job-page ::deep(.data-table) {
   height: 100%;
 }
 
@@ -1155,7 +1151,7 @@ function handleViewJobState(row: JobLogTable) {
   min-height: 0;
 }
 
-.execution-log-drawer :deep(.el-card.data-table) {
+.execution-log-drawer ::deep(.el-card.data-table) {
   flex: 1;
   min-height: 0;
 }

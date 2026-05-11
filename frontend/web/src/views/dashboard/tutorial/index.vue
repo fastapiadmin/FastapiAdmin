@@ -1,22 +1,25 @@
-<!-- 操作教程：内置视频演示（可改为自有 CDN / 资源地址） -->
+<!-- 操作手册：视频演示 + 全功能验收正文 -->
 <template>
-  <div class="page-content tutorial-page">
-    <div class="max-w-200 mx-auto">
-      <h1 class="text-2xl font-medium text-g-900 dark:text-g-50 mb-2">操作教程</h1>
-      <p class="text-sm text-g-600 mb-6">
-        以下为系统常用操作演示视频，可随时暂停、调速与全屏观看。正式环境请将视频地址替换为自有素材。
+  <div class="page-content manual-page">
+    <div class="manual-page__inner mx-auto max-w-[1200px] px-4 pb-8">
+      <!-- 标题 -->
+      <h1 class="mb-2 text-2xl font-medium text-g-900 dark:text-g-50">
+        {{ t("manualPage.title") }}
+      </h1>
+      <p class="mb-6 text-sm text-g-600 dark:text-g-400">
+        {{ t("manualPage.intro") }}
       </p>
 
       <!-- Tab 切换：视频 / 手册 -->
       <ElTabs v-model="activeTab" class="manual-page__tabs">
         <!-- 视频演示 Tab -->
         <ElTabPane :label="t('manualPage.videoTab')" name="video">
-          <div class="art-card-sm mt-2 p-5">
+          <div class="fa-card-sm mt-2 p-5">
             <p class="mb-4 text-sm text-g-600 dark:text-g-400">
               {{ t("manualPage.videoHint") }}
             </p>
             <div class="manual-page__player max-w-full">
-              <ArtVideoPlayer
+              <FaVideoPlayer
                 :player-id="PLAYER_ID"
                 :video-url="videoUrl"
                 :poster-url="posterUrl"
@@ -82,7 +85,7 @@
               <!-- 右侧内容区（滚动） -->
               <ElScrollbar
                 ref="scrollbarRef"
-                class="manual-feature-body__scrollbar art-card-sm rounded-custom-sm"
+                class="manual-feature-body__scrollbar fa-card-sm rounded-custom-sm"
                 max-height="min(78vh, 880px)"
               >
                 <!-- 功能验收手册正文内容 -->
@@ -539,7 +542,7 @@
                             </li>
                             <li>
                               <strong>导入弹窗</strong>
-                              — ArtImportDialog, 模板 user_import_template.xlsx
+                              — FaImportDialog, 模板 user_import_template.xlsx
                             </li>
                             <li>
                               <strong>导出弹窗</strong>
@@ -777,20 +780,276 @@
 </template>
 
 <script setup lang="ts">
+import { Search } from "@element-plus/icons-vue";
+import { computed, ref } from "vue";
 import lockImg from "@imgs/lock/bg_dark.webp";
+import { MANUAL_MODULES_AFTER_SYSTEM, MANUAL_SYSTEM_TAIL_PAGES } from "./manualSections";
+import { manualModuleMatchesQuery, manualPageMatchesQuery } from "./manualTocSearch";
 
 defineOptions({ name: "DashboardTutorial" });
 
-/** 演示用在线 MP4，上线后建议改为自有 OSS / 静态资源地址 */
-const DEFAULT_VIDEO =
-  "//lf3-static.bytednsdoc.com/obj/eden-cn/nupenuvpxnuvo/xgplayer_doc/xgplayer-demo.mp4";
+const { t } = useI18n();
 
-const videoUrl = ref(DEFAULT_VIDEO);
+const manualSystemTailPages = MANUAL_SYSTEM_TAIL_PAGES;
+const manualModulesAfterSystem = MANUAL_MODULES_AFTER_SYSTEM;
+
+// ============ 类型定义 ============
+type ManualPageLink = {
+  anchor: string;
+  title: string;
+};
+
+type ManualModule = {
+  anchor: string;
+  title: string;
+  pages: ManualPageLink[];
+};
+
+// ============ 配置常量 ============
+
+/** 手册目录结构 */
+const MANUAL_TOC: ManualModule[] = [
+  {
+    anchor: "mod-system",
+    title: "一、系统管理",
+    pages: [
+      { anchor: "page-user", title: "用户管理" },
+      { anchor: "page-role", title: "角色管理" },
+      { anchor: "page-menu", title: "菜单管理" },
+      { anchor: "page-dept", title: "部门管理" },
+      { anchor: "page-position", title: "岗位管理" },
+      { anchor: "page-dict", title: "字典管理" },
+      { anchor: "page-param", title: "参数配置" },
+      { anchor: "page-notice", title: "通知公告" },
+      { anchor: "page-tenant", title: "租户管理" },
+      { anchor: "page-log", title: "操作日志" },
+      { anchor: "page-login", title: "登录页" },
+    ],
+  },
+  {
+    anchor: "mod-monitor",
+    title: "二、监控管理",
+    pages: [
+      { anchor: "page-online", title: "在线用户" },
+      { anchor: "page-cache", title: "缓存管理" },
+      { anchor: "page-resource", title: "文件管理" },
+      { anchor: "page-server", title: "服务监控" },
+    ],
+  },
+  {
+    anchor: "mod-task",
+    title: "三、任务管理",
+    pages: [
+      { anchor: "page-cronjob", title: "调度器监控" },
+      { anchor: "page-cronnode", title: "节点管理" },
+      { anchor: "page-workflow", title: "流程编排" },
+      { anchor: "page-nodetype", title: "编排节点类型" },
+    ],
+  },
+  {
+    anchor: "mod-ai",
+    title: "四、AI 模块",
+    pages: [
+      { anchor: "page-ai-chat", title: "AI智能助手" },
+      { anchor: "page-ai-fachat", title: "会话聊天" },
+      { anchor: "page-ai-memory", title: "会话记忆" },
+    ],
+  },
+  {
+    anchor: "mod-generator",
+    title: "五、代码生成器",
+    pages: [{ anchor: "page-gencode", title: "代码生成" }],
+  },
+  {
+    anchor: "mod-app",
+    title: "六、应用管理",
+    pages: [{ anchor: "page-portal", title: "插件市场" }],
+  },
+  {
+    anchor: "mod-example",
+    title: "七、示例模块",
+    pages: [
+      { anchor: "page-demo", title: "示例管理" },
+      { anchor: "page-demo01", title: "三级菜单" },
+    ],
+  },
+  {
+    anchor: "mod-dashboard",
+    title: "八、仪表盘",
+    pages: [
+      { anchor: "page-home", title: "首页" },
+      { anchor: "page-profile", title: "个人中心" },
+      { anchor: "page-changelog", title: "更新日志" },
+      { anchor: "page-db-workplace", title: "工作台" },
+      { anchor: "page-db-console", title: "控制台" },
+      { anchor: "page-db-analysis", title: "分析页" },
+      { anchor: "page-db-ecommerce", title: "电子商务" },
+      { anchor: "page-db-map", title: "地图" },
+      { anchor: "page-db-pricing", title: "定价" },
+      { anchor: "page-db-article", title: "文章管理" },
+      { anchor: "page-db-tutorial", title: "教程" },
+    ],
+  },
+  {
+    anchor: "mod-layout",
+    title: "九、布局与通用功能",
+    pages: [
+      { anchor: "layout-main", title: "主布局" },
+      { anchor: "layout-sidebar", title: "侧栏菜单" },
+      { anchor: "layout-header", title: "顶栏" },
+      { anchor: "layout-worktab", title: "标签页" },
+      { anchor: "layout-settings", title: "设置面板" },
+      { anchor: "layout-notification", title: "通知" },
+      { anchor: "layout-search", title: "全局搜索" },
+      { anchor: "layout-lock", title: "锁屏" },
+      { anchor: "layout-user", title: "用户菜单" },
+      { anchor: "layout-theme", title: "主题切换" },
+      { anchor: "layout-lang", title: "语言切换" },
+    ],
+  },
+  {
+    anchor: "mod-exception",
+    title: "十、异常页",
+    pages: [
+      { anchor: "page-401", title: "401" },
+      { anchor: "page-403", title: "403" },
+      { anchor: "page-404", title: "404" },
+      { anchor: "page-500", title: "500" },
+    ],
+  },
+  {
+    anchor: "mod-swagger",
+    title: "十一、接口文档（API）",
+    pages: [
+      { anchor: "page-swagger", title: "Swagger文档" },
+      { anchor: "page-redoc", title: "Redoc文档" },
+      { anchor: "page-ljdoc", title: "LangJin文档" },
+    ],
+  },
+];
+
+/** 视频资源配置 */
+const VIDEO_CONFIG = {
+  /** 默认视频地址（建议上线后改为自有 OSS / 静态资源） */
+  DEFAULT_URL:
+    "//lf3-static.bytednsdoc.com/obj/eden-cn/nupenuvpxnuvo/xgplayer_doc/xgplayer-demo.mp4",
+  /** 播放器 ID */
+  PLAYER_ID: "dashboard-tutorial-player",
+} as const;
+
+const { DEFAULT_URL, PLAYER_ID } = VIDEO_CONFIG;
+
+// ============ 状态管理 ============
+
+const activeTab = ref<"video" | "manual">("video");
+const videoUrl = ref(DEFAULT_URL);
 const posterUrl = ref(lockImg);
+const scrollbarRef = ref<{ $el?: HTMLElement } | null>(null);
+const tocFilter = ref("");
+
+// ============ 计算属性 ============
+
+/** 过滤后的目录（标题 + manualTocSearch 别名，兼容改版前后检索词） */
+const filteredToc = computed((): ManualModule[] => {
+  const q = tocFilter.value.trim();
+  if (!q) return MANUAL_TOC;
+
+  return MANUAL_TOC.filter((mod) => {
+    if (manualModuleMatchesQuery(mod.title, mod.anchor, q)) return true;
+    return mod.pages.some((p) => manualPageMatchesQuery(p.title, p.anchor, q));
+  }).map((mod) => {
+    if (manualModuleMatchesQuery(mod.title, mod.anchor, q)) return mod;
+    return {
+      ...mod,
+      pages: mod.pages.filter((p) => manualPageMatchesQuery(p.title, p.anchor, q)),
+    };
+  });
+});
+
+// ============ 方法 ============
+
+/** 获取滚动容器元素 */
+function getScrollWrap(): HTMLElement | null {
+  const root = scrollbarRef.value?.$el;
+  if (!root) return null;
+  return root.querySelector<HTMLElement>(".el-scrollbar__wrap");
+}
+
+/** 滚动到指定锚点 */
+function scrollToAnchor(anchorId: string) {
+  const el = document.getElementById(anchorId);
+  const wrap = getScrollWrap();
+  if (!el) return;
+
+  if (!wrap) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const wrapRect = wrap.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  const nextTop = elRect.top - wrapRect.top + wrap.scrollTop - 12;
+  wrap.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
+}
+
+/** 处理文档内锚点点击 */
+function handleAnchorClick(ev: MouseEvent) {
+  const a = (ev.target as HTMLElement | null)?.closest("a");
+  const href = a?.getAttribute("href");
+  if (!href?.startsWith("#")) return;
+  ev.preventDefault();
+  scrollToAnchor(href.slice(1));
+}
 </script>
 
 <style scoped lang="scss">
-.tutorial-page__player {
+.manual-page {
+  &__player {
+    width: 100%;
+  }
+
+  /* Tab 内容区占满宽度，避免内部双栏网格被压窄 */
+  &__tabs {
+    width: 100%;
+
+    ::deep(.el-tab-pane) {
+      box-sizing: border-box;
+    }
+  }
+}
+
+.manual-feature-body {
+  &__toolbar {
+    margin-bottom: 12px;
+  }
+
+  &__filter {
+    max-width: 320px;
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    width: 100%;
+  }
+
+  /* 左侧栏固定宽度；勿设 min-width:0，否则在 Tabs/网格内易被压成细条 */
+  &__aside {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+  }
+
+  &__scrollbar {
+    min-width: 0;
+  }
+}
+
+// 侧边导航样式
+.manual-nav {
+  box-sizing: border-box;
   width: 100%;
   max-height: min(78vh, 880px);
   padding: 10px 12px;
@@ -903,8 +1162,7 @@ const posterUrl = ref(lockImg);
   .toc-l2 {
     margin-top: 0.4rem;
     line-height: 1.85;
-    word-break: break-all;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .module {

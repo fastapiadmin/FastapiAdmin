@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
@@ -15,6 +16,93 @@ const __APP_INFO__ = {
   pkg: { name, version, engines, dependencies, devDependencies },
   buildTimestamp: Date.now(),
 };
+
+/**
+ * 扫描 node_modules 下 Element Plus 全部组件的样式入口（与 unplugin 按需样式一致）。
+ * 漏扫会在首次用到该组件时触发 dependency optimization 更新 → dev 整页刷新。
+ */
+function elementPlusComponentStyleIncludes(rootDir: string): string[] {
+  const componentsDir = path.join(rootDir, "node_modules", "element-plus", "es", "components");
+  try {
+    return fs
+      .readdirSync(componentsDir, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .filter((e) => fs.existsSync(path.join(componentsDir, e.name, "style", "index.mjs")))
+      .map((e) => `element-plus/es/components/${e.name}/style/index`);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 多在路由/异步组件里才加载的依赖；提前预构建可减少「点一下整页 reload」。
+ * 不把 dependencies 全量打入 optimizeDeps，以免拖慢首次 dev 启动。
+ */
+const OPTIMIZE_DEPS_LAZY_CHUNKS = [
+  "xgplayer",
+  "@vue-flow/core",
+  "@vue-flow/background",
+  "@vue-flow/controls",
+  "@vue-flow/minimap",
+  "@wangeditor-next/editor",
+  "codemirror",
+  "vue-json-pretty",
+  "vue-web-terminal",
+  "vue3-cron-plus",
+  "@iconify/vue",
+  "vuedraggable",
+  "vue-draggable-plus",
+  "qrcode.vue",
+  "xlsx",
+  "markdown-it",
+  "highlight.js",
+  "dagre",
+  "dompurify",
+  "js-beautify",
+  "markdown-it-highlightjs",
+  "animate.css",
+  "clipboard",
+  "crypto-js",
+  "file-saver",
+  "mitt",
+  "ohash",
+  "pinia-plugin-persistedstate",
+] as const;
+
+function buildOptimizeDepsInclude(rootDir: string): string[] {
+  const core = [
+    "vue",
+    "vue-router",
+    "element-plus",
+    "pinia",
+    "axios",
+    "@vueuse/core",
+    "@wangeditor-next/editor-for-vue",
+    "codemirror-editor-vue3",
+    "exceljs",
+    "path-to-regexp",
+    "echarts/core",
+    "echarts/renderers",
+    "echarts/charts",
+    "echarts/components",
+    "vue-i18n",
+    "nprogress",
+    "qs",
+    "path-browserify",
+    "@element-plus/icons-vue",
+    "element-plus/es",
+    "element-plus/es/locale/lang/en",
+    "element-plus/es/locale/lang/zh-cn",
+  ];
+
+  return [
+    ...new Set([
+      ...core,
+      ...OPTIMIZE_DEPS_LAZY_CHUNKS,
+      ...elementPlusComponentStyleIncludes(rootDir),
+    ]),
+  ];
+}
 
 export default ({ mode }: { mode: string }) => {
   const root = process.cwd();
@@ -136,7 +224,7 @@ export default ({ mode }: { mode: string }) => {
         dts: "src/types/import/components.d.ts",
         resolvers: [ElementPlusResolver({ importStyle: "sass" })],
         /** art-* 布局组件以 src/layouts 为唯一源码目录（与 src/layouts/index.vue 一致），避免与旧路径重复 */
-        dirs: ["src/layouts", "src/components", "src/**/components"],
+        dirs: ["src/components", "src/**/components"],
       }),
       ElementPlus({
         useSource: true,
@@ -149,117 +237,11 @@ export default ({ mode }: { mode: string }) => {
         threshold: 10240,
         deleteOriginFile: false,
       }),
-      vueDevTools(),
+      /** 仅开发启用：避免生产包体积膨胀与运行期 DevTools 开销 */
+      ...(isProduction ? [] : [vueDevTools()]),
     ],
     optimizeDeps: {
-      include: [
-        "vue",
-        "vue-router",
-        "element-plus",
-        "pinia",
-        "axios",
-        "@vueuse/core",
-        "@wangeditor-next/editor-for-vue",
-        "codemirror-editor-vue3",
-        "exceljs",
-        "path-to-regexp",
-        "echarts/core",
-        "echarts/renderers",
-        "echarts/charts",
-        "echarts/components",
-        "vue-i18n",
-        "nprogress",
-        "qs",
-        "path-browserify",
-        "@element-plus/icons-vue",
-        "element-plus/es",
-        "element-plus/es/locale/lang/en",
-        "element-plus/es/locale/lang/zh-cn",
-        "element-plus/es/components/alert/style/index",
-        "element-plus/es/components/avatar/style/index",
-        "element-plus/es/components/backtop/style/index",
-        "element-plus/es/components/badge/style/index",
-        "element-plus/es/components/base/style/index",
-        "element-plus/es/components/breadcrumb-item/style/index",
-        "element-plus/es/components/breadcrumb/style/index",
-        "element-plus/es/components/button/style/index",
-        "element-plus/es/components/card/style/index",
-        "element-plus/es/components/cascader/style/index",
-        "element-plus/es/components/checkbox-group/style/index",
-        "element-plus/es/components/checkbox/style/index",
-        "element-plus/es/components/col/style/index",
-        "element-plus/es/components/color-picker/style/index",
-        "element-plus/es/components/config-provider/style/index",
-        "element-plus/es/components/date-picker/style/index",
-        "element-plus/es/components/descriptions-item/style/index",
-        "element-plus/es/components/descriptions/style/index",
-        "element-plus/es/components/dialog/style/index",
-        "element-plus/es/components/divider/style/index",
-        "element-plus/es/components/drawer/style/index",
-        "element-plus/es/components/dropdown-item/style/index",
-        "element-plus/es/components/dropdown-menu/style/index",
-        "element-plus/es/components/dropdown/style/index",
-        "element-plus/es/components/empty/style/index",
-        "element-plus/es/components/form-item/style/index",
-        "element-plus/es/components/form/style/index",
-        "element-plus/es/components/icon/style/index",
-        "element-plus/es/components/image-viewer/style/index",
-        "element-plus/es/components/image/style/index",
-        "element-plus/es/components/input-number/style/index",
-        "element-plus/es/components/input-tag/style/index",
-        "element-plus/es/components/input/style/index",
-        "element-plus/es/components/link/style/index",
-        "element-plus/es/components/loading/style/index",
-        "element-plus/es/components/menu-item/style/index",
-        "element-plus/es/components/menu/style/index",
-        "element-plus/es/components/message-box/style/index",
-        "element-plus/es/components/message/style/index",
-        "element-plus/es/components/notification/style/index",
-        "element-plus/es/components/option/style/index",
-        "element-plus/es/components/pagination/style/index",
-        "element-plus/es/components/popover/style/index",
-        "element-plus/es/components/progress/style/index",
-        "element-plus/es/components/radio-button/style/index",
-        "element-plus/es/components/radio-group/style/index",
-        "element-plus/es/components/radio/style/index",
-        "element-plus/es/components/row/style/index",
-        "element-plus/es/components/scrollbar/style/index",
-        "element-plus/es/components/select/style/index",
-        "element-plus/es/components/skeleton-item/style/index",
-        "element-plus/es/components/skeleton/style/index",
-        "element-plus/es/components/step/style/index",
-        "element-plus/es/components/steps/style/index",
-        "element-plus/es/components/sub-menu/style/index",
-        "element-plus/es/components/switch/style/index",
-        "element-plus/es/components/tab-pane/style/index",
-        "element-plus/es/components/table-column/style/index",
-        "element-plus/es/components/table/style/index",
-        "element-plus/es/components/tabs/style/index",
-        "element-plus/es/components/tag/style/index",
-        "element-plus/es/components/text/style/index",
-        "element-plus/es/components/time-picker/style/index",
-        "element-plus/es/components/time-select/style/index",
-        "element-plus/es/components/timeline-item/style/index",
-        "element-plus/es/components/timeline/style/index",
-        "element-plus/es/components/tooltip/style/index",
-        "element-plus/es/components/tree-select/style/index",
-        "element-plus/es/components/tree/style/index",
-        "element-plus/es/components/upload/style/index",
-        "element-plus/es/components/watermark/style/index",
-        "element-plus/es/components/tour/style/index",
-        "element-plus/es/components/tour-step/style/index",
-        "element-plus/es/components/popconfirm/style/index",
-        "element-plus/es/components/container/style/index",
-        "element-plus/es/components/main/style/index",
-        "element-plus/es/components/aside/style/index",
-        "element-plus/es/components/footer/style/index",
-        "element-plus/es/components/header/style/index",
-        "element-plus/es/components/slider/style/index",
-        "element-plus/es/components/button-group/style/index",
-        "element-plus/es/components/result/style/index",
-        "element-plus/es/components/checkbox-button/style/index",
-        "element-plus/es/components/space/style/index",
-      ],
+      include: buildOptimizeDepsInclude(root),
     },
     css: {
       preprocessorOptions: {

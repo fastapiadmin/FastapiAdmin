@@ -84,7 +84,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import type { CSSProperties } from "vue";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 
 defineOptions({ name: "FaMenuRight" });
 
@@ -382,7 +384,7 @@ defineExpose({
 }
 
 .menu-item.is-disabled i:not(.submenu-arrow),
-.menu-item.is-disabled :deep(.fa-svg-icon) {
+.menu-item.is-disabled ::deep(.fa-svg-icon) {
   color: var(--el-text-color-disabled) !important;
 }
 

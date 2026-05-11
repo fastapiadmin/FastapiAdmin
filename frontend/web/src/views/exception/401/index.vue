@@ -1,6 +1,6 @@
 <!-- 401页面 -->
 <template>
-  <ArtException
+  <FaException
     :data="{
       title: '401',
       desc: $t('exceptionPage.401'),

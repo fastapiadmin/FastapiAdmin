@@ -83,9 +83,9 @@
           </div>
         </div>
         <div class="flex-c gap-2">
-          <ArtIconButton icon="ri:phone-line" circle class="size-11 text-g-600" />
-          <ArtIconButton icon="ri:video-on-line" circle class="size-11 text-g-600" />
-          <ArtIconButton icon="ri:more-2-fill" circle class="size-11 text-g-600" />
+          <FaIconButton icon="ri:phone-line" circle class="size-11 text-g-600" />
+          <FaIconButton icon="ri:video-on-line" circle class="size-11 text-g-600" />
+          <FaIconButton icon="ri:more-2-fill" circle class="size-11 text-g-600" />
         </div>
       </div>
       <div class="flex flex-col h-[calc(100%-85px)]">
@@ -144,8 +144,8 @@
           </ElInput>
           <div class="flex-cb mt-3">
             <div class="flex-c">
-              <ArtSvgIcon icon="ri:image-line" class="mr-5 c-p text-g-600 text-lg" />
-              <ArtSvgIcon icon="ri:emotion-happy-line" class="mr-5 c-p text-g-600 text-lg" />
+              <FaSvgIcon icon="ri:image-line" class="mr-5 c-p text-g-600 text-lg" />
+              <FaSvgIcon icon="ri:emotion-happy-line" class="mr-5 c-p text-g-600 text-lg" />
             </div>
             <ElButton type="primary" @click="sendMessage" v-ripple class="min-w-20">发送</ElButton>
           </div>

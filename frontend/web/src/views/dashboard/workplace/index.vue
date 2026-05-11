@@ -40,7 +40,7 @@
                   href="https://blog.csdn.net/weixin_46768253/article/details/149569141?spm=1001.2014.3001.5502"
                   target="_blank"
                 >
-                  <ArtSvgIcon :icon="resolveIconForFaSvgIcon('csdn')" class="text-lg" />
+                  <FaSvgIcon :icon="resolveIconForFaSvgIcon('csdn')" class="text-lg" />
                 </ElLink>
               </div>
             </div>
@@ -54,21 +54,21 @@
               </div>
               <div class="mt-3 whitespace-nowrap">
                 <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
-                  <ArtSvgIcon
+                  <FaSvgIcon
                     :icon="resolveIconForFaSvgIcon('gitee')"
                     class="text-lg text-[#F76560]"
                   />
                 </ElLink>
                 <ElDivider direction="vertical" />
                 <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
-                  <ArtSvgIcon
+                  <FaSvgIcon
                     :icon="resolveIconForFaSvgIcon('github')"
                     class="text-lg text-[#4080FF]"
                   />
                 </ElLink>
                 <ElDivider direction="vertical" />
                 <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
-                  <ArtSvgIcon
+                  <FaSvgIcon
                     :icon="resolveIconForFaSvgIcon('gitcode')"
                     class="text-lg text-[#FF9A2E]"
                   />
@@ -83,18 +83,15 @@
           <div class="flex justify-end space-x-4 overflow-x-auto">
             <!-- 仓库图标 -->
             <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
-              <ArtSvgIcon :icon="resolveIconForFaSvgIcon('gitee')" class="text-lg text-[#F76560]" />
+              <FaSvgIcon :icon="resolveIconForFaSvgIcon('gitee')" class="text-lg text-[#F76560]" />
             </ElLink>
             <ElDivider direction="vertical" />
             <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
-              <ArtSvgIcon
-                :icon="resolveIconForFaSvgIcon('github')"
-                class="text-lg text-[#4080FF]"
-              />
+              <FaSvgIcon :icon="resolveIconForFaSvgIcon('github')" class="text-lg text-[#4080FF]" />
             </ElLink>
             <ElDivider direction="vertical" />
             <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
-              <ArtSvgIcon
+              <FaSvgIcon
                 :icon="resolveIconForFaSvgIcon('gitcode')"
                 class="text-lg text-[#FF9A2E]"
               />
@@ -132,7 +129,7 @@
                 未连接
               </span>
             </div>
-            <ArtSvgIcon
+            <FaSvgIcon
               :icon="resolveIconForFaSvgIcon('people')"
               class="size-8 animate-[pulse_2s_infinite]"
             />
@@ -193,7 +190,7 @@
                     {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
                   </span>
                 </div>
-                <ArtSvgIcon :icon="resolveIconForFaSvgIcon('visitor')" class="size-8" />
+                <FaSvgIcon :icon="resolveIconForFaSvgIcon('visitor')" class="size-8" />
               </div>
 
               <div class="flex items-center justify-between mt-2 text-sm text-g-600">
@@ -253,7 +250,7 @@
                     {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
                   </span>
                 </div>
-                <ArtSvgIcon :icon="resolveIconForFaSvgIcon('browser')" class="size-8" />
+                <FaSvgIcon :icon="resolveIconForFaSvgIcon('browser')" class="size-8" />
               </div>
 
               <div class="flex items-center justify-between mt-2 text-sm text-g-600">
@@ -366,7 +363,7 @@ import {
   TopRight,
   UserFilled,
 } from "@element-plus/icons-vue";
-import ArtSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import { greetings } from "@utils/common";
 import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
 

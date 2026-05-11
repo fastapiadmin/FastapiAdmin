@@ -88,7 +88,7 @@ export const MANUAL_SYSTEM_TAIL_PAGES: CompactManualPage[] = [
     notes: [
       "检索：FaSearchBar（含创建人 UserTableSelect）。",
       "工具栏：新增、导出、批量删除、批量更多(patch)、刷新、列配置。",
-      "弹层：详情；新增/编辑 Dialog；正文为富文本 `ArtWangEditor`；HTML 预览。",
+      "弹层：详情；新增/编辑 Dialog；正文为富文本 `FaWangEditor`；HTML 预览。",
       "权限：`module_system:notice:create|export|delete|patch` + 行级操作。",
     ],
   },
@@ -433,43 +433,43 @@ export const MANUAL_MODULES_AFTER_SYSTEM: ManualModuleSection[] = [
       {
         anchor: "layout-sidebar",
         title: "侧栏菜单",
-        path: "../layouts/fa-menus/**",
+        path: "../layouts/art-menus/**",
         notes: ["菜单折叠、搜索、递归子菜单；与路由 meta.icon/title 绑定。"],
       },
       {
         anchor: "layout-header",
         title: "顶栏",
-        path: "../layouts/fa-header-bar/**",
+        path: "../layouts/art-header-bar/**",
         notes: ["面包屑、快速入口、全屏、通知铃铛区域。"],
       },
       {
         anchor: "layout-worktab",
         title: "标签页",
-        path: "../layouts/fa-work-tab/**",
+        path: "../layouts/art-work-tab/**",
         notes: ["多标签打开、固定钉住、关闭其他；与 keep-alive 协同。"],
       },
       {
         anchor: "layout-settings",
         title: "设置面板",
-        path: "../layouts/fa-settings-panel/**",
+        path: "../layouts/art-settings-panel/**",
         notes: ["主题、色弱、标签栏、菜单布局等本地偏好持久化。"],
       },
       {
         anchor: "layout-notification",
         title: "通知",
-        path: "../layouts/fa-notification/**",
+        path: "../layouts/art-notification/**",
         notes: ["通知下拉列表；已读状态；路由跳转。"],
       },
       {
         anchor: "layout-search",
         title: "全局搜索",
-        path: "../layouts/fa-global-search/**",
+        path: "../layouts/art-global-search/**",
         notes: ["Ctrl/⌘+K 打开全局搜索（`art-global-search` 监听 keydown）。"],
       },
       {
         anchor: "layout-lock",
         title: "锁屏",
-        path: "../layouts/fa-screen-lock/index.vue",
+        path: "../layouts/art-screen-lock/index.vue",
         notes: [
           "锁屏全屏页；背景随明暗主题切换（`@imgs/lock` → `src/assets/images/lock`）；顶栏用户菜单进入。",
         ],
@@ -477,13 +477,13 @@ export const MANUAL_MODULES_AFTER_SYSTEM: ManualModuleSection[] = [
       {
         anchor: "layout-user",
         title: "用户菜单",
-        path: "../layouts/fa-header-bar/**",
+        path: "../layouts/art-header-bar/**",
         notes: ["头像下拉：文档、教程、锁屏、退出等。"],
       },
       {
         anchor: "layout-theme",
         title: "主题切换",
-        path: "../layouts/fa-settings-panel/**",
+        path: "../layouts/art-settings-panel/**",
         notes: ["明暗色、主题色；CSS 变量与 Element Plus 深色。"],
       },
       {

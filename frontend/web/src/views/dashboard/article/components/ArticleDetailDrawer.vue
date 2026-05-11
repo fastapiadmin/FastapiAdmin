@@ -21,7 +21,7 @@
     <template #footer>
       <div class="flex flex-wrap justify-end gap-2">
         <ElButton v-if="articleId != null" @click="emitOpenCommentWall">
-          <ArtSvgIcon icon="ri:message-3-line" class="mr-1" />
+          <FaSvgIcon icon="ri:message-3-line" class="mr-1" />
           留言讨论
         </ElButton>
         <ElButton @click="visible = false">关闭</ElButton>
@@ -127,12 +127,12 @@ watch(
 .article-detail-markdown {
   margin-top: 8px;
 
-  :deep(img) {
+  ::deep(img) {
     width: 100%;
-    border: 1px solid var(--art-gray-200);
+    border: 1px solid var(--fa-gray-200);
   }
 
-  :deep(pre) {
+  ::deep(pre) {
     position: relative;
 
     &:hover {
@@ -152,11 +152,11 @@ watch(
     }
   }
 
-  :deep(.code-wrapper) {
+  ::deep(.code-wrapper) {
     overflow-x: auto;
   }
 
-  :deep(.line-number) {
+  ::deep(.line-number) {
     position: sticky;
     left: 0;
     z-index: 2;
@@ -169,7 +169,7 @@ watch(
     text-align: center;
   }
 
-  :deep(.copy-button) {
+  ::deep(.copy-button) {
     position: absolute;
     top: 6px;
     right: 6px;

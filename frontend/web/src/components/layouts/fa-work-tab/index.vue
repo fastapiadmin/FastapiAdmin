@@ -1,4 +1,4 @@
-<!-- 三种模式与 fa-design-pro 一致：tab-default / tab-card / tab-google（参考 fa-design-pro/src/components/layouts/fa-work-tab） -->
+<!-- 三种模式与 art-design-pro 一致：tab-default / tab-card / tab-google（参考 art-design-pro/src/components/core/layouts/art-work-tab） -->
 <template>
   <div
     v-if="showWorkTab"
@@ -542,7 +542,15 @@ const useTabOperations = (adjustPositionAfterClose: () => void) => {
     const shouldNavigate = navigationRules[key as keyof typeof navigationRules];
 
     if (shouldNavigate) {
-      router.push(clickedPath.value);
+      const dest = list.value.find((tab) => tab.path === clickedPath.value);
+      if (dest) {
+        router.push({
+          path: dest.path,
+          query: dest.query as LocationQueryRaw,
+        });
+      } else {
+        router.push(clickedPath.value);
+      }
     }
 
     closeWorktab(key as TabCloseType, clickedPath.value);
@@ -563,7 +571,7 @@ const { setupEventListeners, cleanupEventListeners, adjustPositionAfterClose } =
 const { clickTab, closeWorktab, showMenu, handleSelect } =
   useTabOperations(adjustPositionAfterClose);
 
-/** 与旧版 TagsView 一致的横向滚动步长 */
+/** 标签横向滚动步长（px） */
 const SCROLL_STEP = 200;
 
 /**

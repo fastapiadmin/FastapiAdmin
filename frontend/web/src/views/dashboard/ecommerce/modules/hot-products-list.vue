@@ -1,6 +1,6 @@
 <template>
-  <div class="art-card p-5 h-[27.8rem] mb-5 overflow-hidden max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="fa-card p-5 h-[27.8rem] mb-5 overflow-hidden max-sm:mb-4">
+    <div class="fa-card-header">
       <div class="title">
         <h4>热销产品</h4>
         <p>本月销售情况</p>
@@ -93,7 +93,7 @@ const tableData = reactive<ProductItem[]>([
     sales: 423,
     percentage: 75,
     pro: 0,
-    color: "var(--art-primary)",
+    color: "var(--fa-primary)",
     image: product1,
   },
   {
@@ -104,7 +104,7 @@ const tableData = reactive<ProductItem[]>([
     sales: 652,
     percentage: 85,
     pro: 0,
-    color: "var(--art-success)",
+    color: "var(--fa-success)",
     image: product2,
   },
   {
@@ -115,7 +115,7 @@ const tableData = reactive<ProductItem[]>([
     sales: 238,
     percentage: 45,
     pro: 0,
-    color: "var(--art-warning)",
+    color: "var(--fa-warning)",
     image: product3,
   },
   {
@@ -126,7 +126,7 @@ const tableData = reactive<ProductItem[]>([
     sales: 126,
     percentage: 30,
     pro: 0,
-    color: "var(--art-error)",
+    color: "var(--fa-error)",
     image: product4,
   },
   {
@@ -137,7 +137,7 @@ const tableData = reactive<ProductItem[]>([
     sales: 321,
     percentage: 60,
     pro: 0,
-    color: "var(--art-info)",
+    color: "var(--fa-info)",
     image: product5,
   },
   {
@@ -148,7 +148,7 @@ const tableData = reactive<ProductItem[]>([
     sales: 489,
     percentage: 70,
     pro: 0,
-    color: "var(--art-secondary)",
+    color: "var(--fa-secondary)",
     image: product6,
   },
 ]);

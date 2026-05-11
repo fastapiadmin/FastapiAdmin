@@ -1,31 +1,90 @@
-/** Table helpers (flattened). */
+/**
+ * 表格列表工具：`useTable`、缓存与分页响应适配。
+ *
+ * - 接口约定：分页列表返回体须符合全局 `PageResult`（或包在标准 `data` 内），见 `defaultResponseAdapter`。
+ * - 缓存：`TableCache` 按参数 hash + 标签失效；策略枚举供 `useTable.clearCache` 使用。
+ */
 
 import { h } from "vue";
 import type { VNode } from "vue";
 import { ElTooltip } from "element-plus";
 import { hash } from "ohash";
-import FaButtonMore from "@/components/forms/fa-button-more/index.vue";
+import ArtButtonMore from "@/components/forms/fa-button-more/index.vue";
 import type { ButtonMoreItem } from "@/components/forms/fa-button-more/index.vue";
-import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
+import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
 
-// -----------------------------
-// Config
-// -----------------------------
+// --- 全局分页字段名（与 PageQuery 对齐） ---
 
+/** 仅保留与全局 `PageQuery` / `PageResult` 对齐的分页参数字段名（供 useTable 合并请求参数） */
 export const tableConfig = {
-  recordFields: ["list", "data", "records", "items", "result", "rows"],
-  totalFields: ["total", "count"],
-  currentFields: ["current", "page", "pageNum", "page_no"],
-  sizeFields: ["size", "pageSize", "limit", "page_size"],
   paginationKey: {
-    current: "current",
-    size: "size",
+    current: "page_no",
+    size: "page_size",
   },
-};
+} as const;
 
-// -----------------------------
-// Cache
-// -----------------------------
+/** 与 `global.d.ts` 中 `PageResult` 字段一致；分页列表接口必须返回该结构（或包在 ApiResponse.data 内） */
+function isPageResultPayload(o: unknown): o is PageResult<unknown> {
+  if (!o || typeof o !== "object" || Array.isArray(o)) return false;
+  const r = o as Record<string, unknown>;
+  return (
+    Array.isArray(r.items) &&
+    typeof r.total === "number" &&
+    typeof r.page_no === "number" &&
+    typeof r.page_size === "number" &&
+    typeof r.has_next === "boolean"
+  );
+}
+
+/** 将常见分页形状（含 MyBatis-Plus / 旧字段名）规范为全局 `PageResult` */
+function normalizePageResultLike(raw: unknown): PageResult<unknown> | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+
+  const items =
+    (Array.isArray(o.items) && o.items) ||
+    (Array.isArray(o.records) && o.records) ||
+    (Array.isArray(o.list) && o.list) ||
+    (Array.isArray(o.rows) && o.rows) ||
+    null;
+  if (!items) return null;
+
+  const totalRaw = o.total;
+  const total =
+    typeof totalRaw === "number" ? totalRaw : typeof totalRaw === "string" ? Number(totalRaw) : NaN;
+  if (!Number.isFinite(total)) return null;
+
+  const pageNoRaw = o.page_no ?? o.current ?? o.page;
+  const page_no =
+    typeof pageNoRaw === "number"
+      ? pageNoRaw
+      : typeof pageNoRaw === "string"
+        ? Number(pageNoRaw)
+        : NaN;
+  if (!Number.isFinite(page_no)) return null;
+
+  const pageSizeRaw = o.page_size ?? o.size ?? o.limit ?? o.pageSize;
+  const page_size =
+    typeof pageSizeRaw === "number"
+      ? pageSizeRaw
+      : typeof pageSizeRaw === "string"
+        ? Number(pageSizeRaw)
+        : NaN;
+  if (!Number.isFinite(page_size)) return null;
+
+  let has_next: boolean;
+  if (typeof o.has_next === "boolean") {
+    has_next = o.has_next;
+  } else if (typeof o.hasNext === "boolean") {
+    has_next = o.hasNext;
+  } else {
+    has_next = page_no * page_size < total;
+  }
+
+  return { items, total, page_no, page_size, has_next };
+}
+
+// --- 缓存 ---
 
 export enum CacheInvalidationStrategy {
   CLEAR_ALL = "clear_all",
@@ -34,12 +93,13 @@ export enum CacheInvalidationStrategy {
   KEEP_ALL = "keep_all",
 }
 
+/** useTable 内部使用的规范化分页响应（由 PageResult 映射而来） */
 export interface ApiResponse<T = unknown> {
-  records?: T[];
-  data?: T[];
-  total?: number;
+  records: T[];
+  total: number;
   current?: number;
   size?: number;
+  has_next?: boolean;
   [key: string]: unknown;
 }
 
@@ -78,7 +138,7 @@ export class TableCache<T> {
 
     const searchKeys = Object.keys(params).filter(
       (key) =>
-        !["current", "size", "total"].includes(key) &&
+        !["current", "size", "total", "page_no", "page_size"].includes(key) &&
         params[key] !== undefined &&
         params[key] !== "" &&
         params[key] !== null
@@ -91,7 +151,9 @@ export class TableCache<T> {
       tags.add("search:default");
     }
 
-    tags.add(`pagination:${params.size || 10}`);
+    const ps = params as Record<string, unknown>;
+    const pageSizeVal = ps.page_size ?? ps.size;
+    tags.add(`pagination:${typeof pageSizeVal === "number" ? pageSizeVal : 10}`);
     tags.add("pagination");
     return tags;
   }
@@ -215,9 +277,7 @@ export class TableCache<T> {
   }
 }
 
-// -----------------------------
-// Utils
-// -----------------------------
+// --- 响应解析与防抖 ---
 
 function unwrapAxiosResponseBody(response: unknown): unknown {
   if (response === null || typeof response !== "object") return response;
@@ -236,6 +296,41 @@ function unwrapAxiosResponseBody(response: unknown): unknown {
   return response;
 }
 
+/**
+ * 从 axios 原始响应或已解包 body 中取出唯一合法的 `PageResult`。
+ * 支持：① 严格 `PageResult`；② `ApiResponse.data` 嵌套；③ `records/current/size` 等常见变体。
+ */
+function extractPageResultPayload(response: unknown): PageResult<unknown> | null {
+  const candidates: unknown[] = [];
+
+  const push = (x: unknown) => {
+    if (x !== undefined && x !== null) candidates.push(x);
+  };
+
+  push(response);
+  push(unwrapAxiosResponseBody(response));
+
+  for (let i = 0; i < candidates.length; i++) {
+    const x = candidates[i];
+    if (isPageResultPayload(x)) {
+      return x;
+    }
+    const normalized = normalizePageResultLike(x);
+    if (normalized) {
+      return normalized;
+    }
+    if (x && typeof x === "object" && !Array.isArray(x) && "data" in x) {
+      const inner = (x as Record<string, unknown>).data;
+      push(inner);
+      if (inner && typeof inner === "object" && !Array.isArray(inner) && "data" in inner) {
+        push((inner as Record<string, unknown>).data);
+      }
+    }
+  }
+
+  return null;
+}
+
 export interface BaseRequestParams extends PageQuery {
   [key: string]: unknown;
 }
@@ -246,104 +341,28 @@ export interface TableError {
   details?: unknown;
 }
 
-function extractRecords<T>(obj: Record<string, unknown>, fields: string[]): T[] {
-  for (const field of fields) {
-    if (field in obj && Array.isArray(obj[field])) return obj[field] as T[];
-  }
-  return [];
-}
-
-function extractTotal(obj: Record<string, unknown>, records: unknown[], fields: string[]): number {
-  for (const field of fields) {
-    if (field in obj && typeof obj[field] === "number") return obj[field] as number;
-  }
-  return records.length;
-}
-
-function extractPagination(
-  obj: Record<string, unknown>,
-  data?: Record<string, unknown>
-): Pick<ApiResponse<unknown>, "current" | "size"> | undefined {
-  const result: Partial<Pick<ApiResponse<unknown>, "current" | "size">> = {};
-  const sources = [obj, data ?? {}];
-
-  for (const src of sources) {
-    for (const field of tableConfig.currentFields) {
-      if (field in src && typeof src[field] === "number") {
-        result.current = src[field] as number;
-        break;
-      }
-    }
-    if (result.current !== undefined) break;
-  }
-
-  for (const src of sources) {
-    for (const field of tableConfig.sizeFields) {
-      if (field in src && typeof src[field] === "number") {
-        result.size = src[field] as number;
-        break;
-      }
-    }
-    if (result.size !== undefined) break;
-  }
-
-  if (result.current === undefined && result.size === undefined) return undefined;
-  return result;
-}
-
 export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => {
-  const recordFields = tableConfig.recordFields;
-
-  response = unwrapAxiosResponseBody(response);
-
-  if (!response) return { records: [], total: 0 };
-  if (Array.isArray(response)) return { records: response, total: response.length };
-
-  if (typeof response !== "object") {
-    console.warn(
-      "[tableUtils] 无法识别的响应格式，支持的格式包括: 数组、包含" +
-        recordFields.join("/") +
-        "字段的对象、嵌套data对象。当前格式:",
+  const pr = extractPageResultPayload(response);
+  if (!pr) {
+    console.error(
+      "[tableUtils] 分页列表响应必须符合全局 PageResult<T>（items、total、page_no、page_size、has_next）；或为 ApiResponse 且 data 为该结构。收到:",
       response
     );
-    return { records: [], total: 0 };
+    return { records: [], total: 0, current: 1, size: 10 };
   }
 
-  const res = response as Record<string, unknown>;
-  let records: T[] = [];
-  let total = 0;
-  let pagination: Pick<ApiResponse<unknown>, "current" | "size"> | undefined;
-
-  records = extractRecords(res, recordFields);
-  total = extractTotal(res, records, tableConfig.totalFields);
-  pagination = extractPagination(res);
-
-  if (records.length === 0 && "data" in res && typeof res.data === "object") {
-    const data = res.data as Record<string, unknown>;
-    records = extractRecords(data, ["list", "records", "items"]);
-    total = extractTotal(data, records, tableConfig.totalFields);
-    pagination = extractPagination(res, data);
-
-    if (Array.isArray(res.data)) {
-      records = res.data as T[];
-      total = records.length;
-    }
-  }
-
-  if (!recordFields.some((field) => field in res) && records.length === 0) {
-    console.warn("[tableUtils] 无法识别的响应格式");
-    console.warn("支持的字段包括: " + recordFields.join("、"), response);
-    console.warn("扩展字段请到 utils/table/tableConfig 文件配置");
-  }
-
-  const result: ApiResponse<T> = { records, total };
-  if (pagination) Object.assign(result, pagination);
-  return result;
+  return {
+    records: pr.items as T[],
+    total: pr.total,
+    current: pr.page_no,
+    size: pr.page_size,
+    has_next: pr.has_next,
+  };
 };
 
 export const extractTableData = <T>(response: ApiResponse<T>): T[] => {
-  const data = response.records || response.data || [];
-  return Array.isArray(data) ? data : [];
+  const rows = response.records;
+  return Array.isArray(rows) ? rows : [];
 };
 
 export const updatePaginationFromResponse = <T>(
@@ -438,9 +457,7 @@ export const createErrorHandler = (
   };
 };
 
-// -----------------------------
-// Operation cell renderer
-// -----------------------------
+// --- 操作列渲染（表格单元格内按钮 + 溢出「更多」） ---
 
 export const DEFAULT_MAX_INLINE_TABLE_OPERATIONS = 3;
 
@@ -512,7 +529,7 @@ export function renderTableOperationCell(
         "span",
         { class: a.disabled ? "inline-flex opacity-40 pointer-events-none" : "inline-flex" },
         [
-          h(FaButtonTable, {
+          h(ArtButtonTable, {
             type: a.artType,
             icon: iconForOperation(a),
             iconColor: iconColorForOperation(a),
@@ -525,7 +542,7 @@ export function renderTableOperationCell(
 
   if (overflow.length === 0) return h("div", { class: wrapperClass }, inlineNodes);
 
-  const moreDropdown = h(FaButtonMore, {
+  const moreDropdown = h(ArtButtonMore, {
     list: overflow.map((a) => ({
       key: a.key,
       label: a.label,

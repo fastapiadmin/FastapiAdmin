@@ -39,7 +39,7 @@
             :md="6"
             class="mb-5"
           >
-            <ArtStatsCard
+            <FaStatsCard
               :icon="card.icon"
               :iconStyle="card.iconStyle"
               :title="card.title"
@@ -59,7 +59,7 @@
             :md="6"
             class="mb-5"
           >
-            <ArtStatsCard
+            <FaStatsCard
               :icon="card.icon"
               :iconStyle="card.iconStyle"
               :count="card.count"
@@ -81,7 +81,7 @@
             :md="6"
             class="mb-5"
           >
-            <ArtStatsCard
+            <FaStatsCard
               :icon="card.icon"
               :iconStyle="card.customIconStyle"
               :boxStyle="card.boxStyle"
@@ -103,11 +103,7 @@
             :md="6"
             class="mb-5"
           >
-            <ArtProgressCard
-              :percentage="card.percentage"
-              :title="card.title"
-              :color="card.color"
-            />
+            <FaProgressCard :percentage="card.percentage" :title="card.title" :color="card.color" />
           </ElCol>
         </ElRow>
 
@@ -121,7 +117,7 @@
             :md="6"
             class="mb-5"
           >
-            <ArtProgressCard
+            <FaProgressCard
               :percentage="card.percentage"
               :title="card.title"
               :color="card.color"
@@ -134,7 +130,7 @@
         <h2 class="page-title">图表卡片（小图表）</h2>
         <ElRow :gutter="20">
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtLineChartCard
+            <FaLineChartCard
               :isMiniChart="true"
               :value="2545"
               label="新用户"
@@ -145,7 +141,7 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtBarChartCard
+            <FaBarChartCard
               :isMiniChart="true"
               :value="15480"
               label="浏览量"
@@ -157,7 +153,7 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtLineChartCard
+            <FaLineChartCard
               :isMiniChart="true"
               :value="2545"
               label="粉丝数"
@@ -169,7 +165,7 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtDonutChartCard
+            <FaDonutChartCard
               :value="36358"
               title="粉丝量"
               :percentage="18"
@@ -186,7 +182,7 @@
         <h2 class="page-title">图表卡片（大图表）</h2>
         <ElRow :gutter="20">
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtLineChartCard
+            <FaLineChartCard
               :value="2545"
               label="新用户"
               :percentage="1.2"
@@ -195,7 +191,7 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtBarChartCard
+            <FaBarChartCard
               :value="15480"
               label="浏览量"
               :percentage="-4.15"
@@ -204,7 +200,7 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtLineChartCard
+            <FaLineChartCard
               :value="2545"
               label="粉丝数"
               :percentage="1.2"
@@ -214,7 +210,7 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtDonutChartCard
+            <FaDonutChartCard
               :value="36358"
               title="粉丝量"
               :percentage="-18"
@@ -230,10 +226,10 @@
         <h2 class="page-title">数据列表卡片</h2>
         <ElRow :gutter="20">
           <ElCol :xs="24" :sm="12" :lg="8" class="mb-5">
-            <ArtDataListCard :list="dataList" title="待办事项" subtitle="今日待处理任务" />
+            <FaDataListCard :list="dataList" title="待办事项" subtitle="今日待处理任务" />
           </ElCol>
           <ElCol :xs="24" :sm="12" :lg="8" class="mb-5">
-            <ArtDataListCard
+            <FaDataListCard
               :maxCount="4"
               :list="dataList"
               title="最近活动"
@@ -243,14 +239,14 @@
             />
           </ElCol>
           <ElCol :xs="24" :sm="12" :lg="8" class="mb-5">
-            <ArtTimelineListCard :list="timelineData" title="最近交易" subtitle="2024年12月20日" />
+            <FaTimelineListCard :list="timelineData" title="最近交易" subtitle="2024年12月20日" />
           </ElCol>
         </ElRow>
 
         <h2 class="page-title">图片卡片</h2>
         <ElRow :gutter="20">
           <ElCol v-for="card in imageCards" :key="card.id" :xs="24" :sm="12" :md="6" class="mb-5">
-            <ArtImageCard
+            <FaImageCard
               :imageUrl="card.imageUrl"
               :title="card.title"
               :category="card.category"
@@ -305,7 +301,7 @@ const statsCards = [
     boxStyle: "!bg-warning/10",
     customIconStyle: "!text-warning !text-3xl",
     iconStyle: "bg-warning",
-    textColor: "var(--art-warning)",
+    textColor: "var(--fa-warning)",
     showArrow: false,
   },
   {
@@ -317,7 +313,7 @@ const statsCards = [
     boxStyle: "!bg-secondary/10",
     customIconStyle: "!text-secondary !text-3xl",
     iconStyle: "bg-secondary",
-    textColor: "var(--art-secondary)",
+    textColor: "var(--fa-secondary)",
     showArrow: false,
   },
   {
@@ -329,7 +325,7 @@ const statsCards = [
     boxStyle: "!bg-error/10",
     customIconStyle: "!text-error !text-3xl",
     iconStyle: "bg-error",
-    textColor: "var(--art-error)",
+    textColor: "var(--fa-error)",
     showArrow: false,
   },
 ];
@@ -339,7 +335,7 @@ const progressCards = [
     id: 1,
     title: "完成进度",
     percentage: 75,
-    color: "var(--art-success)",
+    color: "var(--fa-success)",
     icon: "ri:arrow-up-circle-line",
     iconStyle: "bg-success/12 text-success",
   },
@@ -355,7 +351,7 @@ const progressCards = [
     id: 3,
     title: "学习进度",
     percentage: 45,
-    color: "var(--art-error)",
+    color: "var(--fa-error)",
     icon: "ri:game-line",
     iconStyle: "!bg-error/12 text-error",
   },
@@ -363,7 +359,7 @@ const progressCards = [
     id: 4,
     title: "任务进度",
     percentage: 90,
-    color: "var(--art-secondary)",
+    color: "var(--fa-secondary)",
     icon: "ri:flag-2-line",
     iconStyle: "bg-secondary/12 text-secondary",
   },

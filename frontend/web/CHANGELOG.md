@@ -371,7 +371,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Removed
 
-- Removed CountTo plugin, replaced with ArtCountTo component
+- Removed CountTo plugin, replaced with FaCountTo component
 
 #### Fixed
 
@@ -431,7 +431,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Fixed
 
-- Fixed login page drag component ArtDragVerify width and color abnormal bug
+- Fixed login page drag component FaDragVerify width and color abnormal bug
 - Fixed iframe page mixed mode and double column mode abnormal bug
 - Optimized lock screen page being penetrated by el-loading bug
 
@@ -441,7 +441,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- Refactored form-related components in components/forms folder, improved maintainability and consistency
+- Refactored form-related components in components/core/forms folder, improved maintainability and consistency
 - Refactored ArtBreadcrumb breadcrumb navigation component, optimized logic structure and styles
 - Refactored ArtFireworksEffect fireworks effect component, significantly improved rendering performance and animation smoothness
 
@@ -468,8 +468,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- ArtMenuRight component refactored
-- Components under components/cards refactored, code optimized
+- FaMenuRight component refactored
+- Components under components/core/cards refactored, code optimized
 
 #### Optimized
 
@@ -481,14 +481,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- ArtResultPage component refactored
+- FaResultPage component refactored
 
 #### Optimized
 
 - ArtTextScroll component code optimization
-- ArtException component added type hints
-- ArtCutterImg component style optimization, added type definitions
-- ArtVideoPlayer component added type definitions
+- FaException component added type hints
+- FaCutterImg component style optimization, added type definitions
+- FaVideoPlayer component added type definitions
 
 ---
 

@@ -70,7 +70,7 @@
             @keyup.enter="$emit('submit')"
           >
             <template #prefix>
-              <ArtSvgIcon
+              <FaSvgIcon
                 icon="mdi:shield-lock-outline"
                 class="size-[18px] text-[var(--el-text-color-secondary)]"
               />
@@ -104,7 +104,7 @@
             class="relative z-[2] overflow-hidden select-none rounded-lg border border-transparent tad-300"
             :class="{ '!border-[#FF4E4F]': !isPassing && isClickPass }"
           >
-            <ArtDragVerify
+            <FaDragVerify
               ref="dragVerifyRef"
               v-model:value="isPassing"
               :text="$t('login.sliderText')"

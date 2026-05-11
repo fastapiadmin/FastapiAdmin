@@ -10,6 +10,8 @@
 </template>
 
 <script lang="ts" setup>
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+
 defineOptions({ name: "FaIconButton" });
 
 interface Props {

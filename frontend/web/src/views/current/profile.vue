@@ -4,7 +4,7 @@
     <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
       <!-- 左侧卡片 -->
       <div class="w-112 mr-5 max-md:w-full max-md:mr-0">
-        <div class="art-card-sm relative p-9 pb-6 overflow-hidden text-center">
+        <div class="fa-card-sm relative p-9 pb-6 overflow-hidden text-center">
           <img
             class="absolute top-0 left-0 w-full h-50 object-cover"
             src="@imgs/user/bg.webp"
@@ -58,19 +58,19 @@
 
           <div class="relative z-10 w-75 mx-auto mt-7.5 text-left">
             <div class="mt-2.5 flex items-start">
-              <ArtSvgIcon icon="ri:mail-line" class="text-g-700 shrink-0 mt-0.5" />
+              <FaSvgIcon icon="ri:mail-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm break-all">{{ infoFormState.email || "—" }}</span>
             </div>
             <div class="mt-2.5 flex items-start">
-              <ArtSvgIcon icon="ri:user-3-line" class="text-g-700 shrink-0 mt-0.5" />
+              <FaSvgIcon icon="ri:user-3-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm">{{ infoFormState.username || "—" }}</span>
             </div>
             <div class="mt-2.5 flex items-start">
-              <ArtSvgIcon icon="ri:map-pin-line" class="text-g-700 shrink-0 mt-0.5" />
+              <FaSvgIcon icon="ri:map-pin-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm">{{ infoFormState.dept?.name || "—" }}</span>
             </div>
             <div class="mt-2.5 flex items-start">
-              <ArtSvgIcon icon="ri:briefcase-line" class="text-g-700 shrink-0 mt-0.5" />
+              <FaSvgIcon icon="ri:briefcase-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm">
                 {{ infoFormState.positions?.map((p) => p.name).join("、") || "—" }}
               </span>
@@ -100,7 +100,7 @@
         destroy-on-close
         @closed="onAvatarCropDialogClosed"
       >
-        <ArtCutterImg
+        <FaCutterImg
           v-if="avatarCropVisible && avatarCropSrc"
           :key="avatarCropSrc"
           :img-url="avatarCropSrc"
@@ -122,7 +122,7 @@
 
       <!-- 右侧表单 -->
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
-        <div class="art-card-sm">
+        <div class="fa-card-sm">
           <h1 class="p-4 text-xl font-normal border-b border-g-300">基本设置</h1>
 
           <ElForm
@@ -198,7 +198,7 @@
           </ElForm>
         </div>
 
-        <div class="art-card-sm my-5">
+        <div class="fa-card-sm my-5">
           <h1 class="p-4 text-xl font-normal border-b border-g-300">更改密码</h1>
 
           <ElForm
@@ -263,8 +263,8 @@ import { Camera } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import { redirectToLogin } from "@utils/auth";
-import ArtSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-import ArtCutterImg from "@/components/media/fa-cutter-img/index.vue";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+import FaCutterImg from "@/components/media/fa-cutter-img/index.vue";
 import { dataURLToFile } from "@utils/file/dataUrl";
 
 defineOptions({ name: "UserProfile" });
@@ -609,7 +609,7 @@ onMounted(async () => {
   bottom: 0;
   z-index: 2;
 
-  :deep(.el-upload) {
+  ::deep(.el-upload) {
     display: inline-flex;
   }
 

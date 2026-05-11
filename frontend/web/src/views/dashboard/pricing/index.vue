@@ -5,7 +5,7 @@
         class="mb-2 text-4xl font-medium max-sm:text-3xl flex flex-wrap justify-center items-baseline gap-x-2 gap-y-1"
       >
         <span>超过</span>
-        <ArtCountTo
+        <FaCountTo
           class="text-4xl font-medium max-sm:text-3xl"
           :target="53476"
           :duration="2000"
@@ -34,7 +34,7 @@
                 {{ plan.description }}
               </p>
               <div class="mt-7.5 flex flex-wrap items-baseline gap-x-1">
-                <ArtCountTo
+                <FaCountTo
                   class="text-3xl font-medium"
                   :target="plan.price"
                   :duration="1400"

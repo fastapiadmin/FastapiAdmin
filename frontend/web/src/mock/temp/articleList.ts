@@ -150,7 +150,7 @@ export const ArticleList = [
     create_time: "2023-04-01T00:00:00.000Z",
     home_img: cover8,
     brief:
-      "原理是改变 css 变量 + window.matchMedia 来监听系统主题变，从而实现点击改变主题和监听系统主题变化1、首先定义 css 全局变量创建 variables.scss 文件light color（浅色模式）定义浅色模式下 css 主题变量dark color（深色模式）定义深色模式下 css 主题变量// css全局变量\n:root {\n  // 文字大小\n  --fa-fo",
+      "原理是改变 css 变量 + window.matchMedia 来监听系统主题变，从而实现点击改变主题和监听系统主题变化1、首先定义 css 全局变量创建 variables.scss 文件light color（浅色模式）定义浅色模式下 css 主题变量dark color（深色模式）定义深色模式下 css 主题变量// css全局变量\n:root {\n  // 文字大小\n  --art-fo",
     type_name: "CSS",
     html_content: "",
   },

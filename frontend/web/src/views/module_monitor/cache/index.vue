@@ -1,5 +1,5 @@
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <el-tabs>
       <!-- 监控信息 Tab -->
       <ElTabPane label="监控信息">
@@ -72,7 +72,7 @@
           <!-- 监控图表：单独一行并占满剩余高度 -->
           <ElRow :gutter="16" class="monitor-charts-row">
             <ElCol :span="12" class="cache-chart-col">
-              <ElCard shadow="hover" class="cache-chart-card">
+              <ElCard shadow="hover" class="cache-chfa-card">
                 <template #header>
                   <div class="flex items-center gap-2">
                     <ElIcon>
@@ -91,7 +91,7 @@
             </ElCol>
 
             <ElCol :span="12" class="cache-chart-col">
-              <ElCard shadow="hover" class="cache-chart-card">
+              <ElCard shadow="hover" class="cache-chfa-card">
                 <template #header>
                   <div class="flex items-center gap-2">
                     <ElIcon>
@@ -311,6 +311,7 @@
 </template>
 
 <script lang="ts" setup>
+import { ElMessageBox } from "element-plus";
 import CacheAPI, {
   type CacheInfo,
   type CacheForm,
@@ -442,7 +443,7 @@ const handleClearCacheAll = async () => {
     .then(() => {
       getCacheNameList();
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       if (error !== "cancel") {
         console.error("清理全部缓存失败:", error);
       }
@@ -560,13 +561,13 @@ onUnmounted(() => {
   min-height: 0;
 }
 
-.cache-chart-card {
+.cache-chfa-card {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
 
-  :deep(.el-card__body) {
+  ::deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -606,7 +607,7 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 0;
 
-  :deep(.el-card__body) {
+  ::deep(.el-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;

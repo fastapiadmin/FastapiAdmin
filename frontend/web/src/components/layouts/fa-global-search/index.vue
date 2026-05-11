@@ -367,27 +367,27 @@ const highlightOnHoverHistory = (index: number) => {
 </script>
 <style lang="scss" scoped>
 .layout-search {
-  :deep(.search-modal) {
+  ::deep(.search-modal) {
     background-color: rgb(0 0 0 / 20%);
   }
 
-  :deep(.el-dialog__body) {
+  ::deep(.el-dialog__body) {
     padding: 5px 0 0 !important;
   }
 
-  :deep(.el-dialog__header) {
+  ::deep(.el-dialog__header) {
     padding: 0;
   }
 
   .el-input {
-    :deep(.el-input__wrapper) {
+    ::deep(.el-input__wrapper) {
       background-color: var(--fa-gray-200);
       border: 1px solid var(--default-border-dashed);
       border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
       box-shadow: none;
     }
 
-    :deep(.el-input__inner) {
+    ::deep(.el-input__inner) {
       color: var(--fa-gray-800) !important;
     }
   }
@@ -395,18 +395,18 @@ const highlightOnHoverHistory = (index: number) => {
 
 .dark .layout-search {
   .el-input {
-    :deep(.el-input__wrapper) {
+    ::deep(.el-input__wrapper) {
       background-color: #333;
       border: 1px solid #4c4d50;
     }
   }
 
-  :deep(.search-modal) {
+  ::deep(.search-modal) {
     background-color: rgb(23 23 26 / 60%);
     backdrop-filter: none;
   }
 
-  :deep(.el-dialog) {
+  ::deep(.el-dialog) {
     background-color: #252526;
   }
 }

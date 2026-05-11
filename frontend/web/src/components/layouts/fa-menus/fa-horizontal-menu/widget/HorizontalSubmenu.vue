@@ -49,6 +49,7 @@ import { computed, type PropType } from "vue";
 import { AppRouteRecord } from "@/types/router";
 import { handleMenuJump } from "@utils/navigation";
 import { formatMenuTitle } from "@utils/navigation";
+import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
 
 const props = defineProps({
   item: {
@@ -105,7 +106,7 @@ const closeMenu = () => {
 </script>
 
 <style scoped>
-:deep(.el-sub-menu__title .el-sub-menu__icon-arrow) {
+::deep(.el-sub-menu__title .el-sub-menu__icon-arrow) {
   right: 10px !important;
 }
 </style>

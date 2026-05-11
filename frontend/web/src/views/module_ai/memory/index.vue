@@ -1,6 +1,6 @@
 <!-- AI 会话记录：Art + useTable -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -37,12 +37,12 @@
       </FaTableHeader>
 
       <FaTable
-        ref="FaTableRef"
+        ref="faTableRef"
         row-key="id"
         :loading="loading"
         :data="data"
         :columns="columns"
-        :pagination="paginationBind"
+        :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -275,7 +275,7 @@ const titleInputRef = ref();
 const editingRowId = ref<string | null>(null);
 const editingTitle = ref("");
 
-const FaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<ChatSession[]>([]);
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is string => Boolean(id))
@@ -295,7 +295,7 @@ function deleteSessionRow(id: string) {
     .then(async () => {
       await AiChatAPI.deleteSession([id]);
       ElMessage.success("删除成功");
-      FaTableRef.value?.elTableRef?.clearSelection();
+      faTableRef.value?.elTableRef?.clearSelection();
       await refreshRemove();
     })
     .catch(() => {});
@@ -422,7 +422,7 @@ const {
   },
 });
 
-const formData = ref({
+const formData = reactive({
   id: undefined as string | undefined,
   title: "",
 });
@@ -625,17 +625,17 @@ pre {
   border-radius: 4px;
 }
 
-:deep(.session-detail-dialog .el-dialog__body) {
+::deep(.session-detail-dialog .el-dialog__body) {
   max-height: 60vh;
   padding: 20px;
   overflow-y: auto;
 }
 
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
+.crud-dialog-art-form ::deep(.el-row > .el-col:last-child) {
   display: none;
 }
 
-.crud-dialog-art-form :deep(.el-form-item__content) {
+.crud-dialog-art-form ::deep(.el-form-item__content) {
   max-width: 100%;
 }
 </style>

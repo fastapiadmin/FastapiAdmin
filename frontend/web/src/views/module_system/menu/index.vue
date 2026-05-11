@@ -1,6 +1,6 @@
 <!-- 菜单管理：Art + 树形表格；操作列最多 3 个外露，其余「更多」 -->
 <template>
-  <div class="art-full-height">
+  <div class="fa-full-height">
     <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
@@ -26,7 +26,7 @@
       <ElTabPane label="APP 移动端菜单管理" name="app" />
     </ElTabs>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -520,7 +520,7 @@ import MenuAPI, {
 } from "@/api/module_system/menu";
 import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@utils/common";
-import MenuRouteIcon from "@/components/MenuRouteIcon/index.vue";
+import MenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
 import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
@@ -692,7 +692,7 @@ const createParentLocked = ref(false);
 
 const detailFormData = ref<MenuTable>({});
 
-const formData = ref<MenuForm>({
+const formData = reactive<MenuForm>({
   id: undefined,
   name: undefined,
   type: MenuTypeEnum.CATALOG,
@@ -1153,11 +1153,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.art-table-card {
-  flex: 1;
-}
-
-:deep(.menu-table-actions .inline-flex) {
+::deep(.menu-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

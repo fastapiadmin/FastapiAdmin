@@ -16,7 +16,7 @@
       <RouterView></RouterView>
 
       <!-- AI 助手 -->
-      <FaAiAssistant v-if="enableAiAssistant" />
+      <AiAssistant v-if="enableAiAssistant" />
     </ElWatermark>
   </ElConfigProvider>
 </template>
@@ -27,7 +27,7 @@ import { useAppStore, useUserStore } from "./store";
 import { useSettingsStore } from "./store/modules/setting.store";
 import { defaultSettings } from "./config/setting";
 import { ComponentSize } from "./enums/settings/layout.enum";
-import FaAiAssistant from "./components/others/fa-ai-assistant/index.vue";
+import AiAssistant from "./components/others/fa-ai-assistant/index.vue";
 import { hexToRgba, toggleTransition } from "./utils/ui";
 import { checkStorageCompatibility } from "./utils/storage";
 import { initializeTheme } from "./hooks/core/useTheme";

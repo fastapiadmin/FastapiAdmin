@@ -82,7 +82,7 @@ export function useHeaderBar() {
     return isFeatureEnabled("breadcrumb") && showCrumbs.value;
   });
 
-  // 全局搜索：新版 FaGlobalSearch 体验更好，显示条件 = 配置开启 ∧ 旧版「菜单搜索」开关
+  // 全局搜索：新版 ArtGlobalSearch 体验更好，显示条件 = 配置开启 ∧ 旧版「菜单搜索」开关
   const shouldShowGlobalSearch = computed(() => {
     return isFeatureEnabled("globalSearch") && showMenuSearch.value;
   });

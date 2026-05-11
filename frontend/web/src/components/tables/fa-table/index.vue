@@ -16,59 +16,51 @@
       >
         <ElTable ref="elTableRef" v-loading="!!loading" v-bind="mergedTableProps">
           <template v-for="col in columns" :key="col.prop || col.type">
-            <!-- 渲染全局序号列 -->
             <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
               <template #default="{ $index }">
                 <span>{{ getGlobalIndex($index) }}</span>
               </template>
             </ElTableColumn>
-
-          <!-- 渲染展开行 -->
-          <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
-            <template #default="{ row: expandRow }">
-              <component :is="col.formatter ? col.formatter(expandRow) : null" />
-            </template>
-          </ElTableColumn>
-
-          <!-- 渲染普通列：default 插槽须紧凑书写，避免空白文本抢占 formatter（见 renderColumnFormatter 注释） -->
-          <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
-            <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
-              <slot
-                :name="col.headerSlotName || `${col.prop}-header`"
-                v-bind="{ ...headerScope, prop: col.prop, label: col.label }"
-              >
-                {{ col.label }}
-              </slot>
-            </template>
-            <!-- 整段单行：插槽内兄弟节点之间的空白文本会让 EP 误判单元格内容 -->
-            <!-- eslint-disable-next-line vue/max-attributes-per-line, prettier/prettier -->
-            <template #default="slotScope">
-              <slot
-                v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
-                :name="col.slotName || col.prop"
-                v-bind="{
-                  ...slotScope,
-                  prop: col.prop,
-                  value: col.prop ? slotScope.row[col.prop] : undefined,
-                }"
-              />
-              <TableFormatterOutlet
-                v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
-                :column="col"
-                :record="slotScope.row"
-              />
-            </template>
-          </ElTableColumn>
-        </template>
-
-        <template v-if="$slots.default" #default><slot /></template>
-
-        <template #empty>
-          <div v-if="loading"></div>
-          <ElEmpty v-else :description="emptyText" :image-size="120" />
-        </template>
-      </ElTable>
-    </VueDraggable>
+            <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
+              <template #default="{ row: expandRow }">
+                <component :is="col.formatter ? col.formatter(expandRow) : null" />
+              </template>
+            </ElTableColumn>
+            <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
+              <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
+                <slot
+                  :name="col.headerSlotName || `${col.prop}-header`"
+                  v-bind="{ ...headerScope, prop: col.prop, label: col.label }"
+                >
+                  {{ col.label }}
+                </slot>
+              </template>
+              <template #default="slotScope">
+                <slot
+                  v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
+                  :name="col.slotName || col.prop"
+                  v-bind="{
+                    ...slotScope,
+                    prop: col.prop,
+                    value: col.prop ? slotScope.row[col.prop] : undefined,
+                  }"
+                />
+                <TableFormatterOutlet
+                  v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
+                  :column="col"
+                  :record="slotScope.row"
+                />
+              </template>
+            </ElTableColumn>
+          </template>
+          <template v-if="$slots.default" #default><slot /></template>
+          <template #empty>
+            <div v-if="loading"></div>
+            <ElEmpty v-else :description="emptyText" :image-size="120" />
+          </template>
+        </ElTable>
+      </VueDraggable>
+    </div>
 
     <div
       class="pagination custom-pagination"
@@ -112,12 +104,10 @@ import { storeToRefs } from "pinia";
 import { ColumnOption } from "@/types";
 import { useTableStore } from "@stores/modules/table.store";
 import { useCommon } from "@/hooks/core/useCommon";
+import { useTableHeight } from "@/hooks/core/useTableHeight";
 import { useWindowSize } from "@vueuse/core";
 import FaPagination from "@/components/others/fa-pagination/index.vue";
 import { VueDraggable } from "vue-draggable-plus";
-
-/** 空状态插画高度（列表页统一常量） */
-const ART_TABLE_EMPTY_IMAGE_SIZE = 120;
 
 defineOptions({ name: "FaTable" });
 
@@ -281,7 +271,7 @@ useResizeObserver(tableHeaderRef, (entries) => {
 const PAGINATION_SPACING = computed(() => (props.showTableHeader ? 6 : 15));
 
 // 使用表格高度计算 Hook
-const { containerHeight } = useTableHeight({
+useTableHeight({
   showTableHeader: computed(() => props.showTableHeader),
   paginationHeight,
   tableHeaderHeight,
@@ -449,7 +439,7 @@ const findTableHeader = () => {
     return;
   }
 
-  const tableHeader = document.getElementById("art-table-header");
+  const tableHeader = document.getElementById("fa-table-header");
   if (tableHeader) {
     tableHeaderRef.value = tableHeader;
   } else {

@@ -43,6 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { storeToRefs } from "pinia";
 import {
   useElementSize,
   useRafFn,
@@ -51,6 +53,7 @@ import {
   useTimeoutFn,
 } from "@vueuse/core";
 import { useSettingsStore } from "@stores/modules/setting.store";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 
 type ThemeType =
   | "theme"

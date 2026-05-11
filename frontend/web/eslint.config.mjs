@@ -130,7 +130,6 @@ export default [
         CommonType: 'readonly',
         updatorType: 'readonly',
         creatorType: 'readonly',
-        TagView: 'readonly',
         AppSettings: 'readonly',
         __APP_INFO__: 'readonly',
         UploadFilePath: 'readonly',
@@ -183,11 +182,24 @@ export default [
     },
   },
 
+  // Pin TypeScript project root so @typescript-eslint/parser resolves tsconfig consistently.
+  {
+    files: ['**/*.{ts,tsx,mts,cts}'],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+
   // Vue 文件特定配置
   {
     files: ['**/*.vue'],
     languageOptions: {
-      parserOptions: { parser: tseslint.parser },
+      parserOptions: {
+        parser: tseslint.parser,
+        tsconfigRootDir: __dirname,
+      },
     },
   },
 
