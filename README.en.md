@@ -191,6 +191,7 @@ With **Pydantic v2** and **PostgreSQL (asyncpg)**, ORM writes expect native Pyth
 
 | Module | Screenshot |
 |------------|---------------------------------|
+| Login      | ![login](backend/data/login.png) |
 | Dashboard  | ![Dashboard](backend/data/dashboard.png) |
 | Generator  | ![Generator](backend/data/gencode.png) |
 | AI       | ![AI](backend/data/ai.png) |
