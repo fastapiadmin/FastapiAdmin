@@ -18,9 +18,11 @@ COPY ./backend/requirements.txt .
 
 # 安装 Python 依赖（全部使用预编译 wheel，无需 gcc/build-essential）
 RUN pip install --no-cache-dir --only-binary :all: \
-    -r requirements.txt --target=/home/deps 2>/dev/null \
+    -r requirements.txt --target=/home/deps \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple 2>/dev/null \
     || pip install --no-cache-dir \
-    -r requirements.txt --target=/home/deps
+    -r requirements.txt --target=/home/deps \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 第二阶段：运行环境
 FROM python:3.10-slim
