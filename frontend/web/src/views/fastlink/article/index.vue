@@ -114,9 +114,9 @@
 
 <script setup lang="ts">
 import { Search } from "@element-plus/icons-vue";
-import ArticleCommentWallDrawer from "../components/ArticleCommentWallDrawer.vue";
-import ArticleDetailDrawer from "../components/ArticleDetailDrawer.vue";
-import ArticlePublishDrawer from "../components/ArticlePublishDrawer.vue";
+import ArticleCommentWallDrawer from "./components/ArticleCommentWallDrawer.vue";
+import ArticleDetailDrawer from "./components/ArticleDetailDrawer.vue";
+import ArticlePublishDrawer from "./components/ArticlePublishDrawer.vue";
 import { useDateFormat } from "@vueuse/core";
 import { EmojiText } from "@utils/ui";
 import { ArticleList } from "@/mock/temp/articleList";
