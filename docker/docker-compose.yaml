@@ -91,7 +91,7 @@ services:
     build:
       context: ../
       dockerfile: ./docker/backend/Dockerfile
-    image: backend:latest
+    image: backend:3.0.0
     restart: unless-stopped
     platform: linux/amd64
     environment:
