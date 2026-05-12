@@ -1,99 +1,361 @@
 <!-- 仪表盘首页：快捷入口 + 收藏夹 + 数据概览卡片 -->
 <template>
-  <div class="workplace-page">
-    <!-- 顶栏放入 gutter 行，与下方栅格列边缘对齐 -->
-    <ElRow :gutter="16">
-      <ElCol :span="24">
-        <ElCard shadow="hover" class="workplace-hero-card workplace-surface">
-          <div class="workplace-hero">
-            <div class="flex flex-wrap items-center gap-4 min-w-0 flex-1">
-              <div class="flex items-center md:mb-0">
-                <div class="workplace-hero__avatar-wrap">
-                  <ElAvatar
-                    v-if="currentUser.avatar"
-                    size="large"
-                    :src="currentUser.avatar"
-                    class="workplace-hero__avatar"
-                  />
-                  <ElIcon v-else :size="40" class="text-secondary workplace-hero__avatar-fallback">
-                    <UserFilled />
-                  </ElIcon>
-                </div>
-                <div>
-                  <div class="workplace-hero__greeting">
-                    {{ timefix }}{{ currentUser.name }}，{{ welcome }}
-                  </div>
-                  <ElText class="workplace-hero__meta">
-                    {{ currentUser.username }} · {{ currentUser.dept_name }} ·
-                    {{ currentUser.description }}
-                  </ElText>
-                </div>
+  <div class="dashboard-container">
+    <!-- github 角标 -->
+    <FaGithubCorner class="github-corner" />
+
+    <ElCard shadow="hover">
+      <div class="flex flex-wrap items-center gap-y-3">
+        <!-- 左侧问候语区域 -->
+        <div class="flex min-w-0 flex-1 items-center">
+          <div class="size-20 shrink-0 rounded-full bg-g-100 flex items-center justify-center">
+            <ElAvatar
+              v-if="userStore.basicInfo.avatar"
+              size="large"
+              :src="userStore.basicInfo.avatar"
+              class="workplace-hero__avatar"
+            />
+            <ElIcon v-else :size="40" class="text-g-600">
+              <UserFilled />
+            </ElIcon>
+          </div>
+          <div>
+            <div class="workplace-hero__greeting">
+              {{ timefix }}{{ currentUser.name }}，{{ welcome }}
+            </div>
+            <ElText class="workplace-hero__meta">
+              <p class="text-sm text-g-600">
+                {{ currentUser.username }} · {{ currentUser.dept_name }} ·
+                {{ currentUser.description }} · 今日天气晴朗，气温在15℃至25℃之间，东南风。
+              </p>
+            </ElText>
+          </div>
+        </div>
+
+        <!-- 右侧图标区域 - PC端 -->
+        <div class="hidden shrink-0 sm:block">
+          <div class="flex items-center space-x-6">
+            <!-- 文档 -->
+            <div class="flex flex-col items-center">
+              <div class="flex items-center text-sm font-bold text-[#4080ff]">
+                <ElIcon class="mr-0.5"><Document /></ElIcon>
+                文档
+              </div>
+              <div class="mt-3 whitespace-nowrap">
+                <ElLink
+                  href="https://blog.csdn.net/weixin_46768253/article/details/149569141?spm=1001.2014.3001.5502"
+                  target="_blank"
+                >
+                  <FaSvgIcon :icon="resolveIconForFaSvgIcon('csdn')" class="text-lg" />
+                </ElLink>
               </div>
             </div>
-            <div class="workplace-hero__actions">
-              <div class="workplace-hero__login">
-                <div class="workplace-hero__login-label">最近登录</div>
-                <div class="workplace-hero__login-time">{{ currentUser.last_login }}</div>
+            <!-- 仓库 -->
+            <div class="flex flex-col items-center">
+              <div class="flex items-center text-sm font-bold text-[#ff9a2e]">
+                <ElIcon class="mr-0.5">
+                  <Folder />
+                </ElIcon>
+                仓库
+              </div>
+              <div class="mt-3 whitespace-nowrap">
+                <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
+                  <FaSvgIcon
+                    :icon="resolveIconForFaSvgIcon('gitee')"
+                    class="text-lg text-[#F76560]"
+                  />
+                </ElLink>
+                <ElDivider direction="vertical" />
+                <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
+                  <FaSvgIcon
+                    :icon="resolveIconForFaSvgIcon('github')"
+                    class="text-lg text-[#4080FF]"
+                  />
+                </ElLink>
+                <ElDivider direction="vertical" />
+                <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
+                  <FaSvgIcon
+                    :icon="resolveIconForFaSvgIcon('gitcode')"
+                    class="text-lg text-[#FF9A2E]"
+                  />
+                </ElLink>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 移动端图标区域 -->
+        <div class="w-full sm:hidden">
+          <div class="flex justify-end space-x-4 overflow-x-auto">
+            <!-- 仓库图标 -->
+            <ElLink href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank">
+              <FaSvgIcon :icon="resolveIconForFaSvgIcon('gitee')" class="text-lg text-[#F76560]" />
+            </ElLink>
+            <ElDivider direction="vertical" />
+            <ElLink href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank">
+              <FaSvgIcon :icon="resolveIconForFaSvgIcon('github')" class="text-lg text-[#4080FF]" />
+            </ElLink>
+            <ElDivider direction="vertical" />
+            <ElLink href="https://gitcode.com/qq_36002987/FastapiAdmin" target="_blank">
+              <FaSvgIcon
+                :icon="resolveIconForFaSvgIcon('gitcode')"
+                class="text-lg text-[#FF9A2E]"
+              />
+            </ElLink>
+          </div>
+        </div>
+      </div>
+    </ElCard>
+
+    <!-- 数据统计 -->
+    <ElRow :gutter="16" class="mt-4">
+      <!-- 在线用户数量 -->
+      <ElCol :span="8" :xs="24" class="mb-3 sm:mb-0">
+        <ElCard shadow="hover" class="h-full flex flex-col">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <span class="text-g-600">在线用户</span>
+              <ElTag type="danger" size="small">实时</ElTag>
+            </div>
+          </template>
+
+          <div class="flex items-center justify-between mt-2 flex-1">
+            <div class="flex items-center">
+              <span class="text-lg transition-all duration-300 hover:scale-110">9999</span>
+              <span v-if="true" class="ml-2 text-xs text-success">
+                <ElIcon>
+                  <Connection />
+                </ElIcon>
+                已连接
+              </span>
+              <span v-else class="ml-2 text-xs text-danger">
+                <ElIcon>
+                  <Failed />
+                </ElIcon>
+                未连接
+              </span>
+            </div>
+            <FaSvgIcon
+              :icon="resolveIconForFaSvgIcon('people')"
+              class="size-8 animate-[pulse_2s_infinite]"
+            />
+          </div>
+
+          <div class="flex items-center justify-between mt-2 text-sm text-g-600">
+            <span>更新时间</span>
+            <span>2025-07-12 00:00:00</span>
+          </div>
         </ElCard>
+      </ElCol>
+
+      <!-- 访客数(UV) -->
+      <ElCol :span="8" :xs="24" class="mb-3 sm:mb-0">
+        <ElSkeleton :loading="visitStatsLoading" :rows="5" animated>
+          <template #template>
+            <ElCard>
+              <template #header>
+                <div>
+                  <ElSkeletonItem variant="h3" style="width: 40%" />
+                  <ElSkeletonItem variant="rect" style="float: right; width: 1em; height: 1em" />
+                </div>
+              </template>
+
+              <div class="flex items-center justify-between">
+                <ElSkeletonItem variant="text" style="width: 30%" />
+                <ElSkeletonItem variant="circle" style="width: 2em; height: 2em" />
+              </div>
+              <div class="mt-5 flex items-center justify-between">
+                <ElSkeletonItem variant="text" style="width: 50%" />
+                <ElSkeletonItem variant="text" style="width: 1em" />
+              </div>
+            </ElCard>
+          </template>
+          <template v-if="!visitStatsLoading">
+            <ElCard shadow="hover" class="h-full flex flex-col">
+              <template #header>
+                <div class="flex items-center justify-between">
+                  <span class="text-g-600">访客数(UV)</span>
+                  <ElTag type="success" size="small">日</ElTag>
+                </div>
+              </template>
+
+              <div class="flex items-center justify-between mt-2 flex-1">
+                <div class="flex items-center">
+                  <span class="text-lg">{{ Math.round(transitionUvCount) }}</span>
+                  <span
+                    :class="[
+                      'text-xs',
+                      'ml-2',
+                      computeGrowthRateClass(visitStatsData.uvGrowthRate),
+                    ]"
+                  >
+                    <ElIcon>
+                      <Top v-if="visitStatsData.uvGrowthRate > 0" />
+                      <Bottom v-else-if="visitStatsData.uvGrowthRate < 0" />
+                    </ElIcon>
+                    {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
+                  </span>
+                </div>
+                <FaSvgIcon :icon="resolveIconForFaSvgIcon('visitor')" class="size-8" />
+              </div>
+
+              <div class="flex items-center justify-between mt-2 text-sm text-g-600">
+                <span>总访客数</span>
+                <span>{{ Math.round(transitionTotalUvCount) }}</span>
+              </div>
+            </ElCard>
+          </template>
+        </ElSkeleton>
+      </ElCol>
+
+      <!-- 浏览量(PV) -->
+      <ElCol :span="8" :xs="24">
+        <ElSkeleton :loading="visitStatsLoading" :rows="5" animated>
+          <template #template>
+            <ElCard>
+              <template #header>
+                <div>
+                  <ElSkeletonItem variant="h3" style="width: 40%" />
+                  <ElSkeletonItem variant="rect" style="float: right; width: 1em; height: 1em" />
+                </div>
+              </template>
+
+              <div class="flex items-center justify-between">
+                <ElSkeletonItem variant="text" style="width: 30%" />
+                <ElSkeletonItem variant="circle" style="width: 2em; height: 2em" />
+              </div>
+              <div class="mt-5 flex items-center justify-between">
+                <ElSkeletonItem variant="text" style="width: 50%" />
+                <ElSkeletonItem variant="text" style="width: 1em" />
+              </div>
+            </ElCard>
+          </template>
+          <template v-if="!visitStatsLoading">
+            <ElCard shadow="hover" class="h-full flex flex-col">
+              <template #header>
+                <div class="flex items-center justify-between">
+                  <span class="text-g-600">浏览量(PV)</span>
+                  <ElTag type="primary" size="small">日</ElTag>
+                </div>
+              </template>
+
+              <div class="flex items-center justify-between mt-2 flex-1">
+                <div class="flex items-center">
+                  <span class="text-lg">{{ Math.round(transitionPvCount) }}</span>
+                  <span
+                    :class="[
+                      'text-xs',
+                      'ml-2',
+                      computeGrowthRateClass(visitStatsData.pvGrowthRate),
+                    ]"
+                  >
+                    <ElIcon>
+                      <Top v-if="visitStatsData.pvGrowthRate > 0" />
+                      <Bottom v-else-if="visitStatsData.pvGrowthRate < 0" />
+                    </ElIcon>
+                    {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
+                  </span>
+                </div>
+                <FaSvgIcon :icon="resolveIconForFaSvgIcon('browser')" class="size-8" />
+              </div>
+
+              <div class="flex items-center justify-between mt-2 text-sm text-g-600">
+                <span>总浏览量</span>
+                <span>{{ Math.round(transitionTotalPvCount) }}</span>
+              </div>
+            </ElCard>
+          </template>
+        </ElSkeleton>
       </ElCol>
     </ElRow>
 
-    <ElRow :gutter="16" class="mt-4 workplace-module-row">
-      <ElCol :xs="24" :lg="16">
-        <ElCard class="workplace-modules-card workplace-surface" shadow="hover">
+    <ElRow :gutter="16" class="mt-4">
+      <!-- 访问趋势统计图 -->
+      <ElCol :xs="24" :span="8">
+        <ElCard>
           <template #header>
-            <div>
-              <span class="workplace-panel-title">模块入口</span>
-              <p class="workplace-section-sub workplace-section-sub--inline">
-                按业务域进入；灰色表示暂无该域权限（完整列表见左侧导航）
-              </p>
+            <div class="flex items-center justify-between">
+              <span>访问趋势</span>
+              <ElRadioGroup v-model="visitTrendDateRange" size="small">
+                <ElRadioButton :value="7">近7天</ElRadioButton>
+                <ElRadioButton :value="30">近30天</ElRadioButton>
+              </ElRadioGroup>
             </div>
           </template>
-          <div class="workplace-module-grid">
-            <div
-              v-for="mod in moduleGroupEntries"
-              :key="mod.key"
-              class="workplace-module-card"
-              :class="{ 'is-disabled': !mod.entryPath }"
-              role="button"
-              :tabindex="mod.entryPath ? 0 : -1"
-              @click="goModuleEntry(mod.entryPath)"
-              @keydown.enter.prevent="goModuleEntry(mod.entryPath)"
-              @keydown.space.prevent="goModuleEntry(mod.entryPath)"
-            >
-              <div class="workplace-module-card__icon">
-                <ElIcon :size="26">
-                  <component :is="moduleGroupIcons[mod.key as keyof typeof moduleGroupIcons]" />
-                </ElIcon>
-              </div>
-              <div class="workplace-module-card__body">
-                <span class="workplace-module-card__name">{{ mod.title }}</span>
-                <span class="workplace-module-card__desc">{{ mod.subtitle }}</span>
-                <span v-if="mod.entryPath" class="workplace-module-card__hint">
-                  将进入：{{ mod.entryLabel || "—" }}
-                </span>
-                <span v-else class="workplace-module-card__hint workplace-module-card__hint--muted">
-                  暂无该域权限
-                </span>
-              </div>
-              <ElIcon class="workplace-module-card__arrow" :size="16">
-                <Right />
-              </ElIcon>
-            </div>
-          </div>
+          <ECharts :options="visitTrendChartOptions" height="calc(100vh - 550px)" />
         </ElCard>
       </ElCol>
-      <ElCol :xs="24" :lg="8" class="workplace-bookmarks-col">
-        <ElCard class="workplace-bookmarks-card workplace-surface" shadow="hover">
+      <!-- 最新动态 -->
+      <ElCol :xs="24" :span="8">
+        <ElCard>
+          <template #header>
+            <div class="flex items-center justify-between">
+              <span class="header-title">最新动态</span>
+              <ElLink
+                type="primary"
+                underline="never"
+                href="https://gitee.com/fastapiadmin/FastapiAdmin/releases"
+                target="_blank"
+              >
+                完整记录
+                <ElIcon class="link-icon">
+                  <TopRight />
+                </ElIcon>
+              </ElLink>
+            </div>
+          </template>
+
+          <ElScrollbar height="calc(100vh - 550px)">
+            <ElTimeline class="p-2">
+              <ElTimelineItem
+                v-for="(item, index) in vesionList"
+                :key="index"
+                :timestamp="item.date"
+                placement="top"
+                :color="index === 0 ? '#67C23A' : '#909399'"
+                :hollow="index !== 0"
+              >
+                <div class="version-item" :class="{ 'latest-item': index === 0 }">
+                  <div class="flex items-center justify-between">
+                    <ElText tag="strong">{{ item.title }}</ElText>
+                    <ElTag v-if="item.tag" :type="index === 0 ? 'success' : 'info'" size="small">
+                      {{ item.tag }}
+                    </ElTag>
+                  </div>
+
+                  <ElText class="version-content">{{ item.content }}</ElText>
+
+                  <div v-if="item.link">
+                    <ElLink
+                      :type="index === 0 ? 'primary' : 'info'"
+                      :href="item.link"
+                      target="_blank"
+                      underline="never"
+                    >
+                      详情
+                      <ElIcon class="link-icon">
+                        <TopRight />
+                      </ElIcon>
+                    </ElLink>
+                  </div>
+                </div>
+              </ElTimelineItem>
+            </ElTimeline>
+          </ElScrollbar>
+        </ElCard>
+      </ElCol>
+
+      <ElCol :xs="24" :span="8">
+        <ElCard>
           <template #header>
             <div class="workplace-bookmarks-card__header">
               <div>
                 <span class="workplace-panel-title workplace-bookmarks-card__title-line">
                   <ElIcon class="workplace-bookmarks-card__star" :size="18"><Star /></ElIcon>
                   我的收藏
+                  <p class="workplace-section-sub workplace-section-sub--inline">
+                    最多 {{ QUICK_LINK_MAX }} 个 · 标签栏星标添加 · 仅本机
+                  </p>
                   <ElTag
                     v-if="quickLinks.length > 0"
                     type="info"
@@ -105,9 +367,6 @@
                     {{ quickLinks.length }}/{{ QUICK_LINK_MAX }}
                   </ElTag>
                 </span>
-                <p class="workplace-section-sub workplace-section-sub--inline">
-                  最多 {{ QUICK_LINK_MAX }} 个 · 标签栏星标添加 · 仅本机
-                </p>
               </div>
               <div class="workplace-bookmarks-card__header-actions">
                 <ElTooltip content="在顶部标签栏左侧星标上点击，可加入或取消收藏" placement="top">
@@ -122,9 +381,9 @@
               </div>
             </div>
           </template>
-          <div class="workplace-module-bookmarks">
+          <div style="height: calc(100vh - 550px)">
             <template v-if="quickLinks.length > 0">
-              <div class="workplace-quick-list workplace-quick-list--hub">
+              <div>
                 <ElTooltip
                   v-for="(item, index) in quickLinks"
                   :key="item.id || `${item.href}-${index}`"
@@ -171,7 +430,7 @@
                 </ElTooltip>
               </div>
             </template>
-            <ElEmpty v-else :image-size="48" class="workplace-module-bookmarks__empty">
+            <ElEmpty v-else :image-size="48">
               <template #description>
                 <p class="workplace-quick-empty__title">暂无收藏</p>
                 <p class="workplace-quick-empty__hint">
@@ -185,7 +444,66 @@
         </ElCard>
       </ElCol>
     </ElRow>
+  </div>
 
+  <div class="ecommerce mt-4">
+    <ElRow :gutter="20">
+      <ElCol :sm="24" :md="24" :lg="16">
+        <Banner />
+      </ElCol>
+      <ElCol :sm="12" :md="12" :lg="4">
+        <TotalOrderVolume />
+      </ElCol>
+      <ElCol :sm="12" :md="12" :lg="4">
+        <TotalProducts />
+      </ElCol>
+    </ElRow>
+
+    <ElRow :gutter="20">
+      <ElCol :sm="12" :md="12" :lg="8">
+        <SalesTrend />
+      </ElCol>
+      <ElCol :sm="12" :md="12" :lg="8">
+        <SalesClassification />
+      </ElCol>
+      <ElCol :sm="24" :md="24" :lg="8">
+        <ElRow :gutter="20">
+          <ElCol :sm="24" :md="12" :lg="12">
+            <ProductSales />
+          </ElCol>
+          <ElCol :sm="24" :md="12" :lg="12">
+            <SalesGrowth />
+          </ElCol>
+          <ElCol :span="24" class="no-margin-bottom">
+            <CartConversionRate />
+          </ElCol>
+        </ElRow>
+      </ElCol>
+    </ElRow>
+
+    <ElRow :gutter="20">
+      <ElCol :sm="24" :md="12" :lg="8">
+        <HotCommodity />
+      </ElCol>
+      <ElCol :sm="24" :md="12" :lg="8">
+        <AnnualSales />
+      </ElCol>
+      <ElCol :sm="24" :md="24" :lg="8">
+        <TransactionList />
+      </ElCol>
+    </ElRow>
+
+    <ElRow :gutter="20">
+      <ElCol :md="24" :lg="8">
+        <RecentTransaction />
+      </ElCol>
+      <ElCol :md="24" :lg="16" class="no-margin-bottom">
+        <HotProductsList />
+      </ElCol>
+    </ElRow>
+  </div>
+
+  <div class="workplace-page">
     <!-- 横幅组件演示（原 widgets/banners，后续可调整） -->
     <div class="mt-4 workplace-banners-showcase">
       <h2 class="workplace-banners-showcase__title">基础 & 自定义按钮+背景色</h2>
@@ -368,7 +686,6 @@ import { useUserStore } from "@stores/index";
 import MenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
 import Calendar from "@/components/others/fa-calendar/index.vue";
 import { greetings } from "@utils/common";
-import type { MenuTable } from "@/api/module_system/menu";
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -376,15 +693,15 @@ import {
   Delete,
   UserFilled,
   Close,
-  Setting,
-  Monitor,
-  Timer,
-  ChatDotRound,
-  Cpu,
-  Reading,
-  Right,
   Star,
   QuestionFilled,
+  Bottom,
+  Connection,
+  Document,
+  Failed,
+  Folder,
+  Top,
+  TopRight,
 } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { quickStartManager, QUICK_LINK_MAX, type QuickLink } from "@utils/common";
@@ -392,125 +709,237 @@ import bannerIcon2 from "@imgs/3d/icon2.webp";
 import bannerIcon3 from "@imgs/3d/icon3.webp";
 import bannerIcon4 from "@imgs/3d/icon4.webp";
 import bannerIcon5 from "@imgs/3d/icon7.webp";
+import { dayjs } from "element-plus";
+import { formatGrowthRate } from "@utils";
+import { useTransition } from "@vueuse/core";
+import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
+import Banner from "./home/modules/banner.vue";
+import TotalOrderVolume from "./home/modules/total-order-volume.vue";
+import TotalProducts from "./home/modules/total-products.vue";
+import SalesTrend from "./home/modules/sales-trend.vue";
+import SalesClassification from "./home/modules/sales-classification.vue";
+import TransactionList from "./home/modules/transaction-list.vue";
+import HotCommodity from "./home/modules/hot-commodity.vue";
+import RecentTransaction from "./home/modules/recent-transaction.vue";
+import AnnualSales from "./home/modules/annual-sales.vue";
+import ProductSales from "./home/modules/product-sales.vue";
+import SalesGrowth from "./home/modules/sales-growth.vue";
+import CartConversionRate from "./home/modules/cart-conversion-rate.vue";
+import HotProductsList from "./home/modules/hot-products-list.vue";
+
+const timefix = greetings();
+const userStore = useUserStore();
+const { t } = useI18n();
+const router = useRouter();
+
+const welcome = "祝你开心每一天！";
+
+interface VersionItem {
+  id: string;
+  title: string; // 版本标题（如：v2.4.0）
+  date: string; // 发布时间
+  content: string; // 版本描述
+  link: string; // 详情链接
+  tag?: string; // 版本标签（可选）
+}
+
+// 当前通知公告列表
+const vesionList = ref<VersionItem[]>([
+  {
+    id: "1",
+    title: "v3.2.1",
+    date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    content: "优化性能，修复若干小bug。",
+    link: "https://gitee.com/fastapiadmin/FastapiAdmin/releases",
+    tag: "更新",
+  },
+  {
+    id: "2",
+    title: "v3.2.0",
+    date: dayjs().subtract(1, "day").format("YYYY-MM-DD HH:mm:ss"),
+    content: "新增用户行为分析功能。",
+    link: "https://gitee.com/fastapiadmin/FastapiAdmin/releases",
+    tag: "新功能",
+  },
+  {
+    id: "3",
+    title: "v3.1.0",
+    date: dayjs().subtract(3, "day").format("YYYY-MM-DD HH:mm:ss"),
+    content: "优化权限管理系统。",
+    link: "https://gitee.com/fastapiadmin/FastapiAdmin/releases",
+    tag: "优化",
+  },
+]);
+
+// 访客统计数据加载状态
+const visitStatsLoading = ref(true);
+// 访客统计数据
+const visitStatsData = ref({
+  todayUvCount: 0,
+  uvGrowthRate: 0,
+  totalUvCount: 0,
+  todayPvCount: 0,
+  pvGrowthRate: 0,
+  totalPvCount: 0,
+});
+
+// 数字过渡动画
+const transitionUvCount = useTransition(
+  computed(() => visitStatsData.value.todayUvCount),
+  {
+    duration: 1000,
+    transition: [0.25, 0.1, 0.25, 1.0], // CSS cubic-bezier
+  }
+);
+
+const transitionTotalUvCount = useTransition(
+  computed(() => visitStatsData.value.totalUvCount),
+  {
+    duration: 1200,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+const transitionPvCount = useTransition(
+  computed(() => visitStatsData.value.todayPvCount),
+  {
+    duration: 1000,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+const transitionTotalPvCount = useTransition(
+  computed(() => visitStatsData.value.totalPvCount),
+  {
+    duration: 1200,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+// 访问趋势日期范围（单位：天）
+const visitTrendDateRange = ref(7);
+// 访问趋势图表配置
+const visitTrendChartOptions = ref();
 
 /**
- * 工作台「模块总览」与 src/views 下目录对应：
- * module_system / module_monitor / module_task / module_ai / module_application / module_generator / module_example / module_common
+ * 更新访问趋势图表的配置项
+ *
+ * @param data - 访问趋势数据
  */
-interface MenuLeaf {
-  title: string;
-  path: string;
-  icon?: string;
-  component_path?: string;
-  order?: number;
-}
-
-interface WorkplaceModuleGroup {
-  key: string;
-  title: string;
-  subtitle: string;
-  /** 与菜单 component_path 片段匹配（含 views 相对路径） */
-  matchHints: string[];
-}
-
-/** 按「业务域」划分，与前端 views 目录一致 */
-const WORKPLACE_MODULE_GROUPS: WorkplaceModuleGroup[] = [
-  {
-    key: "system",
-    title: "系统管理",
-    subtitle: "用户、角色、菜单、部门、字典、岗位、参数、公告、日志等",
-    matchHints: ["module_system/"],
-  },
-  {
-    key: "monitor",
-    title: "监控运维",
-    subtitle: "服务监控、缓存、在线用户、资源占用等",
-    matchHints: ["module_monitor/"],
-  },
-  {
-    key: "task",
-    title: "任务与流程",
-    subtitle: "定时任务、执行节点、工作流等",
-    matchHints: ["module_task/"],
-  },
-  {
-    key: "ai",
-    title: "AI 助手",
-    subtitle: "对话、记忆管理等",
-    matchHints: ["module_ai/"],
-  },
-  {
-    key: "app",
-    title: "应用与生成",
-    subtitle: "应用管理、代码生成、示例演示等",
-    matchHints: ["module_application/", "module_generator/", "module_example/"],
-  },
-  {
-    key: "docs",
-    title: "文档中心",
-    subtitle: "Swagger / Redoc / 本地文档等",
-    matchHints: ["module_common/"],
-  },
-];
-
-function normalizePath(p: string) {
-  return p.replace(/\\/g, "/");
-}
-
-/**
- * 在已授权的叶子菜单中，按 matchHints 顺序找到第一个可进入的路由
- */
-function resolveEntryPath(
-  leaves: Pick<MenuLeaf, "path" | "component_path">[],
-  hints: string[]
-): string | undefined {
-  for (const hint of hints) {
-    const hit = leaves.find(
-      (l) => l.component_path && normalizePath(l.component_path).includes(hint)
-    );
-    if (hit) return hit.path;
-  }
-  return undefined;
-}
-
-function resolveEntryTitle(leaves: MenuLeaf[], hints: string[]): string | undefined {
-  for (const hint of hints) {
-    const hit = leaves.find(
-      (l) => l.component_path && normalizePath(l.component_path).includes(hint)
-    );
-    if (hit) return hit.title;
-  }
-  return undefined;
-}
-
-/** 叶子菜单扁平化（与侧栏同源），按菜单 order 排序 */
-function flattenLeafMenusFromTree(menus: MenuTable[]): MenuLeaf[] {
-  const seen = new Set<string>();
-  const out: MenuLeaf[] = [];
-  const walk = (items: MenuTable[]) => {
-    for (const m of items) {
-      if (m.hidden) continue;
-      if (m.children?.length) {
-        walk(m.children);
-      } else if (m.title && m.route_path) {
-        const raw = m.route_path.trim();
-        const path = raw.startsWith("/") ? raw : `/${raw}`;
-        if (seen.has(path)) continue;
-        seen.add(path);
-        out.push({
-          title: m.title,
-          path,
-          icon: m.icon,
-          component_path: m.component_path,
-          order: m.order,
-        });
-      }
-    }
+const updateVisitTrendChartOptions = () => {
+  visitTrendChartOptions.value = {
+    tooltip: {
+      trigger: "axis",
+    },
+    legend: {
+      data: ["浏览量(PV)", "访客数(UV)"],
+      bottom: 0,
+    },
+    grid: {
+      left: "1%",
+      right: "5%",
+      bottom: "10%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: Array.from({ length: visitTrendDateRange.value }, (_, index) =>
+        dayjs()
+          .subtract(visitTrendDateRange.value - index - 1, "day")
+          .format("YYYY-MM-DD")
+      ),
+    },
+    yAxis: {
+      type: "value",
+      splitLine: {
+        show: true,
+        lineStyle: {
+          type: "dashed",
+        },
+      },
+    },
+    series: [
+      {
+        name: "浏览量(PV)",
+        type: "line",
+        data: Array.from(
+          { length: visitTrendDateRange.value },
+          () => Math.floor(Math.random() * 500) + 100
+        ),
+        areaStyle: {
+          color: "rgba(64, 158, 255, 0.1)",
+        },
+        smooth: true,
+        itemStyle: {
+          color: "#4080FF",
+        },
+        lineStyle: {
+          color: "#4080FF",
+        },
+      },
+      {
+        name: "访客数(UV)",
+        type: "line",
+        data: Array.from(
+          { length: visitTrendDateRange.value },
+          () => Math.floor(Math.random() * 200) + 50
+        ),
+        areaStyle: {
+          color: "rgba(103, 194, 58, 0.1)",
+        },
+        smooth: true,
+        itemStyle: {
+          color: "#67C23A",
+        },
+        lineStyle: {
+          color: "#67C23A",
+        },
+      },
+    ],
   };
-  walk(menus);
-  out.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  return out;
-}
+};
+
+/**
+ * 根据增长率计算对应的 CSS 类名
+ *
+ * @param growthRate - 增长率数值
+ */
+const computeGrowthRateClass = (growthRate?: number): string => {
+  if (!growthRate) {
+    return "text-[--el-color-info]";
+  }
+  if (growthRate > 0) {
+    return "text-[--el-color-danger]";
+  } else if (growthRate < 0) {
+    return "text-[--el-color-success]";
+  } else {
+    return "text-[--el-color-info]";
+  }
+};
+
+// 监听访问趋势日期范围的变化，重新获取趋势数据
+watch(
+  () => visitTrendDateRange.value,
+  () => {
+    updateVisitTrendChartOptions();
+  },
+  { immediate: true }
+);
+
+// 组件挂载后加载访客统计数据和通知公告数据
+onMounted(() => {
+  visitStatsLoading.value = false;
+  visitStatsData.value = {
+    todayUvCount: Math.floor(Math.random() * 200) + 50,
+    uvGrowthRate: parseFloat((Math.random() * 20 - 10).toFixed(2)),
+    totalUvCount: Math.floor(Math.random() * 5000) + 1000,
+    todayPvCount: Math.floor(Math.random() * 500) + 100,
+    pvGrowthRate: parseFloat((Math.random() * 20 - 10).toFixed(2)),
+    totalPvCount: Math.floor(Math.random() * 20000) + 5000,
+  };
+  updateVisitTrendChartOptions();
+});
 
 /** 横幅演示（原 widgets/banners） */
 function handleBannerDemoClick() {
@@ -555,47 +984,6 @@ const presetBanners = {
     },
   },
 } as const;
-
-const userStore = useUserStore();
-const timefix = greetings();
-const { t } = useI18n();
-const router = useRouter();
-
-const moduleGroupIcons = {
-  system: Setting,
-  monitor: Monitor,
-  task: Timer,
-  ai: ChatDotRound,
-  app: Cpu,
-  docs: Reading,
-};
-
-/** 叶子菜单（与侧栏同源），用于模块域入口解析 */
-const allMenuLeaves = computed(() => flattenLeafMenusFromTree(userStore.routeList));
-
-const moduleGroupEntries = computed(() => {
-  const leaves = allMenuLeaves.value;
-  return WORKPLACE_MODULE_GROUPS.map((g) => ({
-    ...g,
-    entryPath: resolveEntryPath(leaves, g.matchHints),
-    entryLabel: resolveEntryTitle(leaves, g.matchHints),
-  }));
-});
-
-function goModuleEntry(path: string | undefined) {
-  if (!path) {
-    ElMessage.info("当前账号在该模块暂无可用入口，请联系管理员分配权限");
-    return;
-  }
-  goMenuShortcut(path);
-}
-
-function goMenuShortcut(path: string) {
-  if (!path) return;
-  router.push(path).catch(() => {
-    ElMessage.warning("无法打开该页面，请检查路由配置");
-  });
-}
 
 // 快速链接数据
 const quickLinks = ref<QuickLink[]>(quickStartManager.getQuickLinks());
@@ -678,8 +1066,6 @@ onUnmounted(() => {
   quickStartManager.removeListener(updateQuickLinks);
 });
 
-const welcome = "祝你开心每一天！";
-
 const currentUser = {
   avatar:
     userStore.basicInfo.avatar ||
@@ -693,6 +1079,43 @@ const currentUser = {
 </script>
 
 <style scoped lang="scss">
+.dashboard-container {
+  position: relative;
+
+  .github-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    border: 0;
+  }
+
+  .version-item {
+    padding: 10px 12px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &.latest-item {
+      background: var(--el-color-primary-light-9);
+      border: 1px solid var(--el-color-primary-light-5);
+    }
+
+    &:hover {
+      transform: translateX(5px);
+    }
+
+    .version-content {
+      display: block;
+      margin-top: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--el-text-color-secondary);
+    }
+  }
+}
+
 .workplace-section-sub {
   margin: 4px 0 0;
   font-size: 12px;

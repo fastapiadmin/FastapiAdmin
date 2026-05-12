@@ -545,10 +545,8 @@
     },
     "dashboard": {
       "title": "仪表盘",
-      "console": "控制台",
       "analysis": "分析页",
-      "ecommerce": "电子商务",
-      "map": "地图",
+      "visualization": "三维可视化",
       "pricing": "定价",
       "tutorial": "操作手册"
     },

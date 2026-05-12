@@ -1,6 +1,6 @@
 <div align="center">
      <p align="center">
-          <img src="backend/data/logo.png" width="150" height="150" alt="logo" />  
+          <img src="frontend/docs/src/public/logo.png" width="150" height="150" alt="logo" />  
      </p>
      <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v2.0.0</h1>
      <h3>现代化全栈快速开发平台</h3>
@@ -193,16 +193,16 @@ flowchart LR
 
 | 模块名 <div style="width:60px"/> | 截图 |
 | ----- | --- |
-| 登录   | ![仪表盘](backend/data/login.png) |
-| 仪表盘   | ![仪表盘](backend/data/dashboard.png) |
-| 代码生成  | ![代码生成](backend/data/gencode.png) |
-| 智能助手  | ![智能助手](backend/data/ai.png) |
+| 登录   | ![仪表盘](frontend/docs/src/public/login.png) |
+| 仪表盘   | ![仪表盘](frontend/docs/src/public/dashboard.png) |
+| 代码生成  | ![代码生成](frontend/docs/src/public/gencode.png) |
+| 智能助手  | ![智能助手](frontend/docs/src/public/ai.png) |
 
 ### 移动端
 
 | 登录 <div style="width:60px"/> | 首页 <div style="width:60px"/> | 个人中心 <div style="width:60px"/> |
 |----------|----------|----------|
-| ![移动端登录](backend/data/app_login.png) | ![移动端首页](backend/data/app_home.png) | ![移动端个人中心](backend/data/app_mine.png) |
+| ![移动端登录](frontend/docs/src/public/app_login.png) | ![移动端首页](frontend/docs/src/public/app_home.png) | ![移动端个人中心](frontend/docs/src/public/app_mine.png) |
 
 ## 🚀 快速开始
 
@@ -613,7 +613,7 @@ A：使用 `./deploy.sh` 脚本一键部署到生产环境。
 
 | 群组二维码 | 微信支付二维码 |
 | --- | --- |
-| ![群组二维码](backend/data/group.jpg) | ![微信支付二维码](backend/data/wechatPay.jpg) |
+| ![群组二维码](frontend/docs/src/public/group.jpg) | ![微信支付二维码](frontend/docs/src/public/wechatPay.jpg) |
 
 ## ❤️ 支持项目
 

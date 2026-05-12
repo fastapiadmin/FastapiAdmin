@@ -254,8 +254,8 @@ export const useUserStore = defineStore(
       (await getRouterUtils()).resetRouteInitState();
       Auth.setTokens(data.access_token, data.refresh_token, rememberMe.value);
       setToken(data.access_token, data.refresh_token);
-      setLoginStatus(true);
       await getUserInfo();
+      setLoginStatus(true);
     }
 
     /**
