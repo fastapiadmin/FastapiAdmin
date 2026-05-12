@@ -38,6 +38,11 @@ devops/nginx/ssl
 # 本地配置覆盖文件（不提交到版本控制）
 backend/env/.env.dev
 backend/env/.env.prod
+docker/.env
+docker/nginx/ssl/*
+!docker/nginx/ssl/.gitkeep
 frontend/.env.development
 frontend/.env.production
-docker-compose.yaml
+
+# 备份文件
+backups/
