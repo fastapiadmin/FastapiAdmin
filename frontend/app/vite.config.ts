@@ -15,8 +15,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import { defineConfig } from 'vite'
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './',
-  // base: "/app",
+  base: '/app',
   optimizeDeps: {
     exclude: process.env.NODE_ENV === 'development' ? ['wot-design-uni', 'uni-echarts'] : [],
   },
