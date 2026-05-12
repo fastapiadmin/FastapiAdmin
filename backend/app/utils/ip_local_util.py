@@ -94,13 +94,6 @@ class IpLocalUtil:
                     result = response.json().get("data", {})
                     return f"{result.get('country', '')}-{result.get('prov', '')}-{result.get('city', '')}-{result.get('area', '')}-{result.get('isp', '')}"
 
-                # 备用：ip-api.com（免费，无需 Key，45次/分钟）
-                url = f"http://ip-api.com/json/{ip}?lang=zh-CN"
-                response = await cls._make_api_request(client, url)
-                if response and response.json().get("status") == "success":
-                    data = response.json()
-                    return f"{data.get('country', '')}-{data.get('regionName', '')}-{data.get('city', '')}-{data.get('isp', '')}"
-
         except Exception as e:
             log.error(f"获取IP归属地失败: {e}")
             return "未知"

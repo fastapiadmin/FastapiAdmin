@@ -8,8 +8,8 @@
   .fa-table__main {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
     padding-top: 10px;
+    overflow: hidden;
 
     // VueDraggable 透传高度，确保 ElTable height: 100% 能正确解析
     > * {

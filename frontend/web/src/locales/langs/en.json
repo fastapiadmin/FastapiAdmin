@@ -545,10 +545,8 @@
     },
     "dashboard": {
       "title": "Dashboard",
-      "console": "Console",
       "analysis": "Analysis",
-      "ecommerce": "Ecommerce",
-      "map": "Map",
+      "visualization": "3D Visualization",
       "pricing": "Pricing",
       "tutorial": "User manual"
     },
