@@ -41,6 +41,7 @@ ENV PYTHONUNBUFFERED=1 \
 RUN groupadd -r fastapiadmin && \
     useradd -r -g fastapiadmin -u 1001 -m -s /sbin/nologin fastapiadmin && \
     mkdir -p /home/logs && \
+    chown fastapiadmin:fastapiadmin /home/logs && \
     chmod 755 /home/logs
 
 WORKDIR /home
