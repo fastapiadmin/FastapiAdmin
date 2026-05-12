@@ -52,14 +52,14 @@ check_deps() {
 }
 
 pull_code() {
+    cd "${WORK_DIR}"
+
     local script_md5=""
     if command -v md5sum &>/dev/null; then
         script_md5=$(md5sum "$0" | awk '{print $1}')
     elif command -v md5 &>/dev/null; then
         script_md5=$(md5 -q "$0")
     fi
-
-    cd "${WORK_DIR}"
     if [ -d ".git" ]; then
         log "分支: $(git rev-parse --abbrev-ref HEAD)"
         git fetch origin || true
