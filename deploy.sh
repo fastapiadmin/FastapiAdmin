@@ -180,10 +180,33 @@ update_code() {
     if [ -d ".git" ]; then
         local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
         log "📂 当前Git分支: ${current_branch}" "INFO"
+
+        # 记录更新前的 deploy.sh MD5，判断脚本本身是否有变更
+        local script_checksum_before=""
+        if command -v md5sum &> /dev/null; then
+            script_checksum_before=$(md5sum "$0" 2>/dev/null | awk '{print $1}')
+        elif command -v md5 &> /dev/null; then
+            script_checksum_before=$(md5 -q "$0" 2>/dev/null)
+        fi
+
         git fetch origin || { log "⚠️  获取远程分支失败" "WARN"; }
         git pull || { log "❌ 拉取更新失败" "ERROR"; exit 1; }
         local commit_info=$(git log -1 --oneline 2>/dev/null || echo "无法获取提交信息")
         log "📝 最新提交: ${commit_info}" "INFO"
+
+        # 如果 deploy.sh 自身有更新，重新执行新版本
+        if [ -n "${script_checksum_before}" ]; then
+            local script_checksum_after=""
+            if command -v md5sum &> /dev/null; then
+                script_checksum_after=$(md5sum "$0" 2>/dev/null | awk '{print $1}')
+            elif command -v md5 &> /dev/null; then
+                script_checksum_after=$(md5 -q "$0" 2>/dev/null)
+            fi
+            if [ -n "${script_checksum_after}" ] && [ "${script_checksum_before}" != "${script_checksum_after}" ]; then
+                log "🔄 deploy.sh 已更新，重新执行新版本..." "WARN"
+                exec "$0" "$@"
+            fi
+        fi
     else
         log "📥 初始化Git仓库..." "INFO"
         git init
