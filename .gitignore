@@ -44,5 +44,4 @@ docker/nginx/ssl/*
 frontend/.env.development
 frontend/.env.production
 
-# 备份文件
-backups/
+
