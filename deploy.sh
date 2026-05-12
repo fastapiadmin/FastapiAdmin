@@ -449,9 +449,9 @@ show_containers_logs() {
     log "📊 当前容器状态：" "INFO"
     docker compose ps --format "table {{.Service}}\t{{.Name}}\t{{.Status}}\t{{.Ports}}"
 
-    log "📋 服务日志：" "INFO"
+    log "📋 服务日志（最近 50 行，实时跟踪请用 docker compose logs -f [服务名]）：" "INFO"
     echo "----------------------------------------"
-    docker compose logs
+    docker compose logs --tail=50 --no-log-prefix 2>/dev/null || docker compose logs --tail=50
     echo "----------------------------------------"
 }
 

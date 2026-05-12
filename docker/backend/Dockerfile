@@ -45,15 +45,12 @@ RUN groupadd -r fastapiadmin && \
 
 WORKDIR /home
 
-# 从构建阶段复制依赖
-COPY --from=builder /home/deps /home/deps
+# 从构建阶段复制依赖（直接指定所有者，避免后续 chown）
+COPY --from=builder --chown=fastapiadmin:fastapiadmin /home/deps /home/deps
 ENV PYTHONPATH=/home/deps:$PYTHONPATH
 
-# 复制应用代码
-COPY ./backend/ .
-
-# 更改文件所有权
-RUN chown -R fastapiadmin:fastapiadmin /home
+# 复制应用代码（一步到位设置所有者，省去 chmod -R 耗时）
+COPY --chown=fastapiadmin:fastapiadmin ./backend/ .
 
 # 切换到非 root 用户
 USER fastapiadmin
@@ -62,6 +59,6 @@ EXPOSE 8001
 
 # 容器健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/v1/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/common/health')" || exit 1
 
 CMD ["python", "main.py", "run", "--env=prod"]
