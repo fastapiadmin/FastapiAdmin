@@ -390,9 +390,9 @@ class ComplianceScoringServiceV1:
         """将之前的诊断记录标记为非最新"""
         from sqlalchemy import update
 
-        from app.core.database import async_session
+        from app.core.database import async_db_session
 
-        async with async_session() as session:
+        async with async_db_session() as session:
             await session.execute(
                 update(ComplianceDiagnosisModel)
                 .where(ComplianceDiagnosisModel.consultation_id == consultation_id)
@@ -407,9 +407,9 @@ class ComplianceScoringServiceV1:
         """更新咨询会的合规评分"""
         from sqlalchemy import update
 
-        from app.core.database import async_session
+        from app.core.database import async_db_session
 
-        async with async_session() as session:
+        async with async_db_session() as session:
             await session.execute(
                 update(ConsultationInfoModel)
                 .where(ConsultationInfoModel.id == consultation_id)
@@ -434,10 +434,10 @@ class ComplianceScoringServiceV1:
         返回:
         - dict[int, ComplianceScoreResult]: 诊断结果字典
         """
-        from app.core.database import async_session
+        from app.core.database import async_db_session
 
         results = {}
-        async with async_session() as session:
+        async with async_db_session() as session:
             for consultation_id in consultation_ids:
                 try:
                     # 获取咨询会信息

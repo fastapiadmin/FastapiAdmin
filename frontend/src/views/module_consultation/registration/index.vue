@@ -257,14 +257,41 @@
       width="550px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="咨询会ID" prop="consultation_id">
-          <el-input-number v-model="form.consultation_id" :min="1" style="width: 200px" />
+        <el-form-item label="咨询会" prop="consultation_id">
+          <el-select
+            v-model="form.consultation_id"
+            placeholder="请选择咨询会"
+            filterable
+            clearable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in consultationOptions"
+              :key="item.id"
+              :label="`${item.title} (${item.start_date}${item.city ? ' - ' + item.city : ''})`"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="高校ID" prop="university_id">
-          <el-input-number v-model="form.university_id" :min="1" style="width: 200px" />
+        <el-form-item label="高校" prop="university_id">
+          <el-select
+            v-model="form.university_id"
+            placeholder="请选择高校"
+            filterable
+            clearable
+            style="width: 100%"
+            @change="handleUniversityChange"
+          >
+            <el-option
+              v-for="item in universityOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="高校名称" prop="university_name">
-          <el-input v-model="form.university_name" placeholder="请输入高校名称" />
+          <el-input v-model="form.university_name" placeholder="请输入高校名称" readonly />
         </el-form-item>
         <el-form-item label="联系人" prop="contact_person">
           <el-input v-model="form.contact_person" placeholder="请输入联系人" />
@@ -379,7 +406,11 @@ import { reactive, ref, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import RegistrationAPI from "@/api/module_consultation/registration";
+import ConsultationInfoAPI from "@/api/module_consultation/consultation";
+import UniversityAPI from "@/api/module_consultation/university";
 import type { RegistrationItem, RegistrationQuery } from "@/api/module_consultation/registration";
+import type { ConsultationOption } from "@/api/module_consultation/consultation";
+import type { UniversityOption } from "@/api/module_consultation/university";
 
 const searchForm = reactive<RegistrationQuery>({
   consultation_id: undefined,
@@ -394,6 +425,10 @@ const loading = ref(false);
 const tableData = ref<RegistrationItem[]>([]);
 const selectedIds = ref<number[]>([]);
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 });
+
+// 下拉选项数据
+const consultationOptions = ref<ConsultationOption[]>([]);
+const universityOptions = ref<UniversityOption[]>([]);
 
 const formDialog = reactive({
   visible: false,
@@ -476,11 +511,11 @@ const handlePageChange = (page: number) => {
   fetchList();
 };
 
-const getStatusType = (status: string) => {
+const getStatusType = (status: string): "info" | "success" | "danger" | "warning" => {
   if (status === "pending") return "info";
   if (status === "approved") return "success";
   if (status === "rejected") return "danger";
-  return "";
+  return "info";
 };
 const getStatusLabel = (status: string) => {
   if (status === "pending") return "待审核";
@@ -489,7 +524,7 @@ const getStatusLabel = (status: string) => {
   return status;
 };
 
-const handleCreate = () => {
+const handleCreate = async () => {
   formDialog.type = "create";
   Object.assign(form, {
     consultation_id: undefined,
@@ -501,7 +536,37 @@ const handleCreate = () => {
     booth_number: "",
     booth_size: "",
   });
+  // 加载下拉选项
+  await loadOptions();
   formDialog.visible = true;
+};
+
+// 加载下拉选项
+const loadOptions = async () => {
+  try {
+    // 加载已审核咨询会列表
+    const consultationRes = await ConsultationInfoAPI.getApprovedOptions();
+    if (consultationRes.data?.data) {
+      consultationOptions.value = consultationRes.data.data;
+    }
+    // 加载高校列表
+    const universityRes = await UniversityAPI.getOptions();
+    if (universityRes.data?.data) {
+      universityOptions.value = universityRes.data.data;
+    }
+  } catch (error) {
+    console.error("加载下拉选项失败:", error);
+  }
+};
+
+// 高校选择变化处理
+const handleUniversityChange = (universityId: number) => {
+  const selected = universityOptions.value.find((item) => item.id === universityId);
+  if (selected) {
+    form.university_name = selected.name;
+  } else {
+    form.university_name = "";
+  }
 };
 
 const handleView = (row: RegistrationItem) => {

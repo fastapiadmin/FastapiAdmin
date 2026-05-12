@@ -8,8 +8,8 @@ from app.core.base_schema import BaseSchema
 from app.core.validator import DateTimeStr, menu_request_validator
 
 
-class MenuCreateSchema(BaseModel):
-    """菜单创建模型"""
+class MenuCommonSchema(BaseModel):
+    """菜单字段公共定义（创建/更新/出参共用，不含写入强校验）"""
 
     name: str = Field(..., max_length=50, description="菜单名称")
     type: int = Field(..., ge=1, le=4, description="菜单类型(1:目录 2:菜单 3:按钮 4:外链)")
@@ -70,6 +70,10 @@ class MenuCreateSchema(BaseModel):
                     raise ValueError("组件路径不能以 / 开头")
         return values
 
+
+class MenuCreateSchema(MenuCommonSchema):
+    """菜单创建模型（含类型与路由等写入校验）"""
+
     @model_validator(mode="after")
     def validate_fields(self):
         """
@@ -90,8 +94,8 @@ class MenuUpdateSchema(MenuCreateSchema):
     parent_name: str | None = Field(default=None, max_length=50, description="父菜单名称")
 
 
-class MenuOutSchema(MenuCreateSchema, BaseSchema):
-    """菜单响应模型"""
+class MenuOutSchema(MenuCommonSchema, BaseSchema):
+    """菜单响应模型（不对历史库数据套用创建时的必填规则）"""
 
     model_config = ConfigDict(from_attributes=True)
 

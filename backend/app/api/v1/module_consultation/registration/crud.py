@@ -136,11 +136,12 @@ class RegistrationCRUD(
     async def get_by_consultation_and_university(
         self, consultation_id: int, university_id: int
     ) -> RegistrationModel | None:
-        """根据咨询会和高校获取报名记录"""
+        """是否存在仍在流程中的同校同会报名（待审核/已通过则不可重复提交）。"""
         result = await self.list(
             search={
-                "consultation_id": (consultation_id, "eq"),
-                "university_id": (university_id, "eq"),
+                "consultation_id": ("eq", consultation_id),
+                "university_id": ("eq", university_id),
+                "registration_status": ("in", ["pending", "approved"]),
             }
         )
         return result[0] if result else None

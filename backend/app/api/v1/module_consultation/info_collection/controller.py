@@ -19,6 +19,7 @@ from .schema import (
     InfoCollectionCreateSchema,
     InfoCollectionOutSchema,
     InfoCollectionQueryParam,
+    InfoCollectionSimpleOutSchema,
     InfoCollectionUpdateSchema,
     ThirdPartyUploadSchema,
 )
@@ -495,3 +496,20 @@ async def crawl_controller(
     result_dict = await InfoCollectionService.crawl_and_save_service(auth=auth)
     log.info(f"手动触发爬虫抓取完成: {result_dict}")
     return SuccessResponse(data=result_dict, msg="抓取完成")
+
+
+@InfoCollectionRouter.get(
+    "/approved-options",
+    summary="获取已审核咨询会下拉选项",
+    description="获取已审核状态的咨询会列表，用于报名表单选择",
+    response_model=ResponseSchema[list[InfoCollectionSimpleOutSchema]],
+)
+async def get_approved_options_controller(
+    auth: Annotated[
+        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:query"]))
+    ],
+) -> JSONResponse:
+    """获取已审核咨询会下拉选项"""
+    result_list = await InfoCollectionService.get_approved_list_service(auth=auth)
+    log.info("获取已审核咨询会下拉选项成功")
+    return SuccessResponse(data=result_list, msg="获取选项成功")

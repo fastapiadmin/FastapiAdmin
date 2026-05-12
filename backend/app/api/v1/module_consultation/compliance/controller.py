@@ -193,12 +193,12 @@ async def score_consultation_controller(
     - 多所高中联合、有第三方机构：6-9分
     - 多家第三方机构：3-6分
     """
-    from app.core.database import async_session
+    from app.core.database import async_db_session
 
     from ..info_collection.model import ConsultationInfoModel
     from .scoring_service import ComplianceScoringServiceV1
 
-    async with async_session() as session:
+    async with async_db_session() as session:
         # 获取咨询会信息
         consultation = await session.get(ConsultationInfoModel, consultation_id)
         if not consultation:

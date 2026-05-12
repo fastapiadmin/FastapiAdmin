@@ -11,6 +11,7 @@ from .info_collection.controller import InfoCollectionRouter
 from .itinerary.controller import ItineraryRouter
 from .registration.controller import RegistrationRouter
 from .screening.controller import ScreeningRouter
+from .university.controller import UniversityRouter
 
 consultation_router = APIRouter()
 
@@ -29,5 +30,8 @@ consultation_router.include_router(RegistrationRouter)
 # 注册合规诊断路由
 consultation_router.include_router(ComplianceDiagnosisRouter)
 consultation_router.include_router(ComplianceRuleRouter)
+
+# 注册高校管理路由
+consultation_router.include_router(UniversityRouter)
 
 __all__ = ["consultation_router"]

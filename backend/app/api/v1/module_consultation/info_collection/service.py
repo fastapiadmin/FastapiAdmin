@@ -545,3 +545,25 @@ class InfoCollectionService:
             "total_saved": total_saved,
             "total_skipped": total_skipped,
         }
+
+    @classmethod
+    async def get_approved_list_service(cls, auth: AuthSchema) -> list[dict]:
+        """
+        获取已审核的咨询会列表（用于报名下拉选择）
+
+        参数:
+        - auth (AuthSchema): 认证信息模型
+
+        返回:
+        - list[dict]: 已审核咨询会简要信息列表
+        """
+        from app.common.enums import QueueEnum
+
+        from .schema import InfoCollectionSimpleOutSchema
+
+        search = {"status": (QueueEnum.eq.value, InfoStatus.APPROVED.value)}
+        obj_list = await InfoCollectionCRUD(auth).list_crud(
+            search=search,
+            order_by=[{"start_date": "asc"}],
+        )
+        return [InfoCollectionSimpleOutSchema.model_validate(obj).model_dump() for obj in obj_list]

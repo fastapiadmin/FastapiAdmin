@@ -80,7 +80,7 @@ class ScreeningCRUD(
 
     async def get_default_crud(self) -> ScreeningFilterModel | None:
         """获取默认筛选"""
-        result = await self.list(search={"is_default": (True, "eq")})
+        result = await self.list(search={"is_default": ("eq", True)})
         return result[0] if result else None
 
     async def _clear_default(self) -> None:

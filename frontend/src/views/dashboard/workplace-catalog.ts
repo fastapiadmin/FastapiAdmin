@@ -2,7 +2,7 @@ import type { MenuTable } from "@/api/module_system/menu";
 
 /**
  * 工作台「模块总览」与 src/views 下目录对应：
- * module_system / module_monitor / module_task / module_ai / module_application / module_generator / module_example / module_common
+ * module_system / module_monitor / module_task / module_ai / module_application / module_generator / module_example / module_common / module_consultation
  */
 export interface MenuLeaf {
   title: string;
@@ -57,6 +57,12 @@ export const WORKPLACE_MODULE_GROUPS: WorkplaceModuleGroup[] = [
     title: "文档中心",
     subtitle: "Swagger / Redoc / 本地文档等",
     matchHints: ["module_common/"],
+  },
+  {
+    key: "consultation",
+    title: "招生咨询会",
+    subtitle: "咨询会信息、报名、行程、高校库、合规诊断等",
+    matchHints: ["module_consultation/"],
   },
 ];
 

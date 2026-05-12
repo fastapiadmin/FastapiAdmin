@@ -101,7 +101,9 @@ class BaseCrawler(ABC):
                         parsed_list.append(parsed)
                 except Exception as e:
                     log.warning(f"[{self.source_name}] 解析单条数据失败: {e}")
-            log.info(f"[{self.source_name}] 抓取完成: 原始 {len(raw_list)} 条，有效 {len(parsed_list)} 条")
+            log.info(
+                f"[{self.source_name}] 抓取完成: 原始 {len(raw_list)} 条，有效 {len(parsed_list)} 条"
+            )
             return parsed_list
         except Exception as e:
             log.error(f"[{self.source_name}] 抓取失败: {e}", exc_info=True)

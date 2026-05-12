@@ -89,7 +89,7 @@ class ComplianceDiagnosisCRUD(
     ) -> ComplianceDiagnosisModel | None:
         """获取某咨询会的最新诊断"""
         result = await self.list(
-            search={"consultation_id": (consultation_id, "eq"), "is_latest": (True, "eq")}
+            search={"consultation_id": ("eq", consultation_id), "is_latest": ("eq", True)}
         )
         return result[0] if result else None
 
@@ -164,7 +164,7 @@ class ComplianceRuleCRUD(
 
     async def get_active_rules_crud(self) -> list[ComplianceRuleModel]:
         """获取所有启用的规则"""
-        return await self.list(search={"is_active": (True, "eq")}, order_by=[{"order": "asc"}])
+        return await self.list(search={"is_active": ("eq", True)}, order_by=[{"order": "asc"}])
 
     async def toggle_status_crud(self, id: int) -> ComplianceRuleModel:
         """切换规则启用状态"""

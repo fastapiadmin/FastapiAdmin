@@ -104,6 +104,14 @@ const ConsultationInfoAPI = {
       method: "post",
     });
   },
+
+  /** 获取已审核咨询会下拉选项 */
+  getApprovedOptions() {
+    return request<ApiResponse<ConsultationOption[]>>({
+      url: `${API_PATH}/approved-options`,
+      method: "get",
+    });
+  },
 };
 
 export default ConsultationInfoAPI;
@@ -220,4 +228,20 @@ export interface CrawlResult {
   total_saved: number;
   /** 跳过重复数 */
   total_skipped: number;
+}
+
+/** 咨询会下拉选项 */
+export interface ConsultationOption {
+  /** 咨询会ID */
+  id: number;
+  /** 咨询会标题 */
+  title: string;
+  /** 开始日期 */
+  start_date: string;
+  /** 结束日期 */
+  end_date?: string;
+  /** 城市 */
+  city?: string;
+  /** 详细地址 */
+  address?: string;
 }

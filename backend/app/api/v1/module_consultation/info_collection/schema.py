@@ -211,3 +211,16 @@ class InfoCollectionQueryParam:
         # 时间范围查询
         if created_time and len(created_time) == 2:
             self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
+
+
+class InfoCollectionSimpleOutSchema(BaseModel):
+    """咨询会简要信息（用于下拉选择）"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="咨询会ID")
+    title: str = Field(..., description="咨询会标题")
+    start_date: DateStr = Field(..., description="开始日期")
+    end_date: DateStr | None = Field(default=None, description="结束日期")
+    city: str | None = Field(default=None, description="城市")
+    address: str | None = Field(default=None, description="详细地址")

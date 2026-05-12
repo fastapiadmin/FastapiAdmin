@@ -354,6 +354,55 @@ def main():
             )
             print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
 
+        # 7. 添加二级菜单 - 高校信息
+        print("\n📝 添加二级菜单...")
+        university_id = insert_menu(
+            cursor=cursor,
+            name="高校信息",
+            menu_type=2,
+            order=6,
+            permission="module_consultation:university:query",
+            icon="office-building",
+            route_name="ConsultationUniversity",
+            route_path="/consultation/university",
+            component_path="module_consultation/university/index",
+            hidden=False,
+            keep_alive=True,
+            always_show=False,
+            title="高校信息",
+            parent_id=parent_menu_id,
+            status="0",
+            description="咨询会参与高校维护",
+        )
+        print(f"✅ 高校信息 添加成功，ID: {university_id}")
+
+        university_buttons = [
+            ("查询", "module_consultation:university:query"),
+            ("详情", "module_consultation:university:detail"),
+            ("新增", "module_consultation:university:create"),
+            ("编辑", "module_consultation:university:update"),
+            ("删除", "module_consultation:university:delete"),
+        ]
+        for btn_name, btn_perm in university_buttons:
+            btn_id = insert_menu(
+                cursor=cursor,
+                name=btn_name,
+                menu_type=3,
+                order=1,
+                permission=btn_perm,
+                icon=None,
+                route_name=None,
+                route_path=None,
+                component_path=None,
+                hidden=False,
+                keep_alive=True,
+                always_show=False,
+                title=btn_name,
+                parent_id=university_id,
+                status="0",
+            )
+            print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
+
         # 提交事务
         conn.commit()
         print("\n" + "=" * 50)
