@@ -86,14 +86,13 @@ docker/
 1. 检查脚本权限
 2. 加载环境变量
 3. 检查系统依赖并创建必要目录
-4. **备份数据库**（备份到 `backups/` 目录，保留最近 7 天）
-5. 停止现有容器
-6. 更新代码
-7. 构建前端（可选，默认跳过）
-8. 构建 Docker 镜像
-9. 启动容器
-10. 验证部署
-11. 显示日志
+4. 停止现有容器
+5. 更新代码
+6. 构建前端（可选，默认跳过）
+7. 构建 Docker 镜像
+8. 启动容器
+9. 验证部署
+10. 显示日志
 
 ### 2. 命令选项
 
@@ -173,39 +172,6 @@ docker compose logs -f [服务名]
 各容器的日志会被 Docker 自动轮转，限制为每个容器最多保留 3 个日志文件，每个最大 10MB。
 如有需要，可在 `docker-compose.yaml` 中调整 `logging` 配置。
 
-## 数据库备份与恢复
-
-### 自动备份
-
-执行完整部署流程时，脚本会自动在停服前备份数据库，备份文件保存在 `backups/` 目录：
-
-```bash
-backups/
-├── fastapiadmin_20240101_120000.sql.gz
-├── fastapiadmin_20240102_120000.sql.gz
-└── .env.backup.20240101_120000   # 环境变量备份
-```
-
-自动清理策略：保留最近 **7 天** 的备份。
-
-### 手动备份
-
-```bash
-cd docker
-docker compose exec mysql mysqldump \
-  -u fastapiadmin -p'your_password' \
-  --single-transaction --routines --triggers \
-  fastapiadmin | gzip > ../backups/manual_backup.sql.gz
-```
-
-### 恢复备份
-
-```bash
-cd docker
-cat ../backups/fastapiadmin_20240101_120000.sql.gz | gunzip | \
-  docker compose exec -T mysql mysql -u fastapiadmin -p'your_password' fastapiadmin
-```
-
 ## 常见问题
 
 ### 1. 环境变量文件不存在
@@ -257,8 +223,7 @@ sudo chmod -R 755 docker/mysql/data
 2. **保护 `.env` 文件**：本部署已将 `docker/.env` 加入 `.gitignore`，请勿手动提交
 3. **使用正规 SSL 证书**：生产中不要使用自签名证书
 4. **限制端口访问**：通过防火墙只开放 80/443 端口
-5. **定期备份**：建议将 `backups/` 目录定期同步到异地存储
-6. **及时更新**：定期执行部署脚本获取最新版本
+5. **及时更新**：定期执行部署脚本获取最新版本
 
 ## 版本更新
 
@@ -269,7 +234,6 @@ sudo chmod -R 755 docker/mysql/data
 ```
 
 脚本会自动：
-1. 备份当前数据库
-2. 拉取最新代码
-3. 构建新镜像
-4. 重启容器
+1. 拉取最新代码
+2. 构建新镜像
+3. 重启容器

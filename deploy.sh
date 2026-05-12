@@ -116,7 +116,7 @@ check_permissions() {
     log "==========🔍 检查系统依赖...==========" "INFO"
 
     # 创建必要的持久化目录
-    for dir in "${DOCKER_DIR}/mysql/data" "${DOCKER_DIR}/redis/data" "${WORK_DIR}/backups" ; do
+    for dir in "${DOCKER_DIR}/mysql/data" "${DOCKER_DIR}/redis/data" ; do
         if [ ! -d "$dir" ]; then
             mkdir -p "$dir"
             log "📁 创建目录: ${dir}" "INFO"
@@ -382,43 +382,6 @@ restart_containers() {
     docker compose ps
 }
 
-# 备份数据库
-backup_database() {
-    log "==========💾 备份数据库...==========" "INFO"
-    local backup_dir="${WORK_DIR}/backups"
-    local timestamp=$(date '+%Y%m%d_%H%M%S')
-    mkdir -p "${backup_dir}"
-
-    if docker compose ps mysql --format '{{.Status}}' 2>/dev/null | grep -q "healthy"; then
-        local db_user="${MYSQL_USER:-fastapiadmin}"
-        local db_password="${MYSQL_PASSWORD}"
-        local db_name="${MYSQL_DATABASE:-fastapiadmin}"
-        local backup_file="${backup_dir}/${db_name}_${timestamp}.sql.gz"
-
-        log "📦 备份数据库 ${db_name} 到 ${backup_file}" "INFO"
-        docker compose exec -T mysql mysqldump \
-            -u"${db_user}" -p"${db_password}" \
-            --single-transaction \
-            --routines \
-            --triggers \
-            --events \
-            "${db_name}" | gzip > "${backup_file}"
-        log "✅ 数据库备份完成: ${backup_file}" "SUCCESS"
-
-        # 保留最近 7 天备份，清理旧的
-        find "${backup_dir}" -name "*.sql.gz" -type f -mtime +7 -delete
-        log "🗑️ 已清理 7 天前的旧备份" "INFO"
-    else
-        log "⚠️  MySQL 未运行，跳过数据库备份" "WARN"
-    fi
-
-    # 备份 .env 文件
-    if [ -f "${ENV_FILE}" ]; then
-        cp "${ENV_FILE}" "${backup_dir}/.env.backup.${timestamp}"
-        log "✅ 环境变量配置已备份" "INFO"
-    fi
-}
-
 # 清理旧镜像
 clear_old_images() {
     log "==========🗑️ 清理旧镜像...==========" "INFO"
@@ -528,11 +491,6 @@ main() {
     DEPLOY_STATUS="检查系统依赖"
     log "==========🔍 开始${DEPLOY_STATUS}...==========" "INFO"
     check_permissions
-    log "✅ ${DEPLOY_STATUS}完成" "INFO"
-
-    DEPLOY_STATUS="备份数据库"
-    log "==========💾 开始${DEPLOY_STATUS}...==========" "INFO"
-    backup_database
     log "✅ ${DEPLOY_STATUS}完成" "INFO"
 
     DEPLOY_STATUS="停止现有容器"
@@ -664,14 +622,13 @@ while [[ $# -gt 0 ]]; do
             echo "  1. 检查脚本权限"
             echo "  2. 加载环境变量"
             echo "  3. 检查系统依赖"
-            echo "  4. 备份数据库"
-            echo "  5. 停止现有容器"
-            echo "  6. 更新代码"
-            echo "  7. 构建前端（默认跳过，使用已上传的静态文件）"
-            echo "  8. 构建镜像"
-            echo "  9. 启动容器"
-            echo "  10. 验证部署"
-            echo "  11. 显示日志"
+            echo "  4. 停止现有容器"
+            echo "  5. 更新代码"
+            echo "  6. 构建前端（默认跳过，使用已上传的静态文件）"
+            echo "  7. 构建镜像"
+            echo "  8. 启动容器"
+            echo "  9. 验证部署"
+            echo "  10. 显示日志"
             echo ""
             echo "日志查看命令："
             echo "  查看实时日志：docker compose logs -f [服务名]"
