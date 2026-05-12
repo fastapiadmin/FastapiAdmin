@@ -126,7 +126,7 @@ check_permissions() {
     local missing_deps=()
     local optional_deps_missing=()
 
-    for cmd in git docker docker-compose; do
+    for cmd in git docker; do
         if ! command -v $cmd &> /dev/null; then
             missing_deps+=($cmd)
             log "❌ $cmd 未安装" "ERROR"
@@ -136,12 +136,14 @@ check_permissions() {
         fi
     done
 
-    if command -v docker &> /dev/null; then
-        if docker compose version &> /dev/null; then
-            log "🎉 docker compose 已安装 - $(docker compose version | head -n1)" "INFO"
-        elif docker-compose --version &> /dev/null; then
-            log "🎉 docker-compose 已安装 - $(docker-compose --version | head -n1)" "INFO"
-        fi
+    # 检查 docker compose（v2 带空格）或 docker-compose（v1 带短横线）
+    if docker compose version &> /dev/null; then
+        log "🎉 docker compose 已安装 - $(docker compose version | head -n1)" "INFO"
+    elif docker-compose --version &> /dev/null; then
+        log "🎉 docker-compose 已安装 - $(docker-compose --version | head -n1)" "INFO"
+    else
+        missing_deps+=("docker compose")
+        log "❌ docker compose / docker-compose 未安装" "ERROR"
     fi
 
     if [ -d "frontend/web" ] || [ -d "frontend/app" ] || [ -d "frontend/docs" ]; then
