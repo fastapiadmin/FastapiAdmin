@@ -172,6 +172,7 @@
     "vite-plugin-vue-devtools": "^7.7.6",
     "vue-demi": "^0.14.9",
     "vue-eslint-parser": "^10.2.0",
+    "vue-img-cutter": "^3",
     "vue-tsc": "^2.2.12"
   },
   "packageManager": "pnpm@9.15.3",
