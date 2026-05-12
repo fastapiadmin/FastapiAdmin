@@ -114,6 +114,15 @@ load_env() {
 # 检查系统依赖
 check_permissions() {
     log "==========🔍 检查系统依赖...==========" "INFO"
+
+    # 创建必要的持久化目录
+    for dir in "${DOCKER_DIR}/mysql/data" "${DOCKER_DIR}/redis/data" "${WORK_DIR}/backups" ; do
+        if [ ! -d "$dir" ]; then
+            mkdir -p "$dir"
+            log "📁 创建目录: ${dir}" "INFO"
+        fi
+    done
+
     local missing_deps=()
     local optional_deps_missing=()
 
@@ -170,7 +179,7 @@ update_code() {
         local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
         log "📂 当前Git分支: ${current_branch}" "INFO"
         git fetch origin || { log "⚠️  获取远程分支失败" "WARN"; }
-        git pull --force || { log "❌ 拉取更新失败" "ERROR"; exit 1; }
+        git pull || { log "❌ 拉取更新失败" "ERROR"; exit 1; }
         local commit_info=$(git log -1 --oneline 2>/dev/null || echo "无法获取提交信息")
         log "📝 最新提交: ${commit_info}" "INFO"
     else
@@ -225,9 +234,9 @@ build_frontend() {
         mkdir -p "${WORK_DIR}/docker/nginx/web"
 
         if [ -d "dist" ]; then
-            rm -rf "${WORK_DIR}/docker/nginx/web"/*
-            mv -f "dist"/* "${WORK_DIR}/docker/nginx/web/" || { log "❌ 移动前端打包到docker/nginx/web目录失败" "ERROR"; cd ..; exit 1; }
-            log "✅ 前端打包文件已移动到 docker/nginx/web" "INFO"
+            rm -rf "${WORK_DIR}/docker/nginx/web/dist"
+            mv -f "dist" "${WORK_DIR}/docker/nginx/web/" || { log "❌ 移动前端打包到docker/nginx/web目录失败" "ERROR"; cd ..; exit 1; }
+            log "✅ 前端打包文件已移动到 docker/nginx/web/dist" "INFO"
         fi
 
         cd .. || { log "❌ 无法返回项目根目录" "ERROR"; exit 1; }
@@ -247,9 +256,9 @@ build_frontend() {
         mkdir -p "${WORK_DIR}/docker/nginx/app"
 
         if [ -d "dist" ]; then
-            rm -rf "${WORK_DIR}/docker/nginx/app"/*
-            mv -f "dist"/* "${WORK_DIR}/docker/nginx/app/" || { log "❌ 移动小程序打包到docker/nginx/app目录失败" "ERROR"; cd ..; exit 1; }
-            log "✅ 小程序打包文件已移动到 docker/nginx/app" "INFO"
+            rm -rf "${WORK_DIR}/docker/nginx/app/dist"
+            mv -f "dist" "${WORK_DIR}/docker/nginx/app/" || { log "❌ 移动小程序打包到docker/nginx/app目录失败" "ERROR"; cd ..; exit 1; }
+            log "✅ 小程序打包文件已移动到 docker/nginx/app/dist" "INFO"
         fi
 
         cd .. || { log "❌ 无法返回项目根目录" "ERROR"; exit 1; }
@@ -269,9 +278,9 @@ build_frontend() {
         mkdir -p "${WORK_DIR}/docker/nginx/docs"
 
         if [ -d "dist" ]; then
-            rm -rf "${WORK_DIR}/docker/nginx/docs"/*
-            mv -f "dist"/* "${WORK_DIR}/docker/nginx/docs/" || { log "❌ 移动项目文档打包到docker/nginx/docs目录失败" "ERROR"; cd ..; exit 1; }
-            log "✅ 项目文档打包文件已移动到 docker/nginx/docs" "INFO"
+            rm -rf "${WORK_DIR}/docker/nginx/docs/dist"
+            mv -f "dist" "${WORK_DIR}/docker/nginx/docs/" || { log "❌ 移动项目文档打包到docker/nginx/docs目录失败" "ERROR"; cd ..; exit 1; }
+            log "✅ 项目文档打包文件已移动到 docker/nginx/docs/dist" "INFO"
         fi
 
         cd .. || { log "❌ 无法返回项目根目录" "ERROR"; exit 1; }
@@ -348,18 +357,62 @@ restart_containers() {
     docker compose ps
 }
 
+# 备份数据库
+backup_database() {
+    log "==========💾 备份数据库...==========" "INFO"
+    local backup_dir="${WORK_DIR}/backups"
+    local timestamp=$(date '+%Y%m%d_%H%M%S')
+    mkdir -p "${backup_dir}"
+
+    if docker compose ps mysql --format '{{.Status}}' 2>/dev/null | grep -q "healthy"; then
+        local db_user="${MYSQL_USER:-fastapiadmin}"
+        local db_password="${MYSQL_PASSWORD}"
+        local db_name="${MYSQL_DATABASE:-fastapiadmin}"
+        local backup_file="${backup_dir}/${db_name}_${timestamp}.sql.gz"
+
+        log "📦 备份数据库 ${db_name} 到 ${backup_file}" "INFO"
+        docker compose exec -T mysql mysqldump \
+            -u"${db_user}" -p"${db_password}" \
+            --single-transaction \
+            --routines \
+            --triggers \
+            --events \
+            "${db_name}" | gzip > "${backup_file}"
+        log "✅ 数据库备份完成: ${backup_file}" "SUCCESS"
+
+        # 保留最近 7 天备份，清理旧的
+        find "${backup_dir}" -name "*.sql.gz" -type f -mtime +7 -delete
+        log "🗑️ 已清理 7 天前的旧备份" "INFO"
+    else
+        log "⚠️  MySQL 未运行，跳过数据库备份" "WARN"
+    fi
+
+    # 备份 .env 文件
+    if [ -f "${ENV_FILE}" ]; then
+        cp "${ENV_FILE}" "${backup_dir}/.env.backup.${timestamp}"
+        log "✅ 环境变量配置已备份" "INFO"
+    fi
+}
+
 # 清理旧镜像
 clear_old_images() {
     log "==========🗑️ 清理旧镜像...==========" "INFO"
-    local project_images=$(docker images | grep ${PROJECT_NAME} | awk '{print $3}' | wc -l)
-    if [ $project_images -gt 0 ]; then
-        local before_count=$(docker images | grep ${PROJECT_NAME} | wc -l)
-        docker image prune -f --filter "until=72h" --filter "label=com.docker.compose.project=${PROJECT_NAME}" >/dev/null 2>&1 || true
-        local after_count=$(docker images | grep ${PROJECT_NAME} | wc -l)
-        local cleaned_count=$((before_count - after_count))
-        log "✅ 旧镜像清理完成，清理了 ${cleaned_count} 个镜像" "SUCCESS"
+
+    # 清理悬空镜像（无标签镜像）
+    local dangling_count=$(docker images -f "dangling=true" -q | wc -l)
+    if [ "${dangling_count}" -gt 0 ]; then
+        docker image prune -f >/dev/null 2>&1 || true
+        log "✅ 已清理 ${dangling_count} 个悬空镜像" "INFO"
+    fi
+
+    # 清理 30 天前的旧镜像（保留最近 3 个版本）
+    local before_count=$(docker images | grep -E "backend" | wc -l)
+    if [ "${before_count}" -gt 3 ]; then
+        docker images --format '{{.Repository}}:{{.Tag}}' | grep -E "backend" | \
+            tail -n +4 | xargs -r docker rmi >/dev/null 2>&1 || true
+        log "✅ 已清理旧版本镜像，保留最近 3 个版本" "SUCCESS"
     else
-        log "⚠️  没有找到项目相关镜像，跳过清理" "WARN"
+        log "ℹ️  项目镜像数量正常（${before_count} 个），无需清理" "INFO"
     fi
 }
 
@@ -452,6 +505,11 @@ main() {
     check_permissions
     log "✅ ${DEPLOY_STATUS}完成" "INFO"
 
+    DEPLOY_STATUS="备份数据库"
+    log "==========💾 开始${DEPLOY_STATUS}...==========" "INFO"
+    backup_database
+    log "✅ ${DEPLOY_STATUS}完成" "INFO"
+
     DEPLOY_STATUS="停止现有容器"
     log "==========⏹️ 开始${DEPLOY_STATUS}...==========" "INFO"
     stop_containers
@@ -462,10 +520,10 @@ main() {
     update_code
     log "✅ ${DEPLOY_STATUS}完成" "INFO"
 
-    DEPLOY_STATUS="构建前端"
-    log "==========🚀 开始${DEPLOY_STATUS}...==========" "INFO"
-    build_frontend
-    log "✅ ${DEPLOY_STATUS}完成" "INFO"
+    # DEPLOY_STATUS="构建前端"
+    # log "==========🚀 开始${DEPLOY_STATUS}...==========" "INFO"
+    # build_frontend
+    # log "✅ ${DEPLOY_STATUS}完成" "INFO"
 
     DEPLOY_STATUS="构建镜像"
     log "==========🔨 开始${DEPLOY_STATUS}...==========" "INFO"
@@ -581,13 +639,14 @@ while [[ $# -gt 0 ]]; do
             echo "  1. 检查脚本权限"
             echo "  2. 加载环境变量"
             echo "  3. 检查系统依赖"
-            echo "  4. 停止现有容器"
-            echo "  5. 更新代码"
-            echo "  6. 构建前端（默认跳过，使用已上传的静态文件）"
-            echo "  7. 构建镜像"
-            echo "  8. 启动容器"
-            echo "  9. 验证部署"
-            echo "  10. 显示日志"
+            echo "  4. 备份数据库"
+            echo "  5. 停止现有容器"
+            echo "  6. 更新代码"
+            echo "  7. 构建前端（默认跳过，使用已上传的静态文件）"
+            echo "  8. 构建镜像"
+            echo "  9. 启动容器"
+            echo "  10. 验证部署"
+            echo "  11. 显示日志"
             echo ""
             echo "日志查看命令："
             echo "  查看实时日志：docker compose logs -f [服务名]"

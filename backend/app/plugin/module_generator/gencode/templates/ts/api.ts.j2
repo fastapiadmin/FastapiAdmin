@@ -1,28 +1,28 @@
-import request from "@/utils/request";
+import request from "@utils/http";
 
 // API 前缀来自分系统包 module_xxx → /xxx
 // 对齐 module_example/demo：业务接口固定为 /{prefix}/{module_name}
 const API_PATH = "/{{ api_route_prefix }}/{{ module_name }}";
 
 const {{ class_name }}API = {
-  // 列表查询
-  list{{ class_name }}(query: {{ class_name }}PageQuery) {
-    return request<ApiResponse<PageResult<{{ class_name }}Table[]>>>({
+  /** 获取列表 */
+  get{{ class_name }}List(query: {{ class_name }}PageQuery) {
+    return request<ApiResponse<PageResult<{{ class_name }}Table>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,
     });
   },
 
-  // 详情查询
-  detail{{ class_name }}(id: number) {
+  /** 获取详情 */
+  get{{ class_name }}Detail(id: number) {
     return request<ApiResponse<{{ class_name }}Table>>({
       url: `${API_PATH}/detail/${id}`,
       method: "get",
     });
   },
 
-  // 新增
+  /** 新增 */
   create{{ class_name }}(body: {{ class_name }}Form) {
     return request<ApiResponse>({
       url: `${API_PATH}/create`,
@@ -31,7 +31,7 @@ const {{ class_name }}API = {
     });
   },
 
-  // 修改（带主键）
+  /** 修改 */
   update{{ class_name }}(id: number, body: {{ class_name }}Form) {
     return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
@@ -40,7 +40,7 @@ const {{ class_name }}API = {
     });
   },
 
-  // 删除（支持批量）
+  /** 删除（支持批量） */
   delete{{ class_name }}(ids: number[]) {
     return request<ApiResponse>({
       url: `${API_PATH}/delete`,
@@ -49,7 +49,7 @@ const {{ class_name }}API = {
     });
   },
 
-  // 批量启用/停用
+  /** 批量启用/停用 */
   batch{{ class_name }}(body: BatchType) {
     return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
@@ -58,7 +58,7 @@ const {{ class_name }}API = {
     });
   },
 
-  // 导出
+  /** 导出 Excel */
   export{{ class_name }}(query: {{ class_name }}PageQuery) {
     return request<Blob>({
       url: `${API_PATH}/export`,
@@ -68,7 +68,7 @@ const {{ class_name }}API = {
     });
   },
 
-  // 下载导入模板
+  /** 下载导入模板 */
   downloadTemplate{{ class_name }}() {
     return request<Blob>({
       url: `${API_PATH}/download/template`,
@@ -77,13 +77,15 @@ const {{ class_name }}API = {
     });
   },
 
-  // 导入
+  /** 导入 Excel */
   import{{ class_name }}(body: FormData) {
     return request<ApiResponse>({
       url: `${API_PATH}/import`,
       method: "post",
       data: body,
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
   },
 };
@@ -94,13 +96,11 @@ export default {{ class_name }}API;
 // TS 类型声明
 // ------------------------------
 
-// 列表查询参数
+/** 列表查询参数 */
 export interface {{ class_name }}PageQuery extends PageQuery {
   {% for column in columns %}
-  {# query_type 为 BETWEEN 的字段由范围查询或单独字段表达，勿生成标量；勿使用不存在的 column.column #}
-  {# 主键列默认不参与查询（避免 id 混入搜索类型）；若确需查询请在模板中单独放开 #}
+  {# 主键列默认不参与查询 #}
   {% if column.is_query and column.column_name != pk_column_name and column.query_type != "BETWEEN" and column.column_name not in ['created_time', 'updated_time'] %}
-  {# LIKE 走字符串；EQ 等与列 python_type 一致（来自 DB→Python 映射） #}
   {{ column.column_name }}?: {{
     'string' if column.query_type == 'LIKE'
     else (column.python_type | python_to_ts_type)
@@ -109,13 +109,12 @@ export interface {{ class_name }}PageQuery extends PageQuery {
   {% endfor %}
   created_time?: string[];
   updated_time?: string[];
+  created_id?: number;
+  updated_id?: number;
 }
 
-// 列表展示项
+/** 列表展示项 */
 export interface {{ class_name }}Table extends BaseType {
-  {% if pk_column_name != 'id' and pk_column %}
-  {{ pk_column_name }}?: {{ pk_column.python_type | python_to_ts_type }};
-  {% endif %}
   {% for column in columns %}
   {% if column.column_name not in ['id', 'uuid', 'status', 'description', 'created_time', 'updated_time'] and column.column_name != pk_column_name %}
   {{ column.column_name }}?: {{ column.python_type | python_to_ts_type }};
@@ -126,11 +125,8 @@ export interface {{ class_name }}Table extends BaseType {
   deleted_by?: CommonType;
 }
 
-// 新增/修改/详情表单参数
+/** 新增/修改表单参数 */
 export interface {{ class_name }}Form extends BaseFormType {
-  {% if pk_column_name != 'id' and pk_column %}
-  {{ pk_column_name }}?: {{ pk_column.python_type | python_to_ts_type }};
-  {% endif %}
   {% for column in columns %}
   {% if (column.is_insert or column.is_edit) and column.column_name not in ['uuid', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
   {{ column.column_name }}?: {{ column.python_type | python_to_ts_type }};
