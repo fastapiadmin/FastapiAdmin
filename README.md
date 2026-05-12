@@ -193,6 +193,7 @@ flowchart LR
 
 | 模块名 <div style="width:60px"/> | 截图 |
 | ----- | --- |
+| 登录   | ![仪表盘](backend/data/login.png) |
 | 仪表盘   | ![仪表盘](backend/data/dashboard.png) |
 | 代码生成  | ![代码生成](backend/data/gencode.png) |
 | 智能助手  | ![智能助手](backend/data/ai.png) |
