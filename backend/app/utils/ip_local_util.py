@@ -57,7 +57,7 @@ class IpLocalUtil:
         """
         if not ip:
             return None
-        if settings.DEBUG:
+        if settings.DEBUG or not settings.IP_LOCATION_ENABLE:
             return (
                 "内网IP"
                 if cls.is_private_ip(ip)
@@ -86,7 +86,7 @@ class IpLocalUtil:
             return "内网IP"
 
         try:
-            async with httpx.AsyncClient(timeout=5) as client:
+            async with httpx.AsyncClient(timeout=settings.HTTPX_DEFAULT_TIMEOUT) as client:
                 # 首选：ip9.com.cn API
                 url = f"https://ip9.com.cn/get?ip={ip}"
                 response = await cls._make_api_request(client, url)
