@@ -106,10 +106,9 @@ services:
       REDIS_PORT: "6379"
     ports:
       - "${BACKEND_PORT:-8001}:8001"
-    # 生产环境建议注释掉以下卷挂载，使用镜像内代码；
-    # 开发调试时可取消注释，实现代码热更新
-    # volumes:
-    #   - ../backend:/home
+    # 挂载宿主机代码到容器（热更新，生产环境保留以便读取 .env.prod 等配置文件）
+    volumes:
+      - ../backend:/home
     depends_on:
       mysql:
         condition: service_healthy

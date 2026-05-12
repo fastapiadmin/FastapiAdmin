@@ -37,24 +37,14 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     TZ=Asia/Shanghai
 
-# 创建非 root 用户和日志目录
-RUN groupadd -r fastapiadmin && \
-    useradd -r -g fastapiadmin -u 1001 -m -s /sbin/nologin fastapiadmin && \
-    mkdir -p /home/logs && \
-    chown fastapiadmin:fastapiadmin /home/logs && \
-    chmod 755 /home/logs
-
 WORKDIR /home
 
-# 从构建阶段复制依赖（直接指定所有者，避免后续 chown）
-COPY --from=builder --chown=fastapiadmin:fastapiadmin /home/deps /home/deps
+# 从构建阶段复制依赖
+COPY --from=builder /home/deps /home/deps
 ENV PYTHONPATH=/home/deps:$PYTHONPATH
 
-# 复制应用代码（一步到位设置所有者，省去 chmod -R 耗时）
-COPY --chown=fastapiadmin:fastapiadmin ./backend/ .
-
-# 切换到非 root 用户
-USER fastapiadmin
+# 复制应用代码（运行时由 volume 覆盖，此处仅作为镜像兜底）
+COPY ./backend/ .
 
 EXPOSE 8001
 
