@@ -9,7 +9,7 @@ export interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
   {
-    version: "v3.0.2",
+    version: "v3.0.0",
     title: "问题修复、表单与路由体验优化",
     date: "2026-03-15",
     detail: [
@@ -27,7 +27,7 @@ export const upgradeLogList = ref<UpgradeLog[]>([
     ],
   },
   {
-    version: "v3.0.1",
+    version: "v2.6.3",
     title: "bug修复、新增功能",
     date: "2025-11-15",
     detail: [
@@ -51,7 +51,7 @@ export const upgradeLogList = ref<UpgradeLog[]>([
     ],
   },
   {
-    version: "v3.0.0",
+    version: "v2.6.2",
     title: "Sass 重构为 Tailwind CSS，Iconfont 替换为 Iconify，性能，目录结构，文件注释全方位优化",
     date: "2025-11-9",
     requireReLogin: true,

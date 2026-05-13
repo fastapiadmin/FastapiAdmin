@@ -1,4 +1,4 @@
-declare module "@wangeditor/editor-for-vue" {
+declare module "@wangeditor-next/editor-for-vue" {
   import type { DefineComponent } from "vue";
 
   export const Editor: DefineComponent<Record<string, unknown>, any, any>;
