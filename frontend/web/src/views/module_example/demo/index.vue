@@ -381,6 +381,7 @@ const {
       page_size: 10,
     },
     columnsFactory: (): ColumnOption<DemoTable>[] => [
+      { type: "globalIndex", width: 56, label: "序号" },
       { type: "selection", width: 48, fixed: "left" },
       { prop: "id", label: "ID", width: 72 },
       { prop: "name", label: "名称", minWidth: 120, showOverflowTooltip: true },

@@ -24,6 +24,7 @@
       :header-cell-style="{ background: 'transparent' }"
     >
       <template #default>
+        <ElTableColumn type="index" label="序号" width="60" />
         <ElTableColumn label="头像" prop="avatar" width="150px">
           <template #default="scope">
             <div style="display: flex; align-items: center">

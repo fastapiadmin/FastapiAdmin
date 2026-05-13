@@ -446,6 +446,7 @@ const {
     },
     columnsFactory: (): ColumnOption<DictDataTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "dict_label", label: "标签", minWidth: 150, showOverflowTooltip: true },
       {
         prop: "status",

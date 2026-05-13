@@ -1,7 +1,7 @@
 <template>
   <FaBasicBanner
     class="justify-center !h-53 mb-5 max-sm:!pt-8 max-sm:!h-48 max-sm:mb-4"
-    :title="`欢迎回来 ${userInfo?.name}`"
+    :title="`欢迎回来 ${userInfo?.username}`"
     boxStyle="!bg-theme/10"
     titleColor="var(--fa-gray-900)"
     :decoration="false"
@@ -54,7 +54,7 @@ const userStore = useUserStore();
 /**
  * 获取当前用户信息
  */
-const userInfo = computed(() => userStore.getUserInfo);
+const userInfo = computed(() => userStore.basicInfo);
 
 /**
  * 处理横幅点击事件

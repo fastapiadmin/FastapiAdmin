@@ -616,6 +616,7 @@ const {
     },
     columnsFactory: (): import("@/types/component").ColumnOption<UserInfo>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       {
         prop: "avatar",
         label: "头像",

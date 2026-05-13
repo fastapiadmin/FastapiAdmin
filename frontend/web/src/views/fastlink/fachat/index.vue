@@ -125,7 +125,7 @@
         </div>
 
         <!-- 聊天输入区域 -->
-        <div class="p-4">
+        <div class="p-4 flex-shrink-0">
           <ElInput
             v-model="messageText"
             type="textarea"
@@ -171,7 +171,7 @@ import avatar9 from "@imgs/avatar/avatar9.webp";
 import avatar10 from "@imgs/avatar/avatar10.webp";
 import { useAutoLayoutHeight } from "@/hooks/core/useLayoutHeight";
 
-defineOptions({ name: "TemplateChat" });
+defineOptions({ name: "FastlinkFachat" });
 
 const { containerMinHeight } = useAutoLayoutHeight();
 

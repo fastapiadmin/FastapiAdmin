@@ -345,6 +345,7 @@ const {
     },
     columnsFactory: (): ColumnOption<NoticeTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "notice_title", label: "通知标题", minWidth: 140, showOverflowTooltip: true },
       {
         prop: "status",

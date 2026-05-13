@@ -114,6 +114,8 @@ export interface FastEnterBaseItem {
   routeQuery?: Record<string, string>;
   /** 外部链接 */
   link?: string;
+  /** 点击弹出介绍弹窗（代替路由跳转） */
+  isDialog?: boolean;
 }
 
 // 快速入口应用项

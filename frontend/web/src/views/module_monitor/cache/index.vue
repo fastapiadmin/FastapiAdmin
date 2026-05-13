@@ -145,7 +145,7 @@
                   </div>
                 </template>
                 <div class="cache-table-wrap">
-                  <ElTable :loading="loading" :data="cacheNames" row-key="cache_name" height="100%">
+                  <ElTable :loading="loading" :data="cacheNames" row-key="cache_name">
                     <template #empty>
                       <ElEmpty :image-size="80" description="暂无数据" />
                     </template>
@@ -219,7 +219,6 @@
                     :loading="subLoading"
                     :data="cacheKeys.map((key) => ({ cacheKey: key }))"
                     row-key="cacheKey"
-                    height="100%"
                   >
                     <template #empty>
                       <ElEmpty :image-size="80" description="暂无数据" />
@@ -549,8 +548,32 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+// 让 el-tabs 填满父容器高度
+.fa-full-height {
+  :deep(.el-tabs) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+
+    > .el-tabs__content {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+
+      > .el-tab-pane {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
 .monitor-tab {
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -560,7 +583,6 @@ onUnmounted(() => {
 
 .monitor-charts-row {
   flex: 1;
-  align-items: stretch;
   min-height: 0;
 }
 
@@ -586,12 +608,11 @@ onUnmounted(() => {
 
 .chart-container {
   flex: 1;
-  height: 100%;
   min-height: 200px;
 }
 
+// === 缓存管理三栏 ===
 .cache-mgmt-tab {
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -600,7 +621,6 @@ onUnmounted(() => {
 
 .cache-mgmt-row {
   flex: 1;
-  align-items: stretch;
   min-height: 0;
 }
 
@@ -631,19 +651,60 @@ onUnmounted(() => {
 }
 
 .cache-table-wrap {
+  position: relative;
   overflow: hidden;
+
+  :deep(.el-table) {
+    position: absolute;
+    inset: 0;
+    height: auto;
+
+    .el-table__inner-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .el-table__header-wrapper {
+      flex-shrink: 0;
+    }
+
+    .el-table__body-wrapper {
+      flex: 1;
+      overflow-y: auto;
+    }
+  }
 }
 
 .cache-form-wrap {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 
   .el-form {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
+  }
+}
+
+// 缓存内容 textarea 填满剩余空间，但不超过 60%
+.cache-value-item {
+  flex: 1;
+  min-height: 0;
+  max-height: 60%;
+
+  :deep(.el-form-item__content) {
+    height: 100%;
+
+    .el-textarea {
+      height: 100%;
+
+      textarea {
+        height: 100% !important;
+        resize: none;
+      }
+    }
   }
 }
 </style>

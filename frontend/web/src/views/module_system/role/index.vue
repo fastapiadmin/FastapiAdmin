@@ -459,6 +459,7 @@ const {
     },
     columnsFactory: (): ColumnOption<RoleTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "角色名称", minWidth: 100, showOverflowTooltip: true },
       { prop: "code", label: "角色编码", minWidth: 100, showOverflowTooltip: true },
       {

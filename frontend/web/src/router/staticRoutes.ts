@@ -11,6 +11,7 @@ import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import { defineComponent, h, onMounted, ref } from "vue";
 import type { RouteRecordRaw } from "vue-router";
 import { RouterView, useRoute } from "vue-router";
+import { t } from "@wangeditor-next/editor";
 
 /** 首页 / 仪表盘父级 meta（侧栏、静态子路由共用） */
 export const HOME_MENU_META: RouteMeta = {
@@ -376,14 +377,14 @@ export const staticRoutes: AppRouteRecordRaw[] = [
           {
             path: "profile",
             name: "FastlinkProfile",
-            meta: { title: "个人中心", icon: "ri:user-line", hidden: true },
+            meta: { title: t("menus.system.userCenter"), icon: "ri:user-line", hidden: true },
             component: () => import("@views/fastlink/current/profile.vue"),
           },
           {
             path: "changelog",
             name: "FastlinkChangeLog",
             meta: {
-              title: "menus.changelog.title",
+              title: t("menus.changelog.title"),
               icon: "ri:draft-line",
               hidden: true,
               keepAlive: true,
@@ -394,7 +395,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
             path: "pricing",
             name: "FastlinkPricing",
             meta: {
-              title: "menus.dashboard.pricing",
+              title: t("menus.dashboard.pricing"),
               icon: "ri:money-cny-box-line",
               hidden: true,
               keepAlive: true,
@@ -405,7 +406,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
             path: "article/list",
             name: "FastlinkArticleList",
             meta: {
-              title: "menus.article.articleList",
+              title: t("menus.article.articleList"),
               icon: "ri:article-line",
               hidden: true,
               keepAlive: true,
@@ -416,12 +417,23 @@ export const staticRoutes: AppRouteRecordRaw[] = [
             path: "tutorial",
             name: "FastlinkTutorial",
             meta: {
-              title: "menus.dashboard.tutorial",
+              title: t("menus.dashboard.tutorial"),
               icon: "ri:book-2-line",
               hidden: true,
               keepAlive: true,
             },
             component: () => import("@views/fastlink/tutorial/index.vue"),
+          },
+          {
+            path: "fachat",
+            name: "FastlinkFachat",
+            meta: {
+              title: t("menus.fachat"),
+              icon: "ri:message-3-line",
+              hidden: true,
+              keepAlive: true,
+            },
+            component: () => import("@views/fastlink/fachat/index.vue"),
           },
         ],
       },

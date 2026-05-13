@@ -540,6 +540,9 @@
     "workplace": {
       "title": "工作台"
     },
+    "fachat": {
+      "title": "聊天"
+    },
     "changelog": {
       "title": "更新日志"
     },
@@ -613,13 +616,14 @@
       "large": "宽松"
     },
     "column": {
-      "selection": "勾选",
+      "selection": "复选框",
       "expand": "展开",
       "index": "序号"
     },
     "zebra": "斑马纹",
     "border": "边框",
     "headerBackground": "表头背景",
+    "highlightCurrentRow": "高亮行",
     "toolbar": {
       "hideSearch": "隐藏搜索区域",
       "showSearch": "显示搜索区域",

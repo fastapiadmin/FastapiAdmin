@@ -116,8 +116,15 @@ const elTableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const paginationRef = ref<HTMLElement>();
 const tableHeaderRef = ref<HTMLElement>();
 const tableStore = useTableStore();
-const { isBorder, isZebra, tableSize, isFullScreen, isHeaderBackground, isRowDrag } =
-  storeToRefs(tableStore);
+const {
+  isBorder,
+  isZebra,
+  tableSize,
+  isFullScreen,
+  isHeaderBackground,
+  isRowDrag,
+  highlightCurrentRow,
+} = storeToRefs(tableStore);
 
 /** 分页配置接口 */
 interface PaginationConfig {
@@ -306,6 +313,7 @@ const mergedTableProps = computed(() => ({
   border: border.value,
   size: size.value,
   headerCellStyle: headerCellStyle.value,
+  highlightCurrentRow: highlightCurrentRow.value,
   // Element Plus 默认值为 true，未显式传入时不应被 FaTable 覆盖成 false。
   selectOnIndeterminate: hasExplicitTableProp("selectOnIndeterminate")
     ? props.selectOnIndeterminate

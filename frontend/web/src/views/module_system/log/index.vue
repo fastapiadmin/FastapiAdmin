@@ -289,6 +289,7 @@ const {
     },
     columnsFactory: (): ColumnOption<LogTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       {
         prop: "type",
         label: "日志类型",

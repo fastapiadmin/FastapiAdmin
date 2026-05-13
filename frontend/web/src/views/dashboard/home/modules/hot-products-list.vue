@@ -16,6 +16,7 @@
         :header-cell-style="{ background: 'transparent' }"
       >
         <template #default>
+          <ElTableColumn type="index" label="序号" width="60" />
           <ElTableColumn label="产品" prop="product" width="220px">
             <template #default="scope">
               <div class="flex-c">
