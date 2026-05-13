@@ -209,6 +209,9 @@ import WorkflowDefinitionAPI, {
 } from "@/api/module_task/workflow/definition";
 import WorkflowNodeTypeAPI from "@/api/module_task/workflow/node-type";
 
+type FlowNode = Node<any, any>;
+type FlowEdge = Edge<any>;
+
 defineOptions({
   name: "WorkflowCreateDrawer",
   inheritAttrs: false,
@@ -435,8 +438,8 @@ const handleFormatCanvas = () => {
   ElMessage.success("画布格式化完成");
 };
 
-const nodes = ref<Node[]>([]);
-const edges = ref<Edge[]>([]);
+const nodes = ref<FlowNode[]>([]);
+const edges = ref<FlowEdge[]>([]);
 
 const searchKeyword = ref("");
 
@@ -482,12 +485,12 @@ const getCategoryText = (category: string) => {
 const nodeTypesRegistry = ref<Record<string, Component>>({});
 
 const updateState = ref("");
-const selectedEdge = ref<Edge>();
-const selectedNode = ref<Node>();
+const selectedEdge = ref<FlowEdge>();
+const selectedNode = ref<FlowNode>();
 const loading = ref(false);
 
-const getNodes = () => getNodesRef.value;
-const getEdges = () =>
+const getNodes = (): FlowNode[] => getNodesRef.value as FlowNode[];
+const getEdges = (): FlowEdge[] =>
   getEdgesRef.value.map((edge) => ({
     id: edge.id,
     source: edge.source,
@@ -497,7 +500,7 @@ const getEdges = () =>
     animated: edge.animated,
     style: edge.style,
     data: edge.data,
-  }));
+  })) as FlowEdge[];
 
 const loadNodeTypes = async () => {
   loading.value = true;
@@ -540,14 +543,14 @@ onInit((vueFlowInstance) => {
         if (res.data && res.data.data) {
           nodes.value = res.data.data.nodes || [];
           edges.value = res.data.data.edges || [];
-          saveToHistory(nodes.value, edges.value);
+          pushHistoryFromCanvas();
         }
       } catch {
         ElMessage.error("流程加载失败");
       }
     })();
   } else {
-    saveToHistory(nodes.value, edges.value);
+    pushHistoryFromCanvas();
   }
 });
 
@@ -557,7 +560,7 @@ onConnect((connection) => {
     type: edgeStyle.value,
     animated: edgeAnimated.value,
   });
-  saveToHistory(nodes.value, edges.value);
+  pushHistoryFromCanvas();
 });
 
 function handleValidate() {
@@ -571,8 +574,8 @@ function handleValidate() {
     errors.push("流程中没有节点");
   }
 
-  const nodeIds = new Set(allNodesList.map((n: Node) => n.id));
-  allEdgesList.forEach((edge: Edge) => {
+  const nodeIds = new Set(allNodesList.map((n: FlowNode) => n.id));
+  allEdgesList.forEach((edge: FlowEdge) => {
     if (!nodeIds.has(edge.source)) {
       errors.push(`连线 ${edge.label || edge.id} 的源节点不存在`);
     }
@@ -582,12 +585,13 @@ function handleValidate() {
   });
 
   const orphanNodes = allNodesList.filter(
-    (node: Node) => !allEdgesList.some((e: Edge) => e.source === node.id || e.target === node.id)
+    (node: FlowNode) =>
+      !allEdgesList.some((e: FlowEdge) => e.source === node.id || e.target === node.id)
   );
 
   if (orphanNodes.length > 0) {
     warnings.push(
-      `有 ${orphanNodes.length} 个孤立节点: ${orphanNodes.map((n: Node) => n.data.label).join(", ")}`
+      `有 ${orphanNodes.length} 个孤立节点: ${orphanNodes.map((n: FlowNode) => n.data.label).join(", ")}`
     );
   }
 
@@ -662,9 +666,9 @@ function handleClosePanel() {
 function handleSaveNode(data: any) {
   if (!selectedNode.value) return;
   const nodeId = selectedNode.value!.id;
-  if (nodeId && updateNodeData(nodeId, data, getNodes, setNodes)) {
-    saveToHistory(nodes.value, edges.value);
-  }
+  if (!nodeId) return;
+  if (!updateNodeData(nodeId, data, getNodes, setNodes)) return;
+  pushHistoryFromCanvas();
 }
 
 function handleDeleteNode() {
@@ -682,7 +686,7 @@ function handleDeleteNode() {
       deleteNode(nodeId, getNodes, setNodes, getEdges, setEdges);
       ElMessage.success("节点删除成功");
       handleClosePanel();
-      saveToHistory(nodes.value, edges.value);
+      pushHistoryFromCanvas();
     } catch {
       // 用户取消
     }
@@ -692,9 +696,9 @@ function handleDeleteNode() {
 function handleSaveEdge(data: any) {
   if (!selectedEdge.value) return;
   const edgeId = selectedEdge.value!.id;
-  if (edgeId && updateEdgeData(edgeId, data, getEdges, setEdges)) {
-    saveToHistory(nodes.value, edges.value);
-  }
+  if (!edgeId) return;
+  if (!updateEdgeData(edgeId, data, getEdges, setEdges)) return;
+  pushHistoryFromCanvas();
 }
 
 function handleDeleteEdge() {
@@ -712,7 +716,7 @@ function handleDeleteEdge() {
       deleteEdge(edgeId, getEdges, setEdges);
       ElMessage.success("连线删除成功");
       handleClosePanel();
-      saveToHistory(nodes.value, edges.value);
+      pushHistoryFromCanvas();
     } catch {
       // 用户取消
     }
@@ -788,13 +792,17 @@ const handleClose = () => {
 };
 
 // 历史记录管理
-const history = ref<{ nodes: Node[]; edges: Edge[] }[]>([]);
+const history = ref<{ nodes: unknown[]; edges: unknown[] }[]>([]);
 const historyIndex = ref(-1);
 
-function saveToHistory(nodesData: Node[], edgesData: Edge[]) {
+function saveToHistory(nodesData: FlowNode[], edgesData: FlowEdge[]) {
   history.value = history.value.slice(0, historyIndex.value + 1);
   history.value.push({ nodes: nodesData, edges: edgesData });
   historyIndex.value = history.value.length - 1;
+}
+
+function pushHistoryFromCanvas() {
+  saveToHistory([...nodes.value] as FlowNode[], [...edges.value] as FlowEdge[]);
 }
 
 // 拖拽相关函数
@@ -820,8 +828,8 @@ function handleNodeDrop(
   event: DragEvent,
   screenToFlowCoordinate: (position: { x: number; y: number }) => { x: number; y: number },
   onNodesInitialized: (callback: () => void) => void,
-  updateNode: (id: string, node: Partial<Node>) => void,
-  addNodes: (nodes: Node[]) => void
+  updateNode: (id: string, node: Partial<FlowNode>) => void,
+  addNodes: (nodes: FlowNode[]) => void
 ) {
   const data = event.dataTransfer?.getData("application/vueflow");
   if (!data) return;
@@ -829,7 +837,7 @@ function handleNodeDrop(
   const nodeType = JSON.parse(data);
   const position = screenToFlowCoordinate({ x: event.clientX, y: event.clientY });
 
-  const newNode: Node = {
+  const newNode: FlowNode = {
     id: `node-${Date.now()}`,
     type: nodeType.type,
     position,
@@ -849,8 +857,8 @@ function handleNodeDrop(
 function updateNodeData(
   nodeId: string,
   data: any,
-  getNodes: () => Node[],
-  setNodes: (nodes: Node[]) => void
+  getNodes: () => FlowNode[],
+  setNodes: (nodes: FlowNode[]) => void
 ) {
   const currentNodes = getNodes();
   const nodeIndex = currentNodes.findIndex((n) => n.id === nodeId);
@@ -870,10 +878,10 @@ function updateNodeData(
 
 function deleteNode(
   nodeId: string,
-  getNodes: () => Node[],
-  setNodes: (nodes: Node[]) => void,
-  getEdges: () => Edge[],
-  setEdges: (edges: Edge[]) => void
+  getNodes: () => FlowNode[],
+  setNodes: (nodes: FlowNode[]) => void,
+  getEdges: () => FlowEdge[],
+  setEdges: (edges: FlowEdge[]) => void
 ) {
   const currentNodes = getNodes();
   const currentEdges = getEdges();
@@ -887,8 +895,8 @@ function deleteNode(
 function updateEdgeData(
   edgeId: string,
   data: any,
-  getEdges: () => Edge[],
-  setEdges: (edges: Edge[]) => void
+  getEdges: () => FlowEdge[],
+  setEdges: (edges: FlowEdge[]) => void
 ) {
   const currentEdges = getEdges();
   const edgeIndex = currentEdges.findIndex((e) => e.id === edgeId);
@@ -907,7 +915,7 @@ function updateEdgeData(
   return true;
 }
 
-function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Edge[]) => void) {
+function deleteEdge(edgeId: string, getEdges: () => FlowEdge[], setEdges: (edges: FlowEdge[]) => void) {
   const currentEdges = getEdges();
   const filteredEdges = currentEdges.filter((e) => e.id !== edgeId);
   setEdges(filteredEdges);

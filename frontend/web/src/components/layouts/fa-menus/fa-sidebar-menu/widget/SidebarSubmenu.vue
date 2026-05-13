@@ -26,7 +26,7 @@
 
     <ElMenuItem
       v-else
-      :index="isExternalLink(item) ? undefined : item.path || item.meta.title"
+      :index="getLeafMenuIndex(item, index)"
       :level-item="level + 1"
       @click="goPage(item)"
     >
@@ -190,6 +190,19 @@ const hasChildren = (item: AppRouteRecord): boolean => {
  */
 const isExternalLink = (item: AppRouteRecord): boolean => {
   return !!(item.meta.link && !item.meta.isIframe);
+};
+
+/**
+ * 生成叶子菜单的索引
+ * @param item 菜单项数据
+ * @param index 索引
+ * @returns 菜单索引
+ */
+const getLeafMenuIndex = (item: AppRouteRecord, index: number): string => {
+  if (isExternalLink(item)) {
+    return item.meta.link || item.path || `external-${props.level}-${index}`;
+  }
+  return item.path || item.meta.title || `menu-${props.level}-${index}`;
 };
 
 /**
