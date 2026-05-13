@@ -336,6 +336,7 @@ const opCtx = {
 
 const { columnChecks, columns } = useTableColumns<DeptTable>(() => [
   { type: "selection", width: 48, fixed: "left" },
+  { type: "globalIndex", width: 56, label: "序号" },
   { prop: "name", label: "部门名称", minWidth: 120, showOverflowTooltip: true },
   { prop: "code", label: "部门编码", minWidth: 120, showOverflowTooltip: true },
   {

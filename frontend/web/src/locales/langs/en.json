@@ -540,6 +540,9 @@
     "workplace": {
       "title": "Workbench"
     },
+    "fachat": {
+      "title": "Fachat"
+    },
     "changelog": {
       "title": "Release notes"
     },
@@ -620,6 +623,7 @@
     "zebra": "Zebra",
     "border": "Border",
     "headerBackground": "Header BG",
+    "highlightCurrentRow": "Highlight Row",
     "toolbar": {
       "hideSearch": "Hide search area",
       "showSearch": "Show search area",

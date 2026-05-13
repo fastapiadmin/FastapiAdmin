@@ -161,6 +161,7 @@ const {
       page_size: 10,
     },
     columnsFactory: (): ColumnOption<OnlineUserTable>[] => [
+      { type: "globalIndex", width: 56, label: "序号" },
       {
         prop: "session_id",
         label: "会话编号",

@@ -411,6 +411,7 @@ const {
     },
     columnsFactory: (): ColumnOption<TenantTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "租户名称", minWidth: 140, showOverflowTooltip: true },
       { prop: "code", label: "租户编码", minWidth: 120, showOverflowTooltip: true },
       {

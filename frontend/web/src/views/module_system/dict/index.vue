@@ -283,6 +283,7 @@ const {
     },
     columnsFactory: (): ColumnOption<DictTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "dict_name", label: "字典名称", minWidth: 140, showOverflowTooltip: true },
       {
         prop: "dict_type",

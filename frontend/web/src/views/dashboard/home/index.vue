@@ -1082,6 +1082,11 @@ const currentUser = {
 .dashboard-container {
   position: relative;
 
+  :deep(.el-card) {
+    --el-card-border-radius: calc(var(--custom-radius) + 2px);
+    border: 1px solid var(--fa-card-border);
+  }
+
   .github-corner {
     position: absolute;
     top: 0;

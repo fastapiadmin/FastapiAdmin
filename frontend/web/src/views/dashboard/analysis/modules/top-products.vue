@@ -14,6 +14,7 @@
         :stripe="false"
         :header-cell-style="{ background: 'transparent' }"
       >
+        <ElTableColumn type="index" label="序号" width="60" />
         <ElTableColumn prop="name" label="产品名称" width="200" />
         <ElTableColumn prop="popularity" label="销量">
           <template #default="scope">

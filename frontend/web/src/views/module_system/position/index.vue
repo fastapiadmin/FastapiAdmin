@@ -452,6 +452,7 @@ const {
     },
     columnsFactory: (): ColumnOption<PositionTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "岗位名称", minWidth: 100, showOverflowTooltip: true },
       {
         prop: "status",

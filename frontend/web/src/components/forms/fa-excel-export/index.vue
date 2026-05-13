@@ -413,6 +413,7 @@ defineExpose({
     <ElButton type="danger" @click="handleClear" v-ripple>清除数据</ElButton>
 
     <FaTable :data="tableData" style="margin-top: 10px">
+      <ElTableColumn type="index" label="序号" width="60" />
       <ElTableColumn
         v-for="key in Object.keys(headers)"
         :key="key"

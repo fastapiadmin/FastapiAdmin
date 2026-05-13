@@ -294,6 +294,7 @@ const {
     },
     columnsFactory: (): ColumnOption<ConfigTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "config_name", label: "配置名称", minWidth: 120, showOverflowTooltip: true },
       { prop: "config_key", label: "配置键", minWidth: 200, showOverflowTooltip: true },
       { prop: "config_value", label: "配置值", minWidth: 200, showOverflowTooltip: true },

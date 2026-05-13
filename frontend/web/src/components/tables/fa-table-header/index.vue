@@ -139,6 +139,9 @@
           <ElCheckbox v-model="isHeaderBackground" :value="true">
             {{ t("table.headerBackground") }}
           </ElCheckbox>
+          <ElCheckbox v-model="highlightCurrentRow" :value="true">
+            {{ t("table.highlightCurrentRow") }}
+          </ElCheckbox>
         </div>
       </ElPopover>
       <slot name="right"></slot>
@@ -179,7 +182,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  fullClass: "fa-page-view",
+  fullClass: "fa-table-card",
   layout: "search,refresh,size,fullscreen,columns,rowDrag,settings",
   showSearchBar: undefined,
 });
@@ -224,7 +227,8 @@ const tableSizeOptions = [
 ];
 
 const tableStore = useTableStore();
-const { tableSize, isZebra, isBorder, isHeaderBackground, isRowDrag } = storeToRefs(tableStore);
+const { tableSize, isZebra, isBorder, isHeaderBackground, isRowDrag, highlightCurrentRow } =
+  storeToRefs(tableStore);
 
 const toggleRowDrag = () => {
   tableStore.setIsRowDrag(!isRowDrag.value);
@@ -290,11 +294,28 @@ const isFullScreen = ref(false);
 const originalOverflow = ref("");
 
 /**
+ * 查找可全屏的容器元素
+ * 优先取 .fa-table-card 的父级（包含搜索栏 + 表格卡片），其次降级到 fullClass
+ */
+const findFullscreenContainer = (): HTMLElement | null => {
+  const headerEl = document.getElementById("fa-table-header");
+  if (headerEl) {
+    const card = headerEl.closest(`.${props.fullClass}`);
+    if (card?.parentElement) {
+      // 取父级 — 通常包裹了搜索栏 + 表格卡片
+      return card.parentElement as HTMLElement;
+    }
+    if (card) return card as HTMLElement;
+  }
+  return document.querySelector(`.${props.fullClass}`);
+};
+
+/**
  * 切换全屏状态
  * 进入全屏时会隐藏页面滚动条，退出时恢复原状态
  */
 const toggleFullScreen = () => {
-  const el = document.querySelector(`.${props.fullClass}`);
+  const el = findFullscreenContainer();
   if (!el) return;
 
   isFullScreen.value = !isFullScreen.value;
@@ -336,7 +357,7 @@ onUnmounted(() => {
   // 如果组件在全屏状态下被卸载，恢复页面滚动状态
   if (isFullScreen.value) {
     document.body.style.overflow = originalOverflow.value;
-    const el = document.querySelector(`.${props.fullClass}`);
+    const el = findFullscreenContainer();
     if (el) {
       el.classList.remove("el-full-screen");
     }

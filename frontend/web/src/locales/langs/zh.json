@@ -540,6 +540,9 @@
     "workplace": {
       "title": "工作台"
     },
+    "fachat": {
+      "title": "聊天"
+    },
     "changelog": {
       "title": "更新日志"
     },
@@ -620,6 +623,7 @@
     "zebra": "斑马纹",
     "border": "边框",
     "headerBackground": "表头背景",
+    "highlightCurrentRow": "高亮行",
     "toolbar": {
       "hideSearch": "隐藏搜索区域",
       "showSearch": "显示搜索区域",
