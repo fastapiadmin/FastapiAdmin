@@ -613,7 +613,7 @@
       "large": "宽松"
     },
     "column": {
-      "selection": "勾选",
+      "selection": "复选框",
       "expand": "展开",
       "index": "序号"
     },
