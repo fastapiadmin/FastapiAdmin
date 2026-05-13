@@ -71,7 +71,7 @@ const fastEnterConfig: FastEnterConfig = {
       iconColor: "#38C0FC",
       enabled: true,
       order: 7,
-      routeName: "ChangeLog",
+      routeName: "FastlinkChangeLog",
     },
     {
       name: "操作手册",
