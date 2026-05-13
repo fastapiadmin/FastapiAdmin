@@ -178,8 +178,17 @@ export default ({ mode }: { mode: string }) => {
               if (id.includes("highlight.js") || id.includes("highlightjs")) return "highlight";
               if (id.includes("xgplayer")) return "xgplayer";
               if (id.includes("markdown-it")) return "markdown";
-              const module = id.toString().split("node_modules/")[1].split("/")[0];
-              if (["birpc", "hookable", "tslib", "copy-anything"].includes(module)) return;
+              if (id.includes("@iconify-json")) return "iconify-icons";
+
+              const module = id
+                .toString()
+                // 兼容 pnpm 嵌套路径：node_modules/.pnpm/pkg@ver/node_modules/real-pkg/...
+                .replace(/^.*[/\\]node_modules[/\\]\.pnpm[/\\][^/\\]+[/\\]node_modules[/\\]/, "")
+                .split("node_modules/")
+                .pop()
+                ?.split("/")[0];
+              if (!module || ["birpc", "hookable", "tslib", "copy-anything"].includes(module))
+                return;
               return module;
             }
           },
