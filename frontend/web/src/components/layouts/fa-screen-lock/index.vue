@@ -4,7 +4,7 @@
     <!-- 开发者工具警告覆盖层 -->
     <div
       v-if="showDevToolsWarning"
-      class="fixed top-0 left-0 z-[999999] flex-cc w-full h-full text-white bg-gradient-to-br from-[#1e1e1e] to-black animate-fade-in"
+      class="fixed top-0 left-0 z-999999 flex-cc w-full h-full text-white bg-linear-to-br from-[#1e1e1e] to-black animate-fade-in"
     >
       <div class="p-5 text-center select-none">
         <div class="mb-7.5 text-5xl">🔒</div>
@@ -29,7 +29,13 @@
         @opened="handleDialogOpen"
       >
         <div class="lock-dialog-content">
-          <img v-if="userAvatar" :src="userAvatar" alt="" class="lock-dialog-avatar object-cover" />
+          <img
+            v-if="userAvatar"
+            :src="userAvatar"
+            alt=""
+            class="lock-dialog-avatar object-cover"
+            loading="eager"
+          />
           <img v-else class="lock-dialog-avatar" src="@imgs/user/avatar.webp" alt="" />
           <span class="lock-dialog-name">{{ displayName }}</span>
         </div>
@@ -534,8 +540,6 @@ onUnmounted(() => {
 .lockpage {
   position: fixed;
   inset: 0;
-  top: 0;
-  left: 0;
   z-index: 3000;
   display: flex;
   flex-direction: column;

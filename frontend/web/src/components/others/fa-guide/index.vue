@@ -103,7 +103,7 @@ function firstPresent(selectors: string[]): HTMLElement | null {
 /** 菜单高亮：按菜单类型优先，其次回退到侧栏 / 顶栏菜单 / 主内容区 */
 function resolveMenuEl(): HTMLElement | null {
   const mt = settingStore.menuType as MenuTypeEnum;
-  let order: string[] = [];
+  let order: string[];
   switch (mt) {
     case MenuTypeEnum.TOP:
       order = ["#app-menu-top", "#app-menu-top-left", "#app-sidebar", "#app-main"];

@@ -14,7 +14,7 @@
         <!-- 表单 -->
         <ElForm
           ref="exportsFormRef"
-          style="padding-right: var(--el-dialog-padding-primary)"
+          :style="'padding-right: var(--el-dialog-padding-primary)'"
           :model="exportsFormData"
           :rules="exportsFormRules"
         >
@@ -54,7 +54,7 @@
       </ElScrollbar>
       <!-- 弹窗底部操作按钮 -->
       <template #footer>
-        <div style="padding-right: var(--el-dialog-padding-primary)">
+        <div :style="'padding-right: var(--el-dialog-padding-primary)'">
           <ElButton type="primary" @click="handleExportsSubmit">确 定</ElButton>
           <ElButton @click="handleCloseExportsModal">取 消</ElButton>
         </div>

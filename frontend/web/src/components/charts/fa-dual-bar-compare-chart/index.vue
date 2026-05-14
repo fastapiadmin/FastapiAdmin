@@ -116,7 +116,6 @@ const {
       right: 0,
       left: 0,
       bottom: 0, // 增加底部间距
-      containLabel: true,
     };
 
     const options: EChartsOption = {

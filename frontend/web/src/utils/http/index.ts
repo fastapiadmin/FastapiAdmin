@@ -305,8 +305,12 @@ request.interceptors.response.use(
     if ((status === 401 && !hasApiCode) || data?.code === ResultEnum.TOKEN_EXPIRED) {
       const config = error.config as InternalAxiosRequestConfig | undefined;
 
-      // 若 refresh 接口自身返回 401，不再递归续期，直接跳转登录
-      if (!config || config.url?.includes("auth/token/refresh")) {
+      // 若 refresh 或 logout 接口自身返回 401，不再递归续期，直接跳转登录
+      if (
+        !config ||
+        config.url?.includes("auth/token/refresh") ||
+        config.url?.includes("auth/logout")
+      ) {
         await redirectToLogin("登录状态异常，请重新登录");
         return Promise.reject(new HttpError("Unauthorized", ApiStatus.unauthorized));
       }
@@ -320,7 +324,9 @@ request.interceptors.response.use(
             refresh_token: Auth.getRefreshToken(),
           });
           const tokenData = refreshResp.data.data;
-          Auth.setTokens(tokenData.access_token, tokenData.refresh_token, Auth.getRememberMe());
+          const newAccessToken = tokenData?.access_token || "";
+          const newRefreshToken = tokenData?.refresh_token || "";
+          Auth.setTokens(newAccessToken, newRefreshToken, Auth.getRememberMe());
           isRefreshing = false;
           const newToken = Auth.getAccessToken();
           // 重放等待队列中的所有请求

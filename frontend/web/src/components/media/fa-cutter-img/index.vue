@@ -20,7 +20,7 @@
           <ElButton type="danger" plain v-ripple>清除</ElButton>
         </template>
         <template #confirm>
-          <!-- <ElButton type="primary" style="margin-left: 10px">确定</ElButton> -->
+          <!-- <ElButton type="primary" :style="'margin-left: 10px'">确定</ElButton> -->
           <div></div>
         </template>
       </ImgCutter>
@@ -35,7 +35,7 @@
           height: `${cutterProps.cutHeight}px`,
         }"
       >
-        <img class="preview-img" :src="temImgPath" alt="预览图" v-if="temImgPath" />
+        <img class="preview-img" :src="temImgPath" alt="预览图" v-if="temImgPath" loading="eager" />
       </div>
       <ElButton class="download-btn" @click="downloadImg" :disabled="!temImgPath" v-ripple>
         下载图片

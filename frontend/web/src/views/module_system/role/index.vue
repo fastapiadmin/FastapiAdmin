@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -87,12 +91,12 @@
                   v-for="dept in detailFormData.depts"
                   :key="dept.id"
                   type="info"
-                  style="margin-right: 4px; margin-bottom: 4px"
+                  :style="'margin-right: 4px; margin-bottom: 4px'"
                 >
                   {{ dept.name }}
                 </ElTag>
               </template>
-              <span v-else style="color: var(--el-text-color-placeholder)">-</span>
+              <span v-else :style="'color: var(--el-text-color-placeholder)'">-</span>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="状态" :span="2">
               <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
@@ -139,7 +143,7 @@
       </template>
 
       <template #footer>
-        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
           <ElButton @click="handleCloseDialog">取消</ElButton>
           <ElButton
             v-if="dialogVisible.type !== 'detail'"

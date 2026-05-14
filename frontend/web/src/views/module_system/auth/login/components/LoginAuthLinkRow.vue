@@ -6,7 +6,7 @@
     <span class="inline-flex items-center text-[var(--el-text-color-secondary)]">{{ hint }}</span>
     <ElLink
       type="primary"
-      :underline="false"
+      underline="never"
       class="inline-flex items-center font-medium !leading-[inherit]"
       @click="$emit('link')"
     >

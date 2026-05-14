@@ -15,10 +15,10 @@
             class="border-r-1 border-r-[var(--el-border-color-lighter)] b-r-solid h-[100%] p-[20px] box-border"
           >
             <div class="flex items-center">
-              <div style="display: flex; gap: 10px">
-                <div style="width: 10px; background-color: var(--el-color-primary)"></div>
+              <div :style="'display: flex; gap: 10px'">
+                <div :style="'width: 10px; background-color: var(--el-color-primary)'"></div>
                 <div>
-                  <span style="font-size: 16px">数据授权</span>
+                  <span :style="'font-size: 16px'">数据授权</span>
                   <ElTooltip placement="right">
                     <template #content>
                       <span>授权用户可操作的数据范围</span>
@@ -57,7 +57,7 @@
                   default-expand-all
                   :highlight-current="true"
                   :check-strictly="!parentChildLinked"
-                  style="height: calc(100% - 60px); margin-top: 10px; overflow-y: auto"
+                  :style="'height: calc(100% - 60px); margin-top: 10px; overflow-y: auto'"
                   @check="deptTreeCheck"
                 >
                   <template #empty>
@@ -71,10 +71,10 @@
 
         <!-- 菜单权限 -->
         <ElMain>
-          <div style="display: flex; gap: 10px">
-            <div style="width: 10px; background-color: var(--el-color-primary)"></div>
+          <div :style="'display: flex; gap: 10px'">
+            <div :style="'width: 10px; background-color: var(--el-color-primary)'"></div>
             <div>
-              <span style="font-size: 16px">菜单授权</span>
+              <span :style="'font-size: 16px'">菜单授权</span>
               <ElTooltip placement="right">
                 <template #content>
                   <span>授权用户可操作的菜单权限</span>
@@ -125,7 +125,7 @@
               default-expand-all
               :highlight-current="true"
               :check-strictly="!parentChildLinked"
-              style="height: calc(100% - 60px); margin-top: 10px; overflow: auto"
+              :style="'height: calc(100% - 60px); margin-top: 10px; overflow: auto'"
               @check="menuTreeCheck"
             >
               <template #empty>

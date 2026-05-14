@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card h-128 p-5 mb-5 max-sm:mb-4">
+  <div class="fa-card h-128 p-5">
     <div class="fa-card-header">
       <div class="title">
         <h4>代办事项</h4>

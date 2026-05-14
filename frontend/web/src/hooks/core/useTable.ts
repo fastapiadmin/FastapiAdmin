@@ -290,7 +290,7 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   const clearCache = (strategy: CacheInvalidationStrategy, context?: string): void => {
     if (!cache) return;
 
-    let clearedCount = 0;
+    let clearedCount: number;
 
     switch (strategy) {
       case CacheInvalidationStrategy.CLEAR_ALL:

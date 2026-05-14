@@ -77,7 +77,7 @@ const createChartOption = (mapData: Array<Record<string, unknown>>) => {
       formatter: ({ data }: { data?: Record<string, unknown> }) => {
         const { name, adcode, level } = data || {};
         return `
-            <div style="padding: 8px;">
+            <div :style="'padding: 8px;'">
               <div><strong>名称:</strong> ${name || "未知区域"}</div>
               <div><strong>代码:</strong> ${adcode || "暂无"}</div>
               <div><strong>级别:</strong> ${level || "暂无"}</div>

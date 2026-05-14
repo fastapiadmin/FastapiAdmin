@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card p-5 h-[27.8rem] mb-5 overflow-hidden max-sm:mb-4">
+  <div class="fa-card p-5 h-[28.2rem] overflow-hidden">
     <div class="fa-card-header">
       <div class="title">
         <h4>热销产品</h4>
@@ -7,10 +7,10 @@
       </div>
     </div>
 
-    <ElScrollbar style="height: 21.55rem" class="w-full">
+    <ElScrollbar :style="{ height: '21.55rem' }" class="w-full">
       <FaTable
         :data="tableData"
-        style="margin-top: 0 !important"
+        :style="'margin-top: 0 !important'"
         :border="false"
         :stripe="false"
         :header-cell-style="{ background: 'transparent' }"
@@ -20,7 +20,11 @@
           <ElTableColumn label="产品" prop="product" width="220px">
             <template #default="scope">
               <div class="flex-c">
-                <img class="size-12.5 object-cover rounded-md" :src="scope.row.image" />
+                <img
+                  class="size-12.5 object-cover rounded-md"
+                  :src="scope.row.image"
+                  loading="eager"
+                />
                 <div class="flex flex-col ml-3">
                   <div class="font-medium">{{ scope.row.name }}</div>
                   <div class="text-xs text-slate-500">{{ scope.row.category }}</div>

@@ -68,7 +68,7 @@ const renderedContent = computed(() => {
   font-size: 14px;
   line-height: 1.6;
   color: var(--el-text-color-primary);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   :deep(pre) {
     padding: 12px;

@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card p-5 h-128 overflow-hidden mb-5 max-sm:mb-4">
+  <div class="fa-card p-5 h-128 overflow-hidden">
     <div class="fa-card-header">
       <div class="title">
         <h4>新用户</h4>
@@ -17,7 +17,6 @@
     <FaTable
       class="w-full"
       :data="tableData"
-      style="width: 100%"
       size="large"
       :border="false"
       :stripe="false"
@@ -27,8 +26,8 @@
         <ElTableColumn type="index" label="序号" width="60" />
         <ElTableColumn label="头像" prop="avatar" width="150px">
           <template #default="scope">
-            <div style="display: flex; align-items: center">
-              <img class="size-9 rounded-lg" :src="scope.row.avatar" alt="avatar" />
+            <div class="flex items-center">
+              <img class="size-9 rounded-lg" :src="scope.row.avatar" alt="avatar" loading="eager" />
               <span class="ml-2">{{ scope.row.username }}</span>
             </div>
           </template>
@@ -36,8 +35,8 @@
         <ElTableColumn label="地区" prop="province" />
         <ElTableColumn label="性别" prop="avatar">
           <template #default="scope">
-            <div style="display: flex; align-items: center">
-              <span style="margin-left: 10px">{{ scope.row.sex === 1 ? "男" : "女" }}</span>
+            <div class="flex items-center">
+              <span class="ml-2">{{ scope.row.sex === 1 ? "男" : "女" }}</span>
             </div>
           </template>
         </ElTableColumn>

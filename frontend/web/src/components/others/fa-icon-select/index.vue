@@ -17,7 +17,7 @@
                 <!-- 清空按钮 -->
                 <ElIcon
                   v-if="selectedIcon"
-                  style="margin-right: 8px"
+                  :style="{ marginRight: '8px' }"
                   @click.stop="clearSelectedIcon"
                 >
                   <CircleClose />

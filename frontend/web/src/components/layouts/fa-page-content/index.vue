@@ -46,7 +46,7 @@
       :target="backtopScrollTarget"
       :right="28"
       :bottom="28"
-      class="z-[90]"
+      class="z-90"
     >
       <FaSvgIcon icon="ri:arrow-up-circle-line" class="text-2xl text-g-600" />
     </ElBacktop>
@@ -89,7 +89,7 @@ const route = useRoute();
 const wrapPageWithKeepAlive = computed(() => route.meta.keepAlive !== false);
 
 const isNarrowViewport = useMediaQuery("(max-width: 800px)");
-const backtopScrollTarget = computed(() => (isNarrowViewport.value ? "" : "#app-scroll-main"));
+const backtopScrollTarget = computed(() => (isNarrowViewport.value ? "" : "#app-content"));
 const backtopTargetKey = computed(() => (isNarrowViewport.value ? "win" : "main"));
 
 const { pageTransition, containerWidth, refresh, showWorkTab } = storeToRefs(useSettingsStore());

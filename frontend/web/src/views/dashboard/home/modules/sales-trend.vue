@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card p-5 mb-5 h-105 max-sm:mb-4">
+  <div class="fa-card p-5 h-105">
     <div class="fa-card-header">
       <div class="title">
         <h4>销售趋势</h4>

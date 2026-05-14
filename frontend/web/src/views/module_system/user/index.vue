@@ -4,9 +4,7 @@
     <div
       class="user-manage-body box-border flex gap-4 h-full max-md:block max-md:gap-0 max-md:h-auto"
     >
-      <div
-        class="user-dept-panel flex-shrink-0 w-58 h-full max-md:w-full max-md:h-auto max-md:mb-5"
-      >
+      <div class="user-dept-panel shrink-0 w-58 h-full max-md:w-full max-md:h-auto max-md:mb-5">
         <ElCard class="tree-card fa-card-xs flex flex-col h-full mt-0" shadow="hover">
           <template #header>
             <b>部门</b>
@@ -21,7 +19,7 @@
         </ElCard>
       </div>
 
-      <div class="user-main-panel flex flex-col flex-grow min-w-0 min-h-0">
+      <div class="user-main-panel flex flex-col grow min-w-0 min-h-0">
         <FaSearchBar
           v-show="showSearchBar"
           ref="searchBarRef"
@@ -47,7 +45,11 @@
           </template>
         </FaSearchBar>
 
-        <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+        <ElCard
+          shadow="hover"
+          class="fa-table-card"
+          :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+        >
           <FaTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
@@ -176,7 +178,7 @@
           :model="formData"
           :rules="rules"
           label-suffix=":"
-          label-width="auto"
+          label-width="100px"
           label-position="right"
         >
           <ElFormItem label="账号" prop="username">

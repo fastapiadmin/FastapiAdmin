@@ -232,8 +232,8 @@
                 :label="dict.dict_name"
                 :value="dict.dict_type || ''"
               >
-                <span style="float: left">{{ dict.dict_name }}</span>
-                <span style="float: right; font-size: 13px; color: #8492a6">
+                <span :style="'float: left'">{{ dict.dict_name }}</span>
+                <span :style="'float: right; font-size: 13px; color: #8492a6'">
                   {{ dict.dict_type }}
                 </span>
               </ElOption>

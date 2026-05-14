@@ -43,7 +43,7 @@
         <ElFormItem label="开始日期" required>
           <ElDatePicker
             v-model="eventForm.date"
-            style="width: 100%"
+            :style="'width: 100%'"
             type="date"
             placeholder="选择日期"
             format="YYYY-MM-DD"
@@ -53,7 +53,7 @@
         <ElFormItem label="结束日期">
           <ElDatePicker
             v-model="eventForm.endDate"
-            style="width: 100%"
+            :style="'width: 100%'"
             type="date"
             placeholder="选择结束日期"
             format="YYYY-MM-DD"

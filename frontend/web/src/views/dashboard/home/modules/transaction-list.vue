@@ -1,13 +1,23 @@
 <template>
-  <FaDataListCard
-    class="mb-5 max-sm:mb-4"
-    :maxCount="4"
-    :list="dataList"
-    title="最近活动"
-    subtitle="订单处理状态"
-    :showMoreButton="true"
-    @more="handleMore"
-  />
+  <div class="fa-card p-5 h-full flex flex-col">
+    <div class="pb-3.5">
+      <p class="text-lg font-medium">最近活动</p>
+      <p class="text-sm text-g-600">订单处理状态</p>
+    </div>
+    <ElScrollbar :style="{ height: '264px' }">
+      <div v-for="(item, index) in dataList" :key="index" class="flex-c py-3">
+        <div v-if="item.icon" class="flex-cc mr-3 size-10 rounded-lg" :class="item.class">
+          <FaSvgIcon :icon="item.icon" class="text-xl" />
+        </div>
+        <div class="flex-1">
+          <div class="mb-1 text-sm">{{ item.title }}</div>
+          <div class="text-xs text-g-500">{{ item.status }}</div>
+        </div>
+        <div class="ml-3 text-xs text-g-500">{{ item.time }}</div>
+      </div>
+    </ElScrollbar>
+    <ElButton class="mt-[17px] w-full text-center" v-ripple @click="handleMore">查看更多</ElButton>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -6,7 +6,7 @@
           v-model="query.table_name"
           placeholder="请输入表名称"
           clearable
-          style="width: 180px"
+          :style="'width: 180px'"
           @keyup.enter="emit('query')"
         />
       </ElFormItem>
@@ -15,7 +15,7 @@
           v-model="query.table_comment"
           placeholder="请输入表描述"
           clearable
-          style="width: 180px"
+          :style="'width: 180px'"
           @keyup.enter="emit('query')"
         />
       </ElFormItem>

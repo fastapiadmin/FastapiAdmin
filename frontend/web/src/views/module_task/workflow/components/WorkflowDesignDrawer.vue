@@ -8,9 +8,9 @@
     @close="handleClose"
   >
     <ElContainer class="workflow-create-content">
-      <ElSplitter direction="horizontal" style="height: 100%">
+      <ElSplitter direction="horizontal" :style="'height: 100%'">
         <ElSplitterPanel size="250px" :min="200" :max="400">
-          <ElScrollbar style="height: 100%">
+          <ElScrollbar :style="'height: 100%'">
             <div class="panel-section">
               <div class="section-title">基础信息</div>
               <FaForm
@@ -29,7 +29,7 @@
               />
             </div>
 
-            <ElDivider style="margin: 4px 0" />
+            <ElDivider :style="'margin: 4px 0'" />
 
             <div class="panel-section">
               <div class="section-title">节点</div>
@@ -44,19 +44,19 @@
                   <ElIcon><Search /></ElIcon>
                 </template>
               </ElInput>
-              <ElSpace direction="vertical" :size="8" fill style="width: 100%; margin-top: 8px">
+              <ElSpace direction="vertical" :size="8" fill :style="'width: 100%; margin-top: 8px'">
                 <ElTag
                   v-for="item in filteredNodes"
                   :key="item.id"
                   :type="getCategoryType(item.category) as any"
                   effect="plain"
                   draggable="true"
-                  style="justify-content: center; cursor: move; user-select: none"
+                  :style="'justify-content: center; cursor: move; user-select: none'"
                   @dragstart="onDragStart($event, item)"
                   @dragend="onDragEnd"
                 >
                   {{ item.name }}
-                  <span style="margin-left: 4px; font-size: 10px; opacity: 0.7">
+                  <span :style="'margin-left: 4px; font-size: 10px; opacity: 0.7'">
                     [{{ getCategoryText(item.category) }}]
                   </span>
                 </ElTag>
@@ -287,8 +287,6 @@ const {
   setEdges,
   setNodes,
   screenToFlowCoordinate,
-  onNodesInitialized,
-  updateNode,
   addNodes,
 } = useVueFlow();
 
@@ -540,14 +538,14 @@ onInit((vueFlowInstance) => {
         if (res.data && res.data.data) {
           nodes.value = res.data.data.nodes || [];
           edges.value = res.data.data.edges || [];
-          saveToHistory(nodes.value, edges.value);
+          saveToHistory(nodes.value as Node[], edges.value as Edge[]);
         }
       } catch {
         ElMessage.error("流程加载失败");
       }
     })();
   } else {
-    saveToHistory(nodes.value, edges.value);
+    saveToHistory(nodes.value as Node[], edges.value as Edge[]);
   }
 });
 
@@ -557,7 +555,7 @@ onConnect((connection) => {
     type: edgeStyle.value,
     animated: edgeAnimated.value,
   });
-  saveToHistory(nodes.value, edges.value);
+  saveToHistory(nodes.value as Node[], edges.value as Edge[]);
 });
 
 function handleValidate() {
@@ -593,13 +591,13 @@ function handleValidate() {
 
   if (errors.length > 0) {
     ElMessageBox.alert(
-      `<div style="max-height: 300px; overflow-y: auto;">
+      `<div :style="'max-height: 300px; overflow-y: auto;'">
         <strong>错误 (${errors.length}):</strong>
-        <ul>${errors.map((e) => `<li style="color: #f56c6c;">${e}</li>`).join("")}</ul>
+        <ul>${errors.map((e) => `<li :style="'color: #f56c6c;'">${e}</li>`).join("")}</ul>
         ${
           warnings.length > 0
             ? `<strong>警告 (${warnings.length}):</strong>
-        <ul>${warnings.map((w) => `<li style="color: #e6a23c;">${w}</li>`).join("")}</ul>`
+        <ul>${warnings.map((w) => `<li :style="'color: #e6a23c;'">${w}</li>`).join("")}</ul>`
             : ""
         }
       </div>`,
@@ -612,9 +610,9 @@ function handleValidate() {
     throw new Error("验证失败");
   } else if (warnings.length > 0) {
     ElMessageBox.alert(
-      `<div style="max-height: 300px; overflow-y: auto;">
+      `<div :style="'max-height: 300px; overflow-y: auto;'">
         <strong>流程验证通过，但有警告 (${warnings.length}):</strong>
-        <ul>${warnings.map((w) => `<li style="color: #e6a23c;">${w}</li>`).join("")}</ul>
+        <ul>${warnings.map((w) => `<li :style="'color: #e6a23c;'">${w}</li>`).join("")}</ul>
       </div>`,
       "流程验证结果",
       {
@@ -650,7 +648,7 @@ const onNodeClick = (event: any) => {
 };
 
 function onDrop(event: DragEvent) {
-  handleNodeDrop(event, screenToFlowCoordinate, onNodesInitialized, updateNode, addNodes);
+  handleNodeDrop(event, screenToFlowCoordinate, addNodes);
 }
 
 function handleClosePanel() {
@@ -663,7 +661,7 @@ function handleSaveNode(data: any) {
   if (!selectedNode.value) return;
   const nodeId = selectedNode.value!.id;
   if (nodeId && updateNodeData(nodeId, data, getNodes, setNodes)) {
-    saveToHistory(nodes.value, edges.value);
+    saveToHistory(nodes.value as Node[], edges.value as Edge[]);
   }
 }
 
@@ -682,7 +680,7 @@ function handleDeleteNode() {
       deleteNode(nodeId, getNodes, setNodes, getEdges, setEdges);
       ElMessage.success("节点删除成功");
       handleClosePanel();
-      saveToHistory(nodes.value, edges.value);
+      saveToHistory(nodes.value as Node[], edges.value as Edge[]);
     } catch {
       // 用户取消
     }
@@ -693,7 +691,7 @@ function handleSaveEdge(data: any) {
   if (!selectedEdge.value) return;
   const edgeId = selectedEdge.value!.id;
   if (edgeId && updateEdgeData(edgeId, data, getEdges, setEdges)) {
-    saveToHistory(nodes.value, edges.value);
+    saveToHistory(nodes.value as Node[], edges.value as Edge[]);
   }
 }
 
@@ -712,7 +710,7 @@ function handleDeleteEdge() {
       deleteEdge(edgeId, getEdges, setEdges);
       ElMessage.success("连线删除成功");
       handleClosePanel();
-      saveToHistory(nodes.value, edges.value);
+      saveToHistory(nodes.value as Node[], edges.value as Edge[]);
     } catch {
       // 用户取消
     }
@@ -788,7 +786,9 @@ const handleClose = () => {
 };
 
 // 历史记录管理
-const history = ref<{ nodes: Node[]; edges: Edge[] }[]>([]);
+// 避免 Vue Flow 泛型导致 TypeScript 深度递归，用 object[] 替代
+type HistorySnapshot = { nodes: object[]; edges: object[] };
+const history = ref<HistorySnapshot[]>([]);
 const historyIndex = ref(-1);
 
 function saveToHistory(nodesData: Node[], edgesData: Edge[]) {
@@ -819,8 +819,6 @@ function onDragOver(event: DragEvent) {
 function handleNodeDrop(
   event: DragEvent,
   screenToFlowCoordinate: (position: { x: number; y: number }) => { x: number; y: number },
-  onNodesInitialized: (callback: () => void) => void,
-  updateNode: (id: string, node: Partial<Node>) => void,
   addNodes: (nodes: Node[]) => void
 ) {
   const data = event.dataTransfer?.getData("application/vueflow");
@@ -970,6 +968,7 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
 
 .canvas-container {
   flex: 1;
+  min-height: 400px;
   overflow: hidden;
 }
 

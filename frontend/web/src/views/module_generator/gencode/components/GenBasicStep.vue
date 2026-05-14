@@ -144,7 +144,7 @@
                   default-expand-all
                   :render-after-expand="false"
                   clearable
-                  style="width: 100%"
+                  :style="'width: 100%'"
                 />
               </ElFormItem>
             </ElCol>

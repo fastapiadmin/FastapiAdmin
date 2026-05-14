@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card p-5 flex-b mb-5 max-sm:mb-4">
+  <div class="fa-card p-5 flex-b">
     <div>
       <h2 class="text-2xl font-medium">关于项目</h2>
       <p class="text-g-700 mt-1">{{ systemName }} 是一款兼具设计美学与高效开发的后台系统</p>
@@ -17,7 +17,7 @@
         </div>
       </div>
     </div>
-    <img class="w-75 max-md:!hidden" src="@imgs/draw/draw1.png" alt="draw1" />
+    <img class="w-75 max-md:hidden!" src="@imgs/draw/draw1.png" alt="draw1" loading="eager" />
   </div>
 </template>
 

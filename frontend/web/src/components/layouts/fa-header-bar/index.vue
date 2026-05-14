@@ -16,7 +16,7 @@
           : '',
       ]"
     >
-      <div class="flex-c flex-1 min-w-0 leading-15" style="display: flex">
+      <div class="flex-c flex-1 min-w-0 leading-15" :style="{ display: 'flex' }">
         <!-- 系统信息：Logo + 标题一并受「显示应用 Logo」控制 -->
         <div class="flex-c c-p" @click="toHome" v-if="isTopMenu && showAppLogo">
           <FaLogo class="pl-4.5" :src="headerLogoSrc" />

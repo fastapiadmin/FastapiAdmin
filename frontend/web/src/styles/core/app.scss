@@ -95,6 +95,11 @@
   --el-card-border-color: var(--default-border) !important;
 }
 
+// 全局统一 ElCard 卡片圆角，与 dashboard 首页一致
+.el-card {
+  --el-card-border-radius: calc(var(--custom-radius) + 2px);
+}
+
 .fa-card,
 .fa-card-sm,
 .fa-card-xs {

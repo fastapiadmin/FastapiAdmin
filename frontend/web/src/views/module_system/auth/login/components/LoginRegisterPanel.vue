@@ -66,7 +66,7 @@
           </ElCheckbox>
           <ElLink
             type="primary"
-            :underline="false"
+            underline="never"
             class="text-sm font-medium"
             :href="userAgreementHref"
             target="_blank"

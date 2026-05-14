@@ -216,7 +216,7 @@
         </template>
 
         <template #footer>
-          <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+          <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
             <ElButton @click="handleCloseDialog">取消</ElButton>
             <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
               确定

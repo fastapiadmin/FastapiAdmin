@@ -75,7 +75,6 @@ const {
         right: 20,
         bottom: props.showDataZoom ? 80 : 20,
         left: 20,
-        containLabel: true,
       },
       tooltip: getTooltipStyle("axis", {
         axisPointer: {
@@ -85,7 +84,7 @@ const {
           const param = params[0];
           const data = param.data;
           return `
-              <div style="padding: 5px;">
+              <div :style="'padding: 5px;'">
                 <div><strong>时间：</strong>${param.name}</div>
                 <div><strong>开盘：</strong>${data[0]}</div>
                 <div><strong>收盘：</strong>${data[1]}</div>

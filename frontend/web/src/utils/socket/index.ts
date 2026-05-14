@@ -277,7 +277,7 @@ export default class WebSocketClient {
     }
 
     try {
-      this.ws.send(data);
+      this.ws.send(data as any);
     } catch (error) {
       console.error("WebSocket发送消息失败:", error);
       // 发送失败时将消息加入队列，等待重连后重试
@@ -294,7 +294,7 @@ export default class WebSocketClient {
         const data = this.messageQueue.shift();
         if (data) {
           try {
-            this.ws?.send(data);
+            this.ws?.send(data as any);
           } catch (error) {
             console.error("发送队列消息失败:", error);
             // 如果发送失败，将消息放回队列头部
