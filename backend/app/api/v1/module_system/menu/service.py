@@ -94,6 +94,8 @@ class MenuService:
         menu_list = await MenuCRUD(auth).get_tree_list_crud(
             search=search.__dict__, order_by=order_by
         )
+        # 过滤掉按钮类型的菜单（type=3），按钮权限不应该出现在菜单树中
+        menu_list = [menu for menu in menu_list if menu.type != 3]
         # 转换为字典列表
         menu_dict_list = [MenuOutSchema.model_validate(menu).model_dump() for menu in menu_list]
         # 使用traversal_to_tree构建树形结构
