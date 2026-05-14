@@ -4,7 +4,7 @@ $bg-animation-color-dark: #fff;
 $bg-animation-duration: 0.5s;
 
 html {
-  --bg-animation-color: $bg-animation-color-light;
+  --bg-animation-color: #{$bg-animation-color-light};
 
   // View transition styles
   &::view-transition-old(*) {
@@ -24,7 +24,7 @@ html {
   }
 
   &.dark {
-    --bg-animation-color: $bg-animation-color-dark;
+    --bg-animation-color: #{$bg-animation-color-dark};
 
     &::view-transition-old(*) {
       animation: clip $bg-animation-duration ease-in reverse both;

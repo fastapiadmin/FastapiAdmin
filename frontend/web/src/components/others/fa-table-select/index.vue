@@ -12,7 +12,7 @@
           <slot>
             <ElInput
               class="reference"
-              style="width: 100%"
+              :style="'width: 100%'"
               :model-value="text"
               :readonly="true"
               :placeholder="placeholder"

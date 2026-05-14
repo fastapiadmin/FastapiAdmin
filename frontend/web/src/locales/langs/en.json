@@ -548,6 +548,7 @@
     },
     "dashboard": {
       "title": "Dashboard",
+      "workplace": "Workplace",
       "analysis": "Analysis",
       "visualization": "3D Visualization",
       "pricing": "Pricing",

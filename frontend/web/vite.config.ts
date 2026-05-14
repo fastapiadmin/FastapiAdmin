@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -187,7 +187,19 @@ export default ({ mode }: { mode: string }) => {
                 .split("node_modules/")
                 .pop()
                 ?.split("/")[0];
-              if (!module || ["birpc", "hookable", "tslib", "copy-anything"].includes(module))
+              // 跳过被 tree-shake 清空的模块，避免生成空 chunk
+              if (
+                !module ||
+                [
+                  "birpc",
+                  "hookable",
+                  "tslib",
+                  "copy-anything",
+                  "danmu.js",
+                  "lodash-unified",
+                  "perfect-debounce",
+                ].includes(module)
+              )
                 return;
               return module;
             }
@@ -210,6 +222,22 @@ export default ({ mode }: { mode: string }) => {
       },
     },
     plugins: [
+      // @vueuse/core 已发布产物中存在位置无效的 /* #__PURE__ */ 注释（单独成行或包裹对象字面量），
+      // 导致 Rollup 无法识别而告警。在构建阶段修复这些注释位置，从根源消除告警。
+      {
+        name: "fix-vueuse-pure-annotations",
+        enforce: "pre",
+        transform(code: string, id: string) {
+          if (id.includes("@vueuse/core") && id.endsWith(".js")) {
+            // 移除单独成行的 /* #__PURE__ */（不在函数调用前，Rollup 无法识别）
+            code = code.replace(/^\s*\/\* #__PURE__ \*\/\s*$/gm, "");
+            // 修复括号内包裹对象字面量的 /* #__PURE__ */，如 const x = (/* #__PURE__ */ { ... })
+            code = code.replace(/\(\/\* #__PURE__ \*\/\s*\{/g, "({");
+            return code;
+          }
+          return null;
+        },
+      } satisfies Plugin,
       vue(),
       tailwindcss(),
       AutoImport({

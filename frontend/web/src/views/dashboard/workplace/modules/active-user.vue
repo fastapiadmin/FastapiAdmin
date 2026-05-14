@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card h-105 p-4 box-border mb-5 max-sm:mb-4">
+  <div class="fa-card h-105 p-4 box-border">
     <FaBarChart
       class="box-border p-2"
       barWidth="50%"

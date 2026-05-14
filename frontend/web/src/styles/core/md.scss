@@ -204,7 +204,7 @@ $font-color: #24292e;
   font-size: 16px;
   line-height: 1.5;
   color: $font-color;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
@@ -773,7 +773,7 @@ $font-color: #24292e;
   margin-left: 10px;
   font-size: 14px;
   line-height: 28px;
-  word-wrap: break-all;
+  overflow-wrap: break-all;
   list-style: disc;
 }
 
@@ -853,7 +853,7 @@ $font-color: #24292e;
 }
 
 .markdown-body pre {
-  word-wrap: normal;
+  overflow-wrap: normal;
 }
 
 .markdown-body pre > code {
@@ -890,7 +890,7 @@ $font-color: #24292e;
   margin: 0;
   overflow: visible;
   line-height: inherit;
-  word-wrap: normal;
+  overflow-wrap: normal;
   background-color: initial;
   border: 0;
 }
@@ -953,7 +953,7 @@ $font-color: #24292e;
   overflow: visible;
   font-size: 12px;
   color: $font-color;
-  word-wrap: normal;
+  overflow-wrap: normal;
   white-space: pre;
 }
 

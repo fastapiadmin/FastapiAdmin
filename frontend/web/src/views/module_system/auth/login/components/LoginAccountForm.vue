@@ -129,7 +129,7 @@
           </ElCheckbox>
           <ElLink
             type="primary"
-            :underline="false"
+            underline="never"
             class="inline-flex items-center text-sm !leading-[inherit]"
             @click="$emit('forget')"
           >

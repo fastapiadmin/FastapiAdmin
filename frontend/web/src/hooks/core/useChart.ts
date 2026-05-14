@@ -350,7 +350,6 @@ export function useChart(options: UseChartOptions = {}) {
       right: 15,
       bottom: 8,
       left: 0,
-      containLabel: true,
       ...baseGrid,
     };
 

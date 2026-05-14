@@ -12,7 +12,7 @@
       :gap="[gapX, gapY]"
       :offset="[offsetX, offsetY]"
     >
-      <div style="height: 100vh"></div>
+      <div :style="'height: 100vh'"></div>
     </ElWatermark>
   </div>
 </template>

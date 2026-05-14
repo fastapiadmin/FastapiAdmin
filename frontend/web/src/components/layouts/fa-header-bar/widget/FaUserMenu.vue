@@ -60,17 +60,9 @@
               <FaSvgIcon icon="ri:user-3-line" />
               <span>{{ $t("topBar.user.userCenter") }}</span>
             </li>
-            <li class="btn-item" @click="goChangeLog">
-              <FaSvgIcon icon="ri:draft-line" />
-              <span>{{ $t("topBar.user.changeLog") }}</span>
-            </li>
             <li class="btn-item" @click="openParamConfig">
               <FaSvgIcon icon="ri:settings-3-line" />
               <span>{{ $t("topBar.user.paramConfig") }}</span>
-            </li>
-            <li class="btn-item" @click="toDocs()">
-              <FaSvgIcon icon="ri:book-2-line" />
-              <span>{{ $t("topBar.user.docs") }}</span>
             </li>
             <li class="btn-item" @click="toGithub()">
               <FaSvgIcon icon="ri:github-line" />
@@ -79,10 +71,6 @@
             <li class="btn-item" @click="toGitee">
               <FaSvgIcon icon="ri:git-branch-line" />
               <span>{{ $t("topBar.user.gitee") }}</span>
-            </li>
-            <li class="btn-item" @click="startTour">
-              <FaSvgIcon icon="ri:compass-3-line" />
-              <span>{{ $t("topBar.user.tour") }}</span>
             </li>
             <li class="btn-item" @click="lockScreen()">
               <FaSvgIcon icon="ri:lock-line" />
@@ -102,16 +90,12 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { ElMessageBox } from "element-plus";
 import ConfigInfoDrawer from "@views/module_system/param/components/ConfigInfoDrawer.vue";
-import { useAppStore } from "@stores/modules/app.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
 import { useUserStore } from "@stores/modules/user.store";
 import { WEB_LINKS } from "@utils/constants";
-import { DeviceEnum } from "@/enums/settings/device.enum";
 import { mittBus } from "@utils/sys";
 
 defineOptions({ name: "FaUserMenu" });
@@ -119,8 +103,6 @@ defineOptions({ name: "FaUserMenu" });
 const router = useRouter();
 const { t } = useI18n();
 const userStore = useUserStore();
-const appStore = useAppStore();
-const settingStore = useSettingsStore();
 
 const { info: userInfo } = storeToRefs(userStore);
 const userMenuPopover = ref();
@@ -140,12 +122,6 @@ const displayName = computed(
 
 const displayEmail = computed(() => (userInfo.value as { email?: string })?.email || "");
 
-/** 与旧版 NavbarActions 一致：桌面浮动引导，移动端进引导页 */
-const guideVisible = computed({
-  get: () => appStore.guideVisible,
-  set: (v: boolean) => appStore.showGuide(v),
-});
-
 function openParamConfig(): void {
   closeUserMenu();
   paramDrawerVisible.value = true;
@@ -153,15 +129,6 @@ function openParamConfig(): void {
 
 function goPage(path: string): void {
   router.push(path);
-}
-
-function goChangeLog(): void {
-  closeUserMenu();
-  router.push({ name: "ChangeLog" }).catch(() => {});
-}
-
-function toDocs(): void {
-  window.open(WEB_LINKS.DOCS);
 }
 
 function toGithub(): void {
@@ -175,24 +142,6 @@ function toGitee(): void {
 function lockScreen(): void {
   mittBus.emit("openLockScreen");
 }
-
-function startTour(): void {
-  closeUserMenu();
-  if (appStore.device === DeviceEnum.MOBILE) {
-    router.push({ name: "Guide" });
-  } else {
-    guideVisible.value = true;
-  }
-}
-
-watch(
-  () => guideVisible.value,
-  (val, oldVal) => {
-    if (oldVal && !val) {
-      settingStore.updateSetting("showGuide", false);
-    }
-  }
-);
 
 function handleLogout(): void {
   closeUserMenu();

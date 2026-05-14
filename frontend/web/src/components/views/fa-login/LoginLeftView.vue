@@ -25,52 +25,61 @@
     <!-- 几何装饰元素 -->
     <div class="geometric-decorations">
       <!-- 基础几何形状 -->
-      <div class="geo-element circle-outline animate-fade-in-up" style="animation-delay: 0s"></div>
+      <div
+        class="geo-element circle-outline animate-fade-in-up"
+        :style="'animation-delay: 0s'"
+      ></div>
       <div
         class="geo-element square-rotated animate-fade-in-left"
-        style="animation-delay: 0s"
+        :style="'animation-delay: 0s'"
       ></div>
-      <div class="geo-element circle-small animate-fade-in-up" style="animation-delay: 0.3s"></div>
+      <div
+        class="geo-element circle-small animate-fade-in-up"
+        :style="'animation-delay: 0.3s'"
+      ></div>
 
       <div
         class="geo-element square-bottom-right animate-fade-in-right"
-        style="animation-delay: 0s"
+        :style="'animation-delay: 0s'"
       ></div>
 
       <!-- 背景泡泡 -->
-      <div class="geo-element bg-bubble animate-scale-in" style="animation-delay: 0.5"></div>
+      <div class="geo-element bg-bubble animate-scale-in" :style="'animation-delay: 0.5'"></div>
 
       <!-- 太阳/月亮 -->
       <div
         class="geo-element circle-top-right animate-fade-in-down"
-        style="animation-delay: 0.5"
+        :style="'animation-delay: 0.5'"
         @click="themeAnimation"
       ></div>
 
       <!-- 装饰点 -->
-      <div class="geo-element dot dot-top-left animate-bounce-in" style="animation-delay: 0s"></div>
+      <div
+        class="geo-element dot dot-top-left animate-bounce-in"
+        :style="'animation-delay: 0s'"
+      ></div>
       <div
         class="geo-element dot dot-top-right animate-bounce-in"
-        style="animation-delay: 0s"
+        :style="'animation-delay: 0s'"
       ></div>
       <div
         class="geo-element dot dot-center-right animate-bounce-in"
-        style="animation-delay: 0s"
+        :style="'animation-delay: 0s'"
       ></div>
 
       <!-- 叠加方块组 -->
       <div class="squares-group">
         <i
           class="geo-element square square-blue animate-fade-in-left-rotated-blue"
-          style="animation-delay: 0.2s"
+          :style="'animation-delay: 0.2s'"
         ></i>
         <i
           class="geo-element square square-pink animate-fade-in-left-rotated-pink"
-          style="animation-delay: 0.4s"
+          :style="'animation-delay: 0.4s'"
         ></i>
         <i
           class="geo-element square square-purple animate-fade-in-left-no-rotation"
-          style="animation-delay: 0.6s"
+          :style="'animation-delay: 0.6s'"
         ></i>
       </div>
     </div>
@@ -223,9 +232,9 @@ $bg-mix-light-7: color-mix(in srgb, $primary-light-7 80%, $main-bg);
     .geo-element {
       position: absolute;
       opacity: 0;
-      animation-fill-mode: forwards;
       animation-duration: 0.8s;
       animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      animation-fill-mode: forwards;
     }
 
     // 动画 mixin

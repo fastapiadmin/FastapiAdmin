@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"

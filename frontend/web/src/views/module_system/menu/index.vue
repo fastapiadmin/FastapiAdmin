@@ -26,7 +26,11 @@
       <ElTabPane label="APP 移动端菜单管理" name="app" />
     </ElTabs>
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -94,7 +98,7 @@
           <ElDescriptionsItem label="图标" :span="2">
             <template #default>
               <template v-if="detailFormData.icon">
-                <MenuRouteIcon :icon="detailFormData.icon" style="vertical-align: -0.15em" />
+                <MenuRouteIcon :icon="detailFormData.icon" :style="'vertical-align: -0.15em'" />
               </template>
             </template>
           </ElDescriptionsItem>
@@ -175,7 +179,7 @@
           :model="formData"
           :rules="rules"
           label-suffix=":"
-          label-width="auto"
+          label-width="100px"
           label-position="right"
         >
           <ElFormItem
@@ -304,7 +308,7 @@
             <ElInput
               v-model="formData.component_path"
               placeholder="请输入组件路径，如system/user/index"
-              style="width: 95%"
+              :style="'width: 95%'"
             >
               <template v-if="formData.type == MenuTypeEnum.MENU" #prepend>src/views/</template>
               <template v-if="formData.type == MenuTypeEnum.MENU" #append>.vue</template>
@@ -338,23 +342,23 @@
 
             <div v-else>
               <div v-for="(item, index) in formData.params" :key="index">
-                <ElInput v-model="item.key" placeholder="参数名" style="width: 100px" />
+                <ElInput v-model="item.key" placeholder="参数名" :style="'width: 100px'" />
 
                 <span class="mx-1">=</span>
 
-                <ElInput v-model="item.value" placeholder="参数值" style="width: 100px" />
+                <ElInput v-model="item.value" placeholder="参数值" :style="'width: 100px'" />
 
                 <ElIcon
                   v-if="formData.params.indexOf(item) === formData.params.length - 1"
                   class="ml-2 cursor-pointer color-[var(--el-color-success)]"
-                  style="vertical-align: -0.15em"
+                  :style="'vertical-align: -0.15em'"
                   @click="formData.params.push({ key: '', value: '' })"
                 >
                   <CirclePlusFilled />
                 </ElIcon>
                 <ElIcon
                   class="ml-2 cursor-pointer color-[var(--el-color-danger)]"
-                  style="vertical-align: -0.15em"
+                  :style="'vertical-align: -0.15em'"
                   @click="formData.params.splice(formData.params.indexOf(item), 1)"
                 >
                   <DeleteFilled />

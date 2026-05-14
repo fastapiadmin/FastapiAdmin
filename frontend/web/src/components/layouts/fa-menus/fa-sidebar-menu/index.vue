@@ -13,7 +13,7 @@
     >
       <FaLogo v-if="showAppLogo" class="logo" :src="sidebarLogoSrc" @click="navigateToHome" />
 
-      <ElScrollbar style="height: calc(100% - 135px)">
+      <ElScrollbar :style="{ height: 'calc(100% - 135px)' }">
         <ul>
           <li v-for="menu in firstLevelMenus" :key="menu.path" @click="handleMenuJump(menu, true)">
             <ElTooltip

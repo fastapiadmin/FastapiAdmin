@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card p-5 h-[28.2rem] mb-5 max-sm:mb-4">
+  <div class="fa-card p-5 h-[28.2rem]">
     <div class="fa-card-header">
       <div class="title">
         <h4>年度销售额</h4>

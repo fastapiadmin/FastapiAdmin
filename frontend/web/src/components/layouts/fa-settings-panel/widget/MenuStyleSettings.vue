@@ -14,7 +14,7 @@
           cursor: disabled ? 'no-drop' : 'pointer',
         }"
       >
-        <img :src="item.img" />
+        <img :src="item.img" loading="eager" />
       </div>
     </div>
   </div>

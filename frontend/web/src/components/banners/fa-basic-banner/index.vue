@@ -60,6 +60,7 @@
         :src="imageConfig.src"
         :style="{ width: imageConfig.width, bottom: imageConfig.bottom, right: imageConfig.right }"
         alt="背景图片"
+        loading="eager"
       />
     </div>
   </div>

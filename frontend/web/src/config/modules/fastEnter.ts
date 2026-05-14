@@ -11,22 +11,22 @@ const fastEnterConfig: FastEnterConfig = {
   // 应用列表
   applications: [
     {
-      name: "工作台",
-      description: "系统概览与数据统计",
-      icon: "ri:pie-chart-line",
-      iconColor: "#377dff",
+      name: "功能引导",
+      description: "产品操作指南",
+      icon: "ri:compass-3-line",
+      iconColor: "#009688",
       enabled: true,
       order: 1,
-      routeName: "DashboardWorkplace",
+      routeName: "FastlinkTutorial",
     },
     {
-      name: "分析页",
-      description: "数据分析与可视化",
-      icon: "ri:game-line",
-      iconColor: "#ff3b30",
+      name: "使用文档",
+      description: "使用指南与开发文档",
+      icon: "ri:book-2-line",
+      iconColor: "#377dff",
       enabled: true,
       order: 2,
-      routeName: "DashboardAnalysis",
+      link: WEB_LINKS.DOCS,
     },
     {
       name: "定价",

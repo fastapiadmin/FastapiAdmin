@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -56,9 +60,9 @@
       @close="handleCloseDialog"
       @opened="handleDialogOpened"
     >
-      <ElSplitter direction="horizontal" style="height: 500px">
+      <ElSplitter direction="horizontal" :style="'height: 500px'">
         <ElSplitterPanel size="300px" :min="200" :max="400">
-          <ElScrollbar style="height: 100%">
+          <ElScrollbar :style="'height: 100%'">
             <FaForm
               :key="nodeFormRenderKey"
               ref="dataFormRef"
@@ -66,7 +70,7 @@
               :items="nodeDialogFormItems"
               :rules="rules"
               label-suffix=":"
-              label-width="auto"
+              label-width="85px"
               :span="24"
               :gutter="16"
               :show-reset="false"
@@ -187,7 +191,7 @@
         :items="executeDialogFormItems"
         :rules="executeRules"
         label-suffix=":"
-        label-width="auto"
+        label-width="85px"
         :span="24"
         :gutter="16"
         :show-reset="false"
@@ -251,7 +255,7 @@
               format="YYYY-MM-DD HH:mm:ss"
               value-format="YYYY-MM-DD HH:mm:ss"
               placeholder="请选择执行时间"
-              style="width: 100%"
+              :style="'width: 100%'"
             />
           </template>
         </template>

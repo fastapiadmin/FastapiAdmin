@@ -89,15 +89,12 @@ function addCopyButton(block: HTMLElement) {
 
   const preElement = block.parentElement;
   if (preElement) {
-    let codeWrapper: HTMLElement;
     // 如果代码块还没有被包裹，则创建包裹容器
     if (!block.parentElement.classList.contains("code-wrapper")) {
-      codeWrapper = document.createElement("div");
+      const codeWrapper = document.createElement("div");
       codeWrapper.className = "code-wrapper";
       preElement.replaceChild(codeWrapper, block);
       codeWrapper.appendChild(block);
-    } else {
-      codeWrapper = block.parentElement;
     }
     // 将复制按钮添加到 pre 元素（而非 codeWrapper 内），这样它不会随滚动条滚动
     preElement.appendChild(copyButton);

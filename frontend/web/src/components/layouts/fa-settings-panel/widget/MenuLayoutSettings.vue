@@ -9,7 +9,7 @@
         @click="switchMenuLayouts(item.value)"
       >
         <div class="box" :class="{ 'is-active': item.value === menuType, 'mt-16': index > 2 }">
-          <img :src="item.img" />
+          <img :src="item.img" loading="eager" />
         </div>
         <p class="name">{{ $t(`setting.menuType.list[${index}]`) }}</p>
       </div>

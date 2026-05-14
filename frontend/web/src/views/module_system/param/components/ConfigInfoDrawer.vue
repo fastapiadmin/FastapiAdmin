@@ -10,7 +10,7 @@
     <ElTabs v-model="activeTabRef" type="border-card">
       <!-- 网站配置 -->
       <ElTabPane label="网站配置" name="website">
-        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        <ElForm :model="configState" label-suffix=":" label-width="100px" label-position="right">
           <!-- 系统配置 -->
           <ElDivider>网站配置</ElDivider>
           <div v-for="(item, key) in systemConfigs" :key="key">
@@ -20,7 +20,7 @@
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
-                  style="width: 100%"
+                  :style="'width: 100%'"
                   @input="markModified(key)"
                 />
               </span>
@@ -50,7 +50,7 @@
         </ElForm>
       </ElTabPane>
       <ElTabPane label="安全隐私" name="securityPrivacy">
-        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        <ElForm :model="configState" label-suffix=":" label-width="100px" label-position="right">
           <!-- 系统配置 -->
           <ElDivider>安全隐私</ElDivider>
           <div v-for="(item, key) in securityPrivacyConfigs" :key="key">
@@ -60,7 +60,7 @@
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
-                  style="width: 100%"
+                  :style="'width: 100%'"
                   @input="markModified(key)"
                 />
               </span>
@@ -70,7 +70,7 @@
       </ElTabPane>
       <ElTabPane label="用户协议" name="userAgreement">
         <!-- 系统配置 -->
-        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        <ElForm :model="configState" label-suffix=":" label-width="100px" label-position="right">
           <ElDivider>用户协议</ElDivider>
           <div v-for="(item, key) in userAgreementConfigs" :key="key">
             <ElFormItem :label="item.config_name">
@@ -79,7 +79,7 @@
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
-                  style="width: 100%"
+                  :style="'width: 100%'"
                   @input="markModified(key)"
                 />
               </span>
@@ -88,7 +88,7 @@
         </ElForm>
       </ElTabPane>
       <ElTabPane label="接口白名单" name="apiWhitelist">
-        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        <ElForm :model="configState" label-suffix=":" label-width="100px" label-position="right">
           <!-- 系统配置 -->
           <ElDivider>接口白名单</ElDivider>
           <div v-for="(item, key) in apiWhitelistConfigs" :key="key">
@@ -124,7 +124,7 @@
                   type="primary"
                   icon="plus"
                   size="small"
-                  style="margin-top: 10px"
+                  :style="'margin-top: 10px'"
                   @click="addApiWhitelistItem"
                 >
                   添加接口路径
@@ -138,7 +138,7 @@
         </ElForm>
       </ElTabPane>
       <ElTabPane label="IP黑名单" name="ipBlacklist">
-        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        <ElForm :model="configState" label-suffix=":" label-width="100px" label-position="right">
           <!-- 系统配置 -->
           <ElDivider>IP黑名单</ElDivider>
           <div v-for="(item, key) in ipBlacklistConfigs" :key="key">
@@ -153,7 +153,7 @@
                     v-model="listItem.value"
                     :placeholder="'192.168.1.1'"
                     clearable
-                    style="flex: 1"
+                    :style="'flex: 1'"
                     @input="markModified(key)"
                     @blur="
                       {
@@ -175,7 +175,7 @@
                   type="primary"
                   icon="plus"
                   size="small"
-                  style="margin-top: 10px"
+                  :style="'margin-top: 10px'"
                   @click="addIpBlacklistItem"
                 >
                   添加IP地址
@@ -189,7 +189,7 @@
         </ElForm>
       </ElTabPane>
       <ElTabPane label="演示环境配置" name="demo">
-        <ElForm :model="configState" label-suffix=":" label-width="auto" label-position="right">
+        <ElForm :model="configState" label-suffix=":" label-width="100px" label-position="right">
           <!-- 系统配置 -->
           <ElDivider>演示环境配置</ElDivider>
           <div v-for="(item, key) in demoConfigs" :key="key">
@@ -224,7 +224,7 @@
                       v-model="listItem.value"
                       :placeholder="'192.168.1.1'"
                       clearable
-                      style="flex: 1"
+                      :style="'flex: 1'"
                       @input="markModified(key)"
                       @blur="
                         {
@@ -246,7 +246,7 @@
                     type="primary"
                     icon="plus"
                     size="small"
-                    style="margin-top: 10px"
+                    :style="'margin-top: 10px'"
                     @click="addDemoIpWhitelistItem"
                   >
                     添加IP地址
@@ -262,7 +262,7 @@
                   v-model="item.config_value"
                   :placeholder="t('common.inputText')"
                   clearable
-                  style="width: 100%"
+                  :style="'width: 100%'"
                   @input="markModified(key)"
                 />
               </template>

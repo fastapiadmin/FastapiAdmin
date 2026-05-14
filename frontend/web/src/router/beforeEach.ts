@@ -20,7 +20,7 @@
  *        └─ setWorktab / setPageTitle / 404
  */
 import type { AppRouteRecord } from "@/types/router";
-import type { Router, RouteLocationNormalized, NavigationGuardNext } from "vue-router";
+import type { Router, RouteLocationNormalized } from "vue-router";
 import { nextTick } from "vue";
 import { NProgress } from "@utils/ui";
 import { useSettingsStore } from "@stores/modules/setting.store";
@@ -97,21 +97,15 @@ export function setupBeforeEachGuard(router: Router): void {
 
   routeRegistry = new RouteRegistry(router);
 
-  router.beforeEach(
-    async (
-      to: RouteLocationNormalized,
-      from: RouteLocationNormalized,
-      next: NavigationGuardNext
-    ) => {
-      try {
-        await handleRouteGuard(to, from, next, router);
-      } catch (error) {
-        console.error("[RouteGuard] 路由守卫处理失败:", error);
-        closeLoading();
-        next({ name: "500" });
-      }
+  router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+    try {
+      return await handleRouteGuard(to, from, router);
+    } catch (error) {
+      console.error("[RouteGuard] 路由守卫处理失败:", error);
+      closeLoading();
+      return { name: "500" };
     }
-  );
+  });
 }
 
 function closeLoading(): void {
@@ -138,10 +132,9 @@ function applySafeTitleFromQuery(to: RouteLocationNormalized): void {
 
 async function handleRouteGuard(
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
-  next: NavigationGuardNext,
+  _from: RouteLocationNormalized,
   router: Router
-): Promise<void> {
+) {
   // 顺序：登录 → 动态路由初始化失败兜底 → 动态路由注册 → 根路径 → 已匹配页 → 404
   const settingStore = useSettingsStore();
   const userStore = useUserStore();
@@ -153,73 +146,51 @@ async function handleRouteGuard(
   // 检查存储是否已失效（storage/index.ts 检测到异常时标记）
   if (checkStorageInvalidated()) {
     console.info("[RouteGuard] 检测到存储已失效，执行登出");
-    // 传 { navigate: false } 防止 logout 内部调用 router.push() 造成重复导航，
-    // 导航由本守卫通过 next() 统一控制
     await userStore.logout({ navigate: false });
     resetStorageInvalidated();
-    next({ name: "Login", replace: true });
-    return;
+    return { name: "Login", replace: true };
   }
 
-  if (!handleLoginStatus(to, userStore, next)) {
-    return;
-  }
+  const loginRedirect = handleLoginStatus(to, userStore);
+  if (loginRedirect) return loginRedirect;
 
   if (routeInitFailed) {
-    if (to.matched.length > 0) {
-      next();
-    } else {
-      next({ name: "500", replace: true });
-    }
-    return;
+    return to.matched.length > 0 ? true : { name: "500", replace: true };
   }
 
   const menuStore = useMenuStore();
-  /** 未注册动态路由，或菜单已被清空（登出延迟 reset 与再登录竞态下可能出现「已注册但 menuList 为空」） */
   const shouldInitRoutes =
     userStore.isLogin && (!routeRegistry?.isRegistered() || menuStore.menuList.length === 0);
 
   if (shouldInitRoutes) {
-    if (routeInitInProgress) {
-      next(false);
-      return;
-    }
-    await handleDynamicRoutes(to, next, router);
-    return;
+    if (routeInitInProgress) return false;
+    return await handleDynamicRoutes(to, router);
   }
 
-  if (handleRootPathRedirect(to, next)) {
-    return;
-  }
+  const rootRedirect = handleRootPathRedirect(to);
+  if (rootRedirect) return rootRedirect;
 
   if (to.matched.length > 0) {
     applySafeTitleFromQuery(to);
     setWorktab(to);
     setPageTitle(to);
-    next();
-    return;
-  }
-
-  next({ name: "404" });
-}
-
-/** @returns 是否继续守卫；false 表示已 `next` 跳转 */
-function handleLoginStatus(
-  to: RouteLocationNormalized,
-  userStore: ReturnType<typeof useUserStore>,
-  next: NavigationGuardNext
-): boolean {
-  // 勿把「整条 staticRoutes」当匿名：否则 `/` 重定向到的业务页会被误放行（未登录先进首页）。
-  if (userStore.isLogin || isLoginRoute(to) || isAnonymousPublicPath(to.path)) {
     return true;
   }
 
+  return { name: "404" };
+}
+
+/** @returns undefined 继续守卫，或重定向到登录页的路由 */
+function handleLoginStatus(
+  to: RouteLocationNormalized,
+  userStore: ReturnType<typeof useUserStore>
+): Record<string, unknown> | undefined {
+  if (userStore.isLogin || isLoginRoute(to) || isAnonymousPublicPath(to.path)) {
+    return undefined;
+  }
+
   userStore.resetAllState();
-  next({
-    name: "Login",
-    query: { redirect: to.fullPath },
-  });
-  return false;
+  return { name: "Login", query: { redirect: to.fullPath }, replace: true };
 }
 
 /** 登录页（项目里同时存在 `/login` 与 `/auth/login` 等多套入口） */
@@ -296,11 +267,7 @@ function repairDynamicRoutesIfMenuEmpty(): void {
 /**
  * 处理动态路由注册
  */
-async function handleDynamicRoutes(
-  to: RouteLocationNormalized,
-  next: NavigationGuardNext,
-  router: Router
-): Promise<void> {
+async function handleDynamicRoutes(to: RouteLocationNormalized, router: Router) {
   repairDynamicRoutesIfMenuEmpty();
 
   // 标记初始化进行中
@@ -339,13 +306,12 @@ async function handleDynamicRoutes(
     // 8. 静态路由不依赖菜单权限，初始化后直接恢复目标地址。
     if (isStaticRoute(to.path)) {
       routeInitInProgress = false;
-      next({
+      return {
         path: to.path,
         query: to.query,
         hash: to.hash,
         replace: true,
-      });
-      return;
+      };
     }
 
     // 8. 验证目标路径权限
@@ -361,51 +327,30 @@ async function handleDynamicRoutes(
 
     // 9. 重新导航到目标路由
     if (!hasPermission) {
-      // 无权限访问，跳转到首页
       closeLoading();
-
-      // 输出警告信息
       console.warn(`[RouteGuard] 用户无权限访问路径: ${to.path}，已跳转到首页`);
-
-      // 直接跳转到首页
-      next({
-        path: validatedPath,
-        replace: true,
-      });
-    } else {
-      // 有权限，正常导航
-      next({
-        path: to.path,
-        query: to.query,
-        hash: to.hash,
-        replace: true,
-      });
+      return { path: validatedPath, replace: true };
     }
+
+    return { path: to.path, query: to.query, hash: to.hash, replace: true };
   } catch (error) {
     console.error("[RouteGuard] 动态路由注册失败:", error);
-
-    // 关闭 loading
     closeLoading();
 
     // 401 错误：axios 拦截器已处理退出登录，取消当前导航
     if (isUnauthorizedError(error)) {
-      // 重置状态，允许重新登录后再次初始化
       routeInitInProgress = false;
-      next(false);
-      return;
+      return false;
     }
 
-    // 标记初始化失败，防止死循环
     routeInitFailed = true;
     routeInitInProgress = false;
 
-    // 输出详细错误信息，便于排查
     if (isHttpError(error)) {
       console.error(`[RouteGuard] 错误码: ${error.code}, 消息: ${error.message}`);
     }
 
-    // 跳转到 500 页面，使用 replace 避免产生历史记录
-    next({ name: "500", replace: true });
+    return { name: "500", replace: true };
   }
 }
 
@@ -446,17 +391,14 @@ export function resetRouterState(delay: number): void {
 
 /**
  * 处理根路径重定向到首页
- * @returns true 表示已处理跳转，false 表示无需跳转
+ * @returns 重定向路由或 false
  */
-function handleRootPathRedirect(to: RouteLocationNormalized, next: NavigationGuardNext): boolean {
-  if (to.path !== "/") {
-    return false;
-  }
+function handleRootPathRedirect(to: RouteLocationNormalized): Record<string, unknown> | false {
+  if (to.path !== "/") return false;
 
   const { homePath } = useCommon();
   if (homePath.value && homePath.value !== "/") {
-    next({ path: homePath.value, replace: true });
-    return true;
+    return { path: homePath.value, replace: true };
   }
 
   return false;

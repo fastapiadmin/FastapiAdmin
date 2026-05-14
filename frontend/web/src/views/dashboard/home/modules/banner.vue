@@ -1,6 +1,6 @@
 <template>
   <FaBasicBanner
-    class="justify-center !h-53 mb-5 max-sm:!pt-8 max-sm:!h-48 max-sm:mb-4"
+    class="justify-center !h-53 max-sm:!pt-8 max-sm:!h-48"
     :title="`欢迎回来 ${userInfo?.username}`"
     boxStyle="!bg-theme/10"
     titleColor="var(--fa-gray-900)"

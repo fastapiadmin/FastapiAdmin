@@ -1,7 +1,7 @@
 <!-- 通知组件 -->
 <template>
   <div
-    class="fa-notification-panel fa-card-sm !shadow-xl"
+    class="fa-notification-panel fa-card-sm shadow-xl!"
     :style="{
       transform: show ? 'scaleY(1)' : 'scaleY(0.9)',
       opacity: show ? 1 : 0,
@@ -41,7 +41,7 @@
               class="size-9 leading-9 text-center rounded-lg flex-cc"
               :class="[getNoticeStyle(item.type).iconClass]"
             >
-              <FaSvgIcon class="text-lg !bg-transparent" :icon="getNoticeStyle(item.type).icon" />
+              <FaSvgIcon class="text-lg bg-transparent!" :icon="getNoticeStyle(item.type).icon" />
             </div>
             <div class="w-[calc(100%-45px)] ml-3.5">
               <h4 class="text-sm font-normal leading-5.5 text-g-900">{{ item.title }}</h4>
@@ -58,7 +58,7 @@
             class="box-border flex-c px-3.5 py-3.5 c-p last:border-b-0 hover:bg-g-200/60"
           >
             <div class="w-9 h-9">
-              <img :src="item.avatar" class="w-full h-full rounded-lg" />
+              <img :src="item.avatar" class="w-full h-full rounded-lg" loading="eager" />
             </div>
             <div class="w-[calc(100%-45px)] ml-3.5">
               <h4 class="text-xs font-normal leading-5.5">{{ item.title }}</h4>
@@ -82,10 +82,10 @@
         <!-- 空状态 -->
         <div
           v-show="currentTabIsEmpty"
-          class="relative top-25 h-full text-g-500 text-center !bg-transparent"
+          class="relative top-25 h-full text-g-500 text-center bg-transparent!"
         >
           <FaSvgIcon icon="system-uicons:inbox" class="text-5xl" />
-          <p class="mt-3.5 text-xs !bg-transparent">
+          <p class="mt-3.5 text-xs bg-transparent!">
             {{ $t("notice.text[0]") }}{{ barList[barActiveIndex].name }}
           </p>
         </div>

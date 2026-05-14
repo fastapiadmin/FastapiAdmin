@@ -12,7 +12,7 @@
         <span class="menu-name">
           {{ formatMenuTitle(item.meta.title) }}
         </span>
-        <div v-if="item.meta.showBadge" class="fa-badge" style="right: 10px" />
+        <div v-if="item.meta.showBadge" class="fa-badge" :style="'right: 10px'" />
       </template>
 
       <SidebarSubmenu
@@ -26,7 +26,7 @@
 
     <ElMenuItem
       v-else
-      :index="isExternalLink(item) ? undefined : item.path || item.meta.title"
+      :index="isExternalLink(item) ? '' : item.path || item.meta.title"
       :level-item="level + 1"
       @click="goPage(item)"
     >
@@ -40,7 +40,7 @@
       <div
         v-show="item.meta.showBadge && level === 0 && !menuOpen"
         class="fa-badge"
-        style="right: 5px"
+        :style="'right: 5px'"
       />
 
       <template #title>

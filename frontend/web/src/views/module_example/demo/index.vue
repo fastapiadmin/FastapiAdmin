@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -134,7 +138,7 @@
             :model="formData"
             :rules="rules"
             label-suffix=":"
-            label-width="auto"
+            label-width="100px"
             label-position="right"
             inline
           >
@@ -169,7 +173,7 @@
                 v-model="formData.e"
                 type="date"
                 placeholder="请选择日期"
-                style="width: 100%"
+                :style="'width: 100%'"
                 value-format="YYYY-MM-DD"
               />
             </ElFormItem>
@@ -177,7 +181,7 @@
               <ElTimePicker
                 v-model="formData.f"
                 placeholder="请选择时间"
-                style="width: 100%"
+                :style="'width: 100%'"
                 value-format="HH:mm:ss"
               />
             </ElFormItem>
@@ -186,7 +190,7 @@
                 v-model="formData.g"
                 type="datetime"
                 placeholder="请选择日期时间"
-                style="width: 100%"
+                :style="'width: 100%'"
                 value-format="YYYY-MM-DD HH:mm:ss"
               />
             </ElFormItem>
@@ -240,7 +244,7 @@
       </template>
 
       <template #footer>
-        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
           <ElButton @click="handleCloseDialog">取消</ElButton>
           <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
             确定

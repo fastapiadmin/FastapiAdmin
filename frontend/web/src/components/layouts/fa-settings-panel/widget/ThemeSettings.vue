@@ -8,7 +8,7 @@
       @click="switchThemeStyles(item.theme)"
     >
       <div class="box" :class="{ 'is-active': item.theme === systemThemeMode }">
-        <img :src="item.img" />
+        <img :src="item.img" loading="eager" />
       </div>
       <p class="name">{{ $t(`setting.theme.list[${index}]`) }}</p>
     </div>

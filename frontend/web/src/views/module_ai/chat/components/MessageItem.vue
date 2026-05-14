@@ -347,7 +347,7 @@ const formatFileSize = (bytes: number): string => {
         font-size: 15px;
         line-height: 1.6;
         color: var(--el-text-color-primary);
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         transition:
           max-height 0.25s ease,
           opacity 0.2s ease;

@@ -26,7 +26,11 @@
       </template>
     </FaSearchBar>
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -125,7 +129,7 @@
       </ElScrollbar>
 
       <template #footer>
-        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
+        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
           <ElButton @click="handleCloseDialog">取消</ElButton>
           <ElButton type="primary" @click="handleCloseDialog">确定</ElButton>
         </div>

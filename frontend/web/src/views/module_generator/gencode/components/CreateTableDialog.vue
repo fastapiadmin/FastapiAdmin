@@ -140,7 +140,7 @@
           </ElDescriptions>
 
           <div class="mt-3">
-            <ElLink type="primary" :underline="false" @click="syncVisualToSql">
+            <ElLink type="primary" underline="never" @click="syncVisualToSql">
               需要手写调整？生成 SQL 并切到「写 SQL」
             </ElLink>
           </div>

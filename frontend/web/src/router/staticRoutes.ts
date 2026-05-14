@@ -18,6 +18,7 @@ export const HOME_MENU_META: RouteMeta = {
   title: "menus.home.title",
   icon: "ri:home-smile-2-line",
   keepAlive: true,
+  fixedTab: true,
 };
 
 export const DASHBOARD_PARENT_META: RouteMeta = {
@@ -149,7 +150,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     name: "DashboardWorkplace",
     component: () => import("@views/dashboard/workplace/index.vue"),
     meta: {
-      title: "menus.workplace.title",
+      title: "menus.dashboard.workplace",
       icon: "ri:bar-chart-box-line",
       keepAlive: true,
     },
@@ -428,7 +429,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
             path: "fachat",
             name: "FastlinkFachat",
             meta: {
-              title: t("menus.fachat"),
+              title: t("menus.fachat.title"),
               icon: "ri:message-3-line",
               hidden: true,
               keepAlive: true,
