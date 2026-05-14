@@ -50,6 +50,7 @@
             autocomplete="off"
             show-password
             clearable
+            :placeholder="$t('login.placeholder.password')"
             @keyup="checkCapsLock"
             @keyup.enter="$emit('submit')"
           >
