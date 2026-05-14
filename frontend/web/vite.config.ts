@@ -169,7 +169,7 @@ export default ({ mode }: { mode: string }) => {
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
-              if (id.includes("echarts")) return "echarts";
+              if (id.includes("echarts") || id.includes("zrender")) return "echarts";
               if (id.includes("element-plus")) return "element-plus";
               if (id.includes("@wangeditor-next")) return "wangeditor";
               if (id.includes("codemirror")) return "codemirror";
