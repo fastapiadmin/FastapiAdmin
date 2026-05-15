@@ -125,6 +125,11 @@
 <script setup lang="ts">
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -155,10 +160,7 @@ type PositionSearchForm = {
 };
 
 function normalizePositionQuery(params: Record<string, unknown>): PositionPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as PositionPageQuery;
+  return cleanEmptyArrayParams({ ...params }) as unknown as PositionPageQuery;
 }
 
 function buildPositionReplaceParams(p: PositionSearchForm): Record<string, unknown> {
@@ -345,33 +347,8 @@ const positionSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<PositionTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: PositionTable[]) {
-  selectedRows.value = rows;
-}
-
-async function deletePositionRow(id: number) {
-  try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-
-    await PositionAPI.deletePosition([id]);
-    await userStore.getUserInfo();
-    ElMessage.success("删除成功");
-    faTableRef.value?.elTableRef?.clearSelection();
-    await refreshRemove();
-  } catch {
-    // 用户取消
-  }
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<PositionTable>();
 
 const opCtx = {
   onDetail: (id: number) => void handleOpenDialog("detail", id),
@@ -456,12 +433,10 @@ const positionCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
-  return normalizePositionQuery(sp) as unknown as Record<string, unknown>;
+  return normalizePositionQuery(stripPaginationParams(searchParams)) as unknown as Record<
+    string,
+    unknown
+  >;
 });
 
 const positionExportContentConfig = computed(() => ({
@@ -505,11 +480,7 @@ const formData = ref<PositionForm>({
   description: undefined,
 });
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+const { dialogVisible } = useCrudDialog();
 
 const rules = reactive({
   name: [{ required: true, message: "请输入岗位名称", trigger: "blur" }],
@@ -527,6 +498,30 @@ const initialFormData: PositionForm = {
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const positionFormRenderKey = ref(0);
+
+// ─── CRUD 表单 ───
+const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
+  useCrudForm<PositionForm>({
+    formData,
+    initialFormData,
+    dialogVisible,
+    dataFormRef,
+    formRenderKey: positionFormRenderKey,
+    detailApi: PositionAPI.detailPosition,
+    createApi: PositionAPI.createPosition,
+    updateApi: PositionAPI.updatePosition,
+    titles: { create: "新增岗位", update: "修改岗位", detail: "岗位详情" },
+    detailFormData,
+    onCreateSuccess: async () => {
+      await refreshCreate();
+    },
+    onUpdateSuccess: async () => {
+      await refreshUpdate();
+    },
+    onSubmitSuccess: async () => {
+      await userStore.getUserInfo();
+    },
+  });
 
 const positionDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -564,7 +559,6 @@ const positionDialogFormItems = computed<FormItem[]>(() => [
     },
   },
 ]);
-const submitLoading = ref(false);
 const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: PositionSearchForm) {
@@ -594,70 +588,24 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-async function resetForm() {
-  dataFormRef.value?.resetFields();
-  dataFormRef.value?.clearValidate();
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await PositionAPI.detailPosition(id);
-    if (type === "detail") {
-      dialogVisible.title = "岗位详情";
-      Object.assign(detailFormData.value, response.data.data ?? {});
-    } else if (type === "update") {
-      dialogVisible.title = "修改岗位";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增岗位";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
+async function deletePositionRow(id: number) {
+  try {
+    await confirmDelete();
+    await PositionAPI.deletePosition([id]);
+    await userStore.getUserInfo();
+    ElMessage.success("删除成功");
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
   }
-  positionFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
-async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    submitLoading.value = true;
-    const id = formData.value.id;
-    try {
-      if (id) {
-        await PositionAPI.updatePosition(id, { id, ...formData.value });
-        await refreshUpdate();
-      } else {
-        await PositionAPI.createPosition(formData.value);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-      await userStore.getUserInfo();
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
-    }
-  });
 }
 
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await PositionAPI.deletePosition(ids);
     await userStore.getUserInfo();
@@ -678,11 +626,7 @@ async function handleMoreClick(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmToggleStatus(status);
     await PositionAPI.batchPosition({ ids, status });
     await refreshData();
     await userStore.getUserInfo();
@@ -693,14 +637,6 @@ async function handleMoreClick(status: string) {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-
 :deep(.position-table-actions .inline-flex) {
   vertical-align: middle;
 }

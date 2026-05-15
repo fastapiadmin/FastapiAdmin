@@ -1,4 +1,4 @@
-<!-- 日志管理：Art 布局 + useTable，与 dict 页一致 -->
+<!-- 日志管理：Fa 布局 + useTable，与 dict 页一致 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -114,6 +114,10 @@
 <script setup lang="ts">
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { ColumnOption } from "@/types/component";
@@ -137,10 +141,7 @@ type LogSearchForm = {
 };
 
 function normalizeLogQuery(params: Record<string, unknown>): LogPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as LogPageQuery;
+  return cleanEmptyArrayParams({ ...params }) as unknown as LogPageQuery;
 }
 
 function buildLogReplaceParams(p: LogSearchForm): Record<string, unknown> {
@@ -216,15 +217,8 @@ const logSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<LogTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: LogTable[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<LogTable>();
 
 const {
   columns,
@@ -333,11 +327,7 @@ const logCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeLogQuery(sp);
 });
 
@@ -375,10 +365,7 @@ const logDetailItems: import("@/components/others/fa-descriptions/index.vue").De
   { label: "更新时间", prop: "updated_time" },
 ];
 
-const dialogVisible = ref({
-  title: "",
-  visible: false,
-});
+const { dialogVisible, closeDialog } = useCrudDialog();
 
 function getStatusCodeType(code?: number) {
   if (code === undefined) return "info";
@@ -430,24 +417,20 @@ async function resetForm() {
 }
 
 async function handleCloseDialog() {
-  dialogVisible.value.visible = false;
+  closeDialog();
   await resetForm();
 }
 
 async function handleOpenDialog(id: number) {
-  dialogVisible.value.title = "日志详情";
+  dialogVisible.title = "日志详情";
   const response = await LogAPI.detailLog(id);
   Object.assign(formData, response.data.data ?? {});
-  dialogVisible.value.visible = true;
+  dialogVisible.visible = true;
 }
 
 async function deleteLogRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await LogAPI.deleteLog([id]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
@@ -492,11 +475,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await LogAPI.deleteLog(ids);
     ElMessage.success("删除成功");

@@ -146,10 +146,13 @@ defineOptions({
 
 import { ref, reactive, computed, nextTick } from "vue";
 import { Edit } from "@element-plus/icons-vue";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
 import { formatToDateTime } from "@utils/common";
 import { useTable } from "@/hooks/core/useTable";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
@@ -241,23 +244,11 @@ const editingRowId = ref<string | null>(null);
 const editingTitle = ref("");
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<ChatSession[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is string => Boolean(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: ChatSession[]) {
-  selectedRows.value = rows;
-}
+const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<ChatSession>();
 
 async function deleteSessionRow(id: string) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据？", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await AiChatAPI.deleteSession([id]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
@@ -271,15 +262,11 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
-    await AiChatAPI.deleteSession(ids);
+    await AiChatAPI.deleteSession(ids as unknown as string[]);
     ElMessage.success("删除成功");
-    selectedRows.value = [];
+    faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
     // 用户取消
@@ -392,11 +379,7 @@ const formData = ref({
   title: "",
 });
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "detail",
-});
+const { dialogVisible, closeDialog } = useCrudDialog();
 
 const detailFormData = ref<Partial<ChatSessionDetail>>({});
 
@@ -447,11 +430,11 @@ async function onResetSearch() {
 async function resetForm() {
   dataFormRef.value?.resetFields();
   dataFormRef.value?.clearValidate();
-  Object.assign(formData, initialFormData);
+  Object.assign(formData.value, initialFormData);
 }
 
 async function handleCloseDialog() {
-  dialogVisible.visible = false;
+  closeDialog();
   await resetForm();
 }
 
@@ -609,13 +592,5 @@ pre {
   max-height: 60vh;
   padding: 20px;
   overflow-y: auto;
-}
-
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
 }
 </style>

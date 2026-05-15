@@ -1,4 +1,4 @@
-<!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
+<!-- 示例 CRUD：与角色页同一套 Fa 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
 <template>
   <div class="fa-full-height">
     <FaSearchBarWithAudit
@@ -157,6 +157,10 @@ import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete, confirmAction } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -178,10 +182,10 @@ const { hasAuth } = useAuth();
 type DemoSearchFormParams = { name?: string; status?: string } & AuditSearchFormParams;
 
 function normalizeDemoQuery(params: Record<string, unknown>): DemoPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as DemoPageQuery;
+  return cleanEmptyArrayParams({ ...params }, [
+    "created_time",
+    "updated_time",
+  ]) as unknown as DemoPageQuery;
 }
 
 const searchForm = ref<DemoSearchFormParams>({
@@ -226,15 +230,8 @@ const demoBusinessSearchItems = computed(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<DemoTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: DemoTable[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<DemoTable>();
 
 const {
   columns,
@@ -341,11 +338,7 @@ const demoCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeDemoQuery(sp);
 });
 
@@ -369,11 +362,7 @@ const demoExportContentConfig = computed(() => ({
   },
 }));
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+const { dialogVisible } = useCrudDialog();
 
 const detailFormData = ref<DemoTable>({});
 
@@ -674,21 +663,13 @@ async function handleSubmit() {
 const deleteDemoRow = async (row: DemoTable) => {
   if (!row.id) return;
   try {
-    await ElMessageBox.confirm(
-      `确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`,
-      "删除确认",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }
-    );
+    await confirmDelete(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`);
     await DemoAPI.deleteDemo([row.id!]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("已取消删除");
+    // 用户取消
   }
 };
 
@@ -696,22 +677,14 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(
-      `确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`,
-      "批量删除",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }
-    );
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await DemoAPI.deleteDemo(ids);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("已取消删除");
+    // 用户取消
   } finally {
     batchDeleting.value = false;
   }
@@ -724,10 +697,9 @@ async function runBatchStatus(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(
+    await confirmAction(
       `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
-      "批量设置",
-      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+      "批量设置"
     );
     await DemoAPI.batchDemo({ ids, status });
     ElMessage.success("操作成功");

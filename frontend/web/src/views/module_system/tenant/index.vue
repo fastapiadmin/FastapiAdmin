@@ -96,6 +96,9 @@
 
 <script setup lang="ts">
 import { useTable } from "@/hooks/core/useTable";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
@@ -308,24 +311,13 @@ const tenantSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<TenantTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 
-function onTableSelectionChange(rows: TenantTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<TenantTable>();
 
 async function deleteTenantRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-
+    await confirmDelete();
     await TenantAPI.deleteTenant([id]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
@@ -413,8 +405,6 @@ const tenantDetailItems: import("@/components/others/fa-descriptions/index.vue")
     { label: "创建时间", prop: "created_time" },
   ];
 
-const currentEditId = ref<number | null>(null);
-
 const formData = ref<TenantForm>({
   name: "",
   code: "",
@@ -424,15 +414,12 @@ const formData = ref<TenantForm>({
   end_time: undefined,
 });
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
 
 const CODE_PATTERN = /^[A-Za-z0-9]+$/;
 
-const validateTimeRange = (rule: unknown, value: unknown, callback: (e?: Error) => void) => {
+const validateTimeRange = (_rule: unknown, _value: unknown, callback: (e?: Error) => void) => {
   if (
     formData.value.start_time &&
     formData.value.end_time &&
@@ -469,6 +456,33 @@ const initialFormData: TenantForm = {
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const submitLoading = ref(false);
 const tenantFormRenderKey = ref(0);
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await TenantAPI.detailTenant(id);
+    if (type === "detail") {
+      dialogVisible.title = "租户详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改租户";
+      Object.assign(formData.value, response.data.data);
+    }
+  } else {
+    dialogVisible.title = "新增租户";
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
+  }
+  tenantFormRenderKey.value += 1;
+  dialogVisible.visible = true;
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
+  Object.assign(formData.value, initialFormData);
+}
 
 const tenantDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -541,38 +555,6 @@ const tenantDialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 
-async function resetForm() {
-  dataFormRef.value?.resetFields();
-  dataFormRef.value?.clearValidate();
-  Object.assign(formData, initialFormData);
-  currentEditId.value = null;
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await TenantAPI.detailTenant(id);
-    if (type === "detail") {
-      dialogVisible.title = "租户详情";
-      Object.assign(detailFormData.value, response.data.data);
-    } else if (type === "update") {
-      dialogVisible.title = "修改租户";
-      Object.assign(formData, response.data.data);
-      currentEditId.value = id;
-    }
-  } else {
-    dialogVisible.title = "新增租户";
-    await resetForm();
-  }
-  tenantFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
 async function handleSearchBarSearch(params: TenantSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildTenantReplaceParams(params));
@@ -590,48 +572,45 @@ function onResetSearch() {
 }
 
 async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    submitLoading.value = true;
-    const id = currentEditId.value;
-    try {
-      if (id) {
-        const payload: TenantUpdateForm = {
-          name: formData.value.name,
-          start_time: formData.value.start_time,
-          end_time: formData.value.end_time,
-        };
-        await TenantAPI.updateTenant(id, payload);
-        await refreshUpdate();
-      } else {
-        const payload: TenantCreateForm = {
-          name: formData.value.name as string,
-          code: formData.value.code as string,
-          start_time: formData.value.start_time,
-          end_time: formData.value.end_time,
-        };
-        await TenantAPI.createTenant(payload);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
+  const valid = await dataFormRef.value!.validate().catch(() => false);
+  if (!valid) return;
+  submitLoading.value = true;
+  const id = formData.value.id as number | undefined;
+  try {
+    if (id) {
+      const payload: TenantUpdateForm = {
+        name: formData.value.name,
+        start_time: formData.value.start_time,
+        end_time: formData.value.end_time,
+      };
+      await TenantAPI.updateTenant(id, payload);
+      await refreshUpdate();
+    } else {
+      const payload: TenantCreateForm = {
+        name: formData.value.name as string,
+        code: formData.value.code as string,
+        start_time: formData.value.start_time,
+        end_time: formData.value.end_time,
+      };
+      await TenantAPI.createTenant(payload);
+      await refreshCreate();
     }
-  });
+    dialogVisible.visible = false;
+    dataFormRef.value?.resetFields();
+    dataFormRef.value?.clearValidate();
+    Object.assign(formData.value, initialFormData);
+  } catch (error: unknown) {
+    console.error(error);
+  } finally {
+    submitLoading.value = false;
+  }
 }
 
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await TenantAPI.deleteTenant(ids);
     ElMessage.success("删除成功");
@@ -646,15 +625,7 @@ async function handleBatchDelete() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-
-:deep(.tenant-table-actions .inline-flex) {
+::deep(.tenant-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

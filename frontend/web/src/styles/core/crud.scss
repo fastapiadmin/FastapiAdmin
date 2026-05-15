@@ -1,0 +1,18 @@
+// CRUD 页面通用样式
+// 从各 module_system 视图文件中提取的重复样式
+
+// FaForm 在 Dialog 中的布局优化：隐藏最后一列操作按钮、内容区域自适应宽度
+.crud-dialog-art-form {
+  :deep(.el-row > .el-col:last-child) {
+    display: none;
+  }
+
+  :deep(.el-form-item__content) {
+    max-width: 100%;
+  }
+}
+
+// 表格操作列按钮垂直居中
+:deep(.inline-flex) {
+  vertical-align: middle;
+}

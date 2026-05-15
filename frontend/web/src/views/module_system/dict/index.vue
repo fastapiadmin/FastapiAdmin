@@ -1,4 +1,4 @@
-<!-- 字典类型：Art 布局；操作列最多 3 个外露 +「更多」 -->
+<!-- 字典类型：Fa 布局；操作列最多 3 个外露 +「更多」 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -128,6 +128,11 @@
 <script setup lang="ts">
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -153,13 +158,6 @@ type DictTypeSearchForm = {
   status?: string;
   created_time?: string[];
 };
-
-function normalizeDictTypeQuery(params: Record<string, unknown>): DictPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as DictPageQuery;
-}
 
 const dictStore = useDictStore();
 const { hasAuth } = useAuth();
@@ -226,15 +224,119 @@ const dictTypeSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<DictTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 
-function onTableSelectionChange(rows: DictTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<DictTable>();
+
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
+
+const detailFormData = ref<DictTable>({});
+
+const dictDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "字典名称", prop: "dict_name" },
+    { label: "字典类型", prop: "dict_type", slot: "dict_type" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "描述", prop: "description" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
+const formData = ref<DictForm>({
+  id: undefined,
+  dict_name: "",
+  dict_type: "",
+  status: "0",
+  description: undefined,
+});
+
+const rules = reactive({
+  dict_name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
+  dict_type: [{ required: true, message: "请选择字典类型", trigger: "blur" }],
+  status: [{ required: true, message: "请选择字典状态", trigger: "blur" }],
+});
+
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const dictFormRenderKey = ref(0);
+
+const initialFormData: DictForm = {
+  id: undefined,
+  dict_name: "",
+  dict_type: "",
+  status: "0",
+  description: undefined,
+};
+
+// ─── CRUD 表单 ───
+const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = useCrudForm<DictForm>({
+  formData,
+  initialFormData,
+  dialogVisible,
+  dataFormRef,
+  formRenderKey: dictFormRenderKey,
+  detailApi: DictAPI.detailDictType,
+  createApi: DictAPI.createDictType,
+  updateApi: DictAPI.updateDictType,
+  titles: { create: "新增字典", update: "修改字典", detail: "字典详情" },
+  detailFormData,
+  onCreateSuccess: async () => {
+    await refreshCreate();
+  },
+  onUpdateSuccess: async () => {
+    await refreshUpdate();
+  },
+  onSubmitSuccess: async () => {
+    dictStore.clearDictData();
+    if (formData.value.dict_type) {
+      await dictStore.getDict([formData.value.dict_type]);
+    }
+  },
+});
+
+const dictDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "字典名称",
+    key: "dict_name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入字典名称", maxlength: 50 },
+  },
+  {
+    label: "字典类型",
+    key: "dict_type",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入字典类型", maxlength: 50 },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 
 const {
   columns,
@@ -309,113 +411,22 @@ const dictTypeCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
-  return normalizeDictTypeQuery(sp);
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
+  return cleanEmptyArrayParams(sp) as unknown as DictPageQuery;
 });
 
 const dictTypeExportContentConfig = computed(() => ({
   permPrefix: "module_system:dict_type",
   cols: dictTypeCrudCols.value,
   exportsBlobAction: async (params: IObject) => {
-    const merged = normalizeDictTypeQuery({
+    const merged = cleanEmptyArrayParams({
       ...(exportQueryParams.value as unknown as Record<string, unknown>),
       ...params,
     } as Record<string, unknown>);
-    const res = await DictAPI.exportDictType(merged as DictPageQuery);
+    const res = await DictAPI.exportDictType(merged as unknown as DictPageQuery);
     return res.data as Blob;
   },
 }));
-
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
-
-const detailFormData = ref<DictTable>({});
-
-const dictDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
-  [
-    { label: "字典名称", prop: "dict_name" },
-    { label: "字典类型", prop: "dict_type", slot: "dict_type" },
-    {
-      label: "状态",
-      prop: "status",
-      tag: {
-        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
-      },
-    },
-    { label: "描述", prop: "description" },
-    { label: "创建时间", prop: "created_time" },
-    { label: "更新时间", prop: "updated_time" },
-  ];
-
-const formData = ref<DictForm>({
-  id: undefined,
-  dict_name: "",
-  dict_type: "",
-  status: "0",
-  description: undefined,
-});
-
-const rules = reactive({
-  dict_name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
-  dict_type: [{ required: true, message: "请选择字典类型", trigger: "blur" }],
-  status: [{ required: true, message: "请选择字典状态", trigger: "blur" }],
-});
-
-const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
-const submitLoading = ref(false);
-const dictFormRenderKey = ref(0);
-
-const dictDialogFormItems = computed<FormItem[]>(() => [
-  {
-    label: "字典名称",
-    key: "dict_name",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入字典名称", maxlength: 50 },
-  },
-  {
-    label: "字典类型",
-    key: "dict_type",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入字典类型", maxlength: 50 },
-  },
-  {
-    label: "状态",
-    key: "status",
-    type: "input",
-    span: 24,
-    placeholder: "",
-  },
-  {
-    label: "描述",
-    key: "description",
-    type: "input",
-    span: 24,
-    props: {
-      type: "textarea",
-      rows: 4,
-      maxlength: 100,
-      showWordLimit: true,
-      placeholder: "请输入描述",
-    },
-  },
-]);
-
-const initialFormData: DictForm = {
-  id: undefined,
-  dict_name: "",
-  dict_type: "",
-  status: "0",
-  description: undefined,
-};
 
 const { exportVisible, openExport } = useImportExport();
 
@@ -501,68 +512,9 @@ function handleDictDataDrawer(dictTypeRow: DictTable) {
   drawerVisible.value = true;
 }
 
-async function resetForm() {
-  dataFormRef.value?.resetFields();
-  dataFormRef.value?.clearValidate();
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await DictAPI.detailDictType(id);
-    if (type === "detail") {
-      dialogVisible.title = "字典详情";
-      detailFormData.value = response.data.data ?? {};
-    } else if (type === "update") {
-      dialogVisible.title = "修改字典";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增字典";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
-  }
-  dictFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
-async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    const id = formData.value.id;
-    try {
-      if (id) {
-        await DictAPI.updateDictType(id, { id, ...formData.value });
-        await refreshUpdate();
-      } else {
-        await DictAPI.createDictType(formData.value);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-      dictStore.clearDictData();
-      if (formData.value.dict_type) {
-        await dictStore.getDict([formData.value.dict_type]);
-      }
-    } catch (error: unknown) {
-      console.error(error);
-    }
-  });
-}
-
 async function deleteDictTypeRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await DictAPI.deleteDictType([id]);
     dictStore.clearDictData();
     const dictTypes = Object.keys(dictStore.dictData);
@@ -579,11 +531,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await DictAPI.deleteDictType(ids);
     dictStore.clearDictData();
@@ -606,11 +554,7 @@ async function handleMoreClick(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmToggleStatus(status);
     await DictAPI.batchDictType({ ids, status });
     await refreshData();
     dictStore.clearDictData();
@@ -621,13 +565,3 @@ async function handleMoreClick(status: string) {
   }
 }
 </script>
-
-<style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-</style>

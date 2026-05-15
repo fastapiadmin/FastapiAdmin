@@ -210,11 +210,16 @@ defineOptions({
 });
 
 import { UserFilled } from "@element-plus/icons-vue";
+import { ElAvatar } from "element-plus";
 import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
@@ -230,7 +235,6 @@ import RoleAPI from "@/api/module_system/role";
 import DeptTree from "./components/DeptTree.vue";
 import UserTableSelect from "./components/UserTableSelect.vue";
 import { useUserStore } from "@stores";
-import { ElMessage, ElMessageBox, ElTag, ElAvatar } from "element-plus";
 import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import type { ColumnOption } from "@/types/component";
@@ -247,12 +251,6 @@ type UserSearchForm = {
   created_id?: number;
   created_time?: string[];
 };
-
-function normalizeUserQuery(params: Record<string, unknown>): UserPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  return p as unknown as UserPageQuery;
-}
 
 function buildUserReplaceParams(u: UserSearchForm): Record<string, unknown> {
   return {
@@ -344,7 +342,6 @@ const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const userFormRenderKey = ref(0);
 const submitLoading = ref(false);
 const uploadLoading = ref(false);
-const batchDeleting = ref(false);
 const deptFilterId = ref<string | number | undefined>(undefined);
 
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450px" : "90%"));
@@ -527,14 +524,8 @@ const userSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<UserInfo[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-
-function onTableSelectionChange(rows: UserInfo[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<UserInfo>();
 
 async function handleResetPassword(row: UserInfo) {
   try {
@@ -556,11 +547,7 @@ async function handleResetPassword(row: UserInfo) {
 
 async function deleteUserRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await UserAPI.deleteUser([id]);
     const idSet = [id];
     if (userStore.basicInfo.id && idSet.includes(userStore.basicInfo.id)) {
@@ -677,26 +664,22 @@ const userCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams);
   if (
     deptFilterId.value !== undefined &&
     deptFilterId.value !== null &&
     deptFilterId.value !== ""
   ) {
-    sp.dept_id = Number(deptFilterId.value);
+    (sp as Record<string, unknown>).dept_id = Number(deptFilterId.value);
   }
-  const q = normalizeUserQuery(sp);
+  const q = cleanEmptyArrayParams(sp) as Record<string, unknown>;
   if (typeof q.status === "string") {
     const s = q.status;
     if (s === "true" || s === "false") {
-      (q as unknown as Record<string, unknown>).status = s === "true";
+      q.status = s === "true";
     }
   }
-  return q as unknown as Record<string, unknown>;
+  return q;
 });
 
 const userImportContentConfig = computed<IContentConfig>(() => ({
@@ -710,14 +693,14 @@ const userExportContentConfig = computed(() => ({
   permPrefix: "module_system:user",
   cols: userCrudCols.value,
   exportsBlobAction: async (params: IObject) => {
-    const merged = normalizeUserQuery({
+    const merged = cleanEmptyArrayParams({
       ...(exportQueryParams.value as Record<string, unknown>),
       ...params,
-    } as Record<string, unknown>);
+    } as Record<string, unknown>) as Record<string, unknown>;
     if (typeof merged.status === "string") {
       const s = merged.status;
       if (s === "true" || s === "false") {
-        (merged as unknown as Record<string, unknown>).status = s === "true";
+        merged.status = s === "true";
       }
     }
     const res = await UserAPI.exportUser(merged as unknown as UserPageQuery);
@@ -744,11 +727,7 @@ const formData = ref<UserForm>({
   description: undefined,
 });
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+const { dialogVisible } = useCrudDialog();
 
 const rules = reactive({
   username: [{ required: true, message: "请输入账号", trigger: "blur" }],
@@ -849,7 +828,7 @@ async function resetForm() {
     dataFormRef.value.resetFields();
     dataFormRef.value.clearValidate();
   }
-  Object.assign(formData, initialFormData);
+  Object.assign(formData.value, initialFormData);
 }
 
 async function handleCloseDialog() {
@@ -940,11 +919,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await UserAPI.deleteUser(ids);
     if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
@@ -968,11 +943,7 @@ async function handleMoreClick(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm("确认启用或停用该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmToggleStatus(status);
     batchDeleting.value = true;
     await UserAPI.batchUser({ ids, status });
     await refreshData();

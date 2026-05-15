@@ -143,7 +143,7 @@ export default ({ mode }: { mode: string }) => {
       },
     },
     build: {
-      target: "es2015",
+      target: "es2020",
       outDir: "dist",
       chunkSizeWarningLimit: 4000,
       minify: isProduction ? "terser" : false,

@@ -198,6 +198,10 @@
 <script setup lang="ts">
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -280,10 +284,10 @@ type DictDataSearchForm = {
 };
 
 function normalizeDictDataQuery(params: Record<string, unknown>): DictDataPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as DictDataPageQuery;
+  return cleanEmptyArrayParams({ ...params }, [
+    "created_time",
+    "updated_time",
+  ]) as unknown as DictDataPageQuery;
 }
 
 async function fetchDictDataListMerged(params: Record<string, unknown>) {
@@ -360,15 +364,8 @@ const dictDataSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<DictDataTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: DictDataTable[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<DictDataTable>();
 
 const {
   columns,
@@ -458,11 +455,7 @@ const dictDataCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeDictDataQuery({
     ...sp,
     dict_type: props.dictType,
@@ -485,11 +478,7 @@ const dictDataExportContentConfig = computed(() => ({
   },
 }));
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+const { dialogVisible } = useCrudDialog();
 
 const detailFormData = ref<DictDataTable>({});
 
@@ -768,11 +757,7 @@ function formatDictDataOperationCell(row: DictDataTable) {
 
 async function deleteDictDataRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await DictAPI.deleteDictData([id]);
     dictStore.clearDictData();
     if (props.dictType) await dictStore.getDict([props.dictType]);
@@ -788,11 +773,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await DictAPI.deleteDictData(ids);
     dictStore.clearDictData();
@@ -814,11 +795,7 @@ async function handleMoreClick(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmToggleStatus(status);
     await DictAPI.batchDictData({ ids, status });
     await refreshData();
     dictStore.clearDictData();
@@ -859,13 +836,5 @@ async function handleMoreClick(status: string) {
   color: var(--el-text-color-regular);
   background: var(--el-fill-color-light);
   border-color: var(--el-border-color-lighter);
-}
-
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
 }
 </style>
