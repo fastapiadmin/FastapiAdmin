@@ -42,7 +42,7 @@
               :perm-patch="['module_system:dict_data:patch']"
               :delete-loading="batchDeleting"
               @add="handleOpenDialog('create')"
-              @export="openExportModal"
+              @export="openExport"
               @delete="handleBatchDelete"
               @more="handleMoreClick"
             />
@@ -67,167 +67,125 @@
         width="720px"
         dialog-class="crud-embed-dialog"
         modal-class="crud-embed-dialog"
-        @close="handleCloseDialog"
+        :form-mode="dialogVisible.type"
+        :confirm-loading="submitLoading"
+        @cancel="handleCloseDialog"
+        @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
       >
         <template v-if="dialogVisible.type === 'detail'">
-          <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-            <ElDescriptions :column="2" border>
-              <ElDescriptionsItem label="数据标签" :span="2">
-                {{ detailFormData.dict_label }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="数据类型" :span="2">
-                {{ detailFormData.dict_type }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="数据值" :span="2">
-                {{ detailFormData.dict_value }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="样式属性" :span="2">
-                {{ detailFormData.css_class }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="列表样式属性" :span="2">
-                {{ detailFormData.list_class }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="是否默认" :span="2">
-                <ElTag v-if="detailFormData.is_default" type="success">是</ElTag>
-                <ElTag v-else type="danger">否</ElTag>
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="状态" :span="2">
-                <ElTag v-if="detailFormData.status === '0'" type="success">启用</ElTag>
-                <ElTag v-else type="danger">停用</ElTag>
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="排序" :span="2">
-                {{ detailFormData.dict_sort }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="描述" :span="2">
-                {{ detailFormData.description }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="创建时间" :span="2">
-                {{ detailFormData.created_time }}
-              </ElDescriptionsItem>
-              <ElDescriptionsItem label="更新时间" :span="2">
-                {{ detailFormData.updated_time }}
-              </ElDescriptionsItem>
-            </ElDescriptions>
-          </ElScrollbar>
+          <FaDescriptions
+            :column="2"
+            :data="detailFormData"
+            :items="dictDataDetailItems"
+            max-height="70vh"
+          />
         </template>
         <template v-else>
-          <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-            <FaForm
-              :key="dictDataFormRenderKey"
-              ref="dataFormRef"
-              v-model="formData"
-              :items="dictDataDialogFormItems"
-              :rules="rules"
-              label-suffix=":"
-              :label-width="'auto'"
-              label-position="right"
-              :span="24"
-              :gutter="16"
-              :show-reset="false"
-              :show-submit="false"
-              class="crud-dialog-art-form"
-            >
-              <template #css_class>
-                <ElSelect
-                  v-model="formData.css_class"
-                  placeholder="请选择常用颜色或输入自定义"
-                  clearable
-                  filterable
-                  allow-create
-                  default-first-option
-                >
-                  <ElOption value="primary" label="主要(primary)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('primary')">
-                      主要(primary)
-                    </span>
-                  </ElOption>
-                  <ElOption value="success" label="成功(success)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('success')">
-                      成功(success)
-                    </span>
-                  </ElOption>
-                  <ElOption value="warning" label="警告(warning)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('warning')">
-                      警告(warning)
-                    </span>
-                  </ElOption>
-                  <ElOption value="danger" label="危险(danger)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('danger')">
-                      危险(danger)
-                    </span>
-                  </ElOption>
-                  <ElOption value="info" label="信息(info)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('info')">
-                      信息(info)
-                    </span>
-                  </ElOption>
-                </ElSelect>
-              </template>
-              <template #list_class>
-                <ElSelect v-model="formData.list_class" placeholder="请选择列表类样式" clearable>
-                  <ElOption value="default" label="默认(default)">
-                    <span class="tag-option-preview tag-option-preview--default">
-                      默认(default)
-                    </span>
-                  </ElOption>
-                  <ElOption value="primary" label="主要(primary)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('primary')">
-                      主要(primary)
-                    </span>
-                  </ElOption>
-                  <ElOption value="success" label="成功(success)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('success')">
-                      成功(success)
-                    </span>
-                  </ElOption>
-                  <ElOption value="warning" label="警告(warning)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('warning')">
-                      警告(warning)
-                    </span>
-                  </ElOption>
-                  <ElOption value="danger" label="危险(danger)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('danger')">
-                      危险(danger)
-                    </span>
-                  </ElOption>
-                  <ElOption value="info" label="信息(info)">
-                    <span class="tag-option-preview" :style="getTagPreviewStyle('info')">
-                      信息(info)
-                    </span>
-                  </ElOption>
-                </ElSelect>
-              </template>
-              <template #is_default>
-                <ElRadioGroup v-model="formData.is_default">
-                  <ElRadio :value="true">是</ElRadio>
-                  <ElRadio :value="false">否</ElRadio>
-                </ElRadioGroup>
-              </template>
-              <template #status>
-                <ElSwitch
-                  v-model="formData.status"
-                  inline-prompt
-                  :active-value="'0'"
-                  :inactive-value="'1'"
-                />
-              </template>
-            </FaForm>
-          </ElScrollbar>
-        </template>
-
-        <template #footer>
-          <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-            <ElButton @click="handleCloseDialog">取消</ElButton>
-            <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-              确定
-            </ElButton>
-            <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-          </div>
+          <FaForm
+            :key="dictDataFormRenderKey"
+            scrollbar
+            max-height="70vh"
+            ref="dataFormRef"
+            v-model="formData"
+            :items="dictDataDialogFormItems"
+            :rules="rules"
+            label-suffix=":"
+            :label-width="'auto'"
+            label-position="right"
+            :span="24"
+            :gutter="16"
+            :show-reset="false"
+            :show-submit="false"
+            class="crud-dialog-art-form"
+          >
+            <template #css_class>
+              <ElSelect
+                v-model="formData.css_class"
+                placeholder="请选择常用颜色或输入自定义"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+              >
+                <ElOption value="primary" label="主要(primary)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('primary')">
+                    主要(primary)
+                  </span>
+                </ElOption>
+                <ElOption value="success" label="成功(success)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('success')">
+                    成功(success)
+                  </span>
+                </ElOption>
+                <ElOption value="warning" label="警告(warning)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('warning')">
+                    警告(warning)
+                  </span>
+                </ElOption>
+                <ElOption value="danger" label="危险(danger)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('danger')">
+                    危险(danger)
+                  </span>
+                </ElOption>
+                <ElOption value="info" label="信息(info)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('info')">
+                    信息(info)
+                  </span>
+                </ElOption>
+              </ElSelect>
+            </template>
+            <template #list_class>
+              <ElSelect v-model="formData.list_class" placeholder="请选择列表类样式" clearable>
+                <ElOption value="default" label="默认(default)">
+                  <span class="tag-option-preview tag-option-preview--default">默认(default)</span>
+                </ElOption>
+                <ElOption value="primary" label="主要(primary)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('primary')">
+                    主要(primary)
+                  </span>
+                </ElOption>
+                <ElOption value="success" label="成功(success)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('success')">
+                    成功(success)
+                  </span>
+                </ElOption>
+                <ElOption value="warning" label="警告(warning)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('warning')">
+                    警告(warning)
+                  </span>
+                </ElOption>
+                <ElOption value="danger" label="危险(danger)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('danger')">
+                    危险(danger)
+                  </span>
+                </ElOption>
+                <ElOption value="info" label="信息(info)">
+                  <span class="tag-option-preview" :style="getTagPreviewStyle('info')">
+                    信息(info)
+                  </span>
+                </ElOption>
+              </ElSelect>
+            </template>
+            <template #is_default>
+              <ElRadioGroup v-model="formData.is_default">
+                <ElRadio :value="true">是</ElRadio>
+                <ElRadio :value="false">否</ElRadio>
+              </ElRadioGroup>
+            </template>
+            <template #status>
+              <ElSwitch
+                v-model="formData.status"
+                inline-prompt
+                :active-value="'0'"
+                :inactive-value="'1'"
+              />
+            </template>
+          </FaForm>
         </template>
       </FaDialog>
 
       <FaExportDialog
-        v-model="exportModalVisible"
+        v-model="exportVisible"
         :content-config="dictDataExportContentConfig"
         :query-params="exportQueryParams"
         :page-data="data"
@@ -238,16 +196,10 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DictAPI, {
@@ -255,7 +207,6 @@ import DictAPI, {
   type DictDataPageQuery,
   type DictDataTable,
 } from "@/api/module_system/dict";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useDictStore } from "@stores";
@@ -542,6 +493,33 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DictDataTable>({});
 
+const dictDataDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "数据标签", prop: "dict_label" },
+    { label: "数据类型", prop: "dict_type" },
+    { label: "数据值", prop: "dict_value" },
+    { label: "样式属性", prop: "css_class" },
+    { label: "列表样式属性", prop: "list_class" },
+    {
+      label: "是否默认",
+      prop: "is_default",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "排序", prop: "dict_sort" },
+    { label: "描述", prop: "description" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
 const formData = ref<DictDataForm>({
   id: undefined,
   dict_sort: 1,
@@ -566,6 +544,7 @@ const rules = reactive({
 });
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const submitLoading = ref(false);
 const dictDataFormRenderKey = ref(0);
 
 const dictDataDialogFormItems = computed<FormItem[]>(() => [
@@ -662,7 +641,7 @@ const initialFormData: DictDataForm = {
   dict_type_id: props.dictTypeId,
 };
 
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: DictDataSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -689,8 +668,8 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, {
     ...initialFormData,
     dict_type_id: props.dictTypeId,
@@ -847,10 +826,6 @@ async function handleMoreClick(status: string) {
   } catch {
     // 用户取消
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>
 

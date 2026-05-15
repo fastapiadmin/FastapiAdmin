@@ -43,7 +43,7 @@
             :perm-export="['module_system:log:export']"
             :perm-delete="['module_system:log:delete']"
             :delete-loading="batchDeleting"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
           />
         </template>
@@ -67,77 +67,42 @@
       width="960px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      form-mode="detail"
+      @confirm="handleCloseDialog"
     >
-      <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-        <ElDescriptions :column="8" border label-width="200px">
-          <ElDescriptionsItem label="日志类型" :span="2">
-            <ElTag :type="formData.type === 1 ? 'success' : 'primary'">
-              {{ formData.type === 1 ? "登录日志" : "操作日志" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求路径" :span="2">
-            {{ formData.request_path }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求方法" :span="2">
-            <ElTag :type="getMethodType(formData.request_method)">
-              {{ formData.request_method }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="响应状态码" :span="2">
-            <ElTag :type="getStatusCodeType(formData.response_code)">
-              {{ formData.response_code }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求IP" :span="2">
-            {{ formData.request_ip }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="处理时间" :span="2">
-            {{ formData.process_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="浏览器" :span="2">
-            {{ formData.request_browser }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="操作系统" :span="2">
-            {{ formData.request_os }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求参数" :span="4">
-            <JsonPretty :value="formData.request_payload" height="80px" />
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="响应数据" :span="4">
-            <JsonPretty :value="formData.response_json" height="140px" />
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="登录地点" :span="2">
-            {{ formData.login_location }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="描述" :span="4">
-            {{ formData.description }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建人" :span="2">
-            {{ formData.created_by?.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新人" :span="2">
-            {{ formData.updated_by?.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建时间" :span="2">
-            {{ formData.created_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新时间" :span="2">
-            {{ formData.updated_time }}
-          </ElDescriptionsItem>
-        </ElDescriptions>
-      </ElScrollbar>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
-      </template>
+      <FaDescriptions
+        :column="8"
+        :data="formData"
+        :items="logDetailItems"
+        label-width="200px"
+        max-height="75vh"
+      >
+        <template #type="{ row }">
+          <ElTag :type="row?.type === 1 ? 'success' : 'primary'">
+            {{ row?.type === 1 ? "登录日志" : "操作日志" }}
+          </ElTag>
+        </template>
+        <template #request_method="{ row }">
+          <ElTag :type="getMethodType(row?.request_method as string)">
+            {{ row?.request_method }}
+          </ElTag>
+        </template>
+        <template #response_code="{ row }">
+          <ElTag :type="getStatusCodeType(row?.response_code as number)">
+            {{ row?.response_code }}
+          </ElTag>
+        </template>
+        <template #request_payload="{ row }">
+          <JsonPretty :value="row?.request_payload as any" height="80px" />
+        </template>
+        <template #response_json="{ row }">
+          <JsonPretty :value="row?.response_json as any" height="140px" />
+        </template>
+      </FaDescriptions>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="logExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -147,21 +112,12 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, nextTick } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
-import CopyButton from "@/components/others/fa-copy-button/index.vue";
 import type { ColumnOption } from "@/types/component";
 import LogAPI, { type LogPageQuery, type LogTable } from "@/api/module_system/log";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
@@ -400,6 +356,25 @@ const logExportContentConfig = computed(() => ({
 
 const formData = ref<LogTable>({});
 
+const logDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] = [
+  { label: "日志类型", prop: "type", slot: "type" },
+  { label: "请求路径", prop: "request_path" },
+  { label: "请求方法", prop: "request_method", slot: "request_method" },
+  { label: "响应状态码", prop: "response_code", slot: "response_code" },
+  { label: "请求IP", prop: "request_ip" },
+  { label: "处理时间", prop: "process_time" },
+  { label: "浏览器", prop: "request_browser" },
+  { label: "操作系统", prop: "request_os" },
+  { label: "请求参数", prop: "request_payload", slot: "request_payload", span: 4 },
+  { label: "响应数据", prop: "response_json", slot: "response_json", span: 4 },
+  { label: "登录地点", prop: "login_location" },
+  { label: "描述", prop: "description", span: 4 },
+  { label: "创建人", prop: "created_by.name" },
+  { label: "更新人", prop: "updated_by.name" },
+  { label: "创建时间", prop: "created_time" },
+  { label: "更新时间", prop: "updated_time" },
+];
+
 const dialogVisible = ref({
   title: "",
   visible: false,
@@ -421,7 +396,7 @@ function getMethodType(method?: string) {
   return "info";
 }
 
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: LogSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -532,9 +507,5 @@ async function handleBatchDelete() {
   } finally {
     batchDeleting.value = false;
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>

@@ -778,8 +778,8 @@ const initialFormData: Partial<NodeForm> = {
 };
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
   argsList.value = [];
   kwargsList.value = [];
@@ -886,7 +886,7 @@ function handleOpenExecuteDialog(row: NodeTable) {
 function handleCloseExecuteDialog() {
   executeDialogVisible.value = false;
   currentExecuteNode.value = null;
-  executeFormRef.value?.ref?.resetFields();
+  executeFormRef.value?.resetFields();
 }
 
 async function handleExecuteNode() {

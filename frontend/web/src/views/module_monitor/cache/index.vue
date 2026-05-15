@@ -13,7 +13,7 @@
                     <span class="font-medium">Redis监控信息</span>
                   </div>
                 </template>
-                <ElDescriptions :column="6" border>
+                <FaDescriptions :column="6" :scrollbar="false">
                   <ElDescriptionsItem label="Redis版本">
                     {{ cache.info?.redis_version || "-" }}
                   </ElDescriptionsItem>
@@ -55,7 +55,7 @@
                     {{ cache.info?.instantaneous_input_kbps || 0 }}kps/
                     {{ cache.info?.instantaneous_output_kbps || 0 }}kps
                   </ElDescriptionsItem>
-                </ElDescriptions>
+                </FaDescriptions>
               </ElCard>
             </ElCol>
           </ElRow>
@@ -262,6 +262,7 @@
 </template>
 
 <script lang="ts" setup>
+import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 import { ElMessageBox } from "element-plus";
 import CacheAPI, {
   type CacheInfo,

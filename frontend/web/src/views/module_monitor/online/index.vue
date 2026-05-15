@@ -66,7 +66,6 @@ import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
 import CopyButton from "@/components/others/fa-copy-button/index.vue";
 import OnlineAPI, { type OnlineUserTable } from "@/api/module_monitor/online";
 import type { ColumnOption } from "@/types/component";
@@ -235,7 +234,7 @@ const {
           }
           return h(ElTooltip, { content: "强退", placement: "top" }, () =>
             h("span", { class: "inline-flex" }, [
-              h(ArtButtonTable, {
+              h(FaButtonTable, {
                 type: "delete",
                 onClick: () => kickSession(row.session_id),
               }),

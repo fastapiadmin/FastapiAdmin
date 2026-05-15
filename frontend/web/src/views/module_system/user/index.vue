@@ -67,8 +67,8 @@
                 :import-loading="uploadLoading"
                 :delete-loading="batchDeleting"
                 @add="handleOpenDialog('create')"
-                @import="openImportModal"
-                @export="openExportModal"
+                @import="openImport"
+                @export="openExport"
                 @delete="handleBatchDelete"
                 @more="handleMoreClick"
               />
@@ -95,121 +95,60 @@
       :title="dialogVisible.title"
       append-to-body
       :size="drawerSize"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElDescriptions :column="2" border>
-          <ElDescriptionsItem label="编号" :span="2">
-            {{ detailFormData.id }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="头像" :span="2">
-            <template v-if="detailFormData.avatar">
-              <ElAvatar :src="detailFormData.avatar" size="small"></ElAvatar>
-            </template>
-            <template v-else>
-              <ElAvatar icon="UserFilled" size="small"></ElAvatar>
-            </template>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="账号" :span="2">
-            {{ detailFormData.username }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="用户名" :span="2">
-            {{ detailFormData.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="性别" :span="2">
-            <ElTag v-if="detailFormData.gender === '0'" type="success">男</ElTag>
-            <ElTag v-else-if="detailFormData.gender === '1'" type="warning">女</ElTag>
+        <FaDescriptions
+          :column="2"
+          :data="detailFormData"
+          :items="userDetailItems"
+          :scrollbar="false"
+        >
+          <!-- 头像 → 自定义渲染 -->
+          <template #avatar="{ row }">
+            <ElAvatar v-if="row?.avatar" :src="row?.avatar as string" size="small" />
+            <ElAvatar v-else icon="UserFilled" size="small" />
+          </template>
+          <!-- 性别 → 三种状态 Tag -->
+          <template #gender="{ row }">
+            <ElTag v-if="row?.gender === '0'" type="success">男</ElTag>
+            <ElTag v-else-if="row?.gender === '1'" type="warning">女</ElTag>
             <ElTag v-else type="info">未知</ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="部门" :span="2">
-            {{ detailFormData.dept ? detailFormData.dept.name : "" }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="角色" :span="2">
+          </template>
+          <!-- 角色 → 数组 join 渲染 -->
+          <template #roles="{ row }">
+            {{ row?.roles ? (row.roles as any[]).map((item: any) => item.name).join("、") : "" }}
+          </template>
+          <!-- 岗位 → 数组 join 渲染 -->
+          <template #positions="{ row }">
             {{
-              detailFormData.roles ? detailFormData.roles.map((item) => item.name).join("、") : ""
-            }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="岗位" :span="2">
-            {{
-              detailFormData.positions
-                ? detailFormData.positions.map((item) => item.name).join("、")
+              row?.positions
+                ? (row.positions as any[]).map((item: any) => item.name).join("、")
                 : ""
             }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="邮箱" :span="2">
-            {{ detailFormData.email }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="手机号" :span="2">
-            {{ detailFormData.mobile }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="是否超管" :span="2">
-            <ElTag :type="detailFormData.is_superuser ? 'success' : 'info'">
-              {{ detailFormData.is_superuser ? "是" : "否" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="状态" :span="2">
-            <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-              {{ detailFormData.status === "0" ? "启用" : "停用" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="上次登录时间" :span="2">
-            {{ detailFormData.last_login }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建人" :span="2">
-            {{ detailFormData.created_by?.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新人" :span="2">
-            {{ detailFormData.updated_by?.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="描述" :span="4">
-            {{ detailFormData.description }}
-          </ElDescriptionsItem>
-        </ElDescriptions>
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElForm
+        <FaForm
+          :key="userFormRenderKey"
           ref="dataFormRef"
-          :model="formData"
+          v-model="formData"
+          :items="userDialogFormItems"
           :rules="rules"
           label-suffix=":"
-          label-width="100px"
+          :label-width="'auto'"
           label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
         >
-          <ElFormItem label="账号" prop="username">
-            <ElInput
-              v-model="formData.username"
-              :disabled="!!formData.id"
-              placeholder="请输入账号"
-            />
-          </ElFormItem>
-
-          <ElFormItem label="用户名" prop="name">
-            <ElInput v-model="formData.name" placeholder="请输入用户名" />
-          </ElFormItem>
-
-          <ElFormItem label="性别" prop="gender">
-            <ElSelect v-model="formData.gender" placeholder="请选择性别">
-              <ElOption label="男" value="0" />
-              <ElOption label="女" value="1" />
-              <ElOption label="未知" value="2" />
-            </ElSelect>
-          </ElFormItem>
-
-          <ElFormItem label="手机号" prop="mobile">
-            <ElInput v-model="formData.mobile" placeholder="请输入手机号码" maxlength="11" />
-          </ElFormItem>
-
-          <ElFormItem label="邮箱" prop="email">
-            <ElInput v-model="formData.email" placeholder="请输入邮箱" maxlength="50" />
-          </ElFormItem>
-
-          <ElFormItem label="部门" prop="dept_id">
+          <template #dept_id>
             <ElTreeSelect
               v-model="formData.dept_id"
               placeholder="请选择上级部门"
@@ -219,9 +158,8 @@
               check-strictly
               :render-after-expand="false"
             />
-          </ElFormItem>
-
-          <ElFormItem label="角色" prop="role_ids">
+          </template>
+          <template #role_ids>
             <ElSelect v-model="formData.role_ids" multiple placeholder="请选择角色">
               <ElOption
                 v-for="item in roleOptions"
@@ -231,9 +169,8 @@
                 :disabled="item.disabled"
               />
             </ElSelect>
-          </ElFormItem>
-
-          <ElFormItem label="岗位" prop="position_ids">
+          </template>
+          <template #position_ids>
             <ElSelect v-model="formData.position_ids" multiple placeholder="请选择岗位">
               <ElOption
                 v-for="item in positionOptions"
@@ -243,60 +180,13 @@
                 :disabled="item.disabled"
               />
             </ElSelect>
-          </ElFormItem>
-
-          <ElFormItem v-if="!formData.id" label="密码" prop="password">
-            <ElInput
-              v-model="formData.password"
-              placeholder="请输入密码"
-              type="password"
-              show-password
-              clearable
-            />
-          </ElFormItem>
-
-          <ElFormItem label="是否超管" prop="is_superuser">
-            <ElSwitch v-model="formData.is_superuser" />
-          </ElFormItem>
-
-          <ElFormItem label="状态" prop="status">
-            <ElRadioGroup v-model="formData.status">
-              <ElRadio value="0">启用</ElRadio>
-              <ElRadio value="1">停用</ElRadio>
-            </ElRadioGroup>
-          </ElFormItem>
-
-          <ElFormItem label="描述" prop="description">
-            <ElInput
-              v-model="formData.description"
-              :rows="4"
-              :maxlength="100"
-              show-word-limit
-              type="textarea"
-              placeholder="请输入描述"
-            />
-          </ElFormItem>
-        </ElForm>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type === 'create' || dialogVisible.type === 'update'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+          </template>
+        </FaForm>
       </template>
     </FaDrawer>
 
     <FaImportDialog
-      v-model="importModalVisible"
+      v-model="importVisible"
       :content-config="userImportContentConfig"
       default-template-file-name="user_import_template.xlsx"
       :loading="uploadLoading"
@@ -304,7 +194,7 @@
     />
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="userExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -319,20 +209,14 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { h, ref, reactive, computed, nextTick } from "vue";
 import { UserFilled } from "@element-plus/icons-vue";
 import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import UserAPI, {
   type UserForm,
@@ -347,6 +231,7 @@ import DeptTree from "./components/DeptTree.vue";
 import UserTableSelect from "./components/UserTableSelect.vue";
 import { useUserStore } from "@stores";
 import { ElMessage, ElMessageBox, ElTag, ElAvatar } from "element-plus";
+import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import type { ColumnOption } from "@/types/component";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
@@ -455,7 +340,8 @@ function formatUserOperationCell(row: UserInfo, ctx: Parameters<typeof buildUser
   });
 }
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const userFormRenderKey = ref(0);
 const submitLoading = ref(false);
 const uploadLoading = ref(false);
 const batchDeleting = ref(false);
@@ -465,9 +351,112 @@ const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450
 const deptOptions = ref<OptionType[]>();
 const roleOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
 const positionOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
-const importModalVisible = ref(false);
-const exportModalVisible = ref(false);
+const { importVisible, exportVisible, openImport, openExport } = useImportExport();
 const detailFormData = ref<UserInfo>({});
+
+// 用户详情描述项配置 —— 数据驱动 + 关键字段用具名插槽覆盖
+const userDetailItems: DescriptionsItem[] = [
+  { label: "编号", prop: "id" },
+  { label: "头像", prop: "avatar", slot: "avatar" }, // 自定义插槽渲染
+  { label: "账号", prop: "username" },
+  { label: "用户名", prop: "name" },
+  { label: "性别", prop: "gender", slot: "gender" }, // 三种状态 Tag
+  { label: "部门", prop: "dept.name" }, // 嵌套属性 a.b.c
+  { label: "角色", prop: "roles", slot: "roles" }, // 数组 join 渲染
+  { label: "岗位", prop: "positions", slot: "positions" }, // 数组 join 渲染
+  { label: "邮箱", prop: "email" },
+  { label: "手机号", prop: "mobile" },
+  {
+    label: "是否超管",
+    prop: "is_superuser",
+    tag: {
+      map: { true: { type: "success", text: "是" }, false: { type: "info", text: "否" } },
+    },
+  },
+  {
+    label: "状态",
+    prop: "status",
+    tag: {
+      map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+    },
+  },
+  { label: "上次登录时间", prop: "last_login" },
+  { label: "创建人", prop: "created_by.name" },
+  { label: "更新人", prop: "updated_by.name" },
+  { label: "创建时间", prop: "created_time" },
+  { label: "更新时间", prop: "updated_time" },
+  { label: "描述", prop: "description", span: 4 },
+];
+
+// 用户新增/编辑表单配置 —— 三个复杂字段（部门树、角色多选、岗位多选）用插槽渲染
+const userDialogFormItems = computed<FormItem[]>(() => [
+  {
+    key: "username",
+    label: "账号",
+    type: "input",
+    props: { placeholder: "请输入账号", disabled: !!formData.value.id },
+  },
+  { key: "name", label: "用户名", type: "input", props: { placeholder: "请输入用户名" } },
+  {
+    key: "gender",
+    label: "性别",
+    type: "select",
+    props: {
+      placeholder: "请选择性别",
+      options: [
+        { label: "男", value: "0" },
+        { label: "女", value: "1" },
+        { label: "未知", value: "2" },
+      ],
+    },
+  },
+  {
+    key: "mobile",
+    label: "手机号",
+    type: "input",
+    props: { placeholder: "请输入手机号码", maxlength: 11 },
+  },
+  {
+    key: "email",
+    label: "邮箱",
+    type: "input",
+    props: { placeholder: "请输入邮箱", maxlength: 50 },
+  },
+  { key: "dept_id", label: "部门", type: "input" /* 实际渲染由 #dept_id 插槽接管 */ },
+  { key: "role_ids", label: "角色", type: "input" /* 实际渲染由 #role_ids 插槽接管 */ },
+  { key: "position_ids", label: "岗位", type: "input" /* 实际渲染由 #position_ids 插槽接管 */ },
+  {
+    key: "password",
+    label: "密码",
+    type: "input",
+    hidden: !!formData.value.id,
+    props: { placeholder: "请输入密码", type: "password", showPassword: true, clearable: true },
+  },
+  { key: "is_superuser", label: "是否超管", type: "switch" },
+  {
+    key: "status",
+    label: "状态",
+    type: "radiogroup",
+    props: {
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+    },
+  },
+  {
+    key: "description",
+    label: "描述",
+    type: "input",
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 
 const searchForm = ref<UserSearchForm>({
   username: undefined,
@@ -836,21 +825,13 @@ async function handleDeptNodeClick() {
   await getData();
 }
 
-function openImportModal() {
-  importModalVisible.value = true;
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
-}
-
 async function handleImportUpload(formDataUpload: FormData) {
   uploadLoading.value = true;
   try {
     const response = await UserAPI.importUser(formDataUpload);
     if (response.data.code === ResultEnum.SUCCESS) {
       ElMessage.success(`${response.data.msg}，${response.data.data}`);
-      importModalVisible.value = false;
+      importVisible.value = false;
       await refreshData();
     } else {
       ElMessage.error(response.data.msg || "导入失败");
@@ -893,7 +874,9 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }
   } else {
     dialogVisible.title = "新增用户";
+    Object.assign(formData.value, initialFormData);
     formData.value.id = undefined;
+    userFormRenderKey.value += 1;
   }
   dialogVisible.visible = true;
   await nextTick();
@@ -928,7 +911,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     submitLoading.value = true;
     const id = formData.value.id;

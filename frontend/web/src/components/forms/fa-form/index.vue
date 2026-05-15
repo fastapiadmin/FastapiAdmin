@@ -2,7 +2,106 @@
 <!-- 支持常用表单组件、自定义组件、插槽、校验、隐藏表单项 -->
 <!-- 写法同 ElementPlus 官方文档组件，把属性写在 props 里面就可以了 -->
 <template>
-  <section class="px-4 pb-0 pt-4 md:px-4 md:pt-4">
+  <ElScrollbar v-if="scrollbar" :max-height="maxHeight" :view-style="{ overflowX: 'hidden' }">
+    <section class="px-4 pb-0 pt-4 md:px-4 md:pt-4">
+      <ElForm
+        ref="formRef"
+        :model="modelValue"
+        :label-position="labelPosition"
+        v-bind="{ ...$attrs }"
+      >
+        <ElRow class="flex flex-wrap" :gutter="gutter">
+          <ElCol
+            v-for="item in visibleFormItems"
+            :key="item.key"
+            :xs="getColSpan(item.span, 'xs')"
+            :sm="getColSpan(item.span, 'sm')"
+            :md="getColSpan(item.span, 'md')"
+            :lg="getColSpan(item.span, 'lg')"
+            :xl="getColSpan(item.span, 'xl')"
+          >
+            <ElFormItem
+              :prop="item.key"
+              :label-width="item.label ? item.labelWidth || labelWidth : undefined"
+            >
+              <template #label v-if="item.label">
+                <component v-if="typeof item.label !== 'string'" :is="item.label" />
+                <span v-else>{{ item.label }}</span>
+              </template>
+              <slot :name="item.key" :item="item" :modelValue="modelValue">
+                <component
+                  :is="getComponent(item)"
+                  :model-value="getFieldValue(item.key)"
+                  @update:model-value="setFieldValue(item.key, $event)"
+                  v-bind="getProps(item)"
+                >
+                  <!-- 下拉选择 -->
+                  <template v-if="item.type === 'select' && getProps(item)?.options">
+                    <ElOption
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
+
+                  <!-- 复选框组 -->
+                  <template v-if="item.type === 'checkboxgroup' && getProps(item)?.options">
+                    <ElCheckbox
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
+
+                  <!-- 单选框组 -->
+                  <template v-if="item.type === 'radiogroup' && getProps(item)?.options">
+                    <ElRadio
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
+
+                  <!-- 动态插槽支持 -->
+                  <template
+                    v-for="(slotFn, slotName) in getSlots(item)"
+                    :key="slotName"
+                    #[slotName]
+                  >
+                    <component :is="slotFn" />
+                  </template>
+                </component>
+              </slot>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="24" :md="span" :lg="span" :xl="span" class="max-w-full flex-1">
+            <div
+              class="mb-3 flex-c flex-wrap justify-end md:flex-row md:items-stretch md:gap-2"
+              :style="actionButtonsStyle"
+            >
+              <div class="flex gap-2 md:justify-center">
+                <ElButton v-if="showReset" class="reset-button" @click="handleReset" v-ripple>
+                  {{ t("table.form.reset") }}
+                </ElButton>
+                <ElButton
+                  v-if="showSubmit"
+                  type="primary"
+                  class="submit-button"
+                  @click="handleSubmit"
+                  v-ripple
+                  :disabled="disabledSubmit"
+                >
+                  {{ t("table.form.submit") }}
+                </ElButton>
+              </div>
+            </div>
+          </ElCol>
+        </ElRow>
+      </ElForm>
+    </section>
+  </ElScrollbar>
+  <!-- 不使用滚动条时直接渲染 -->
+  <section v-else class="px-4 pb-0 pt-4 md:px-4 md:pt-4">
     <ElForm
       ref="formRef"
       :model="modelValue"
@@ -34,7 +133,6 @@
                 @update:model-value="setFieldValue(item.key, $event)"
                 v-bind="getProps(item)"
               >
-                <!-- 下拉选择 -->
                 <template v-if="item.type === 'select' && getProps(item)?.options">
                   <ElOption
                     v-for="option in getProps(item).options"
@@ -42,8 +140,6 @@
                     :key="option.value"
                   />
                 </template>
-
-                <!-- 复选框组 -->
                 <template v-if="item.type === 'checkboxgroup' && getProps(item)?.options">
                   <ElCheckbox
                     v-for="option in getProps(item).options"
@@ -51,8 +147,6 @@
                     :key="option.value"
                   />
                 </template>
-
-                <!-- 单选框组 -->
                 <template v-if="item.type === 'radiogroup' && getProps(item)?.options">
                   <ElRadio
                     v-for="option in getProps(item).options"
@@ -60,8 +154,6 @@
                     :key="option.value"
                   />
                 </template>
-
-                <!-- 动态插槽支持 -->
                 <template v-for="(slotFn, slotName) in getSlots(item)" :key="slotName" #[slotName]>
                   <component :is="slotFn" />
                 </template>
@@ -206,6 +298,10 @@ interface FormProps {
   disabledSubmit?: boolean;
   /** 提交时是否清洗空值 */
   sanitizeOutput?: Partial<SanitizeOutputOptions>;
+  /** 是否需要内置 ElScrollbar 包裹 */
+  scrollbar?: boolean;
+  /** ElScrollbar 最大高度 */
+  maxHeight?: string;
 }
 
 interface SanitizeOutputOptions {
@@ -234,6 +330,8 @@ const props = withDefaults(defineProps<FormProps>(), {
   showSubmit: true,
   disabledSubmit: false,
   sanitizeOutput: () => ({}),
+  scrollbar: false,
+  maxHeight: "75vh",
 });
 
 interface FormEmits {
@@ -505,6 +603,12 @@ const handleSubmit = () => {
 defineExpose({
   ref: formInstance,
   validate: (...args: any[]) => formInstance.value?.validate(...args),
+  /** 代理 ElForm.resetFields */
+  resetFields: (...args: any[]) => formInstance.value?.resetFields(...args),
+  /** 代理 ElForm.clearValidate */
+  clearValidate: (...args: any[]) => formInstance.value?.clearValidate(...args),
+  /** 代理 ElForm.validateField */
+  validateField: (...args: any[]) => formInstance.value?.validateField(...args),
   reset: handleReset,
   // 允许外部在不触发提交事件时主动获取清洗后的输出。
   getOutput: getSanitizedOutput,

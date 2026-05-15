@@ -457,8 +457,8 @@ function resetForm() {
     status: "0",
     description: "",
   });
-  formRef.value?.ref?.resetFields();
-  formRef.value?.ref?.clearValidate();
+  formRef.value?.resetFields();
+  formRef.value?.clearValidate();
 }
 
 function handleCloseDialog() {

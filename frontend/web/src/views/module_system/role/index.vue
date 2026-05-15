@@ -37,7 +37,7 @@
             :perm-patch="['module_system:role:patch']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -62,99 +62,65 @@
       width="720px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border>
-            <ElDescriptionsItem label="角色名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="排序" :span="2">
-              {{ detailFormData.order }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="角色编码" :span="2">
-              {{ detailFormData.code }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="数据权限" :span="2">
-              <ElTag v-if="detailFormData.data_scope === 1" type="primary">仅本人数据权限</ElTag>
-              <ElTag v-else-if="detailFormData.data_scope === 2" type="info">本部门数据权限</ElTag>
-              <ElTag v-else-if="detailFormData.data_scope === 3" type="warning">
-                本部门及以下数据权限
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="roleDetailItems"
+          max-height="75vh"
+        >
+          <template #data_scope="{ row }">
+            <ElTag v-if="row?.data_scope === 1" type="primary">仅本人数据权限</ElTag>
+            <ElTag v-else-if="row?.data_scope === 2" type="info">本部门数据权限</ElTag>
+            <ElTag v-else-if="row?.data_scope === 3" type="warning">本部门及以下数据权限</ElTag>
+            <ElTag v-else-if="row?.data_scope === 4" type="success">全部数据权限</ElTag>
+            <ElTag v-else type="danger">自定义数据权限</ElTag>
+          </template>
+          <template #depts="{ row }">
+            <template v-if="row?.depts && (row.depts as any[]).length > 0">
+              <ElTag
+                v-for="dept in row.depts as any[]"
+                :key="dept.id"
+                type="info"
+                :style="'margin-right: 4px; margin-bottom: 4px'"
+              >
+                {{ dept.name }}
               </ElTag>
-              <ElTag v-else-if="detailFormData.data_scope === 4" type="success">全部数据权限</ElTag>
-              <ElTag v-else type="danger">自定义数据权限</ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="所属部门" :span="2">
-              <template v-if="detailFormData.depts && detailFormData.depts.length > 0">
-                <ElTag
-                  v-for="dept in detailFormData.depts"
-                  :key="dept.id"
-                  type="info"
-                  :style="'margin-right: 4px; margin-bottom: 4px'"
-                >
-                  {{ dept.name }}
-                </ElTag>
-              </template>
-              <span v-else :style="'color: var(--el-text-color-placeholder)'">-</span>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "启用" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="4">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+            </template>
+            <span v-else :style="'color: var(--el-text-color-placeholder)'">-</span>
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="roleFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="roleDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="roleFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="roleDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
@@ -167,7 +133,7 @@
     />
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="roleExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -177,18 +143,11 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import RoleAPI, {
@@ -196,7 +155,6 @@ import RoleAPI, {
   type RoleTable,
   type TablePageQuery,
 } from "@/api/module_system/role";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
 import PermissonDrawer from "./components/PermissonDrawer.vue";
@@ -553,6 +511,25 @@ const roleExportContentConfig = computed(() => ({
 
 const detailFormData = ref<RoleTable>({} as RoleTable);
 
+const roleDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "角色名称", prop: "name" },
+    { label: "排序", prop: "order" },
+    { label: "角色编码", prop: "code" },
+    { label: "数据权限", prop: "data_scope", slot: "data_scope" },
+    { label: "所属部门", prop: "depts", slot: "depts" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+    { label: "描述", prop: "description", span: 4 },
+  ];
+
 const formData = ref<RoleForm>({
   id: undefined,
   name: undefined,
@@ -649,7 +626,7 @@ const initialFormData: RoleForm = {
   description: undefined,
 };
 
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: RoleSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -667,8 +644,8 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -764,10 +741,6 @@ async function handleMoreClick(status: string) {
   } catch {
     // 用户取消
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>
 

@@ -241,7 +241,29 @@ export default ({ mode }: { mode: string }) => {
       vue(),
       tailwindcss(),
       AutoImport({
-        imports: ["vue", "vue-router", "pinia", "@vueuse/core", "vue-i18n"],
+        imports: [
+          "vue",
+          "vue-router",
+          "pinia",
+          "@vueuse/core",
+          "vue-i18n",
+          // Element Plus 组件/API：在 <script> 中通过 h() 或直接调用时需要自动导入
+          {
+            "element-plus": [
+              "ElMessageBox",
+              "ElTag",
+              "ElTooltip",
+              "ElDropdown",
+              "ElDropdownMenu",
+              "ElDropdownItem",
+            ],
+          },
+          // 自定义组件：在 <script> 中通过 h() 使用时需要自动导入
+          { "@/components/forms/fa-button-table/index.vue": [["default", "FaButtonTable"]] },
+          { "@/components/others/fa-json-pretty/index.vue": [["default", "JsonPretty"]] },
+          { "@/components/others/fa-copy-button/index.vue": [["default", "CopyButton"]] },
+          { "@/components/others/fa-menu-routeIcon/index.vue": [["default", "MenuRouteIcon"]] },
+        ],
         dts: "src/types/import/auto-imports.d.ts",
         resolvers: [ElementPlusResolver({ importStyle: "sass" })],
         eslintrc: {
@@ -254,7 +276,6 @@ export default ({ mode }: { mode: string }) => {
       Components({
         dts: "src/types/import/components.d.ts",
         resolvers: [ElementPlusResolver({ importStyle: "sass" })],
-        /** art-* 布局组件以 src/layouts 为唯一源码目录（与 src/layouts/index.vue 一致），避免与旧路径重复 */
         dirs: ["src/components", "src/**/components"],
       }),
       ElementPlus({

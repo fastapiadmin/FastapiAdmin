@@ -37,7 +37,7 @@
             :perm-patch="['module_system:dict_type:patch']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -62,73 +62,53 @@
       width="640px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="2" border>
-            <ElDescriptionsItem label="字典名称" :span="2">
-              {{ detailFormData.dict_name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="字典类型" :span="2">
-              <ElTag type="primary">{{ detailFormData.dict_type }}</ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag v-if="detailFormData.status === '0'" type="success">启用</ElTag>
-              <ElTag v-else type="danger">停用</ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="2"
+          :data="detailFormData"
+          :items="dictDetailItems"
+          max-height="70vh"
+        >
+          <template #dict_type="{ row }">
+            <ElTag type="primary">{{ row?.dict_type }}</ElTag>
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="dictFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="dictDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="dictFormRenderKey"
+          scrollbar
+          max-height="70vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="dictDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="dictTypeExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -146,15 +126,10 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DictAPI, {
@@ -162,7 +137,6 @@ import DictAPI, {
   type DictPageQuery,
   type DictTable,
 } from "@/api/module_system/dict";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useDictStore } from "@stores";
 import DataDrawer from "@views/module_system/dict/components/DataDrawer.vue";
 import { useAuth } from "@/hooks/core/useAuth";
@@ -364,6 +338,22 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<DictTable>({});
 
+const dictDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "字典名称", prop: "dict_name" },
+    { label: "字典类型", prop: "dict_type", slot: "dict_type" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "描述", prop: "description" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
 const formData = ref<DictForm>({
   id: undefined,
   dict_name: "",
@@ -379,6 +369,7 @@ const rules = reactive({
 });
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const submitLoading = ref(false);
 const dictFormRenderKey = ref(0);
 
 const dictDialogFormItems = computed<FormItem[]>(() => [
@@ -426,7 +417,7 @@ const initialFormData: DictForm = {
   description: undefined,
 };
 
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 const drawerVisible = ref(false);
 const currentDictType = ref("");
@@ -511,8 +502,8 @@ function handleDictDataDrawer(dictTypeRow: DictTable) {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 
@@ -628,10 +619,6 @@ async function handleMoreClick(status: string) {
   } catch {
     // 用户取消
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>
 

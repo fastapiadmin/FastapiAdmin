@@ -65,7 +65,7 @@
     <div v-show="editMode === 'visual'" class="visual-pane">
       <ElScrollbar max-height="min(58vh, 520px)" class="visual-pane-scroll">
         <div class="visual-structure max-w-3xl">
-          <ElDescriptions :column="1" border size="small" class="visual-desc">
+          <FaDescriptions :column="1" size="small" class="visual-desc" :scrollbar="false">
             <template #title>
               <span class="text-sm font-medium text-[var(--el-text-color-primary)]">选项</span>
             </template>
@@ -81,9 +81,9 @@
                 <ElRadioButton value="masterSub">主表 + 子表明细</ElRadioButton>
               </ElRadioGroup>
             </ElDescriptionsItem>
-          </ElDescriptions>
+          </FaDescriptions>
 
-          <ElDescriptions :column="1" border size="small" class="visual-desc mt-3">
+          <FaDescriptions :column="1" size="small" class="visual-desc mt-3" :scrollbar="false">
             <template #title>
               <span class="text-sm font-medium text-[var(--el-text-color-primary)]">主表</span>
             </template>
@@ -101,14 +101,14 @@
             <ElDescriptionsItem label="说明" label-class-name="visual-desc-label">
               <ElInput v-model="visual.mainComment" placeholder="中文说明，可选" clearable />
             </ElDescriptionsItem>
-          </ElDescriptions>
+          </FaDescriptions>
 
-          <ElDescriptions
+          <FaDescriptions
             v-if="visual.subEnabled"
             :column="1"
-            border
             size="small"
             class="visual-desc mt-3"
+            :scrollbar="false"
           >
             <template #title>
               <span class="text-sm font-medium text-[var(--el-text-color-primary)]">子表</span>
@@ -137,7 +137,7 @@
             <ElDescriptionsItem label="对应主表列" label-class-name="visual-desc-label">
               <ElInput v-model="visual.fkRefColumn" placeholder="一般是 id" clearable />
             </ElDescriptionsItem>
-          </ElDescriptions>
+          </FaDescriptions>
 
           <div class="mt-3">
             <ElLink type="primary" underline="never" @click="syncVisualToSql">
@@ -179,6 +179,7 @@ import { ElMessage } from "element-plus";
 import { ArrowDown, CopyDocument } from "@element-plus/icons-vue";
 import { useClipboard } from "@vueuse/core";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 import { useSettingsStore } from "@stores";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { buildSqlFromVisual } from "../utils/buildCreateTableSql";

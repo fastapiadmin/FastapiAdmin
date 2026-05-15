@@ -1,4 +1,4 @@
-<!-- 岗位管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
+<!-- 岗位管理：FA + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -46,7 +46,7 @@
             :perm-patch="['module_system:position:patch']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -71,84 +71,49 @@
       width="720px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border>
-            <ElDescriptionsItem label="岗位名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="排序" :span="2">
-              {{ detailFormData.order }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag v-if="detailFormData.status === '0'" type="success">启用</ElTag>
-              <ElTag v-else type="danger">停用</ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建人" :span="2">
-              {{ detailFormData.created_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="4">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="positionDetailItems"
+          max-height="75vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="positionFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="positionDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          scrollbar
+          max-height="75vh"
+          :key="positionFormRenderKey"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="positionDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="positionExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -158,18 +123,10 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive, nextTick } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
-import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import PositionAPI, {
@@ -177,15 +134,6 @@ import PositionAPI, {
   type PositionPageQuery,
   type PositionTable,
 } from "@/api/module_system/position";
-import {
-  ElMessage,
-  ElMessageBox,
-  ElTag,
-  ElTooltip,
-  ElDropdown,
-  ElDropdownMenu,
-  ElDropdownItem,
-} from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
 import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
@@ -281,7 +229,7 @@ function formatPositionOperationCell(
   const inlineNodes = inline.map((a) =>
     h(ElTooltip, { content: a.label, placement: "top" }, () =>
       h("span", { class: "inline-flex" }, [
-        h(ArtButtonTable, {
+        h(FaButtonTable, {
           type: a.artType,
           icon: a.icon,
           onClick: a.run,
@@ -305,7 +253,7 @@ function formatPositionOperationCell(
       default: () =>
         h(ElTooltip, { content: "更多", placement: "top" }, () =>
           h("span", { class: "inline-flex align-middle" }, [
-            h(ArtButtonTable, {
+            h(FaButtonTable, {
               type: "more",
               onClick: () => {},
             }),
@@ -531,6 +479,24 @@ const positionExportContentConfig = computed(() => ({
 
 const detailFormData = ref<PositionTable>({});
 
+const positionDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "岗位名称", prop: "name" },
+    { label: "排序", prop: "order" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+    { label: "描述", prop: "description", span: 4 },
+  ];
+
 const formData = ref<PositionForm>({
   id: undefined,
   name: undefined,
@@ -599,11 +565,7 @@ const positionDialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 const submitLoading = ref(false);
-const exportModalVisible = ref(false);
-
-function openExportModal() {
-  exportModalVisible.value = true;
-}
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: PositionSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -633,8 +595,8 @@ function onResetSearch() {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 

@@ -58,86 +58,45 @@
       width="640px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="2" border>
-            <ElDescriptionsItem label="租户名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="租户编码" :span="2">
-              {{ detailFormData.code }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "正常" : "禁用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="开始时间">
-              {{ detailFormData.start_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="结束时间">
-              {{ detailFormData.end_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="2"
+          :data="detailFormData"
+          :items="tenantDetailItems"
+          max-height="75vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="tenantFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="tenantDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          />
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="tenantFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="tenantDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        />
       </template>
     </FaDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
@@ -146,15 +105,6 @@ import TenantAPI, {
   type TenantTable,
   type TenantUpdateForm,
 } from "@/api/module_system/tenant";
-import {
-  ElMessage,
-  ElMessageBox,
-  ElTag,
-  ElTooltip,
-  ElDropdown,
-  ElDropdownMenu,
-  ElDropdownItem,
-} from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 
 defineOptions({
@@ -240,7 +190,7 @@ function formatTenantOperationCell(
   const inlineNodes = inline.map((a) =>
     h(ElTooltip, { content: a.label, placement: "top" }, () =>
       h("span", { class: "inline-flex" }, [
-        h(ArtButtonTable, {
+        h(FaButtonTable, {
           type: a.artType,
           icon: a.icon,
           onClick: a.run,
@@ -264,7 +214,7 @@ function formatTenantOperationCell(
       default: () =>
         h(ElTooltip, { content: "更多", placement: "top" }, () =>
           h("span", { class: "inline-flex align-middle" }, [
-            h(ArtButtonTable, {
+            h(FaButtonTable, {
               type: "more",
               onClick: () => {},
             }),
@@ -445,6 +395,24 @@ const {
 
 const detailFormData = ref<TenantTable>({ code: "", name: "", status: "0" });
 
+const tenantDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "租户名称", prop: "name" },
+    { label: "租户编码", prop: "code" },
+    {
+      label: "状态",
+      prop: "status",
+      span: 1,
+      tag: {
+        map: { "0": { type: "success", text: "正常" }, "1": { type: "danger", text: "禁用" } },
+      },
+    },
+    { label: "开始时间", prop: "start_time", span: 1 },
+    { label: "结束时间", prop: "end_time", span: 1 },
+    { label: "描述", prop: "description" },
+    { label: "创建时间", prop: "created_time" },
+  ];
+
 const currentEditId = ref<number | null>(null);
 
 const formData = ref<TenantForm>({
@@ -574,8 +542,8 @@ const tenantDialogFormItems = computed<FormItem[]>(() => [
 ]);
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
   currentEditId.value = null;
 }

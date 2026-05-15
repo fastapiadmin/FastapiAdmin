@@ -15,6 +15,58 @@ const __dirname = dirname(__filename)
 const autoImportConfig = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, ".auto-import.json"), "utf-8")
 )
+// Fa- 组件全局配置（unplugin-vue-components 自动注册）
+const faComponents = {
+  FaTable: "readonly",
+  FaTableHeader: "readonly",
+  FaTableHeaderLeft: "readonly",
+  FaSearchBar: "readonly",
+  FaSearchBarWithAudit: "readonly",
+  FaDialog: "readonly",
+  FaDrawer: "readonly",
+  FaForm: "readonly",
+  FaDescriptions: "readonly",
+  FaImportDialog: "readonly",
+  FaExportDialog: "readonly",
+  FaIconSelect: "readonly",
+  FaWangEditor: "readonly",
+  FaSvgIcon: "readonly",
+  FaButtonMore: "readonly",
+  FaButtonTable: "readonly",
+  ArtButtonTable: "readonly",
+  FaExcelImport: "readonly",
+  FaExcelExport: "readonly",
+  FaBreadcrumb: "readonly",
+  FaCardBanner: "readonly",
+  FaJsonPretty: "readonly",
+  JsonPretty: "readonly",
+  FaCopyButton: "readonly",
+  CopyButton: "readonly",
+  FaMenuRouteIcon: "readonly",
+  MenuRouteIcon: "readonly",
+  FaIntervalTab: "readonly",
+  FaPagination: "readonly",
+  FaSizeSelect: "readonly",
+  FaMarkdownRenderer: "readonly",
+  FaScreenLock: "readonly",
+  FaSettingsPanel: "readonly",
+  FaGlobalSearch: "readonly",
+  FaHeaderBar: "readonly",
+  FaFastEnter: "readonly",
+  FaFireworksEffect: "readonly",
+  FaGlobalComponent: "readonly",
+  FaWatermark: "readonly",
+  FaCountTo: "readonly",
+  FaECharts: "readonly",
+  FaIcon: "readonly",
+  FaChatWindow: "readonly",
+  FaBackToTop: "readonly",
+  FaCalender: "readonly",
+  FaDragVerify: "readonly",
+  FaException: "readonly",
+  FaVideoPlayer: "readonly",
+  FaCutterImg: "readonly",
+}
 
 // Element Plus 组件全局配置
 const elementPlusComponents = {
@@ -115,6 +167,7 @@ export default [
     languageOptions: {
       globals: {
         ...autoImportConfig.globals,
+        ...faComponents,
         Api: "readonly",
         ...elementPlusComponents,
         // 全局类型定义

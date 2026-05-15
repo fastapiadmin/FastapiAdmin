@@ -38,8 +38,8 @@
             :perm-patch="['module_example:demo01:patch']"
             :delete-loading="batchDeleting"
             @add="openEditDialog('add')"
-            @import="openImportModal"
-            @export="openExportModal"
+            @import="openImport"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="runBatchStatus"
           />
@@ -64,87 +64,56 @@
       width="768px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="2" border>
-            <ElDescriptionsItem label="名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="UUID" :span="2">
-              {{ detailFormData.uuid }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "正常" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建人" :span="2">
-              {{ detailFormData.created_by?.name ?? "—" }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name ?? "—" }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="2"
+          :data="detailFormData"
+          :items="demo01DetailItems"
+          max-height="70vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="demo01FormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="demo01DialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">正常</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="demo01FormRenderKey"
+          scrollbar
+          max-height="70vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="demo01DialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">正常</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaImportDialog
-      v-model="importModalVisible"
+      v-model="importVisible"
       :content-config="demo01ImportContentConfig"
       default-template-file-name="demo01_import_template.xlsx"
       @upload="handleCrudImportUpload"
     />
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="demo01ExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -154,18 +123,12 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useTable } from "@/hooks/core/useTable";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { IContentConfig, IObject } from "@/components/modal/types";
-import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import Demo01API, {
@@ -373,6 +336,24 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<Demo01Table>({});
 
+const demo01DetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "名称", prop: "name" },
+    { label: "UUID", prop: "uuid" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "正常" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "描述", prop: "description" },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
 const formData = ref<Demo01Form>({
   id: undefined,
   name: "",
@@ -386,6 +367,7 @@ const rules = reactive({
 });
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const submitLoading = ref(false);
 const demo01FormRenderKey = ref(0);
 
 const demo01DialogFormItems = computed<FormItem[]>(() => [
@@ -412,8 +394,7 @@ const demo01DialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 
-const importModalVisible = ref(false);
-const exportModalVisible = ref(false);
+const { importVisible, exportVisible, openImport, openExport } = useImportExport();
 
 const initialFormData: Demo01Form = {
   id: undefined,
@@ -516,8 +497,8 @@ async function openEditDialog(type: "add" | "edit", row?: Demo01Table) {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData.value, initialFormData);
 }
 
@@ -605,10 +586,6 @@ async function runBatchStatus(status: string) {
   }
 }
 
-function openImportModal() {
-  importModalVisible.value = true;
-}
-
 async function handleCrudImportUpload(formDataUpload: FormData) {
   try {
     const res = await Demo01API.importDemo01(formDataUpload);
@@ -617,16 +594,12 @@ async function handleCrudImportUpload(formDataUpload: FormData) {
       return;
     }
     ElMessage.success(res.data.msg || "导入成功");
-    importModalVisible.value = false;
+    importVisible.value = false;
     await refreshData();
   } catch (error) {
     console.error("[Import]", error);
     ElMessage.error("导入失败");
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>
 

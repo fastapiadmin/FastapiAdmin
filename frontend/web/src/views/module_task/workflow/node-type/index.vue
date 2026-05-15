@@ -454,8 +454,8 @@ const rules: FormRules = {
 function resetForm() {
   Object.assign(formData.value, defaultForm());
   editingId.value = null;
-  formRef.value?.ref?.resetFields();
-  formRef.value?.ref?.clearValidate();
+  formRef.value?.resetFields();
+  formRef.value?.clearValidate();
 }
 
 function handleCloseDialog() {

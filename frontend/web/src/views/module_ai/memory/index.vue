@@ -74,48 +74,24 @@
       width="920px"
       dialog-class="session-detail-dialog"
       modal-class="session-detail-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
         <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="2" border>
-            <ElDescriptionsItem label="会话ID" :span="2">
-              {{ detailFormData.session_id }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="标题" :span="2">
-              {{ detailFormData.title }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="用户ID" :span="1">
-              {{ detailFormData.user_id }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="团队ID" :span="1">
-              {{ detailFormData.team_id }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="部门名称" :span="1">
-              {{ detailFormData.team_name || "未知部门" }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="Agent ID" :span="1">
-              {{ detailFormData.agent_id }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="1">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="1">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="消息数量" :span="1">
-              {{ detailFormData.message_count }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="会话摘要" :span="2">
-              {{ detailFormData.summary || "无" }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="元数据" :span="2">
-              <pre v-if="detailFormData.metadata">{{
-                JSON.stringify(detailFormData.metadata, null, 2)
-              }}</pre>
+          <FaDescriptions
+            :column="2"
+            :data="detailFormData"
+            :items="memoryDetailItems"
+            :scrollbar="false"
+          >
+            <template #metadata="{ row }">
+              <pre v-if="row?.metadata">{{ JSON.stringify(row?.metadata, null, 2) }}</pre>
               <span v-else>无</span>
-            </ElDescriptionsItem>
-          </ElDescriptions>
+            </template>
+          </FaDescriptions>
 
           <ElDivider content-position="left">消息记录</ElDivider>
           <ElTimeline v-if="detailFormData.messages && detailFormData.messages.length > 0">
@@ -158,16 +134,6 @@
           class="crud-dialog-art-form"
         />
       </template>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
-      </template>
     </FaDialog>
   </div>
 </template>
@@ -184,13 +150,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
 import { formatToDateTime } from "@utils/common";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
@@ -264,6 +224,7 @@ const memorySearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const submitLoading = ref(false);
 const memoryFormRenderKey = ref(0);
 
 const memoryDialogFormItems = computed<FormItem[]>(() => [
@@ -439,6 +400,21 @@ const dialogVisible = reactive({
 
 const detailFormData = ref<Partial<ChatSessionDetail>>({});
 
+const memoryDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "会话ID", prop: "session_id" },
+    { label: "标题", prop: "title" },
+    { label: "用户ID", prop: "user_id", span: 1 },
+    { label: "团队ID", prop: "team_id", span: 1 },
+    { label: "部门名称", prop: "team_name", span: 1 },
+    { label: "Agent ID", prop: "agent_id", span: 1 },
+    { label: "创建时间", prop: "created_time", span: 1 },
+    { label: "更新时间", prop: "updated_time", span: 1 },
+    { label: "消息数量", prop: "message_count", span: 1 },
+    { label: "会话摘要", prop: "summary" },
+    { label: "元数据", prop: "metadata", slot: "metadata" },
+  ];
+
 const rules = reactive({
   title: [{ required: true, message: "请输入标题", trigger: "blur" }],
 });
@@ -469,8 +445,8 @@ async function onResetSearch() {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
 }
 

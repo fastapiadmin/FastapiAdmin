@@ -46,7 +46,7 @@
             :perm-patch="['module_system:notice:patch']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -71,105 +71,74 @@
       width="920px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border label-width="120px">
-            <ElDescriptionsItem label="标题" :span="2">
-              {{ detailFormData.notice_title }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="类型" :span="2">
-              <ElTag :type="detailFormData.notice_type === '1' ? 'primary' : 'warning'">
-                {{ noticeTypeLabel(detailFormData.notice_type) }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "启用" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="内容" :span="4">
-              <div class="notice-html-preview">
-                <template v-if="detailHasRenderableContent">
-                  <div v-html="detailContentHtml" />
-                </template>
-                <p v-else class="notice-html-empty">暂无内容</p>
-              </div>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建人" :span="2">
-              {{ detailFormData.created_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="noticeDetailItems"
+          label-width="120px"
+          max-height="75vh"
+        >
+          <template #notice_type="{ row }">
+            <ElTag :type="row?.notice_type === '1' ? 'primary' : 'warning'">
+              {{ noticeTypeLabel(row?.notice_type as string) }}
+            </ElTag>
+          </template>
+          <template #notice_content>
+            <div class="notice-html-preview">
+              <template v-if="detailHasRenderableContent">
+                <div v-html="detailContentHtml" />
+              </template>
+              <p v-else class="notice-html-empty">暂无内容</p>
+            </div>
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <!-- FaForm + items + 栅格；弹窗内关闭内置提交/重置，仍用底部按钮 -->
-          <FaForm
-            :key="noticeFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="noticeDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="100"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-            <template #notice_content>
-              <FaWangEditor
-                :model-value="formData.notice_content ?? ''"
-                height="min(38vh, 280px)"
-                placeholder="请输入公告内容，支持完整排版与插入..."
-                :exclude-keys="[]"
-                @update:model-value="(v: string) => (formData.notice_content = v)"
-              />
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <!-- FaForm + items + 栅格；弹窗内关闭内置提交/重置，仍用底部按钮 -->
+        <FaForm
+          :key="noticeFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="noticeDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="100"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+          <template #notice_content>
+            <FaWangEditor
+              :model-value="formData.notice_content ?? ''"
+              height="min(38vh, 280px)"
+              placeholder="请输入公告内容，支持完整排版与插入..."
+              :exclude-keys="[]"
+              @update:model-value="(v: string) => (formData.notice_content = v)"
+            />
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="noticeExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -179,30 +148,21 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive, nextTick, onMounted } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
 import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import type { ColumnOption } from "@/types/component";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import NoticeAPI, {
   type NoticeForm,
   type NoticePageQuery,
   type NoticeTable,
 } from "@/api/module_system/notice";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
 import { useDictStore, useNoticeStore } from "@stores/index";
 import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
-import FaWangEditor from "@/components/forms/fa-wang-editor/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
 
 defineOptions({
   name: "Notice",
@@ -436,6 +396,25 @@ const noticeExportContentConfig = computed(() => ({
 
 const detailFormData = ref<NoticeTable>({});
 
+const noticeDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "标题", prop: "notice_title" },
+    { label: "类型", prop: "notice_type", slot: "notice_type" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "描述", prop: "description" },
+    { label: "内容", prop: "notice_content", slot: "notice_content", span: 4 },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
 /** 详情富文本 HTML（用于预览） */
 const detailContentHtml = computed({
   get: () => detailFormData.value.notice_content ?? "",
@@ -545,7 +524,7 @@ const initialFormData: NoticeForm = {
   description: undefined,
 };
 
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 function buildNoticeReplaceParams(p: NoticeSearchForm): Record<string, unknown> {
   return {
@@ -741,10 +720,6 @@ async function handleMoreClick(status: string) {
   } catch {
     // 用户取消
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 
 onMounted(async () => {

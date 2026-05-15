@@ -25,7 +25,7 @@
               >
                 <span class="text-sm">{{ (server.cpu?.used || 0).toFixed(1) }}%</span>
               </ElProgress>
-              <ElDescriptions :column="2" border size="small">
+              <FaDescriptions :column="2" size="small" :scrollbar="false">
                 <ElDescriptionsItem label="核心数">
                   {{ server.cpu?.cpu_num || 0 }}
                 </ElDescriptionsItem>
@@ -38,7 +38,7 @@
                 <ElDescriptionsItem label="系统使用率">
                   {{ (server.cpu?.sys || 0).toFixed(1) }}%
                 </ElDescriptionsItem>
-              </ElDescriptions>
+              </FaDescriptions>
             </div>
           </div>
         </ElCard>
@@ -68,7 +68,7 @@
               >
                 <span class="text-sm">{{ (server.mem?.usage || 0).toFixed(1) }}%</span>
               </ElProgress>
-              <ElDescriptions :column="2" border size="small">
+              <FaDescriptions :column="2" size="small" :scrollbar="false">
                 <ElDescriptionsItem label="总内存">
                   {{ server.mem?.total }}
                 </ElDescriptionsItem>
@@ -81,7 +81,7 @@
                 <ElDescriptionsItem label="Python内存">
                   {{ server.py?.memory_usage ? server.py.memory_usage.toFixed(1) + "%" : "-" }}
                 </ElDescriptionsItem>
-              </ElDescriptions>
+              </FaDescriptions>
             </div>
           </div>
         </ElCard>
@@ -98,7 +98,7 @@
               <span class="font-medium">服务器基本信息</span>
             </div>
           </template>
-          <ElDescriptions :column="2" border size="small">
+          <FaDescriptions :column="2" size="small" :scrollbar="false">
             <ElDescriptionsItem label="服务器名称">
               {{ server.sys?.computer_name || "-" }}
             </ElDescriptionsItem>
@@ -111,7 +111,7 @@
             <ElDescriptionsItem label="系统架构">
               {{ server.sys?.os_arch || "-" }}
             </ElDescriptionsItem>
-          </ElDescriptions>
+          </FaDescriptions>
         </ElCard>
       </ElCol>
 
@@ -124,7 +124,7 @@
               <span class="font-medium">Python运行环境</span>
             </div>
           </template>
-          <ElDescriptions :column="2" border size="small">
+          <FaDescriptions :column="2" size="small" :scrollbar="false">
             <ElDescriptionsItem label="Python名称">
               {{ server.py?.name || "-" }}
             </ElDescriptionsItem>
@@ -143,7 +143,7 @@
             <ElDescriptionsItem label="项目路径" :span="2">
               {{ server.sys?.user_dir || "-" }}
             </ElDescriptionsItem>
-          </ElDescriptions>
+          </FaDescriptions>
         </ElCard>
       </ElCol>
     </ElRow>
@@ -186,6 +186,7 @@
 </template>
 
 <script lang="ts" setup>
+import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 import ServerAPI, { type ServerInfo } from "@/api/module_monitor/server";
 
 defineOptions({ name: "ServerMonitor" });
