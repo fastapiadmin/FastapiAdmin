@@ -84,14 +84,14 @@
       />
     </ElCard>
 
-    <CreateTableDialog
+    <FaCreateTableDialog
       v-model="createTableVisible"
       :loading="loading"
       :link-from-gen="createTableLinkFromGen"
       @submit="handleCreateTableSubmit"
     />
 
-    <ImportDbTableDialog
+    <FaImportDbTableDialog
       ref="importDbDialogRef"
       v-model="importVisible"
       v-model:query="formData"
@@ -105,12 +105,12 @@
       @selection-change="handleImportTableSelectionChange"
     />
 
-    <GenCodeDrawer
+    <FaGenCodeDrawer
       v-model="editVisible"
       v-model:preview-scope="previewScope"
       v-model:preview-types="previewTypes"
       v-model:code="code"
-      :info="info"
+      v-model:info="info"
       :rules="rules"
       :active-step="activeStep"
       :menu-options="menuOptions"
@@ -164,13 +164,14 @@ import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaGenCodeDrawer from "./components/FaGenCodeDrawer.vue";
+import FaImportDbTableDialog from "./components/FaImportDbTableDialog.vue";
+import { CreateTableSubmitMeta } from "./components/FaCreateTableDialog.vue";
+import FaCreateTableDialog from "./components/FaCreateTableDialog.vue";
+import { GENCODE_BASIC_FORM_KEY, GENCODE_CM_KEY } from "./gencodeInjectionKeys";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import CreateTableDialog, { type CreateTableSubmitMeta } from "./components/CreateTableDialog.vue";
-import GenCodeDrawer from "./components/GenCodeDrawer.vue";
-import ImportDbTableDialog from "./components/ImportDbTableDialog.vue";
-import { GENCODE_BASIC_FORM_KEY, GENCODE_CM_KEY } from "./gencodeInjectionKeys";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import type { TreeNode } from "./types";
 
 // 文件数据接口
@@ -184,7 +185,7 @@ interface FileData {
 // 组件引用（与子组件 inject 同步，供校验 / CodeMirror 主题）
 const cmRef = ref<CmComponentRef>();
 const basicInfo = ref<FormInstance>();
-const importDbDialogRef = ref<InstanceType<typeof ImportDbTableDialog>>();
+const importDbDialogRef = ref<InstanceType<typeof FaImportDbTableDialog>>();
 /** FaTable：勾选清空（删除后） */
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 
@@ -1038,7 +1039,7 @@ async function handleImportReset(): Promise<void> {
 }
 
 // 表单数据（后端返回字段可能含 null，这里做更宽松的承载，避免 TS 因类型收窄报错）
-const info = reactive<
+let info = reactive<
   GenTableSchema & {
     sub_table_name?: string | null;
     sub_table_fk_name?: string | null;

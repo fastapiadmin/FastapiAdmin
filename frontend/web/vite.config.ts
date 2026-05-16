@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import { defineConfig, loadEnv, type Plugin } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "url";
 import vueDevTools from "vite-plugin-vue-devtools";
 import viteCompression from "vite-plugin-compression";
@@ -10,7 +10,10 @@ import AutoImport from "unplugin-auto-import/vite";
 import ElementPlus from "unplugin-element-plus/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 import tailwindcss from "@tailwindcss/vite";
+import vitePluginStart from "./build/vitePluginStart";
 import { name, version, engines, dependencies, devDependencies } from "./package.json";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const __APP_INFO__ = {
   pkg: { name, version, engines, dependencies, devDependencies },
@@ -24,93 +27,29 @@ const __APP_INFO__ = {
 function elementPlusComponentStyleIncludes(rootDir: string): string[] {
   const componentsDir = path.join(rootDir, "node_modules", "element-plus", "es", "components");
   try {
-    return fs
+    const dirs = fs
       .readdirSync(componentsDir, { withFileTypes: true })
-      .filter((e) => e.isDirectory())
-      .filter((e) => fs.existsSync(path.join(componentsDir, e.name, "style", "index.mjs")))
-      .map((e) => `element-plus/es/components/${e.name}/style/index`);
+      .filter((e) => e.isDirectory());
+    const result: string[] = [];
+    for (const d of dirs) {
+      const styleDir = path.join(componentsDir, d.name, "style");
+      if (fs.existsSync(path.join(styleDir, "index.mjs"))) {
+        result.push(`element-plus/es/components/${d.name}/style/index`);
+      }
+      if (fs.existsSync(path.join(styleDir, "css.mjs"))) {
+        result.push(`element-plus/es/components/${d.name}/style/css`);
+      }
+    }
+    return result;
   } catch {
     return [];
   }
-}
-
-/**
- * 多在路由/异步组件里才加载的依赖；提前预构建可减少「点一下整页 reload」。
- * 不把 dependencies 全量打入 optimizeDeps，以免拖慢首次 dev 启动。
- */
-const OPTIMIZE_DEPS_LAZY_CHUNKS = [
-  "xgplayer",
-  "@vue-flow/core",
-  "@vue-flow/background",
-  "@vue-flow/controls",
-  "@vue-flow/minimap",
-  "@wangeditor-next/editor",
-  "codemirror",
-  "vue-json-pretty",
-  "vue-web-terminal",
-  "vue3-cron-plus",
-  "@iconify/vue",
-  "vuedraggable",
-  "vue-draggable-plus",
-  "qrcode.vue",
-  "xlsx",
-  "markdown-it",
-  "highlight.js",
-  "dagre",
-  "dompurify",
-  "js-beautify",
-  "markdown-it-highlightjs",
-  "animate.css",
-  "clipboard",
-  "crypto-js",
-  "file-saver",
-  "mitt",
-  "ohash",
-  "pinia-plugin-persistedstate",
-] as const;
-
-function buildOptimizeDepsInclude(rootDir: string): string[] {
-  const core = [
-    "vue",
-    "vue-router",
-    "element-plus",
-    "pinia",
-    "axios",
-    "@vueuse/core",
-    "@wangeditor-next/editor-for-vue",
-    "codemirror-editor-vue3",
-    "exceljs",
-    "path-to-regexp",
-    "echarts/core",
-    "echarts/renderers",
-    "echarts/charts",
-    "echarts/components",
-    "vue-i18n",
-    "nprogress",
-    "qs",
-    "path-browserify",
-    "@element-plus/icons-vue",
-    "element-plus/es",
-    "element-plus/es/locale/lang/en",
-    "element-plus/es/locale/lang/zh-cn",
-  ];
-
-  return [
-    ...new Set([
-      ...core,
-      ...OPTIMIZE_DEPS_LAZY_CHUNKS,
-      ...elementPlusComponentStyleIncludes(rootDir),
-    ]),
-  ];
 }
 
 export default ({ mode }: { mode: string }) => {
   const root = process.cwd();
   const env = loadEnv(mode, root);
   const isProduction = mode === "production";
-
-  console.log(`🚀 VITE_API_BASE_URL = ${env.VITE_API_BASE_URL}`);
-  console.log(`🚀 VERSION = ${env.VITE_VERSION}`);
 
   return defineConfig({
     define: {
@@ -135,15 +74,17 @@ export default ({ mode }: { mode: string }) => {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
         "@views": resolvePath("src/views"),
+        "@views/*": resolvePath("src/views/*"),
         "@imgs": resolvePath("src/assets/images"),
         "@icons": resolvePath("src/assets/images/svg"),
         "@utils": resolvePath("src/utils"),
         "@stores": resolvePath("src/store"),
+        "@plugins": resolvePath("src/plugins"),
         "@styles": resolvePath("src/styles"),
       },
     },
     build: {
-      target: "es2020",
+      target: "es2024",
       outDir: "dist",
       chunkSizeWarningLimit: 4000,
       minify: isProduction ? "terser" : false,
@@ -160,49 +101,53 @@ export default ({ mode }: { mode: string }) => {
             },
           }
         : {},
-      dynamicImportVarsOptions: {
-        warnOnError: true,
-        exclude: [],
-        include: ["src/views/**/*.vue"],
-      },
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes("node_modules")) {
-              if (id.includes("echarts") || id.includes("zrender")) return "echarts";
-              if (id.includes("element-plus")) return "element-plus";
-              if (id.includes("@wangeditor-next")) return "wangeditor";
-              if (id.includes("codemirror")) return "codemirror";
-              if (id.includes("exceljs")) return "exceljs";
-              if (id.includes("@vue-flow")) return "vue-flow";
-              if (id.includes("highlight.js") || id.includes("highlightjs")) return "highlight";
-              if (id.includes("xgplayer")) return "xgplayer";
-              if (id.includes("markdown-it")) return "markdown";
-              if (id.includes("@iconify-json")) return "iconify-icons";
+            if (!id.includes("node_modules")) return;
+            if (id.includes("echarts") || id.includes("zrender")) return "echarts";
+            if (id.includes("element-plus")) return "element-plus";
+            if (id.includes("@wangeditor")) return "wangeditor";
+            if (id.includes("codemirror")) return "codemirror";
+            if (id.includes("exceljs")) return "exceljs";
+            if (id.includes("@vue-flow") || id.includes("dagre")) return "vue-flow";
+            if (id.includes("highlight.js") || id.includes("highlightjs")) return "highlight";
+            if (id.includes("xgplayer")) return "xgplayer";
+            if (id.includes("markdown-it")) return "markdown";
+            if (id.includes("@iconify-json")) return "iconify-icons";
+            if (id.includes("xlsx")) return "xlsx";
+            if (id.includes("crypto-js")) return "crypto";
+            if (id.includes("js-beautify")) return "beautify";
+            if (id.includes("dayjs")) return "dayjs";
+            if (
+              id.includes("vue/") ||
+              id.includes("vue-router") ||
+              id.includes("pinia") ||
+              id.includes("vue-i18n") ||
+              id.includes("@vueuse")
+            )
+              return "vue-vendor";
 
-              const module = id
-                .toString()
-                // 兼容 pnpm 嵌套路径：node_modules/.pnpm/pkg@ver/node_modules/real-pkg/...
-                .replace(/^.*[/\\]node_modules[/\\]\.pnpm[/\\][^/\\]+[/\\]node_modules[/\\]/, "")
-                .split("node_modules/")
-                .pop()
-                ?.split("/")[0];
-              // 跳过被 tree-shake 清空的模块，避免生成空 chunk
-              if (
-                !module ||
-                [
-                  "birpc",
-                  "hookable",
-                  "tslib",
-                  "copy-anything",
-                  "danmu.js",
-                  "lodash-unified",
-                  "perfect-debounce",
-                ].includes(module)
-              )
-                return;
-              return module;
-            }
+            const module = id
+              .toString()
+              .replace(/^.*[/\\]node_modules[/\\]\.pnpm[/\\][^/\\]+[/\\]node_modules[/\\]/, "")
+              .split("node_modules/")
+              .pop()
+              ?.split("/")[0];
+            if (
+              !module ||
+              [
+                "birpc",
+                "hookable",
+                "tslib",
+                "copy-anything",
+                "danmu.js",
+                "lodash-unified",
+                "perfect-debounce",
+              ].includes(module)
+            )
+              return;
+            return module;
           },
           entryFileNames: "js/[name].[hash].js",
           chunkFileNames: "js/[name].[hash].js",
@@ -220,52 +165,21 @@ export default ({ mode }: { mode: string }) => {
           },
         },
       },
+      dynamicImportVarsOptions: {
+        warnOnError: true,
+        exclude: [],
+        include: ["src/views/**/*.vue"],
+      },
     },
     plugins: [
-      // @vueuse/core 已发布产物中存在位置无效的 /* #__PURE__ */ 注释（单独成行或包裹对象字面量），
-      // 导致 Rollup 无法识别而告警。在构建阶段修复这些注释位置，从根源消除告警。
-      {
-        name: "fix-vueuse-pure-annotations",
-        enforce: "pre",
-        transform(code: string, id: string) {
-          if (id.includes("@vueuse/core") && id.endsWith(".js")) {
-            // 移除单独成行的 /* #__PURE__ */（不在函数调用前，Rollup 无法识别）
-            code = code.replace(/^\s*\/\* #__PURE__ \*\/\s*$/gm, "");
-            // 修复括号内包裹对象字面量的 /* #__PURE__ */，如 const x = (/* #__PURE__ */ { ... })
-            code = code.replace(/\(\/\* #__PURE__ \*\/\s*\{/g, "({");
-            return code;
-          }
-          return null;
-        },
-      } satisfies Plugin,
       vue(),
+      vitePluginStart(),
       tailwindcss(),
+      /** 自动按需导入 API */
       AutoImport({
-        imports: [
-          "vue",
-          "vue-router",
-          "pinia",
-          "@vueuse/core",
-          "vue-i18n",
-          // Element Plus 组件/API：在 <script> 中通过 h() 或直接调用时需要自动导入
-          {
-            "element-plus": [
-              "ElMessageBox",
-              "ElTag",
-              "ElTooltip",
-              "ElDropdown",
-              "ElDropdownMenu",
-              "ElDropdownItem",
-            ],
-          },
-          // 自定义组件：在 <script> 中通过 h() 使用时需要自动导入
-          { "@/components/forms/fa-button-table/index.vue": [["default", "FaButtonTable"]] },
-          { "@/components/others/fa-json-pretty/index.vue": [["default", "JsonPretty"]] },
-          { "@/components/others/fa-copy-button/index.vue": [["default", "CopyButton"]] },
-          { "@/components/others/fa-menu-routeIcon/index.vue": [["default", "MenuRouteIcon"]] },
-        ],
+        imports: ["vue", "vue-router", "pinia", "@vueuse/core", "vue-i18n"],
         dts: "src/types/import/auto-imports.d.ts",
-        resolvers: [ElementPlusResolver({ importStyle: "sass" })],
+        resolvers: [ElementPlusResolver()],
         eslintrc: {
           enabled: true,
           filepath: "./.auto-import.json",
@@ -275,30 +189,83 @@ export default ({ mode }: { mode: string }) => {
       }),
       Components({
         dts: "src/types/import/components.d.ts",
-        resolvers: [ElementPlusResolver({ importStyle: "sass" })],
-        dirs: ["src/components", "src/**/components"],
+        resolvers: [ElementPlusResolver()],
       }),
       ElementPlus({
         useSource: true,
       }),
       viteCompression({
-        verbose: false,
-        disable: false,
-        algorithm: "gzip",
-        ext: ".gz",
-        threshold: 10240,
-        deleteOriginFile: false,
+        verbose: false, // 是否在控制台输出压缩结果
+        disable: false, // 是否禁用
+        algorithm: "gzip", // 压缩算法
+        ext: ".gz", // 压缩后的文件名后缀
+        threshold: 10240, // 只有大小大于该值的资源会被处理 10240B = 10KB
+        deleteOriginFile: false, // 压缩后是否删除原文件
       }),
       /** 仅开发启用：避免生产包体积膨胀与运行期 DevTools 开销 */
       ...(isProduction ? [] : [vueDevTools()]),
     ],
     optimizeDeps: {
-      include: buildOptimizeDepsInclude(root),
+      include: [
+        "@vue-flow/core",
+        "@vue-flow/background",
+        "@vue-flow/controls",
+        "@vue-flow/minimap",
+        "vue",
+        "vue-router",
+        "vue-i18n",
+        "vue-json-pretty",
+        "vue-web-terminal",
+        "vue3-cron-plus",
+        "vuedraggable",
+        "vue-draggable-plus",
+        "element-plus",
+        "@element-plus/icons-vue",
+        "element-plus/es",
+        "element-plus/es/locale/lang/en",
+        "element-plus/es/locale/lang/zh-cn",
+        "pinia",
+        "axios",
+        "@vueuse/core",
+        "codemirror",
+        "codemirror-editor-vue3",
+        "@wangeditor-next/editor",
+        "@wangeditor-next/editor-for-vue",
+        "exceljs",
+        "echarts/core",
+        "echarts/renderers",
+        "echarts/charts",
+        "echarts/components",
+        "nprogress",
+        "qs",
+        "path-to-regexp",
+        "path-browserify",
+        "xgplayer",
+        "@iconify/vue",
+        "qrcode.vue",
+        "xlsx",
+        "highlight.js",
+        "dagre",
+        "dompurify",
+        "js-beautify",
+        "markdown-it",
+        "markdown-it-highlightjs",
+        "clipboard",
+        "crypto-js",
+        "file-saver",
+        "mitt",
+        "ohash",
+        "pinia-plugin-persistedstate",
+        ...elementPlusComponentStyleIncludes(root),
+      ],
     },
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@use "@/styles/variables.scss" as *;`,
+          additionalData: `
+            @use "@styles/core/el-light.scss" as *; 
+            @use "@styles/core/mixin.scss" as *;
+          `,
         },
       },
       postcss: {

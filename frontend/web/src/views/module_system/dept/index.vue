@@ -117,12 +117,14 @@ import DeptAPI, {
   type DeptPageQuery,
   type DeptTable,
 } from "@/api/module_system/dept";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
-import { formatTree } from "@utils/common";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { formatTree, renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Dept",

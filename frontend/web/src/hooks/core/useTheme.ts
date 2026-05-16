@@ -31,11 +31,11 @@
  * @author FastapiAdmin Team
  */
 
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { SystemThemeEnum } from "@/enums/appEnum";
 import AppConfig from "@/config";
 import { SystemThemeTypes } from "@/types/store";
-import { getDarkColor, getLightColor, setElementThemeColor } from "@utils/ui";
+import { getDarkColor, getLightColor, setElementThemeColor } from "@utils";
 import { usePreferredDark } from "@vueuse/core";
 import { watch } from "vue";
 

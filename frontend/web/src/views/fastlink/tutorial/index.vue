@@ -58,7 +58,7 @@
                     <ElButton
                       link
                       type="primary"
-                      class="manual-nav__mod-title !h-auto min-h-0 justify-start px-0 py-1"
+                      class="manual-nav__mod-title h-auto! min-h-0 justify-start px-0 py-1"
                       @click="scrollToAnchor(mod.anchor)"
                     >
                       {{ mod.title }}
@@ -69,7 +69,7 @@
                         :key="p.anchor"
                         link
                         size="small"
-                        class="manual-nav__page !h-auto min-h-0 justify-start px-2 py-1"
+                        class="manual-nav__page h-auto! min-h-0 justify-start px-2 py-1"
                         @click="scrollToAnchor(p.anchor)"
                       >
                         {{ p.title }}
@@ -400,7 +400,7 @@
                         </h3>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">API 权限标识</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">API 权限标识</ElDivider>
                           <p>
                             <ElTag effect="plain" type="info" size="small" class="mr-1 font-mono">
                               module_system:user
@@ -431,44 +431,68 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">
+                          <ElDivider content-position="left" class="my-3!">
                             🔍 搜索/筛选表单（5字段）
                           </ElDivider>
                           <ElCard shadow="never" class="mb-3 overflow-x-auto">
                             <table class="manual-doc-table w-full border-collapse text-sm">
                               <thead>
-                                <tr><th>备注</th></tr>
+                                <tr>
+                                  <th>备注</th>
+                                </tr>
                               </thead>
                               <tbody>
-                                <tr><td>文本·账号</td></tr>
-                                <tr><td>文本·用户名</td></tr>
-                                <tr><td>下拉·启用/停用</td></tr>
-                                <tr><td>创建人（UserTableSelect 弹窗选用户）</td></tr>
-                                <tr><td>创建时间·日期时间范围</td></tr>
+                                <tr>
+                                  <td>文本·账号</td>
+                                </tr>
+                                <tr>
+                                  <td>文本·用户名</td>
+                                </tr>
+                                <tr>
+                                  <td>下拉·启用/停用</td>
+                                </tr>
+                                <tr>
+                                  <td>创建人（FaUserTableSelect 弹窗选用户）</td>
+                                </tr>
+                                <tr>
+                                  <td>创建时间·日期时间范围</td>
+                                </tr>
                               </tbody>
                             </table>
                           </ElCard>
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">📊 表格列</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">📊 表格列</ElDivider>
                           <ElCard shadow="never" class="mb-3 overflow-x-auto">
                             <table class="manual-doc-table w-full border-collapse text-sm">
                               <thead>
-                                <tr><th>渲染</th></tr>
+                                <tr>
+                                  <th>渲染</th>
+                                </tr>
                               </thead>
                               <tbody>
-                                <tr><td>固定左侧</td></tr>
-                                <tr><td>ElAvatar</td></tr>
-                                <tr><td>溢出省略</td></tr>
-                                <tr><td>溢出省略</td></tr>
+                                <tr>
+                                  <td>固定左侧</td>
+                                </tr>
+                                <tr>
+                                  <td>ElAvatar</td>
+                                </tr>
+                                <tr>
+                                  <td>溢出省略</td>
+                                </tr>
+                                <tr>
+                                  <td>溢出省略</td>
+                                </tr>
                                 <tr>
                                   <td>
                                     <span class="tag tag-success">启用</span>
                                     <span class="tag tag-danger">停用</span>
                                   </td>
                                 </tr>
-                                <tr><td>row.dept?.name</td></tr>
+                                <tr>
+                                  <td>row.dept?.name</td>
+                                </tr>
                                 <tr>
                                   <td>
                                     <span class="tag tag-success">男</span>
@@ -476,16 +500,22 @@
                                     <span class="tag tag-info">未知</span>
                                   </td>
                                 </tr>
-                                <tr><td></td></tr>
-                                <tr><td></td></tr>
-                                <tr><td>固定右侧</td></tr>
+                                <tr>
+                                  <td></td>
+                                </tr>
+                                <tr>
+                                  <td></td>
+                                </tr>
+                                <tr>
+                                  <td>固定右侧</td>
+                                </tr>
                               </tbody>
                             </table>
                           </ElCard>
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">🔘 工具栏按钮</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">🔘 工具栏按钮</ElDivider>
                           <ElSpace wrap size="small" class="mb-2">
                             <ElButton type="primary" size="small" plain class="manual-doc-btn">
                               新增
@@ -508,7 +538,7 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">🔘 行操作按钮</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">🔘 行操作按钮</ElDivider>
                           <ElSpace wrap size="small" class="mb-2">
                             <ElButton type="warning" size="small" plain class="manual-doc-btn">
                               重置密码
@@ -526,7 +556,7 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">📋 弹窗/抽屉</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">📋 弹窗/抽屉</ElDivider>
                           <ul class="feature-list">
                             <li>
                               <strong>详情 Drawer</strong>
@@ -554,7 +584,7 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">✨ 特殊功能</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">✨ 特殊功能</ElDivider>
                           <ul class="feature-list">
                             <li>左侧部门树联动筛选(点击树节点过滤列表)</li>
                             <li>批量删除(确认对话框)</li>
@@ -574,7 +604,7 @@
                         </h3>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">API 权限标识</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">API 权限标识</ElDivider>
                           <p>
                             <ElTag effect="plain" type="info" size="small" class="mr-1 font-mono">
                               module_system:role
@@ -605,48 +635,66 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">
+                          <ElDivider content-position="left" class="my-3!">
                             🔍 搜索表单（3字段）
                           </ElDivider>
                           <ElCard shadow="never" class="mb-3 overflow-x-auto">
                             <table class="manual-doc-table w-full border-collapse text-sm">
                               <thead>
-                                <tr><th>类型</th></tr>
+                                <tr>
+                                  <th>类型</th>
+                                </tr>
                               </thead>
                               <tbody>
-                                <tr><td>文本输入</td></tr>
-                                <tr><td>下拉(启用/停用, value="true"/"false")</td></tr>
-                                <tr><td>日期时间范围</td></tr>
+                                <tr>
+                                  <td>文本输入</td>
+                                </tr>
+                                <tr>
+                                  <td>下拉(启用/停用, value="true"/"false")</td>
+                                </tr>
+                                <tr>
+                                  <td>日期时间范围</td>
+                                </tr>
                               </tbody>
                             </table>
                           </ElCard>
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">📊 表格列</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">📊 表格列</ElDivider>
                           <ElCard shadow="never" class="mb-3 overflow-x-auto">
                             <table class="manual-doc-table w-full border-collapse text-sm">
                               <thead>
-                                <tr><th>渲染</th></tr>
+                                <tr>
+                                  <th>渲染</th>
+                                </tr>
                               </thead>
                               <tbody>
-                                <tr><td>固定左侧</td></tr>
-                                <tr><td>溢出省略</td></tr>
+                                <tr>
+                                  <td>固定左侧</td>
+                                </tr>
+                                <tr>
+                                  <td>溢出省略</td>
+                                </tr>
                                 <tr>
                                   <td>
                                     <span class="tag tag-success">启用</span>
                                     <span class="tag tag-danger">停用</span>
                                   </td>
                                 </tr>
-                                <tr><td>溢出省略</td></tr>
-                                <tr><td>固定右侧</td></tr>
+                                <tr>
+                                  <td>溢出省略</td>
+                                </tr>
+                                <tr>
+                                  <td>固定右侧</td>
+                                </tr>
                               </tbody>
                             </table>
                           </ElCard>
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">🔘 工具栏按钮</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">🔘 工具栏按钮</ElDivider>
                           <ElSpace wrap size="small" class="mb-2">
                             <ElButton type="primary" size="small" plain class="manual-doc-btn">
                               新增
@@ -663,7 +711,7 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">🔘 行操作按钮</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">🔘 行操作按钮</ElDivider>
                           <ElSpace wrap size="small" class="mb-2">
                             <ElButton type="info" size="small" plain class="manual-doc-btn">
                               权限
@@ -678,7 +726,7 @@
                         </div>
 
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">📋 弹窗/抽屉</ElDivider>
+                          <ElDivider content-position="left" class="my-3!">📋 弹窗/抽屉</ElDivider>
                           <ul class="feature-list">
                             <li>
                               <strong>新增/编辑 Drawer</strong>
@@ -711,7 +759,7 @@
                           </ElText>
                         </h3>
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">
+                          <ElDivider content-position="left" class="my-3!">
                             功能完整性验收
                           </ElDivider>
                           <ul class="feature-list">
@@ -748,7 +796,7 @@
                           </ElText>
                         </h3>
                         <div class="section">
-                          <ElDivider content-position="left" class="!my-3">
+                          <ElDivider content-position="left" class="my-3!">
                             功能完整性验收
                           </ElDivider>
                           <ul class="feature-list">

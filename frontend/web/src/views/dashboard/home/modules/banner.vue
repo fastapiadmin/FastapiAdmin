@@ -1,8 +1,8 @@
 <template>
   <FaBasicBanner
-    class="justify-center !h-53 max-sm:!pt-8 max-sm:!h-48"
+    class="justify-center h-53! max-sm:pt-8! max-sm:h-48!"
     :title="`欢迎回来 ${userInfo?.username}`"
-    boxStyle="!bg-theme/10"
+    boxStyle="bg-theme/10!"
     titleColor="var(--fa-gray-900)"
     :decoration="false"
     :meteorConfig="{
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import bannerCover from "@imgs/login/lf_icon2.webp";
-import { useUserStore } from "@stores/modules/user.store";
+import { useUserStore } from "@stores";
 
 const userStore = useUserStore();
 

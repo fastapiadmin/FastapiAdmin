@@ -5,7 +5,7 @@
       <div
         v-show="visible"
         :style="menuStyle"
-        class="context-menu fa-card-xs !shadow-xl min-w-[var(--menu-width)] w-[var(--menu-width)]"
+        class="context-menu fa-card-xs shadow-xl! min-w-(--menu-width) w-(--menu-width)"
       >
         <ul class="menu-list m-0 list-none" :style="menuListStyle">
           <template v-for="item in menuItems" :key="item.key">
@@ -52,7 +52,7 @@
                 />
               </div>
               <ul
-                class="submenu-list fa-card-xs absolute left-full top-0 z-[2001] hidden w-max min-w-max list-none !shadow-xl"
+                class="submenu-list fa-card-xs absolute left-full top-0 z-2001 hidden w-max min-w-max list-none shadow-xl!"
                 :style="submenuListStyle"
               >
                 <li
@@ -86,7 +86,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { CSSProperties } from "vue";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 
 defineOptions({ name: "FaMenuRight" });
 

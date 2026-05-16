@@ -21,11 +21,11 @@
 import "@wangeditor-next/editor/dist/css/style.css";
 import { onBeforeUnmount, onMounted, shallowRef, computed } from "vue";
 import { Editor, Toolbar } from "@wangeditor-next/editor-for-vue";
-import { useUserStore } from "@stores/modules/user.store";
-import { EmojiText } from "@utils/ui";
+import { useUserStore } from "@stores";
+import { request, EmojiText } from "@utils";
 import { IDomEditor, IToolbarConfig, IEditorConfig } from "@wangeditor-next/editor";
-import request from "@utils/http";
 import type { AxiosResponse } from "axios";
+import { ElMessage } from "element-plus";
 
 defineOptions({ name: "FaWangEditor" });
 
@@ -258,5 +258,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
-@use "./style";
+@use "@styles/fa-wang-editor";
 </style>

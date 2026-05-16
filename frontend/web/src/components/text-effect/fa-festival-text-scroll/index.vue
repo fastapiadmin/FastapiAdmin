@@ -6,7 +6,7 @@
   >
     <FaTextScroll
       v-if="showFestivalStrip"
-      class="!mb-3"
+      class="mb-3!"
       type="primary"
       :text="festivalScrollDisplayHtml"
       height="40px"
@@ -21,9 +21,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { useCeremony } from "@/hooks/core/useCeremony";
-import { WEB_LINKS } from "@utils/constants";
+import { WEB_LINKS } from "@utils";
 
 defineOptions({ name: "FaFestivalTextScroll" });
 

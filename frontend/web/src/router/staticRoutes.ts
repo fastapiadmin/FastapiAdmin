@@ -6,7 +6,7 @@
  *
  * 动态路由由 `beforeEach.ts` → `RouteRegistry` 在登录后根据不同角色的菜单列表动态 `addRoute`。
  */
-import type { AppRouteRecordRaw } from "@utils/navigation";
+import type { AppRouteRecordRaw } from "@utils";
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import { defineComponent, h, onMounted, ref } from "vue";
 import type { RouteRecordRaw } from "vue-router";

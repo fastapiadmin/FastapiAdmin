@@ -1,10 +1,10 @@
 <!-- 顶部栏 -->
 <template>
   <div
-    class="w-full bg-[var(--default-bg-color)]"
+    class="w-full bg-(--default-bg-color)"
     :class="[
       tabStyle === 'tab-card' || tabStyle === 'tab-google' || tabStyle === 'tab-default'
-        ? 'max-sm:mb-3 !bg-box'
+        ? 'max-sm:mb-3 bg-box!'
         : '',
     ]"
   >
@@ -12,7 +12,7 @@
       class="relative box-border flex-b h-15 leading-15 select-none"
       :class="[
         tabStyle === 'tab-card' || tabStyle === 'tab-google' || tabStyle === 'tab-default'
-          ? 'border-b border-[var(--fa-card-border)]'
+          ? 'border-b border-(--fa-card-border)'
           : '',
       ]"
     >
@@ -25,7 +25,7 @@
 
         <FaLogo
           v-if="showAppLogo"
-          class="!hidden pl-3.5 overflow-hidden align-[-0.15em] fill-current"
+          class="hidden! pl-3.5 overflow-hidden align-[-0.15em] fill-current"
           :src="headerLogoSrc"
           @click="toHome"
         />
@@ -42,7 +42,7 @@
         <FaIconButton
           v-if="shouldShowRefreshButton"
           icon="ri:refresh-line"
-          class="!ml-3 refresh-btn max-sm:!hidden"
+          class="ml-3! refresh-btn max-sm:hidden!"
           :style="{ marginLeft: !isLeftMenu ? '10px' : '0' }"
           @click="reload"
         />
@@ -68,7 +68,7 @@
         <!-- 搜索 -->
         <div
           v-if="shouldShowGlobalSearch"
-          class="flex-cb w-40 h-9 px-2.5 c-p border border-g-400 rounded-custom-sm max-md:!hidden tad-300 hover:-translate-y-0.5 hover:shadow-md"
+          class="flex-cb w-40 h-9 px-2.5 c-p border border-g-400 rounded-custom-sm max-md:hidden! tad-300 hover:-translate-y-0.5 hover:shadow-md"
           @click="openSearchDialog"
         >
           <div class="flex-c">
@@ -87,12 +87,12 @@
           v-if="shouldShowFullscreen"
           :icon="isFullscreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-fill'"
           :class="[!isFullscreen ? 'full-screen-btn' : 'exit-full-screen-btn', 'ml-3']"
-          class="max-md:!hidden"
+          class="max-md:hidden!"
           @click="toggleFullScreen"
         />
 
         <!-- 组件尺寸 default/large/small（沿用旧版持久化开关 showSizeSelect） -->
-        <div v-if="shouldShowSizeSelect" class="flex-cc ml-1 max-md:!hidden">
+        <div v-if="shouldShowSizeSelect" class="flex-cc ml-1 max-md:hidden!">
           <FaSizeSelect />
         </div>
 
@@ -125,7 +125,7 @@
           class="notice-button relative"
           @click="visibleNotice"
         >
-          <div class="absolute top-2 right-2 size-1.5 !bg-danger rounded-full"></div>
+          <div class="absolute top-2 right-2 size-1.5 bg-danger! rounded-full"></div>
         </FaIconButton>
 
         <!-- 聊天按钮 -->
@@ -135,7 +135,7 @@
           class="chat-button relative"
           @click="openChat"
         >
-          <div class="breathing-dot absolute top-2 right-2 size-1.5 !bg-success rounded-full"></div>
+          <div class="breathing-dot absolute top-2 right-2 size-1.5 bg-success! rounded-full"></div>
         </FaIconButton>
 
         <!-- 设置按钮 -->
@@ -183,18 +183,13 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useFullscreen, useWindowSize } from "@vueuse/core";
 import { LanguageEnum, MenuTypeEnum } from "@/enums/appEnum";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { useUserStore } from "@stores/modules/user.store";
-import { useMenuStore } from "@stores/modules/menu.store";
+import { useSettingsStore, useMenuStore, useUserStore, useConfigStore } from "@stores";
 import AppConfig from "@/config";
-import { useConfigStore } from "@stores/modules/config.store";
 import { languageOptions } from "@/locales";
-import { mittBus } from "@utils/sys";
-import { themeAnimation } from "@utils/ui";
+import { mittBus, themeAnimation } from "@utils";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useHeaderBar } from "@/hooks/core/useHeaderBar";
 import FaUserMenu from "./widget/FaUserMenu.vue";
-import FaSizeSelect from "@/components/others/fa-size-select/index.vue";
 
 defineOptions({ name: "FaHeaderBar" });
 

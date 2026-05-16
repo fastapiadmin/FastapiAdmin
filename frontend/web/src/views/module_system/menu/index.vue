@@ -97,7 +97,7 @@
           </template>
           <template #icon="{ row }">
             <template v-if="row?.icon">
-              <MenuRouteIcon :icon="row?.icon as string" :style="'vertical-align: -0.15em'" />
+              <FaMenuRouteIcon :icon="row?.icon as string" :style="'vertical-align: -0.15em'" />
             </template>
           </template>
         </FaDescriptions>
@@ -316,8 +316,7 @@ defineOptions({
 });
 
 import { CirclePlusFilled, DeleteFilled } from "@element-plus/icons-vue";
-import { useAppStore } from "@stores/modules/app.store";
-import { useUserStore } from "@stores/modules/user.store";
+import { useAppStore, useUserStore } from "@stores";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { useTableColumns } from "@/hooks/core/useTableColumns";
 import MenuAPI, {
@@ -327,10 +326,14 @@ import MenuAPI, {
 } from "@/api/module_system/menu";
 import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@utils/common";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
+import { ElTag, ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
 const appStore = useAppStore();
@@ -759,7 +762,7 @@ const { columnChecks, columns } = useTableColumns<MenuTable>(() => [
     align: "center",
     formatter: (row: MenuTable) =>
       row.icon
-        ? h(MenuRouteIcon, { icon: row.icon, style: { verticalAlign: "-0.15em" } })
+        ? h(FaMenuRouteIcon, { icon: row.icon, style: { verticalAlign: "-0.15em" } })
         : h("span", { class: "text-g-400" }, "—"),
   },
   {

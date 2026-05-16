@@ -26,7 +26,7 @@
     <!-- 全局浮层层（引导、通知等跨页面组件） -->
     <div id="app-global">
       <FaGlobalComponent />
-      <Guide v-if="guideVisible" v-model="guideVisible" @skip="onGuideFinished" />
+      <FaGuide v-if="guideVisible" v-model="guideVisible" @skip="onGuideFinished" />
     </div>
   </div>
 </template>
@@ -44,9 +44,7 @@
  *   → settingStore.showGuide=false → 后续不再显示
  */
 import { computed } from "vue";
-import Guide from "@/components/others/fa-guide/index.vue";
-import { useAppStore } from "@stores/modules/app.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useAppStore, useSettingsStore } from "@stores";
 
 defineOptions({ name: "AppLayout" });
 
@@ -66,5 +64,5 @@ function onGuideFinished(): void {
 </script>
 
 <style lang="scss" scoped>
-@use "./style";
+@use "@styles/layouts";
 </style>

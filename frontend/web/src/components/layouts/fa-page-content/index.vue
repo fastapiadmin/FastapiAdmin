@@ -62,9 +62,7 @@
 import type { CSSProperties } from "vue";
 import { useMediaQuery } from "@vueuse/core";
 import { useRoute, type RouteLocationNormalizedLoaded } from "vue-router";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { useWorktabStore } from "@stores/modules/worktab.store";
+import { useSettingsStore, useWorktabStore } from "@stores";
 
 defineOptions({ name: "FaPageContent" });
 

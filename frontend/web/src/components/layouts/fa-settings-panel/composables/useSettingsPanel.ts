@@ -1,11 +1,10 @@
 import { ref, computed, watch } from "vue";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { storeToRefs } from "pinia";
 import { useBreakpoints } from "@vueuse/core";
 import AppConfig from "@/config";
 import { SystemThemeEnum, MenuTypeEnum } from "@/enums/appEnum";
-import { mittBus } from "@utils/sys";
-import { StorageConfig } from "@utils";
+import { mittBus, StorageConfig } from "@utils";
 import { useTheme } from "@/hooks/core/useTheme";
 import { useCeremony } from "@/hooks/core/useCeremony";
 import { useSettingsState } from "./useSettingsState";

@@ -1,4 +1,4 @@
-<!-- 租户管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
+<!-- 租户管理：Art + useTable；操作列前 3 个为 FaButtonTable，其余收入「更多」下拉 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -99,8 +99,6 @@ import { useTable } from "@/hooks/core/useTable";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
   type TenantCreateForm,
@@ -109,6 +107,19 @@ import TenantAPI, {
   type TenantUpdateForm,
 } from "@/api/module_system/tenant";
 import { useAuth } from "@/hooks/core/useAuth";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import {
+  ElTag,
+  ElMessage,
+  ElTooltip,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+} from "element-plus";
 
 defineOptions({
   name: "Tenant",
@@ -572,7 +583,11 @@ function onResetSearch() {
 }
 
 async function handleSubmit() {
-  const valid = await dataFormRef.value!.validate().catch(() => false);
+  const formRef = dataFormRef.value;
+  if (!formRef) return;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  const valid = await formRef.validate().catch(() => false);
   if (!valid) return;
   submitLoading.value = true;
   const id = formData.value.id as number | undefined;

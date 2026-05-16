@@ -1,6 +1,6 @@
 <!-- 聊天页 -->
 <template>
-  <div class="page-content flex !p-0 max-md:flex-col" :style="{ height: containerMinHeight }">
+  <div class="page-content flex p-0! max-md:flex-col" :style="{ height: containerMinHeight }">
     <ElRow>
       <ElCol :span="12">
         <div class="grid-content ep-bg-purple" />
@@ -12,7 +12,7 @@
     <div
       class="box-border w-90 h-full p-5 border-r border-g-300 max-md:w-full max-md:h-42 max-md:border-r-0"
     >
-      <div class="pb-5 max-md:!hidden">
+      <div class="pb-5 max-md:hidden!">
         <div class="flex-c gap-3">
           <ElAvatar :size="50" :src="selectedPerson?.avatar" />
           <div>
@@ -53,7 +53,7 @@
             </ElAvatar>
             <div
               class="absolute right-1 bottom-1 size-2 rounded-full"
-              :class="item.online ? 'bg-success/100' : 'bg-error/100'"
+              :class="item.online ? 'bg-success' : 'bg-error'"
             ></div>
           </div>
           <div class="flex-1 min-w-0">
@@ -75,10 +75,7 @@
         <div>
           <span class="text-base font-medium">Art Bot</span>
           <div class="flex-c gap-1 mt-1.5">
-            <div
-              class="w-2 h-2 rounded-full"
-              :class="isOnline ? 'bg-success/100' : 'bg-danger/100'"
-            ></div>
+            <div class="w-2 h-2 rounded-full" :class="isOnline ? 'bg-success' : 'bg-danger'"></div>
             <span class="text-xs text-g-600">{{ isOnline ? "在线" : "离线" }}</span>
           </div>
         </div>
@@ -91,7 +88,7 @@
       <div class="flex flex-col h-[calc(100%-85px)]">
         <!-- 聊天消息区域 -->
         <div
-          class="flex-1 py-7.5 px-4 overflow-y-auto border-t-d [&::-webkit-scrollbar]:!w-1"
+          class="flex-1 py-7.5 px-4 overflow-y-auto border-t-d [&::-webkit-scrollbar]:w-1!"
           ref="messageContainer"
         >
           <template v-for="message in messages" :key="message.id">
@@ -101,7 +98,7 @@
                 message.isMe ? 'flex-row-reverse' : 'flex-row justify-start',
               ]"
             >
-              <ElAvatar :size="32" :src="message.avatar" class="flex-shrink-0" />
+              <ElAvatar :size="32" :src="message.avatar" class="shrink-0" />
               <div
                 class="flex flex-col max-w-[70%]"
                 :class="message.isMe ? 'items-end' : 'items-start'"
@@ -115,7 +112,7 @@
                 </div>
                 <div
                   class="py-2.5 px-3.5 text-sm leading-[1.4] rounded-md"
-                  :class="message.isMe ? '!bg-theme/15' : '!bg-active-color'"
+                  :class="message.isMe ? 'bg-theme/15!' : 'bg-active-color!'"
                 >
                   {{ message.content }}
                 </div>
@@ -125,7 +122,7 @@
         </div>
 
         <!-- 聊天输入区域 -->
-        <div class="p-4 flex-shrink-0">
+        <div class="p-4 shrink-0">
           <ElInput
             v-model="messageText"
             type="textarea"
@@ -157,7 +154,7 @@
 
 <script setup lang="ts">
 import { Picture, Paperclip, ArrowDown } from "@element-plus/icons-vue";
-import { mittBus } from "@utils/sys";
+import { mittBus } from "@utils";
 import meAvatar from "@imgs/avatar/avatar5.webp";
 import aiAvatar from "@imgs/avatar/avatar10.webp";
 import avatar2 from "@imgs/avatar/avatar2.webp";

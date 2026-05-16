@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
@@ -133,6 +133,8 @@ import { confirmDelete, confirmBatchDelete, confirmAction } from "@/hooks/core/u
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
+import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import Demo01API, {
@@ -141,6 +143,7 @@ import Demo01API, {
   type Demo01Table,
 } from "@/api/module_example/demo01";
 import { ResultEnum } from "@/enums/api/result.enum";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "ModuleExampleDemo01",

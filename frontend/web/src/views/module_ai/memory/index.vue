@@ -148,16 +148,17 @@ import { ref, reactive, computed, nextTick } from "vue";
 import { Edit } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
-import { formatToDateTime } from "@utils/common";
 import { useTable } from "@/hooks/core/useTable";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { formatToDateTime, renderTableOperationCell, type TableOperationAction } from "@utils";
 
 type MemorySearchForm = {
   title?: string;

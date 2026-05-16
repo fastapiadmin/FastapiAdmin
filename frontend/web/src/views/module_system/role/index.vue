@@ -124,7 +124,7 @@
       </template>
     </FaDialog>
 
-    <PermissonDrawer
+    <FaPermissonDrawer
       v-if="drawerVisible"
       v-model="drawerVisible"
       :role-name="checkedRole.name"
@@ -150,10 +150,7 @@ import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
 import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import type { IObject } from "@/components/modal/types";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import type { ColumnOption } from "@/types/component";
 import RoleAPI, {
   type RoleForm,
@@ -162,7 +159,12 @@ import RoleAPI, {
 } from "@/api/module_system/role";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
-import PermissonDrawer from "./components/PermissonDrawer.vue";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Role",

@@ -266,7 +266,7 @@
               subtitle="基于 Vue 3 + TypeScript + Element Plus 构建的现代化管理系统。"
               titleColor="#333"
               subtitleColor="#666"
-              boxStyle="!bg-[#D4F1F7]"
+              boxStyle="bg-[#D4F1F7]!"
               :buttonConfig="{
                 show: true,
                 text: '开始探索',
@@ -613,7 +613,11 @@ const multiLineData: LineDataItem[] = [
     data: [120, 132, 101, 134, 90, 130],
     areaStyle: { startOpacity: 0.1, endOpacity: 0 },
   },
-  { name: "利润", data: [80, 92, 71, 94, 60, 80], areaStyle: { startOpacity: 0.1, endOpacity: 0 } },
+  {
+    name: "利润",
+    data: [80, 92, 71, 94, 60, 80],
+    areaStyle: { startOpacity: 0.1, endOpacity: 0 },
+  },
 ];
 const singleBarData = ref([120, 200, 150, 80, 70, 110, 130]);
 const xAxisData = ref(["周一", "周二", "周三", "周四", "周五", "周六", "周日"]);
@@ -635,8 +639,8 @@ const statsCards = [
     count: 1235,
     description: "鞋子、牛仔裤、派对服装、手表",
     icon: "ri:bar-chart-box-line",
-    boxStyle: "!bg-theme/10",
-    customIconStyle: "!text-theme !text-3xl",
+    boxStyle: "bg-theme/10!",
+    customIconStyle: "text-theme! text-3xl!",
     iconStyle: "bg-info",
     textColor: "var(--theme-color)",
     showArrow: false,
@@ -647,8 +651,8 @@ const statsCards = [
     count: 5000,
     description: "日活跃用户超过5,000+",
     icon: "ri:account-box-2-line",
-    boxStyle: "!bg-warning/10",
-    customIconStyle: "!text-warning !text-3xl",
+    boxStyle: "bg-warning/10!",
+    customIconStyle: "text-warning! text-3xl!",
     iconStyle: "bg-warning",
     textColor: "var(--fa-warning)",
     showArrow: false,
@@ -659,8 +663,8 @@ const statsCards = [
     count: 35000,
     description: "月收入超过¥350,000+",
     icon: "ri:money-cny-box-line",
-    boxStyle: "!bg-secondary/10",
-    customIconStyle: "!text-secondary !text-3xl",
+    boxStyle: "bg-secondary/10!",
+    customIconStyle: "text-secondary! text-3xl!",
     iconStyle: "bg-secondary",
     textColor: "var(--fa-secondary)",
     showArrow: false,
@@ -671,8 +675,8 @@ const statsCards = [
     count: 4800,
     description: "平均评分4.8/5",
     icon: "ri:message-3-line",
-    boxStyle: "!bg-error/10",
-    customIconStyle: "!text-error !text-3xl",
+    boxStyle: "bg-error/10!",
+    customIconStyle: "text-error! text-3xl!",
     iconStyle: "bg-error",
     textColor: "var(--fa-error)",
     showArrow: false,
@@ -701,7 +705,7 @@ const progressCards = [
     percentage: 45,
     color: "var(--fa-error)",
     icon: "ri:game-line",
-    iconStyle: "!bg-error/12 text-error",
+    iconStyle: "bg-error/12! text-error",
   },
   {
     id: 4,
@@ -792,7 +796,11 @@ const dataList = [
   },
 ];
 const timelineData = [
-  { time: "上午 09:30", status: "rgb(73, 190, 255)", content: "收到 John Doe 支付的 385.90 美元" },
+  {
+    time: "上午 09:30",
+    status: "rgb(73, 190, 255)",
+    content: "收到 John Doe 支付的 385.90 美元",
+  },
   { time: "上午 10:00", status: "rgb(54, 158, 255)", content: "新销售记录", code: "ML-3467" },
   { time: "上午 12:00", status: "rgb(103, 232, 207)", content: "向 Michael 支付了 64.95 美元" },
   { time: "下午 14:30", status: "rgb(255, 193, 7)", content: "系统维护通知", code: "MT-2023" },

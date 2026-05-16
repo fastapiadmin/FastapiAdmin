@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     >
       <template #created_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
           @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -154,19 +154,22 @@ import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
 import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import type { IObject } from "@/components/modal/types";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { ColumnOption } from "@/types/component";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import NoticeAPI, {
   type NoticeForm,
   type NoticePageQuery,
   type NoticeTable,
 } from "@/api/module_system/notice";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import { useDictStore, useNoticeStore } from "@stores/index";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import { useDictStore, useNoticeStore } from "@stores";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Notice",
@@ -404,7 +407,7 @@ const noticeDialogFormItems = computed<FormItem[]>(() => [
     props: {
       placeholder: "请选择类型",
       clearable: true,
-      class: "!w-full max-w-md",
+      class: "w-full! max-w-md",
       options: dictStore.getDictArray("sys_notice_type").map((item) => ({
         label: item.dict_label,
         value: item.dict_value,

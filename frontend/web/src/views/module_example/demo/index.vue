@@ -77,7 +77,7 @@
           max-height="70vh"
         >
           <template #i="{ row }">
-            <JsonPretty v-if="row?.i != null" :value="row?.i" height="140px" />
+            <FaJsonPretty v-if="row?.i != null" :value="row?.i" height="140px" />
           </template>
         </FaDescriptions>
       </template>
@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
@@ -164,6 +164,7 @@ import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaJsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DemoAPI, {
   type DemoForm,
@@ -171,6 +172,7 @@ import DemoAPI, {
   type DemoTable,
 } from "@/api/module_example/demo";
 import { ResultEnum } from "@/enums/api/result.enum";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Demo",
@@ -200,7 +202,7 @@ const searchForm = ref<DemoSearchFormParams>({
 /** 搜索区域默认展开展示 */
 const showSearchBar = ref(true);
 
-const searchBarRef = ref<InstanceType<typeof FaSearchBarWithAudit> | null>(null);
+const searchBarRef = ref<{ validate: () => Promise<boolean> } | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 const statusOptions = ref([
   { label: "启用", value: "0" },
@@ -294,7 +296,7 @@ const {
         minWidth: 160,
         formatter: (row: DemoTable) => {
           if (row.i == null) return h("span", { class: "text-g-500" }, "—");
-          return h(JsonPretty, { value: row.i, height: "120px" });
+          return h(FaJsonPretty, { value: row.i, height: "120px" });
         },
       },
       { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
@@ -491,7 +493,11 @@ const rules = reactive({
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
-const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const dataFormRef = ref<{
+  resetFields: () => void;
+  clearValidate: () => void;
+  validate: (cb: (valid: boolean) => void) => void;
+} | null>(null);
 const submitLoading = ref(false);
 const demoFormRenderKey = ref(0);
 const metadataList = ref<{ key: string; value: string }[]>([]);

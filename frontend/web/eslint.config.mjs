@@ -1,261 +1,87 @@
 // ESLint 配置文件
-import fs from "fs"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 
-import pluginJs from "@eslint/js"
-import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
-import pluginVue from "eslint-plugin-vue"
-import globals from "globals"
-import tseslint from "typescript-eslint"
+// 从 ESLint 插件中导入推荐配置
+import pluginJs from "@eslint/js";
+import pluginVue from "eslint-plugin-vue";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+// 使用 import.meta.url 获取当前模块的路径
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
+// 读取 .auto-import.json 文件的内容，并将其解析为 JSON 对象
 const autoImportConfig = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, ".auto-import.json"), "utf-8")
-)
-// Fa- 组件全局配置（unplugin-vue-components 自动注册）
-const faComponents = {
-  FaTable: "readonly",
-  FaTableHeader: "readonly",
-  FaTableHeaderLeft: "readonly",
-  FaSearchBar: "readonly",
-  FaSearchBarWithAudit: "readonly",
-  FaDialog: "readonly",
-  FaDrawer: "readonly",
-  FaForm: "readonly",
-  FaDescriptions: "readonly",
-  FaImportDialog: "readonly",
-  FaExportDialog: "readonly",
-  FaIconSelect: "readonly",
-  FaWangEditor: "readonly",
-  FaSvgIcon: "readonly",
-  FaButtonMore: "readonly",
-  FaButtonTable: "readonly",
-  ArtButtonTable: "readonly",
-  FaExcelImport: "readonly",
-  FaExcelExport: "readonly",
-  FaBreadcrumb: "readonly",
-  FaCardBanner: "readonly",
-  FaJsonPretty: "readonly",
-  JsonPretty: "readonly",
-  FaCopyButton: "readonly",
-  CopyButton: "readonly",
-  FaMenuRouteIcon: "readonly",
-  MenuRouteIcon: "readonly",
-  FaIntervalTab: "readonly",
-  FaPagination: "readonly",
-  FaSizeSelect: "readonly",
-  FaMarkdownRenderer: "readonly",
-  FaScreenLock: "readonly",
-  FaSettingsPanel: "readonly",
-  FaGlobalSearch: "readonly",
-  FaHeaderBar: "readonly",
-  FaFastEnter: "readonly",
-  FaFireworksEffect: "readonly",
-  FaGlobalComponent: "readonly",
-  FaWatermark: "readonly",
-  FaCountTo: "readonly",
-  FaECharts: "readonly",
-  FaIcon: "readonly",
-  FaChatWindow: "readonly",
-  FaBackToTop: "readonly",
-  FaCalender: "readonly",
-  FaDragVerify: "readonly",
-  FaException: "readonly",
-  FaVideoPlayer: "readonly",
-  FaCutterImg: "readonly",
-}
-
-// Element Plus 组件全局配置
-const elementPlusComponents = {
-  ElInput: "readonly",
-  ElSelect: "readonly",
-  ElSwitch: "readonly",
-  ElCascader: "readonly",
-  ElInputNumber: "readonly",
-  ElTimePicker: "readonly",
-  ElTimeSelect: "readonly",
-  ElDatePicker: "readonly",
-  ElTreeSelect: "readonly",
-  ElText: "readonly",
-  ElRadioGroup: "readonly",
-  ElCheckboxGroup: "readonly",
-  ElOption: "readonly",
-  ElRadio: "readonly",
-  ElCheckbox: "readonly",
-  ElInputTag: "readonly",
-  ElForm: "readonly",
-  ElFormItem: "readonly",
-  ElTable: "readonly",
-  ElTableColumn: "readonly",
-  ElButton: "readonly",
-  ElDialog: "readonly",
-  ElPagination: "readonly",
-  ElMessage: "readonly",
-  ElMessageBox: "readonly",
-  ElNotification: "readonly",
-  ElTree: "readonly",
-  ElDropdown: "readonly",
-  ElDropdownMenu: "readonly",
-  ElDropdownItem: "readonly",
-  ElAvatar: "readonly",
-  ElBadge: "readonly",
-  ElCard: "readonly",
-  ElCol: "readonly",
-  ElRow: "readonly",
-  ElContainer: "readonly",
-  ElHeader: "readonly",
-  ElAside: "readonly",
-  ElMain: "readonly",
-  ElFooter: "readonly",
-  ElLink: "readonly",
-  ElDivider: "readonly",
-  ElImage: "readonly",
-  ElProgress: "readonly",
-  ElSkeleton: "readonly",
-  ElSlider: "readonly",
-  ElSwitch: "readonly",
-  ElTag: "readonly",
-  ElTooltip: "readonly",
-  ElPopover: "readonly",
-  ElPopconfirm: "readonly",
-  ElDrawer: "readonly",
-  ElAlert: "readonly",
-  ElLoading: "readonly",
-}
+);
 
 export default [
-  // 忽略文件配置
+  // 忽略文件（flat config 中 ignores 需在最前面）
   {
     ignores: [
-      "node_modules",
-      "dist",
-      "public",
+      "**/node_modules/**",
+      "**/dist/**",
+      "public/**",
       ".vscode/**",
       "src/assets/**",
       "src/utils/console.ts",
-      "**/*.min.*",
-      "**/auto-imports.d.ts",
-      "**/components.d.ts",
-      "**/types/**/*.d.ts",
+      ".auto-import.json",
     ],
   },
-
-  // 基础配置
-  {
-    files: ["**/*.{js,mjs,cjs,ts,tsx,vue}"],
-  },
+  // 全局语言环境
   {
     languageOptions: {
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.es2022,
       },
     },
   },
+  // 基础推荐配置
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs["flat/essential"],
-
-  // 全局配置
+  // 项目自定义规则
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx,vue}"],
-
     languageOptions: {
       globals: {
         ...autoImportConfig.globals,
-        ...faComponents,
+        // TypeScript 全局命名空间（global.d.ts 中声明的类型）
         Api: "readonly",
-        ...elementPlusComponents,
-        // 全局类型定义
-        PageQuery: "readonly",
-        PageResult: "readonly",
-        UserListItem: "readonly",
-        UserSearchParams: "readonly",
-        RoleListItem: "readonly",
-        RoleSearchParams: "readonly",
         OptionType: "readonly",
         ApiResponse: "readonly",
-        ExcelResult: "readonly",
-        CommonType: "readonly",
-        updatorType: "readonly",
-        creatorType: "readonly",
-        AppSettings: "readonly",
-        __APP_INFO__: "readonly",
         UploadFilePath: "readonly",
+        // unplugin-vue-components 自动注册的组件引用
+        FaSearchBar: "readonly",
+        FaSearchBarWithAudit: "readonly",
+        FaForm: "readonly",
       },
     },
     rules: {
-      // 代码风格
-      quotes: ["error", "single"],
-      semi: ["error", "never"],
       "no-var": "error",
-      "prefer-const": "error",
-      "object-shorthand": "error",
-
-      // 最佳实践
-      "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
-      "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
-      "eqeqeq": "off",
-      "no-multi-spaces": "error",
       "no-multiple-empty-lines": ["warn", { max: 1 }],
       "no-unexpected-multiline": "error",
-
-      // TypeScript 规则
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/ban-ts-comment": "off",
-      "@typescript-eslint/no-empty-function": "off",
-      "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
-
-      // Vue 规则
+      "@typescript-eslint/no-explicit-any": "off",
       "vue/multi-word-component-names": "off",
-      "vue/no-v-html": "off",
-      "vue/require-default-prop": "off",
-      "vue/require-explicit-emits": "error",
-      "vue/no-unused-vars": "error",
-      "vue/no-mutating-props": "off",
-      "vue/valid-v-for": "warn",
-      "vue/no-template-shadow": "warn",
-      "vue/return-in-computed-property": "warn",
-      "vue/block-order": ["error", { order: ["template", "script", "style"] }],
-      "vue/html-self-closing": [
-        "error",
-        {
-          html: { void: "always", normal: "never", component: "always" },
-          svg: "always",
-          math: "always",
-        },
-      ],
-      "vue/component-name-in-template-casing": ["error", "PascalCase"],
+      // Prettier 负责格式化，ESLint 只关注代码质量
     },
   },
-
-  // Pin TypeScript project root so @typescript-eslint/parser resolves tsconfig consistently.
-  {
-    files: ["**/*.{ts,tsx,mts,cts}"],
-    languageOptions: {
-      parserOptions: {
-        tsconfigRootDir: __dirname,
-      },
-    },
-  },
-
-  // Vue 文件特定配置
+  // Vue 文件：使用 TypeScript parser
   {
     files: ["**/*.vue"],
     languageOptions: {
-      parserOptions: {
-        parser: tseslint.parser,
-        tsconfigRootDir: __dirname,
-      },
+      parserOptions: { parser: tseslint.parser },
     },
   },
-
-  // prettier 配置
-  eslintPluginPrettierRecommended,
+  // .d.ts 声明文件：放宽规则
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      "@typescript-eslint/no-empty-object-type": "off",
+    },
+  },
 ];

@@ -276,7 +276,7 @@ defineOptions({
 });
 
 import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
-import { useDictStore } from "@stores/index";
+import { useDictStore } from "@stores";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -285,15 +285,15 @@ import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import IntervalTab from "@/components/others/fa-interval-tab/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useTable } from "@/hooks/core/useTable";
 import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { vue3CronPlus } from "vue3-cron-plus";
 import "vue3-cron-plus/dist/index.css";
-import IntervalTab from "@/components/others/fa-interval-tab/index.vue";
 import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import "codemirror/mode/python/python.js";

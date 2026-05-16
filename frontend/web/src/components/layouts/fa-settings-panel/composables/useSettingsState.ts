@@ -1,4 +1,4 @@
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { MenuThemeEnum, MenuTypeEnum } from "@/enums/appEnum";
 
 /**

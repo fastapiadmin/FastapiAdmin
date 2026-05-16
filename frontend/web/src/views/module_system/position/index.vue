@@ -1,4 +1,4 @@
-<!-- 岗位管理：FA + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
+<!-- 岗位管理：FA + useTable；操作列前 3 个为 FaButtonTable，其余收入「更多」下拉 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     >
       <template #created_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
           @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -130,9 +130,6 @@ import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
 import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import type { IObject } from "@/components/modal/types";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import PositionAPI, {
   type PositionForm,
@@ -141,7 +138,21 @@ import PositionAPI, {
 } from "@/api/module_system/position";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
+import {
+  ElTag,
+  ElMessage,
+  ElTooltip,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem,
+} from "element-plus";
 
 defineOptions({
   name: "Position",

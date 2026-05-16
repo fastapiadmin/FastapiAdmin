@@ -81,8 +81,7 @@ defineOptions({ name: "FaUpload" });
 import { ref, watch } from "vue";
 import { UploadRawFile, UploadRequestOptions, ElMessage, type UploadUserFile } from "element-plus";
 import ParamsAPI from "@/api/module_system/params";
-import FaCutterImg from "@/components/media/fa-cutter-img/index.vue";
-import { dataURLToFile } from "@utils/file/dataUrl";
+import { dataURLToFile } from "@utils";
 
 const props = defineProps({
   /**

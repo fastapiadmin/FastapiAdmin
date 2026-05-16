@@ -27,23 +27,16 @@
               </template>
             </ElTableColumn>
             <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
-              <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
-                <slot
-                  :name="col.headerSlotName || `${col.prop}-header`"
-                  v-bind="{ ...headerScope, prop: col.prop, label: col.label }"
-                >
-                  {{ col.label }}
-                </slot>
+              <template #header="headerScope">
+                <component
+                  v-if="col.useHeaderSlot && col.prop"
+                  :is="() => renderColumnHeader(headerScope, col)"
+                />
               </template>
               <template #default="slotScope">
-                <slot
+                <component
                   v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
-                  :name="col.slotName || col.prop"
-                  v-bind="{
-                    ...slotScope,
-                    prop: col.prop,
-                    value: col.prop ? slotScope.row[col.prop] : undefined,
-                  }"
+                  :is="() => renderCellSlot(slotScope, col)"
                 />
                 <TableFormatterOutlet
                   v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
@@ -53,7 +46,9 @@
               </template>
             </ElTableColumn>
           </template>
-          <template v-if="$slots.default" #default><slot /></template>
+          <template v-if="$slots.default" #default>
+            <component :is="() => renderDefaultSlot()" />
+          </template>
           <template #empty>
             <div v-if="loading"></div>
             <ElEmpty v-else :description="emptyText" :image-size="120" />
@@ -94,6 +89,7 @@ import {
   watchEffect,
   getCurrentInstance,
   useAttrs,
+  useSlots,
   isVNode,
   h,
   defineComponent,
@@ -102,11 +98,10 @@ import {
 import type { ElTable, TableProps } from "element-plus";
 import { storeToRefs } from "pinia";
 import { ColumnOption } from "@/types";
-import { useTableStore } from "@stores/modules/table.store";
+import { useTableStore } from "@stores";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useTableHeight } from "@/hooks/core/useTableHeight";
 import { useWindowSize } from "@vueuse/core";
-import FaPagination from "@/components/others/fa-pagination/index.vue";
 import { VueDraggable } from "vue-draggable-plus";
 
 defineOptions({ name: "FaTable" });
@@ -116,6 +111,7 @@ const elTableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const paginationRef = ref<HTMLElement>();
 const tableHeaderRef = ref<HTMLElement>();
 const tableStore = useTableStore();
+const slots = useSlots();
 const {
   isBorder,
   isZebra,
@@ -361,6 +357,28 @@ const shouldRenderSlotScope = (slotScope: { $index?: number }) => {
   return slotScope.$index === undefined || slotScope.$index >= 0;
 };
 
+/** Vue 3.5：useSlots() 直接调用 slot 渲染函数，模板中零 <slot> 元素 */
+function renderColumnHeader(headerScope: Record<string, unknown>, col: Record<string, unknown>) {
+  const slotName = (col.headerSlotName || `${col.prop}-header`) as string;
+  return slots[slotName]?.({ ...headerScope, prop: col.prop, label: col.label }) ?? col.label;
+}
+
+function renderCellSlot(slotScope: Record<string, unknown>, col: Record<string, unknown>) {
+  const slotName = (col.slotName || col.prop) as string;
+  const row = slotScope.row as Record<string, unknown> | undefined;
+  return (
+    slots[slotName]?.({
+      ...slotScope,
+      prop: col.prop,
+      value: col.prop ? row?.[col.prop as string] : undefined,
+    }) ?? null
+  );
+}
+
+function renderDefaultSlot() {
+  return slots.default?.() ?? null;
+}
+
 /**
  * ElTableColumn 若存在 default 插槽且插槽产物含任意非 Comment 的 vnode（含空白文本节点），
  * 将不会执行 formatter（见 element-plus render-helper setColumnRenders）。
@@ -482,5 +500,5 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-@use "./style";
+@use "@styles/fa-table";
 </style>

@@ -121,8 +121,7 @@
 <script setup lang="ts">
 defineOptions({ name: "FaAiAssistant" });
 
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
+import { resolveIconForFaSvgIcon } from "@utils";
 import { nextTick, onBeforeUnmount, onMounted, watch, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";

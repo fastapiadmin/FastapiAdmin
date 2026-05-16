@@ -7,11 +7,16 @@ import { ref, computed, watch } from "vue";
 import { MenuThemeType } from "@/types/store";
 import AppConfig from "@/config";
 import { SystemThemeEnum, MenuThemeEnum, MenuTypeEnum, ContainerWidthEnum } from "@/enums/appEnum";
-import { setElementThemeColor } from "@utils/ui";
-import { formatToDate } from "@utils/common";
-import { StorageConfig } from "@utils/storage";
 import { SETTING_DEFAULT_CONFIG } from "@/config/setting";
-import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@utils/ui";
+import {
+  setElementThemeColor,
+  formatToDate,
+  StorageConfig,
+  applyTheme,
+  generateThemeColors,
+  toggleDarkMode,
+  toggleSidebarColor,
+} from "@utils";
 import { SETTINGS_KEYS } from "@/constants";
 import { useStorage } from "@vueuse/core";
 import { defaultSettings } from "@/config/setting";

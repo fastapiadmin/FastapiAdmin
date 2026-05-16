@@ -133,9 +133,6 @@ import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
 import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import type { IObject } from "@/components/modal/types";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DictAPI, {
   type DictForm,
@@ -143,9 +140,15 @@ import DictAPI, {
   type DictTable,
 } from "@/api/module_system/dict";
 import { useDictStore } from "@stores";
-import DataDrawer from "@views/module_system/dict/components/DataDrawer.vue";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import DataDrawer from "./components/DataDrawer.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Dict",

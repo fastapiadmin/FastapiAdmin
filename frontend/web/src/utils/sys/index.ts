@@ -4,8 +4,8 @@ import type { App } from "vue";
 import mitt, { type Emitter } from "mitt";
 import { upgradeLogList } from "@/mock/upgrade/changeLog";
 import { ElNotification } from "element-plus";
-import { useUserStore } from "@stores/modules/user.store";
-import { StorageConfig } from "@utils/storage";
+import { useUserStore } from "@stores";
+import { StorageConfig } from "@utils";
 
 // -----------------------------
 // Console banner

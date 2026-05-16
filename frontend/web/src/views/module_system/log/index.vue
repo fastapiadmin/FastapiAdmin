@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     >
       <template #created_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
           @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -93,10 +93,10 @@
           </ElTag>
         </template>
         <template #request_payload="{ row }">
-          <JsonPretty :value="row?.request_payload as any" height="80px" />
+          <FaJsonPretty :value="row?.request_payload as any" height="80px" />
         </template>
         <template #response_json="{ row }">
-          <JsonPretty :value="row?.response_json as any" height="140px" />
+          <FaJsonPretty :value="row?.response_json as any" height="140px" />
         </template>
       </FaDescriptions>
     </FaDialog>
@@ -118,13 +118,16 @@ import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import type { IObject } from "@/components/modal/types";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { ColumnOption } from "@/types/component";
 import LogAPI, { type LogPageQuery, type LogTable } from "@/api/module_system/log";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaCopyButton from "@/components/others/fa-copy-button/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Log",
@@ -278,7 +281,7 @@ const {
           h("span", { class: "inline-flex items-center flex-wrap gap-0.5" }, [
             row.request_ip ?? "",
             row.request_ip
-              ? h(CopyButton, {
+              ? h(FaCopyButton, {
                   text: row.request_ip,
                   style: { marginLeft: "2px" },
                 })

@@ -10,7 +10,7 @@
             <b>部门</b>
           </template>
           <ElScrollbar class="dept-tree-scroll min-h-0 flex-1">
-            <DeptTree
+            <FaDeptTree
               v-model="deptFilterId"
               class="dept-tree-inner"
               @node-click="handleDeptNodeClick"
@@ -36,7 +36,7 @@
           @reset="onResetSearch"
         >
           <template #created_id>
-            <UserTableSelect
+            <FaUserTableSelect
               :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
               @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
               @confirm-click="afterUserSelectSearch"
@@ -211,7 +211,6 @@ defineOptions({
 
 import { UserFilled } from "@element-plus/icons-vue";
 import { ElAvatar } from "element-plus";
-import { useAppStore } from "@stores/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { useTable } from "@/hooks/core/useTable";
@@ -220,25 +219,26 @@ import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
 import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import type { IContentConfig, IObject } from "@/components/modal/types";
 import UserAPI, {
   type UserForm,
   type UserInfo,
   type UserPageQuery,
 } from "@/api/module_system/user";
-import { formatTree } from "@utils/common";
+import { formatTree, renderTableOperationCell, type TableOperationAction } from "@utils";
 import PositionAPI from "@/api/module_system/position";
 import DeptAPI from "@/api/module_system/dept";
 import RoleAPI from "@/api/module_system/role";
-import DeptTree from "./components/DeptTree.vue";
-import UserTableSelect from "./components/UserTableSelect.vue";
-import { useUserStore } from "@stores";
-import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
+import { useAppStore, useUserStore } from "@stores";
 import { useAuth } from "@/hooks/core/useAuth";
 import type { ColumnOption } from "@/types/component";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
+import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import type { IContentConfig, IObject } from "@/components/modal/types";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
 const appStore = useAppStore();

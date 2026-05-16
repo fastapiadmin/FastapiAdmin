@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-24 px-20 max-md:!pt-15 max-sm:!px-5 max-md:!px-8 bg-transparent !border-none">
+  <div class="pt-24 px-20 max-md:pt-15! max-sm:px-5! max-md:px-8! bg-transparent border-none!">
     <div class="mb-10 text-center">
       <h1
         class="mb-2 text-4xl font-medium max-sm:text-3xl flex flex-wrap justify-center items-baseline gap-x-2 gap-y-1"
@@ -14,7 +14,7 @@
         <span>位信赖的开发者</span>
       </h1>
       <h2 class="mb-2.5 text-2xl font-normal text-g-600 max-sm:text-2xl">以及众多科技巨头的选择</h2>
-      <div class="gap-2 flex-cc mt-2.5 max-sm:mt-3.5 max-sm:!block">
+      <div class="gap-2 flex-cc mt-2.5 max-sm:mt-3.5 max-sm:block!">
         <p class="text-sm italic text-g-600 max-sm:text-sm">
           本项目基于 MIT 协议开源免费，当前页面为定价模板，仅作演示用途
         </p>
@@ -45,13 +45,13 @@
               </div>
             </div>
 
-            <div class="flex-grow mb-5">
+            <div class="grow mb-5">
               <div
                 v-for="(feature, index) in plan.features"
                 :key="index"
                 class="flex-c mb-2.5 text-sm"
               >
-                <ElIcon class="mr-2.5" :class="feature.available ? '!text-theme' : '!text-danger'">
+                <ElIcon class="mr-2.5" :class="feature.available ? 'text-theme!' : 'text-danger!'">
                   <Check v-if="feature.available" />
                   <Close v-else />
                 </ElIcon>

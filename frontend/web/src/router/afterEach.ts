@@ -2,11 +2,10 @@
  * 路由后置守卫：滚动置顶、结束 NProgress、关闭 beforeEach 开启的全局 loading。
  */
 import { nextTick } from "vue";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { Router } from "vue-router";
-import { NProgress } from "@utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
-import { loadingService } from "@utils/ui";
+import { NProgress, loadingService } from "@utils";
 
 /** 防止重复注册 afterEach（与 beforeEach 同理） */
 let afterEachGuardRegistered = false;

@@ -24,13 +24,12 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import {
   elementMenuIconToEpIconify,
   isElementPlusStoredIcon,
   resolveElementPlusIconComponent,
-} from "@utils/menuIcon";
-import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
+  resolveIconForFaSvgIcon,
+} from "@utils";
 
 defineOptions({ name: "FaMenuRouteIcon", inheritAttrs: false });
 

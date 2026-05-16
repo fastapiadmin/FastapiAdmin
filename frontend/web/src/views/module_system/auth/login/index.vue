@@ -1,26 +1,26 @@
 <!-- 登录页：顶栏固定；仅插画列与表单区随布局切换 -->
 <template>
   <div class="login-page-root flex h-screen w-full flex-col overflow-hidden">
-    <LoginCenterBackdrop v-if="panelAlign === 'center'" viewport-fixed />
+    <FaLoginCenterBackdrop v-if="panelAlign === 'center'" viewport-fixed />
     <AuthTopBar v-model:panel-align="panelAlign" />
 
     <div
-      class="login-auth-split relative z-[1] flex min-h-0 flex-1 overflow-hidden"
+      class="login-auth-split relative z-1 flex min-h-0 flex-1 overflow-hidden"
       :class="`login-auth-split--${panelAlign}`"
     >
       <div
         v-if="panelAlign !== 'center'"
         class="login-auth-split__col login-auth-split__col--illustration"
       >
-        <LoginLeftView hide-top-branding />
+        <FaLoginLeftView hide-top-branding />
       </div>
 
       <div
         class="login-auth-split__col login-auth-split__col--form login-page-panel relative flex min-h-0 min-w-0 flex-col"
-        :class="panelAlign === 'center' ? 'bg-transparent' : 'bg-[var(--el-bg-color-page)]'"
+        :class="panelAlign === 'center' ? 'bg-transparent' : 'bg-(--el-bg-color-page)'"
       >
         <div
-          class="login-page-panel__main relative z-[1] flex min-h-0 flex-1 flex-col overflow-hidden px-5 pb-2 pt-14 md:px-10 md:pt-[4.5rem]"
+          class="login-page-panel__main relative z-1 flex min-h-0 flex-1 flex-col overflow-hidden px-5 pb-2 pt-14 md:px-10 md:pt-18"
         >
           <div
             class="login-page-panel__scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-6 [-webkit-overflow-scrolling:touch]"
@@ -43,11 +43,11 @@
 
                   <template v-if="authPanel === 'login'">
                     <template v-if="loginFlowMode === 'account'">
-                      <LoginAccountForm
+                      <FaLoginAccountForm
                         ref="accountFormRef"
                         v-model:is-passing="isPassing"
                         v-model:is-click-pass="isClickPass"
-                        :login-form="loginForm"
+                        v-model:login-form="loginForm"
                         :rules="rules"
                         :captcha-state="captchaState"
                         :code-loading="codeLoading"
@@ -68,24 +68,24 @@
                       />
                     </template>
 
-                    <LoginMobilePanel
+                    <FaLoginMobilePanel
                       v-else-if="loginFlowMode === 'mobile'"
                       @back="backToAccountLogin"
                       @register="setAuthPanel('register')"
                     />
 
-                    <LoginQrPanel
+                    <FaLoginQrPanel
                       v-else-if="loginFlowMode === 'qr'"
                       @back="backToAccountLogin"
                       @register="setAuthPanel('register')"
                     />
                   </template>
 
-                  <LoginRegisterPanel
+                  <FaLoginRegisterPanel
                     v-else-if="authPanel === 'register'"
                     ref="registerPanelRef"
                     v-model:register-agreement-read="registerAgreementRead"
-                    :register-form="registerForm"
+                    v-model:register-form="registerForm"
                     :register-rules="registerRules"
                     :form-key="formKey"
                     :register-loading="registerLoading"
@@ -94,10 +94,10 @@
                     @to-login="setAuthPanel('login')"
                   />
 
-                  <LoginForgetPanel
+                  <FaLoginForgetPanel
                     v-else
                     ref="forgetPanelRef"
-                    :forget-form="forgetForm"
+                    v-model:forget-form="forgetForm"
                     :forget-rules="forgetRules"
                     :form-key="formKey"
                     :forget-loading="forgetLoading"
@@ -110,7 +110,7 @@
           </div>
 
           <footer
-            class="login-page-footer login-page-footer--pinned flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
+            class="login-page-footer login-page-footer--pinned shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
             :class="panelAlign === 'center' && 'login-page-footer--floating-layout'"
           >
             <div class="login-footer-text text-sm">
@@ -171,21 +171,16 @@ import AuthAPI, {
   type OAuthProvider,
 } from "@/api/module_system/auth";
 import UserAPI, { type ForgetPasswordForm, type RegisterForm } from "@/api/module_system/user";
-import { useConfigStore } from "@stores/modules/config.store";
-import { useAppStore } from "@stores/modules/app.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { useUserStore } from "@stores/modules/user.store";
-import { Auth } from "@utils/auth";
-import { HttpError } from "@utils/http";
-import { startOAuthLogin } from "@utils/oauth";
+import { useConfigStore, useAppStore, useSettingsStore, useUserStore } from "@stores";
+import { Auth, HttpError, startOAuthLogin } from "@utils";
 import { ElMessage, ElNotification, type FormRules } from "element-plus";
-import LoginAccountForm from "./components/LoginAccountForm.vue";
-import LoginForgetPanel from "./components/LoginForgetPanel.vue";
-import LoginMobilePanel from "./components/LoginMobilePanel.vue";
-import LoginQrPanel from "./components/LoginQrPanel.vue";
-import LoginRegisterPanel from "./components/LoginRegisterPanel.vue";
 import type { Account, AccountKey } from "./types";
-import { useLoginPanelAlign } from "../composables/useLoginPanelAlign";
+import FaLoginAccountForm from "@/components/views/fa-login/FaLoginAccountForm.vue";
+import FaLoginForgetPanel from "@/components/views/fa-login/FaLoginForgetPanel.vue";
+import FaLoginMobilePanel from "@/components/views/fa-login/FaLoginMobilePanel.vue";
+import FaLoginQrPanel from "@/components/views/fa-login/FaLoginQrPanel.vue";
+import FaLoginRegisterPanel from "@/components/views/fa-login/FaLoginRegisterPanel.vue";
+import { useLoginPanelAlign } from "@/components/views/fa-login/useLoginPanelAlign";
 
 defineOptions({ name: "Login" });
 
@@ -360,9 +355,9 @@ const route = useRoute();
 const isPassing = ref(false);
 const isClickPass = ref(false);
 
-const accountFormRef = ref<InstanceType<typeof LoginAccountForm> | null>(null);
-const registerPanelRef = ref<InstanceType<typeof LoginRegisterPanel> | null>(null);
-const forgetPanelRef = ref<InstanceType<typeof LoginForgetPanel> | null>(null);
+const accountFormRef = ref<InstanceType<typeof FaLoginAccountForm> | null>(null);
+const registerPanelRef = ref<InstanceType<typeof FaLoginRegisterPanel> | null>(null);
+const forgetPanelRef = ref<InstanceType<typeof FaLoginForgetPanel> | null>(null);
 
 const loading = ref(false);
 const registerLoading = ref(false);
@@ -552,6 +547,10 @@ onMounted(async () => {
   setupAccount("super");
   await configStore.getConfig();
   await tryConsumeOAuthCallback();
+  if (userStore.isLogin) {
+    await router.replace(resolveRedirectTarget(route.query));
+    return;
+  }
   getCaptcha();
   voteTimer = setTimeout(showVoteNotification, 500);
 });
@@ -659,7 +658,7 @@ async function submitForget() {
 </script>
 
 <style scoped>
-@import "./style.css";
+@import "@styles/fa-login.css";
 </style>
 
 <style lang="scss" scoped>

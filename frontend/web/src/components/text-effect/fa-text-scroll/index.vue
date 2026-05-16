@@ -52,8 +52,7 @@ import {
   useDebounceFn,
   useTimeoutFn,
 } from "@vueuse/core";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
+import { useSettingsStore } from "@stores";
 
 type ThemeType =
   | "theme"
@@ -143,14 +142,14 @@ const isPaused = computed(() => {
 // 主题样式映射
 const themeClasses = computed(() => {
   const themeMap: Record<ThemeType, string> = {
-    theme: "text-theme/90 !border-theme/50",
-    primary: "text-primary/90 !border-primary/50",
-    secondary: "text-secondary/90 !border-secondary/50",
-    error: "text-error/90 !border-error/50",
-    info: "text-info/90 !border-info/50",
-    success: "text-success/90 !border-success/50",
-    warning: "text-warning/90 !border-warning/50",
-    danger: "text-danger/90 !border-danger/50",
+    theme: "text-theme/90 border-theme/50!",
+    primary: "text-primary/90 border-primary/50!",
+    secondary: "text-secondary/90 border-secondary/50!",
+    error: "text-error/90 border-error/50!",
+    info: "text-info/90 border-info/50!",
+    success: "text-success/90 border-success/50!",
+    warning: "text-warning/90 border-warning/50!",
+    danger: "text-danger/90 border-danger/50!",
   };
   return themeMap[props.type] || themeMap.theme;
 });
@@ -325,7 +324,6 @@ onBeforeUnmount(() => {
 
 <script setup lang="ts">
 defineOptions({ name: "FaTextScroll" });
-
 
 const handleClose = () => {
   console.log("文本滚动组件已关闭");
