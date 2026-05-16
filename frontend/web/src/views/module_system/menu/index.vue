@@ -71,122 +71,57 @@
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
       :size="drawerSize"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
-        <ElDescriptions :column="4" border>
-          <ElDescriptionsItem label="编号" :span="2">
-            {{ detailFormData.id }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="菜单名称" :span="2">
-            {{ detailFormData.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="菜单类型" :span="2">
-            <ElTag v-if="detailFormData.type === MenuTypeEnum.CATALOG" type="warning">目录</ElTag>
-            <ElTag v-if="detailFormData.type === MenuTypeEnum.MENU" type="success">菜单</ElTag>
-            <ElTag v-if="detailFormData.type === MenuTypeEnum.BUTTON" type="danger">按钮</ElTag>
-            <ElTag v-if="detailFormData.type === MenuTypeEnum.EXTLINK" type="info">外链</ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="终端" :span="2">
-            <ElTag v-if="detailFormData.client === MenuClientEnum.PC" type="primary">PC</ElTag>
-            <ElTag v-else-if="detailFormData.client === MenuClientEnum.APP" type="success">
-              APP
-            </ElTag>
-            <ElTag v-else type="info">{{ detailFormData.client || "—" }}</ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="图标" :span="2">
-            <template #default>
-              <template v-if="detailFormData.icon">
-                <MenuRouteIcon :icon="detailFormData.icon" :style="'vertical-align: -0.15em'" />
-              </template>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="menuDetailItems"
+          :scrollbar="false"
+        >
+          <template #type="{ row }">
+            <ElTag v-if="row?.type === MenuTypeEnum.CATALOG" type="warning">目录</ElTag>
+            <ElTag v-if="row?.type === MenuTypeEnum.MENU" type="success">菜单</ElTag>
+            <ElTag v-if="row?.type === MenuTypeEnum.BUTTON" type="danger">按钮</ElTag>
+            <ElTag v-if="row?.type === MenuTypeEnum.EXTLINK" type="info">外链</ElTag>
+          </template>
+          <template #client="{ row }">
+            <ElTag v-if="row?.client === MenuClientEnum.PC" type="primary">PC</ElTag>
+            <ElTag v-else-if="row?.client === MenuClientEnum.APP" type="success">APP</ElTag>
+            <ElTag v-else type="info">{{ row?.client || "—" }}</ElTag>
+          </template>
+          <template #icon="{ row }">
+            <template v-if="row?.icon">
+              <FaMenuRouteIcon :icon="row?.icon as string" :style="'vertical-align: -0.15em'" />
             </template>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="排序" :span="2">
-            {{ detailFormData.order }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="权限标识" :span="2">
-            {{ detailFormData.permission }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="路由名称" :span="2">
-            {{ detailFormData.route_name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="路由路径" :span="2">
-            {{ detailFormData.route_path }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="组件路径" :span="2">
-            {{ detailFormData.component_path }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="重定向" :span="2">
-            {{ detailFormData.redirect }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="父级编号" :span="2">
-            {{ detailFormData.parent_id }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="父级菜单" :span="2">
-            {{ detailFormData.parent_name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="是否缓存" :span="2">
-            <ElTag :type="detailFormData.keep_alive ? 'success' : 'danger'">
-              {{ detailFormData.keep_alive ? "是" : "否" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="是否显示" :span="2">
-            <ElTag :type="detailFormData.hidden ? 'success' : 'danger'">
-              {{ detailFormData.hidden ? "是" : "否" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="是否显示根路由" :span="2">
-            <ElTag :type="detailFormData.always_show ? 'success' : 'danger'">
-              {{ detailFormData.always_show ? "是" : "否" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="菜单标题" :span="2">
-            {{ detailFormData.title }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="路由参数" :span="2">
-            {{ detailFormData.params }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="是否固定路由" :span="2">
-            <ElTag :type="detailFormData.affix ? 'success' : 'danger'">
-              {{ detailFormData.affix ? "是" : "否" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="状态" :span="2">
-            <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-              {{ detailFormData.status === "0" ? "启用" : "停用" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="排序" :span="2">
-            {{ detailFormData.order }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="描述" :span="4">
-            {{ detailFormData.description }}
-          </ElDescriptionsItem>
-        </ElDescriptions>
+          </template>
+        </FaDescriptions>
       </template>
 
       <!-- 新增、编辑表单 -->
       <template v-else>
-        <ElForm
+        <FaForm
+          :key="menuFormRenderKey"
           ref="dataFormRef"
-          :model="formData"
+          v-model="formData"
+          :items="menuDialogFormItems"
           :rules="rules"
           label-suffix=":"
-          label-width="100px"
+          :label-width="'auto'"
           label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
         >
-          <ElFormItem
-            v-if="formData.type !== MenuTypeEnum.CATALOG"
-            label="父级菜单"
-            prop="parent_id"
-          >
+          <!-- 父级菜单(条件显示) -->
+          <template v-if="formData.type !== MenuTypeEnum.CATALOG" #parent_id>
             <ElTreeSelect
               v-model="formData.parent_id"
               placeholder="选择上级菜单"
@@ -199,17 +134,10 @@
             <ElText v-if="createParentLocked" type="info" size="small" class="block mt-1">
               在菜单下仅可新增按钮，父级已固定
             </ElText>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem label="菜单名称" prop="name">
-            <ElInput v-model="formData.name" placeholder="请输入菜单名称" />
-          </ElFormItem>
-
-          <ElFormItem label="菜单标题" prop="title">
-            <ElInput v-model="formData.title" placeholder="请输入菜单标题" />
-          </ElFormItem>
-
-          <ElFormItem label="菜单类型" prop="type">
+          <!-- 菜单类型(动态枚举按钮组) -->
+          <template #type>
             <ElRadioGroup v-model="formData.type" @change="handleMenuTypeChange">
               <ElRadio
                 v-if="allowedMenuTypeValues.includes(MenuTypeEnum.CATALOG)"
@@ -236,9 +164,10 @@
                 外链
               </ElRadio>
             </ElRadioGroup>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem label="终端" prop="client">
+          <!-- 终端(禁用态+提示) -->
+          <template #client>
             <ElRadioGroup v-model="formData.client" :disabled="createParentLocked">
               <ElRadio :value="MenuClientEnum.PC">PC 桌面</ElRadio>
               <ElRadio :value="MenuClientEnum.APP">APP 移动</ElRadio>
@@ -246,91 +175,41 @@
             <ElText v-if="createParentLocked" type="info" size="small" class="block mt-1">
               子级终端与父菜单一致
             </ElText>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type == MenuTypeEnum.EXTLINK" label="外链地址" prop="path">
+          <!-- 外链地址(条件显示) -->
+          <template v-if="formData.type == MenuTypeEnum.EXTLINK" #extlink_path>
             <ElInput v-model="formData.route_path" placeholder="请输入外链完整路径" />
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type !== MenuTypeEnum.BUTTON" prop="route_name">
-            <template #label>
-              <div class="flex-y-center">
-                路由名称
-                <ElTooltip placement="bottom" effect="light">
-                  <template #content>
-                    如果需要开启缓存，需保证页面 defineOptions 中的 name 与此处一致，建议使用驼峰。
-                  </template>
-                  <ElIcon class="ml-1 cursor-pointer">
-                    <QuestionFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
+          <!-- 路由名称(Tooltip标签) -->
+          <template v-if="formData.type !== MenuTypeEnum.BUTTON" #route_name>
             <ElInput v-model="formData.route_name" placeholder="请输入路由名称" />
-          </ElFormItem>
+          </template>
 
-          <ElFormItem
+          <!-- 路由路径(Tooltip标签) -->
+          <template
             v-if="formData.type == MenuTypeEnum.CATALOG || formData.type == MenuTypeEnum.MENU"
-            prop="route_path"
+            #route_path
           >
-            <template #label>
-              <div class="flex-y-center">
-                路由路径
-                <ElTooltip placement="bottom" effect="light">
-                  <template #content>
-                    定义应用中不同页面对应的 URL 路径，目录需以 /
-                    开头，菜单项不用。例如：系统管理目录 /system，系统管理下的用户管理菜单 user。
-                  </template>
-                  <ElIcon class="ml-1 cursor-pointer">
-                    <QuestionFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
             <ElInput v-model="formData.route_path" placeholder="请输入路由路径,如：/system" />
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type == MenuTypeEnum.MENU" prop="component">
-            <template #label>
-              <div class="flex-y-center">
-                组件路径
-                <ElTooltip placement="bottom" effect="light">
-                  <template #content>
-                    组件页面完整路径，相对于 src/views/，如 system/user/index，缺省后缀 .vue
-                  </template>
-                  <ElIcon class="ml-1 cursor-pointer">
-                    <QuestionFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
-
+          <!-- 组件路径(Tooltip+prepend/append) -->
+          <template v-if="formData.type == MenuTypeEnum.MENU" #component_path>
             <ElInput
               v-model="formData.component_path"
               placeholder="请输入组件路径，如system/user/index"
               :style="'width: 95%'"
             >
-              <template v-if="formData.type == MenuTypeEnum.MENU" #prepend>src/views/</template>
-              <template v-if="formData.type == MenuTypeEnum.MENU" #append>.vue</template>
+              <template #prepend>src/views/</template>
+              <template #append>.vue</template>
             </ElInput>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type == MenuTypeEnum.MENU">
-            <template #label>
-              <div class="flex-y-center">
-                路由参数
-                <ElTooltip placement="bottom" effect="light">
-                  <template #content>
-                    组件页面使用 `useRoute().query.参数名` 获取路由参数值。
-                  </template>
-                  <ElIcon class="ml-1 cursor-pointer">
-                    <QuestionFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
-
-            <div
+          <!-- 路由参数(动态键值编辑器) -->
+          <template v-if="formData.type == MenuTypeEnum.MENU" #params>
+            <template
               v-if="
                 !formData.params || (Array.isArray(formData.params) && formData.params.length === 0)
               "
@@ -338,16 +217,12 @@
               <ElButton type="success" plain @click="formData.params = [{ key: '', value: '' }]">
                 添加路由参数
               </ElButton>
-            </div>
-
-            <div v-else>
+            </template>
+            <template v-else>
               <div v-for="(item, index) in formData.params" :key="index">
                 <ElInput v-model="item.key" placeholder="参数名" :style="'width: 100px'" />
-
                 <span class="mx-1">=</span>
-
                 <ElInput v-model="item.value" placeholder="参数值" :style="'width: 100px'" />
-
                 <ElIcon
                   v-if="formData.params.indexOf(item) === formData.params.length - 1"
                   class="ml-2 cursor-pointer color-[var(--el-color-success)]"
@@ -364,90 +239,52 @@
                   <DeleteFilled />
                 </ElIcon>
               </div>
-            </div>
-          </ElFormItem>
-
-          <ElFormItem v-if="formData.type !== MenuTypeEnum.BUTTON">
-            <template #label>
-              <div class="flex-y-center">
-                是否隐藏
-                <ElTooltip placement="bottom" effect="light">
-                  <template #content>
-                    选择"是", 菜单中隐藏
-                    <br />
-                    选择"否"，菜单中显示。
-                    <br />
-                  </template>
-                  <ElIcon class="ml-1 cursor-pointer">
-                    <QuestionFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
             </template>
-
+          </template>
+          <!-- 是否隐藏(Tooltip标签) -->
+          <template v-if="formData.type !== MenuTypeEnum.BUTTON" #hidden>
             <ElRadioGroup v-model="formData.hidden">
               <ElRadio :value="true">是</ElRadio>
               <ElRadio :value="false">否</ElRadio>
             </ElRadioGroup>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem
+          <!-- 始终显示(Tooltip标签) -->
+          <template
             v-if="formData.type === MenuTypeEnum.CATALOG || formData.type === MenuTypeEnum.MENU"
+            #always_show
           >
-            <template #label>
-              <div class="flex-y-center">
-                始终显示
-                <ElTooltip placement="bottom" effect="light">
-                  <template #content>
-                    选择"是"，即使目录或菜单下只有一个子节点，也会显示父节点。
-                    <br />
-                    选择"否"，如果目录或菜单下只有一个子节点，则只显示该子节点，隐藏父节点。
-                    <br />
-                    如果是叶子节点，请选择"否"。
-                  </template>
-                  <ElIcon class="ml-1 cursor-pointer">
-                    <QuestionFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
-
             <ElRadioGroup v-model="formData.always_show">
               <ElRadio :value="true">是</ElRadio>
               <ElRadio :value="false">否</ElRadio>
             </ElRadioGroup>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type === MenuTypeEnum.MENU" label="缓存页面">
+          <!-- 缓存页面(v-if) -->
+          <template v-if="formData.type === MenuTypeEnum.MENU" #keep_alive>
             <ElRadioGroup v-model="formData.keep_alive">
               <ElRadio :value="true">开启</ElRadio>
               <ElRadio :value="false">关闭</ElRadio>
             </ElRadioGroup>
-          </ElFormItem>
+          </template>
 
-          <ElFormItem label="排序" prop="order">
-            <ElInputNumber v-model="formData.order" controls-position="right" :min="1" />
-          </ElFormItem>
-
-          <!-- 权限标识 -->
-          <ElFormItem
+          <!-- 权限标识(v-if) -->
+          <template
             v-if="formData.type == MenuTypeEnum.BUTTON || formData.type === MenuTypeEnum.MENU"
-            label="权限标识"
-            prop="perm"
+            #permission
           >
             <ElInput v-model="formData.permission" placeholder="请输入权限标识，如sys:user:add" />
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type !== MenuTypeEnum.BUTTON" label="图标" prop="icon">
-            <!-- 图标选择器 -->
+          <!-- 图标(v-if) -->
+          <template v-if="formData.type !== MenuTypeEnum.BUTTON" #icon>
             <FaIconSelect v-model="formData.icon" />
-          </ElFormItem>
+          </template>
 
-          <ElFormItem
+          <!-- 重定向(v-if, 动态placeholder) -->
+          <template
             v-if="formData.type == MenuTypeEnum.CATALOG || formData.type === MenuTypeEnum.MENU"
-            label="重定向"
-            prop="redirect"
-            :required="formData.type === MenuTypeEnum.CATALOG"
+            #redirect
           >
             <ElInput
               v-model="formData.redirect"
@@ -457,49 +294,16 @@
                   : '可选，请输入重定向路由'
               "
             />
-          </ElFormItem>
+          </template>
 
-          <ElFormItem v-if="formData.type != MenuTypeEnum.BUTTON" label="常驻标签栏" prop="affix">
+          <!-- 常驻标签栏(v-if) -->
+          <template v-if="formData.type != MenuTypeEnum.BUTTON" #affix>
             <ElRadioGroup v-model="formData.affix">
               <ElRadio :value="true">是</ElRadio>
               <ElRadio :value="false">否</ElRadio>
             </ElRadioGroup>
-          </ElFormItem>
-
-          <ElFormItem label="状态" prop="status">
-            <ElRadioGroup v-model="formData.status">
-              <ElRadio value="0">启用</ElRadio>
-              <ElRadio value="1">禁用</ElRadio>
-            </ElRadioGroup>
-          </ElFormItem>
-
-          <ElFormItem label="描述" prop="description">
-            <ElInput
-              v-model="formData.description"
-              :rows="4"
-              :maxlength="100"
-              show-word-limit
-              type="textarea"
-              placeholder="请输入描述"
-            />
-          </ElFormItem>
-        </ElForm>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <!-- 详情弹窗不需要确定按钮的提交逻辑 -->
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-        </div>
+          </template>
+        </FaForm>
       </template>
     </FaDrawer>
   </div>
@@ -511,10 +315,8 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { h, ref, reactive, computed, nextTick, onMounted } from "vue";
-import { CirclePlusFilled, DeleteFilled, QuestionFilled } from "@element-plus/icons-vue";
-import { useAppStore } from "@stores/modules/app.store";
-import { useUserStore } from "@stores/modules/user.store";
+import { CirclePlusFilled, DeleteFilled } from "@element-plus/icons-vue";
+import { useAppStore, useUserStore } from "@stores";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import { useTableColumns } from "@/hooks/core/useTableColumns";
 import MenuAPI, {
@@ -524,17 +326,14 @@ import MenuAPI, {
 } from "@/api/module_system/menu";
 import { MenuClientEnum, MenuTypeEnum } from "@/enums/system/menu.enum";
 import { formatTree } from "@utils/common";
-import MenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import FaIconSelect from "@/components/others/fa-icon-select/index.vue";
-import { ElMessage, ElMessageBox, ElTag, ElTooltip } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
+import { ElTag, ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
 const appStore = useAppStore();
@@ -696,6 +495,108 @@ const fullMenuTree = ref<MenuTable[]>([]);
 const createParentLocked = ref(false);
 
 const detailFormData = ref<MenuTable>({});
+
+const menuDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "编号", prop: "id" },
+    { label: "菜单名称", prop: "name" },
+    { label: "菜单类型", prop: "type", slot: "type" },
+    { label: "终端", prop: "client", slot: "client" },
+    { label: "图标", prop: "icon", slot: "icon" },
+    { label: "权限标识", prop: "permission" },
+    { label: "路由名称", prop: "route_name" },
+    { label: "路由路径", prop: "route_path" },
+    { label: "组件路径", prop: "component_path" },
+    { label: "重定向", prop: "redirect" },
+    { label: "父级编号", prop: "parent_id" },
+    { label: "父级菜单", prop: "parent_name" },
+    {
+      label: "是否缓存",
+      prop: "keep_alive",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    {
+      label: "是否显示",
+      prop: "hidden",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    {
+      label: "是否显示根路由",
+      prop: "always_show",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    { label: "菜单标题", prop: "title" },
+    { label: "路由参数", prop: "params" },
+    {
+      label: "是否固定路由",
+      prop: "affix",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "排序", prop: "order" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+    { label: "描述", prop: "description", span: 4 },
+  ];
+
+// 菜单新增/编辑表单 —— 简单字段走 items，条件渲染/Tooltip标签/复杂控件走插槽
+const menuDialogFormItems: FormItem[] = [
+  { key: "parent_id", label: "父级菜单", type: "input" /* #parent_id 插槽 */ },
+  { key: "name", label: "菜单名称", type: "input", props: { placeholder: "请输入菜单名称" } },
+  { key: "title", label: "菜单标题", type: "input", props: { placeholder: "请输入菜单标题" } },
+  { key: "type", label: "菜单类型", type: "input" /* #type 插槽 */ },
+  { key: "client", label: "终端", type: "input" /* #client 插槽 */ },
+  { key: "extlink_path", label: "外链地址", type: "input" /* #extlink_path 插槽 */ },
+  { key: "route_name", label: "路由名称", type: "input" /* #route_name 插槽 */ },
+  { key: "route_path", label: "路由路径", type: "input" /* #route_path 插槽 */ },
+  { key: "component_path", label: "组件路径", type: "input" /* #component_path 插槽 */ },
+  { key: "params", label: "路由参数", type: "input" /* #params 插槽 */ },
+  { key: "hidden", label: "是否隐藏", type: "input" /* #hidden 插槽 */ },
+  { key: "always_show", label: "始终显示", type: "input" /* #always_show 插槽 */ },
+  { key: "keep_alive", label: "缓存页面", type: "input" /* #keep_alive 插槽 */ },
+  { key: "order", label: "排序", type: "number", props: { controlsPosition: "right", min: 1 } },
+  { key: "permission", label: "权限标识", type: "input" /* #permission 插槽 */ },
+  { key: "icon", label: "图标", type: "input" /* #icon 插槽 */ },
+  { key: "redirect", label: "重定向", type: "input" /* #redirect 插槽 */ },
+  { key: "affix", label: "常驻标签栏", type: "input" /* #affix 插槽 */ },
+  {
+    key: "status",
+    label: "状态",
+    type: "radiogroup",
+    props: {
+      options: [
+        { label: "启用", value: "0" },
+        { label: "禁用", value: "1" },
+      ],
+    },
+  },
+  {
+    key: "description",
+    label: "描述",
+    type: "input",
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+];
 
 const formData = ref<MenuForm>({
   id: undefined,
@@ -861,7 +762,7 @@ const { columnChecks, columns } = useTableColumns<MenuTable>(() => [
     align: "center",
     formatter: (row: MenuTable) =>
       row.icon
-        ? h(MenuRouteIcon, { icon: row.icon, style: { verticalAlign: "-0.15em" } })
+        ? h(FaMenuRouteIcon, { icon: row.icon, style: { verticalAlign: "-0.15em" } })
         : h("span", { class: "text-g-400" }, "—"),
   },
   {
@@ -1004,7 +905,8 @@ const initialFormData: MenuForm = {
   client: MenuClientEnum.PC,
 };
 
-const dataFormRef = ref();
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const menuFormRenderKey = ref(0);
 
 async function resetForm() {
   if (dataFormRef.value) {
@@ -1052,6 +954,7 @@ async function handleOpenDialog(
   } else {
     dialogVisible.title = "新增菜单";
     formData.value = { ...initialFormData };
+    menuFormRenderKey.value += 1;
     if (parentRow?.id != null) {
       formData.value.parent_id = parentRow.id;
       formData.value.client = (parentRow.client as MenuClientEnum) || menuClientTab.value;
@@ -1075,7 +978,7 @@ function handleMenuTypeChange() {
   nextTick(() => {
     dataFormRef.value?.clearValidate("redirect");
     if (formData.value.type === MenuTypeEnum.CATALOG) {
-      dataFormRef.value?.validateField("redirect").catch(() => {});
+      dataFormRef.value?.validateField("redirect")?.catch(() => {});
     }
   });
 }

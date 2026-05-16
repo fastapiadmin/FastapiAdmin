@@ -56,7 +56,7 @@
             </div>
           </div>
           <ul class="py-4 mt-3 border-t border-g-300/80">
-            <li class="btn-item" @click="goPage('/profile')">
+            <li class="btn-item" @click="goPage('/fastlink/profile')">
               <FaSvgIcon icon="ri:user-3-line" />
               <span>{{ $t("topBar.user.userCenter") }}</span>
             </li>
@@ -85,7 +85,7 @@
       </template>
     </ElPopover>
 
-    <ConfigInfoDrawer v-model="paramDrawerVisible" />
+    <FaConfigInfoDrawer v-model="paramDrawerVisible" />
   </div>
 </template>
 
@@ -93,10 +93,8 @@
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { ElMessageBox } from "element-plus";
-import ConfigInfoDrawer from "@views/module_system/param/components/ConfigInfoDrawer.vue";
-import { useUserStore } from "@stores/modules/user.store";
-import { WEB_LINKS } from "@utils/constants";
-import { mittBus } from "@utils/sys";
+import { useUserStore } from "@stores";
+import { WEB_LINKS, mittBus } from "@utils";
 
 defineOptions({ name: "FaUserMenu" });
 

@@ -64,7 +64,6 @@
 </template>
 
 <script lang="ts" setup>
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import ExcelJS from "exceljs";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import { useThrottleFn } from "@vueuse/core";

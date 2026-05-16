@@ -337,7 +337,7 @@
     </FaDrawer>
 
     <FaDialog v-model="jobStateVisible" title="执行元数据" width="800px">
-      <JsonPretty :value="jobStateData" height="400px" />
+      <FaJsonPretty :value="jobStateData" height="400px" />
       <template #footer>
         <ElButton type="primary" @click="jobStateVisible = false">关闭</ElButton>
       </template>
@@ -359,7 +359,7 @@ import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue"
 import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
+import FaJsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { Calendar, Clock, Timer } from "@element-plus/icons-vue";

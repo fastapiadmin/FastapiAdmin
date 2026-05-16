@@ -1,4 +1,4 @@
-<!-- 公告通知：Art 布局 + useTable，与 dict 页一致 -->
+<!-- 公告通知：Fa 布局 + useTable，与 dict 页一致 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     >
       <template #created_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
           @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -46,7 +46,7 @@
             :perm-patch="['module_system:notice:patch']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -71,105 +71,73 @@
       width="920px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border label-width="120px">
-            <ElDescriptionsItem label="标题" :span="2">
-              {{ detailFormData.notice_title }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="类型" :span="2">
-              <ElTag :type="detailFormData.notice_type === '1' ? 'primary' : 'warning'">
-                {{ noticeTypeLabel(detailFormData.notice_type) }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "启用" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="内容" :span="4">
-              <div class="notice-html-preview">
-                <template v-if="detailHasRenderableContent">
-                  <div v-html="detailContentHtml" />
-                </template>
-                <p v-else class="notice-html-empty">暂无内容</p>
-              </div>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建人" :span="2">
-              {{ detailFormData.created_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="noticeDetailItems"
+          label-width="120px"
+          max-height="75vh"
+        >
+          <template #notice_type="{ row }">
+            <ElTag :type="row?.notice_type === '1' ? 'primary' : 'warning'">
+              {{ noticeTypeLabel(row?.notice_type as string) }}
+            </ElTag>
+          </template>
+          <template #notice_content>
+            <div class="notice-html-preview">
+              <template v-if="detailHasRenderableContent">
+                <div v-html="detailContentHtml" />
+              </template>
+              <p v-else class="notice-html-empty">暂无内容</p>
+            </div>
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <!-- FaForm + items + 栅格；弹窗内关闭内置提交/重置，仍用底部按钮 -->
-          <FaForm
-            :key="noticeFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="noticeDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="100"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-            <template #notice_content>
-              <FaWangEditor
-                :model-value="formData.notice_content ?? ''"
-                height="min(38vh, 280px)"
-                placeholder="请输入公告内容，支持完整排版与插入..."
-                :exclude-keys="[]"
-                @update:model-value="(v: string) => (formData.notice_content = v)"
-              />
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="noticeFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="noticeDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="100"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+          <template #notice_content>
+            <FaWangEditor
+              :model-value="formData.notice_content ?? ''"
+              height="min(38vh, 280px)"
+              placeholder="请输入公告内容，支持完整排版与插入..."
+              :exclude-keys="[]"
+              @update:model-value="(v: string) => (formData.notice_content = v)"
+            />
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="noticeExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -179,30 +147,29 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive, nextTick, onMounted } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
-import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { ColumnOption } from "@/types/component";
 import NoticeAPI, {
   type NoticeForm,
   type NoticePageQuery,
   type NoticeTable,
 } from "@/api/module_system/notice";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import { useDictStore, useNoticeStore } from "@stores/index";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
-import FaWangEditor from "@/components/forms/fa-wang-editor/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import { useDictStore, useNoticeStore } from "@stores";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Notice",
@@ -222,10 +189,7 @@ type NoticeSearchForm = {
 };
 
 function normalizeNoticeQuery(params: Record<string, unknown>): NoticePageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as NoticePageQuery;
+  return cleanEmptyArrayParams({ ...params }) as unknown as NoticePageQuery;
 }
 
 function noticeTypeLabel(val?: string) {
@@ -314,15 +278,157 @@ const noticeSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<NoticeTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 
-function onTableSelectionChange(rows: NoticeTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<NoticeTable>();
+
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
+
+const detailFormData = ref<NoticeTable>({});
+
+const noticeDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "标题", prop: "notice_title" },
+    { label: "类型", prop: "notice_type", slot: "notice_type" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "描述", prop: "description" },
+    { label: "内容", prop: "notice_content", slot: "notice_content", span: 4 },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
+/** 详情富文本 HTML（用于预览） */
+const detailContentHtml = computed({
+  get: () => detailFormData.value.notice_content ?? "",
+  set: (v: string) => {
+    detailFormData.value.notice_content = v;
+  },
+});
+
+/** 详情是否有可视文本 */
+const detailHasRenderableContent = computed(() => {
+  const raw = detailFormData.value.notice_content ?? "";
+  if (!raw.trim()) return false;
+  const plain = raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return plain.length > 0;
+});
+
+const formData = ref<NoticeForm>({
+  id: undefined,
+  notice_title: "",
+  notice_type: "",
+  notice_content: "",
+  status: "0",
+  description: undefined,
+});
+
+const rules = reactive({
+  notice_title: [{ required: true, message: "请输入公告通知标题", trigger: "blur" }],
+  notice_type: [{ required: true, message: "请选择公告通知类型", trigger: "blur" }],
+  notice_content: [{ required: true, message: "请输入公告通知内容", trigger: "blur" }],
+  status: [{ required: true, message: "请选择公告通知状态", trigger: "blur" }],
+});
+
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const noticeFormRenderKey = ref(0);
+
+const initialFormData: NoticeForm = {
+  id: undefined,
+  notice_title: "",
+  notice_type: "",
+  notice_content: "",
+  status: "0",
+  description: undefined,
+};
+
+// ─── CRUD 表单 ───
+const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
+  useCrudForm<NoticeForm>({
+    formData,
+    initialFormData,
+    dialogVisible,
+    dataFormRef,
+    formRenderKey: noticeFormRenderKey,
+    detailApi: NoticeAPI.detailNotice,
+    createApi: NoticeAPI.createNotice,
+    updateApi: NoticeAPI.updateNotice,
+    titles: { create: "新增公告通知", update: "修改公告通知", detail: "公告通知详情" },
+    detailFormData,
+    onCreateSuccess: async () => {
+      await refreshCreate();
+    },
+    onUpdateSuccess: async () => {
+      await refreshUpdate();
+    },
+    onSubmitSuccess: async () => {
+      await noticeStore.getNotice();
+    },
+  });
+
+const noticeDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "标题",
+    key: "notice_title",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入标题", maxlength: 50 },
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 2,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+  {
+    label: "类型",
+    key: "notice_type",
+    type: "select",
+    span: 24,
+    props: {
+      placeholder: "请选择类型",
+      clearable: true,
+      class: "w-full! max-w-md",
+      options: dictStore.getDictArray("sys_notice_type").map((item) => ({
+        label: item.dict_label,
+        value: item.dict_value,
+      })),
+    },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "内容",
+    key: "notice_content",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+]);
 
 const {
   columns,
@@ -413,11 +519,7 @@ const noticeCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeNoticeQuery(sp);
 });
 
@@ -434,118 +536,7 @@ const noticeExportContentConfig = computed(() => ({
   },
 }));
 
-const detailFormData = ref<NoticeTable>({});
-
-/** 详情富文本 HTML（用于预览） */
-const detailContentHtml = computed({
-  get: () => detailFormData.value.notice_content ?? "",
-  set: (v: string) => {
-    detailFormData.value.notice_content = v;
-  },
-});
-
-/** 详情是否有可视文本（排除仅空标签） */
-const detailHasRenderableContent = computed(() => {
-  const raw = detailFormData.value.notice_content ?? "";
-  if (!raw.trim()) return false;
-  const plain = raw
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return plain.length > 0;
-});
-
-const formData = ref<NoticeForm>({
-  id: undefined,
-  notice_title: "",
-  notice_type: "",
-  notice_content: "",
-  status: "0",
-  description: undefined,
-});
-
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
-
-const rules = reactive({
-  notice_title: [{ required: true, message: "请输入公告通知标题", trigger: "blur" }],
-  notice_type: [{ required: true, message: "请选择公告通知类型", trigger: "blur" }],
-  notice_content: [{ required: true, message: "请输入公告通知内容", trigger: "blur" }],
-  status: [{ required: true, message: "请选择公告通知状态", trigger: "blur" }],
-});
-
-const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
-const submitLoading = ref(false);
-
-/** 每次打开弹窗递增，令 FaForm 重新挂载并同步初始 model（与示例页声明式 items 一致） */
-const noticeFormRenderKey = ref(0);
-
-/** 公告编辑表单字段配置（FaForm + items） */
-const noticeDialogFormItems = computed<FormItem[]>(() => [
-  {
-    label: "标题",
-    key: "notice_title",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入标题", maxlength: 50 },
-  },
-  {
-    label: "描述",
-    key: "description",
-    type: "input",
-    span: 24,
-    props: {
-      type: "textarea",
-      rows: 2,
-      maxlength: 100,
-      showWordLimit: true,
-      placeholder: "请输入描述",
-    },
-  },
-  {
-    label: "类型",
-    key: "notice_type",
-    type: "select",
-    span: 24,
-    props: {
-      placeholder: "请选择类型",
-      clearable: true,
-      class: "!w-full max-w-md",
-      options: dictStore.getDictArray("sys_notice_type").map((item) => ({
-        label: item.dict_label,
-        value: item.dict_value,
-      })),
-    },
-  },
-  {
-    label: "状态",
-    key: "status",
-    type: "input",
-    span: 24,
-    placeholder: "",
-  },
-  {
-    label: "内容",
-    key: "notice_content",
-    type: "input",
-    span: 24,
-    placeholder: "",
-  },
-]);
-
-const initialFormData: NoticeForm = {
-  id: undefined,
-  notice_title: "",
-  notice_type: "",
-  notice_content: "",
-  status: "0",
-  description: undefined,
-};
-
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 function buildNoticeReplaceParams(p: NoticeSearchForm): Record<string, unknown> {
   return {
@@ -586,70 +577,9 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-async function resetForm() {
-  const inner = dataFormRef.value?.ref;
-  inner?.resetFields();
-  inner?.clearValidate();
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await NoticeAPI.detailNotice(id);
-    if (type === "detail") {
-      dialogVisible.title = "公告通知详情";
-      Object.assign(detailFormData.value, response.data.data ?? {});
-    } else if (type === "update") {
-      dialogVisible.title = "修改公告通知";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增公告通知";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
-  }
-  noticeFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
-async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    submitLoading.value = true;
-    const id = formData.value.id;
-    try {
-      if (id) {
-        await NoticeAPI.updateNotice(id, { id, ...formData.value });
-        await refreshUpdate();
-      } else {
-        await NoticeAPI.createNotice(formData.value);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-      await noticeStore.getNotice();
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
-    }
-  });
-}
-
 async function deleteNoticeRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-
+    await confirmDelete();
     await NoticeAPI.deleteNotice([id]);
     await noticeStore.getNotice();
     ElMessage.success("删除成功");
@@ -705,11 +635,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await NoticeAPI.deleteNotice(ids);
     await noticeStore.getNotice();
@@ -729,12 +655,8 @@ async function handleMoreClick(status: string) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  });
   try {
+    await confirmToggleStatus(status);
     await NoticeAPI.batchNotice({ ids, status });
     await refreshData();
     await noticeStore.getNotice();
@@ -743,25 +665,12 @@ async function handleMoreClick(status: string) {
   }
 }
 
-function openExportModal() {
-  exportModalVisible.value = true;
-}
-
 onMounted(async () => {
   await dictStore.getDict(["sys_notice_type"]);
 });
 </script>
 
 <style scoped lang="scss">
-/* FaForm 底部预留的操作栏列在弹窗内不需要占位 */
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-
 /* 富文本预览区域阅读样式（与 FaWangEditor 输出 HTML 展示一致） */
 .notice-html-preview {
   box-sizing: border-box;

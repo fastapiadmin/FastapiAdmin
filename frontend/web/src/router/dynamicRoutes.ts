@@ -191,7 +191,7 @@ export class ComponentLoader {
   }
 
   loadLayout(): () => Promise<any> {
-    return () => import("@/layouts/index.vue");
+    return () => import("@/components/layouts/index.vue");
   }
 
   loadIframe(): () => Promise<any> {

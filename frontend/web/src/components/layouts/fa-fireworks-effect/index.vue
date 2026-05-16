@@ -2,13 +2,13 @@
 <template>
   <canvas
     ref="canvasRef"
-    class="fixed top-0 left-0 z-[9999] w-full h-full pointer-events-none"
+    class="fixed top-0 left-0 z-9999 w-full h-full pointer-events-none"
   ></canvas>
 </template>
 
 <script setup lang="ts">
 import { useEventListener } from "@vueuse/core";
-import { mittBus } from "@utils/sys";
+import { mittBus } from "@utils";
 import type { Handler } from "mitt";
 import { festivalConfigList } from "@/config/modules/festival";
 import { buildBuiltinSolarFestivals } from "@/config/modules/festival.builtin";

@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     >
       <template #created_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
           @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -25,7 +25,7 @@
         />
       </template>
       <template #updated_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.updated_id == null ? undefined : searchForm.updated_id"
           @update:model-value="(v: number | undefined) => (searchForm.updated_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -183,13 +183,13 @@ defineOptions({
 import { computed, nextTick, reactive, ref } from "vue";
 import { Delete, Edit, Monitor, Plus } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { useAppStore } from "@stores/modules/app.store";
+import { useAppStore } from "@stores";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 import ApplicationAPI, {
   type ApplicationForm,
   type ApplicationInfo,
 } from "@/api/module_application/portal";
-import { formatToDateTime } from "@utils/common";
+import { formatToDateTime } from "@utils";
 import { useTable } from "@/hooks/core/useTable";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
@@ -197,7 +197,7 @@ import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue"
 import FaDrawer from "@/components/modal/fa-drawer/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
 import type { ColumnOption } from "@/types/component";
 
 const appStore = useAppStore();
@@ -341,7 +341,20 @@ const {
     },
     columnsFactory: (): ColumnOption<ApplicationInfo>[] => [],
   },
-});
+}) as unknown as {
+  columnChecks: any;
+  data: ApplicationInfo[];
+  loading: any;
+  pagination: any;
+  getData: any;
+  replaceSearchParams: any;
+  resetSearchParams: any;
+  handleSizeChange: any;
+  handleCurrentChange: any;
+  refreshData: any;
+  refreshCreate: any;
+  refreshUpdate: any;
+};
 
 const formData = ref<ApplicationForm>({
   name: "",
@@ -457,8 +470,8 @@ function resetForm() {
     status: "0",
     description: "",
   });
-  formRef.value?.ref?.resetFields();
-  formRef.value?.ref?.clearValidate();
+  formRef.value?.resetFields();
+  formRef.value?.clearValidate();
 }
 
 function handleCloseDialog() {

@@ -6,7 +6,7 @@
       <p class="text-sm text-g-600">{{ subtitle }}</p>
     </div>
     <ElScrollbar :style="{ height: maxHeight }">
-      <ElTimeline class="!pl-0.5">
+      <ElTimeline class="pl-0.5!">
         <ElTimelineItem
           v-for="item in list"
           :key="item.time"

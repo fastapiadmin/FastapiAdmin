@@ -4,9 +4,7 @@
 import axios from "axios";
 import { ElLoading, ElMessage } from "element-plus";
 import { saveAs as fileSaverSaveAs } from "file-saver";
-import { Auth } from "@utils/auth";
-import { errorCode } from "@utils/constants";
-import { blobValidate } from "@utils/common";
+import { Auth, errorCode, blobValidate } from "@utils";
 
 const baseURL = import.meta.env.VITE_APP_BASE_API;
 let downloadLoadingInstance: any;

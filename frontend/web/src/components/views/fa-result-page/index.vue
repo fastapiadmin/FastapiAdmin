@@ -1,11 +1,11 @@
 <template>
-  <div class="page-content box-border !px-20 py-3.5 text-center max-md:!px-5" :class="type">
+  <div class="page-content box-border px-20! py-3.5 text-center max-md:px-5!" :class="type">
     <FaSvgIcon
-      class="icon size-22 p-2 mt-16 block rounded-full !text-white"
+      class="icon size-22 p-2 mt-16 block rounded-full text-white!"
       :icon="iconCode"
       :class="type === 'success' ? 'bg-[#19BE6B]' : 'bg-[#ED4014]'"
     />
-    <h1 class="title mt-8 text-3xl font-medium !text-g-900 max-md:mt-2.5 max-md:text-2xl">
+    <h1 class="title mt-8 text-3xl font-medium text-g-900! max-md:mt-2.5 max-md:text-2xl">
       {{ title }}
     </h1>
     <p class="msg mt-5 text-base text-g-600">{{ message }}</p>
@@ -21,8 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-
 defineOptions({ name: "FaResultPage" });
 
 // 显式声明插槽类型

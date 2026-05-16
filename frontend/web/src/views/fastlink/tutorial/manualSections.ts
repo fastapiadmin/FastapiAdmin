@@ -51,7 +51,7 @@ export const MANUAL_SYSTEM_TAIL_PAGES: CompactManualPage[] = [
     title: "岗位管理",
     path: "module_system/position/index.vue",
     notes: [
-      "检索：FaSearchBar（含创建人 UserTableSelect 槽）。",
+      "检索：FaSearchBar（含创建人 FaUserTableSelect 槽）。",
       "主区：分页表格。",
       "工具栏：新增、导出、批量删除、批量更多(patch)、刷新、列配置。",
       "弹层：详情；新增/编辑 Dialog；导出 FaExportDialog。",
@@ -86,7 +86,7 @@ export const MANUAL_SYSTEM_TAIL_PAGES: CompactManualPage[] = [
     title: "通知公告",
     path: "module_system/notice/index.vue",
     notes: [
-      "检索：FaSearchBar（含创建人 UserTableSelect）。",
+      "检索：FaSearchBar（含创建人 FaUserTableSelect）。",
       "工具栏：新增、导出、批量删除、批量更多(patch)、刷新、列配置。",
       "弹层：详情；新增/编辑 Dialog；正文为富文本 `FaWangEditor`；HTML 预览。",
       "权限：`module_system:notice:create|export|delete|patch` + 行级操作。",
@@ -108,7 +108,7 @@ export const MANUAL_SYSTEM_TAIL_PAGES: CompactManualPage[] = [
     title: "操作日志",
     path: "module_system/log/index.vue",
     notes: [
-      "检索：FaSearchBar（含创建人 UserTableSelect）；登录/操作日志类型在列或详情中区分。",
+      "检索：FaSearchBar（含创建人 FaUserTableSelect）；登录/操作日志类型在列或详情中区分。",
       "工具栏：导出、批量删除、刷新、列配置（无新增）。",
       "弹层：详情 Dialog（请求路径/方法、IP、状态码、耗时、入参出参等大字段）。",
       "权限：`module_system:log:export|delete` + 行级查看/删除。",
@@ -289,7 +289,7 @@ export const MANUAL_MODULES_AFTER_SYSTEM: ManualModuleSection[] = [
         title: "插件市场",
         path: "module_application/portal/index.vue",
         notes: [
-          "检索：FaSearchBar（含创建人、更新人 UserTableSelect）。",
+          "检索：FaSearchBar（含创建人、更新人 FaUserTableSelect）。",
           "工具栏：标题「应用市场」+「创建应用」（`module_application:portal:create`）；刷新、搜索栏。",
           "主区：卡片网格（图标、名称、状态、描述）；卡片脚编辑/删除（update/delete）；底部分页器。",
           "完整性：空列表 ElEmpty；卡片点击进入内部打开逻辑（见 `openAppInternal`）。",

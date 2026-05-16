@@ -3,8 +3,7 @@ import { router } from "@/router";
 import type { AppRouteRecord, AppRouteRecord as AppRouteRecordFromTypes } from "@/types";
 import i18n, { $t } from "@/locales";
 import AppConfig from "@/config";
-import { useWorktabStore } from "@stores/modules/worktab.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore, useWorktabStore } from "@stores";
 import { IframeRouteManager } from "@/router";
 import { useCommon } from "@/hooks/core/useCommon";
 

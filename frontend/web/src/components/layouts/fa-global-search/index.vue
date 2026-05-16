@@ -20,7 +20,7 @@
       >
         <template #suffix>
           <div
-            class="h-4.5 flex-cc rounded border border-g-300 dark:!bg-g-200/50 !bg-box px-1.5 text-g-500"
+            class="h-4.5 flex-cc rounded border border-g-300 dark:bg-g-200/50! bg-box! px-1.5 text-g-500"
           >
             <FaSvgIcon icon="fluent:arrow-enter-left-20-filled" />
           </div>
@@ -29,13 +29,13 @@
       <ElScrollbar class="mt-5" max-height="370px" ref="searchResultScrollbar" always>
         <div class="result w-full" v-show="searchResult.length">
           <div
-            class="box !mt-0 c-p text-base leading-none"
+            class="box mt-0! c-p text-base leading-none"
             v-for="(item, index) in searchResult"
             :key="index"
           >
             <div
               class="mt-2 h-12 flex-cb rounded-custom-sm bg-g-200/80 px-4 text-sm text-g-700"
-              :class="isHighlighted(index) ? 'highlighted !bg-theme/70 !text-white' : ''"
+              :class="isHighlighted(index) ? 'highlighted bg-theme/70! text-white!' : ''"
               @click="searchGoPage(item)"
               @mouseenter="highlightOnHover(index)"
             >
@@ -54,7 +54,7 @@
               :key="index"
               :class="
                 historyHIndex === index
-                  ? 'highlighted !bg-theme/70 !text-white [&_.selected-icon]:!text-white'
+                  ? 'highlighted bg-theme/70! text-white! [&_.selected-icon]:text-white!'
                   : ''
               "
               @click="searchGoPage(item)"
@@ -84,7 +84,7 @@
             <span class="mr-3.5 text-xs text-g-700">{{ $t("search.switchKeydown") }}</span>
           </div>
           <div class="flex-c">
-            <i class="keyboard !w-8 flex-cc"><p class="text-[10px] font-medium">ESC</p></i>
+            <i class="keyboard w-8! flex-cc"><p class="text-[10px] font-medium">ESC</p></i>
             <span class="mr-3.5 text-xs text-g-700">{{ $t("search.exitKeydown") }}</span>
           </div>
         </div>
@@ -94,13 +94,10 @@
 </template>
 
 <script lang="ts" setup>
-import { useUserStore } from "@stores/modules/user.store";
 import { AppRouteRecord } from "@/types/router";
 import { Search } from "@element-plus/icons-vue";
-import { mittBus } from "@utils/sys";
-import { useMenuStore } from "@stores/modules/menu.store";
-import { formatMenuTitle } from "@utils/navigation";
-import { handleMenuJump } from "@utils/navigation";
+import { mittBus, formatMenuTitle, handleMenuJump } from "@utils";
+import { useUserStore, useMenuStore } from "@stores";
 import { type ScrollbarInstance } from "element-plus";
 
 defineOptions({ name: "FaGlobalSearch" });

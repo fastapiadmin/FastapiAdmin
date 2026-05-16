@@ -37,7 +37,7 @@
             :perm-patch="['module_system:role:patch']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -62,103 +62,69 @@
       width="720px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border>
-            <ElDescriptionsItem label="角色名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="排序" :span="2">
-              {{ detailFormData.order }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="角色编码" :span="2">
-              {{ detailFormData.code }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="数据权限" :span="2">
-              <ElTag v-if="detailFormData.data_scope === 1" type="primary">仅本人数据权限</ElTag>
-              <ElTag v-else-if="detailFormData.data_scope === 2" type="info">本部门数据权限</ElTag>
-              <ElTag v-else-if="detailFormData.data_scope === 3" type="warning">
-                本部门及以下数据权限
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="roleDetailItems"
+          max-height="75vh"
+        >
+          <template #data_scope="{ row }">
+            <ElTag v-if="row?.data_scope === 1" type="primary">仅本人数据权限</ElTag>
+            <ElTag v-else-if="row?.data_scope === 2" type="info">本部门数据权限</ElTag>
+            <ElTag v-else-if="row?.data_scope === 3" type="warning">本部门及以下数据权限</ElTag>
+            <ElTag v-else-if="row?.data_scope === 4" type="success">全部数据权限</ElTag>
+            <ElTag v-else type="danger">自定义数据权限</ElTag>
+          </template>
+          <template #depts="{ row }">
+            <template v-if="row?.depts && (row.depts as any[]).length > 0">
+              <ElTag
+                v-for="dept in row.depts as any[]"
+                :key="dept.id"
+                type="info"
+                :style="'margin-right: 4px; margin-bottom: 4px'"
+              >
+                {{ dept.name }}
               </ElTag>
-              <ElTag v-else-if="detailFormData.data_scope === 4" type="success">全部数据权限</ElTag>
-              <ElTag v-else type="danger">自定义数据权限</ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="所属部门" :span="2">
-              <template v-if="detailFormData.depts && detailFormData.depts.length > 0">
-                <ElTag
-                  v-for="dept in detailFormData.depts"
-                  :key="dept.id"
-                  type="info"
-                  :style="'margin-right: 4px; margin-bottom: 4px'"
-                >
-                  {{ dept.name }}
-                </ElTag>
-              </template>
-              <span v-else :style="'color: var(--el-text-color-placeholder)'">-</span>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "启用" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="4">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+            </template>
+            <span v-else :style="'color: var(--el-text-color-placeholder)'">-</span>
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="roleFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="roleDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="roleFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="roleDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
-    <PermissonDrawer
+    <FaPermissonDrawer
       v-if="drawerVisible"
       v-model="drawerVisible"
       :role-name="checkedRole.name"
@@ -167,7 +133,7 @@
     />
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="roleExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -177,29 +143,28 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import type { ColumnOption } from "@/types/component";
 import RoleAPI, {
   type RoleForm,
   type RoleTable,
   type TablePageQuery,
 } from "@/api/module_system/role";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
-import PermissonDrawer from "./components/PermissonDrawer.vue";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Role",
@@ -215,14 +180,7 @@ type RoleSearchForm = {
 };
 
 function normalizeRoleQuery(params: Record<string, unknown>): TablePageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  if (typeof p.status === "string") {
-    if (p.status === "true" || p.status === "false") {
-      /* 与列表查询一致，保留字符串 */
-    }
-  }
+  const p = cleanEmptyArrayParams({ ...params });
   return p as unknown as TablePageQuery;
 }
 
@@ -395,15 +353,10 @@ const roleSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<RoleTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 
-function onTableSelectionChange(rows: RoleTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<RoleTable>();
 
 const drawerVisible = ref(false);
 const checkedRole = ref({ id: 0, name: "" });
@@ -415,11 +368,7 @@ function handleOpenAssignPermDialog(roleId: number, roleName: string) {
 
 async function deleteRoleRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await RoleAPI.deleteRole([id]);
     const userStore = useUserStore();
     await userStore.getUserInfo();
@@ -431,12 +380,149 @@ async function deleteRoleRow(id: number) {
   }
 }
 
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
+
+const detailFormData = ref<RoleTable>({} as RoleTable);
+
+const roleDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "角色名称", prop: "name" },
+    { label: "排序", prop: "order" },
+    { label: "角色编码", prop: "code" },
+    { label: "数据权限", prop: "data_scope", slot: "data_scope" },
+    { label: "所属部门", prop: "depts", slot: "depts" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+    { label: "描述", prop: "description", span: 4 },
+  ];
+
+const formData = ref<RoleForm>({
+  id: undefined,
+  name: undefined,
+  order: 1,
+  code: "",
+  status: "0",
+  description: undefined,
+});
+
+const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
+
+const rules = reactive({
+  name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
+  code: [
+    { required: true, message: "请输入角色编码", trigger: "blur" },
+    {
+      pattern: CODE_PATTERN,
+      message: "字母开头，2-16位字母/数字/下划线",
+      trigger: "blur",
+    },
+  ],
+  order: [{ required: true, message: "请输入角色排序", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+});
+
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const roleFormRenderKey = ref(0);
+
+const initialFormData: RoleForm = {
+  id: undefined,
+  name: undefined,
+  order: 1,
+  code: "",
+  status: "0",
+  description: undefined,
+};
+
+// ─── CRUD 表单 ───
+const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = useCrudForm<RoleForm>({
+  formData,
+  initialFormData,
+  dialogVisible,
+  dataFormRef,
+  formRenderKey: roleFormRenderKey,
+  detailApi: RoleAPI.detailRole,
+  createApi: RoleAPI.createRole,
+  updateApi: RoleAPI.updateRole,
+  titles: { create: "新增角色", update: "修改角色", detail: "角色详情" },
+  detailFormData,
+  onCreateSuccess: async () => {
+    await refreshCreate();
+  },
+  onUpdateSuccess: async () => {
+    await refreshUpdate();
+  },
+  onSubmitSuccess: async () => {
+    const userStore = useUserStore();
+    await userStore.getUserInfo();
+  },
+});
+
 const opCtx = {
   onPerm: handleOpenAssignPermDialog,
   onDetail: (id: number) => void handleOpenDialog("detail", id),
   onEdit: (id: number) => void handleOpenDialog("update", id),
   onDelete: deleteRoleRow,
 };
+
+const roleDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "角色名称",
+    key: "name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入角色名称" },
+  },
+  {
+    label: "排序",
+    key: "order",
+    type: "number",
+    span: 24,
+    props: {
+      controlsPosition: "right",
+      min: 0,
+      style: { width: "100px" },
+    },
+  },
+  {
+    label: "角色编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: {
+      placeholder: "字母开头，2-16位字母/数字/下划线",
+      maxlength: 16,
+      showWordLimit: true,
+    },
+  },
+  {
+    label: "状态",
+    key: "status",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 
 const {
   columns,
@@ -516,19 +602,8 @@ const roleCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
-  const q = normalizeRoleQuery(sp);
-  if (typeof q.status === "string") {
-    const s = q.status;
-    if (s === "true" || s === "false") {
-      (q as unknown as Record<string, unknown>).status = s === "true";
-    }
-  }
-  return q as unknown as Record<string, unknown>;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
+  return normalizeRoleQuery(sp) as unknown as Record<string, unknown>;
 });
 
 const roleExportContentConfig = computed(() => ({
@@ -536,120 +611,13 @@ const roleExportContentConfig = computed(() => ({
   cols: roleCrudCols.value,
   exportsBlobAction: async (params: IObject) => {
     const base = { ...(exportQueryParams.value as Record<string, unknown>) };
-    const merged = normalizeRoleQuery({
-      ...base,
-      ...params,
-    } as Record<string, unknown>);
-    if (typeof merged.status === "string") {
-      const s = merged.status;
-      if (s === "true" || s === "false") {
-        (merged as unknown as Record<string, unknown>).status = s === "true";
-      }
-    }
+    const merged = normalizeRoleQuery({ ...base, ...params } as Record<string, unknown>);
     const res = await RoleAPI.exportRole(merged as TablePageQuery);
     return res.data as Blob;
   },
 }));
 
-const detailFormData = ref<RoleTable>({} as RoleTable);
-
-const formData = ref<RoleForm>({
-  id: undefined,
-  name: undefined,
-  order: 1,
-  code: "",
-  status: "0",
-  description: undefined,
-});
-
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
-
-const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
-
-const rules = reactive({
-  name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
-  code: [
-    { required: true, message: "请输入角色编码", trigger: "blur" },
-    {
-      pattern: CODE_PATTERN,
-      message: "字母开头，2-16位字母/数字/下划线",
-      trigger: "blur",
-    },
-  ],
-  order: [{ required: true, message: "请输入角色排序", trigger: "blur" }],
-  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
-});
-
-const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
-const roleFormRenderKey = ref(0);
-
-const roleDialogFormItems = computed<FormItem[]>(() => [
-  {
-    label: "角色名称",
-    key: "name",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入角色名称" },
-  },
-  {
-    label: "排序",
-    key: "order",
-    type: "number",
-    span: 24,
-    props: {
-      controlsPosition: "right",
-      min: 0,
-      style: { width: "100px" },
-    },
-  },
-  {
-    label: "角色编码",
-    key: "code",
-    type: "input",
-    span: 24,
-    props: {
-      placeholder: "字母开头，2-16位字母/数字/下划线",
-      maxlength: 16,
-      showWordLimit: true,
-    },
-  },
-  {
-    label: "状态",
-    key: "status",
-    type: "input",
-    span: 24,
-    placeholder: "",
-  },
-  {
-    label: "描述",
-    key: "description",
-    type: "input",
-    span: 24,
-    props: {
-      type: "textarea",
-      rows: 4,
-      maxlength: 100,
-      showWordLimit: true,
-      placeholder: "请输入描述",
-    },
-  },
-]);
-const submitLoading = ref(false);
-
-const initialFormData: RoleForm = {
-  id: undefined,
-  name: undefined,
-  order: 1,
-  code: "",
-  status: "0",
-  description: undefined,
-};
-
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: RoleSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -666,71 +634,11 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await RoleAPI.detailRole(id);
-    if (type === "detail") {
-      dialogVisible.title = "角色详情";
-      Object.assign(detailFormData.value, response.data.data ?? {});
-    } else if (type === "update") {
-      dialogVisible.title = "修改角色";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增角色";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
-  }
-  roleFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
-async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    submitLoading.value = true;
-    const id = formData.value.id;
-    try {
-      if (id) {
-        await RoleAPI.updateRole(id, { id, ...formData.value });
-        await refreshUpdate();
-      } else {
-        await RoleAPI.createRole(formData.value);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-      const userStore = useUserStore();
-      await userStore.getUserInfo();
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
-    }
-  });
-}
-
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await RoleAPI.deleteRole(ids);
     const userStore = useUserStore();
@@ -752,11 +660,7 @@ async function handleMoreClick(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmToggleStatus(status);
     await RoleAPI.batchRole({ ids, status });
     await refreshData();
     const userStore = useUserStore();
@@ -765,22 +669,4 @@ async function handleMoreClick(status: string) {
     // 用户取消
   }
 }
-
-function openExportModal() {
-  exportModalVisible.value = true;
-}
 </script>
-
-<style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-
-:deep(.role-table-actions .inline-flex) {
-  vertical-align: middle;
-}
-</style>

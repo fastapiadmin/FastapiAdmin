@@ -149,16 +149,14 @@
 import { Lock } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElInput } from "element-plus";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import CryptoJS from "crypto-js";
-import { useUserStore } from "@stores/modules/user.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { mittBus } from "@utils/sys";
-import { useNow } from "@utils/common";
+import { useUserStore, useSettingsStore } from "@stores";
+import { mittBus, useNow } from "@utils";
 import bgDark from "@imgs/lock/bg_dark.webp";
 import bgLight from "@imgs/lock/bg_light.webp";
+import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
 const route = useRoute();

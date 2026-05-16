@@ -76,7 +76,6 @@
 
 <script lang="ts" setup>
 import { Download, UploadFilled } from "@element-plus/icons-vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { ElMessage, type UploadUserFile } from "element-plus";
 import { ref, reactive } from "vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";

@@ -26,10 +26,10 @@ main.ts 启动
 
 ### 1. 环境准备
 
-| 工具 | 版本要求 |
-|------|-----------|
-| Node.js | ≥ 20.19（见 `package.json` → `engines`） |
-| pnpm | ≥ 8.8，推荐 **pnpm 9**（与 `packageManager` 字段一致） |
+| 工具    | 版本要求                                               |
+| ------- | ------------------------------------------------------ |
+| Node.js | ≥ 20.19（见 `package.json` → `engines`）               |
+| pnpm    | ≥ 8.8，推荐 **pnpm 9**（与 `packageManager` 字段一致） |
 
 未安装 pnpm 时可执行：`corepack enable && corepack prepare pnpm@9.15.3 --activate`（版本可按项目 `packageManager` 调整）。
 
@@ -76,45 +76,45 @@ cp .env.example .env
 
 ## 常见问题（排查）
 
-| 现象 | 建议 |
-|------|------|
-| `ECONNREFUSED` / 网络错误 | 后端未启动或 **`VITE_API_BASE_URL`** 端口错误 |
-| 接口 401 / 频繁跳转登录 | Token 失效或未登录；清除站点本地存储后重新登录 |
-| 修改 `.env` 不生效 | 必须 **重启** `pnpm dev` |
-| 依赖异常、热更新怪异 | 尝试 **`pnpm clean:cache`** 后再 **`pnpm dev`**；仍不行可 **`pnpm dev:force`** |
-| 类型报错 | 运行 **`pnpm type-check`**；自动生成类型见 `src/types/import/`（勿手改自动生成的 d.ts） |
+| 现象                      | 建议                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| `ECONNREFUSED` / 网络错误 | 后端未启动或 **`VITE_API_BASE_URL`** 端口错误                                           |
+| 接口 401 / 频繁跳转登录   | Token 失效或未登录；清除站点本地存储后重新登录                                          |
+| 修改 `.env` 不生效        | 必须 **重启** `pnpm dev`                                                                |
+| 依赖异常、热更新怪异      | 尝试 **`pnpm clean:cache`** 后再 **`pnpm dev`**；仍不行可 **`pnpm dev:force`**          |
+| 类型报错                  | 运行 **`pnpm type-check`**；自动生成类型见 `src/types/import/`（勿手改自动生成的 d.ts） |
 
 ---
 
 ## 技术栈
 
-| 类别 | 选型 |
-|------|------|
-| 框架 | Vue 3（Composition API / `<script setup>`） |
-| 构建 | Vite 7 |
-| 语言 | TypeScript |
-| UI | Element Plus |
-| 路由 | Vue Router 4（Hash；静态路由 + 守卫内动态 `addRoute`） |
-| 状态 | Pinia + pinia-plugin-persistedstate |
-| 样式 | Tailwind CSS、SCSS |
-| HTTP | Axios |
-| 国际化 | vue-i18n |
+| 类别   | 选型                                                   |
+| ------ | ------------------------------------------------------ |
+| 框架   | Vue 3（Composition API / `<script setup>`）            |
+| 构建   | Vite 7                                                 |
+| 语言   | TypeScript                                             |
+| UI     | Element Plus                                           |
+| 路由   | Vue Router 4（Hash；静态路由 + 守卫内动态 `addRoute`） |
+| 状态   | Pinia + pinia-plugin-persistedstate                    |
+| 样式   | Tailwind CSS、SCSS                                     |
+| HTTP   | Axios                                                  |
+| 国际化 | vue-i18n                                               |
 
 ---
 
 ## 常用脚本
 
-| 命令 | 说明 |
-|------|------|
-| `pnpm dev` | 本地开发（读取 `.env` + `.env.development`） |
-| `pnpm dev:force` | 强制预打包依赖后启动（缓存异常时） |
-| `pnpm build` | `vue-tsc` 类型检查 + 生产构建，产物在 **`dist/`** |
-| `pnpm build:dev` / `build:test` / `build:pro` | 按 mode 构建（需对应 env 文件） |
-| `pnpm preview` | 本地预览构建结果 |
-| `pnpm type-check` | 仅 TypeScript 检查 |
-| `pnpm lint` | ESLint + Prettier + Stylelint |
-| `pnpm clean:dev` | 执行 `scripts/clean-dev.ts`（清理演示等，使用前阅读脚本说明） |
-| `pnpm clean:cache` | 清理 Vite 等缓存 |
+| 命令                                          | 说明                                                          |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| `pnpm dev`                                    | 本地开发（读取 `.env` + `.env.development`）                  |
+| `pnpm dev:force`                              | 强制预打包依赖后启动（缓存异常时）                            |
+| `pnpm build`                                  | `vue-tsc` 类型检查 + 生产构建，产物在 **`dist/`**             |
+| `pnpm build:dev` / `build:test` / `build:pro` | 按 mode 构建（需对应 env 文件）                               |
+| `pnpm preview`                                | 本地预览构建结果                                              |
+| `pnpm type-check`                             | 仅 TypeScript 检查                                            |
+| `pnpm lint`                                   | ESLint + Prettier + Stylelint                                 |
+| `pnpm clean:dev`                              | 执行 `scripts/clean-dev.ts`（清理演示等，使用前阅读脚本说明） |
+| `pnpm clean:cache`                            | 清理 Vite 等缓存                                              |
 
 ---
 
@@ -146,14 +146,14 @@ src/
 
 ## 路径别名（编写代码时）
 
-| 别名 | 指向 |
-|------|------|
-| `@` | `src/` |
-| `@views` | `src/views` |
-| `@stores` | `src/store` |
-| `@utils` | `src/utils` |
-| `@styles` | `src/styles` |
-| `@imgs` / `@icons` | 图片与 SVG |
+| 别名               | 指向         |
+| ------------------ | ------------ |
+| `@`                | `src/`       |
+| `@views`           | `src/views`  |
+| `@stores`          | `src/store`  |
+| `@utils`           | `src/utils`  |
+| `@styles`          | `src/styles` |
+| `@imgs` / `@icons` | 图片与 SVG   |
 
 与 **`vite.config.ts`**、`tsconfig.json` 中 `paths` 保持一致。
 
@@ -163,16 +163,16 @@ src/
 
 只有以 **`VITE_`** 开头的变量会注入前端代码。下列与 **`pnpm dev`** 关系最密切：
 
-| 变量 | 作用 |
-|------|------|
-| `VITE_PORT` | 开发服务器端口 |
-| `VITE_BASE_URL` | 部署基础路径（子目录部署时形如 `/admin/`） |
-| `VITE_APP_BASE_API` | 接口路径前缀，与 Vite 代理匹配 |
-| `VITE_API_URL` | 浏览器侧发出的 API 根前缀（开发时常为 `/`） |
-| `VITE_API_BASE_URL` | **代理目标**：后端 HTTP 根地址 |
-| `VITE_ACCESS_MODE` | `frontend` / `backend` / `mixed`，菜单与路由来源 |
-| `VITE_APP_WS_ENDPOINT` | WebSocket（如 AI 对话） |
-| `VITE_APP_TITLE` | 页面标题（可被后端参数配置覆盖） |
+| 变量                   | 作用                                             |
+| ---------------------- | ------------------------------------------------ |
+| `VITE_PORT`            | 开发服务器端口                                   |
+| `VITE_BASE_URL`        | 部署基础路径（子目录部署时形如 `/admin/`）       |
+| `VITE_APP_BASE_API`    | 接口路径前缀，与 Vite 代理匹配                   |
+| `VITE_API_URL`         | 浏览器侧发出的 API 根前缀（开发时常为 `/`）      |
+| `VITE_API_BASE_URL`    | **代理目标**：后端 HTTP 根地址                   |
+| `VITE_ACCESS_MODE`     | `frontend` / `backend` / `mixed`，菜单与路由来源 |
+| `VITE_APP_WS_ENDPOINT` | WebSocket（如 AI 对话）                          |
+| `VITE_APP_TITLE`       | 页面标题（可被后端参数配置覆盖）                 |
 
 完整列表以仓库内 **`.env`**、**`.env.development`** 为准；模板说明见 **`.env.example`**。
 
@@ -180,12 +180,12 @@ src/
 
 ## 路由与菜单（扩展页面时）
 
-| 文件 | 职责 |
-|------|------|
-| `src/router/staticRoutes.ts` | 静态路由、`dashboardLayoutChildren`、壳层菜单合并 |
-| `src/router/dynamicRoutes.ts` | 菜单驱动的动态路由 |
-| `src/router/beforeEach.ts` | 权限与动态挂载 |
-| `src/router/MenuProcessor.ts` | 后端菜单 → 前端路由记录 |
+| 文件                          | 职责                                              |
+| ----------------------------- | ------------------------------------------------- |
+| `src/router/staticRoutes.ts`  | 静态路由、`dashboardLayoutChildren`、壳层菜单合并 |
+| `src/router/dynamicRoutes.ts` | 菜单驱动的动态路由                                |
+| `src/router/beforeEach.ts`    | 权限与动态挂载                                    |
+| `src/router/MenuProcessor.ts` | 后端菜单 → 前端路由记录                           |
 
 新增业务页：一般需要 **视图 +（可选）静态或动态路由 + 后端菜单/i18n**，三者路径与 **name** 保持一致。
 

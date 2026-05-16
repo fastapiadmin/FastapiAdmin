@@ -112,7 +112,7 @@
             </div>
           </template>
           <div class="workplace-ops-card__body">
-            <Calendar />
+            <FaCalendar />
           </div>
         </ElCard>
       </ElCol>
@@ -176,7 +176,7 @@
                   class="workplace-quick-row__icon"
                   :style="{ color: getQuickLinkColor(getQuickLinkStableIndex(item)) }"
                 >
-                  <MenuRouteIcon :icon="item.icon || 'menu'" />
+                  <FaMenuRouteIcon :icon="item.icon || 'menu'" />
                 </div>
                 <div class="workplace-quick-row__text">
                   <span class="workplace-quick-row__title">{{ item.title }}</span>
@@ -273,12 +273,16 @@
 <script setup lang="ts">
 defineOptions({ name: "Home", inheritAttrs: false });
 
-import { useUserStore } from "@stores/index";
-import MenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
-import Calendar from "@/components/others/fa-calendar/index.vue";
+import { useUserStore } from "@stores";
 import CardList from "../workplace/modules/card-list.vue";
 import AboutProject from "../workplace/modules/about-project.vue";
-import { greetings } from "@utils/common";
+import {
+  greetings,
+  resolveIconForFaSvgIcon,
+  quickStartManager,
+  QUICK_LINK_MAX,
+  type QuickLink,
+} from "@utils";
 import { ref, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -293,10 +297,7 @@ import {
   TopRight,
 } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { quickStartManager, QUICK_LINK_MAX, type QuickLink } from "@utils/common";
 import { dayjs } from "element-plus";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
 
 const timefix = greetings();
 const userStore = useUserStore();

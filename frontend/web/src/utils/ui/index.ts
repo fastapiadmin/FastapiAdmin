@@ -3,7 +3,7 @@
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { ThemeMode } from "@/enums";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { fourDotsSpinnerSvg } from "@/assets/svg/loading";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useTheme } from "@/hooks/core/useTheme";

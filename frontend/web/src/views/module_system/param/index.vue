@@ -1,4 +1,4 @@
-<!-- 系统配置：Art 布局 + useTable，与 notice 页一致 -->
+<!-- 系统配置：Fa 布局 + useTable，与 notice 页一致 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -36,7 +36,7 @@
             :perm-delete="['module_system:param:delete']"
             :delete-loading="batchDeleting"
             @add="handleOpenDialog('create')"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
           />
         </template>
@@ -60,81 +60,49 @@
       width="640px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border>
-            <ElDescriptionsItem label="配置名称" :span="2">
-              {{ detailFormData.config_name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="系统内置" :span="2">
-              <ElTag v-if="detailFormData.config_type" type="success">是</ElTag>
-              <ElTag v-else type="danger">否</ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="配置键" :span="2">
-              {{ detailFormData.config_key }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="配置值" :span="2">
-              {{ detailFormData.config_value }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="paramDetailItems"
+          max-height="75vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="paramFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="paramDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="100"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #config_type>
-              <ElRadioGroup v-model="formData.config_type">
-                <ElRadio :value="true">是</ElRadio>
-                <ElRadio :value="false">否</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="paramFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="paramDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="100"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #config_type>
+            <ElRadioGroup v-model="formData.config_type">
+              <ElRadio :value="true">是</ElRadio>
+              <ElRadio :value="false">否</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="paramExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -144,28 +112,28 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
-import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { ColumnOption } from "@/types/component";
 import ParamsAPI, {
   type ConfigForm,
   type ConfigPageQuery,
   type ConfigTable,
 } from "@/api/module_system/params";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useConfigStore } from "@stores";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Params",
@@ -183,9 +151,7 @@ type ParamSearchForm = {
 };
 
 function normalizeParamQuery(params: Record<string, unknown>): ConfigPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
+  const p = cleanEmptyArrayParams({ ...params });
   if (p.config_type === "true" || p.config_type === true) p.config_type = true;
   else if (p.config_type === "false" || p.config_type === false) p.config_type = false;
   return p as unknown as ConfigPageQuery;
@@ -263,15 +229,129 @@ const paramSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<ConfigTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 
-function onTableSelectionChange(rows: ConfigTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<ConfigTable>();
+
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
+
+const detailFormData = ref<ConfigTable>({} as ConfigTable);
+
+const paramDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "配置名称", prop: "config_name" },
+    {
+      label: "系统内置",
+      prop: "config_type",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    { label: "配置键", prop: "config_key" },
+    { label: "配置值", prop: "config_value" },
+    { label: "描述", prop: "description" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
+const formData = ref<ConfigForm>({
+  id: undefined,
+  config_name: "",
+  config_key: "",
+  config_value: "",
+  config_type: false,
+  description: "",
+});
+
+const rules = reactive({
+  config_name: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
+  config_key: [{ required: true, message: "请输入系统配置键", trigger: "blur" }],
+  config_value: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
+  config_type: [{ required: true, message: "请选择系统配置类型", trigger: "blur" }],
+});
+
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const paramFormRenderKey = ref(0);
+
+const initialFormData: ConfigForm = {
+  id: undefined,
+  config_name: "",
+  config_key: "",
+  config_value: "",
+  config_type: false,
+  description: "",
+};
+
+// ─── CRUD 表单 ───
+const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
+  useCrudForm<ConfigForm>({
+    formData,
+    initialFormData,
+    dialogVisible,
+    dataFormRef,
+    formRenderKey: paramFormRenderKey,
+    detailApi: ParamsAPI.detailParams,
+    createApi: ParamsAPI.createParams,
+    updateApi: ParamsAPI.updateParams,
+    titles: { create: "新增系统配置", update: "修改系统配置", detail: "系统配置详情" },
+    detailFormData,
+    onCreateSuccess: async () => {
+      await refreshCreate();
+    },
+    onUpdateSuccess: async () => {
+      await refreshUpdate();
+    },
+    onSubmitSuccess: async () => {
+      configStore.isConfigLoaded = false;
+      await configStore.getConfig();
+    },
+  });
+
+const paramDialogFormItems = computed<FormItem[]>(() => [
+  {
+    label: "配置名称",
+    key: "config_name",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入配置名称", maxlength: 50 },
+  },
+  {
+    label: "配置键",
+    key: "config_key",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入配置键", maxlength: 50 },
+  },
+  {
+    label: "配置值",
+    key: "config_value",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入配置值", maxlength: 100 },
+  },
+  {
+    label: "系统内置",
+    key: "config_type",
+    type: "input",
+    span: 24,
+    placeholder: "",
+  },
+  {
+    label: "描述",
+    key: "description",
+    type: "input",
+    span: 24,
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+]);
 
 const {
   columns,
@@ -339,11 +419,7 @@ const paramCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeParamQuery(sp);
 });
 
@@ -360,88 +436,7 @@ const paramExportContentConfig = computed(() => ({
   },
 }));
 
-const detailFormData = ref<ConfigTable>({} as ConfigTable);
-
-const formData = ref<ConfigForm>({
-  id: undefined,
-  config_name: "",
-  config_key: "",
-  config_value: "",
-  config_type: false,
-  description: "",
-});
-
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
-
-const rules = reactive({
-  config_name: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
-  config_key: [{ required: true, message: "请输入系统配置键", trigger: "blur" }],
-  config_value: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
-  config_type: [{ required: true, message: "请选择系统配置类型", trigger: "blur" }],
-});
-
-const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
-const paramFormRenderKey = ref(0);
-
-const paramDialogFormItems = computed<FormItem[]>(() => [
-  {
-    label: "配置名称",
-    key: "config_name",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入配置名称", maxlength: 50 },
-  },
-  {
-    label: "配置键",
-    key: "config_key",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入配置键", maxlength: 50 },
-  },
-  {
-    label: "配置值",
-    key: "config_value",
-    type: "input",
-    span: 24,
-    props: { placeholder: "请输入配置值", maxlength: 100 },
-  },
-  {
-    label: "系统内置",
-    key: "config_type",
-    type: "input",
-    span: 24,
-    placeholder: "",
-  },
-  {
-    label: "描述",
-    key: "description",
-    type: "input",
-    span: 24,
-    props: {
-      type: "textarea",
-      rows: 4,
-      maxlength: 100,
-      showWordLimit: true,
-      placeholder: "请输入描述",
-    },
-  },
-]);
-const submitLoading = ref(false);
-
-const initialFormData: ConfigForm = {
-  id: undefined,
-  config_name: "",
-  config_key: "",
-  config_value: "",
-  config_type: false,
-  description: "",
-};
-
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: ParamSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -459,70 +454,9 @@ function onResetSearch() {
   void resetSearchParams();
 }
 
-async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await ParamsAPI.detailParams(id);
-    if (type === "detail") {
-      dialogVisible.title = "系统配置详情";
-      Object.assign(detailFormData.value, response.data.data ?? {});
-    } else if (type === "update") {
-      dialogVisible.title = "修改系统配置";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增系统配置";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
-  }
-  paramFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
-async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    submitLoading.value = true;
-    const id = formData.value.id;
-    try {
-      if (id) {
-        await ParamsAPI.updateParams(id, { id, ...formData.value });
-        await refreshUpdate();
-      } else {
-        await ParamsAPI.createParams(formData.value);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-      configStore.isConfigLoaded = false;
-      await configStore.getConfig();
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
-    }
-  });
-}
-
 async function deleteParamRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-
+    await confirmDelete();
     await ParamsAPI.deleteParams([id]);
     configStore.isConfigLoaded = false;
     await configStore.getConfig();
@@ -579,11 +513,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await ParamsAPI.deleteParams(ids);
     configStore.isConfigLoaded = false;
@@ -597,18 +527,4 @@ async function handleBatchDelete() {
     batchDeleting.value = false;
   }
 }
-
-function openExportModal() {
-  exportModalVisible.value = true;
-}
 </script>
-
-<style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-</style>

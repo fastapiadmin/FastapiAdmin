@@ -13,9 +13,9 @@
     </template>
     <template v-if="!$slots.created_id" #created_id>
       <div class="w-full min-w-0">
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="modelValue?.created_id == null ? undefined : modelValue.created_id"
-          @update:model-value="(v) => patchField('created_id', v)"
+          @update:model-value="(v: number | undefined) => patchField('created_id', v)"
           @confirm-click="emitImmediateSearch"
           @clear-click="emitImmediateSearch"
         />
@@ -23,9 +23,9 @@
     </template>
     <template v-if="!$slots.updated_id" #updated_id>
       <div class="w-full min-w-0">
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="modelValue?.updated_id == null ? undefined : modelValue.updated_id"
-          @update:model-value="(v) => patchField('updated_id', v)"
+          @update:model-value="(v: number | undefined) => patchField('updated_id', v)"
           @confirm-click="emitImmediateSearch"
           @clear-click="emitImmediateSearch"
         />
@@ -35,6 +35,8 @@
 </template>
 
 <script setup lang="ts">
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { computed, ref, useAttrs } from "vue";
 import FaSearchBar from "./index.vue";
 import type { SearchFormItem } from "./index.vue";
@@ -42,7 +44,6 @@ import {
   getAuditSearchFormItems,
   type GetAuditSearchFormItemsOptions,
 } from "./auditSearchFormItems";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
 
 defineOptions({ name: "FaSearchBarWithAudit", inheritAttrs: false });
 
@@ -65,13 +66,10 @@ const emit = defineEmits<{
 
 const modelValue = defineModel<Record<string, any>>({ default: () => ({}) });
 const attrs = useAttrs();
-
+// @ts-expect-error 循环类型引用问题
 const innerRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
-
 const forwardedAttrs = computed(() => attrs as Record<string, unknown>);
-
 const auditItems = computed(() => getAuditSearchFormItems(props.auditItemOptions));
-
 const mergedItems = computed(() => {
   if (!props.includeAudit) return props.items;
   return [...props.items, ...auditItems.value];
@@ -85,10 +83,11 @@ function emitImmediateSearch() {
   emit("search", { ...modelValue.value });
 }
 
+// @ts-expect-error 循环类型引用问题
 defineExpose({
   validate: (...args: any[]) => innerRef.value?.validate?.(...args),
   reset: () => innerRef.value?.reset?.(),
   getOutput: () => innerRef.value?.getOutput?.(),
-  ref: computed(() => innerRef.value?.ref),
+  ref: computed(() => innerRef.value?.ref) as unknown as any,
 });
 </script>

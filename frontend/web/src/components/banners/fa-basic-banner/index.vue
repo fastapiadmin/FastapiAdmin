@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 const settingStore = useSettingsStore();
 const { isDark } = storeToRefs(settingStore);
 
@@ -147,7 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
   height: "11rem",
   titleColor: "white",
   subtitleColor: "white",
-  boxStyle: "!bg-theme/60",
+  boxStyle: "bg-theme/60!",
   decoration: true,
   buttonConfig: () => ({
     show: true,

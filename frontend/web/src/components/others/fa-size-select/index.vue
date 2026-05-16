@@ -24,11 +24,11 @@
 <script setup lang="ts">
 defineOptions({ name: "FaSizeSelect" });
 
-import FaIconButton from "@/components/widget/fa-icon-button/index.vue";
 import { ComponentSize } from "@/enums/settings/layout.enum";
-import { useAppStore } from "@stores/modules/app.store";
-import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
+import { useAppStore } from "@stores";
+import { resolveIconForFaSvgIcon } from "@utils";
 import { computed } from "vue";
+import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
 const sizeOptions = computed(() => {

@@ -6,7 +6,7 @@
  *
  * 动态路由由 `beforeEach.ts` → `RouteRegistry` 在登录后根据不同角色的菜单列表动态 `addRoute`。
  */
-import type { AppRouteRecordRaw } from "@utils/navigation";
+import type { AppRouteRecordRaw } from "@utils";
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import { defineComponent, h, onMounted, ref } from "vue";
 import type { RouteRecordRaw } from "vue-router";
@@ -102,8 +102,8 @@ export const ROUTE_COMPONENT_NESTED_PARENT = "/nested/router-view-parent";
 export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
 
 /**
- * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。
- * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
+ * 主框架布局：新版 art 体系（`src/components/layouts/index.vue` + `src/components/layouts/fa-*` 组件）。
+ * 旧版 Left/Top/Mix 壳子已移除，统一使用 `@/components/layouts/index.vue`。
  */
 export const Layout = () => import("@/components/layouts/index.vue");
 
@@ -442,7 +442,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   },
   {
     path: "/outside",
-    component: () => import("@/layouts/index.vue"),
+    component: () => import("@/components/layouts/index.vue"),
     name: "Outside",
     meta: { title: "menus.outside.title" },
     children: [

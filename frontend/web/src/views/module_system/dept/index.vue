@@ -1,4 +1,4 @@
-<!-- 部门配置：Art + 树形表格（对齐 system/menu 模版） -->
+<!-- 部门配置：FA + 树形表格（对齐 system/menu 模版） -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -63,101 +63,68 @@
       width="640px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border>
-            <ElDescriptionsItem label="部门名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="部门编码" :span="2">
-              {{ detailFormData.code }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="上级部门" :span="2">
-              {{ detailFormData.parent_name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "启用" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="排序" :span="2">
-              {{ detailFormData.order }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="4">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="deptDetailItems"
+          max-height="75vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="deptFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="deptDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="deptFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="deptDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">启用</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, ref, reactive, computed, nextTick, onMounted } from "vue";
 import { useTableColumns } from "@/hooks/core/useTableColumns";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
 import DeptAPI, {
   type DeptForm,
   type DeptPageQuery,
   type DeptTable,
 } from "@/api/module_system/dept";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
-import { formatTree } from "@utils/common";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { formatTree, renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Dept",
@@ -289,16 +256,11 @@ const tableRef = ref<{
 const tableData = ref<DeptTable[]>([]);
 const loading = ref(false);
 const isExpanded = ref(false);
-const selectedRows = ref<DeptTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 const deptOptions = ref<OptionType[]>([]);
 
-function onTableSelectionChange(rows: DeptTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<DeptTable>();
 
 async function loadDeptData() {
   loading.value = true;
@@ -316,11 +278,7 @@ async function loadDeptData() {
 
 async function deleteDeptRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await DeptAPI.deleteDept([id]);
     await userStore.getUserInfo();
     ElMessage.success("删除成功");
@@ -331,8 +289,94 @@ async function deleteDeptRow(id: number) {
   }
 }
 
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
+
+const detailFormData = ref<DeptTable>({ code: "" });
+
+const deptDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "部门名称", prop: "name" },
+    { label: "部门编码", prop: "code" },
+    { label: "上级部门", prop: "parent_name" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "排序", prop: "order" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+    { label: "描述", prop: "description", span: 4 },
+  ];
+
+const formData = ref<DeptForm>({
+  id: undefined,
+  name: undefined,
+  code: "",
+  order: 1,
+  parent_id: undefined,
+  status: "0",
+  description: undefined,
+});
+
+const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
+
+const rules = reactive({
+  name: [{ required: true, message: "请输入部门名称", trigger: "blur" }],
+  code: [
+    { required: true, message: "请输入部门编码", trigger: "blur" },
+    {
+      pattern: CODE_PATTERN,
+      message: "字母开头，2-16位字母/数字/下划线",
+      trigger: "blur",
+    },
+  ],
+  order: [{ required: true, message: "请输入排序", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+});
+
+const initialFormData: DeptForm = {
+  id: undefined,
+  name: undefined,
+  code: "",
+  order: 1,
+  parent_id: undefined,
+  status: "0",
+  description: undefined,
+};
+
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const deptFormRenderKey = ref(0);
+
+// ─── CRUD 表单 ───
+const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = useCrudForm<DeptForm>({
+  formData,
+  initialFormData,
+  dialogVisible,
+  dataFormRef,
+  formRenderKey: deptFormRenderKey,
+  detailApi: DeptAPI.detailDept,
+  createApi: DeptAPI.createDept,
+  updateApi: DeptAPI.updateDept,
+  titles: { create: "新增部门", update: "修改部门", detail: "部门详情" },
+  detailFormData,
+  onCreateSuccess: async () => {
+    await loadDeptData();
+  },
+  onUpdateSuccess: async () => {
+    await loadDeptData();
+  },
+  onSubmitSuccess: async () => {
+    await userStore.getUserInfo();
+  },
+});
+
 const opCtx = {
-  onAddChild: (parentId: number) => void handleOpenDialog("create", undefined, parentId),
+  onAddChild: (parentId: number) =>
+    void handleOpenDialog("create", undefined, { parent_id: parentId }),
   onDetail: (id: number) => void handleOpenDialog("detail", id),
   onEdit: (id: number) => void handleOpenDialog("update", id),
   onDelete: deleteDeptRow,
@@ -365,53 +409,6 @@ const { columnChecks, columns } = useTableColumns<DeptTable>(() => [
     formatter: (row: DeptTable) => formatDeptOperationCell(row, opCtx),
   },
 ]);
-
-const detailFormData = ref<DeptTable>({ code: "" });
-
-const formData = ref<DeptForm>({
-  id: undefined,
-  name: undefined,
-  code: "",
-  order: 1,
-  parent_id: undefined,
-  status: "0",
-  description: undefined,
-});
-
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
-
-const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
-
-const rules = reactive({
-  name: [{ required: true, message: "请输入部门名称", trigger: "blur" }],
-  code: [
-    { required: true, message: "请输入部门编码", trigger: "blur" },
-    {
-      pattern: CODE_PATTERN,
-      message: "字母开头，2-16位字母/数字/下划线",
-      trigger: "blur",
-    },
-  ],
-  order: [{ required: true, message: "请输入排序", trigger: "blur" }],
-  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
-});
-
-const initialFormData: DeptForm = {
-  id: undefined,
-  name: undefined,
-  code: "",
-  order: 1,
-  parent_id: undefined,
-  status: "0",
-  description: undefined,
-};
-
-const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
-const deptFormRenderKey = ref(0);
 
 const deptDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -493,73 +490,11 @@ function onResetSearch() {
   void loadDeptData();
 }
 
-async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
-  Object.assign(formData, initialFormData);
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(
-  type: "create" | "update" | "detail",
-  id?: number,
-  parentId?: number
-) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await DeptAPI.detailDept(id);
-    if (type === "detail") {
-      dialogVisible.title = "部门详情";
-      Object.assign(detailFormData.value, response.data.data ?? {});
-    } else if (type === "update") {
-      dialogVisible.title = "修改部门";
-      Object.assign(formData, response.data.data);
-    }
-  } else {
-    dialogVisible.title = "新增部门";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
-    if (parentId) {
-      formData.value.parent_id = parentId;
-    }
-  }
-  deptFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
-async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    const id = formData.value.id;
-    try {
-      if (id) {
-        await DeptAPI.updateDept(id, { id, ...formData.value });
-      } else {
-        await DeptAPI.createDept(formData.value);
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-      await loadDeptData();
-      await userStore.getUserInfo();
-    } catch (error: unknown) {
-      console.error(error);
-    }
-  });
-}
-
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await DeptAPI.deleteDept(ids);
     await userStore.getUserInfo();
@@ -580,11 +515,7 @@ async function handleMoreClick(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmToggleStatus(status);
     await DeptAPI.batchDept({ ids, status });
     await loadDeptData();
     await userStore.getUserInfo();
@@ -614,17 +545,3 @@ onMounted(() => {
   void loadDeptData();
 });
 </script>
-
-<style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-
-:deep(.dept-table-actions .inline-flex) {
-  vertical-align: middle;
-}
-</style>

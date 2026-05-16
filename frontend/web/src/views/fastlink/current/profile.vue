@@ -3,7 +3,7 @@
   <div class="w-full h-full p-0 bg-transparent border-none shadow-none">
     <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
       <!-- 左侧卡片 -->
-      <div class="w-112 mr-5 max-md:w-full max-md:mr-0">
+      <div class="w-md mr-5 max-md:w-full max-md:mr-0">
         <div class="fa-card-sm relative p-9 pb-6 overflow-hidden text-center">
           <img
             class="absolute top-0 left-0 w-full h-50 object-cover"
@@ -184,7 +184,7 @@
               </ElFormItem>
             </ElRow>
 
-            <div class="flex-c justify-end [&_.el-button]:!w-27.5">
+            <div class="flex-c justify-end [&_.el-button]:w-27.5!">
               <ElButton
                 type="primary"
                 class="w-22.5"
@@ -236,7 +236,7 @@
               />
             </ElFormItem>
 
-            <div class="flex-c justify-end [&_.el-button]:!w-27.5">
+            <div class="flex-c justify-end [&_.el-button]:w-27.5!">
               <ElButton
                 type="primary"
                 class="w-22.5"
@@ -262,10 +262,7 @@ import { useUserStore, useDictStore } from "@stores";
 import { Camera } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
-import { redirectToLogin } from "@utils/auth";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-import FaCutterImg from "@/components/media/fa-cutter-img/index.vue";
-import { dataURLToFile } from "@utils/file/dataUrl";
+import { redirectToLogin, dataURLToFile } from "@utils";
 
 defineOptions({ name: "UserProfile" });
 

@@ -1,4 +1,4 @@
-<!-- 示例01 CRUD：与 demo 同一套 Art 布局；权限与接口为 module_example:demo01 / Demo01API -->
+<!-- 示例01 CRUD：与 demo 同一套 Fa 布局；权限与接口为 module_example:demo01 / Demo01API -->
 <template>
   <div class="fa-full-height">
     <FaSearchBarWithAudit
@@ -38,8 +38,8 @@
             :perm-patch="['module_example:demo01:patch']"
             :delete-loading="batchDeleting"
             @add="openEditDialog('add')"
-            @import="openImportModal"
-            @export="openExportModal"
+            @import="openImport"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="runBatchStatus"
           />
@@ -64,87 +64,56 @@
       width="768px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="2" border>
-            <ElDescriptionsItem label="名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="UUID" :span="2">
-              {{ detailFormData.uuid }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "正常" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建人" :span="2">
-              {{ detailFormData.created_by?.name ?? "—" }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name ?? "—" }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="2"
+          :data="detailFormData"
+          :items="demo01DetailItems"
+          max-height="70vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="demo01FormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="demo01DialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          >
-            <template #status>
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">正常</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </template>
-          </FaForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="demo01FormRenderKey"
+          scrollbar
+          max-height="70vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="demo01DialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #status>
+            <ElRadioGroup v-model="formData.status">
+              <ElRadio value="0">正常</ElRadio>
+              <ElRadio value="1">停用</ElRadio>
+            </ElRadioGroup>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaImportDialog
-      v-model="importModalVisible"
+      v-model="importVisible"
       :content-config="demo01ImportContentConfig"
       default-template-file-name="demo01_import_template.xlsx"
       @upload="handleCrudImportUpload"
     />
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="demo01ExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -154,17 +123,17 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useTable } from "@/hooks/core/useTable";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete, confirmAction } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IContentConfig, IObject } from "@/components/modal/types";
-import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
@@ -173,8 +142,8 @@ import Demo01API, {
   type Demo01PageQuery,
   type Demo01Table,
 } from "@/api/module_example/demo01";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { ResultEnum } from "@/enums/api/result.enum";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "ModuleExampleDemo01",
@@ -190,10 +159,10 @@ type Demo01SearchFormParams = {
 } & AuditSearchFormParams;
 
 function normalizeDemo01Query(params: Record<string, unknown>): Demo01PageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as Demo01PageQuery;
+  return cleanEmptyArrayParams({ ...params }, [
+    "created_time",
+    "updated_time",
+  ]) as unknown as Demo01PageQuery;
 }
 
 const searchForm = ref<Demo01SearchFormParams>({
@@ -247,15 +216,8 @@ const demo01BusinessSearchItems = computed(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<Demo01Table[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: Demo01Table[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<Demo01Table>();
 
 const {
   columns,
@@ -337,11 +299,7 @@ const demo01CrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeDemo01Query(sp);
 });
 
@@ -365,13 +323,27 @@ const demo01ExportContentConfig = computed(() => ({
   },
 }));
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+const { dialogVisible } = useCrudDialog();
 
 const detailFormData = ref<Demo01Table>({});
+
+const demo01DetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "名称", prop: "name" },
+    { label: "UUID", prop: "uuid" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "正常" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "描述", prop: "description" },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
 
 const formData = ref<Demo01Form>({
   id: undefined,
@@ -386,6 +358,7 @@ const rules = reactive({
 });
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const submitLoading = ref(false);
 const demo01FormRenderKey = ref(0);
 
 const demo01DialogFormItems = computed<FormItem[]>(() => [
@@ -412,8 +385,7 @@ const demo01DialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 
-const importModalVisible = ref(false);
-const exportModalVisible = ref(false);
+const { importVisible, exportVisible, openImport, openExport } = useImportExport();
 
 const initialFormData: Demo01Form = {
   id: undefined,
@@ -516,8 +488,8 @@ async function openEditDialog(type: "add" | "edit", row?: Demo01Table) {
 }
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData.value, initialFormData);
 }
 
@@ -549,17 +521,13 @@ async function handleSubmit() {
 const deleteDemo01Row = async (row: Demo01Table) => {
   if (!row.id) return;
   try {
-    await ElMessageBox.confirm(
-      `确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`,
-      "删除确认",
-      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
-    );
+    await confirmDelete(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`);
     await Demo01API.deleteDemo01([row.id!]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("已取消删除");
+    // 用户取消
   }
 };
 
@@ -567,18 +535,14 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(
-      `确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`,
-      "批量删除",
-      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
-    );
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await Demo01API.deleteDemo01(ids);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("已取消删除");
+    // 用户取消
   } finally {
     batchDeleting.value = false;
   }
@@ -591,22 +555,17 @@ async function runBatchStatus(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(
+    await confirmAction(
       `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
-      "批量设置",
-      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+      "批量设置"
     );
     await Demo01API.batchDemo01({ ids, status });
     ElMessage.success("操作成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshData();
   } catch {
-    // 用户取消操作，无需处理
+    // 用户取消
   }
-}
-
-function openImportModal() {
-  importModalVisible.value = true;
 }
 
 async function handleCrudImportUpload(formDataUpload: FormData) {
@@ -617,25 +576,13 @@ async function handleCrudImportUpload(formDataUpload: FormData) {
       return;
     }
     ElMessage.success(res.data.msg || "导入成功");
-    importModalVisible.value = false;
+    importVisible.value = false;
     await refreshData();
   } catch (error) {
     console.error("[Import]", error);
     ElMessage.error("导入失败");
   }
 }
-
-function openExportModal() {
-  exportModalVisible.value = true;
-}
 </script>
 
-<style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-</style>
+<style scoped lang="scss"></style>

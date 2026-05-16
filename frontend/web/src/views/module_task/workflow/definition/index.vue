@@ -104,7 +104,7 @@
       </FaTable>
     </ElCard>
 
-    <WorkflowDesignDrawer
+    <FaWorkflowDesignDrawer
       v-model:visible="createVisible"
       :workflow="selectedWorkflow"
       @refresh="onDrawerRefresh"
@@ -129,7 +129,6 @@ import type { ColumnOption } from "@/types/component";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { computed, h, ref } from "vue";
-import WorkflowDesignDrawer from "../components/WorkflowDesignDrawer.vue";
 
 const BATCH_DELETE_MSG = "确认删除选中的工作流吗？";
 

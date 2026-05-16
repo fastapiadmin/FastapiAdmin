@@ -1,4 +1,4 @@
-<!-- 示例 CRUD：与角色页同一套 Art 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
+<!-- 示例 CRUD：与角色页同一套 Fa 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
 <template>
   <div class="fa-full-height">
     <FaSearchBarWithAudit
@@ -38,8 +38,8 @@
             :perm-patch="['module_example:demo:patch']"
             :delete-loading="batchDeleting"
             @add="openEditDialog('add')"
-            @import="openImportModal"
-            @export="openExportModal"
+            @import="openImport"
+            @export="openExport"
             @delete="handleBatchDelete"
             @more="runBatchStatus"
           />
@@ -64,205 +64,86 @@
       width="920px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="4" border>
-            <ElDescriptionsItem label="名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="UUID" :span="2">
-              {{ detailFormData.uuid }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态" :span="2">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "启用" : "停用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="整数" :span="2">
-              {{ detailFormData.a }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="大整数" :span="2">
-              {{ detailFormData.b }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="浮点数" :span="2">
-              {{ detailFormData.c }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="布尔值" :span="2">
-              <ElTag :type="detailFormData.d ? 'success' : 'danger'">
-                {{ detailFormData.d ? "是" : "否" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="日期" :span="2">
-              {{ detailFormData.e }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="时间" :span="2">
-              {{ detailFormData.f }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="日期时间" :span="2">
-              {{ detailFormData.g }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="长文本" :span="2">
-              {{ detailFormData.h }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="元数据" :span="2">
-              <JsonPretty
-                v-if="detailFormData.i != null"
-                :value="detailFormData.i"
-                height="140px"
-              />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建人" :span="2">
-              {{ detailFormData.created_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="demoDetailItems"
+          max-height="70vh"
+        >
+          <template #i="{ row }">
+            <FaJsonPretty v-if="row?.i != null" :value="row?.i" height="140px" />
+          </template>
+        </FaDescriptions>
       </template>
       <template v-else>
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
-          <ElForm
-            ref="dataFormRef"
-            :model="formData"
-            :rules="rules"
-            label-suffix=":"
-            label-width="100px"
-            label-position="right"
-            inline
-          >
-            <ElFormItem label="名称" prop="name">
-              <ElInput v-model="formData.name" placeholder="请输入名称" :maxlength="50" />
-            </ElFormItem>
-            <ElFormItem label="状态" prop="status">
-              <ElRadioGroup v-model="formData.status">
-                <ElRadio value="0">启用</ElRadio>
-                <ElRadio value="1">停用</ElRadio>
-              </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="整数" prop="a">
-              <ElInputNumber v-model="formData.a" placeholder="请输入整数" />
-            </ElFormItem>
-            <ElFormItem label="大整数" prop="b">
-              <ElInputNumber v-model="formData.b" placeholder="请输入大整数" />
-            </ElFormItem>
-            <ElFormItem label="浮点数" prop="c">
-              <ElInputNumber
-                v-model="formData.c"
-                placeholder="请输入浮点数"
-                :step="0.01"
-                :precision="2"
-              />
-            </ElFormItem>
-            <ElFormItem label="布尔值" prop="d">
-              <ElSwitch v-model="formData.d" />
-            </ElFormItem>
-            <ElFormItem label="日期" prop="e">
-              <ElDatePicker
-                v-model="formData.e"
-                type="date"
-                placeholder="请选择日期"
-                :style="'width: 100%'"
-                value-format="YYYY-MM-DD"
-              />
-            </ElFormItem>
-            <ElFormItem label="时间" prop="f">
-              <ElTimePicker
-                v-model="formData.f"
-                placeholder="请选择时间"
-                :style="'width: 100%'"
-                value-format="HH:mm:ss"
-              />
-            </ElFormItem>
-            <ElFormItem label="日期时间" prop="g">
-              <ElDatePicker
-                v-model="formData.g"
-                type="datetime"
-                placeholder="请选择日期时间"
-                :style="'width: 100%'"
-                value-format="YYYY-MM-DD HH:mm:ss"
-              />
-            </ElFormItem>
-            <ElFormItem label="长文本" prop="h">
-              <ElInput v-model="formData.h" :rows="4" type="textarea" placeholder="请输入长文本" />
-            </ElFormItem>
-            <ElFormItem label="描述" prop="description">
-              <ElInput
-                v-model="formData.description"
-                :rows="4"
-                :maxlength="100"
-                show-word-limit
-                type="textarea"
-                placeholder="请输入描述"
-              />
-            </ElFormItem>
-            <ElFormItem label="元数据" prop="i">
-              <div class="flex flex-col gap-2">
-                <div
-                  v-for="(item, index) in metadataList"
-                  :key="index"
-                  class="flex items-center gap-2"
-                >
-                  <ElInput v-model="item.key" placeholder="键" />
-                  <ElInput v-model="item.value" placeholder="值" />
-                  <ElButton
-                    type="primary"
-                    icon="Plus"
-                    circle
-                    @click="metadataList.push({ key: '', value: '' })"
-                  />
-                  <ElButton
-                    type="danger"
-                    icon="Delete"
-                    circle
-                    @click="metadataList.splice(index, 1)"
-                  />
-                </div>
+        <FaForm
+          :key="demoFormRenderKey"
+          scrollbar
+          max-height="70vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="demoDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        >
+          <template #i>
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="(item, index) in metadataList"
+                :key="index"
+                class="flex items-center gap-2"
+              >
+                <ElInput v-model="item.key" placeholder="键" />
+                <ElInput v-model="item.value" placeholder="值" />
                 <ElButton
-                  v-if="metadataList.length === 0"
                   type="primary"
                   icon="Plus"
+                  circle
                   @click="metadataList.push({ key: '', value: '' })"
-                >
-                  添加元数据
-                </ElButton>
+                />
+                <ElButton
+                  type="danger"
+                  icon="Delete"
+                  circle
+                  @click="metadataList.splice(index, 1)"
+                />
               </div>
-            </ElFormItem>
-          </ElForm>
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton v-if="dialogVisible.type !== 'detail'" type="primary" @click="handleSubmit">
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+              <ElButton
+                v-if="metadataList.length === 0"
+                type="primary"
+                icon="Plus"
+                @click="metadataList.push({ key: '', value: '' })"
+              >
+                添加元数据
+              </ElButton>
+            </div>
+          </template>
+        </FaForm>
       </template>
     </FaDialog>
 
     <FaImportDialog
-      v-model="importModalVisible"
+      v-model="importVisible"
       :content-config="demoImportContentConfig"
       default-template-file-name="demo_import_template.xlsx"
       @upload="handleCrudImportUpload"
     />
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="demoExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -272,26 +153,26 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useTable } from "@/hooks/core/useTable";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaImportDialog from "@/components/modal/fa-import-dialog/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete, confirmAction } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { IContentConfig, IObject } from "@/components/modal/types";
-import FaSearchBarWithAudit from "@/components/forms/fa-search-bar/FaSearchBarWithAudit.vue";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import FaJsonPretty from "@/components/others/fa-json-pretty/index.vue";
 import type { ColumnOption } from "@/types/component";
 import DemoAPI, {
   type DemoForm,
   type DemoPageQuery,
   type DemoTable,
 } from "@/api/module_example/demo";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { ResultEnum } from "@/enums/api/result.enum";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Demo",
@@ -303,10 +184,10 @@ const { hasAuth } = useAuth();
 type DemoSearchFormParams = { name?: string; status?: string } & AuditSearchFormParams;
 
 function normalizeDemoQuery(params: Record<string, unknown>): DemoPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as DemoPageQuery;
+  return cleanEmptyArrayParams({ ...params }, [
+    "created_time",
+    "updated_time",
+  ]) as unknown as DemoPageQuery;
 }
 
 const searchForm = ref<DemoSearchFormParams>({
@@ -321,7 +202,7 @@ const searchForm = ref<DemoSearchFormParams>({
 /** 搜索区域默认展开展示 */
 const showSearchBar = ref(true);
 
-const searchBarRef = ref<InstanceType<typeof FaSearchBarWithAudit> | null>(null);
+const searchBarRef = ref<{ validate: () => Promise<boolean> } | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 const statusOptions = ref([
   { label: "启用", value: "0" },
@@ -351,15 +232,8 @@ const demoBusinessSearchItems = computed(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<DemoTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: DemoTable[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<DemoTable>();
 
 const {
   columns,
@@ -422,7 +296,7 @@ const {
         minWidth: 160,
         formatter: (row: DemoTable) => {
           if (row.i == null) return h("span", { class: "text-g-500" }, "—");
-          return h(JsonPretty, { value: row.i, height: "120px" });
+          return h(FaJsonPretty, { value: row.i, height: "120px" });
         },
       },
       { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
@@ -466,11 +340,7 @@ const demoCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeDemoQuery(sp);
 });
 
@@ -494,13 +364,113 @@ const demoExportContentConfig = computed(() => ({
   },
 }));
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+const { dialogVisible } = useCrudDialog();
 
 const detailFormData = ref<DemoTable>({});
+
+const demoDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "名称", prop: "name" },
+    { label: "UUID", prop: "uuid" },
+    {
+      label: "状态",
+      prop: "status",
+      tag: {
+        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+      },
+    },
+    { label: "整数", prop: "a" },
+    { label: "大整数", prop: "b" },
+    { label: "浮点数", prop: "c" },
+    {
+      label: "布尔值",
+      prop: "d",
+      tag: {
+        map: { true: { type: "success", text: "是" }, false: { type: "danger", text: "否" } },
+      },
+    },
+    { label: "日期", prop: "e" },
+    { label: "时间", prop: "f" },
+    { label: "日期时间", prop: "g" },
+    { label: "长文本", prop: "h" },
+    { label: "元数据", prop: "i", slot: "i" },
+    { label: "描述", prop: "description" },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
+    { label: "创建时间", prop: "created_time" },
+    { label: "更新时间", prop: "updated_time" },
+  ];
+
+// 示例页新增/编辑表单 —— 元数据字段用具名插槽渲染
+const demoDialogFormItems: FormItem[] = [
+  {
+    key: "name",
+    label: "名称",
+    type: "input",
+    props: { placeholder: "请输入名称", maxlength: 50 },
+  },
+  {
+    key: "status",
+    label: "状态",
+    type: "radiogroup",
+    props: {
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+    },
+  },
+  { key: "a", label: "整数", type: "number", props: { placeholder: "请输入整数" } },
+  { key: "b", label: "大整数", type: "number", props: { placeholder: "请输入大整数" } },
+  {
+    key: "c",
+    label: "浮点数",
+    type: "number",
+    props: { placeholder: "请输入浮点数", step: 0.01, precision: 2 },
+  },
+  { key: "d", label: "布尔值", type: "switch" },
+  {
+    key: "e",
+    label: "日期",
+    type: "date",
+    props: { placeholder: "请选择日期", valueFormat: "YYYY-MM-DD", style: "width: 100%" },
+  },
+  {
+    key: "f",
+    label: "时间",
+    type: "timepicker",
+    props: { placeholder: "请选择时间", valueFormat: "HH:mm:ss", style: "width: 100%" },
+  },
+  {
+    key: "g",
+    label: "日期时间",
+    type: "datetime",
+    props: {
+      placeholder: "请选择日期时间",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      style: "width: 100%",
+    },
+  },
+  {
+    key: "h",
+    label: "长文本",
+    type: "input",
+    props: { type: "textarea", rows: 4, placeholder: "请输入长文本" },
+  },
+  {
+    key: "description",
+    label: "描述",
+    type: "input",
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+  { key: "i", label: "元数据", type: "input" /* 由 #i 插槽接管 */ },
+];
 
 const formData = ref<DemoForm>({
   id: undefined,
@@ -523,11 +493,16 @@ const rules = reactive({
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
-const dataFormRef = ref();
+const dataFormRef = ref<{
+  resetFields: () => void;
+  clearValidate: () => void;
+  validate: (cb: (valid: boolean) => void) => void;
+} | null>(null);
+const submitLoading = ref(false);
+const demoFormRenderKey = ref(0);
 const metadataList = ref<{ key: string; value: string }[]>([]);
 
-const importModalVisible = ref(false);
-const exportModalVisible = ref(false);
+const { importVisible, exportVisible, openImport, openExport } = useImportExport();
 
 const initialFormData: DemoForm = {
   id: undefined,
@@ -628,6 +603,7 @@ async function openEditDialog(type: "add" | "edit", row?: DemoTable) {
     Object.assign(formData.value, initialFormData);
     formData.value.id = undefined;
     metadataList.value = [];
+    demoFormRenderKey.value += 1;
   } else if (row?.id) {
     dialogVisible.title = "修改";
     const response = await DemoAPI.getDemoDetail(row.id);
@@ -659,7 +635,7 @@ async function handleCloseDialog() {
 }
 
 async function handleSubmit() {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  dataFormRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
     const submitData = { ...formData.value };
     if (metadataList.value.length > 0) {
@@ -693,21 +669,13 @@ async function handleSubmit() {
 const deleteDemoRow = async (row: DemoTable) => {
   if (!row.id) return;
   try {
-    await ElMessageBox.confirm(
-      `确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`,
-      "删除确认",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }
-    );
+    await confirmDelete(`确定删除「${row.name ?? row.id}」吗？此操作不可恢复！`);
     await DemoAPI.deleteDemo([row.id!]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("已取消删除");
+    // 用户取消
   }
 };
 
@@ -715,22 +683,14 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(
-      `确定删除选中的 ${ids.length} 条数据吗？此操作不可恢复！`,
-      "批量删除",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }
-    );
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await DemoAPI.deleteDemo(ids);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("已取消删除");
+    // 用户取消
   } finally {
     batchDeleting.value = false;
   }
@@ -743,10 +703,9 @@ async function runBatchStatus(status: string) {
     return;
   }
   try {
-    await ElMessageBox.confirm(
+    await confirmAction(
       `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
-      "批量设置",
-      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
+      "批量设置"
     );
     await DemoAPI.batchDemo({ ids, status });
     ElMessage.success("操作成功");
@@ -757,10 +716,6 @@ async function runBatchStatus(status: string) {
   }
 }
 
-function openImportModal() {
-  importModalVisible.value = true;
-}
-
 async function handleCrudImportUpload(formData: FormData) {
   try {
     const res = await DemoAPI.importDemo(formData);
@@ -769,15 +724,11 @@ async function handleCrudImportUpload(formData: FormData) {
       return;
     }
     ElMessage.success(res.data.msg || "导入成功");
-    importModalVisible.value = false;
+    importVisible.value = false;
     await refreshData();
   } catch (error) {
     console.error("[Import]", error);
     ElMessage.error("导入失败");
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>

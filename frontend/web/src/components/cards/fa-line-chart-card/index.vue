@@ -24,7 +24,7 @@
     <div
       ref="chartRef"
       class="absolute bottom-0 left-0 right-0 box-border w-full"
-      :class="isMiniChart ? '!absolute !top-5 !right-5 !bottom-auto !left-auto !h-15 !w-4/10' : ''"
+      :class="isMiniChart ? 'absolute! top-5! right-5! bottom-auto! left-auto! h-15! w-4/10!' : ''"
       :style="{ height: isMiniChart ? '60px' : `calc(${height}rem - 5rem)` }"
     ></div>
   </div>
@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { graphic, type EChartsOption } from "@/plugins/echarts";
-import { getCssVar, hexToRgba } from "@utils/ui";
+import { getCssVar, hexToRgba } from "@utils";
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 
 defineOptions({ name: "FaLineChartCard" });

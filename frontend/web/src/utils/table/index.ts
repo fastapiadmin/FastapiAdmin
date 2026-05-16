@@ -19,9 +19,9 @@ import { h } from "vue";
 import type { VNode } from "vue";
 import { ElTooltip } from "element-plus";
 import { hash } from "ohash";
-import ArtButtonMore from "@/components/forms/fa-button-more/index.vue";
+import FaButtonMore from "@/components/forms/fa-button-more/index.vue";
 import type { ButtonMoreItem } from "@/components/forms/fa-button-more/types";
-import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
+import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
 
 // --- 全局分页字段名（与 PageQuery 对齐） ---
 
@@ -539,7 +539,7 @@ export function renderTableOperationCell(
         "span",
         { class: a.disabled ? "inline-flex opacity-40 pointer-events-none" : "inline-flex" },
         [
-          h(ArtButtonTable, {
+          h(FaButtonTable, {
             type: a.artType,
             icon: iconForOperation(a),
             iconColor: iconColorForOperation(a),
@@ -552,7 +552,7 @@ export function renderTableOperationCell(
 
   if (overflow.length === 0) return h("div", { class: wrapperClass }, inlineNodes);
 
-  const moreDropdown = h(ArtButtonMore, {
+  const moreDropdown = h(FaButtonMore, {
     list: overflow.map((a) => ({
       key: a.key,
       label: a.label,

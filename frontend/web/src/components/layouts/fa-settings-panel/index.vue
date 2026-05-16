@@ -1,42 +1,31 @@
 <!-- 设置面板 -->
 <template>
   <div class="layout-settings">
-    <SettingDrawer v-model="showDrawer" @open="handleOpen" @close="handleClose">
+    <FaSettingDrawer v-model="showDrawer" @open="handleOpen" @close="handleClose">
       <!-- 头部关闭按钮 -->
-      <SettingHeader @close="closeDrawer" />
+      <FaSettingHeader @close="closeDrawer" />
       <!-- 主题风格 -->
-      <ThemeSettings />
+      <FaThemeSettings />
       <!-- 菜单布局 -->
-      <MenuLayoutSettings />
+      <FaMenuLayoutSettings />
       <!-- 菜单风格 -->
-      <MenuStyleSettings />
+      <FaMenuStyleSettings />
       <!-- 系统主题色 -->
-      <ColorSettings />
+      <FaColorSettings />
       <!-- 盒子样式 -->
-      <BoxStyleSettings />
+      <FaBoxStyleSettings />
       <!-- 容器宽度 -->
-      <ContainerSettings />
+      <FaContainerSettings />
       <!-- 基础配置 -->
-      <BasicSettings />
+      <FaBasicSettings />
       <!-- 操作按钮 -->
-      <SettingActions />
-    </SettingDrawer>
+      <FaSettingActions />
+    </FaSettingDrawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useSettingsPanel } from "./composables/useSettingsPanel";
-
-import SettingDrawer from "./widget/SettingDrawer.vue";
-import SettingHeader from "./widget/SettingHeader.vue";
-import ThemeSettings from "./widget/ThemeSettings.vue";
-import MenuLayoutSettings from "./widget/MenuLayoutSettings.vue";
-import MenuStyleSettings from "./widget/MenuStyleSettings.vue";
-import ColorSettings from "./widget/ColorSettings.vue";
-import BoxStyleSettings from "./widget/BoxStyleSettings.vue";
-import ContainerSettings from "./widget/ContainerSettings.vue";
-import BasicSettings from "./widget/BasicSettings.vue";
-import SettingActions from "./widget/SettingActions.vue";
 
 defineOptions({ name: "FaSettingsPanel" });
 
@@ -68,5 +57,5 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-@use "./style";
+@use "@styles/fa-settings-panel";
 </style>

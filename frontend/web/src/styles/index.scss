@@ -21,3 +21,24 @@
 
 // 主题切换圆形扩散动画
 @use "./core/theme-animation";
+
+// CRUD 页面通用样式
+@use "./core/crud";
+
+// 布局组件样式
+@use "./layouts";
+
+// 侧边栏菜单样式
+@use "./fa-sidebar-menu";
+
+// 侧边栏菜单主题样式
+@use "./fa-sidebar-menu-theme";
+
+// 设置面板样式
+@use "./fa-settings-panel";
+
+// 表格组件样式
+@use "./fa-table";
+
+// 富文本编辑器样式
+@use "./fa-wang-editor";

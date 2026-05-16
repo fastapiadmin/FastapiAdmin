@@ -14,7 +14,7 @@ import { initGlobDirectives } from "@/directives";
 import { initI18n } from "@/locales";
 import { initRouter } from "@/router";
 import { initStore } from "@stores";
-import { initErrorHandle } from "@utils/sys";
+import { initErrorHandle } from "@utils";
 import { initCodeMirror } from "./codemirror";
 import { initElementPlus } from "./element-plus";
 import { initElIcons } from "./icons";

@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { hexToRgb } from "@utils/ui";
+import { hexToRgb } from "@utils";
 
 interface Product {
   name: string;

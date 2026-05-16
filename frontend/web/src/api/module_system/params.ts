@@ -1,5 +1,4 @@
-import request from "@utils/http";
-import { NO_AUTH_FLAG } from "@utils/http";
+import { request, NO_AUTH_FLAG } from "@utils";
 
 const API_PATH = "/system/param";
 

@@ -1,7 +1,7 @@
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import type { UserInfo } from "@/api/module_system/user";
 import type { MenuTable } from "@/api/module_system/menu";
-import { useUserStore } from "@stores/modules/user.store";
+import { useUserStore } from "@stores";
 import { useAppMode } from "@/hooks/core/useAppMode";
 
 import {
@@ -312,11 +312,11 @@ export class MenuProcessor {
   private isNavigableRoute(route: AppRouteRecord): boolean {
     return Boolean(
       route.path &&
-        route.path !== "/" &&
-        !route.meta?.link &&
-        route.meta?.isIframe !== true &&
-        route.component &&
-        route.component !== ""
+      route.path !== "/" &&
+      !route.meta?.link &&
+      route.meta?.isIframe !== true &&
+      route.component &&
+      route.component !== ""
     );
   }
 

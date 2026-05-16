@@ -22,21 +22,22 @@
 import type { AppRouteRecord } from "@/types/router";
 import type { Router, RouteLocationNormalized } from "vue-router";
 import { nextTick } from "vue";
-import { NProgress } from "@utils/ui";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { useUserStore } from "@stores/modules/user.store";
-import { useMenuStore } from "@stores/modules/menu.store";
-import { setWorktab } from "@utils/navigation";
-import { setPageTitle } from "@utils/navigation";
+import { useSettingsStore, useUserStore, useMenuStore, useWorktabStore } from "@stores";
 import { IframeRouteManager, ROUTE_PATH_LOGIN_ALT, staticRoutes } from "./staticRoutes";
-import { loadingService } from "@utils/ui";
 import { useCommon } from "@/hooks/core/useCommon";
-import { useWorktabStore } from "@stores/modules/worktab.store";
 import { UserAPI } from "@/api/module_system/user";
-import { ApiStatus, isHttpError } from "@utils/http";
+import {
+  NProgress,
+  setWorktab,
+  setPageTitle,
+  loadingService,
+  ApiStatus,
+  isHttpError,
+  resetStorageInvalidated,
+  checkStorageInvalidated,
+} from "@utils";
 import { RouteRegistry } from "./dynamicRoutes";
 import { MenuProcessor } from "./MenuProcessor";
-import { resetStorageInvalidated, checkStorageInvalidated } from "@utils/storage";
 
 // --- 模块级单例与守卫状态 ---
 
@@ -185,7 +186,14 @@ function handleLoginStatus(
   to: RouteLocationNormalized,
   userStore: ReturnType<typeof useUserStore>
 ): Record<string, unknown> | undefined {
-  if (userStore.isLogin || isLoginRoute(to) || isAnonymousPublicPath(to.path)) {
+  if (userStore.isLogin) {
+    if (isLoginRoute(to)) {
+      return { path: "/", replace: true };
+    }
+    return undefined;
+  }
+
+  if (isLoginRoute(to) || isAnonymousPublicPath(to.path)) {
     return undefined;
   }
 
