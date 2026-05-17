@@ -238,6 +238,7 @@ import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
+import FaDeptTree from "./components/FaDeptTree.vue";
 import { ElTag, ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();

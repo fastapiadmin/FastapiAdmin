@@ -100,4 +100,10 @@ function handleCurrentChange(val: number) {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+</style>
