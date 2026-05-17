@@ -57,7 +57,7 @@ class IpLocalUtil:
         """
         if not ip:
             return None
-        if settings.DEBUG:
+        if settings.DEBUG or not settings.IP_LOCATION_ENABLE:
             return (
                 "内网IP"
                 if cls.is_private_ip(ip)
@@ -86,22 +86,13 @@ class IpLocalUtil:
             return "内网IP"
 
         try:
-            # 使用ip-api.com API获取IP归属地信息
             async with httpx.AsyncClient(timeout=settings.HTTPX_DEFAULT_TIMEOUT) as client:
-                # 尝试使用 ip9.com.cn API
+                # 首选：ip9.com.cn API
                 url = f"https://ip9.com.cn/get?ip={ip}"
                 response = await cls._make_api_request(client, url)
                 if response and response.json().get("ret") == 200:
                     result = response.json().get("data", {})
                     return f"{result.get('country', '')}-{result.get('prov', '')}-{result.get('city', '')}-{result.get('area', '')}-{result.get('isp', '')}"
-
-                # 尝试使用百度 API
-                url = f"https://qifu-api.baidubce.com/ip/geo/v1/district?ip={ip}"
-                response = await cls._make_api_request(client, url)
-                if response and response.json().get("code") == "Success":
-                    data = response.json().get("data", {})
-                    # 修正原代码中的格式错误
-                    return f"{data.get('country', '')}-{data.get('prov', '')}-{data.get('city', '')}-{data.get('district', '')}-{data.get('isp', '')}"
 
         except Exception as e:
             log.error(f"获取IP归属地失败: {e}")
@@ -119,14 +110,10 @@ class IpLocalUtil:
         返回:
         - Response | None: 响应对象，失败时返回None。
         """
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = await client.get(url, timeout=settings.HTTPX_DEFAULT_TIMEOUT)
-                if response.status_code == 200:
-                    return response
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    continue
-                log.error(f"API 请求失败: {e}")
+        try:
+            response = await client.get(url)
+            if response.status_code == 200:
+                return response
+        except Exception as e:
+            log.error(f"IP 归属地 API 请求失败: {url} - {e}")
         return None

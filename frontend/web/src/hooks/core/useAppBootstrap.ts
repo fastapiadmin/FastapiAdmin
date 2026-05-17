@@ -5,9 +5,7 @@
  * 保持 App.vue 的 onMounted 为单行调用。
  */
 import { useSiteConfig } from "@/hooks/core/useSiteConfig";
-import { checkStorageCompatibility } from "@utils/storage";
-import { toggleTransition } from "@utils/ui";
-import { systemUpgrade } from "@utils/sys";
+import { checkStorageCompatibility, toggleTransition, systemUpgrade } from "@utils";
 
 export function useAppBootstrap() {
   const { initSiteConfig } = useSiteConfig();

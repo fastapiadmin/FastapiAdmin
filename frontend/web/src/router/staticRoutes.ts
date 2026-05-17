@@ -6,17 +6,19 @@
  *
  * 动态路由由 `beforeEach.ts` → `RouteRegistry` 在登录后根据不同角色的菜单列表动态 `addRoute`。
  */
-import type { AppRouteRecordRaw } from "@utils/navigation";
+import type { AppRouteRecordRaw } from "@utils";
 import type { AppRouteRecord, RouteMeta } from "@/types/router";
 import { defineComponent, h, onMounted, ref } from "vue";
 import type { RouteRecordRaw } from "vue-router";
 import { RouterView, useRoute } from "vue-router";
+import { t } from "@wangeditor-next/editor";
 
 /** 首页 / 仪表盘父级 meta（侧栏、静态子路由共用） */
 export const HOME_MENU_META: RouteMeta = {
   title: "menus.home.title",
-  icon: "ri:presentation-line",
+  icon: "ri:home-smile-2-line",
   keepAlive: true,
+  fixedTab: true,
 };
 
 export const DASHBOARD_PARENT_META: RouteMeta = {
@@ -100,8 +102,8 @@ export const ROUTE_COMPONENT_NESTED_PARENT = "/nested/router-view-parent";
 export const ROUTE_PATH_LOGIN_ALT = "/auth/login";
 
 /**
- * 主框架布局：新版 art 体系（`src/layouts/index.vue` + `src/layouts/art-*` 组件）。
- * 旧版 Left/Top/Mix 壳子仍在 `@/layouts/index.vue`，路由不再默认使用。
+ * 主框架布局：新版 art 体系（`src/components/layouts/index.vue` + `src/components/layouts/fa-*` 组件）。
+ * 旧版 Left/Top/Mix 壳子已移除，统一使用 `@/components/layouts/index.vue`。
  */
 export const Layout = () => import("@/components/layouts/index.vue");
 
@@ -148,20 +150,9 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
     name: "DashboardWorkplace",
     component: () => import("@views/dashboard/workplace/index.vue"),
     meta: {
-      title: "menus.workplace.title",
-      icon: "ri:layout-grid-line",
+      title: "menus.dashboard.workplace",
+      icon: "ri:bar-chart-box-line",
       keepAlive: true,
-    },
-  },
-  {
-    path: "console",
-    name: "DashboardConsole",
-    component: () => import("@views/dashboard/console/index.vue"),
-    meta: {
-      title: "menus.dashboard.console",
-      icon: "ri:home-smile-2-line",
-      keepAlive: false,
-      fixedTab: true,
     },
   },
   {
@@ -172,73 +163,6 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
       title: "menus.dashboard.analysis",
       icon: "ri:align-item-bottom-line",
       keepAlive: false,
-    },
-  },
-  {
-    path: "ecommerce",
-    name: "DashboardEcommerce",
-    component: () => import("@views/dashboard/ecommerce/index.vue"),
-    meta: {
-      title: "menus.dashboard.ecommerce",
-      icon: "ri:bar-chart-box-line",
-      keepAlive: false,
-    },
-  },
-  {
-    path: "map",
-    name: "DashboardMap",
-    component: () => import("@views/dashboard/map/index.vue"),
-    meta: {
-      title: "menus.dashboard.map",
-      icon: "ri:map-pin-line",
-      keepAlive: true,
-    },
-  },
-  {
-    path: "pricing",
-    name: "DashboardPricing",
-    component: () => import("@views/dashboard/pricing/index.vue"),
-    meta: {
-      title: "menus.dashboard.pricing",
-      icon: "ri:money-cny-box-line",
-      keepAlive: true,
-    },
-  },
-  {
-    path: "article",
-    name: "DashboardArticle",
-    component: NestedRouterParent,
-    meta: {
-      title: "menus.article.title",
-      icon: "ri:book-2-line",
-      alwaysShow: true,
-      roles: ["R_SUPER", "R_ADMIN"],
-    },
-    children: [
-      {
-        path: "article-list",
-        name: "ArticleList",
-        component: () => import("@views/dashboard/article/list/index.vue"),
-        meta: {
-          title: "menus.article.articleList",
-          icon: "ri:article-line",
-          keepAlive: true,
-          authList: [
-            { title: "新增", authMark: "add" },
-            { title: "编辑", authMark: "edit" },
-          ],
-        },
-      },
-    ],
-  },
-  {
-    path: "tutorial",
-    name: "DashboardTutorial",
-    component: () => import("@views/dashboard/tutorial/index.vue"),
-    meta: {
-      title: "menus.dashboard.tutorial",
-      icon: "ri:book-2-line",
-      keepAlive: true,
     },
   },
 ];
@@ -432,26 +356,8 @@ export const staticRoutes: AppRouteRecordRaw[] = [
       {
         path: "home",
         name: HOME_ROUTE_NAME,
-        component: () => import("@views/dashboard/index.vue"),
+        component: () => import("@views/dashboard/home/index.vue"),
         meta: HOME_MENU_META,
-      },
-      {
-        path: "profile",
-        name: "Profile",
-        meta: { title: "个人中心", icon: "ri:user-line", hidden: true },
-        component: () => import("@views/current/profile.vue"),
-      },
-      /** 更新日志（mock 数据）：侧栏隐藏，由顶栏头像下拉进入（routeName 供 fastEnter 等使用） */
-      {
-        path: "changelog",
-        name: "ChangeLog",
-        meta: {
-          title: "menus.changelog.title",
-          icon: "ri:draft-line",
-          hidden: true,
-          keepAlive: true,
-        },
-        component: () => import("@views/changelog/index.vue"),
       },
       /** 仪表盘子路由定义见同文件导出的 `dashboardLayoutChildren` */
       {
@@ -462,11 +368,81 @@ export const staticRoutes: AppRouteRecordRaw[] = [
         meta: DASHBOARD_PARENT_META,
         children: dashboardLayoutChildren,
       },
+      /** 快速链接：统一父级，不在菜单中展示，通过 URL 或 fastEnter 直接访问 */
+      {
+        path: "fastlink",
+        name: "Fastlink",
+        component: NestedRouterParent,
+        meta: { hidden: true },
+        children: [
+          {
+            path: "profile",
+            name: "FastlinkProfile",
+            meta: { title: t("menus.system.userCenter"), icon: "ri:user-line", hidden: true },
+            component: () => import("@views/fastlink/current/profile.vue"),
+          },
+          {
+            path: "changelog",
+            name: "FastlinkChangeLog",
+            meta: {
+              title: t("menus.changelog.title"),
+              icon: "ri:draft-line",
+              hidden: true,
+              keepAlive: true,
+            },
+            component: () => import("@views/fastlink/changelog/index.vue"),
+          },
+          {
+            path: "pricing",
+            name: "FastlinkPricing",
+            meta: {
+              title: t("menus.dashboard.pricing"),
+              icon: "ri:money-cny-box-line",
+              hidden: true,
+              keepAlive: true,
+            },
+            component: () => import("@views/fastlink/pricing/index.vue"),
+          },
+          {
+            path: "article/list",
+            name: "FastlinkArticleList",
+            meta: {
+              title: t("menus.article.articleList"),
+              icon: "ri:article-line",
+              hidden: true,
+              keepAlive: true,
+            },
+            component: () => import("@views/fastlink/article/index.vue"),
+          },
+          {
+            path: "tutorial",
+            name: "FastlinkTutorial",
+            meta: {
+              title: t("menus.dashboard.tutorial"),
+              icon: "ri:book-2-line",
+              hidden: true,
+              keepAlive: true,
+            },
+            component: () => import("@views/fastlink/tutorial/index.vue"),
+          },
+          {
+            path: "fachat",
+            name: "FastlinkFachat",
+            meta: {
+              title: t("menus.fachat.title"),
+              icon: "ri:message-3-line",
+              hidden: true,
+              keepAlive: true,
+            },
+            component: () => import("@views/fastlink/fachat/index.vue"),
+          },
+        ],
+      },
     ],
   },
   {
     path: "/outside",
-    component: () => import("@/layouts/index.vue"),
+    component: () => import("@/components/layouts/index.vue"),
     name: "Outside",
     meta: { title: "menus.outside.title" },
     children: [

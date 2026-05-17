@@ -13,7 +13,7 @@
     >
       <FaLogo v-if="showAppLogo" class="logo" :src="sidebarLogoSrc" @click="navigateToHome" />
 
-      <ElScrollbar style="height: calc(100% - 135px)">
+      <ElScrollbar :style="{ height: 'calc(100% - 135px)' }">
         <ul>
           <li v-for="menu in firstLevelMenus" :key="menu.path" @click="handleMenuJump(menu, true)">
             <ElTooltip
@@ -131,14 +131,10 @@
 
 <script setup lang="ts">
 import AppConfig from "@/config";
-import { useConfigStore } from "@stores/modules/config.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useConfigStore, useSettingsStore, useMenuStore } from "@stores";
 import { MenuTypeEnum, MenuWidth } from "@/enums/appEnum";
-import { useMenuStore } from "@stores/modules/menu.store";
-import { isIframe } from "@utils/navigation";
-import { handleMenuJump } from "@utils/navigation";
-import SidebarSubmenu from "./widget/SidebarSubmenu.vue";
-import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
+import { isIframe, handleMenuJump } from "@utils";
+import SidebarSubmenu from "./widget/FaSidebarSubmenu.vue";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useWindowSize, useTimeoutFn } from "@vueuse/core";
 
@@ -366,11 +362,11 @@ watch(menuOpen, (isMenuOpen: boolean) => {
 </script>
 
 <style lang="scss" scoped>
-@use "./style";
+@use "@styles/fa-sidebar-menu";
 </style>
 
 <style lang="scss">
-@use "./theme";
+@use "@styles/fa-sidebar-menu-theme";
 
 .layout-sidebar {
   // 展开的宽度

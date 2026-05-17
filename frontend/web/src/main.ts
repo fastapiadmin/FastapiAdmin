@@ -11,7 +11,7 @@ import "animate.css";
 // ---------------------------------------------------------------------------
 import App from "./App.vue";
 import { createApp } from "vue";
-import { printConsoleBanner } from "@utils/sys";
+import { printConsoleBanner } from "@utils";
 import { initPlugins } from "@/plugins";
 
 /**

@@ -20,8 +20,6 @@ src/types/import/components.d.ts
 *.local
 
 stats.html
-pnpm-lock.yaml
-package-lock.json
 .stylelintcache
 .eslintcache
 

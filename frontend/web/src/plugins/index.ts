@@ -14,10 +14,11 @@ import { initGlobDirectives } from "@/directives";
 import { initI18n } from "@/locales";
 import { initRouter } from "@/router";
 import { initStore } from "@stores";
-import { initErrorHandle } from "@utils/sys";
+import { initErrorHandle } from "@utils";
 import { initCodeMirror } from "./codemirror";
 import { initElementPlus } from "./element-plus";
 import { initElIcons } from "./icons";
+import { initIconify } from "./iconify";
 import { initTerminal } from "./terminal";
 
 /**
@@ -35,6 +36,7 @@ import { initTerminal } from "./terminal";
  */
 export async function initPlugins(app: App<Element>): Promise<void> {
   initElIcons(app);
+  initIconify();
   initStore(app);
   await initRouter(app);
   initGlobDirectives(app);

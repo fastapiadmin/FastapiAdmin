@@ -95,6 +95,11 @@
   --el-card-border-color: var(--default-border) !important;
 }
 
+// 全局统一 ElCard 卡片圆角，与 dashboard 首页一致
+.el-card {
+  --el-card-border-radius: calc(var(--custom-radius) + 2px);
+}
+
 .fa-card,
 .fa-card-sm,
 .fa-card-xs {
@@ -161,17 +166,14 @@
 // 元素全屏
 .el-full-screen {
   position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
+  inset: 0;
   z-index: 2300;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  width: 100vw !important;
-  height: 100% !important;
+  width: 100vw;
   padding: 15px;
-  margin-top: 0;
+  margin: 0;
   background-color: var(--default-box-color);
 }
 

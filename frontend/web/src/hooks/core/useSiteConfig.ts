@@ -8,7 +8,7 @@
  */
 
 import { watch } from "vue";
-import { useConfigStore } from "@stores/modules/config.store";
+import { useConfigStore } from "@stores";
 
 const updateFavicon = (url: string) => {
   const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');

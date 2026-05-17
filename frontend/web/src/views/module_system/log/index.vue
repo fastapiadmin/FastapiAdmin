@@ -1,4 +1,4 @@
-<!-- 日志管理：Art 布局 + useTable，与 dict 页一致 -->
+<!-- 日志管理：Fa 布局 + useTable，与 dict 页一致 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -17,7 +17,7 @@
       @reset="onResetSearch"
     >
       <template #created_id>
-        <UserTableSelect
+        <FaUserTableSelect
           :model-value="searchForm.created_id == null ? undefined : searchForm.created_id"
           @update:model-value="(v: number | undefined) => (searchForm.created_id = v)"
           @confirm-click="afterUserSelectSearch"
@@ -26,7 +26,11 @@
       </template>
     </FaSearchBar>
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -39,7 +43,7 @@
             :perm-export="['module_system:log:export']"
             :perm-delete="['module_system:log:delete']"
             :delete-loading="batchDeleting"
-            @export="openExportModal"
+            @export="openExport"
             @delete="handleBatchDelete"
           />
         </template>
@@ -63,77 +67,42 @@
       width="960px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      form-mode="detail"
+      @confirm="handleCloseDialog"
     >
-      <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-        <ElDescriptions :column="8" border label-width="200px">
-          <ElDescriptionsItem label="日志类型" :span="2">
-            <ElTag :type="formData.type === 1 ? 'success' : 'primary'">
-              {{ formData.type === 1 ? "登录日志" : "操作日志" }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求路径" :span="2">
-            {{ formData.request_path }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求方法" :span="2">
-            <ElTag :type="getMethodType(formData.request_method)">
-              {{ formData.request_method }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="响应状态码" :span="2">
-            <ElTag :type="getStatusCodeType(formData.response_code)">
-              {{ formData.response_code }}
-            </ElTag>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求IP" :span="2">
-            {{ formData.request_ip }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="处理时间" :span="2">
-            {{ formData.process_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="浏览器" :span="2">
-            {{ formData.request_browser }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="操作系统" :span="2">
-            {{ formData.request_os }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="请求参数" :span="4">
-            <JsonPretty :value="formData.request_payload" height="80px" />
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="响应数据" :span="4">
-            <JsonPretty :value="formData.response_json" height="140px" />
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="登录地点" :span="2">
-            {{ formData.login_location }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="描述" :span="4">
-            {{ formData.description }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建人" :span="2">
-            {{ formData.created_by?.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新人" :span="2">
-            {{ formData.updated_by?.name }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="创建时间" :span="2">
-            {{ formData.created_time }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="更新时间" :span="2">
-            {{ formData.updated_time }}
-          </ElDescriptionsItem>
-        </ElDescriptions>
-      </ElScrollbar>
-
-      <template #footer>
-        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
-      </template>
+      <FaDescriptions
+        :column="8"
+        :data="formData"
+        :items="logDetailItems"
+        label-width="200px"
+        max-height="75vh"
+      >
+        <template #type="{ row }">
+          <ElTag :type="row?.type === 1 ? 'success' : 'primary'">
+            {{ row?.type === 1 ? "登录日志" : "操作日志" }}
+          </ElTag>
+        </template>
+        <template #request_method="{ row }">
+          <ElTag :type="getMethodType(row?.request_method as string)">
+            {{ row?.request_method }}
+          </ElTag>
+        </template>
+        <template #response_code="{ row }">
+          <ElTag :type="getStatusCodeType(row?.response_code as number)">
+            {{ row?.response_code }}
+          </ElTag>
+        </template>
+        <template #request_payload="{ row }">
+          <FaJsonPretty :value="row?.request_payload as any" height="80px" />
+        </template>
+        <template #response_json="{ row }">
+          <FaJsonPretty :value="row?.response_json as any" height="140px" />
+        </template>
+      </FaDescriptions>
     </FaDialog>
 
     <FaExportDialog
-      v-model="exportModalVisible"
+      v-model="exportVisible"
       :content-config="logExportContentConfig"
       :query-params="exportQueryParams"
       :page-data="data"
@@ -143,24 +112,22 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, nextTick } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaExportDialog from "@/components/modal/fa-export-dialog/index.vue";
-import type { IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import JsonPretty from "@/components/others/fa-json-pretty/index.vue";
-import CopyButton from "@/components/others/fa-copy-button/index.vue";
+import { useImportExport } from "@/hooks/core/useImportExport";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
+import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
 import type { ColumnOption } from "@/types/component";
 import LogAPI, { type LogPageQuery, type LogTable } from "@/api/module_system/log";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import UserTableSelect from "@views/module_system/user/components/UserTableSelect.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { IObject } from "@/components/modal/types";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaCopyButton from "@/components/others/fa-copy-button/index.vue";
+import { ElTag, ElMessage } from "element-plus";
 
 defineOptions({
   name: "Log",
@@ -177,10 +144,7 @@ type LogSearchForm = {
 };
 
 function normalizeLogQuery(params: Record<string, unknown>): LogPageQuery {
-  const p = { ...params } as Record<string, unknown>;
-  if (Array.isArray(p.created_time) && p.created_time.length === 0) p.created_time = undefined;
-  if (Array.isArray(p.updated_time) && p.updated_time.length === 0) p.updated_time = undefined;
-  return p as unknown as LogPageQuery;
+  return cleanEmptyArrayParams({ ...params }) as unknown as LogPageQuery;
 }
 
 function buildLogReplaceParams(p: LogSearchForm): Record<string, unknown> {
@@ -256,15 +220,8 @@ const logSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<LogTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: LogTable[]) {
-  selectedRows.value = rows;
-}
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<LogTable>();
 
 const {
   columns,
@@ -289,6 +246,7 @@ const {
     },
     columnsFactory: (): ColumnOption<LogTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       {
         prop: "type",
         label: "日志类型",
@@ -323,7 +281,7 @@ const {
           h("span", { class: "inline-flex items-center flex-wrap gap-0.5" }, [
             row.request_ip ?? "",
             row.request_ip
-              ? h(CopyButton, {
+              ? h(FaCopyButton, {
                   text: row.request_ip,
                   style: { marginLeft: "2px" },
                 })
@@ -372,11 +330,7 @@ const logCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = { ...(searchParams as object) } as Record<string, unknown>;
-  delete sp.current;
-  delete sp.size;
-  delete sp.page_no;
-  delete sp.page_size;
+  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
   return normalizeLogQuery(sp);
 });
 
@@ -395,10 +349,26 @@ const logExportContentConfig = computed(() => ({
 
 const formData = ref<LogTable>({});
 
-const dialogVisible = ref({
-  title: "",
-  visible: false,
-});
+const logDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] = [
+  { label: "日志类型", prop: "type", slot: "type" },
+  { label: "请求路径", prop: "request_path" },
+  { label: "请求方法", prop: "request_method", slot: "request_method" },
+  { label: "响应状态码", prop: "response_code", slot: "response_code" },
+  { label: "请求IP", prop: "request_ip" },
+  { label: "处理时间", prop: "process_time" },
+  { label: "浏览器", prop: "request_browser" },
+  { label: "操作系统", prop: "request_os" },
+  { label: "请求参数", prop: "request_payload", slot: "request_payload", span: 4 },
+  { label: "响应数据", prop: "response_json", slot: "response_json", span: 4 },
+  { label: "登录地点", prop: "login_location" },
+  { label: "描述", prop: "description", span: 4 },
+  { label: "创建人", prop: "created_by.name" },
+  { label: "更新人", prop: "updated_by.name" },
+  { label: "创建时间", prop: "created_time" },
+  { label: "更新时间", prop: "updated_time" },
+];
+
+const { dialogVisible, closeDialog } = useCrudDialog();
 
 function getStatusCodeType(code?: number) {
   if (code === undefined) return "info";
@@ -416,7 +386,7 @@ function getMethodType(method?: string) {
   return "info";
 }
 
-const exportModalVisible = ref(false);
+const { exportVisible, openExport } = useImportExport();
 
 async function handleSearchBarSearch(params: LogSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -450,24 +420,20 @@ async function resetForm() {
 }
 
 async function handleCloseDialog() {
-  dialogVisible.value.visible = false;
+  closeDialog();
   await resetForm();
 }
 
 async function handleOpenDialog(id: number) {
-  dialogVisible.value.title = "日志详情";
+  dialogVisible.title = "日志详情";
   const response = await LogAPI.detailLog(id);
   Object.assign(formData, response.data.data ?? {});
-  dialogVisible.value.visible = true;
+  dialogVisible.visible = true;
 }
 
 async function deleteLogRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmDelete();
     await LogAPI.deleteLog([id]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
@@ -512,11 +478,7 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await LogAPI.deleteLog(ids);
     ElMessage.success("删除成功");
@@ -527,9 +489,5 @@ async function handleBatchDelete() {
   } finally {
     batchDeleting.value = false;
   }
-}
-
-function openExportModal() {
-  exportModalVisible.value = true;
 }
 </script>

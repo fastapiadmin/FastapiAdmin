@@ -6,10 +6,7 @@
         <div>
           <span class="text-base font-medium">Art Bot</span>
           <div class="mt-1.5 flex-c gap-1">
-            <div
-              class="h-2 w-2 rounded-full"
-              :class="isOnline ? 'bg-success/100' : 'bg-danger/100'"
-            ></div>
+            <div class="h-2 w-2 rounded-full" :class="isOnline ? 'bg-success' : 'bg-danger'"></div>
             <span class="text-xs text-g-600">{{ isOnline ? "在线" : "离线" }}</span>
           </div>
         </div>
@@ -22,7 +19,7 @@
       <div class="flex h-[calc(100%-70px)] flex-col">
         <!-- 聊天消息区域 -->
         <div
-          class="flex-1 overflow-y-auto border-t-d px-4 py-7.5 [&::-webkit-scrollbar]:!w-1"
+          class="flex-1 overflow-y-auto border-t-d px-4 py-7.5 [&::-webkit-scrollbar]:w-1!"
           ref="messageContainer"
         >
           <template v-for="(message, index) in messages" :key="index">
@@ -91,7 +88,7 @@
 
 <script setup lang="ts">
 import { Picture, Paperclip, Close } from "@element-plus/icons-vue";
-import { mittBus } from "@utils/sys";
+import { mittBus } from "@utils";
 import meAvatar from "@imgs/avatar/avatar5.webp";
 import aiAvatar from "@imgs/avatar/avatar10.webp";
 

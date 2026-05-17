@@ -18,14 +18,14 @@
 </template>
 
 <script setup lang="ts">
-import "@wangeditor/editor/dist/css/style.css";
+import "@wangeditor-next/editor/dist/css/style.css";
 import { onBeforeUnmount, onMounted, shallowRef, computed } from "vue";
-import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
-import { useUserStore } from "@stores/modules/user.store";
-import { EmojiText } from "@utils/ui";
-import { IDomEditor, IToolbarConfig, IEditorConfig } from "@wangeditor/editor";
-import request from "@utils/http";
+import { Editor, Toolbar } from "@wangeditor-next/editor-for-vue";
+import { useUserStore } from "@stores";
+import { request, EmojiText } from "@utils";
+import { IDomEditor, IToolbarConfig, IEditorConfig } from "@wangeditor-next/editor";
 import type { AxiosResponse } from "axios";
+import { ElMessage } from "element-plus";
 
 defineOptions({ name: "FaWangEditor" });
 
@@ -120,7 +120,7 @@ const editorConfig: Partial<IEditorConfig> = {
       fieldName: mergedUploadConfig.value.fieldName,
       maxFileSize: mergedUploadConfig.value.maxFileSize,
       maxNumberOfFiles: mergedUploadConfig.value.maxNumberOfFiles,
-      allowedFileTypes: mergedUploadConfig.value.allowedFileTypes,
+      allowedFileTypes: [...mergedUploadConfig.value.allowedFileTypes],
       server: uploadServer.value,
       headers: {
         Authorization: userStore.accessToken,
@@ -128,7 +128,7 @@ const editorConfig: Partial<IEditorConfig> = {
       onSuccess() {
         ElMessage.success(`图片上传成功 ${EmojiText[200]}`);
       },
-      onError(file: File, err: any, res: any) {
+      onError(_file: unknown, err: any, res: any) {
         console.error("图片上传失败:", err, res);
         ElMessage.error(`图片上传失败 ${EmojiText[500]}`);
       },
@@ -140,7 +140,7 @@ const editorConfig: Partial<IEditorConfig> = {
 const uploadConfig = props.uploadConfig;
 if (uploadConfig?.isCustomUpload && uploadConfig.server && editorConfig.MENU_CONF) {
   const uploadServerUrl = uploadConfig.server;
-  editorConfig.MENU_CONF.uploadImage.customUpload = async (file: File, insertFn: InsertFnType) => {
+  editorConfig.MENU_CONF.uploadImage!.customUpload = async (file: File, insertFn: InsertFnType) => {
     try {
       const formData = new FormData();
       formData.append(mergedUploadConfig.value.fieldName, file);
@@ -258,5 +258,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
-@use "./style";
+@use "@styles/fa-wang-editor";
 </style>

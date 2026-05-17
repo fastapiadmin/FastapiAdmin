@@ -1,11 +1,11 @@
 <!-- 表格头部，包含表格大小、刷新、全屏、列设置、其他设置 -->
 <template>
-  <div class="flex-cb max-md:!block" id="fa-table-header">
+  <div class="flex-cb max-md:block!" id="fa-table-header">
     <div class="flex-wrap">
       <slot name="left"></slot>
     </div>
 
-    <div class="flex-c md:justify-end max-md:mt-3 max-sm:!hidden">
+    <div class="flex-c md:justify-end max-md:mt-3 max-sm:hidden!">
       <!-- 搜索区域显示/隐藏：默认展示搜索（未高亮）；点按收起后高亮表示当前为隐藏状态 -->
       <ElTooltip
         v-if="showSearchBar != null"
@@ -15,7 +15,7 @@
         <div
           class="button"
           @click="search"
-          :class="!showSearchBar ? 'active !bg-theme hover:!bg-theme/80' : ''"
+          :class="!showSearchBar ? 'active bg-theme! hover:bg-theme/80!' : ''"
         >
           <FaSvgIcon icon="ri:search-line" :class="!showSearchBar ? 'text-white' : 'text-g-700'" />
         </div>
@@ -44,12 +44,12 @@
             <div
               v-for="item in tableSizeOptions"
               :key="item.value"
-              class="table-size-btn-item [&_.el-dropdown-menu__item]:!mb-[3px] last:[&_.el-dropdown-menu__item]:!mb-0"
+              class="table-size-btn-item [&_.el-dropdown-menu__item]:mb-[3px]! last:[&_.el-dropdown-menu__item]:mb-0!"
             >
               <ElDropdownItem
                 :key="item.value"
                 :command="item.value"
-                :class="tableSize === item.value ? '!bg-g-300/55' : ''"
+                :class="tableSize === item.value ? 'bg-g-300/55!' : ''"
               >
                 {{ item.label }}
               </ElDropdownItem>
@@ -72,7 +72,7 @@
         <div
           class="button"
           @click="toggleRowDrag"
-          :class="isRowDrag ? 'active !bg-theme hover:!bg-theme/80' : ''"
+          :class="isRowDrag ? 'active bg-theme! hover:bg-theme/80!' : ''"
         >
           <FaSvgIcon icon="ri:drag-move-line" :class="isRowDrag ? 'text-white' : 'text-g-700'" />
         </div>
@@ -139,6 +139,9 @@
           <ElCheckbox v-model="isHeaderBackground" :value="true">
             {{ t("table.headerBackground") }}
           </ElCheckbox>
+          <ElCheckbox v-model="highlightCurrentRow" :value="true">
+            {{ t("table.highlightCurrentRow") }}
+          </ElCheckbox>
         </div>
       </ElPopover>
       <slot name="right"></slot>
@@ -150,7 +153,7 @@
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 import { TableSizeEnum } from "@/enums/formEnum";
-import { useTableStore } from "@stores/modules/table.store";
+import { useTableStore } from "@stores";
 import { VueDraggable } from "vue-draggable-plus";
 import { useI18n } from "vue-i18n";
 import type { ColumnOption } from "@/types/component";
@@ -179,7 +182,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  fullClass: "fa-page-view",
+  fullClass: "fa-full-height",
   layout: "search,refresh,size,fullscreen,columns,rowDrag,settings",
   showSearchBar: undefined,
 });
@@ -224,7 +227,8 @@ const tableSizeOptions = [
 ];
 
 const tableStore = useTableStore();
-const { tableSize, isZebra, isBorder, isHeaderBackground, isRowDrag } = storeToRefs(tableStore);
+const { tableSize, isZebra, isBorder, isHeaderBackground, isRowDrag, highlightCurrentRow } =
+  storeToRefs(tableStore);
 
 const toggleRowDrag = () => {
   tableStore.setIsRowDrag(!isRowDrag.value);

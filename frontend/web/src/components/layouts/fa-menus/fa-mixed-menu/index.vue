@@ -16,11 +16,11 @@
       @scroll="handleScroll"
       @wheel="handleWheel"
     >
-      <div class="box-border flex-c flex-shrink-0 flex-nowrap h-15 whitespace-nowrap">
+      <div class="box-border flex-c shrink-0 flex-nowrap h-15 whitespace-nowrap">
         <template v-for="item in processedMenuList" :key="item.meta.title">
           <div
             v-if="!item.meta.isHide"
-            class="menu-item relative flex-shrink-0 h-10 px-3 text-sm flex-c c-p hover:text-theme"
+            class="menu-item relative shrink-0 h-10 px-3 text-sm flex-c c-p hover:text-theme"
             :class="{
               'menu-item-active text-theme': item.isActive,
             }"
@@ -29,11 +29,11 @@
             <FaMenuRouteIcon
               :icon="item.meta.icon"
               class="text-lg text-g-700 dark:text-g-800 mr-1"
-              :class="item.isActive && '!text-theme'"
+              :class="item.isActive && 'text-theme!'"
             />
             <span
               class="text-md text-g-700 dark:text-g-800"
-              :class="item.isActive && '!text-theme'"
+              :class="item.isActive && 'text-theme!'"
             >
               {{ item.formattedTitle }}
             </span>
@@ -56,10 +56,8 @@
 import { ref, computed, onMounted, nextTick } from "vue";
 import { ArrowLeft, ArrowRight } from "@element-plus/icons-vue";
 import { useThrottleFn } from "@vueuse/core";
-import { formatMenuTitle } from "@utils/navigation";
-import { handleMenuJump } from "@utils/navigation";
+import { formatMenuTitle, handleMenuJump } from "@utils";
 import type { AppRouteRecord } from "@/types/router";
-import FaMenuRouteIcon from "@/components/others/fa-menu-routeIcon/index.vue";
 
 defineOptions({ name: "FaMixedMenu" });
 

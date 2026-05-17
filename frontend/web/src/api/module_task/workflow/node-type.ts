@@ -1,4 +1,4 @@
-import request from "@utils/http";
+import { request } from "@utils";
 
 /** 对应后端 `plugin.module_task.workflow.node_type` */
 const API_PATH = "/task/workflow/node-type";

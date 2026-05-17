@@ -51,8 +51,8 @@
 
 import { echarts, type EChartsOption } from "@/plugins/echarts";
 import { storeToRefs } from "pinia";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { getCssVar } from "@utils/ui";
+import { useSettingsStore } from "@stores";
+import { getCssVar } from "@utils";
 import type { BaseChartProps, ChartThemeConfig, UseChartOptions } from "@/types/component/chart";
 
 // 图表主题配置
@@ -350,7 +350,6 @@ export function useChart(options: UseChartOptions = {}) {
       right: 15,
       bottom: 8,
       left: 0,
-      containLabel: true,
       ...baseGrid,
     };
 

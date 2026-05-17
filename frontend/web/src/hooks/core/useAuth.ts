@@ -32,7 +32,7 @@
 
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
-import { useUserStore } from "@stores/modules/user.store";
+import { useUserStore } from "@stores";
 import { useAppMode } from "@/hooks/core/useAppMode";
 import type { AppRouteRecord } from "@/types/router";
 import { ROLE_ROOT } from "@/constants";

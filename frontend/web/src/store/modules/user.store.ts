@@ -7,12 +7,10 @@ import { useSettingsStore } from "./setting.store";
 import { useWorktabStore } from "./worktab.store";
 import { useMenuStore } from "./menu.store";
 import { AppRouteRecord } from "@/types/router";
-import { setPageTitle } from "@utils/navigation";
-import { StorageConfig } from "@utils/storage";
+import { Auth, setPageTitle, StorageConfig } from "@utils";
 import AuthAPI from "@/api/module_system/auth";
 import UserAPI from "@/api/module_system/user";
 import type { MenuTable } from "@/api/module_system/menu";
-import { Auth } from "@utils/auth";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { ElNotification } from "element-plus";
 import { store, useDictStore } from "@stores";
@@ -250,12 +248,19 @@ export const useUserStore = defineStore(
         });
       }
       rememberMe.value = loginForm.remember;
+
+      const accessToken = data?.access_token || "";
+      const refreshToken = data?.refresh_token || "";
+      if (!accessToken) {
+        console.error("[Login Debug] ⚠️ 未获取到 access_token！字段名可能与后端不匹配");
+      }
+
       // 清除上次会话里「动态路由初始化失败」标记，避免重新登录后侧栏/菜单不注册
       (await getRouterUtils()).resetRouteInitState();
-      Auth.setTokens(data.access_token, data.refresh_token, rememberMe.value);
-      setToken(data.access_token, data.refresh_token);
-      setLoginStatus(true);
+      Auth.setTokens(accessToken, refreshToken, rememberMe.value);
+      setToken(accessToken, refreshToken);
       await getUserInfo();
+      setLoginStatus(true);
     }
 
     /**

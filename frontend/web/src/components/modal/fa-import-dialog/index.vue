@@ -14,7 +14,7 @@
         <!-- 表单 -->
         <ElForm
           ref="importFormRef"
-          style="padding-right: var(--el-dialog-padding-primary)"
+          :style="'padding-right: var(--el-dialog-padding-primary)'"
           :model="importFormData"
           :rules="importFormRules"
         >
@@ -58,7 +58,7 @@
         </ElForm>
       </ElScrollbar>
       <template #footer>
-        <div style="padding-right: var(--el-dialog-padding-primary)">
+        <div :style="'padding-right: var(--el-dialog-padding-primary)'">
           <ElButton @click="handleClose">{{ props.cancelButtonText || "取 消" }}</ElButton>
           <ElButton
             type="primary"
@@ -76,7 +76,6 @@
 
 <script lang="ts" setup>
 import { Download, UploadFilled } from "@element-plus/icons-vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { ElMessage, type UploadUserFile } from "element-plus";
 import { ref, reactive } from "vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";

@@ -1,4 +1,4 @@
-import request from "@utils/http";
+import { request } from "@utils";
 
 const API_PATH = "/monitor/server";
 

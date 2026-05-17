@@ -44,7 +44,7 @@
  * @author FastapiAdmin Team
  */
 
-import { useUserStore } from "@stores/modules/user.store";
+import { useUserStore } from "@stores";
 import { App, Directive, DirectiveBinding } from "vue";
 
 export type RolesDirective = Directive<HTMLElement, string | string[]>;

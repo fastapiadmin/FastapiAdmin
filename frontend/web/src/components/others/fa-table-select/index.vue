@@ -12,7 +12,7 @@
           <slot>
             <ElInput
               class="reference"
-              style="width: 100%"
+              :style="'width: 100%'"
               :model-value="text"
               :readonly="true"
               :placeholder="placeholder"
@@ -153,7 +153,7 @@ defineSlots<{
 import { ref, reactive, computed } from "vue";
 import { useResizeObserver } from "@vueuse/core";
 import type { FormInstance, PopoverProps, TableInstance } from "element-plus";
-import FaPagination from "@/components/others/fa-pagination/index.vue";
+import { ElMessage } from "element-plus";
 
 // 对象类型
 export type IObject = Record<string, any>;

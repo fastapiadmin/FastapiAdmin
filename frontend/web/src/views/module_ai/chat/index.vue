@@ -2,7 +2,7 @@
   <div class="fa-full-height">
     <ElContainer class="main-chat">
       <ElAside class="sidebar-container" :class="{ collapsed: isSidebarCollapsed }">
-        <Sidebar
+        <FaSidebar
           ref="sidebarRef"
           :current-session-id="currentSessionId"
           :is-collapsed="isSidebarCollapsed"
@@ -12,7 +12,7 @@
       </ElAside>
       <ElContainer class="chat-container">
         <ElHeader class="chat-header">
-          <ChatNavbar
+          <FaChatNavbar
             :connection-status="connectionStatus"
             :is-connected="isConnected"
             :message-count="messages.length"
@@ -23,7 +23,7 @@
           />
         </ElHeader>
         <ElMain class="chat-main">
-          <ChatMessages
+          <FaChatMessages
             ref="chatMessagesRef"
             :messages="messages"
             :error="error"
@@ -32,7 +32,7 @@
           />
         </ElMain>
         <ElFooter class="chat-footer">
-          <ChatInput
+          <FaChatInput
             :disabled="!isConnected"
             :sending="sending"
             :is-connected="isConnected"
@@ -52,10 +52,6 @@ defineOptions({
 
 import { ref, onMounted, onUnmounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import ChatNavbar from "./components/ChatNavbar.vue";
-import ChatMessages from "./components/ChatMessages.vue";
-import ChatInput from "./components/ChatInput.vue";
-import Sidebar from "./components/Sidebar.vue";
 import AiChatAPI, { ChatSession } from "@/api/module_ai/chat";
 import { Auth } from "@utils/auth";
 import type { ChatMessage, UploadedFile } from "./types";

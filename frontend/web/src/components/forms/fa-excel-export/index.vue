@@ -395,7 +395,7 @@ defineExpose({
     </FaExcelImport>
 
     <FaExcelExport
-      style="margin-left: 10px"
+      :style="'margin-left: 10px'"
       :data="tableData"
       filename="用户数据-1"
       sheetName="用户列表"
@@ -412,7 +412,8 @@ defineExpose({
 
     <ElButton type="danger" @click="handleClear" v-ripple>清除数据</ElButton>
 
-    <FaTable :data="tableData" style="margin-top: 10px">
+    <FaTable :data="tableData" :style="'margin-top: 10px'">
+      <ElTableColumn type="index" label="序号" width="60" />
       <ElTableColumn
         v-for="key in Object.keys(headers)"
         :key="key"

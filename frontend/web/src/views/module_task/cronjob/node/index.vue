@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -56,9 +60,9 @@
       @close="handleCloseDialog"
       @opened="handleDialogOpened"
     >
-      <ElSplitter direction="horizontal" style="height: 500px">
+      <ElSplitter direction="horizontal" :style="'height: 500px'">
         <ElSplitterPanel size="300px" :min="200" :max="400">
-          <ElScrollbar style="height: 100%">
+          <ElScrollbar :style="'height: 100%'">
             <FaForm
               :key="nodeFormRenderKey"
               ref="dataFormRef"
@@ -66,7 +70,7 @@
               :items="nodeDialogFormItems"
               :rules="rules"
               label-suffix=":"
-              label-width="auto"
+              label-width="85px"
               :span="24"
               :gutter="16"
               :show-reset="false"
@@ -187,7 +191,7 @@
         :items="executeDialogFormItems"
         :rules="executeRules"
         label-suffix=":"
-        label-width="auto"
+        label-width="85px"
         :span="24"
         :gutter="16"
         :show-reset="false"
@@ -251,7 +255,7 @@
               format="YYYY-MM-DD HH:mm:ss"
               value-format="YYYY-MM-DD HH:mm:ss"
               placeholder="请选择执行时间"
-              style="width: 100%"
+              :style="'width: 100%'"
             />
           </template>
         </template>
@@ -272,7 +276,7 @@ defineOptions({
 });
 
 import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
-import { useDictStore } from "@stores/index";
+import { useDictStore } from "@stores";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -281,15 +285,15 @@ import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import IntervalTab from "@/components/others/fa-interval-tab/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useTable } from "@/hooks/core/useTable";
 import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { vue3CronPlus } from "vue3-cron-plus";
 import "vue3-cron-plus/dist/index.css";
-import IntervalTab from "@/components/others/fa-interval-tab/index.vue";
 import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import "codemirror/mode/python/python.js";
@@ -774,8 +778,8 @@ const initialFormData: Partial<NodeForm> = {
 };
 
 async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
   Object.assign(formData, initialFormData);
   argsList.value = [];
   kwargsList.value = [];
@@ -882,7 +886,7 @@ function handleOpenExecuteDialog(row: NodeTable) {
 function handleCloseExecuteDialog() {
   executeDialogVisible.value = false;
   currentExecuteNode.value = null;
-  executeFormRef.value?.ref?.resetFields();
+  executeFormRef.value?.resetFields();
 }
 
 async function handleExecuteNode() {

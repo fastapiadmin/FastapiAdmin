@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { echarts } from "@/plugins/echarts";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import chinaMapJson from "@/mock/json/chinaMap.json";
 import type { MapChartProps } from "@/types/component/chart";
 
@@ -77,7 +77,7 @@ const createChartOption = (mapData: Array<Record<string, unknown>>) => {
       formatter: ({ data }: { data?: Record<string, unknown> }) => {
         const { name, adcode, level } = data || {};
         return `
-            <div style="padding: 8px;">
+            <div :style="'padding: 8px;'">
               <div><strong>名称:</strong> ${name || "未知区域"}</div>
               <div><strong>代码:</strong> ${adcode || "暂无"}</div>
               <div><strong>级别:</strong> ${level || "暂无"}</div>

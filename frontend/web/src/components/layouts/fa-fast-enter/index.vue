@@ -26,7 +26,7 @@
           <div
             v-for="application in enabledApplications"
             :key="application.name"
-            class="mr-3 c-p flex-c gap-3 rounded-lg p-2 hover:bg-g-200/70 dark:hover:bg-g-200/90 hover:[&_.app-icon]:!bg-transparent"
+            class="mr-3 c-p flex-c gap-3 rounded-lg p-2 hover:bg-g-200/70 dark:hover:bg-g-200/90 hover:[&_.app-icon]:bg-transparent!"
             @click="handleApplicationClick(application)"
           >
             <div class="app-icon size-12 flex-cc rounded-lg bg-g-200/80 dark:bg-g-300/30">
@@ -59,6 +59,61 @@
       </div>
     </div>
   </ElPopover>
+
+  <!-- 礼花效果介绍弹窗（放在 Popover 外，避免被 Popover 销毁） -->
+  <ElDialog
+    v-model="fireworksDialogVisible"
+    title="礼花效果"
+    width="480px"
+    :close-on-click-modal="true"
+  >
+    <div class="px-2">
+      <div class="mb-5 flex items-start gap-4">
+        <div class="flex-cc size-14 rounded-xl bg-linear-to-br from-purple-400 to-indigo-500">
+          <FaSvgIcon icon="ri:loader-line" class="text-2xl text-white" />
+        </div>
+        <div class="flex-1">
+          <h4 class="m-0 text-base font-semibold">节日礼花动画</h4>
+          <p class="mt-1 text-sm text-g-500 leading-relaxed">
+            根据当前节日自动匹配对应素材的全屏 Canvas 烟花效果，支持多种粒子形状和绚丽色彩。
+          </p>
+        </div>
+      </div>
+
+      <ElDivider />
+
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <ElTag type="primary" class="rounded-md! border-0! shrink-0">快捷键</ElTag>
+          <span class="text-sm text-g-600">
+            <ElTag size="small" class="mr-1!">Ctrl</ElTag>
+            +
+            <ElTag size="small" class="mx-1!">Shift</ElTag>
+            +
+            <ElTag size="small" class="ml-1!">P</ElTag>
+            <span class="mx-2 text-g-400">/</span>
+            <ElTag size="small" class="mr-1!">⌘</ElTag>
+            +
+            <ElTag size="small" class="mx-1!">Shift</ElTag>
+            +
+            <ElTag size="small" class="ml-1!">P</ElTag>
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <ElTag type="success" class="rounded-md! border-0! shrink-0">节日素材</ElTag>
+          <span class="text-sm text-g-600">
+            礼花素材与当前节日配置一致，自动匹配春节、元宵、中秋等传统节日主题
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <ElTag type="warning" class="rounded-md! border-0! shrink-0">触发方式</ElTag>
+          <span class="text-sm text-g-600">
+            页面加载时自动检测节日并连发，也可通过快捷键手动触发一次
+          </span>
+        </div>
+      </div>
+    </div>
+  </ElDialog>
 </template>
 
 <script setup lang="ts">
@@ -69,6 +124,7 @@ defineOptions({ name: "FaFastEnter" });
 
 const router = useRouter();
 const popoverRef = ref();
+const fireworksDialogVisible = ref(false);
 
 // 使用快速入口配置
 const { enabledApplications, enabledQuickLinks } = useFastEnter();
@@ -104,6 +160,11 @@ const handleNavigate = (
  * @param application 应用配置对象
  */
 const handleApplicationClick = (application: FastEnterApplication): void => {
+  if (application.isDialog) {
+    popoverRef.value?.hide();
+    fireworksDialogVisible.value = true;
+    return;
+  }
   handleNavigate(application.routeName, application.link, application.routeQuery);
 };
 
@@ -112,6 +173,11 @@ const handleApplicationClick = (application: FastEnterApplication): void => {
  * @param quickLink 快速链接配置对象
  */
 const handleQuickLinkClick = (quickLink: FastEnterQuickLink): void => {
+  if (quickLink.isDialog) {
+    popoverRef.value?.hide();
+    fireworksDialogVisible.value = true;
+    return;
+  }
   handleNavigate(quickLink.routeName, quickLink.link, quickLink.routeQuery);
 };
 </script>

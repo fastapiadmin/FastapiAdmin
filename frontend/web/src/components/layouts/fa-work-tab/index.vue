@@ -5,7 +5,7 @@
     class="worktab-tags-shell box-border w-full select-none"
     :class="[
       /** 三种模式统一底边线；谷歌模式底边与标签贴合，默认/卡片需要与底边留出间距（避免重合） */
-      'border-b border-[var(--fa-card-border)]',
+      'border-b border-(--fa-card-border)',
       tabStyle === 'tab-google' ? 'worktab-tags-shell--google pt-1 pb-0' : 'py-1',
     ]"
   >
@@ -28,7 +28,7 @@
         ref="scrollRef"
       >
         <ul
-          class="float-left whitespace-nowrap !bg-transparent flex"
+          class="float-left whitespace-nowrap bg-transparent! flex"
           :class="[chromeTabStrip ? 'pl-1' : '']"
           ref="tabsRef"
           :style="{
@@ -42,12 +42,12 @@
               item.path === activeTab
                 ? chromeTabStrip
                   ? 'activ-tab'
-                  : 'activ-tab !text-theme'
+                  : 'activ-tab text-theme!'
                 : chromeTabStrip
                   ? ''
                   : 'text-g-600 dark:text-g-800',
               isCardTabs ? 'worktab-tab--card' : '',
-              chromeTabStrip ? 'google-tab relative !h-8 !leading-8 !border-none' : '',
+              chromeTabStrip ? 'google-tab relative h-8! leading-8! border-none!' : '',
             ]"
             :style="
               tabStyle === 'tab-google'
@@ -70,7 +70,7 @@
           >
             <button
               type="button"
-              class="worktab-star focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--el-color-primary)] focus-visible:ring-offset-1 rounded"
+              class="worktab-star focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--el-color-primary) focus-visible:ring-offset-1 rounded"
               :class="{ 'worktab-star--on': isQuickLinkBookmarked(item) }"
               :title="
                 isQuickLinkBookmarked(item) ? t('worktab.bookmarkRemove') : t('worktab.bookmarkAdd')
@@ -171,16 +171,11 @@ import { computed, onMounted, ref, watch, nextTick, onUnmounted } from "vue";
 import { LocationQueryRaw, useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
-
 import { ElMessage } from "element-plus";
-import { refreshAppCaches } from "@stores";
-import { useWorktabStore } from "@stores/modules/worktab.store";
-import { useUserStore } from "@stores/modules/user.store";
-import { formatMenuTitle } from "@utils/navigation";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { refreshAppCaches, useWorktabStore, useUserStore, useSettingsStore } from "@stores";
 import { MenuItemType } from "@/components/others/fa-menu-right/index.vue";
 import { useCommon } from "@/hooks/core/useCommon";
-import { quickStartManager } from "@utils/common";
+import { formatMenuTitle, quickStartManager } from "@utils";
 import { WorkTab } from "@/types";
 
 defineOptions({ name: "FaWorkTab" });

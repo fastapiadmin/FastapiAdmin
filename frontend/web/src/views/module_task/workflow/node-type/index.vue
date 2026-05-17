@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -450,8 +454,8 @@ const rules: FormRules = {
 function resetForm() {
   Object.assign(formData.value, defaultForm());
   editingId.value = null;
-  formRef.value?.ref?.resetFields();
-  formRef.value?.ref?.clearValidate();
+  formRef.value?.resetFields();
+  formRef.value?.clearValidate();
 }
 
 function handleCloseDialog() {

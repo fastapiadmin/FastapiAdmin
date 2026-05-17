@@ -40,7 +40,7 @@ const defaultButtons = {
   edit: { icon: "ri:pencil-line", class: "bg-secondary/12 text-secondary" },
   delete: { icon: "ri:delete-bin-5-line", class: "bg-error/12 text-error" },
   view: { icon: "ri:eye-line", class: "bg-info/12 text-info" },
-  more: { icon: "ri:more-2-fill", class: "" },
+  more: { icon: "ri:more-2-fill", class: "bg-primary/12 text-primary" },
 } as const;
 
 // 获取图标内容

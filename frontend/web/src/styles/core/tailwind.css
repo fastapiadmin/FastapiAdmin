@@ -2,6 +2,53 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ==================== Tailwind Theme Configuration ==================== */
+@theme {
+  /* Box Color (Light: white / Dark: black) */
+  --color-box: var(--default-box-color);
+
+  /* System Theme Color */
+  --color-theme: var(--theme-color);
+
+  /* Hover Color */
+  --color-hover-color: var(--fa-hover-color);
+
+  /* Active Color */
+  --color-active-color: var(--fa-active-color);
+
+  /* Active Color */
+  --color-el-active-color: var(--fa-active-color);
+
+  /* ElementPlus Theme Colors */
+  --color-primary: var(--fa-primary);
+  --color-secondary: var(--fa-secondary);
+  --color-error: var(--fa-error);
+  --color-info: var(--fa-info);
+  --color-success: var(--fa-success);
+  --color-warning: var(--fa-warning);
+  --color-danger: var(--fa-danger);
+
+  /* Gray Scale Colors (Auto-adapts to dark mode) */
+  --color-g-100: var(--fa-gray-100);
+  --color-g-200: var(--fa-gray-200);
+  --color-g-300: var(--fa-gray-300);
+  --color-g-400: var(--fa-gray-400);
+  --color-g-500: var(--fa-gray-500);
+  --color-g-600: var(--fa-gray-600);
+  --color-g-700: var(--fa-gray-700);
+  --color-g-800: var(--fa-gray-800);
+  --color-g-900: var(--fa-gray-900);
+}
+
+/* ==================== Custom Border Radius Utilities ==================== */
+@utility rounded-custom-xs {
+  border-radius: calc(var(--custom-radius) / 2);
+}
+
+@utility rounded-custom-sm {
+  border-radius: calc(var(--custom-radius) / 2 + 2px);
+}
+
 /* ==================== Light Mode Variables ==================== */
 :root {
   /* Base Colors */
@@ -82,53 +129,6 @@
   --fa-el-active-color: #2e2e38;
 }
 
-/* ==================== Tailwind Theme Configuration ==================== */
-@theme {
-  /* Box Color (Light: white / Dark: black) */
-  --color-box: var(--default-box-color);
-
-  /* System Theme Color */
-  --color-theme: var(--theme-color);
-
-  /* Hover Color */
-  --color-hover-color: var(--fa-hover-color);
-
-  /* Active Color */
-  --color-active-color: var(--fa-active-color);
-
-  /* Active Color */
-  --color-el-active-color: var(--fa-active-color);
-
-  /* ElementPlus Theme Colors */
-  --color-primary: var(--fa-primary);
-  --color-secondary: var(--fa-secondary);
-  --color-error: var(--fa-error);
-  --color-info: var(--fa-info);
-  --color-success: var(--fa-success);
-  --color-warning: var(--fa-warning);
-  --color-danger: var(--fa-danger);
-
-  /* Gray Scale Colors (Auto-adapts to dark mode) */
-  --color-g-100: var(--fa-gray-100);
-  --color-g-200: var(--fa-gray-200);
-  --color-g-300: var(--fa-gray-300);
-  --color-g-400: var(--fa-gray-400);
-  --color-g-500: var(--fa-gray-500);
-  --color-g-600: var(--fa-gray-600);
-  --color-g-700: var(--fa-gray-700);
-  --color-g-800: var(--fa-gray-800);
-  --color-g-900: var(--fa-gray-900);
-}
-
-/* ==================== Custom Border Radius Utilities ==================== */
-@utility rounded-custom-xs {
-  border-radius: calc(var(--custom-radius) / 2);
-}
-
-@utility rounded-custom-sm {
-  border-radius: calc(var(--custom-radius) / 2 + 2px);
-}
-
 /* ==================== Custom Utility Classes ==================== */
 @layer utilities {
   /* Flexbox Layout Utilities */
@@ -159,23 +159,23 @@
 
   /* Border Utilities */
   .border-full-d {
-    @apply border border-[var(--default-border)];
+    @apply border border-(--default-border);
   }
 
   .border-b-d {
-    @apply border-b border-[var(--default-border)];
+    @apply border-b border-(--default-border);
   }
 
   .border-t-d {
-    @apply border-t border-[var(--default-border)];
+    @apply border-t border-(--default-border);
   }
 
   .border-l-d {
-    @apply border-l border-[var(--default-border)];
+    @apply border-l border-(--default-border);
   }
 
   .border-r-d {
-    @apply border-r border-[var(--default-border)];
+    @apply border-r border-(--default-border);
   }
 
   /* Cursor Utilities */

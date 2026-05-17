@@ -218,15 +218,15 @@ import {
   UploadFilled,
 } from "@element-plus/icons-vue";
 import { useTable } from "@/hooks/core/useTable";
+import { ResourceAPI, type ResourceItem } from "@/api/module_monitor/resource";
+import type { ColumnOption } from "@/types/component";
+import { useAuth } from "@/hooks/core/useAuth";
 import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import { ResourceAPI, type ResourceItem } from "@/api/module_monitor/resource";
-import type { ColumnOption } from "@/types/component";
-import { useAuth } from "@/hooks/core/useAuth";
+import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
 
 const { hasAuth } = useAuth();
 
@@ -406,7 +406,7 @@ const {
                 !row.is_dir && hasAuth("module_monitor:resource:download")
                   ? h(ElTooltip, { content: "下载", placement: "top" }, () =>
                       h("span", { class: "inline-flex" }, [
-                        h(ArtButtonTable, {
+                        h(FaButtonTable, {
                           type: "view",
                           icon: "ri:download-line",
                           onClick: () => void handleDownload(row),
@@ -417,7 +417,7 @@ const {
                 hasAuth("module_monitor:resource:rename")
                   ? h(ElTooltip, { content: "重命名", placement: "top" }, () =>
                       h("span", { class: "inline-flex" }, [
-                        h(ArtButtonTable, {
+                        h(FaButtonTable, {
                           type: "edit",
                           onClick: () => void handleRenameOpen(row),
                         }),
@@ -427,7 +427,7 @@ const {
                 hasAuth("module_monitor:resource:delete")
                   ? h(ElTooltip, { content: "删除", placement: "top" }, () =>
                       h("span", { class: "inline-flex" }, [
-                        h(ArtButtonTable, {
+                        h(FaButtonTable, {
                           type: "delete",
                           onClick: () => void handleDelete(row),
                         }),

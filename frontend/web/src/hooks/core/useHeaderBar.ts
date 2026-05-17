@@ -17,7 +17,7 @@
 
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 import { headerBarConfig } from "@/config/modules/headerBar";
 import { HeaderBarFeatureConfig } from "@/types";
 

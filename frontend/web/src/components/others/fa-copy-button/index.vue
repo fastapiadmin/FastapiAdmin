@@ -36,7 +36,7 @@ async function handleClipboard() {
       ElMessage.success(t("common.copySuccess"));
     } catch (error) {
       ElMessage.warning(t("common.copyFailed"));
-      console.warn("[CopyButton] Copy failed:", error);
+      console.warn("[FaCopyButton] Copy failed:", error);
     }
   } else {
     // 兼容性处理（useClipboard 有兼容性问题）
@@ -55,7 +55,7 @@ async function handleClipboard() {
       }
     } catch (err) {
       ElMessage.warning(t("common.copyFailed"));
-      console.warn("[CopyButton] Copy failed:", err);
+      console.warn("[FaCopyButton] Copy failed:", err);
     } finally {
       document.body.removeChild(input);
     }

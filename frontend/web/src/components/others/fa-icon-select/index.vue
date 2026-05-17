@@ -17,7 +17,7 @@
                 <!-- 清空按钮 -->
                 <ElIcon
                   v-if="selectedIcon"
-                  style="margin-right: 8px"
+                  :style="{ marginRight: '8px' }"
                   @click.stop="clearSelectedIcon"
                 >
                   <CircleClose />
@@ -82,10 +82,12 @@
 <script setup lang="ts">
 defineOptions({ name: "FaIconSelect" });
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
-import { listLocalIconBasenames } from "@utils/icons";
-import { isIconifyStoredIcon, resolveElementPlusIconComponent } from "@utils/menuIcon";
-import { resolveIconForFaSvgIcon } from "@utils/menuIcon/remix";
+import {
+  listLocalIconBasenames,
+  isIconifyStoredIcon,
+  resolveElementPlusIconComponent,
+  resolveIconForFaSvgIcon,
+} from "@utils";
 
 const props = defineProps({
   modelValue: {

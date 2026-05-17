@@ -2,11 +2,10 @@
 <template>
   <div class="w-full c-p" @click="handleClick">
     <div class="fa-card overflow-hidden">
-      <div class="relative w-full aspect-[16/10] overflow-hidden">
+      <div class="relative w-full aspect-16/10 overflow-hidden">
         <ElImage
           :src="props.imageUrl"
           fit="cover"
-          loading="lazy"
           class="w-full h-full transition-transform duration-300 ease-in-out hover:scale-105"
         >
           <template #placeholder>

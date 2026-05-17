@@ -1,0 +1,200 @@
+# ============================================
+# FastapiAdmin Docker Compose 配置文件
+# ============================================
+# 使用方式:
+#   开发环境: docker compose --env-file .env up -d
+#   生产环境: docker compose --env-file .env -f docker-compose.yaml up -d
+# ============================================
+
+services:
+  # ==================== 数据库服务 ====================
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?错误: 请设置 MYSQL_ROOT_PASSWORD 环境变量}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-fastapiadmin}"
+      MYSQL_USER: "${MYSQL_USER:-fastapiadmin}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?错误: 请设置 MYSQL_PASSWORD 环境变量}"
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - app_network
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 256m
+
+  # ==================== Redis 服务 ====================
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      TZ: "Asia/Shanghai"
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:?错误: 请设置 REDIS_PASSWORD 环境变量}
+      --appendonly yes
+      --appendfsync everysec
+      --auto-aof-rewrite-percentage 100
+      --auto-aof-rewrite-min-size 64mb
+    networks:
+      - app_network
+    healthcheck:
+      test:
+        ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 128m
+
+  # ==================== 后端服务 ====================
+  backend:
+    container_name: backend
+    build:
+      context: ../
+      dockerfile: ./docker/backend/Dockerfile
+    image: backend:3.0.0
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      TZ: "Asia/Shanghai"
+      DATABASE_HOST: "mysql"
+      DATABASE_PASSWORD: "${MYSQL_PASSWORD}"
+      DATABASE_PORT: "3306"
+      DATABASE_NAME: "${MYSQL_DATABASE:-fastapiadmin}"
+      DATABASE_USER: "${MYSQL_USER:-fastapiadmin}"
+      REDIS_HOST: "redis"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_PORT: "6379"
+    ports:
+      - "${BACKEND_PORT:-8001}:8001"
+    # 挂载宿主机代码到容器（热更新，生产环境保留以便读取 .env.prod 等配置文件）
+    volumes:
+      - ../backend:/home
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app_network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8001/common/health\")' || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "1.0"
+        reservations:
+          memory: 256m
+
+  # ==================== Nginx 服务 ====================
+  nginx:
+    container_name: nginx
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      TZ: "Asia/Shanghai"
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/web:/usr/share/nginx/html/web:ro
+      - ./nginx/app:/usr/share/nginx/html/app:ro
+      - ./nginx/docs:/usr/share/nginx/html/docs:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+        reservations:
+          memory: 64m
+
+# ==================== 持久化卷 ====================
+volumes:
+  mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./mysql/data
+      o: bind
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./redis/data
+      o: bind
+
+# ==================== 网络 ====================
+networks:
+  app_network:
+    driver: bridge

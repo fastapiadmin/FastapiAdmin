@@ -3,8 +3,7 @@
  */
 
 import { computed } from "vue";
-import { useMenuStore } from "@stores/modules/menu.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useMenuStore, useSettingsStore } from "@stores";
 
 export function useCommon() {
   const menuStore = useMenuStore();

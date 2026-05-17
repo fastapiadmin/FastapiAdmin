@@ -12,7 +12,7 @@
       :gap="[gapX, gapY]"
       :offset="[offsetX, offsetY]"
     >
-      <div style="height: 100vh"></div>
+      <div :style="'height: 100vh'"></div>
     </ElWatermark>
   </div>
 </template>
@@ -23,8 +23,8 @@ import { storeToRefs } from "pinia";
 import AppConfig from "@/config";
 import { defaultSettings } from "@/config/setting";
 import { ThemeMode } from "@/enums";
-import { hexToRgba } from "@utils/ui";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { hexToRgba } from "@utils";
+import { useSettingsStore } from "@stores";
 
 defineOptions({ name: "FaWatermark" });
 

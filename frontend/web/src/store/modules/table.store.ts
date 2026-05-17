@@ -24,6 +24,8 @@ export const useTableStore = defineStore(
     const isFullScreen = ref(false);
     /** 工具栏「行拖拽」；仅当表格数据为可变数组时有效 */
     const isRowDrag = ref(false);
+    /** 高亮当前行 */
+    const highlightCurrentRow = ref(false);
 
     const setTableSize = (size: TableSizeEnum) => (tableSize.value = size);
     const setIsZebra = (value: boolean) => (isZebra.value = value);
@@ -31,6 +33,7 @@ export const useTableStore = defineStore(
     const setIsHeaderBackground = (value: boolean) => (isHeaderBackground.value = value);
     const setIsFullScreen = (value: boolean) => (isFullScreen.value = value);
     const setIsRowDrag = (value: boolean) => (isRowDrag.value = value);
+    const setHighlightCurrentRow = (value: boolean) => (highlightCurrentRow.value = value);
 
     return {
       tableSize,
@@ -45,6 +48,8 @@ export const useTableStore = defineStore(
       setIsFullScreen,
       isRowDrag,
       setIsRowDrag,
+      highlightCurrentRow,
+      setHighlightCurrentRow,
     };
   },
   {

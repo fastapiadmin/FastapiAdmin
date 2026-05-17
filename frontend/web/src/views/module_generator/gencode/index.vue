@@ -16,7 +16,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -80,14 +84,14 @@
       />
     </ElCard>
 
-    <CreateTableDialog
+    <FaCreateTableDialog
       v-model="createTableVisible"
       :loading="loading"
       :link-from-gen="createTableLinkFromGen"
       @submit="handleCreateTableSubmit"
     />
 
-    <ImportDbTableDialog
+    <FaImportDbTableDialog
       ref="importDbDialogRef"
       v-model="importVisible"
       v-model:query="formData"
@@ -101,12 +105,12 @@
       @selection-change="handleImportTableSelectionChange"
     />
 
-    <GenCodeDrawer
+    <FaGenCodeDrawer
       v-model="editVisible"
       v-model:preview-scope="previewScope"
       v-model:preview-types="previewTypes"
       v-model:code="code"
-      :info="info"
+      v-model:info="info"
       :rules="rules"
       :active-step="activeStep"
       :menu-options="menuOptions"
@@ -160,13 +164,14 @@ import FaTable from "@/components/tables/fa-table/index.vue";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import FaGenCodeDrawer from "./components/FaGenCodeDrawer.vue";
+import FaImportDbTableDialog from "./components/FaImportDbTableDialog.vue";
+import { CreateTableSubmitMeta } from "./components/FaCreateTableDialog.vue";
+import FaCreateTableDialog from "./components/FaCreateTableDialog.vue";
+import { GENCODE_BASIC_FORM_KEY, GENCODE_CM_KEY } from "./gencodeInjectionKeys";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils/table";
-import CreateTableDialog, { type CreateTableSubmitMeta } from "./components/CreateTableDialog.vue";
-import GenCodeDrawer from "./components/GenCodeDrawer.vue";
-import ImportDbTableDialog from "./components/ImportDbTableDialog.vue";
-import { GENCODE_BASIC_FORM_KEY, GENCODE_CM_KEY } from "./gencodeInjectionKeys";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import type { TreeNode } from "./types";
 
 // 文件数据接口
@@ -180,7 +185,7 @@ interface FileData {
 // 组件引用（与子组件 inject 同步，供校验 / CodeMirror 主题）
 const cmRef = ref<CmComponentRef>();
 const basicInfo = ref<FormInstance>();
-const importDbDialogRef = ref<InstanceType<typeof ImportDbTableDialog>>();
+const importDbDialogRef = ref<InstanceType<typeof FaImportDbTableDialog>>();
 /** FaTable：勾选清空（删除后） */
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 
@@ -480,7 +485,7 @@ async function handlePreview(row: GenTableSchema): Promise<void> {
 
 /** 表格行内生成代码操作 */
 async function handleGenTable(targetGenType: string, row?: GenTableSchema): Promise<void> {
-  let tbNames: string | string[] = [];
+  let tbNames: string | string[];
 
   // 判断是单条还是批量操作
   if (row) {
@@ -552,23 +557,23 @@ async function confirmWritePaths(tableId: number) {
   const shown = keys.slice(0, 80);
   const more =
     keys.length > shown.length
-      ? `<div style="margin-top:10px;padding:8px 12px;border-radius:6px;background:var(--el-fill-color-light);font-size:12px;color:var(--el-text-color-secondary);text-align:center">还有 <b style="color:var(--el-text-color-primary)">${keys.length - shown.length}</b> 个文件未列出</div>`
+      ? `<div :style="'margin-top:10px;padding:8px 12px;border-radius:6px;background:var(--el-fill-color-light);font-size:12px;color:var(--el-text-color-secondary);text-align:center'">还有 <b :style="'color:var(--el-text-color-primary)'">${keys.length - shown.length}</b> 个文件未列出</div>`
       : "";
   const listRows = shown
     .map((p, i) => {
       const bg = i % 2 === 0 ? "var(--el-fill-color-blank)" : "var(--el-fill-color-light)";
-      return `<div class="gencode-write-path-row" style="padding:9px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.45;white-space:nowrap;color:var(--el-text-color-primary);background:${bg};border-bottom:1px solid var(--el-border-color-lighter)">${escapeHtml(p)}</div>`;
+      return `<div class="gencode-write-path-row" :style="'padding:9px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.45;white-space:nowrap;color:var(--el-text-color-primary);background:${bg};border-bottom:1px solid var(--el-border-color-lighter)'">${escapeHtml(p)}</div>`;
     })
     .join("");
   const listHtml = shown.length
     ? `<div class="gencode-write-path-list-wrap">${listRows}</div>${more}`
-    : `<div style="padding:16px;border-radius:8px;background:var(--el-fill-color-light);color:var(--el-text-color-secondary);font-size:13px;text-align:center">未获取到预览路径，仍将继续写入。</div>`;
-  const tipHtml = `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--el-border-color-lighter);font-size:12px;line-height:1.5;color:var(--el-text-color-secondary)">与「代码预览」同源；路径为相对项目根的落盘位置。</div>`;
+    : `<div :style="'padding:16px;border-radius:8px;background:var(--el-fill-color-light);color:var(--el-text-color-secondary);font-size:13px;text-align:center'">未获取到预览路径，仍将继续写入。</div>`;
+  const tipHtml = `<div :style="'margin-top:12px;padding-top:10px;border-top:1px solid var(--el-border-color-lighter);font-size:12px;line-height:1.5;color:var(--el-text-color-secondary)'">与「代码预览」同源；路径为相对项目根的落盘位置。</div>`;
   await ElMessageBox.confirm(
-    `<div class="gencode-write-confirm-body" style="font-family:var(--el-font-family);line-height:1.5;color:var(--el-text-color-primary)">
-      <div style="margin-bottom:12px">
-        <div style="font-size:15px;font-weight:600;letter-spacing:0.02em">将写入以下文件</div>
-        <div style="margin-top:4px;font-size:12px;color:var(--el-text-color-secondary)">共 ${keys.length} 项 · 相对项目根目录</div>
+    `<div class="gencode-write-confirm-body" :style="'font-family:var(--el-font-family);line-height:1.5;color:var(--el-text-color-primary)'">
+      <div :style="'margin-bottom:12px'">
+        <div :style="'font-size:15px;font-weight:600;letter-spacing:0.02em'">将写入以下文件</div>
+        <div :style="'margin-top:4px;font-size:12px;color:var(--el-text-color-secondary)'">共 ${keys.length} 项 · 相对项目根目录</div>
       </div>
       ${listHtml}
       ${shown.length ? tipHtml : ""}
@@ -605,13 +610,13 @@ async function handleSynchDb(row: GenTableSchema): Promise<void> {
     const s = renderSummary(p);
     const list = (xs: string[]) => (xs?.length ? xs.slice(0, 20).join(", ") : "无");
     return `
-      <div style="line-height:1.6">
-        <div style="font-weight:600;margin-bottom:6px">${title}</div>
+      <div :style="'line-height:1.6'">
+        <div :style="'font-weight:600;margin-bottom:6px'">${title}</div>
         <div>新增：<b>${s.added}</b>；删除：<b>${s.removed}</b>；变更：<b>${s.changed}</b>；未变：${s.unchanged}</div>
-        <div style="margin-top:6px">新增列：${list(p.added || [])}</div>
+        <div :style="'margin-top:6px'">新增列：${list(p.added || [])}</div>
         <div>删除列：${list(p.removed || [])}</div>
         <div>变更列：${list((p.changed || []).map((c: any) => c.column_name))}</div>
-        <div style="margin-top:8px;color:var(--el-text-color-secondary)">提示：同步会尽量保留你已配置的 dict/html/query 等生成项，仅以数据库结构为准更新元信息。</div>
+        <div :style="'margin-top:8px;color:var(--el-text-color-secondary)'">提示：同步会尽量保留你已配置的 dict/html/query 等生成项，仅以数据库结构为准更新元信息。</div>
       </div>
     `;
   };
@@ -1034,7 +1039,7 @@ async function handleImportReset(): Promise<void> {
 }
 
 // 表单数据（后端返回字段可能含 null，这里做更宽松的承载，避免 TS 因类型收窄报错）
-const info = reactive<
+let info = reactive<
   GenTableSchema & {
     sub_table_name?: string | null;
     sub_table_fk_name?: string | null;

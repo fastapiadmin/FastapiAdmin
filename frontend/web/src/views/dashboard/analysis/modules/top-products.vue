@@ -8,12 +8,13 @@
     <div class="overflow-auto h-full">
       <FaTable
         :data="products"
-        style="width: 100%"
+        :style="{ width: '100%' }"
         size="large"
         :border="false"
         :stripe="false"
         :header-cell-style="{ background: 'transparent' }"
       >
+        <ElTableColumn type="index" label="序号" width="60" />
         <ElTableColumn prop="name" label="产品名称" width="200" />
         <ElTableColumn prop="popularity" label="销量">
           <template #default="scope">
@@ -47,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { hexToRgb } from "@utils/ui";
+import { hexToRgb } from "@utils";
 
 interface Product {
   name: string;

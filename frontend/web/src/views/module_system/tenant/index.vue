@@ -1,4 +1,4 @@
-<!-- 租户管理：Art + useTable；操作列前 3 个为 ArtButtonTable，其余收入「更多」下拉 -->
+<!-- 租户管理：Art + useTable；操作列前 3 个为 FaButtonTable，其余收入「更多」下拉 -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -17,7 +17,11 @@
       @reset="onResetSearch"
     />
 
-    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard
+      shadow="hover"
+      class="fa-table-card"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -54,87 +58,47 @@
       width="640px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
-      @close="handleCloseDialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <ElDescriptions :column="2" border>
-            <ElDescriptionsItem label="租户名称" :span="2">
-              {{ detailFormData.name }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="租户编码" :span="2">
-              {{ detailFormData.code }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="状态">
-              <ElTag :type="detailFormData.status === '0' ? 'success' : 'danger'">
-                {{ detailFormData.status === "0" ? "正常" : "禁用" }}
-              </ElTag>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="开始时间">
-              {{ detailFormData.start_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="结束时间">
-              {{ detailFormData.end_time }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="描述" :span="2">
-              {{ detailFormData.description }}
-            </ElDescriptionsItem>
-            <ElDescriptionsItem label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </ElDescriptionsItem>
-          </ElDescriptions>
-        </ElScrollbar>
+        <FaDescriptions
+          :column="2"
+          :data="detailFormData"
+          :items="tenantDetailItems"
+          max-height="75vh"
+        />
       </template>
       <template v-else>
-        <ElScrollbar max-height="75vh" :view-style="{ overflowX: 'hidden' }">
-          <FaForm
-            :key="tenantFormRenderKey"
-            ref="dataFormRef"
-            v-model="formData"
-            :items="tenantDialogFormItems"
-            :rules="rules"
-            label-suffix=":"
-            :label-width="'auto'"
-            label-position="right"
-            :span="24"
-            :gutter="16"
-            :show-reset="false"
-            :show-submit="false"
-            class="crud-dialog-art-form"
-          />
-        </ElScrollbar>
-      </template>
-
-      <template #footer>
-        <div class="dialog-footer" style="padding-right: var(--el-dialog-padding-primary)">
-          <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton
-            v-if="dialogVisible.type !== 'detail'"
-            type="primary"
-            :loading="submitLoading"
-            @click="handleSubmit"
-          >
-            确定
-          </ElButton>
-          <ElButton v-else type="primary" @click="handleCloseDialog">确定</ElButton>
-        </div>
+        <FaForm
+          :key="tenantFormRenderKey"
+          scrollbar
+          max-height="75vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="tenantDialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="'auto'"
+          label-position="right"
+          :span="24"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        />
       </template>
     </FaDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, reactive } from "vue";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import ArtButtonTable from "@/components/forms/fa-button-table/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import { useCrudDialog } from "@/hooks/core/useCrudDialog";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
   type TenantCreateForm,
@@ -142,16 +106,20 @@ import TenantAPI, {
   type TenantTable,
   type TenantUpdateForm,
 } from "@/api/module_system/tenant";
+import { useAuth } from "@/hooks/core/useAuth";
+import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
+import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import {
-  ElMessage,
-  ElMessageBox,
   ElTag,
+  ElMessage,
   ElTooltip,
   ElDropdown,
   ElDropdownMenu,
   ElDropdownItem,
 } from "element-plus";
-import { useAuth } from "@/hooks/core/useAuth";
 
 defineOptions({
   name: "Tenant",
@@ -236,7 +204,7 @@ function formatTenantOperationCell(
   const inlineNodes = inline.map((a) =>
     h(ElTooltip, { content: a.label, placement: "top" }, () =>
       h("span", { class: "inline-flex" }, [
-        h(ArtButtonTable, {
+        h(FaButtonTable, {
           type: a.artType,
           icon: a.icon,
           onClick: a.run,
@@ -260,7 +228,7 @@ function formatTenantOperationCell(
       default: () =>
         h(ElTooltip, { content: "更多", placement: "top" }, () =>
           h("span", { class: "inline-flex align-middle" }, [
-            h(ArtButtonTable, {
+            h(FaButtonTable, {
               type: "more",
               onClick: () => {},
             }),
@@ -354,24 +322,13 @@ const tenantSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<TenantTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => id != null && !Number.isNaN(id))
-);
-const batchDeleting = ref(false);
 
-function onTableSelectionChange(rows: TenantTable[]) {
-  selectedRows.value = rows;
-}
+// ─── 表格多选 ───
+const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<TenantTable>();
 
 async function deleteTenantRow(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该项数据?", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-
+    await confirmDelete();
     await TenantAPI.deleteTenant([id]);
     ElMessage.success("删除成功");
     faTableRef.value?.elTableRef?.clearSelection();
@@ -411,6 +368,7 @@ const {
     },
     columnsFactory: (): ColumnOption<TenantTable>[] => [
       { type: "selection", width: 48, fixed: "left" },
+      { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "租户名称", minWidth: 140, showOverflowTooltip: true },
       { prop: "code", label: "租户编码", minWidth: 120, showOverflowTooltip: true },
       {
@@ -440,7 +398,23 @@ const {
 
 const detailFormData = ref<TenantTable>({ code: "", name: "", status: "0" });
 
-const currentEditId = ref<number | null>(null);
+const tenantDetailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] =
+  [
+    { label: "租户名称", prop: "name" },
+    { label: "租户编码", prop: "code" },
+    {
+      label: "状态",
+      prop: "status",
+      span: 1,
+      tag: {
+        map: { "0": { type: "success", text: "正常" }, "1": { type: "danger", text: "禁用" } },
+      },
+    },
+    { label: "开始时间", prop: "start_time", span: 1 },
+    { label: "结束时间", prop: "end_time", span: 1 },
+    { label: "描述", prop: "description" },
+    { label: "创建时间", prop: "created_time" },
+  ];
 
 const formData = ref<TenantForm>({
   name: "",
@@ -451,15 +425,12 @@ const formData = ref<TenantForm>({
   end_time: undefined,
 });
 
-const dialogVisible = reactive({
-  title: "",
-  visible: false,
-  type: "create" as "create" | "update" | "detail",
-});
+// ─── 对话框状态 ───
+const { dialogVisible } = useCrudDialog();
 
 const CODE_PATTERN = /^[A-Za-z0-9]+$/;
 
-const validateTimeRange = (rule: unknown, value: unknown, callback: (e?: Error) => void) => {
+const validateTimeRange = (_rule: unknown, _value: unknown, callback: (e?: Error) => void) => {
   if (
     formData.value.start_time &&
     formData.value.end_time &&
@@ -496,6 +467,33 @@ const initialFormData: TenantForm = {
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const submitLoading = ref(false);
 const tenantFormRenderKey = ref(0);
+
+async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
+  dialogVisible.type = type;
+  if (id) {
+    const response = await TenantAPI.detailTenant(id);
+    if (type === "detail") {
+      dialogVisible.title = "租户详情";
+      Object.assign(detailFormData.value, response.data.data);
+    } else if (type === "update") {
+      dialogVisible.title = "修改租户";
+      Object.assign(formData.value, response.data.data);
+    }
+  } else {
+    dialogVisible.title = "新增租户";
+    Object.assign(formData.value, initialFormData);
+    formData.value.id = undefined;
+  }
+  tenantFormRenderKey.value += 1;
+  dialogVisible.visible = true;
+}
+
+async function handleCloseDialog() {
+  dialogVisible.visible = false;
+  dataFormRef.value?.resetFields();
+  dataFormRef.value?.clearValidate();
+  Object.assign(formData.value, initialFormData);
+}
 
 const tenantDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -568,38 +566,6 @@ const tenantDialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 
-async function resetForm() {
-  dataFormRef.value?.ref?.resetFields();
-  dataFormRef.value?.ref?.clearValidate();
-  Object.assign(formData, initialFormData);
-  currentEditId.value = null;
-}
-
-async function handleCloseDialog() {
-  dialogVisible.visible = false;
-  await resetForm();
-}
-
-async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
-  dialogVisible.type = type;
-  if (id) {
-    const response = await TenantAPI.detailTenant(id);
-    if (type === "detail") {
-      dialogVisible.title = "租户详情";
-      Object.assign(detailFormData.value, response.data.data);
-    } else if (type === "update") {
-      dialogVisible.title = "修改租户";
-      Object.assign(formData, response.data.data);
-      currentEditId.value = id;
-    }
-  } else {
-    dialogVisible.title = "新增租户";
-    await resetForm();
-  }
-  tenantFormRenderKey.value += 1;
-  dialogVisible.visible = true;
-}
-
 async function handleSearchBarSearch(params: TenantSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildTenantReplaceParams(params));
@@ -617,48 +583,49 @@ function onResetSearch() {
 }
 
 async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    submitLoading.value = true;
-    const id = currentEditId.value;
-    try {
-      if (id) {
-        const payload: TenantUpdateForm = {
-          name: formData.value.name,
-          start_time: formData.value.start_time,
-          end_time: formData.value.end_time,
-        };
-        await TenantAPI.updateTenant(id, payload);
-        await refreshUpdate();
-      } else {
-        const payload: TenantCreateForm = {
-          name: formData.value.name as string,
-          code: formData.value.code as string,
-          start_time: formData.value.start_time,
-          end_time: formData.value.end_time,
-        };
-        await TenantAPI.createTenant(payload);
-        await refreshCreate();
-      }
-      dialogVisible.visible = false;
-      await resetForm();
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      submitLoading.value = false;
+  const formRef = dataFormRef.value;
+  if (!formRef) return;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  const valid = await formRef.validate().catch(() => false);
+  if (!valid) return;
+  submitLoading.value = true;
+  const id = formData.value.id as number | undefined;
+  try {
+    if (id) {
+      const payload: TenantUpdateForm = {
+        name: formData.value.name,
+        start_time: formData.value.start_time,
+        end_time: formData.value.end_time,
+      };
+      await TenantAPI.updateTenant(id, payload);
+      await refreshUpdate();
+    } else {
+      const payload: TenantCreateForm = {
+        name: formData.value.name as string,
+        code: formData.value.code as string,
+        start_time: formData.value.start_time,
+        end_time: formData.value.end_time,
+      };
+      await TenantAPI.createTenant(payload);
+      await refreshCreate();
     }
-  });
+    dialogVisible.visible = false;
+    dataFormRef.value?.resetFields();
+    dataFormRef.value?.clearValidate();
+    Object.assign(formData.value, initialFormData);
+  } catch (error: unknown) {
+    console.error(error);
+  } finally {
+    submitLoading.value = false;
+  }
 }
 
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据吗？`, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await TenantAPI.deleteTenant(ids);
     ElMessage.success("删除成功");
@@ -673,15 +640,7 @@ async function handleBatchDelete() {
 </script>
 
 <style scoped lang="scss">
-.crud-dialog-art-form :deep(.el-row > .el-col:last-child) {
-  display: none;
-}
-
-.crud-dialog-art-form :deep(.el-form-item__content) {
-  max-width: 100%;
-}
-
-:deep(.tenant-table-actions .inline-flex) {
+::deep(.tenant-table-actions .inline-flex) {
   vertical-align: middle;
 }
 </style>

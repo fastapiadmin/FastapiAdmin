@@ -13,7 +13,7 @@
       popper-class="horizontal-menu-popper"
       class="w-full border-none"
     >
-      <HorizontalSubmenu
+      <FaHorizontalSubmenu
         v-for="item in filteredMenuItems"
         :key="item.path"
         :item="item"
@@ -26,8 +26,7 @@
 
 <script setup lang="ts">
 import type { AppRouteRecord } from "@/types/router";
-import HorizontalSubmenu from "./widget/HorizontalSubmenu.vue";
-import { useSettingsStore } from "@stores/modules/setting.store";
+import { useSettingsStore } from "@stores";
 
 defineOptions({ name: "FaHorizontalMenu" });
 

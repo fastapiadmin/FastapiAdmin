@@ -27,7 +27,7 @@
 
     <ul>
       <div class="pb-5 text-lg font-medium">评论 {{ comments.length }}</div>
-      <CommentItem
+      <FaCommentItem
         v-for="comment in comments.slice().reverse()"
         :key="comment.id"
         :comment="comment"
@@ -42,8 +42,9 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import CommentItem from "./widget/CommentItem.vue";
 import { commentList, Comment } from "@/mock/temp/commentDetail";
+import { ElMessage } from "element-plus";
+
 const comments = commentList;
 
 const newComment = ref<Partial<Comment>>({

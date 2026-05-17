@@ -4,7 +4,7 @@
     <!-- 开发者工具警告覆盖层 -->
     <div
       v-if="showDevToolsWarning"
-      class="fixed top-0 left-0 z-[999999] flex-cc w-full h-full text-white bg-gradient-to-br from-[#1e1e1e] to-black animate-fade-in"
+      class="fixed top-0 left-0 z-999999 flex-cc w-full h-full text-white bg-linear-to-br from-[#1e1e1e] to-black animate-fade-in"
     >
       <div class="p-5 text-center select-none">
         <div class="mb-7.5 text-5xl">🔒</div>
@@ -29,7 +29,13 @@
         @opened="handleDialogOpen"
       >
         <div class="lock-dialog-content">
-          <img v-if="userAvatar" :src="userAvatar" alt="" class="lock-dialog-avatar object-cover" />
+          <img
+            v-if="userAvatar"
+            :src="userAvatar"
+            alt=""
+            class="lock-dialog-avatar object-cover"
+            loading="eager"
+          />
           <img v-else class="lock-dialog-avatar" src="@imgs/user/avatar.webp" alt="" />
           <span class="lock-dialog-name">{{ displayName }}</span>
         </div>
@@ -143,16 +149,14 @@
 import { Lock } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElInput } from "element-plus";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import CryptoJS from "crypto-js";
-import { useUserStore } from "@stores/modules/user.store";
-import { useSettingsStore } from "@stores/modules/setting.store";
-import { mittBus } from "@utils/sys";
-import { useNow } from "@utils/common";
+import { useUserStore, useSettingsStore } from "@stores";
+import { mittBus, useNow } from "@utils";
 import bgDark from "@imgs/lock/bg_dark.webp";
 import bgLight from "@imgs/lock/bg_light.webp";
+import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -534,8 +538,6 @@ onUnmounted(() => {
 .lockpage {
   position: fixed;
   inset: 0;
-  top: 0;
-  left: 0;
   z-index: 3000;
   display: flex;
   flex-direction: column;

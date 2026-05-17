@@ -1,0 +1,56 @@
+# ============================================
+# FastapiAdmin .dockerignore
+# 用于优化 Docker 构建上下文，提升构建速度
+# ============================================
+
+# Python 缓存
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# 虚拟环境
+venv
+.venv
+.env
+
+# 编辑器/IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 版本控制
+.git
+.gitignore
+.gitattributes
+
+# 日志
+logs
+*.log
+
+# 数据库
+*.db
+*.sqlite3
+
+# 前端工程（后端镜像不需要）
+frontend
+
+# 部署脚本
+deploy.sh
+deploy.bat
+
+# 文档
+README.md
+README.en.md
+LICENSE
+
+# 数据库迁移（构建镜像时不包含，启动时动态执行）
+# 取消注释以加速构建：backend/alembic/versions
