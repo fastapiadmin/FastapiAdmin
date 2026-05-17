@@ -37,7 +37,7 @@
         </ElButton>
       </ElFormItem>
     </ElForm>
-    <ElRow>
+    <div>
       <ElTable
         ref="tableRef"
         :data="data"
@@ -79,7 +79,7 @@
         :total="total"
         @pagination="emit('fetch')"
       />
-    </ElRow>
+    </div>
     <template #footer>
       <div class="dialog-footer">
         <ElButton type="primary" :loading="confirmLoading" @click="emit('confirm')">确 定</ElButton>

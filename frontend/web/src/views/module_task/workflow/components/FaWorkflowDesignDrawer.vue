@@ -206,6 +206,8 @@ import WorkflowDefinitionAPI, {
   type WorkflowForm,
 } from "@/api/module_task/workflow/definition";
 import WorkflowNodeTypeAPI from "@/api/module_task/workflow/node-type";
+import FaNodeConfigPanel from "./FaNodeConfigPanel.vue";
+import FaEdgeConfigPanel from "./FaEdgeConfigPanel.vue";
 
 defineOptions({
   name: "WorkflowCreateDrawer",
@@ -965,7 +967,14 @@ function deleteEdge(edgeId: string, getEdges: () => Edge[], setEdges: (edges: Ed
 .canvas-container {
   flex: 1;
   min-height: 400px;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+}
+
+.canvas-container :deep(.vue-flow) {
+  width: 100%;
+  height: 100%;
 }
 
 :deep(.vue-flow__controls) {

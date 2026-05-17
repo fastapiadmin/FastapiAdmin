@@ -165,6 +165,7 @@ import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
 import { ElTag, ElMessage } from "element-plus";
+import FaPermissonDrawer from "./components/FaPermissonDrawer.vue";
 
 defineOptions({
   name: "Role",
