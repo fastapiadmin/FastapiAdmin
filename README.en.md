@@ -1,6 +1,6 @@
 <div align="center">
      <p align="center">
-          <img src="frontend/docs/src/public/logo.png" width="150" height="150" alt="logo" /> 
+          <img src="frontend/web/public/logo.png" width="150" height="150" alt="logo" /> 
      </p>
      <h1>FastApiAdmin <img src="https://img.shields.io/badge/Version-v2.0.0-blue" alt="Version"></h1>
      <h3>Modern Full-Stack Rapid Development Platform</h3>
@@ -191,16 +191,16 @@ With **Pydantic v2** and **PostgreSQL (asyncpg)**, ORM writes expect native Pyth
 
 | Module | Screenshot |
 |------------|---------------------------------|
-| Login      | ![login](frontend/docs/src/public/login.png) |
-| Dashboard  | ![Dashboard](frontend/docs/src/public/dashboard.png) |
-| Generator  | ![Generator](frontend/docs/src/public/gencode.png) |
-| AI       | ![AI](frontend/docs/src/public/ai.png) |
+| Login      | ![login](frontend/web/public/login.png) |
+| Dashboard  | ![Dashboard](frontend/web/public/dashboard.png) |
+| Generator  | ![Generator](frontend/web/public/gencode.png) |
+| AI       | ![AI](frontend/web/public/ai.png) |
 
 ### Mobile
 
 | Login <div style="width:60px"/> | Home <div style="width:60px"/> | Profile <div style="width:60px"/> |
 |----------|----------|----------|
-| ![Mobile Login](frontend/docs/src/public/app_login.png) | ![Mobile Home](frontend/docs/src/public/app_home.png) | ![Mobile Personal Info](frontend/docs/src/public/app_mine.png) |
+| ![Mobile Login](frontend/web/public/app_login.png) | ![Mobile Home](frontend/web/public/app_home.png) | ![Mobile Personal Info](frontend/web/public/app_mine.png) |
 
 ## 🚀 Quick Start
 
@@ -652,7 +652,7 @@ Thanks to the contributions and support of the following open-source projects:
 
 | Group QR Code | WeChat Pay QR Code |
 | --- | --- |
-| ![Group QR Code](frontend/docs/src/public/group.jpg) | ![WeChat Pay QR Code](frontend/docs/src/public/wechatPay.jpg) |
+| ![Group QR Code](frontend/web/public/group.jpg) | ![WeChat Pay QR Code](frontend/web/public/wechatPay.jpg) |
 
 ## ❤️ Support the Project
 

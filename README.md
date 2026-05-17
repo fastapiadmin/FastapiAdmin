@@ -1,6 +1,6 @@
 <div align="center">
      <p align="center">
-          <img src="https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/logo.png" width="150" height="150" alt="logo" />  
+          <img src="frontend/web/public/logo.png" width="150" height="150" alt="logo" />  
      </p>
      <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v2.0.0</h1>
      <h3>现代化全栈快速开发平台</h3>
@@ -83,7 +83,7 @@
 ## 🍪 演示环境
 
 - 💻 网页端：[https://service.fastapiadmin.com/web](https://service.fastapiadmin.com/web)
-- 📱 移动端：[https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app) （暂未开放）
+- 📱 移动端：[https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app)
 - 👤 登录账号：`admin` 密码：`123456`
 
 ## 🔗 源码仓库
@@ -144,8 +144,8 @@ flowchart LR
 | 组件 | 配置项 | 示例默认值（开发模板） |
 |------|--------|------------------------|
 | Web前端 | `frontend/web/.env.development` → `VITE_PORT` | **5173**，即 **`http://127.0.0.1:5173`** |
-| 移动端H5 | `frontend/app` 开发服务器 | **不开源** |
-| 文档服务 | `frontend/docs` 开发服务器 | **不开源** |
+| 移动端H5 | `frontend/app` 开发服务器 | **8080**，即 **`http://127.0.0.1:8080`** |
+| 文档服务 | `frontend/docs` 开发服务器 | **5174**，即 **`http://127.0.0.1:5174`** |
 | 后端 HTTP | `backend/env/.env.dev` → `SERVER_HOST` / `SERVER_PORT` | **`0.0.0.0:8001`**，本机访问 **`http://127.0.0.1:8001`** |
 | 前端请求后端 | `VITE_API_BASE_URL` | **`http://127.0.0.1:8001`** |
 | API 前缀 | `ROOT_PATH`（后端） | 后端 **`/api/v1`** |
@@ -193,14 +193,16 @@ flowchart LR
 
 | 模块名 <div style="width:60px"/> | 截图 |
 | ----- | --- |
-| 登录   | ![登录](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/login.png) |
-| 仪表盘   | ![仪表盘](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/dashboard.png) |
-| 代码生成  | ![代码生成](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/gencode.png) |
-| 智能助手  | ![智能助手](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/ai.png) |
+| 登录   | ![仪表盘](frontend/web/public/login.png) |
+| 仪表盘   | ![仪表盘](frontend/web/public/dashboard.png) |
+| 代码生成  | ![代码生成](frontend/web/public/gencode.png) |
+| 智能助手  | ![智能助手](frontend/web/public/ai.png) |
 
-### 移动端（不开源）
+### 移动端
 
-> 移动端源码暂不开源，如需使用请联系作者。
+| 登录 <div style="width:60px"/> | 首页 <div style="width:60px"/> | 个人中心 <div style="width:60px"/> |
+|----------|----------|----------|
+| ![移动端登录](frontend/web/public/app_login.png) | ![移动端首页](frontend/web/public/app_home.png) | ![移动端个人中心](frontend/web/public/app_mine.png) |
 
 ## 🚀 快速开始
 
@@ -279,13 +281,25 @@ pnpm run dev
 pnpm run build
 ```
 
-#### 移动端 (UniApp) - 不开源
+#### 移动端 (UniApp)
 
-> 移动端源码暂不开源，如需使用请联系作者。
+```bash
+cd frontend/app
+pnpm install
+pnpm run dev:h5  # 启动H5开发服务器
+# 构建生产版本
+pnpm run build:h5
+```
 
-#### 文档网站 (VitePress) - 不开源
+#### 文档网站 (VitePress)
 
-> 文档网站源码暂不开源，如需使用请联系作者。
+```bash
+cd frontend/docs
+pnpm install
+pnpm run dev
+# 构建生产版本
+pnpm run build
+```
 
 ### 启动后访问
 
@@ -294,8 +308,8 @@ pnpm run build
 | 服务 | 地址（示例） |
 |------|----------------|
 | Web前端 (Vite) | `http://127.0.0.1:5173` |
-| 移动端H5 (UniApp) | **不开源** |
-| 文档网站 (VitePress) | **不开源** |
+| 移动端H5 (UniApp) | `http://127.0.0.1:8080` |
+| 文档网站 (VitePress) | `http://127.0.0.1:5174` |
 | 后端 API 根 | `http://127.0.0.1:8001` |
 | Swagger | `http://127.0.0.1:8001/docs` |
 | 业务接口前缀 | `http://127.0.0.1:8001/api/v1`（与 `ROOT_PATH` 一致） |
@@ -599,7 +613,7 @@ A：使用 `./deploy.sh` 脚本一键部署到生产环境。
 
 | 群组二维码 | 微信支付二维码 |
 | --- | --- |
-| ![群组二维码](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/group.jpg) | ![微信支付二维码](https://gitee.com/fastapiadmin/FastDocs/raw/master/docs/public/wechatPay.jpg) |
+| ![群组二维码](frontend/web/public/group.jpg) | ![微信支付二维码](frontend/web/public/wechatPay.jpg) |
 
 ## ❤️ 支持项目
 
