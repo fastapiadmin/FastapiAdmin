@@ -97,24 +97,10 @@
     <!-- CardList 概览统计（含在线用户/UV/PV/访问量等） -->
     <CardList />
 
-    <!-- 日程日历 + 我的收藏 -->
+    <!-- 关于项目 + 我的收藏 -->
     <ElRow :gutter="16">
       <ElCol :xs="24" :span="12" class="flex flex-col">
-        <ElCard shadow="hover" class="workplace-surface workplace-ops-card flex flex-col h-full">
-          <template #header>
-            <div class="workplace-section-card__head">
-              <div>
-                <span class="workplace-panel-title">日程日历</span>
-                <p class="workplace-section-sub workplace-section-sub--inline">
-                  点击日期添加或编辑（本地演示）
-                </p>
-              </div>
-            </div>
-          </template>
-          <div class="workplace-ops-card__body">
-            <FaCalendar />
-          </div>
-        </ElCard>
+        <AboutProject />
       </ElCol>
       <ElCol :xs="24" :span="12" class="flex flex-col">
         <ElCard shadow="hover" class="flex flex-col h-full">
@@ -152,51 +138,60 @@
               </div>
             </div>
           </template>
-          <div v-if="quickLinks.length > 0">
-            <ElTooltip
+          <ElRow v-if="quickLinks.length > 0" :gutter="12">
+            <ElCol
               v-for="(item, index) in quickLinks"
               :key="item.id || `${item.href}-${index}`"
-              placement="top"
-              :show-after="400"
-              :content="item.title"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="8"
+              :xl="8"
+              class="mb-3"
             >
-              <div
-                class="workplace-quick-row workplace-quick-row--compact workplace-quick-row--chip"
-                role="button"
-                tabindex="0"
-                @click="handleQuickLinkClick(item)"
-                @keydown.enter.prevent="handleQuickLinkClick(item)"
-                @keydown.space.prevent="handleQuickLinkClick(item)"
+              <ElTooltip
+                placement="top"
+                :show-after="400"
+                :content="item.title"
               >
-                <span
-                  class="workplace-quick-row__accent"
-                  :style="{ backgroundColor: getQuickLinkColor(getQuickLinkStableIndex(item)) }"
-                />
                 <div
-                  class="workplace-quick-row__icon"
-                  :style="{ color: getQuickLinkColor(getQuickLinkStableIndex(item)) }"
+                  class="workplace-quick-row workplace-quick-row--compact workplace-quick-row--chip"
+                  role="button"
+                  tabindex="0"
+                  @click="handleQuickLinkClick(item)"
+                  @keydown.enter.prevent="handleQuickLinkClick(item)"
+                  @keydown.space.prevent="handleQuickLinkClick(item)"
                 >
-                  <FaMenuRouteIcon :icon="item.icon || 'menu'" />
-                </div>
-                <div class="workplace-quick-row__text">
-                  <span class="workplace-quick-row__title">{{ item.title }}</span>
-                </div>
-                <div class="workplace-quick-row__actions">
-                  <button
-                    type="button"
-                    class="workplace-quick-row__remove"
-                    :disabled="!item.id && !item.href"
-                    :title="item.id || item.href ? '移除收藏' : '无法移除（缺少路径）'"
-                    :aria-label="`移除收藏 ${item.title}`"
-                    @click.stop="handleDeleteLink(item)"
+                  <span
+                    class="workplace-quick-row__accent"
+                    :style="{ backgroundColor: getQuickLinkColor(getQuickLinkStableIndex(item)) }"
+                  />
+                  <div
+                    class="workplace-quick-row__icon"
+                    :style="{ color: getQuickLinkColor(getQuickLinkStableIndex(item)) }"
                   >
-                    <ElIcon><Close /></ElIcon>
-                  </button>
+                    <FaMenuRouteIcon :icon="item.icon || 'menu'" />
+                  </div>
+                  <div class="workplace-quick-row__text">
+                    <span class="workplace-quick-row__title">{{ item.title }}</span>
+                  </div>
+                  <div class="workplace-quick-row__actions">
+                    <button
+                      type="button"
+                      class="workplace-quick-row__remove"
+                      :disabled="!item.id && !item.href"
+                      :title="item.id || item.href ? '移除收藏' : '无法移除（缺少路径）'"
+                      :aria-label="`移除收藏 ${item.title}`"
+                      @click.stop="handleDeleteLink(item)"
+                    >
+                      <ElIcon><Close /></ElIcon>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </ElTooltip>
-          </div>
-          <ElEmpty v-else :image-size="48">
+              </ElTooltip>
+            </ElCol>
+          </ElRow>
+          <ElEmpty v-else :image-size="100">
             <template #description>
               <p class="workplace-quick-empty__title">暂无收藏</p>
               <p class="workplace-quick-empty__hint">
@@ -210,8 +205,25 @@
       </ElCol>
     </ElRow>
 
-    <!-- 最新动态 + 关于项目 -->
+    <!-- 日程日历 + 最新动态 -->
     <ElRow :gutter="16">
+      <ElCol :span="12" class="flex flex-col">
+        <ElCard shadow="hover" class="workplace-surface workplace-ops-card flex flex-col h-full">
+          <template #header>
+            <div class="workplace-section-card__head">
+              <div>
+                <span class="workplace-panel-title">日程日历</span>
+                <p class="workplace-section-sub workplace-section-sub--inline">
+                  点击日期添加或编辑（本地演示）
+                </p>
+              </div>
+            </div>
+          </template>
+          <div class="workplace-ops-card__body">
+            <FaCalendar />
+          </div>
+        </ElCard>
+      </ElCol>
       <ElCol :span="12" class="flex flex-col">
         <ElCard shadow="hover" class="h-full flex flex-col">
           <template #header>
@@ -228,7 +240,7 @@
               </ElLink>
             </div>
           </template>
-          <ElScrollbar height="300px">
+          <ElScrollbar class="h-full">
             <ElTimeline class="p-2">
               <ElTimelineItem
                 v-for="(item, index) in vesionList"
@@ -262,9 +274,6 @@
             </ElTimeline>
           </ElScrollbar>
         </ElCard>
-      </ElCol>
-      <ElCol :span="12" class="flex flex-col">
-        <AboutProject />
       </ElCol>
     </ElRow>
   </div>
