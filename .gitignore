@@ -71,8 +71,6 @@ frontend/web/.env
 
 frontend/docs/*
 !frontend/docs/.gitkeep
-!frontend/docs/README.md
 
 frontend/app/*
 !frontend/app/.gitkeep
-!frontend/app/README.md
