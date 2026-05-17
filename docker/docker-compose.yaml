@@ -153,8 +153,8 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/web:/usr/share/nginx/html/web:ro
-      - ./nginx/app:/usr/share/nginx/html/app:ro
-      - ./nginx/docs:/usr/share/nginx/html/docs:ro
+      # - ./nginx/app:/usr/share/nginx/html/app:ro
+      # - ./nginx/docs:/usr/share/nginx/html/docs:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       backend:

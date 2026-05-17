@@ -36,8 +36,8 @@ echo.
 echo %BLUE%服务说明:%RESET%
 echo   🚀 后端服务     - FastAPI 后端 (端口: 8001)
 echo   🌐 前端 Web    - Vue 前端 (端口: 5173)
-echo   📱 前端 App    - UniApp 应用 (端口: 8080)
-echo   📚 文档服务    - VitePress 文档 (端口: 5174)
+REM echo   📱 前端 App    - UniApp 应用 (端口: 8080) [已禁用：不开源]
+REM echo   📚 文档服务    - VitePress 文档 (端口: 5174) [已禁用：不开源]
 echo.
 echo %BLUE%日志位置:%RESET%
 echo   %LOG_DIR%\
@@ -50,8 +50,8 @@ echo.
 
 call :start_service "backend"   "%SCRIPT_DIR%backend"             "uv run main.py run --env=dev"    "FastapiAdmin.Backend"  "%BACKEND_PID%"
 call :start_service "frontend"  "%SCRIPT_DIR%frontend\web"        "pnpm dev"                         "FastapiAdmin.Web"      "%WEB_PID%"
-call :start_service "app"       "%SCRIPT_DIR%frontend\app"        "pnpm dev:h5"                      "FastapiAdmin.App"      "%APP_PID%"
-call :start_service "docs"      "%SCRIPT_DIR%frontend\docs"       "pnpm dev"                         "FastapiAdmin.Docs"     "%DOCS_PID%"
+REM call :start_service "app"       "%SCRIPT_DIR%frontend\app"        "pnpm dev:h5"                      "FastapiAdmin.App"      "%APP_PID%"
+REM call :start_service "docs"      "%SCRIPT_DIR%frontend\docs"       "pnpm dev"                         "FastapiAdmin.Docs"     "%DOCS_PID%"
 
 echo.
 echo %GREEN%🎉 所有服务启动完成！%RESET%
@@ -59,8 +59,8 @@ echo.
 echo %BLUE%访问地址:%RESET%
 echo   🚀 后端 API: http://localhost:8001/api/v1/docs
 echo   🌐 前端 Web: http://localhost:5173
-echo   📱 前端 App: http://localhost:8080
-echo   📚 文档服务: http://localhost:5174
+REM echo   📱 前端 App: http://localhost:8080 [已禁用]
+REM echo   📚 文档服务: http://localhost:5174 [已禁用]
 echo.
 goto :end
 
@@ -99,8 +99,8 @@ echo %CYAN%⏹️ 开始停止所有服务...%RESET%
 echo.
 call :stop_service "backend"
 call :stop_service "frontend"
-call :stop_service "app"
-call :stop_service "docs"
+REM call :stop_service "app"
+REM call :stop_service "docs"
 echo %GREEN%🎉 所有服务已停止！%RESET%
 echo.
 goto :end
@@ -136,8 +136,8 @@ echo %CYAN%🔍 检查服务状态...%RESET%
 echo.
 call :check_service "backend"
 call :check_service "frontend"
-call :check_service "app"
-call :check_service "docs"
+REM call :check_service "app"
+REM call :check_service "docs"
 goto :end
 
 :check_service

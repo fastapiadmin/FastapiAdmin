@@ -12,8 +12,8 @@ docker/
 │   │   └── server.key      # SSL 私钥文件
 │   │   └── server.pem      # SSL 证书文件
 │   ├── web/                # 前端静态文件（Web）
-│   ├── app/                # 前端静态文件（小程序 H5）
-│   └── docs/               # 前端静态文件（官网文档）
+│   ├── app/                # 前端静态文件（小程序 H5）[已禁用：不开源]
+│   └── docs/               # 前端静态文件（官网文档）[已禁用：不开源]
 ├── mysql/                  # MySQL 数据目录
 │   └── data/               # MySQL 数据持久化目录
 ├── redis/                  # Redis 数据目录
@@ -147,11 +147,13 @@ docker compose up -d --no-deps --build [service_name]
 
 部署完成后，可以通过以下地址访问：
 
-- **官网**: https://域名(或 ip)/docs
+- **官网**: https://域名(或 ip)/docs [已禁用：不开源]
 - **前端**: https://域名(或 ip)/web
-- **小程序**: https://域名(或 ip)/app
+- **小程序**: https://域名(或 ip)/app [已禁用：不开源]
 - **API 文档**: https://域名(或 ip)/api/v1/docs
 - **登录信息**: 账号 admin，密码 123456
+
+> **注意**: `docs` 和 `app` 已禁用开源部署，如需使用请取消相关配置注释。
 
 ## 日志管理
 
