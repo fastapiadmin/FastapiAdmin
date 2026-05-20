@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.common.response import ResponseSchema, SuccessResponse
 from app.core.base_params import PaginationQueryParam
-from app.core.dependencies import AuthPermission
+from app.core.dependencies import AuthPermission, get_current_user
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
@@ -59,18 +59,31 @@ async def get_obj_detail_controller(
     return SuccessResponse(data=result_dict, msg="获取详情成功")
 
 
+def _has_permission(auth: AuthSchema, permission: str) -> bool:
+    """检查用户是否有指定权限"""
+    if auth.user and auth.user.is_superuser:
+        return True
+    if not auth.user or not auth.user.roles:
+        return False
+    user_permissions = {
+        menu.permission
+        for role in auth.user.roles
+        for menu in role.menus
+        if role.status == "0" and menu.permission and menu.status == "0"
+    }
+    return permission in user_permissions
+
+
 @InfoCollectionRouter.get(
     "/list",
     summary="查询咨询会信息列表",
-    description="查询咨询会信息列表",
+    description="查询咨询会信息列表（无菜单权限用户仅可查看已审核数据）",
     response_model=ResponseSchema[list[InfoCollectionOutSchema]],
 )
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[InfoCollectionQueryParam, Depends()],
-    auth: Annotated[
-        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:query"]))
-    ],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     查询咨询会信息列表
@@ -83,6 +96,12 @@ async def get_obj_list_controller(
     返回:
     - JSONResponse: 包含咨询会信息列表分页信息的JSON响应
     """
+    from app.common.enums import QueueEnum
+
+    # 无权限用户强制只查询已审核状态的数据
+    if not _has_permission(auth, "module_consultation:info_collection:query"):
+        search.status = (QueueEnum.eq.value, InfoStatus.APPROVED.value)
+
     result_dict = await InfoCollectionService.page_service(
         auth=auth,
         page_no=page.page_no,
@@ -501,13 +520,11 @@ async def crawl_controller(
 @InfoCollectionRouter.get(
     "/approved-options",
     summary="获取已审核咨询会下拉选项",
-    description="获取已审核状态的咨询会列表，用于报名表单选择",
+    description="获取已审核状态的咨询会列表（所有登录用户可查看，用于报名表单选择）",
     response_model=ResponseSchema[list[InfoCollectionSimpleOutSchema]],
 )
 async def get_approved_options_controller(
-    auth: Annotated[
-        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:query"]))
-    ],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """获取已审核咨询会下拉选项"""
     result_list = await InfoCollectionService.get_approved_list_service(auth=auth)

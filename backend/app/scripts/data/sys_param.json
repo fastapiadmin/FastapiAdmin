@@ -2,7 +2,7 @@
   {
     "config_name": "网站名称",
     "config_key": "sys_web_title",
-    "config_value": "FastApiAdmin",
+    "config_value": "高中高校联动平台",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -10,7 +10,7 @@
   {
     "config_name": "网站描述",
     "config_key": "sys_web_description",
-    "config_value": "FastApiAdmin 是完全开源的权限管理系统",
+    "config_value": "高中与高校招生咨询、宣传联动与数据协同管理平台",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -42,7 +42,7 @@
   {
     "config_name": "版权信息",
     "config_key": "sys_web_copyright",
-    "config_value": "Copyright © 2025-2026 service.fastapiadmin.com 版权所有",
+    "config_value": "",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -50,7 +50,7 @@
   {
     "config_name": "备案信息",
     "config_key": "sys_keep_record",
-    "config_value": "陕ICP备2025069493号-1",
+    "config_value": "",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -58,7 +58,7 @@
   {
     "config_name": "帮助文档",
     "config_key": "sys_help_doc",
-    "config_value": "https://service.fastapiadmin.com",
+    "config_value": "#",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -66,7 +66,7 @@
   {
     "config_name": "隐私政策",
     "config_key": "sys_web_privacy",
-    "config_value": "https://github.com/fastapiadmin/FastapiAdmin/blob/master/LICENSE",
+    "config_value": "#",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -74,7 +74,7 @@
   {
     "config_name": "用户协议",
     "config_key": "sys_web_clause",
-    "config_value": "https://github.com/fastapiadmin/FastapiAdmin/blob/master/LICENSE",
+    "config_value": "#",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"
@@ -82,7 +82,7 @@
   {
     "config_name": "源码代码",
     "config_key": "sys_git_code",
-    "config_value": "https://github.com/fastapiadmin/FastapiAdmin.git",
+    "config_value": "#",
     "config_type": true,
     "status": "0",
     "description": "初始化数据"

@@ -103,8 +103,7 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="consultation_id" label="咨询会ID" width="100" />
-        <el-table-column prop="university_id" label="高校ID" width="100" />
+        <el-table-column prop="consultation_name" label="咨询会" width="100" />
         <el-table-column
           prop="university_name"
           label="高校名称"
@@ -211,6 +210,9 @@
       <el-descriptions v-if="detailDialog.data" :column="2" border>
         <el-descriptions-item label="咨询会ID">
           {{ detailDialog.data.consultation_id }}
+        </el-descriptions-item>
+        <el-descriptions-item label="咨询会">
+          {{ detailDialog.data.consultation_name}}
         </el-descriptions-item>
         <el-descriptions-item label="高校ID">
           {{ detailDialog.data.university_id }}

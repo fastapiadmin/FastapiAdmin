@@ -2,16 +2,10 @@
      <p align="center">
           <img src="backend/data/logo.png" width="150" height="150" alt="logo" />  
      </p>
-     <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v2.0.0</h1>
-     <h3>现代化全栈快速开发平台</h3>
-     <p>如果你喜欢这个项目，给个 ⭐️ 支持一下吧！</p>
+     <h1>高中高校联动项目 <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v2.0.0</h1>
+     <h3>招生咨询 · 宣传联动 · 数据协同管理平台</h3>
+     <p>面向高中与高校的招生业务协同与信息共享</p>
      <p align="center">
-          <a href="https://gitee.com/fastapiadmin/FastapiAdmin.git" target="_blank">
-               <img src="https://gitee.com/fastapiadmin/FastapiAdmin/badge/star.svg?theme=dark" alt="Gitee Stars">
-          </a>
-          <a href="https://github.com/fastapiadmin/FastapiAdmin.git" target="_blank">
-               <img src="https://img.shields.io/github/stars/fastapiadmin/FastapiAdmin?style=social" alt="GitHub Stars">
-          </a>
           <a href="https://gitee.com/fastapiadmin/FastapiAdmin/blob/master/LICENSE" target="_blank">
                <img src="https://img.shields.io/badge/License-MIT-orange" alt="License">
           </a>
@@ -30,9 +24,9 @@
 
 ## 📘 项目介绍
 
-**FastApiAdmin** 是一套 **完全开源、高度模块化、技术先进的现代化快速开发平台**，旨在帮助开发者高效搭建高质量的企业级中后台系统。该项目采用 **前后端分离架构**，融合 Python 后端框架 `FastAPI` 和前端主流框架 `Vue3` 实现多端统一开发，提供了一站式开箱即用的开发体验。
+**高中高校联动项目** 是一套面向 **高中与高校招生协同** 的业务管理平台，覆盖招生咨询会、信息采集、高校库、宣传联动等场景，支持多部门、多角色权限协作与公开数据共享。项目采用 **前后端分离架构**，后端基于 `FastAPI`，前端基于 `Vue3` + `Element Plus`。
 
-> **设计初心**: 以模块化、松耦合为核心，追求丰富的功能模块、简洁易用的接口、详尽的开发文档和便捷的维护方式。通过统一框架和组件，降低技术选型成本，遵循开发规范和设计模式，构建强大的代码分层模型，搭配完善的本地中文化支持，专为团队和企业开发场景量身定制。
+> **业务目标**: 解决不同部门、不同角色之间招生信息与高校基础数据难以共享的问题——高校库等公开数据全员可查可用，业务数据按菜单权限与审核状态控制可见与可编辑范围。
 
 <a id="packaging-philosophy"></a>
 
@@ -80,23 +74,15 @@
 | 📖 **完善文档** | 详细的开发文档和教程，降低学习成本 |
 | 🤖 **智能体框架** | 基于Agno的开发智能体 |
 
-## 🍪 演示环境
+## 🍪 本地访问
 
-- 💻 网页端：[https://service.fastapiadmin.com/web](https://service.fastapiadmin.com/web)
-- 📱 移动端：[https://service.fastapiadmin.com/app](https://service.fastapiadmin.com/app)
-- 👤 登录账号：`admin` 密码：`123456`
-
-## 🔗 源码仓库
-
-| 平台 | 仓库地址 |
-|------|----------|
-| GitHub | [FastapiAdmin主工程](https://github.com/fastapiadmin/FastapiAdmin.git) \| [FastDocs官网](https://github.com/fastapiadmin/FastDocs.git) \| [FastApp移动端](https://github.com/fastapiadmin/FastApp.git) |
-| Gitee  | [FastapiAdmin主工程](https://gitee.com/fastapiadmin/FastapiAdmin.git) \| [FastDocs官网](https://gitee.com/fastapiadmin/FastDocs.git) \| [FastApp移动端](https://gitee.com/fastapiadmin/FastApp.git) |
+- 💻 网页端（开发环境示例）：`http://127.0.0.1:5180` 或 `http://localhost:15180/web`
+- 👤 默认管理员账号：`admin` 密码：`123456`（以实际初始化数据为准）
 
 ## 📦 工程结构概览
 
 ```sh
-FastapiAdmin
+high-school-college
 ├─ backend               # 后端工程 (FastAPI + Python)
 ├─ frontend              # Web前端工程 (Vue3 + Element Plus)
 ├─ devops                # 部署配置
@@ -220,10 +206,9 @@ flowchart LR
 ### 获取代码
 
 ```bash
-# 克隆代码到本地
-git clone https://gitee.com/fastapiadmin/FastapiAdmin.git
-# 或者
-git clone https://github.com/fastapiadmin/FastapiAdmin.git
+# 克隆代码到本地（以实际仓库地址为准）
+git clone <your-repo-url>
+cd high-school-college
 ```
 
 > **后端注意**：克隆下的代码需要修改 `backend/env` 目录下的 `.env.dev.example` 文件为 `.env.dev`，修改 `backend/env` 目录下的 `.env.prod.example` 文件为 `.env.prod`，然后根据实际情况修改数据库连接信息、Redis连接信息等。
@@ -284,8 +269,8 @@ pnpm run build
 
 ```bash
 # 1. 克隆代码到服务器
-git clone https://gitee.com/fastapiadmin/FastapiAdmin.git
-cd FastapiAdmin
+git clone <your-repo-url>
+cd high-school-college
 
 # 2. 赋予执行权限并部署
 chmod +x deploy.sh

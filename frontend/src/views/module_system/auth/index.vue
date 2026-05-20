@@ -19,28 +19,28 @@
       <section class="auth-feature">
         <div class="auth-feature__badge">
           <span class="auth-feature__dot" />
-          Enterprise Ready
+          招生联动平台
         </div>
-        <h1 class="auth-feature__title">企业级管理系统</h1>
+        <h1 class="auth-feature__title">高中高校联动项目</h1>
         <p class="auth-feature__subtitle">
-          提供安全、高效、可扩展的管理解决方案，助力企业数字化转型与业务增长。
+          面向高中与高校的招生咨询、宣传联动与数据协同，支撑多部门、多角色协同办公与信息共享。
         </p>
         <ul class="auth-feature__highlights">
           <li>
             <span>✓</span>
-            统一身份认证与权限管理
+            招生咨询会与信息采集管理
           </li>
           <li>
             <span>✓</span>
-            支持定时任务与任务调度
+            高校库与宣传联动业务协同
           </li>
           <li>
             <span>✓</span>
-            数据安全与操作审计
+            统一权限与跨部门数据共享
           </li>
           <li>
             <span>✓</span>
-            灵活扩展与高可用架构
+            审核流程与操作留痕可追溯
           </li>
         </ul>
       </section>
@@ -59,12 +59,9 @@
           <div class="auth-panel__meta">
             <div class="auth-panel__title-row">
               <span class="auth-panel__title">
-                {{ configStore.configData?.sys_web_title?.config_value || "" }}
+                {{ webTitle }}
               </span>
-              <el-tooltip
-                :content="configStore.configData?.sys_web_description?.config_value || ''"
-                placement="bottom"
-              >
+              <el-tooltip :content="webDescription" placement="bottom">
                 <el-icon class="cursor-help"><QuestionFilled /></el-icon>
               </el-tooltip>
             </div>
@@ -86,28 +83,6 @@
             class="auth-panel__form"
           />
         </transition>
-
-        <!-- 登录页底部版权 -->
-        <footer class="auth-panel__footer">
-          <el-text size="small">
-            <a :href="configStore.configData?.sys_git_code?.config_value || ''" target="_blank">
-              {{ configStore.configData?.sys_web_copyright?.config_value || "" }}
-            </a>
-            |
-            <a :href="configStore.configData?.sys_help_doc?.config_value || ''" target="_blank">
-              帮助
-            </a>
-            |
-            <a :href="configStore.configData?.sys_web_privacy?.config_value || ''" target="_blank">
-              隐私
-            </a>
-            |
-            <a :href="configStore.configData?.sys_web_clause?.config_value || ''" target="_blank">
-              条款
-            </a>
-            {{ configStore.configData?.sys_keep_record?.config_value || "" }}
-          </el-text>
-        </footer>
       </section>
     </div>
   </div>
@@ -121,6 +96,26 @@ import ThemeSwitch from "@/components/ThemeSwitch/index.vue";
 import { useConfigStore } from "@/store";
 
 const configStore = useConfigStore();
+
+const DEFAULT_WEB_TITLE = "高中高校联动平台";
+const DEFAULT_WEB_DESCRIPTION = "高中与高校招生咨询、宣传联动与数据协同管理平台";
+
+/** 登录页标头：兼容库内仍为 FastApiAdmin 的旧配置 */
+const webTitle = computed(() => {
+  const value = configStore.configData?.sys_web_title?.config_value?.trim();
+  if (!value || /^fastapiadmin$/i.test(value)) {
+    return DEFAULT_WEB_TITLE;
+  }
+  return value;
+});
+
+const webDescription = computed(() => {
+  const value = configStore.configData?.sys_web_description?.config_value?.trim();
+  if (!value || /fastapiadmin|完全开源|权限管理系统/i.test(value)) {
+    return DEFAULT_WEB_DESCRIPTION;
+  }
+  return value;
+});
 
 // 添加计算属性处理背景图片URL
 const loginBackgroundUrl = computed(() => {
@@ -148,31 +143,6 @@ const loginPreset = reactive<{ username: string; password: string }>({
   password: "123456",
 });
 
-let notificationInstance: ReturnType<typeof ElNotification> | null = null;
-
-const showVoteNotification = () => {
-  notificationInstance = ElNotification({
-    title: "⭐ FastapiAdmin 完全开源 · 期待您的 Star 支持 🙏",
-    message: `项目持续迭代中，若对您有所帮助，欢迎点亮 Star 支持！
-    <br/><a href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank" style="color: var(--el-color-primary); text-decoration: none; font-weight: 500;">Github仓库 →</a>
-    <br/><a href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank" style="color: var(--el-color-warning); text-decoration: none; font-weight: 500;">Gitee仓库 →</a>`,
-    type: "success",
-    position: "bottom-left",
-    duration: 0,
-    dangerouslyUseHTMLString: true,
-  });
-};
-
-onMounted(() => {
-  setTimeout(showVoteNotification, 500);
-});
-
-onBeforeUnmount(() => {
-  if (notificationInstance) {
-    notificationInstance.close();
-    notificationInstance = null;
-  }
-});
 </script>
 
 <style lang="scss" scoped>
@@ -450,25 +420,6 @@ onBeforeUnmount(() => {
   :deep(.el-card) {
     background: transparent;
     box-shadow: none;
-  }
-}
-
-.auth-panel__footer {
-  padding-top: 0.875rem;
-  margin-top: 0.125rem;
-  font-size: 0.875rem;
-  text-align: center;
-  border-top: 1px solid var(--el-border-color-lighter);
-
-  a {
-    margin-left: 0.1rem;
-    color: var(--el-text-color-regular);
-    text-decoration: none;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--el-color-primary);
-    }
   }
 }
 

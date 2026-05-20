@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.common.response import ResponseSchema, SuccessResponse
 from app.core.base_params import PaginationQueryParam
-from app.core.dependencies import AuthPermission
+from app.core.dependencies import AuthPermission, get_current_user
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
 
@@ -33,12 +33,12 @@ UniversityRouter = APIRouter(
 @UniversityRouter.get(
     "/detail/{id}",
     summary="获取高校详情",
-    description="获取高校详情",
+    description="获取高校详情（所有登录用户可查看）",
     response_model=ResponseSchema[UniversityOutSchema],
 )
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="高校ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:university:detail"]))],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """获取高校详情"""
     result_dict = await UniversityService.detail_service(id=id)
@@ -49,13 +49,13 @@ async def get_obj_detail_controller(
 @UniversityRouter.get(
     "/list",
     summary="查询高校列表",
-    description="查询高校列表",
+    description="查询高校列表（所有登录用户可查看）",
     response_model=ResponseSchema[list[UniversityOutSchema]],
 )
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[UniversityQuerySchema, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:university:query"]))],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """查询高校列表"""
     result_dict = await UniversityService.page_service(
@@ -71,11 +71,11 @@ async def get_obj_list_controller(
 @UniversityRouter.get(
     "/options",
     summary="获取高校下拉选项",
-    description="获取高校下拉选项（用于表单选择）",
+    description="获取高校下拉选项（所有登录用户可查看，用于表单选择）",
     response_model=ResponseSchema[list[UniversitySimpleOutSchema]],
 )
 async def get_university_options_controller(
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_consultation:university:query"]))],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """获取高校下拉选项"""
     search = UniversityQuerySchema(status="active")

@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     # ******************* API文档配置 ****************** #
     # ================================================= #
     DEBUG: bool = True  # 调试模式
-    TITLE: str = "🎉 FastapiAdmin 🎉 "  # 文档标题
+    TITLE: str = "高中高校联动平台"  # 文档标题
     VERSION: str = "0.1.0"  # 版本号
     DESCRIPTION: str = (
         "该项目是一个基于python的web服务框架，基于fastapi和sqlalchemy实现。"  # 文档描述
