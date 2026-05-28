@@ -82,6 +82,8 @@ export default ({ mode }: { mode: string }) => {
         "@plugins": resolvePath("src/plugins"),
         "@styles": resolvePath("src/styles"),
         "@api": resolvePath("src/api"),
+        "@fa_logo": resolvePath("src/assets/fa_logo"),
+        "@fa_logo/*": resolvePath("src/assets/fa_logo/*"),
       },
     },
     build: {

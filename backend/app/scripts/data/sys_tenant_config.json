@@ -25,7 +25,7 @@
   },
   {
     "config_key": "tenant_favicon",
-    "config_value": "https://service.fastapiadmin.com/api/v1/static/image/favicon.png",
+    "config_value": "https://service.fastapiadmin.com/api/v1/static/image/favicon.ico",
     "config_type": "string",
     "tenant_id": 1
   },
