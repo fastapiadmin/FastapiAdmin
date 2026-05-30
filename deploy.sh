@@ -66,8 +66,8 @@ pull_code() {
         log "分支: ${branch}"
         local old_head
         old_head=$(git rev-parse HEAD 2>/dev/null || echo "")
-        git fetch origin || { log "git fetch 失败" "ERROR"; exit 1; }
-        git reset --hard "origin/${branch}" || { log "git reset 失败" "ERROR"; exit 1; }
+        git fetch origin || true
+        git pull || { log "git pull 失败" "ERROR"; exit 1; }
         local new_head
         new_head=$(git rev-parse HEAD 2>/dev/null || echo "")
         if [ -n "$old_head" ] && [ "$old_head" != "$new_head" ]; then
