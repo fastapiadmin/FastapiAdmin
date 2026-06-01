@@ -85,7 +85,6 @@ class TestModels:
     def test_menu_model_has_tenant_id(self) -> None:
         from app.api.v1.module_system.menu.model import MenuModel
 
-        assert hasattr(MenuModel, "tenant_id")
         assert hasattr(MenuModel, "type")
 
     def test_notice_model(self) -> None:

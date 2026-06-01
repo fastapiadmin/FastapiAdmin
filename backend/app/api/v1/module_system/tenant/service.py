@@ -1,6 +1,7 @@
 import json
 import random
 import string
+from datetime import datetime
 
 import sqlalchemy as sa
 from redis.asyncio.client import Redis
@@ -18,16 +19,22 @@ from app.core.redis_crud import RedisCURD
 from app.utils.hash_bcrpy_util import PwdUtil
 
 from .crud import TenantCRUD
-from .model import TenantConfigModel, TenantMenuModel, TenantModel, TenantQuotaModel, TenantUserModel
+from .model import (
+    TenantConfigModel,
+    TenantMenuModel,
+    TenantModel,
+    TenantQuotaModel,
+    TenantUserModel,
+)
 from .schema import (
     TenantConfigItem,
     TenantConfigOutSchema,
     TenantCreateSchema,
     TenantMenuSetSchema,
     TenantOutSchema,
+    TenantQueryParam,
     TenantQuotaOutSchema,
     TenantQuotaUpdateSchema,
-    TenantQueryParam,
     TenantUpdateSchema,
     TenantUserAddSchema,
     TenantUserOutSchema,
@@ -96,6 +103,16 @@ class TenantService:
             user_obj = await UserCRUD(auth).create(data=admin_data)
             if not user_obj:
                 raise CustomException(msg="创建租户初始管理员失败")
+            auth.db.add(
+                TenantUserModel(
+                    user_id=user_obj.id,
+                    tenant_id=tenant_obj.id,
+                    role="admin",
+                    is_default=1,
+                    create_time=datetime.now(),
+                )
+            )
+            await auth.db.flush()
         except CustomException:
             raise
         except Exception as e:
@@ -526,8 +543,9 @@ class TenantService:
         返回:
         - None
         """
-        from app.core.database import async_db_session
         from sqlalchemy import select
+
+        from app.core.database import async_db_session
 
         async with async_db_session() as session:
             async with session.begin():

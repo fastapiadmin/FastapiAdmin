@@ -34,6 +34,28 @@ from .schema import (
 class UserService:
     """用户模块服务层"""
 
+    @staticmethod
+    async def _is_tenant_admin_user(auth: AuthSchema) -> bool:
+        """判断当前用户是否为租户 admin。"""
+        if not auth.user or not auth.user.id or not auth.user.tenant_id:
+            return False
+
+        from sqlalchemy import select
+
+        from app.api.v1.module_system.tenant.model import TenantUserModel
+
+        member_stmt = (
+            select(TenantUserModel.role)
+            .where(
+                TenantUserModel.user_id == auth.user.id,
+                TenantUserModel.tenant_id == auth.user.tenant_id,
+            )
+            .limit(1)
+        )
+        member_result = await auth.db.execute(member_stmt)
+        member_role = member_result.scalar_one_or_none()
+        return member_role == "admin"
+
     @classmethod
     async def get_detail_by_id_service(cls, auth: AuthSchema, id: int) -> dict:
         """
@@ -325,6 +347,14 @@ class UserService:
                 if allowed_ids is not None:
                     allowed_set = set(allowed_ids)
                     menu_ids = menu_ids & allowed_set
+            elif auth.user.tenant_id:
+                from app.api.v1.module_system.tenant.service import TenantService
+
+                allowed_ids = await TenantService.get_tenant_menu_ids(
+                    auth, auth.user.tenant_id
+                )
+                if allowed_ids is not None and await cls._is_tenant_admin_user(auth):
+                    menu_ids = set(allowed_ids)
 
             # 使用树形结构查询，预加载children关系
             menus = (
