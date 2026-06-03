@@ -4,10 +4,12 @@
     <el-form :model="formData" label-width="100px">
       <el-divider content-position="left">咨询会信息</el-divider>
       <el-descriptions :column="1" border>
-        <el-descriptions-item label="标题">{{ data?.title }}</el-descriptions-item>
-        <el-descriptions-item label="主办方">{{ data?.organizer }}</el-descriptions-item>
-        <el-descriptions-item label="开始日期">{{ data?.start_date }}</el-descriptions-item>
-        <el-descriptions-item label="城市">{{ data?.city || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="省份">{{ data?.province || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="指导单位">{{ data?.guidance_unit || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="承办单位">{{ data?.organizer }}</el-descriptions-item>
+        <el-descriptions-item label="线路">{{ data?.route_arrangement || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="时间">{{ data?.event_time_text || data?.start_date }}</el-descriptions-item>
+        <el-descriptions-item label="地点">{{ data?.address || "-" }}</el-descriptions-item>
       </el-descriptions>
 
       <el-divider content-position="left" style="margin-top: 20px">审核意见</el-divider>

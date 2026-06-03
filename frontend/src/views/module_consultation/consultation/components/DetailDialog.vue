@@ -1,6 +1,6 @@
-<!-- 详情对话框 -->
+<!-- 详情对话框（与 Excel/抓取字段一致） -->
 <template>
-  <el-dialog v-model="dialogVisible" title="咨询会信息详情" width="800px" destroy-on-close>
+  <el-dialog v-model="dialogVisible" title="咨询会信息详情" width="900px" destroy-on-close>
     <el-descriptions v-if="data" :column="2" border>
       <el-descriptions-item v-if="data.excel_serial_no" label="序号">
         {{ data.excel_serial_no }}
@@ -13,7 +13,14 @@
       <el-descriptions-item label="承办单位">{{ data.organizer }}</el-descriptions-item>
       <el-descriptions-item label="线路安排">{{ data.route_arrangement || "-" }}</el-descriptions-item>
       <el-descriptions-item label="是否参加">{{ data.is_participating || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="时间原文">{{ data.event_time_text || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="信息来源">
+        <el-tag :type="getSourceTypeType(data.source_type)">
+          {{ getSourceTypeLabel(data.source_type) }}
+        </el-tag>
+      </el-descriptions-item>
+      <el-descriptions-item label="时间原文" :span="2">
+        {{ data.event_time_text || "-" }}
+      </el-descriptions-item>
       <el-descriptions-item label="开始日期">{{ data.start_date }}</el-descriptions-item>
       <el-descriptions-item label="结束日期">{{ data.end_date || "-" }}</el-descriptions-item>
       <el-descriptions-item label="地点" :span="2">{{ data.address || "-" }}</el-descriptions-item>
@@ -38,44 +45,24 @@
       <el-descriptions-item label="是否需要回执" :span="2">
         {{ data.receipt_required_time || "-" }}
       </el-descriptions-item>
-      <el-descriptions-item label="备注" :span="2">{{ data.remarks || data.description || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="主办方类型">
-        {{ getOrganizerTypeLabel(data.organizer_type) }}
-      </el-descriptions-item>
-      <el-descriptions-item label="开始时间">{{ data.start_time || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="结束时间">{{ data.end_time || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="城市">{{ data.city || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="区县">{{ data.district || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="参与高校数量">{{ data.university_count }}</el-descriptions-item>
-      <el-descriptions-item label="预计参观人数">
-        {{ data.estimated_visitors || "-" }}
-      </el-descriptions-item>
-      <el-descriptions-item label="展位费用">
-        {{ data.booth_fee ? "¥" + data.booth_fee : "-" }}
-      </el-descriptions-item>
-      <el-descriptions-item label="信息来源">
-        <el-tag :type="getSourceTypeType(data.source_type)">
-          {{ getSourceTypeLabel(data.source_type) }}
-        </el-tag>
+      <el-descriptions-item label="备注" :span="2">
+        {{ data.remarks || data.description || "-" }}
       </el-descriptions-item>
       <el-descriptions-item label="状态">
         <el-tag :type="getStatusType(data.status)">
           {{ getStatusLabel(data.status) }}
         </el-tag>
       </el-descriptions-item>
-      <el-descriptions-item v-if="data.compliance_score !== null" label="合规评分">
+      <el-descriptions-item
+        v-if="data.compliance_score !== null && data.compliance_score !== undefined"
+        label="合规评分"
+      >
         <el-tag :type="getComplianceType(data.compliance_score)">
           {{ data.compliance_score }}分
         </el-tag>
       </el-descriptions-item>
       <el-descriptions-item v-if="data.compliance_level" label="合规等级">
-        {{ getComplianceLevelLabel(data.compliance_level) }}
-      </el-descriptions-item>
-      <el-descriptions-item label="是否归档">
-        {{ data.is_archived ? "是" : "否" }}
-      </el-descriptions-item>
-      <el-descriptions-item v-if="data.is_archived" label="归档时间">
-        {{ data.archived_time }}
+        {{ data.compliance_level }}
       </el-descriptions-item>
       <el-descriptions-item label="创建时间" :span="2">
         {{ data.created_time }}
@@ -86,9 +73,7 @@
     </el-descriptions>
 
     <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">关闭</el-button>
-      </div>
+      <el-button @click="dialogVisible = false">关闭</el-button>
     </template>
   </el-dialog>
 </template>
@@ -114,20 +99,10 @@ const dialogVisible = computed({
 
 const data = computed(() => props.data);
 
-// 辅助函数
-const getOrganizerTypeLabel = (type?: string) => {
-  const map: Record<string, string> = {
-    education_dept: "教育部门",
-    university: "高校",
-    high_school: "中学",
-    training: "培训机构",
-    other: "其他",
-  };
-  return type ? map[type] : "-";
-};
+type TagType = "primary" | "success" | "warning" | "info" | "danger";
 
-const getSourceTypeType = (type: string) => {
-  const map: Record<string, string> = {
+const getSourceTypeType = (type: string): TagType => {
+  const map: Record<string, TagType> = {
     crawler: "primary",
     upload: "success",
     manual: "warning",
@@ -144,8 +119,8 @@ const getSourceTypeLabel = (type: string) => {
   return map[type] || type;
 };
 
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = {
+const getStatusType = (status: string): TagType => {
+  const map: Record<string, TagType> = {
     pending: "warning",
     approved: "success",
     rejected: "danger",
@@ -164,25 +139,9 @@ const getStatusLabel = (status: string) => {
   return map[status] || status;
 };
 
-const getComplianceType = (score: number) => {
-  if (score >= 80) return "success";
-  if (score >= 60) return "warning";
+const getComplianceType = (score: number): TagType => {
+  if (score >= 8) return "success";
+  if (score >= 6) return "warning";
   return "danger";
 };
-
-const getComplianceLevelLabel = (level: string) => {
-  const map: Record<string, string> = {
-    low: "低风险",
-    medium: "中风险",
-    high: "高风险",
-  };
-  return map[level] || level;
-};
 </script>
-
-<style lang="scss" scoped>
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-</style>

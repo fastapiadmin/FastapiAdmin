@@ -1,28 +1,67 @@
 """
 咨询会信息聚合 - 网络爬虫基础设施
 
-功能：提供基础爬虫抽象类和咨询会信息抓取实现
+功能：微信公众号渠道抓取（搜狗微信搜索）
 """
 
+from __future__ import annotations
+
+import hashlib
+import re
+import urllib.parse
 from abc import ABC, abstractmethod
 from datetime import datetime
+from html import unescape
 from typing import Any
 
 import httpx
 
 from app.core.logger import log
 
+# 微信公众号抓取固定关键词
+WECHAT_SEARCH_KEYWORD = "2026高考咨询会"
+WECHAT_SOGOU_SEARCH_URL = "https://weixin.sogou.com/weixin"
+
+_PROVINCES = (
+    "北京",
+    "天津",
+    "上海",
+    "重庆",
+    "河北",
+    "山西",
+    "辽宁",
+    "吉林",
+    "黑龙江",
+    "江苏",
+    "浙江",
+    "安徽",
+    "福建",
+    "江西",
+    "山东",
+    "河南",
+    "湖北",
+    "湖南",
+    "广东",
+    "海南",
+    "四川",
+    "贵州",
+    "云南",
+    "陕西",
+    "甘肃",
+    "青海",
+    "内蒙古",
+    "广西",
+    "西藏",
+    "宁夏",
+    "新疆",
+    "香港",
+    "澳门",
+    "台湾",
+)
+
 
 class BaseCrawler(ABC):
-    """
-    爬虫基类
-
-    子类需实现:
-    - source_name: 来源名称
-    - source_url: 来源基础URL
-    - fetch(): 抓取数据并返回结构化列表
-    - parse(): 解析原始数据为标准格式
-    """
+    """爬虫基类"""
 
     source_name: str = ""
     source_url: str = ""
@@ -39,55 +78,23 @@ class BaseCrawler(ABC):
                 ),
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+                "Referer": WECHAT_SOGOU_SEARCH_URL,
             },
+            follow_redirects=True,
         )
 
     async def close(self) -> None:
-        """关闭 HTTP 客户端"""
         await self.client.aclose()
 
     @abstractmethod
     async def fetch(self) -> list[dict[str, Any]]:
-        """
-        抓取原始数据
-
-        返回:
-        - list[dict]: 原始数据列表
-        """
+        """抓取原始数据"""
 
     @abstractmethod
     def parse(self, raw_data: dict[str, Any]) -> dict[str, Any] | None:
-        """
-        解析单条原始数据为标准格式
-
-        标准格式字段:
-        - title (str): 咨询会标题
-        - organizer (str): 主办方
-        - organizer_nature (str): 主办机构性质
-        - start_date (str): 开始日期 (YYYY-MM-DD)
-        - end_date (str | None): 结束日期
-        - province (str): 省份
-        - city (str): 城市
-        - address (str | None): 详细地址
-        - venue_name (str | None): 场馆名称
-        - booth_fee (float | None): 展位费用
-        - fee_description (str | None): 费用说明
-        - registration_email (str | None): 报名邮箱
-        - source_url (str | None): 来源链接
-        - external_id (str | None): 外部系统ID(用于去重)
-        - description (str | None): 描述
-
-        返回:
-        - dict | None: 解析后的标准数据，解析失败返回 None
-        """
+        """解析单条原始数据为标准格式"""
 
     async def crawl(self) -> list[dict[str, Any]]:
-        """
-        完整抓取流程: fetch + parse
-
-        返回:
-        - list[dict]: 解析后的标准数据列表
-        """
         try:
             raw_list = await self.fetch()
             parsed_list = []
@@ -96,7 +103,7 @@ class BaseCrawler(ABC):
                     parsed = self.parse(raw)
                     if parsed:
                         parsed["source_type"] = "crawler"
-                        parsed["crawl_url"] = self.source_url
+                        parsed["crawl_url"] = raw.get("article_url") or self.source_url
                         parsed["crawl_time"] = datetime.now().isoformat()
                         parsed_list.append(parsed)
                 except Exception as e:
@@ -112,115 +119,213 @@ class BaseCrawler(ABC):
             await self.close()
 
 
-class MockConsultationCrawler(BaseCrawler):
-    """
-    模拟爬虫 - 用于演示和测试
+_MUNICIPALITIES = frozenset({"北京", "天津", "上海", "重庆"})
 
-    实际生产环境应替换为真实的数据源爬虫
+
+def _extract_province(text: str) -> str | None:
+    for name in _PROVINCES:
+        if name in text:
+            if name in _MUNICIPALITIES:
+                return f"{name}市"
+            if name.endswith(("市", "省", "区")):
+                return name
+            return f"{name}省"
+    return None
+
+
+def _extract_date(text: str) -> str | None:
+    m = re.search(r"(20\d{2})[年\-/](\d{1,2})[月\-/](\d{1,2})", text)
+    if m:
+        y, mo, d = m.groups()
+        return f"{y}-{int(mo):02d}-{int(d):02d}"
+    m = re.search(r"(20\d{2})[年\-/](\d{1,2})[月]?", text)
+    if m:
+        y, mo = m.groups()
+        return f"{y}-{int(mo):02d}-01"
+    return None
+
+
+class WechatOfficialAccountCrawler(BaseCrawler):
+    """
+    微信公众号渠道爬虫
+
+    通过搜狗微信搜索「2026高考咨询会」相关文章并结构化入库。
     """
 
-    source_name = "mock_consultation_source"
-    source_url = "https://example.com/consultations"
+    source_name = "wechat_official_account"
+    source_url = WECHAT_SOGOU_SEARCH_URL
+    search_keyword = WECHAT_SEARCH_KEYWORD
+    max_pages = 2
 
     async def fetch(self) -> list[dict[str, Any]]:
-        """模拟抓取数据"""
-        log.info(f"[{self.source_name}] 开始模拟抓取...")
-        return [
-            {
-                "title": "2026年河北省高招咨询会",
-                "organizer": "河北省教育考试院",
-                "organizer_nature": "official_single",
-                "start_date": "2026-06-20",
-                "end_date": "2026-06-21",
-                "province": "河北省",
-                "city": "石家庄市",
-                "address": "石家庄国际会展中心",
-                "venue_name": "石家庄国际会展中心",
-                "booth_fee": 2000.0,
-                "fee_description": "标准展位费用",
-                "registration_email": "consultation@example.com",
-                "external_id": "mock_001",
-                "description": "河北省年度高招咨询会",
-            },
-            {
-                "title": "2026年天津市高校招生咨询会",
-                "organizer": "天津市教育招生考试院",
-                "organizer_nature": "official_single",
-                "start_date": "2026-06-15",
-                "end_date": None,
-                "province": "天津市",
-                "city": "天津市",
-                "address": "天津梅江会展中心",
-                "venue_name": "天津梅江会展中心",
-                "booth_fee": 1500.0,
-                "fee_description": "普通展位",
-                "registration_email": "tjconsult@example.com",
-                "external_id": "mock_002",
-                "description": "天津市高校招生咨询会",
-            },
-        ]
+        log.info(f"[{self.source_name}] 微信公众号搜索: {self.search_keyword}")
+        articles: list[dict[str, Any]] = []
+        seen_urls: set[str] = set()
+
+        for page in range(1, self.max_pages + 1):
+            params = {
+                "type": "2",
+                "query": self.search_keyword,
+                "ie": "utf8",
+                "page": str(page),
+            }
+            url = f"{self.source_url}?{urllib.parse.urlencode(params)}"
+            try:
+                resp = await self.client.get(url)
+                resp.raise_for_status()
+            except Exception as e:
+                log.warning(f"[{self.source_name}] 请求第 {page} 页失败: {e}")
+                break
+
+            page_items = self._parse_sogou_html(resp.text)
+            for item in page_items:
+                link = item.get("article_url") or ""
+                if not link or link in seen_urls:
+                    continue
+                seen_urls.add(link)
+                articles.append(item)
+
+            if not page_items:
+                break
+
+        log.info(f"[{self.source_name}] 共获取 {len(articles)} 条微信文章")
+        return articles
+
+    def _parse_sogou_html(self, html: str) -> list[dict[str, Any]]:
+        """从搜狗微信搜索结果页解析文章列表"""
+        items: list[dict[str, Any]] = []
+        blocks = re.split(r"<div[^>]*class=\"[^\"]*txt-box[^\"]*\"[^>]*>", html)
+        for block in blocks[1:]:
+            title_m = re.search(
+                r"<h3[^>]*>\s*<a[^>]*href=\"([^\"]+)\"[^>]*>([\s\S]*?)</a>",
+                block,
+                re.I,
+            )
+            if not title_m:
+                continue
+            href, title_html = title_m.group(1), title_m.group(2)
+            title = unescape(re.sub(r"<[^>]+>", "", title_html)).strip()
+            if not title or self.search_keyword not in title and "咨询会" not in title:
+                continue
+
+            account_m = re.search(
+                r"<span[^>]*class=\"[^\"]*all-time-y2[^\"]*\"[^>]*>([^<]+)</span>",
+                block,
+                re.I,
+            )
+            account = unescape(account_m.group(1)).strip() if account_m else "微信公众号"
+
+            snippet_m = re.search(
+                r"<p[^>]*class=\"[^\"]*txt-info[^\"]*\"[^>]*>([\s\S]*?)</p>",
+                block,
+                re.I,
+            )
+            snippet = ""
+            if snippet_m:
+                snippet = unescape(re.sub(r"<[^>]+>", "", snippet_m.group(1))).strip()
+
+            article_url = (
+                href if href.startswith("http") else urllib.parse.urljoin(self.source_url, href)
+            )
+
+            items.append({
+                "title": title,
+                "article_url": article_url,
+                "account_name": account,
+                "snippet": snippet,
+                "search_keyword": self.search_keyword,
+            })
+
+        if items:
+            return items
+
+        # 降级：整页正则匹配标题链接
+        for href, title_html in re.findall(
+            r"<a[^>]*href=\"([^\"]+)\"[^>]*uigs=\"article_title[^\"]*\"[^>]*>([\s\S]*?)</a>",
+            html,
+            re.I,
+        ):
+            title = unescape(re.sub(r"<[^>]+>", "", title_html)).strip()
+            if not title or ("咨询会" not in title and self.search_keyword not in title):
+                continue
+            article_url = (
+                href if href.startswith("http") else urllib.parse.urljoin(self.source_url, href)
+            )
+            items.append({
+                "title": title,
+                "article_url": article_url,
+                "account_name": "微信公众号",
+                "snippet": "",
+                "search_keyword": self.search_keyword,
+            })
+        return items
 
     def parse(self, raw_data: dict[str, Any]) -> dict[str, Any] | None:
-        """解析模拟数据"""
-        required_fields = ["title", "organizer", "start_date", "province", "city"]
-        for field in required_fields:
-            if not raw_data.get(field):
-                log.warning(f"[{self.source_name}] 缺少必填字段: {field}")
-                return None
+        title = (raw_data.get("title") or "").strip()
+        if not title:
+            return None
+
+        snippet = (raw_data.get("snippet") or "").strip()
+        account = (raw_data.get("account_name") or "微信公众号").strip()
+        combined = f"{title} {snippet}"
+        province = _extract_province(combined)
+        start_date = _extract_date(combined) or "2026-06-01"
+        article_url = raw_data.get("article_url") or self.source_url
+        external_id = hashlib.md5(article_url.encode("utf-8")).hexdigest()
+
+        organizer = account if account != "微信公众号" else "微信公众号"
+        if province:
+            auto_title = f"{province}-{title[:80]}"
+        else:
+            auto_title = title[:200]
+
         return {
-            "title": raw_data["title"],
-            "organizer": raw_data["organizer"],
-            "organizer_nature": raw_data.get("organizer_nature"),
-            "start_date": raw_data["start_date"],
-            "end_date": raw_data.get("end_date"),
-            "province": raw_data["province"],
-            "city": raw_data["city"],
-            "address": raw_data.get("address"),
-            "venue_name": raw_data.get("venue_name"),
-            "booth_fee": raw_data.get("booth_fee"),
-            "fee_description": raw_data.get("fee_description"),
-            "registration_email": raw_data.get("registration_email"),
-            "source_url": raw_data.get("source_url") or self.source_url,
-            "external_id": raw_data.get("external_id"),
-            "description": raw_data.get("description"),
+            "title": auto_title[:200],
+            "organizer": organizer[:200],
+            "organizer_nature": "third_party_single",
+            "start_date": start_date,
+            "province": province,
+            "city": province,
+            "address": snippet[:500] if snippet else None,
+            "guidance_unit": account,
+            "event_time_text": snippet[:2000] if snippet else None,
+            "fee_description": None,
+            "source_url": article_url,
+            "external_id": external_id,
+            "description": f"渠道：微信公众号\n关键词：{self.search_keyword}\n{snippet}".strip(),
+            "search_keywords": f"{self.search_keyword} {title} {account} {province or ''}".strip(),
         }
 
 
 class CrawlerRegistry:
-    """
-    爬虫注册表
-
-    管理所有可用的爬虫实例
-    """
+    """爬虫注册表"""
 
     _crawlers: dict[str, BaseCrawler] = {}
 
     @classmethod
     def register(cls, name: str, crawler: BaseCrawler) -> None:
-        """注册爬虫"""
         cls._crawlers[name] = crawler
         log.info(f"爬虫已注册: {name}")
 
     @classmethod
     def get(cls, name: str) -> BaseCrawler | None:
-        """获取爬虫实例"""
         return cls._crawlers.get(name)
 
     @classmethod
     def list_crawlers(cls) -> list[str]:
-        """列出所有已注册的爬虫名称"""
         return list(cls._crawlers.keys())
 
     @classmethod
-    async def run_all(cls) -> dict[str, list[dict[str, Any]]]:
-        """
-        运行所有已注册的爬虫
-
-        返回:
-        - dict: {爬虫名称: 抓取结果列表}
-        """
-        results = {}
-        for name, crawler in cls._crawlers.items():
+    async def run(cls, names: list[str] | None = None) -> dict[str, list[dict[str, Any]]]:
+        """运行指定爬虫（默认全部已注册）"""
+        targets = names if names is not None else list(cls._crawlers.keys())
+        results: dict[str, list[dict[str, Any]]] = {}
+        for name in targets:
+            crawler = cls._crawlers.get(name)
+            if not crawler:
+                log.warning(f"爬虫未注册: {name}")
+                results[name] = []
+                continue
             try:
                 results[name] = await crawler.crawl()
             except Exception as e:
@@ -229,5 +334,4 @@ class CrawlerRegistry:
         return results
 
 
-# 注册默认爬虫
-CrawlerRegistry.register("mock_consultation", MockConsultationCrawler())
+CrawlerRegistry.register("wechat_official_account", WechatOfficialAccountCrawler())

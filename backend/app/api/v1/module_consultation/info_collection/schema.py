@@ -196,8 +196,10 @@ class InfoCollectionQueryParam:
     def __init__(
         self,
         title: str | None = Query(None, description="咨询会标题"),
-        organizer: str | None = Query(None, description="主办方"),
+        organizer: str | None = Query(None, description="承办单位"),
         province: str | None = Query(None, description="省份"),
+        guidance_unit: str | None = Query(None, description="指导单位"),
+        route_arrangement: str | None = Query(None, description="线路安排"),
         city: str | None = Query(None, description="城市"),
         start_date_begin: DateStr | None = Query(None, description="开始日期范围-开始"),
         start_date_end: DateStr | None = Query(None, description="开始日期范围-结束"),
@@ -217,6 +219,10 @@ class InfoCollectionQueryParam:
             self.title = (QueueEnum.like.value, title)
         if organizer:
             self.organizer = (QueueEnum.like.value, organizer)
+        if guidance_unit:
+            self.guidance_unit = (QueueEnum.like.value, guidance_unit)
+        if route_arrangement:
+            self.route_arrangement = (QueueEnum.like.value, route_arrangement)
 
         # 精确查询字段
         if province:

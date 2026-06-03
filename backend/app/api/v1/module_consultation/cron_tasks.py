@@ -31,7 +31,10 @@ async def task_crawl_consultation() -> dict:
 
     log.info("[定时任务] 开始抓取咨询会信息...")
     auth = await _get_system_auth()
-    result = await InfoCollectionService.crawl_and_save_service(auth=auth)
+    result = await InfoCollectionService.crawl_and_save_service(
+        auth=auth,
+        crawler_names=["wechat_official_account"],
+    )
     log.info(f"[定时任务] 抓取咨询会信息完成: {result}")
     return result
 

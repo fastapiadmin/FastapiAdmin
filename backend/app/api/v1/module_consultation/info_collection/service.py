@@ -491,18 +491,25 @@ class InfoCollectionService:
         return {"updated_count": updated_count}
 
     @classmethod
-    async def crawl_and_save_service(cls, auth: AuthSchema) -> dict:
+    async def crawl_and_save_service(
+        cls,
+        auth: AuthSchema,
+        crawler_names: list[str] | None = None,
+    ) -> dict:
         """
         执行爬虫抓取并保存到数据库
+
+        参数:
+        - crawler_names: 指定爬虫名称列表，默认仅微信公众号渠道
 
         返回:
         - dict: 抓取结果统计
         """
         from .crawler import CrawlerRegistry
 
-        # 与定时任务一致：无用户上下文，避免 crawler 数据绑定超管 created_id
+        names = crawler_names or ["wechat_official_account"]
         crawl_auth = AuthSchema(db=auth.db, check_data_scope=False)
-        all_results = await CrawlerRegistry.run_all()
+        all_results = await CrawlerRegistry.run(names)
 
         total_fetched = 0
         total_saved = 0
@@ -534,12 +541,16 @@ class InfoCollectionService:
                         "booth_fee": item.get("booth_fee"),
                         "fee_description": item.get("fee_description"),
                         "registration_email": item.get("registration_email"),
+                        "guidance_unit": item.get("guidance_unit"),
+                        "route_arrangement": item.get("route_arrangement"),
+                        "event_time_text": item.get("event_time_text"),
                         "source_type": item.get("source_type", "crawler"),
                         "source_url": item.get("source_url"),
                         "external_id": item.get("external_id"),
                         "description": item.get("description"),
                         "status": InfoStatus.PENDING.value,
-                        "search_keywords": (
+                        "search_keywords": item.get("search_keywords")
+                        or (
                             f"{item.get('title', '')} {item.get('organizer', '')} "
                             f"{item.get('city', '')}"
                         ),

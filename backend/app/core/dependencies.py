@@ -1,5 +1,6 @@
 import json
 from collections.abc import AsyncGenerator
+from typing import Annotated
 
 from fastapi import Depends, Query, Request
 from redis.asyncio.client import Redis
@@ -126,6 +127,14 @@ async def get_current_user(
         user.positions = [pos for pos in user.positions if pos and pos.status]
 
     auth.user = user
+    return auth
+
+
+async def get_current_user_scoped(
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
+) -> AuthSchema:
+    """获取当前用户并启用数据权限（用于业务列表/详情查询）"""
+    auth.check_data_scope = True
     return auth
 
 

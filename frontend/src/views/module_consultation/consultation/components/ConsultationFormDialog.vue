@@ -1,9 +1,9 @@
-<!-- 咨询会信息表单弹窗 -->
+<!-- 咨询会信息表单（与详情/Excel 字段一致） -->
 <template>
   <el-dialog
     v-model="dialogVisible"
     :title="dialogTitle"
-    width="800px"
+    width="900px"
     destroy-on-close
     :close-on-click-modal="false"
   >
@@ -11,188 +11,203 @@
       ref="formRef"
       :model="formData"
       :rules="formRules"
-      label-width="120px"
+      label-width="130px"
       class="consultation-form"
     >
       <el-divider content-position="left">基本信息</el-divider>
-
       <el-row :gutter="20">
-        <el-col :span="24">
-          <el-form-item label="咨询会标题" prop="title">
+        <el-col :span="8">
+          <el-form-item label="序号" prop="excel_serial_no">
+            <el-input v-model="formData.excel_serial_no" placeholder="Excel序号" clearable />
+          </el-form-item>
+        </el-col>
+        <el-col :span="16">
+          <el-form-item label="标题" prop="title">
             <el-input
               v-model="formData.title"
-              placeholder="请输入咨询会标题"
+              placeholder="留空将按省份-线路-承办单位自动生成"
               maxlength="200"
               show-word-limit
             />
           </el-form-item>
         </el-col>
       </el-row>
-
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <el-form-item label="咨询会描述" prop="description">
-            <el-input
-              v-model="formData.description"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入咨询会描述"
-              maxlength="2000"
-              show-word-limit
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-divider content-position="left">主办方信息</el-divider>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="主办方" prop="organizer">
-            <el-input v-model="formData.organizer" placeholder="请输入主办方" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="主办方类型" prop="organizer_type">
-            <el-select
-              v-model="formData.organizer_type"
-              placeholder="请选择"
-              clearable
-              style="width: 100%"
-            >
-              <el-option label="教育部门" value="education_dept" />
-              <el-option label="高校" value="university" />
-              <el-option label="中学" value="high_school" />
-              <el-option label="培训机构" value="training" />
-              <el-option label="其他" value="other" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-divider content-position="left">时间地点</el-divider>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="开始日期" prop="start_date">
-            <el-date-picker
-              v-model="formData.start_date"
-              type="date"
-              placeholder="选择开始日期"
-              value-format="YYYY-MM-DD"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="结束日期" prop="end_date">
-            <el-date-picker
-              v-model="formData.end_date"
-              type="date"
-              placeholder="选择结束日期"
-              value-format="YYYY-MM-DD"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="开始时间" prop="start_time">
-            <el-time-picker
-              v-model="formData.start_time"
-              placeholder="选择开始时间"
-              value-format="HH:mm"
-              format="HH:mm"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="结束时间" prop="end_time">
-            <el-time-picker
-              v-model="formData.end_time"
-              placeholder="选择结束时间"
-              value-format="HH:mm"
-              format="HH:mm"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="省份" prop="province">
-            <el-input v-model="formData.province" placeholder="请输入省份" />
+            <el-input v-model="formData.province" placeholder="省份" clearable />
           </el-form-item>
         </el-col>
         <el-col :span="8">
-          <el-form-item label="城市" prop="city">
-            <el-input v-model="formData.city" placeholder="请输入城市" />
+          <el-form-item label="指导单位" prop="guidance_unit">
+            <el-input v-model="formData.guidance_unit" placeholder="指导单位" clearable />
           </el-form-item>
         </el-col>
         <el-col :span="8">
-          <el-form-item label="区县" prop="district">
-            <el-input v-model="formData.district" placeholder="请输入区县" />
+          <el-form-item label="承办单位" prop="organizer">
+            <el-input v-model="formData.organizer" placeholder="承办单位" />
           </el-form-item>
         </el-col>
       </el-row>
-
       <el-row :gutter="20">
-        <el-col :span="24">
-          <el-form-item label="详细地址" prop="address">
-            <el-input v-model="formData.address" placeholder="请输入详细地址" />
+        <el-col :span="8">
+          <el-form-item label="线路安排" prop="route_arrangement">
+            <el-input v-model="formData.route_arrangement" placeholder="线路安排" clearable />
           </el-form-item>
         </el-col>
-      </el-row>
-
-      <el-divider content-position="left">其他信息</el-divider>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="预计参观人数" prop="estimated_visitors">
-            <el-input-number
-              v-model="formData.estimated_visitors"
-              :min="0"
-              :step="100"
-              placeholder="请输入预计参观人数"
-              style="width: 100%"
-            />
+        <el-col :span="8">
+          <el-form-item label="是否参加" prop="is_participating">
+            <el-input v-model="formData.is_participating" placeholder="是否参加" clearable />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
-          <el-form-item label="展位费用" prop="booth_fee">
-            <el-input-number
-              v-model="formData.booth_fee"
-              :min="0"
-              :precision="2"
-              :step="100"
-              placeholder="请输入展位费用"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="信息来源" prop="source_type">
-            <el-select
-              v-model="formData.source_type"
-              placeholder="请选择信息来源"
-              style="width: 100%"
-            >
+            <el-select v-model="formData.source_type" style="width: 100%">
               <el-option label="全网抓取" value="crawler" />
               <el-option label="第三方上传" value="upload" />
               <el-option label="手动录入" value="manual" />
             </el-select>
           </el-form-item>
         </el-col>
+      </el-row>
+
+      <el-divider content-position="left">时间地点</el-divider>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="时间原文" prop="event_time_text">
+            <el-input
+              v-model="formData.event_time_text"
+              type="textarea"
+              :rows="3"
+              placeholder="如：6月25-28日，或多场次说明"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-form-item label="开始日期" prop="start_date">
+            <el-date-picker
+              v-model="formData.start_date"
+              type="date"
+              placeholder="开始日期"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="结束日期" prop="end_date">
+            <el-date-picker
+              v-model="formData.end_date"
+              type="date"
+              placeholder="结束日期"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="地点" prop="address">
+            <el-input
+              v-model="formData.address"
+              type="textarea"
+              :rows="2"
+              placeholder="地点/详细地址"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-divider content-position="left">联系与费用</el-divider>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="人员" prop="personnel">
+            <el-input v-model="formData.personnel" type="textarea" :rows="2" placeholder="人员" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="收费标准" prop="fee_description">
+            <el-input
+              v-model="formData.fee_description"
+              type="textarea"
+              :rows="3"
+              placeholder="收费标准说明"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="邮寄材料地址" prop="mailing_address">
+            <el-input
+              v-model="formData.mailing_address"
+              type="textarea"
+              :rows="2"
+              placeholder="邮寄材料地址"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="联系人及电话" prop="contact_info">
+            <el-input v-model="formData.contact_info" placeholder="联系人及电话" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="汇款账户" prop="remittance_account">
+            <el-input
+              v-model="formData.remittance_account"
+              type="textarea"
+              :rows="3"
+              placeholder="汇款账户信息"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-divider content-position="left">回执与材料</el-divider>
+      <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="来源链接" prop="source_url">
-            <el-input v-model="formData.source_url" placeholder="请输入来源链接" />
+          <el-form-item label="回执情况" prop="receipt_status">
+            <el-input v-model="formData.receipt_status" placeholder="回执情况" clearable />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="材料已领取" prop="materials_received">
+            <el-input v-model="formData.materials_received" placeholder="材料已领取" clearable />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="材料" prop="materials">
+            <el-input v-model="formData.materials" type="textarea" :rows="2" placeholder="材料" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="是否需要回执" prop="receipt_required_time">
+            <el-input
+              v-model="formData.receipt_required_time"
+              placeholder="是否需要回执（具体时间）"
+              clearable
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="备注" prop="remarks">
+            <el-input v-model="formData.remarks" type="textarea" :rows="3" placeholder="备注" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -217,7 +232,6 @@ import type {
   ConsultationInfoForm,
 } from "@/api/module_consultation/consultation";
 
-// Props & Emits
 interface Props {
   visible: boolean;
   type: "create" | "edit";
@@ -230,101 +244,97 @@ const emit = defineEmits<{
   (e: "success"): void;
 }>();
 
-// 弹窗显示控制
 const dialogVisible = computed({
   get: () => props.visible,
   set: (val) => emit("update:visible", val),
 });
 
-// 弹窗标题
-const dialogTitle = computed(() => {
-  return props.type === "create" ? "新增咨询会信息" : "编辑咨询会信息";
-});
+const dialogTitle = computed(() =>
+  props.type === "create" ? "新增咨询会信息" : "编辑咨询会信息"
+);
 
-// 表单引用
 const formRef = ref<FormInstance>();
 const submitLoading = ref(false);
 
-// 表单数据
-const formData = reactive<ConsultationInfoForm>({
+const defaultForm = (): ConsultationInfoForm => ({
   title: "",
-  description: "",
   organizer: "",
-  organizer_type: undefined,
   start_date: "",
-  end_date: undefined,
-  start_time: undefined,
-  end_time: undefined,
-  province: undefined,
-  city: undefined,
-  district: undefined,
-  address: undefined,
-  participating_universities: undefined,
-  estimated_visitors: undefined,
-  booth_fee: undefined,
   source_type: "manual",
-  source_url: undefined,
+  excel_serial_no: undefined,
+  guidance_unit: undefined,
+  route_arrangement: undefined,
+  is_participating: undefined,
+  event_time_text: undefined,
+  end_date: undefined,
+  address: undefined,
+  personnel: undefined,
+  fee_description: undefined,
+  mailing_address: undefined,
+  contact_info: undefined,
+  remittance_account: undefined,
+  receipt_status: undefined,
+  materials: undefined,
+  materials_received: undefined,
+  remarks: undefined,
+  receipt_required_time: undefined,
+  province: undefined,
 });
 
-// 表单校验规则
+const formData = reactive<ConsultationInfoForm>(defaultForm());
+
 const formRules: FormRules = {
-  title: [
-    { required: true, message: "请输入咨询会标题", trigger: "blur" },
-    { min: 2, max: 200, message: "长度在 2 到 200 个字符", trigger: "blur" },
-  ],
   organizer: [
-    { required: true, message: "请输入主办方", trigger: "blur" },
+    { required: true, message: "请输入承办单位", trigger: "blur" },
     { min: 2, max: 200, message: "长度在 2 到 200 个字符", trigger: "blur" },
   ],
   start_date: [{ required: true, message: "请选择开始日期", trigger: "change" }],
 };
 
-// 监听数据变化
+const buildTitle = () => {
+  const parts = [formData.province, formData.route_arrangement, formData.organizer].filter(
+    (p) => p && String(p).trim()
+  );
+  return (parts.length ? parts.join("-") : formData.organizer).slice(0, 200);
+};
+
+const resetForm = () => {
+  Object.assign(formData, defaultForm());
+};
+
 watch(
   () => props.data,
   (newData) => {
     if (newData) {
-      Object.assign(formData, newData);
+      Object.assign(formData, defaultForm(), newData);
     } else {
-      // 重置表单
-      Object.assign(formData, {
-        title: "",
-        description: "",
-        organizer: "",
-        organizer_type: undefined,
-        start_date: "",
-        end_date: undefined,
-        start_time: undefined,
-        end_time: undefined,
-        province: undefined,
-        city: undefined,
-        district: undefined,
-        address: undefined,
-        participating_universities: undefined,
-        estimated_visitors: undefined,
-        booth_fee: undefined,
-        source_type: "manual",
-        source_url: undefined,
-      });
+      resetForm();
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 
-// 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return;
-
   const valid = await formRef.value.validate().catch(() => false);
   if (!valid) return;
 
+  if (!formData.title?.trim()) {
+    formData.title = buildTitle();
+  }
+  if (!formData.title?.trim() || formData.title.length < 2) {
+    ElMessage.warning("请填写标题或完善省份、线路、承办单位以自动生成标题");
+    return;
+  }
+
   submitLoading.value = true;
   try {
+    const payload = { ...formData };
     if (props.type === "create") {
-      await ConsultationInfoAPI.create(formData);
+      await ConsultationInfoAPI.create(payload);
       ElMessage.success("创建成功");
     } else {
-      await ConsultationInfoAPI.update(props.data!.id!, formData);
+      await ConsultationInfoAPI.update(props.data!.id!, payload);
       ElMessage.success("更新成功");
     }
     emit("success");
@@ -337,10 +347,13 @@ const handleSubmit = async () => {
 
 <style lang="scss" scoped>
 .consultation-form {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 8px;
+
   :deep(.el-divider__text) {
     font-size: 14px;
     font-weight: 600;
-    color: var(--el-text-color-primary);
   }
 }
 

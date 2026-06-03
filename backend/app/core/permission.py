@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.sql.elements import ColumnElement
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -185,20 +185,30 @@ class Permission:
     def __merge_crawler_global_scope(
         self, scope_cond: ColumnElement | None
     ) -> ColumnElement | None:
-        """咨询会 crawler 来源数据对所有用户绕过 created_id/部门数据权限"""
+        """
+        咨询会数据权限补充：
+        - 非 crawler：沿用部门/本人数据范围
+        - crawler：仅已审核记录全平台可见（超管在 __permission_condition 已放行）
+        """
         if self.model.__name__ != "ConsultationInfoModel":
             return scope_cond
 
         source_type_attr = getattr(self.model, "source_type", None)
-        if source_type_attr is None:
+        status_attr = getattr(self.model, "status", None)
+        if source_type_attr is None or status_attr is None:
             return scope_cond
 
-        from app.api.v1.module_consultation.info_collection.model import InfoSource
+        from app.api.v1.module_consultation.info_collection.model import InfoSource, InfoStatus
 
-        crawler_cond = source_type_attr == InfoSource.CRAWLER.value
+        crawler_approved = and_(
+            source_type_attr == InfoSource.CRAWLER.value,
+            status_attr == InfoStatus.APPROVED.value,
+        )
+        non_crawler = source_type_attr != InfoSource.CRAWLER.value
+
         if scope_cond is None:
-            return None
-        return or_(scope_cond, crawler_cond)
+            return or_(non_crawler, crawler_approved)
+        return or_(scope_cond, crawler_approved)
 
     async def __filter_by_data_scope(self) -> ColumnElement | None:
         """

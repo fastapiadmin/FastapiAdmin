@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
 from app.core.base_params import PaginationQueryParam
-from app.core.dependencies import AuthPermission, get_current_user
+from app.core.dependencies import AuthPermission, get_current_user, get_current_user_scoped
 from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
@@ -43,7 +43,7 @@ InfoCollectionRouter = APIRouter(
 )
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="咨询会信息ID")],
-    auth: Annotated[AuthSchema, Depends(get_current_user)],
+    auth: Annotated[AuthSchema, Depends(get_current_user_scoped)],
 ) -> JSONResponse:
     """
     获取咨询会信息详情
@@ -90,7 +90,7 @@ def _has_permission(auth: AuthSchema, permission: str) -> bool:
 async def get_obj_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[InfoCollectionQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(get_current_user)],
+    auth: Annotated[AuthSchema, Depends(get_current_user_scoped)],
 ) -> JSONResponse:
     """
     查询咨询会信息列表
@@ -105,8 +105,10 @@ async def get_obj_list_controller(
     """
     from app.common.enums import QueueEnum
 
-    # 无权限用户强制只查询已审核状态的数据
-    if not _has_permission(auth, "module_consultation:info_collection:query"):
+    # 非超管且无 query 权限：仅可查已审核数据（含已审核的 crawler）
+    if not (auth.user and auth.user.is_superuser) and not _has_permission(
+        auth, "module_consultation:info_collection:query"
+    ):
         search.status = (QueueEnum.eq.value, InfoStatus.APPROVED.value)
 
     result_dict = await InfoCollectionService.page_service(
@@ -520,7 +522,10 @@ async def crawl_controller(
 ) -> JSONResponse:
     """手动触发爬虫抓取（仅超级管理员）"""
     _require_superuser(auth)
-    result_dict = await InfoCollectionService.crawl_and_save_service(auth=auth)
+    result_dict = await InfoCollectionService.crawl_and_save_service(
+        auth=auth,
+        crawler_names=["wechat_official_account"],
+    )
     log.info(f"手动触发爬虫抓取完成: {result_dict}")
     return SuccessResponse(data=result_dict, msg="抓取完成")
 
@@ -584,7 +589,7 @@ async def import_excel_controller(
     response_model=ResponseSchema[list[InfoCollectionSimpleOutSchema]],
 )
 async def get_approved_options_controller(
-    auth: Annotated[AuthSchema, Depends(get_current_user)],
+    auth: Annotated[AuthSchema, Depends(get_current_user_scoped)],
 ) -> JSONResponse:
     """获取已审核咨询会下拉选项"""
     result_list = await InfoCollectionService.get_approved_list_service(auth=auth)

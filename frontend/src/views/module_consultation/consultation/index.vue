@@ -3,29 +3,45 @@
   <div class="app-container">
     <!-- 搜索区域 -->
     <el-card class="search-card" shadow="never">
-      <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
+      <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="90px">
+        <el-form-item label="省份" prop="province">
+          <el-input
+            v-model="searchForm.province"
+            placeholder="省份"
+            clearable
+            style="width: 120px"
+          />
+        </el-form-item>
+        <el-form-item label="指导单位" prop="guidance_unit">
+          <el-input
+            v-model="searchForm.guidance_unit"
+            placeholder="指导单位"
+            clearable
+            style="width: 160px"
+          />
+        </el-form-item>
+        <el-form-item label="承办单位" prop="organizer">
+          <el-input
+            v-model="searchForm.organizer"
+            placeholder="承办单位"
+            clearable
+            style="width: 160px"
+          />
+        </el-form-item>
+        <el-form-item label="线路" prop="route_arrangement">
+          <el-input
+            v-model="searchForm.route_arrangement"
+            placeholder="线路安排"
+            clearable
+            style="width: 120px"
+          />
+        </el-form-item>
         <el-form-item label="标题" prop="title">
           <el-input
             v-model="searchForm.title"
-            placeholder="请输入标题"
+            placeholder="标题"
             clearable
-            style="width: 200px"
-          />
-        </el-form-item>
-        <el-form-item label="主办方" prop="organizer">
-          <el-input
-            v-model="searchForm.organizer"
-            placeholder="请输入主办方"
-            clearable
-            style="width: 200px"
-          />
-        </el-form-item>
-        <el-form-item label="城市" prop="city">
-          <el-input
-            v-model="searchForm.city"
-            placeholder="请输入城市"
-            clearable
-            style="width: 150px"
+            style="width: 160px"
           />
         </el-form-item>
         <el-form-item label="状态" prop="status">
@@ -118,24 +134,28 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip>
+        <el-table-column prop="excel_serial_no" label="序号" width="70" align="center" />
+        <el-table-column prop="province" label="省份" width="80" />
+        <el-table-column
+          prop="guidance_unit"
+          label="指导单位"
+          min-width="120"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="organizer" label="承办单位" min-width="140" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-link type="primary" @click="handleView(row)">{{ row.title }}</el-link>
+            <el-link type="primary" @click="handleView(row)">{{ row.organizer }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="organizer" label="主办方" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="city" label="城市" width="100" />
-        <el-table-column prop="start_date" label="开始日期" width="120" />
-        <el-table-column prop="end_date" label="结束日期" width="120" />
-        <el-table-column prop="booth_fee" label="展位费用" width="100" align="right">
-          <template #default="{ row }">
-            <span v-if="row.booth_fee !== null && row.booth_fee !== undefined">
-              {{ row.booth_fee.toFixed(2) }}
-            </span>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
+        <el-table-column prop="route_arrangement" label="线路" width="90" show-overflow-tooltip />
+        <el-table-column
+          prop="event_time_text"
+          label="时间"
+          width="110"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="address" label="地点" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="is_participating" label="是否参加" width="90" />
         <el-table-column prop="source_type" label="信息来源" width="100">
           <template #default="{ row }">
             <el-tag :type="getSourceTypeType(row.source_type)">
@@ -261,18 +281,22 @@ import DetailDialog from "./components/DetailDialog.vue";
 
 // 搜索表单
 interface SearchForm {
-  title?: string;
+  province?: string;
+  guidance_unit?: string;
   organizer?: string;
-  city?: string;
+  route_arrangement?: string;
+  title?: string;
   status?: string;
   source_type?: string;
   start_date_range?: string[];
 }
 
 const searchForm = reactive<SearchForm>({
-  title: undefined,
+  province: undefined,
+  guidance_unit: undefined,
   organizer: undefined,
-  city: undefined,
+  route_arrangement: undefined,
+  title: undefined,
   status: undefined,
   source_type: undefined,
   start_date_range: undefined,
@@ -315,9 +339,11 @@ const fetchList = async () => {
     const params: ConsultationInfoQuery = {
       page_no: pagination.page,
       page_size: pagination.pageSize,
-      title: searchForm.title,
+      province: searchForm.province,
+      guidance_unit: searchForm.guidance_unit,
       organizer: searchForm.organizer,
-      city: searchForm.city,
+      route_arrangement: searchForm.route_arrangement,
+      title: searchForm.title,
       status: searchForm.status,
       source_type: searchForm.source_type,
       start_date_begin: searchForm.start_date_range?.[0],
@@ -343,9 +369,11 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   Object.assign(searchForm, {
-    title: undefined,
+    province: undefined,
+    guidance_unit: undefined,
     organizer: undefined,
-    city: undefined,
+    route_arrangement: undefined,
+    title: undefined,
     status: undefined,
     source_type: undefined,
     start_date_range: undefined,
@@ -411,8 +439,8 @@ const getSourceTypeLabel = (type: string): string => {
 };
 
 const getComplianceType = (score: number): TagType => {
-  if (score >= 80) return "success";
-  if (score >= 60) return "warning";
+  if (score >= 8) return "success";
+  if (score >= 6) return "warning";
   return "danger";
 };
 
@@ -423,14 +451,19 @@ const handleCreate = () => {
   formDialog.visible = true;
 };
 
-const handleEdit = (row: ConsultationInfoItem) => {
+const loadDetail = async (id: number) => {
+  const res = await ConsultationInfoAPI.getDetail(id);
+  return res.data?.data;
+};
+
+const handleEdit = async (row: ConsultationInfoItem) => {
   formDialog.type = "edit";
-  formDialog.data = row;
+  formDialog.data = (await loadDetail(row.id!)) || row;
   formDialog.visible = true;
 };
 
-const handleView = (row: ConsultationInfoItem) => {
-  detailDialog.data = row;
+const handleView = async (row: ConsultationInfoItem) => {
+  detailDialog.data = (await loadDetail(row.id!)) || row;
   detailDialog.visible = true;
 };
 

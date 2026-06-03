@@ -6,7 +6,7 @@
         <div>
           <h3 class="title">全网抓取</h3>
           <p class="hint">
-            支持 Excel 批量导入或自动抓取；已审核的抓取数据全平台用户可见
+            支持 Excel 导入；「立即抓取」仅搜索微信公众号「2026高考咨询会」。已审核抓取数据全平台可见
           </p>
         </div>
         <div class="action-buttons">
@@ -50,6 +50,55 @@
           {{ lastStats.total_failed }}
         </el-descriptions-item>
       </el-descriptions>
+    </el-card>
+
+    <el-card class="search-card" shadow="never">
+      <el-form :model="searchForm" :inline="true" label-width="90px">
+        <el-form-item label="省份" prop="province">
+          <el-input v-model="searchForm.province" placeholder="省份" clearable style="width: 120px" />
+        </el-form-item>
+        <el-form-item label="指导单位" prop="guidance_unit">
+          <el-input
+            v-model="searchForm.guidance_unit"
+            placeholder="指导单位"
+            clearable
+            style="width: 160px"
+          />
+        </el-form-item>
+        <el-form-item label="承办单位" prop="organizer">
+          <el-input
+            v-model="searchForm.organizer"
+            placeholder="承办单位"
+            clearable
+            style="width: 160px"
+          />
+        </el-form-item>
+        <el-form-item label="线路" prop="route_arrangement">
+          <el-input
+            v-model="searchForm.route_arrangement"
+            placeholder="线路"
+            clearable
+            style="width: 120px"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="searchForm.status" placeholder="状态" clearable style="width: 120px">
+            <el-option label="待审核" value="pending" />
+            <el-option label="已审核" value="approved" />
+            <el-option label="已拒绝" value="rejected" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">
+            <i-ep-search />
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <i-ep-refresh />
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
     </el-card>
 
     <el-card class="table-card" shadow="never">
@@ -183,6 +232,14 @@ const loading = ref(false);
 const tableData = ref<ConsultationInfoItem[]>([]);
 const lastStats = ref<(CrawlResult & ExcelImportResult) | null>(null);
 
+const searchForm = reactive({
+  province: undefined as string | undefined,
+  guidance_unit: undefined as string | undefined,
+  organizer: undefined as string | undefined,
+  route_arrangement: undefined as string | undefined,
+  status: undefined as string | undefined,
+});
+
 const pagination = reactive({
   page: 1,
   pageSize: 10,
@@ -213,6 +270,11 @@ const fetchList = async () => {
       page_no: pagination.page,
       page_size: pagination.pageSize,
       source_type: "crawler",
+      province: searchForm.province,
+      guidance_unit: searchForm.guidance_unit,
+      organizer: searchForm.organizer,
+      route_arrangement: searchForm.route_arrangement,
+      status: searchForm.status,
     };
     const res = await ConsultationInfoAPI.getList(params);
     if (res.data?.data) {
@@ -326,14 +388,35 @@ const handlePageChange = (page: number) => {
   fetchList();
 };
 
-const handleView = (row: ConsultationInfoItem) => {
-  detailDialog.data = row;
+const loadDetail = async (id: number) => {
+  const res = await ConsultationInfoAPI.getDetail(id);
+  return res.data?.data;
+};
+
+const handleSearch = () => {
+  pagination.page = 1;
+  fetchList();
+};
+
+const handleReset = () => {
+  Object.assign(searchForm, {
+    province: undefined,
+    guidance_unit: undefined,
+    organizer: undefined,
+    route_arrangement: undefined,
+    status: undefined,
+  });
+  handleSearch();
+};
+
+const handleView = async (row: ConsultationInfoItem) => {
+  detailDialog.data = (await loadDetail(row.id!)) || row;
   detailDialog.visible = true;
 };
 
-const handleEdit = (row: ConsultationInfoItem) => {
+const handleEdit = async (row: ConsultationInfoItem) => {
   formDialog.type = "edit";
-  formDialog.data = row;
+  formDialog.data = (await loadDetail(row.id!)) || row;
   formDialog.visible = true;
 };
 
@@ -365,6 +448,10 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.search-card {
+  margin-bottom: 16px;
+}
+
 .action-card {
   margin-bottom: 16px;
 

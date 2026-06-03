@@ -141,10 +141,14 @@ export default ConsultationInfoAPI;
 export interface ConsultationInfoQuery extends PageQuery {
   /** 标题 */
   title?: string;
-  /** 主办方 */
+  /** 承办单位 */
   organizer?: string;
   /** 省份 */
   province?: string;
+  /** 指导单位 */
+  guidance_unit?: string;
+  /** 线路安排 */
+  route_arrangement?: string;
   /** 城市 */
   city?: string;
   /** 开始日期范围-开始 */
