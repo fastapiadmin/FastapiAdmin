@@ -69,8 +69,48 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
 
     description: Mapped[str | None] = mapped_column(Text, nullable=True, comment="咨询会描述")
 
+    excel_serial_no: Mapped[str | None] = mapped_column(
+        String(20), nullable=True, comment="Excel序号"
+    )
+
     # 主办方信息
-    organizer: Mapped[str] = mapped_column(String(200), nullable=False, comment="主办方")
+    organizer: Mapped[str] = mapped_column(String(200), nullable=False, comment="承办单位/主办方")
+
+    guidance_unit: Mapped[str | None] = mapped_column(
+        String(200), nullable=True, comment="指导单位"
+    )
+
+    route_arrangement: Mapped[str | None] = mapped_column(Text, nullable=True, comment="线路安排")
+
+    is_participating: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, comment="是否参加"
+    )
+
+    event_time_text: Mapped[str | None] = mapped_column(Text, nullable=True, comment="时间原文")
+
+    personnel: Mapped[str | None] = mapped_column(Text, nullable=True, comment="人员")
+
+    mailing_address: Mapped[str | None] = mapped_column(Text, nullable=True, comment="邮寄材料地址")
+
+    contact_info: Mapped[str | None] = mapped_column(Text, nullable=True, comment="联系人及电话")
+
+    remittance_account: Mapped[str | None] = mapped_column(Text, nullable=True, comment="汇款账户")
+
+    receipt_status: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, comment="回执情况"
+    )
+
+    materials: Mapped[str | None] = mapped_column(Text, nullable=True, comment="材料")
+
+    materials_received: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, comment="材料已领取"
+    )
+
+    remarks: Mapped[str | None] = mapped_column(Text, nullable=True, comment="备注")
+
+    receipt_required_time: Mapped[str | None] = mapped_column(
+        Text, nullable=True, comment="是否需要回执及具体时间"
+    )
 
     organizer_type: Mapped[str | None] = mapped_column(
         String(50), nullable=True, comment="主办方类型(教育部门/高校/中学/机构)"
@@ -108,7 +148,7 @@ class ConsultationInfoModel(ModelMixin, UserMixin):
 
     district: Mapped[str | None] = mapped_column(String(50), nullable=True, comment="区县")
 
-    address: Mapped[str | None] = mapped_column(String(500), nullable=True, comment="详细地址")
+    address: Mapped[str | None] = mapped_column(Text, nullable=True, comment="详细地址/地点")
 
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True, comment="经度")
 

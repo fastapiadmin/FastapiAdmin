@@ -2,19 +2,22 @@
 咨询会信息聚合 - 控制器
 """
 
+import urllib.parse
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, UploadFile
 from fastapi.responses import JSONResponse
 
 from app.api.v1.module_system.auth.schema import AuthSchema
-from app.common.response import ResponseSchema, SuccessResponse
+from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
 from app.core.base_params import PaginationQueryParam
 from app.core.dependencies import AuthPermission, get_current_user
+from app.core.exceptions import CustomException
 from app.core.logger import log
 from app.core.router_class import OperationLogRoute
+from app.utils.common_util import bytes2file_response
 
-from .model import InfoStatus
+from .model import InfoSource, InfoStatus
 from .schema import (
     InfoCollectionCreateSchema,
     InfoCollectionOutSchema,
@@ -40,9 +43,7 @@ InfoCollectionRouter = APIRouter(
 )
 async def get_obj_detail_controller(
     id: Annotated[int, Path(description="咨询会信息ID")],
-    auth: Annotated[
-        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:detail"]))
-    ],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
     """
     获取咨询会信息详情
@@ -55,6 +56,12 @@ async def get_obj_detail_controller(
     - JSONResponse: 包含咨询会信息详情的JSON响应
     """
     result_dict = await InfoCollectionService.detail_service(auth=auth, id=id)
+    if not _has_permission(auth, "module_consultation:info_collection:detail"):
+        if (
+            result_dict.get("source_type") != InfoSource.CRAWLER.value
+            or result_dict.get("status") != InfoStatus.APPROVED.value
+        ):
+            raise CustomException(msg="无权限操作", code=10403, status_code=403)
     log.info(f"获取咨询会信息详情成功 {id}")
     return SuccessResponse(data=result_dict, msg="获取详情成功")
 
@@ -229,10 +236,11 @@ async def batch_delete_obj_controller(
 )
 async def approve_controller(
     id: Annotated[int, Path(description="咨询会信息ID")],
+    background_tasks: BackgroundTasks,
     auth: Annotated[
         AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:approve"]))
     ],
-    review_comment: str | None = None,
+    review_comment: Annotated[str | None, Query(description="审核意见")] = None,
 ) -> JSONResponse:
     """
     审核通过
@@ -248,6 +256,7 @@ async def approve_controller(
     result_dict = await InfoCollectionService.approve_service(
         auth=auth, id=id, review_comment=review_comment
     )
+    background_tasks.add_task(InfoCollectionService.run_compliance_diagnosis_background, id)
     log.info(f"审核通过咨询会信息成功 {id}")
     return SuccessResponse(data=result_dict, msg="审核通过")
 
@@ -260,7 +269,7 @@ async def approve_controller(
 )
 async def reject_controller(
     id: Annotated[int, Path(description="咨询会信息ID")],
-    review_comment: str,
+    review_comment: Annotated[str, Query(description="审核意见")],
     auth: Annotated[
         AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:approve"]))
     ],
@@ -507,14 +516,65 @@ async def public_upload_controller(
     description="手动触发咨询会信息爬虫抓取并保存到数据库",
 )
 async def crawl_controller(
-    auth: Annotated[
-        AuthSchema, Depends(AuthPermission(["module_consultation:info_collection:create"]))
-    ],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
 ) -> JSONResponse:
-    """手动触发爬虫抓取"""
+    """手动触发爬虫抓取（仅超级管理员）"""
+    _require_superuser(auth)
     result_dict = await InfoCollectionService.crawl_and_save_service(auth=auth)
     log.info(f"手动触发爬虫抓取完成: {result_dict}")
     return SuccessResponse(data=result_dict, msg="抓取完成")
+
+
+def _require_superuser(auth: AuthSchema) -> None:
+    if not auth.user or not auth.user.is_superuser:
+        raise CustomException(msg="仅超级管理员可执行此操作", code=10403, status_code=403)
+
+
+@InfoCollectionRouter.post(
+    "/import/template",
+    summary="下载全网抓取 Excel 导入模板",
+    description="下载与业务表格列一致的 Excel 导入模板",
+)
+async def import_template_controller(
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
+) -> StreamResponse:
+    """下载 Excel 导入模板（仅超级管理员）"""
+    _require_superuser(auth)
+    result = InfoCollectionService.import_template_bytes_service()
+    log.info("下载全网抓取 Excel 模板成功")
+    return StreamResponse(
+        data=bytes2file_response(result),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": (
+                f"attachment; filename={urllib.parse.quote('全网抓取导入模板.xlsx')}"
+            ),
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@InfoCollectionRouter.post(
+    "/import/data",
+    summary="Excel 导入全网抓取咨询会信息",
+    description="按标准 Excel 列导入咨询会信息，来源标记为 crawler",
+)
+async def import_excel_controller(
+    file: UploadFile,
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
+) -> JSONResponse:
+    """Excel 导入（仅超级管理员）"""
+    _require_superuser(auth)
+    result_dict = await InfoCollectionService.import_excel_service(auth=auth, file=file)
+    log.info(f"Excel 导入完成: {result_dict}")
+    msg = (
+        f"导入完成：有效 {result_dict['total_rows']} 行，"
+        f"保存 {result_dict['total_saved']} 条，"
+        f"跳过重复 {result_dict['total_skipped']} 条"
+    )
+    if result_dict.get("total_failed"):
+        msg += f"，失败 {result_dict['total_failed']} 条"
+    return SuccessResponse(data=result_dict, msg=msg)
 
 
 @InfoCollectionRouter.get(

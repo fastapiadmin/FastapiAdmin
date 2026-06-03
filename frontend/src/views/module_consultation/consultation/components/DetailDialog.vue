@@ -1,25 +1,51 @@
 <!-- 详情对话框 -->
 <template>
-  <el-dialog v-model="dialogVisible" title="咨询会信息详情" width="700px" destroy-on-close>
+  <el-dialog v-model="dialogVisible" title="咨询会信息详情" width="800px" destroy-on-close>
     <el-descriptions v-if="data" :column="2" border>
-      <el-descriptions-item label="标题" :span="2">{{ data.title }}</el-descriptions-item>
-      <el-descriptions-item label="描述" :span="2">
-        {{ data.description || "-" }}
+      <el-descriptions-item v-if="data.excel_serial_no" label="序号">
+        {{ data.excel_serial_no }}
       </el-descriptions-item>
-      <el-descriptions-item label="主办方">{{ data.organizer }}</el-descriptions-item>
+      <el-descriptions-item label="标题" :span="data.excel_serial_no ? 1 : 2">
+        {{ data.title }}
+      </el-descriptions-item>
+      <el-descriptions-item label="省份">{{ data.province || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="指导单位">{{ data.guidance_unit || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="承办单位">{{ data.organizer }}</el-descriptions-item>
+      <el-descriptions-item label="线路安排">{{ data.route_arrangement || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="是否参加">{{ data.is_participating || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="时间原文">{{ data.event_time_text || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="开始日期">{{ data.start_date }}</el-descriptions-item>
+      <el-descriptions-item label="结束日期">{{ data.end_date || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="地点" :span="2">{{ data.address || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="人员" :span="2">{{ data.personnel || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="收费标准" :span="2">
+        {{ data.fee_description || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="邮寄材料地址" :span="2">
+        {{ data.mailing_address || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="联系人及电话" :span="2">
+        {{ data.contact_info || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="汇款账户" :span="2">
+        {{ data.remittance_account || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="回执情况">{{ data.receipt_status || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="材料已领取">
+        {{ data.materials_received || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="材料" :span="2">{{ data.materials || "-" }}</el-descriptions-item>
+      <el-descriptions-item label="是否需要回执" :span="2">
+        {{ data.receipt_required_time || "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="备注" :span="2">{{ data.remarks || data.description || "-" }}</el-descriptions-item>
       <el-descriptions-item label="主办方类型">
         {{ getOrganizerTypeLabel(data.organizer_type) }}
       </el-descriptions-item>
-      <el-descriptions-item label="开始日期">{{ data.start_date }}</el-descriptions-item>
-      <el-descriptions-item label="结束日期">{{ data.end_date || "-" }}</el-descriptions-item>
       <el-descriptions-item label="开始时间">{{ data.start_time || "-" }}</el-descriptions-item>
       <el-descriptions-item label="结束时间">{{ data.end_time || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="省份">{{ data.province || "-" }}</el-descriptions-item>
       <el-descriptions-item label="城市">{{ data.city || "-" }}</el-descriptions-item>
       <el-descriptions-item label="区县">{{ data.district || "-" }}</el-descriptions-item>
-      <el-descriptions-item label="详细地址" :span="2">
-        {{ data.address || "-" }}
-      </el-descriptions-item>
       <el-descriptions-item label="参与高校数量">{{ data.university_count }}</el-descriptions-item>
       <el-descriptions-item label="预计参观人数">
         {{ data.estimated_visitors || "-" }}

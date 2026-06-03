@@ -199,18 +199,28 @@ class InfoCollectionService:
             raise CustomException(msg="该数据不存在")
 
         updated_obj = await InfoCollectionCRUD(auth).approve_crud(id, review_comment)
-
-        # 审核通过后自动触发合规诊断
-        try:
-            from ..compliance.scoring_service import ComplianceScoringServiceV1
-
-            result = await ComplianceScoringServiceV1.diagnose_consultation(updated_obj)
-            await ComplianceScoringServiceV1.save_diagnosis_result(updated_obj.id, result)
-            log.info(f"审核通过后自动合规诊断完成，咨询会ID: {id}, 评分: {result.score}")
-        except Exception as e:
-            log.warning(f"自动合规诊断失败: {e}")
-
         return InfoCollectionOutSchema.model_validate(updated_obj).model_dump()
+
+    @classmethod
+    async def run_compliance_diagnosis_background(cls, consultation_id: int) -> None:
+        """
+        审核通过后后台合规诊断（独立会话，避免与审核请求争抢行锁）
+        """
+        try:
+            from app.core.database import async_db_session
+
+            from ..compliance.scoring_service import ComplianceScoringServiceV1
+            from .model import ConsultationInfoModel
+
+            async with async_db_session() as session:
+                consultation = await session.get(ConsultationInfoModel, consultation_id)
+                if not consultation:
+                    return
+                result = await ComplianceScoringServiceV1.diagnose_consultation(consultation)
+                await ComplianceScoringServiceV1.save_diagnosis_result(consultation_id, result)
+                log.info(f"后台合规诊断完成，咨询会ID: {consultation_id}, 评分: {result.score}")
+        except Exception as e:
+            log.warning(f"后台合规诊断失败，咨询会ID: {consultation_id}: {e}")
 
     @classmethod
     async def reject_service(cls, auth: AuthSchema, id: int, review_comment: str) -> dict:
@@ -490,6 +500,8 @@ class InfoCollectionService:
         """
         from .crawler import CrawlerRegistry
 
+        # 与定时任务一致：无用户上下文，避免 crawler 数据绑定超管 created_id
+        crawl_auth = AuthSchema(db=auth.db, check_data_scope=False)
         all_results = await CrawlerRegistry.run_all()
 
         total_fetched = 0
@@ -502,7 +514,7 @@ class InfoCollectionService:
                 try:
                     external_id = item.get("external_id")
                     if external_id:
-                        existing = await InfoCollectionCRUD(auth).list_crud(
+                        existing = await InfoCollectionCRUD(crawl_auth).list_crud(
                             search={"external_id": ("eq", external_id)}
                         )
                         if existing:
@@ -532,7 +544,7 @@ class InfoCollectionService:
                             f"{item.get('city', '')}"
                         ),
                     }
-                    await InfoCollectionCRUD(auth).create_crud(create_data)
+                    await InfoCollectionCRUD(crawl_auth).create_crud(create_data)
                     total_saved += 1
                 except Exception as e:
                     log.warning(f"[{source_name}] 保存单条数据失败: {e}")
@@ -545,6 +557,20 @@ class InfoCollectionService:
             "total_saved": total_saved,
             "total_skipped": total_skipped,
         }
+
+    @classmethod
+    async def import_excel_service(cls, auth: AuthSchema, file) -> dict:
+        """Excel 批量导入全网抓取咨询会信息"""
+        from .excel_import import import_excel_file
+
+        return await import_excel_file(auth=auth, file=file)
+
+    @classmethod
+    def import_template_bytes_service(cls) -> bytes:
+        """下载 Excel 导入模板"""
+        from .excel_import import get_import_template_bytes
+
+        return get_import_template_bytes()
 
     @classmethod
     async def get_approved_list_service(cls, auth: AuthSchema) -> list[dict]:

@@ -7,6 +7,7 @@ from typing import Any
 
 from app.api.v1.module_system.auth.schema import AuthSchema
 from app.core.base_crud import CRUDBase
+from app.core.exceptions import CustomException
 
 from .model import ConsultationInfoModel, InfoStatus
 from .schema import InfoCollectionCreateSchema, InfoCollectionOutSchema, InfoCollectionUpdateSchema
@@ -66,6 +67,23 @@ class InfoCollectionCRUD(
         """批量删除"""
         await self.delete(ids=ids)
 
+    async def _update_status_crud(self, id: int, data: dict) -> ConsultationInfoModel:
+        """状态审核更新（直接 UPDATE，减少行锁持有时间）"""
+        from sqlalchemy import update
+
+        values = {**data}
+        if self.auth.user:
+            values["updated_id"] = self.auth.user.id
+
+        await self.auth.db.execute(
+            update(ConsultationInfoModel).where(ConsultationInfoModel.id == id).values(**values)
+        )
+        await self.auth.db.flush()
+        obj = await self.get_by_id_crud(id=id)
+        if not obj:
+            raise CustomException(msg="更新失败，记录不存在")
+        return obj
+
     async def approve_crud(
         self, id: int, review_comment: str | None = None
     ) -> ConsultationInfoModel:
@@ -76,7 +94,7 @@ class InfoCollectionCRUD(
             "reviewed_by": self.auth.user.id if self.auth.user else None,
             "reviewed_time": datetime.now(),
         }
-        return await self.update(id=id, data=data)
+        return await self._update_status_crud(id, data)
 
     async def reject_crud(self, id: int, review_comment: str) -> ConsultationInfoModel:
         """审核拒绝"""
@@ -86,7 +104,7 @@ class InfoCollectionCRUD(
             "reviewed_by": self.auth.user.id if self.auth.user else None,
             "reviewed_time": datetime.now(),
         }
-        return await self.update(id=id, data=data)
+        return await self._update_status_crud(id, data)
 
     async def archive_crud(self, id: int) -> ConsultationInfoModel:
         """归档"""

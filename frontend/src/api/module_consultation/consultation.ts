@@ -105,6 +105,27 @@ const ConsultationInfoAPI = {
     });
   },
 
+  /** 下载 Excel 导入模板 */
+  downloadImportTemplate() {
+    return request<Blob>({
+      url: `${API_PATH}/import/template`,
+      method: "post",
+      responseType: "blob",
+    });
+  },
+
+  /** Excel 导入全网抓取数据 */
+  importExcel(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return request<ApiResponse<ExcelImportResult>>({
+      url: `${API_PATH}/import/data`,
+      method: "post",
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
   /** 获取已审核咨询会下拉选项 */
   getApprovedOptions() {
     return request<ApiResponse<ConsultationOption[]>>({
@@ -182,6 +203,36 @@ export interface ConsultationInfoForm {
   source_type?: string;
   /** 来源链接 */
   source_url?: string;
+  /** Excel 序号 */
+  excel_serial_no?: string;
+  /** 指导单位 */
+  guidance_unit?: string;
+  /** 线路安排 */
+  route_arrangement?: string;
+  /** 是否参加 */
+  is_participating?: string;
+  /** 时间原文 */
+  event_time_text?: string;
+  /** 收费标准说明 */
+  fee_description?: string;
+  /** 人员 */
+  personnel?: string;
+  /** 邮寄材料地址 */
+  mailing_address?: string;
+  /** 联系人及电话 */
+  contact_info?: string;
+  /** 汇款账户 */
+  remittance_account?: string;
+  /** 回执情况 */
+  receipt_status?: string;
+  /** 材料 */
+  materials?: string;
+  /** 材料已领取 */
+  materials_received?: string;
+  /** 备注 */
+  remarks?: string;
+  /** 是否需要回执及具体时间 */
+  receipt_required_time?: string;
 }
 
 /** 咨询会信息项 */
@@ -228,6 +279,15 @@ export interface CrawlResult {
   total_saved: number;
   /** 跳过重复数 */
   total_skipped: number;
+}
+
+/** Excel 导入结果 */
+export interface ExcelImportResult {
+  total_rows: number;
+  total_saved: number;
+  total_skipped: number;
+  total_failed: number;
+  errors?: string[];
 }
 
 /** 咨询会下拉选项 */

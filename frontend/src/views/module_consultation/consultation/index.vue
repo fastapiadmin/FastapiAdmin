@@ -92,15 +92,6 @@
               新增
             </el-button>
             <el-button
-              v-permission="['module_consultation:info_collection:create']"
-              type="success"
-              :loading="crawlLoading"
-              @click="handleCrawl"
-            >
-              <i-ep-refresh />
-              全网抓取
-            </el-button>
-            <el-button
               v-permission="['module_consultation:info_collection:delete']"
               type="danger"
               :disabled="!selectedIds.length"
@@ -289,7 +280,6 @@ const searchForm = reactive<SearchForm>({
 
 // 表格数据
 const loading = ref(false);
-const crawlLoading = ref(false);
 const tableData = ref<ConsultationInfoItem[]>([]);
 const selectedIds = ref<number[]>([]);
 
@@ -508,25 +498,6 @@ const handleArchive = (row: ConsultationInfoItem) => {
 
 const handleExport = () => {
   ElMessage.info("导出功能开发中...");
-};
-
-// 全网抓取
-const handleCrawl = async () => {
-  crawlLoading.value = true;
-  try {
-    const res = await ConsultationInfoAPI.crawl();
-    if (res.data?.data) {
-      const result = res.data.data;
-      ElMessage.success(
-        `抓取完成：共抓取 ${result.total_fetched} 条，保存 ${result.total_saved} 条，跳过重复 ${result.total_skipped} 条`
-      );
-      fetchList();
-    }
-  } catch (error) {
-    console.error("抓取失败:", error);
-  } finally {
-    crawlLoading.value = false;
-  }
 };
 
 // 表单成功回调

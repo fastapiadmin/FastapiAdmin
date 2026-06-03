@@ -151,13 +151,54 @@ def main():
             )
             print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
 
-        # 3. 添加二级菜单 - 咨询会筛选
+        # 3. 添加二级菜单 - 全网抓取（仅超级管理员可见，不分配普通角色）
+        print("\n📝 添加二级菜单 - 全网抓取...")
+        crawler_id = insert_menu(
+            cursor=cursor,
+            name="全网抓取",
+            menu_type=2,
+            order=2,
+            permission="module_consultation:info_collection:crawl",
+            icon="download",
+            route_name="ConsultationCrawler",
+            route_path="/consultation/crawler",
+            component_path="module_consultation/crawler/index",
+            hidden=False,
+            keep_alive=True,
+            always_show=False,
+            title="全网抓取",
+            parent_id=parent_menu_id,
+            status="0",
+            description="超级管理员：手动触发全网抓取",
+        )
+        print(f"✅ 全网抓取 添加成功，ID: {crawler_id}")
+
+        insert_menu(
+            cursor=cursor,
+            name="触发抓取",
+            menu_type=3,
+            order=1,
+            permission="module_consultation:info_collection:crawl",
+            icon=None,
+            route_name=None,
+            route_path=None,
+            component_path=None,
+            hidden=False,
+            keep_alive=True,
+            always_show=False,
+            title="触发抓取",
+            parent_id=crawler_id,
+            status="0",
+        )
+        print("  ✅ 触发抓取 按钮权限添加成功")
+
+        # 4. 添加二级菜单 - 咨询会筛选
         print("\n📝 添加二级菜单...")
         screening_id = insert_menu(
             cursor=cursor,
             name="咨询会筛选",
             menu_type=2,
-            order=2,
+            order=3,
             permission="module_consultation:screening:query",
             icon="filter",
             route_name="ConsultationScreening",
@@ -199,13 +240,13 @@ def main():
             )
             print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
 
-        # 4. 添加二级菜单 - 报名管理
+        # 5. 添加二级菜单 - 报名管理
         print("\n📝 添加二级菜单...")
         registration_id = insert_menu(
             cursor=cursor,
             name="报名管理",
             menu_type=2,
-            order=3,
+            order=4,
             permission="module_consultation:registration:query",
             icon="list",
             route_name="ConsultationRegistration",
@@ -250,13 +291,13 @@ def main():
             )
             print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
 
-        # 5. 添加二级菜单 - 行程方案
+        # 6. 添加二级菜单 - 行程方案
         print("\n📝 添加二级菜单...")
         itinerary_id = insert_menu(
             cursor=cursor,
             name="行程方案",
             menu_type=2,
-            order=4,
+            order=5,
             permission="module_consultation:itinerary:query",
             icon="route",
             route_name="ConsultationItinerary",
@@ -302,13 +343,13 @@ def main():
             )
             print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
 
-        # 6. 添加二级菜单 - 合规诊断
+        # 7. 添加二级菜单 - 合规诊断
         print("\n📝 添加二级菜单...")
         compliance_id = insert_menu(
             cursor=cursor,
             name="合规诊断",
             menu_type=2,
-            order=5,
+            order=6,
             permission="module_consultation:compliance:query",
             icon="document-checked",
             route_name="ConsultationCompliance",
@@ -354,13 +395,13 @@ def main():
             )
             print(f"  ✅ {btn_name} 添加成功，ID: {btn_id}")
 
-        # 7. 添加二级菜单 - 高校信息
+        # 8. 添加二级菜单 - 高校信息
         print("\n📝 添加二级菜单...")
         university_id = insert_menu(
             cursor=cursor,
             name="高校信息",
             menu_type=2,
-            order=6,
+            order=7,
             permission="module_consultation:university:query",
             icon="office-building",
             route_name="ConsultationUniversity",

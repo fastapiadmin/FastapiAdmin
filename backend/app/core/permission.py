@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.sql.elements import ColumnElement
 
 from app.api.v1.module_system.auth.schema import AuthSchema
@@ -182,23 +182,43 @@ class Permission:
             return created_id_attr == self.auth.user.id
         return None
 
+    def __merge_crawler_global_scope(
+        self, scope_cond: ColumnElement | None
+    ) -> ColumnElement | None:
+        """咨询会 crawler 来源数据对所有用户绕过 created_id/部门数据权限"""
+        if self.model.__name__ != "ConsultationInfoModel":
+            return scope_cond
+
+        source_type_attr = getattr(self.model, "source_type", None)
+        if source_type_attr is None:
+            return scope_cond
+
+        from app.api.v1.module_consultation.info_collection.model import InfoSource
+
+        crawler_cond = source_type_attr == InfoSource.CRAWLER.value
+        if scope_cond is None:
+            return None
+        return or_(scope_cond, crawler_cond)
+
     async def __filter_by_data_scope(self) -> ColumnElement | None:
         """
         基于数据范围权限的通用过滤（默认策略）
 
         适用于大多数业务模型
         """
+        scope_cond: ColumnElement | None = None
+
         # 如果模型没有创建人created_id字段,则不限制
         if not hasattr(self.model, "created_id"):
-            return None
+            return self.__merge_crawler_global_scope(None)
 
         # 如果用户没有角色,则只能查看自己的数据
         roles = getattr(self.auth.user, "roles", []) or []
         if not roles:
             created_id_attr = getattr(self.model, "created_id", None)
             if created_id_attr is not None and self.auth.user:
-                return created_id_attr == self.auth.user.id
-            return None
+                scope_cond = created_id_attr == self.auth.user.id
+            return self.__merge_crawler_global_scope(scope_cond)
 
         # 获取用户所有角色的权限范围
         data_scopes = set()
@@ -211,7 +231,7 @@ class Permission:
 
         # 全部数据权限最高优先级
         if self.DATA_SCOPE_ALL in data_scopes:
-            return None
+            return self.__merge_crawler_global_scope(None)
 
         # 收集所有可访问的部门ID
         accessible_dept_ids = await self.__get_accessible_dept_ids(data_scopes, custom_dept_ids)
@@ -222,31 +242,33 @@ class Permission:
             if self.model.__name__ == "UserModel" and hasattr(self.model, "dept_id"):
                 dept_id_attr = getattr(self.model, "dept_id", None)
                 if dept_id_attr is not None:
-                    return dept_id_attr.in_(list(accessible_dept_ids))
+                    scope_cond = dept_id_attr.in_(list(accessible_dept_ids))
+                    return self.__merge_crawler_global_scope(scope_cond)
 
             # 其他模型：通过created_by关系过滤创建人的部门
             creator_rel = getattr(self.model, "created_by", None)
             if creator_rel is not None and hasattr(UserModel, "dept_id"):
-                return creator_rel.has(UserModel.dept_id.in_(list(accessible_dept_ids)))
+                scope_cond = creator_rel.has(UserModel.dept_id.in_(list(accessible_dept_ids)))
+                return self.__merge_crawler_global_scope(scope_cond)
 
             # 降级方案：只能查看自己的数据
             created_id_attr = getattr(self.model, "created_id", None)
             if created_id_attr is not None and self.auth.user:
-                return created_id_attr == self.auth.user.id
-            return None
+                scope_cond = created_id_attr == self.auth.user.id
+            return self.__merge_crawler_global_scope(scope_cond)
 
         # 处理仅本人数据权限
         if self.DATA_SCOPE_SELF in data_scopes:
             created_id_attr = getattr(self.model, "created_id", None)
             if created_id_attr is not None and self.auth.user:
-                return created_id_attr == self.auth.user.id
-            return None
+                scope_cond = created_id_attr == self.auth.user.id
+            return self.__merge_crawler_global_scope(scope_cond)
 
         # 默认情况：只能查看自己的数据
         created_id_attr = getattr(self.model, "created_id", None)
         if created_id_attr is not None and self.auth.user:
-            return created_id_attr == self.auth.user.id
-        return None
+            scope_cond = created_id_attr == self.auth.user.id
+        return self.__merge_crawler_global_scope(scope_cond)
 
     async def __get_accessible_dept_ids(self, data_scopes: set, custom_dept_ids: set) -> set[int]:
         """

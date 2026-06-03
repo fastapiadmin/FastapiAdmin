@@ -110,6 +110,22 @@ class InfoCollectionCreateSchema(BaseModel):
     # 报名信息
     registration_email: str | None = Field(default=None, description="报名接收邮箱", max_length=100)
 
+    # 全网抓取 Excel 字段
+    excel_serial_no: str | None = Field(default=None, description="Excel序号", max_length=20)
+    guidance_unit: str | None = Field(default=None, description="指导单位", max_length=200)
+    route_arrangement: str | None = Field(default=None, description="线路安排")
+    is_participating: str | None = Field(default=None, description="是否参加", max_length=50)
+    event_time_text: str | None = Field(default=None, description="时间原文")
+    personnel: str | None = Field(default=None, description="人员")
+    mailing_address: str | None = Field(default=None, description="邮寄材料地址")
+    contact_info: str | None = Field(default=None, description="联系人及电话")
+    remittance_account: str | None = Field(default=None, description="汇款账户")
+    receipt_status: str | None = Field(default=None, description="回执情况", max_length=100)
+    materials: str | None = Field(default=None, description="材料")
+    materials_received: str | None = Field(default=None, description="材料已领取", max_length=100)
+    remarks: str | None = Field(default=None, description="备注")
+    receipt_required_time: str | None = Field(default=None, description="是否需要回执及具体时间")
+
     @field_validator("title", "organizer")
     @classmethod
     def validate_required_string(cls, v: str) -> str:
@@ -138,6 +154,16 @@ class InfoCollectionOutSchema(InfoCollectionCreateSchema, BaseSchema, UserBySche
     """咨询会信息响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
+
+    # 输出时不做入参级 min_length 校验，兼容历史/导入脏数据
+    title: str = Field(..., description="咨询会标题", max_length=200)
+    organizer: str = Field(..., description="主办方", max_length=200)
+
+    @field_validator("title", "organizer", mode="before")
+    @classmethod
+    def normalize_display_required(cls, v: object) -> str:
+        text = str(v).strip() if v is not None else ""
+        return text if len(text) >= 2 else "未填写"
 
     # 状态信息
     status: str | None = Field(default=None, description="状态")
