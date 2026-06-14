@@ -268,24 +268,28 @@ class RegistrationService:
         if not registration_email:
             raise CustomException(msg="报名接收邮箱不能为空，请在咨询会信息中维护报名邮箱")
 
-        # 发送回执邮件
+        # 发送回执邮件（邮件服务未配置时跳过发送）
         consultation_date = str(consultation.start_date) if consultation.start_date else "待定"
         consultation_location = (
             consultation.address or f"{consultation.city or ''}{consultation.address or ''}"
         )
 
-        email_result = await EmailService.sendRegistrationReceipt(
-            to_email=registration_email,
-            university_name=obj.university_name or "未知高校",
-            consultation_title=consultation.title,
-            consultation_date=consultation_date,
-            consultation_location=consultation_location,
-            booth_number=obj.booth_number,
-            contact_person=obj.contact_person,
-        )
+        try:
+            from app.common.email_service import EmailService
 
-        if not email_result.get("success"):
-            raise CustomException(msg=f"邮件发送失败: {email_result.get('message')}")
+            email_result = await EmailService.sendRegistrationReceipt(
+                to_email=registration_email,
+                university_name=obj.university_name or "未知高校",
+                consultation_title=consultation.title,
+                consultation_date=consultation_date,
+                consultation_location=consultation_location,
+                booth_number=obj.booth_number,
+                contact_person=obj.contact_person,
+            )
+            if not email_result.get("success"):
+                log.warning(f"邮件发送失败: {email_result.get('message')}，跳过发送")
+        except Exception as e:
+            log.warning(f"邮件服务异常: {e}，跳过发送")
 
         # 更新报名状态
         obj = await RegistrationCRUD(auth).update_registered_crud(
