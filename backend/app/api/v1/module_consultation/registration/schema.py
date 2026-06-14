@@ -36,6 +36,7 @@ class RegistrationOutSchema(RegistrationCreateSchema, BaseSchema, UserBySchema):
 
     model_config = ConfigDict(from_attributes=True)
 
+    consultation_name: str | None = Field(default=None, description="咨询会名称")
     registration_status: str = Field(default="pending", description="报名状态")
     registration_time: datetime | None = Field(default=None, description="报名时间")
     approval_time: datetime | None = Field(default=None, description="审核时间")

@@ -103,15 +103,17 @@ export interface RegistrationForm {
   contact_email?: string;
   booth_number?: string;
   booth_size?: string;
+  registration_email?: string;
 }
 
 export interface RegistrationItem extends RegistrationForm, BaseType {
+  consultation_name?: string;
   registration_status: string;
   registration_time?: string;
   approval_time?: string;
   approval_by?: number;
   approval_comment?: string;
-  registration_email?: string;
   is_registered?: boolean;
   register_time?: string;
+  created_id?: number;
 }

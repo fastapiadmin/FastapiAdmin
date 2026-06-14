@@ -135,7 +135,7 @@
           show-overflow-tooltip
         />
         <el-table-column prop="registration_time" label="报名时间" width="160" />
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
             <el-button
               v-permission="['module_consultation:registration:detail']"
@@ -144,6 +144,15 @@
               @click="handleView(row)"
             >
               详情
+            </el-button>
+            <el-button
+              v-if="row.registration_status === 'pending' && isCreator(row)"
+              v-permission="['module_consultation:registration:update']"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
             </el-button>
             <el-button
               v-if="row.registration_status === 'pending'"
@@ -229,6 +238,9 @@
         <el-descriptions-item label="联系邮箱">
           {{ detailDialog.data.contact_email }}
         </el-descriptions-item>
+        <el-descriptions-item label="报名邮箱">
+          {{ detailDialog.data.registration_email || "-" }}
+        </el-descriptions-item>
         <el-descriptions-item label="展位号">
           {{ detailDialog.data.booth_number || "-" }}
         </el-descriptions-item>
@@ -303,6 +315,9 @@
         </el-form-item>
         <el-form-item label="联系邮箱" prop="contact_email">
           <el-input v-model="form.contact_email" :min="1" placeholder="请输入联系邮箱" />
+        </el-form-item>
+        <el-form-item label="报名邮箱" prop="registration_email">
+          <el-input v-model="form.registration_email" placeholder="请输入报名接收邮箱" />
         </el-form-item>
         <el-form-item label="展位号" prop="booth_number">
           <el-input v-model="form.booth_number" placeholder="请输入展位号" />
@@ -413,6 +428,9 @@ import UniversityAPI from "@/api/module_consultation/university";
 import type { RegistrationItem, RegistrationQuery } from "@/api/module_consultation/registration";
 import type { ConsultationOption } from "@/api/module_consultation/consultation";
 import type { UniversityOption } from "@/api/module_consultation/university";
+import { useUserStore } from "@/store";
+
+const userStore = useUserStore();
 
 const searchForm = reactive<RegistrationQuery>({
   consultation_id: undefined,
@@ -459,6 +477,7 @@ const form = reactive<any>({
   contact_person: "",
   contact_phone: "",
   contact_email: "",
+  registration_email: "",
   booth_number: "",
   booth_size: "",
 });
@@ -535,10 +554,35 @@ const handleCreate = async () => {
     contact_person: "",
     contact_phone: "",
     contact_email: "",
+    registration_email: "",
     booth_number: "",
     booth_size: "",
   });
   // 加载下拉选项
+  await loadOptions();
+  formDialog.visible = true;
+};
+
+// 判断当前用户是否为录入人
+const isCreator = (row: RegistrationItem) => {
+  return userStore.basicInfo.id && row.created_id && userStore.basicInfo.id === row.created_id;
+};
+
+// 编辑报名
+const handleEdit = async (row: RegistrationItem) => {
+  formDialog.type = "edit";
+  formDialog.data = row;
+  Object.assign(form, {
+    consultation_id: row.consultation_id,
+    university_id: row.university_id,
+    university_name: row.university_name || "",
+    contact_person: row.contact_person || "",
+    contact_phone: row.contact_phone || "",
+    contact_email: row.contact_email || "",
+    registration_email: row.registration_email || "",
+    booth_number: row.booth_number || "",
+    booth_size: row.booth_size || "",
+  });
   await loadOptions();
   formDialog.visible = true;
 };

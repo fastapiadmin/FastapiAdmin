@@ -29,12 +29,38 @@ class RegistrationService:
     """
 
     @classmethod
+    async def _enrich_consultation_name(cls, auth: AuthSchema, items: list[dict]) -> list[dict]:
+        """为报名记录填充咨询会名称"""
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+
+        consultation_ids = {
+            item["consultation_id"] for item in items if item.get("consultation_id")
+        }
+        if not consultation_ids:
+            return items
+        consultation_map: dict[int, str] = {}
+        for cid in consultation_ids:
+            consultation = await InfoCollectionCRUD(auth).get_by_id_crud(cid)
+            if consultation:
+                consultation_map[cid] = consultation.title
+        for item in items:
+            item["consultation_name"] = consultation_map.get(item.get("consultation_id", 0))
+        return items
+
+    @classmethod
     async def detail_service(cls, auth: AuthSchema, id: int) -> dict:
         """详情"""
         obj = await RegistrationCRUD(auth).get_by_id_crud(id=id)
         if not obj:
             raise CustomException(msg="该报名记录不存在")
-        return RegistrationOutSchema.model_validate(obj).model_dump()
+        result = RegistrationOutSchema.model_validate(obj).model_dump()
+        # 填充咨询会名称
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+
+        consultation = await InfoCollectionCRUD(auth).get_by_id_crud(obj.consultation_id)
+        if consultation:
+            result["consultation_name"] = consultation.title
+        return result
 
     @classmethod
     async def list_service(
@@ -46,7 +72,8 @@ class RegistrationService:
         """列表查询"""
         search_dict = search.__dict__ if search else None
         obj_list = await RegistrationCRUD(auth).list_crud(search=search_dict, order_by=order_by)
-        return [RegistrationOutSchema.model_validate(obj).model_dump() for obj in obj_list]
+        items = [RegistrationOutSchema.model_validate(obj).model_dump() for obj in obj_list]
+        return await cls._enrich_consultation_name(auth, items)
 
     @classmethod
     async def page_service(
@@ -68,6 +95,9 @@ class RegistrationService:
             order_by=order_by_list,
             search=search_dict,
         )
+        # 填充咨询会名称
+        if result.get("items"):
+            result["items"] = await cls._enrich_consultation_name(auth, result["items"])
         return result
 
     @classmethod
@@ -95,9 +125,19 @@ class RegistrationService:
             raise CustomException(msg="该报名记录不存在")
         if obj.registration_status != "pending":
             raise CustomException(msg="只能修改待审核状态的报名")
+        # 录入人权限校验：只有创建者可以编辑
+        if auth.user and obj.created_id and obj.created_id != auth.user.id:
+            raise CustomException(msg="只有录入人可以编辑此报名记录")
         update_data = data.model_dump(exclude_unset=True)
         obj = await RegistrationCRUD(auth).update_crud(id, update_data)
-        return RegistrationOutSchema.model_validate(obj).model_dump()
+        result = RegistrationOutSchema.model_validate(obj).model_dump()
+        # 填充咨询会名称
+        from app.api.v1.module_consultation.info_collection.crud import InfoCollectionCRUD
+
+        consultation = await InfoCollectionCRUD(auth).get_by_id_crud(obj.consultation_id)
+        if consultation:
+            result["consultation_name"] = consultation.title
+        return result
 
     @classmethod
     async def delete_service(cls, auth: AuthSchema, id: int) -> None:
