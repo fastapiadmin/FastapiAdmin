@@ -4,11 +4,37 @@
     <!-- 搜索卡片 -->
     <el-card class="search-card" shadow="never">
       <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="80px">
-        <el-form-item label="咨询会ID" prop="consultation_id">
-          <el-input-number v-model="searchForm.consultation_id" :min="1" style="width: 120px" />
+        <el-form-item label="咨询会" prop="consultation_id">
+          <el-select
+            v-model="searchForm.consultation_id"
+            placeholder="请选择咨询会"
+            clearable
+            filterable
+            style="width: 220px"
+          >
+            <el-option
+              v-for="item in consultationOptions"
+              :key="item.id"
+              :label="item.title"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="招生组ID" prop="team_id">
-          <el-input-number v-model="searchForm.team_id" :min="1" style="width: 120px" />
+        <el-form-item label="招生组" prop="team_id">
+          <el-select
+            v-model="searchForm.team_id"
+            placeholder="请选择招生组"
+            clearable
+            filterable
+            style="width: 200px"
+          >
+            <el-option
+              v-for="item in teamOptions"
+              :key="item.id"
+              :label="item.team_name"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="方案名称" prop="itinerary_name">
           <el-input
@@ -88,8 +114,16 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="consultation_id" label="咨询会ID" width="100" />
-        <el-table-column prop="team_id" label="招生组ID" width="100" />
+        <el-table-column prop="consultation_id" label="咨询会" width="180" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ getConsultationName(row.consultation_id) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="team_id" label="招生组" width="150" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ getTeamName(row.team_id) }}
+          </template>
+        </el-table-column>
         <el-table-column
           prop="itinerary_name"
           label="方案名称"
@@ -270,11 +304,11 @@
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailDialog.visible" title="行程方案详情" width="600px">
       <el-descriptions v-if="detailDialog.data" :column="2" border>
-        <el-descriptions-item label="咨询会ID">
-          {{ detailDialog.data.consultation_id }}
+        <el-descriptions-item label="咨询会">
+          {{ getConsultationName(detailDialog.data.consultation_id) }}
         </el-descriptions-item>
-        <el-descriptions-item label="招生组ID">
-          {{ detailDialog.data.team_id || "-" }}
+        <el-descriptions-item label="招生组">
+          {{ getTeamName(detailDialog.data.team_id) }}
         </el-descriptions-item>
         <el-descriptions-item label="方案名称" :span="2">
           {{ detailDialog.data.itinerary_name || "-" }}
@@ -347,11 +381,37 @@
       width="550px"
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="咨询会ID" prop="consultation_id">
-          <el-input-number v-model="form.consultation_id" :min="1" style="width: 200px" />
+        <el-form-item label="咨询会" prop="consultation_id">
+          <el-select
+            v-model="form.consultation_id"
+            placeholder="请选择咨询会"
+            clearable
+            filterable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in consultationOptions"
+              :key="item.id"
+              :label="item.title"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="招生组ID" prop="team_id">
-          <el-input-number v-model="form.team_id" :min="1" style="width: 200px" />
+        <el-form-item label="招生组" prop="team_id">
+          <el-select
+            v-model="form.team_id"
+            placeholder="请选择招生组"
+            clearable
+            filterable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in teamOptions"
+              :key="item.id"
+              :label="item.team_name"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="方案名称" prop="itinerary_name">
           <el-input v-model="form.itinerary_name" placeholder="请输入方案名称" />
@@ -477,6 +537,47 @@ import ItineraryAPI, {
   type ItineraryItem,
   type ItineraryQuery,
 } from "@/api/module_consultation/itinerary";
+import ConsultationInfoAPI, {
+  type ConsultationOption,
+} from "@/api/module_consultation/consultation";
+import TeamAPI, { type TeamItem } from "@/api/module_promotion/team";
+
+// 下拉选项
+const consultationOptions = ref<ConsultationOption[]>([]);
+const teamOptions = ref<TeamItem[]>([]);
+
+const loadOptions = async () => {
+  try {
+    const consultRes = await ConsultationInfoAPI.getApprovedOptions();
+    if (consultRes.data?.data) {
+      consultationOptions.value = consultRes.data.data;
+    }
+  } catch {
+    // ignore
+  }
+  try {
+    const teamRes = await TeamAPI.getList({} as any);
+    if (teamRes.data?.data?.items) {
+      teamOptions.value = teamRes.data.data.items;
+    } else if (teamRes.data?.data) {
+      teamOptions.value = Array.isArray(teamRes.data.data) ? teamRes.data.data : [];
+    }
+  } catch {
+    // ignore
+  }
+};
+
+const getConsultationName = (id: number | undefined) => {
+  if (!id) return "-";
+  const item = consultationOptions.value.find((c) => c.id === id);
+  return item?.title || String(id);
+};
+
+const getTeamName = (id: number | undefined) => {
+  if (!id) return "-";
+  const item = teamOptions.value.find((t) => t.id === id);
+  return item?.team_name || String(id);
+};
 
 const searchForm = reactive<ItineraryQuery>({
   consultation_id: undefined,
@@ -831,6 +932,7 @@ const handleBatchDelete = () => {
 
 // 监听视图模式
 onMounted(() => {
+  loadOptions();
   fetchList();
   watch(() => viewMode.value, handleViewModeChange);
 });
@@ -886,7 +988,8 @@ onMounted(() => {
 }
 .kanban-column-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
+  color: #303133;
 }
 .kanban-column-body {
   min-height: 400px;
@@ -906,6 +1009,7 @@ onMounted(() => {
 .kanban-card-title {
   font-weight: 600;
   font-size: 14px;
+  color: #303133;
   margin-bottom: 8px;
 }
 .kanban-card-info {
