@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     # ******************** 跨域配置 ******************** #
     # ================================================= #
     CORS_ORIGIN_ENABLE: bool = True  # 是否启用跨域
-    ALLOW_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:4173", "http://127.0.0.1:5173", "http://localhost:5180", "http://127.0.0.1:5180"]  # 允许的域名列表
+    ALLOW_ORIGINS: list[str] = ["*"]  # 允许的域名列表
     ALLOW_METHODS: list[str] = ["*"]  # 允许的HTTP方法
     ALLOW_HEADERS: list[str] = ["*"]  # 允许的请求头
     ALLOW_CREDENTIALS: bool = True  # 是否允许携带cookie

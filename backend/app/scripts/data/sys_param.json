@@ -11,7 +11,7 @@
   {
     "config_name": "演示访问IP白名单",
     "config_key": "ip_white_list",
-    "config_value": "[\"127.0.0.1\", \"::1\"]",
+    "config_value": "[\"127.0.0.1\", \"223.104.209.37\"]",
     "config_type": true,
     "status": 0,
     "description": "演示模式下允许访问的IP列表",
