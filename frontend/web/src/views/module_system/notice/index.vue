@@ -45,7 +45,9 @@
             :perm-delete="['module_system:notice:delete']"
             :perm-patch="['module_system:notice:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -85,17 +87,18 @@
           max-height="75vh"
         >
           <template #notice_type="{ row }">
-            <ElTag :type="row?.notice_type === '1' ? 'primary' : 'warning'">
-              {{ noticeTypeLabel(row?.notice_type as string) }}
-            </ElTag>
+            <FaStatusTag
+              :type="row?.notice_type === '1' ? 'primary' : 'warning'"
+              :label="noticeTypeLabel(row?.notice_type as string)"
+            />
           </template>
           <template #notice_content>
-            <div class="notice-html-preview">
+            <ElScrollbar class="notice-html-preview" view-class="p-3">
               <template v-if="detailHasRenderableContent">
                 <div v-html="detailContentHtml" />
               </template>
               <p v-else class="notice-html-empty">暂无内容</p>
-            </div>
+            </ElScrollbar>
           </template>
         </FaDescriptions>
       </template>
@@ -161,15 +164,14 @@ import NoticeAPI, {
   type NoticeTable,
 } from "@/api/module_system/notice";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import { renderTableOperationCell, type TableOperationAction, resolveStatusColumns } from "@utils";
 import { useDictStore, useNoticeStore } from "@stores";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import { ElTag, ElMessage } from "element-plus";
+import type FaForm from "@/components/forms/fa-form/index.vue";
+import { ElMessage, ElScrollbar } from "element-plus";
 import DOMPurify from "dompurify";
 
 defineOptions({
@@ -184,7 +186,7 @@ const { hasAuth } = useAuth();
 type NoticeSearchForm = {
   notice_title?: string;
   notice_type?: string;
-  status?: string;
+  status?: number;
   created_time?: string[];
   created_id?: number;
 };
@@ -284,6 +286,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<NoticeTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
 
@@ -382,6 +387,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
     },
   });
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 const noticeDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "标题",
@@ -457,7 +471,7 @@ const {
       page_no: 1,
       page_size: 10,
     },
-    columnsFactory: (): ColumnOption<NoticeTable>[] => [
+    columnsFactory: resolveStatusColumns<NoticeTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "notice_title", label: "通知标题", minWidth: 140, showOverflowTooltip: true },
@@ -465,22 +479,19 @@ const {
         prop: "status",
         label: "状态",
         width: 88,
-        formatter: (row: NoticeTable) => {
-          const ok = row.status === 0;
-          const cfg = ok
-            ? { type: "success" as const, text: "启用" }
-            : { type: "danger" as const, text: "停用" };
-          return h(ElTag, { type: cfg.type }, () => cfg.text);
+        status: {
+          0: { type: "success", text: "启用" },
+          1: { type: "danger", text: "停用" },
         },
       },
       {
         prop: "notice_type",
         label: "类型",
         minWidth: 100,
-        formatter: (row: NoticeTable) =>
-          h(ElTag, { type: row.notice_type === "1" ? "primary" : "warning" }, () =>
-            noticeTypeLabel(row.notice_type)
-          ),
+        status: {
+          "1": { type: "primary", text: "通知" },
+          "2": { type: "warning", text: "公告" },
+        },
       },
       { prop: "notice_content", label: "内容", minWidth: 200, showOverflowTooltip: true },
       { prop: "description", label: "描述", minWidth: 140, showOverflowTooltip: true },
@@ -506,7 +517,7 @@ const {
         align: "right",
         formatter: (row: NoticeTable) => formatNoticeOperationCell(row),
       },
-    ],
+    ]),
   },
 });
 
@@ -651,7 +662,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -659,11 +670,14 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await NoticeAPI.batchNotice({ ids, status });
     await refreshData();
     await noticeStore.getNotice();
   } catch {
-    ElMessage.info("操作取消");
+    // 用户取消或操作失败
+  } finally {
+    moreLoading.value = false;
   }
 }
 
@@ -678,8 +692,6 @@ onMounted(async () => {
   box-sizing: border-box;
   min-height: 120px;
   max-height: min(360px, 45vh);
-  padding: 12px 16px;
-  overflow-y: auto;
   background-color: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: calc(var(--custom-radius) / 3 + 2px);

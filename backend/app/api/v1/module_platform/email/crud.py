@@ -1,21 +1,13 @@
-"""邮件模块 CRUD"""
 from typing import Any
 
 from app.core.base_crud import CRUDBase
 from app.core.base_schema import AuthSchema
 
 from .model import EmailConfigModel, EmailLogModel, EmailTemplateModel
-from .schema import (
-    EmailConfigCreateSchema,
-    EmailConfigUpdateSchema,
-    EmailTemplateCreateSchema,
-    EmailTemplateUpdateSchema,
-)
+from .schema import EmailConfigCreateSchema, EmailConfigUpdateSchema, EmailTemplateCreateSchema, EmailTemplateUpdateSchema
 
 
-class EmailConfigCRUD(
-    CRUDBase[EmailConfigModel, EmailConfigCreateSchema, EmailConfigUpdateSchema]
-):
+class EmailConfigCRUD(CRUDBase[EmailConfigModel, EmailConfigCreateSchema, EmailConfigUpdateSchema]):
     """SMTP 配置 CRUD"""
 
     def __init__(self, auth: AuthSchema) -> None:
@@ -28,11 +20,7 @@ class EmailConfigCRUD(
         """清除所有配置的 is_default 标记（不管理事务，由调用方控制）"""
         from sqlalchemy import update as sa_update
 
-        await self.db.execute(
-            sa_update(EmailConfigModel).where(
-                EmailConfigModel.is_default == True  # noqa: E712
-            ).values(is_default=False)
-        )
+        await self.db.execute(sa_update(EmailConfigModel).where(EmailConfigModel.is_default.is_(True)).values(is_default=False))
 
     async def get_active_by_id(self, config_id: int) -> EmailConfigModel | None:
         return await self.get(id=config_id, status=0)
@@ -41,9 +29,7 @@ class EmailConfigCRUD(
         return await self.get(is_default=True, status=0)
 
 
-class EmailTemplateCRUD(
-    CRUDBase[EmailTemplateModel, EmailTemplateCreateSchema, EmailTemplateUpdateSchema]
-):
+class EmailTemplateCRUD(CRUDBase[EmailTemplateModel, EmailTemplateCreateSchema, EmailTemplateUpdateSchema]):
     """邮件模板 CRUD"""
 
     def __init__(self, auth: AuthSchema) -> None:

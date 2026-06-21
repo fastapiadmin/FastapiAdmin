@@ -81,17 +81,14 @@ const DemoAPI = {
 
 export default DemoAPI;
 
-export interface DemoPageQuery extends PageQuery {
+export interface DemoPageQuery extends PageQuery, UserByQueryParams, TenantByQueryParams {
   name?: string;
-  status?: number;
-  created_time?: string[];
-  updated_time?: string[];
-  created_id?: number;
-  updated_id?: number;
 }
 
 export interface DemoTable extends BaseType {
   name?: string;
+  status?: number;
+  description?: string;
   int_val?: number;
   bigint_val?: number;
   float_val?: number;
@@ -105,6 +102,8 @@ export interface DemoTable extends BaseType {
 
 export interface DemoForm extends BaseFormType {
   name?: string;
+  status?: number;
+  description?: string;
   int_val?: number;
   bigint_val?: number;
   float_val?: number;

@@ -66,7 +66,9 @@
                 :perm-patch="['module_system:user:patch']"
                 :import-loading="uploadLoading"
                 :delete-loading="batchDeleting"
-                @add="handleOpenDialog('create')"
+                :create-loading="createLoading"
+                :more-loading="moreLoading"
+                @add="handleAdd"
                 @import="openImport"
                 @export="openExport"
                 @delete="handleBatchDelete"
@@ -114,19 +116,23 @@
           </template>
           <!-- 性别 → 三种状态 Tag -->
           <template #gender="{ row }">
-            <ElTag v-if="row?.gender === '0'" type="success">男</ElTag>
-            <ElTag v-else-if="row?.gender === '1'" type="warning">女</ElTag>
-            <ElTag v-else type="info">未知</ElTag>
+            <FaStatusTag v-if="row?.gender === '0'" type="success" label="男" />
+            <FaStatusTag v-else-if="row?.gender === '1'" type="warning" label="女" />
+            <FaStatusTag v-else type="info" label="未知" />
           </template>
           <!-- 角色 → 数组 join 渲染 -->
           <template #roles="{ row }">
-            {{ row?.roles ? (row.roles as any[]).map((item: any) => item.name).join("、") : "" }}
+            {{
+              (row as unknown as UserInfo)?.roles
+                ? (row as unknown as UserInfo).roles!.map((item) => item.name).join("、")
+                : ""
+            }}
           </template>
           <!-- 岗位 → 数组 join 渲染 -->
           <template #positions="{ row }">
             {{
-              row?.positions
-                ? (row.positions as any[]).map((item: any) => item.name).join("、")
+              (row as unknown as UserInfo)?.positions
+                ? (row as unknown as UserInfo).positions!.map((item) => item.name).join("、")
                 : ""
             }}
           </template>
@@ -209,6 +215,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
+import { h } from "vue";
 import { UserFilled } from "@element-plus/icons-vue";
 import { ElAvatar } from "element-plus";
 import { DeviceEnum } from "@/enums/settings/device.enum";
@@ -224,22 +231,26 @@ import UserAPI, {
   type UserInfo,
   type UserPageQuery,
 } from "@/api/module_system/user";
-import { formatTree, renderTableOperationCell, type TableOperationAction } from "@utils";
+import {
+  formatTree,
+  renderTableOperationCell,
+  type TableOperationAction,
+  resolveStatusColumns,
+} from "@utils";
 import PositionAPI from "@/api/module_system/position";
 import DeptAPI from "@/api/module_system/dept";
 import RoleAPI from "@/api/module_system/role";
 import { useAppStore, useUserStore } from "@stores";
 import { useAuth } from "@/hooks/core/useAuth";
 import type { ColumnOption } from "@/types/component";
-import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
 import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import FaDeptTree from "./components/FaDeptTree.vue";
-import { ElTag, ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
 const appStore = useAppStore();
@@ -248,7 +259,7 @@ const userStore = useUserStore();
 type UserSearchForm = {
   username?: string;
   name?: string;
-  status?: string;
+  status?: number;
   created_id?: number;
   created_time?: string[];
 };
@@ -343,6 +354,8 @@ const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const userFormRenderKey = ref(0);
 const submitLoading = ref(false);
 const uploadLoading = ref(false);
+const createLoading = ref(false);
+const moreLoading = ref(false);
 const deptFilterId = ref<string | number | undefined>(undefined);
 
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450px" : "90%"));
@@ -592,7 +605,7 @@ const {
       page_no: 1,
       page_size: 20,
     },
-    columnsFactory: (): import("@/types/component").ColumnOption<UserInfo>[] => [
+    columnsFactory: resolveStatusColumns<UserInfo>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       {
@@ -616,10 +629,10 @@ const {
         prop: "status",
         label: "状态",
         width: 88,
-        formatter: (row: UserInfo) =>
-          h(ElTag, { type: row.status === 0 ? "success" : "danger" }, () =>
-            row.status === 0 ? "启用" : "停用"
-          ),
+        status: {
+          0: { type: "success", text: "启用" },
+          1: { type: "danger", text: "停用" },
+        },
       },
       {
         prop: "dept",
@@ -631,10 +644,9 @@ const {
         prop: "gender",
         label: "性别",
         width: 88,
-        formatter: (row: UserInfo) => {
-          if (row.gender === "0") return h(ElTag, { type: "success" }, () => "男");
-          if (row.gender === "1") return h(ElTag, { type: "warning" }, () => "女");
-          return h(ElTag, { type: "info" }, () => "未知");
+        status: {
+          "0": { type: "success", text: "男" },
+          "1": { type: "warning", text: "女" },
         },
       },
       { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
@@ -647,7 +659,7 @@ const {
         align: "right",
         formatter: (row: UserInfo) => formatUserOperationCell(row, opCtx),
       },
-    ],
+    ]),
   },
 });
 
@@ -836,6 +848,15 @@ async function handleCloseDialog() {
   await resetForm();
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
   if (id) {
@@ -925,7 +946,7 @@ async function handleBatchDelete() {
     if (userStore.basicInfo.id && ids.includes(userStore.basicInfo.id)) {
       userStore.clearUserInfo();
     } else {
-      ElMessage.success("删除成功");
+      console.info(`删除 ${ids.length} 条数据`);
     }
     selectedRows.value = [];
     await refreshRemove();
@@ -936,7 +957,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -944,13 +965,13 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
-    batchDeleting.value = true;
+    moreLoading.value = true;
     await UserAPI.batchUser({ ids, status });
     await refreshData();
   } catch {
     // 用户取消
   } finally {
-    batchDeleting.value = false;
+    moreLoading.value = false;
   }
 }
 </script>

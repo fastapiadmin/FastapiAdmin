@@ -23,9 +23,7 @@ class NodeCRUD(CRUDBase[NodeModel, NodeCreateSchema, NodeUpdateSchema]):
         """
         super().__init__(model=NodeModel, auth=auth)
 
-    async def get_obj_by_id_crud(
-        self, id: int, preload: list[str | Any] | None = None
-    ) -> NodeModel | None:
+    async def get_obj_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> NodeModel | None:
         """
         获取节点详情
 
@@ -55,7 +53,7 @@ class NodeCRUD(CRUDBase[NodeModel, NodeCreateSchema, NodeUpdateSchema]):
         返回:
         - Sequence[NodeModel]: 节点模型序列
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
     async def create_obj_crud(self, data: NodeCreateSchema) -> NodeModel | None:
         """

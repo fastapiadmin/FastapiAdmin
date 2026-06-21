@@ -99,7 +99,6 @@ import { Close, Right, FolderOpened, Back, Download, Finished } from "@element-p
 import type { EditorConfiguration } from "codemirror";
 import type { GenTableSchema } from "@/api/module_generator/gencode";
 import type { DictTable } from "@/api/module_system/dict";
-import FaDrawer from "@/components/modal/fa-drawer/index.vue";
 import type { TreeNode } from "../types";
 import GenBasicStep from "./FaGenBasicStep.vue";
 import GenColumnsStep from "./FaGenColumnsStep.vue";

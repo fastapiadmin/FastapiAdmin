@@ -178,8 +178,6 @@ import type { CmComponentRef } from "codemirror-editor-vue3";
 import { ElMessage } from "element-plus";
 import { ArrowDown, CopyDocument } from "@element-plus/icons-vue";
 import { useClipboard } from "@vueuse/core";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 import { useSettingsStore } from "@stores";
 import { ThemeMode } from "@/enums/settings/theme.enum";
 import { buildSqlFromVisual } from "../utils/buildCreateTableSql";

@@ -9,16 +9,20 @@
     ]"
   >
     <div
-      class="relative box-border flex-b h-15 leading-15 select-none"
+      class="relative box-border flex justify-between h-15 leading-15 select-none"
       :class="[
         tabStyle === 'tab-card' || tabStyle === 'tab-google' || tabStyle === 'tab-default'
           ? 'border-b border-(--fa-card-border)'
           : '',
       ]"
     >
-      <div class="flex-c flex-1 min-w-0 leading-15" :style="{ display: 'flex' }">
+      <div class="flex items-center flex-1 min-w-0 leading-15" :style="{ display: 'flex' }">
         <!-- 系统信息：Logo + 标题一并受「显示应用 Logo」控制 -->
-        <div class="flex-c c-p" @click="toHome" v-if="isTopMenu && showAppLogo">
+        <div
+          class="flex items-center cursor-pointer"
+          @click="toHome"
+          v-if="isTopMenu && showAppLogo"
+        >
           <FaLogo class="pl-4.5" :src="headerLogoSrc" />
           <p v-if="width >= 1400" class="my-0 mx-2 ml-2 text-lg">{{ headerSystemName }}</p>
         </div>
@@ -64,18 +68,18 @@
         <FaMixedMenu v-if="isTopLeftMenu" :list="menuList" />
       </div>
 
-      <div id="app-header-toolbar" class="flex-c gap-2.5">
+      <div id="app-header-toolbar" class="flex items-center gap-2.5">
         <!-- 搜索 -->
         <div
           v-if="shouldShowGlobalSearch"
-          class="flex-cb w-40 h-9 px-2.5 c-p border border-g-400 rounded-custom-sm max-md:hidden! tad-300 hover:-translate-y-0.5 hover:shadow-md"
+          class="flex items-center justify-between w-40 h-9 px-2.5 cursor-pointer border border-g-400 rounded-custom-sm max-md:hidden! transition duration-300 hover:-translate-y-0.5 hover:shadow-md"
           @click="openSearchDialog"
         >
-          <div class="flex-c">
+          <div class="flex items-center">
             <FaSvgIcon icon="ri:search-line" class="text-sm text-g-500" />
             <span class="ml-1 text-xs font-normal text-g-500">{{ $t("topBar.search.title") }}</span>
           </div>
-          <div class="flex-c h-5 px-1.5 text-g-500/80 border border-g-400 rounded">
+          <div class="flex items-center h-5 px-1.5 text-g-500/80 border border-g-400 rounded">
             <FaSvgIcon v-if="isWindows" icon="vaadin:ctrl-a" class="text-sm" />
             <FaSvgIcon v-else icon="ri:command-fill" class="text-xs" />
             <span class="ml-0.5 text-xs">k</span>
@@ -92,7 +96,10 @@
         />
 
         <!-- 组件尺寸 default/large/small（沿用旧版持久化开关 showSizeSelect） -->
-        <div v-if="shouldShowSizeSelect" class="flex-cc ml-1 max-md:hidden!">
+        <div
+          v-if="shouldShowSizeSelect"
+          class="flex items-center justify-center ml-1 max-md:hidden!"
+        >
           <FaSizeSelect />
         </div>
 
@@ -142,7 +149,7 @@
         <div v-if="shouldShowSettings">
           <ElPopover :visible="showSettingGuide" placement="bottom-start" :width="190" :offset="0">
             <template #reference>
-              <div class="flex-cc">
+              <div class="flex items-center justify-center">
                 <FaIconButton icon="ri:settings-line" class="setting-btn" @click="openSetting" />
               </div>
             </template>
@@ -189,7 +196,7 @@ import { languageOptions } from "@/locales";
 import { mittBus, themeAnimation } from "@utils";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useHeaderBar } from "@/hooks/core/useHeaderBar";
-import FaUserMenu from "./widget/FaUserMenu.vue";
+import FaUserMenu from "./widgets/FaUserMenu.vue";
 
 defineOptions({ name: "FaHeaderBar" });
 

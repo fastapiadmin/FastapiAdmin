@@ -22,7 +22,7 @@ from app.core.logger import logger
 
 from .schema import DependencyStatus, HealthOut, ReadinessOut
 
-HealthRouter = APIRouter(prefix="/health", tags=["公共服务/健康检查"])
+HealthRouter = APIRouter(prefix="/health", tags=["公共模块", "健康检查"])
 
 
 async def _check_database() -> DependencyStatus:

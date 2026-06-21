@@ -5,7 +5,8 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema
+from app.core.base_params import BaseQueryParam, TenantByQueryParam, UserByQueryParam
+from app.core.base_schema import BaseSchema, TenantBySchema, UserBySchema
 
 
 class GenDBTableSchema(BaseModel):
@@ -254,7 +255,7 @@ class GenTableSchema(BaseModel):
         return s if s else None
 
 
-class GenTableOutSchema(GenTableSchema, BaseSchema):
+class GenTableOutSchema(GenTableSchema, BaseSchema, UserBySchema, TenantBySchema):
     """业务表输出模型（面向控制器/前端）。"""
 
     model_config = ConfigDict(from_attributes=True)
@@ -300,30 +301,15 @@ class GenSyncPreviewSchema(BaseModel):
 
 
 @dataclass
-class GenTableQueryParam:
+class GenTableQueryParam(BaseQueryParam, UserByQueryParam, TenantByQueryParam):
     """代码生成业务表查询参数
     - 支持按`table_name`、`table_comment`进行模糊检索（由CRUD层实现like）。
     - 空值将被忽略，不参与过滤。
     """
 
-    def __init__(
-        self,
-        table_name: str | None = Query(None, description="表名称"),
-        table_comment: str | None = Query(None, description="表注释"),
-    ) -> None:
-        # 模糊查询字段
-        self.table_name = (QueueEnum.like.value, table_name)
-        self.table_comment = (QueueEnum.like.value, table_comment)
+    table_name: str | None = Query(None, description="表名称")
+    table_comment: str | None = Query(None, description="表注释")
 
-
-class GenTableColumnQueryParam:
-    """代码生成业务表字段查询参数
-    - `column_name`按like规则模糊查询（透传到CRUD层）
-    """
-
-    def __init__(
-        self,
-        column_name: str | None = Query(None, description="列名称"),
-    ) -> None:
-        # 模糊查询字段：约定("like", 值)格式，便于CRUD解析
-        self.column_name = (QueueEnum.like.value, column_name)
+    def __post_init__(self) -> None:
+        self.table_name = (QueueEnum.like.value, self.table_name) if self.table_name else None
+        self.table_comment = (QueueEnum.like.value, self.table_comment) if self.table_comment else None

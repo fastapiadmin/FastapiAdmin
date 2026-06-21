@@ -150,7 +150,7 @@ class VersionManager {
   constructor() {
     // 提取当前页面第一个 <script type="module" src="..."> 的 src
     const scripts = document.querySelectorAll<HTMLScriptElement>("script[type=module]");
-    this.currentScriptSrc = scripts.length > 0 ? scripts[0].src : "";
+    this.currentScriptSrc = scripts.length > 0 ? scripts[0]!.src : "";
   }
 
   private normalizeVersion(version: string): string {
@@ -210,7 +210,7 @@ class VersionManager {
   }
 
   private buildUpgradeMessage(requireReLogin: boolean): string {
-    const { title: content } = upgradeLogList.value[0];
+    const { title: content } = upgradeLogList.value[0]!;
     const messageParts = [
       `<p style="color: var(--fa-gray-800) !important; padding-bottom: 5px;">`,
       `系统已升级到 ${StorageConfig.CURRENT_VERSION} 版本，此次更新带来了以下改进：`,
@@ -326,7 +326,7 @@ class VersionManager {
         const match = html.match(/<script[^>]+type="module"[^>]+src="([^"]+)"/);
         if (!match) return;
 
-        const remoteSrc = match[1];
+        const remoteSrc = match[1]!;
         if (remoteSrc === this.currentScriptSrc) return;
 
         // 去重：同一 hash 不重复提示

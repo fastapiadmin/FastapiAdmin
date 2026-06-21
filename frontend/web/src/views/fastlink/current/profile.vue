@@ -1,7 +1,7 @@
 <!-- 个人中心（Art 模版布局 + 当前用户接口） -->
 <template>
   <div class="w-full h-full p-0 bg-transparent border-none shadow-none">
-    <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
+    <div class="relative flex justify-between mt-2.5 max-md:block max-md:mt-1">
       <!-- 左侧卡片 -->
       <div class="w-md mr-5 max-md:w-full max-md:mr-0">
         <div class="fa-card-sm relative p-9 pb-6 overflow-hidden text-center">
@@ -184,7 +184,7 @@
               </ElFormItem>
             </ElRow>
 
-            <div class="flex-c justify-end [&_.el-button]:w-27.5!">
+            <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
               <ElButton
                 type="primary"
                 class="w-22.5"
@@ -236,7 +236,7 @@
               />
             </ElFormItem>
 
-            <div class="flex-c justify-end [&_.el-button]:w-27.5!">
+            <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
               <ElButton
                 type="primary"
                 class="w-22.5"

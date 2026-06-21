@@ -3,7 +3,7 @@
     <ElCalendar v-model="currentDate">
       <template #date-cell="{ data }">
         <div
-          class="home-calendar__cell relative flex h-full min-h-14 max-h-20 flex-col overflow-hidden p-0.5 c-p"
+          class="home-calendar__cell relative flex h-full min-h-14 max-h-20 flex-col overflow-hidden p-0.5 cursor-pointer"
           :class="{ 'is-selected': data.isSelected }"
           @click="handleCellClick(data.day)"
         >

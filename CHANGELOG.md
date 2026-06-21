@@ -186,7 +186,7 @@ MappedBase (声明式基类)
 |------|------|------|
 | `id` | Integer PK AI | 主键 |
 | `uuid` | String(64) UNIQUE | UUID 全局唯一标识 |
-| `status` | Integer | default=0 | 状态（0:正常 1:禁用） |
+| `status` | Integer | default=0 | 状态（0:启动 1:停用） |
 | `description` | Text nullable | 备注/描述 |
 | `created_time` | DateTime | 创建时间 |
 | `updated_time` | DateTime | 更新时间（onupdate） |
@@ -998,7 +998,7 @@ PUT /tenant/update/{id} (package_id 变更)
 |------|------|------|------|
 | `name` | String(100) | NOT NULL, UNIQUE | 套餐名称 |
 | `code` | String(100) | NOT NULL, UNIQUE | 套餐编码 |
-| `status` | Integer | default=0 | 状态（0:正常 1:禁用） |
+| `status` | Integer | default=0 | 状态（0:启动 1:停用） |
 | `is_default` | Boolean | default=False | 是否为默认套餐（自助注册时自动选用） |
 | `price` | Integer | default=0 | 价格（分），0=免费 |
 | `period` | String(10) | nullable | 计费周期：month/year/once |
@@ -2136,7 +2136,7 @@ POST /tenant/order/create (body: {package_id, order_type: "upgrade"})
 | **并发用户** | 单实例支持 500+ 并发租户用户（需压测验证） |
 | **可用性** | 99.5%（不包含计划运维窗口） |
 | **数据安全** | 传输层 TLS 1.3，存储层 Bcrypt/AES-256，日志脱敏（手机号/邮箱部分掩码） |
-| **兼容性** | 支持 MySQL 8.0+ / PostgreSQL 14+ / SQLite（开发环境）；Python ≥ 3.10；Node.js ≥ 20 |
+| **兼容性** | 支持 MySQL 8.0+ / PostgreSQL 14+ / SQLite（开发环境）；Python ≥ 3.12；Node.js ≥ 20 |
 | **数据库备份** | 每日全量备份（保留 30 天），每小时增量备份（保留 7 天）。备份异地存储，定期恢复演练（每季度 1 次） |
 | **容灾恢复** | RTO ≤ 4 小时，RPO ≤ 1 小时。主库故障时自动切换只读副本，30 分钟内完成主从切换 |
 | **版本升级策略** | 数据库迁移采用 Alembic 管理，所有 schema 变更通过 migration 脚本执行。升级前自动备份，升级失败可回滚至上一个备份点。主版本升级需提前通知租户（7 天），次版本/补丁版可灰度发布 |

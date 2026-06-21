@@ -135,7 +135,7 @@ export class TableCache<T> {
     this.enableLog = enableLog;
   }
 
-  private log(message: string, ...args: any[]) {
+  private log(message: string, ...args: unknown[]) {
     if (this.enableLog) console.log(`[TableCache] ${message}`, ...args);
   }
 
@@ -387,7 +387,7 @@ export const createSmartDebounce = <T extends (...args: any[]) => Promise<any>>(
   fn: T,
   delay: number
 ): T & { cancel: () => void; flush: () => Promise<any> } => {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: Parameters<T> | null = null;
   let lastResolve: ((value: any) => void) | null = null;
   let lastReject: ((reason: any) => void) | null = null;
@@ -570,3 +570,7 @@ export function renderTableOperationCell(
 
   return h("div", { class: wrapperClass }, [...inlineNodes, moreDropdown]);
 }
+
+/* ============ 状态 Tag 工具 ============ */
+// 表格 status formatter：消除 50+ 处 h(ElTag, { type }, () => text) 重复
+export * from "./statusFormatter";

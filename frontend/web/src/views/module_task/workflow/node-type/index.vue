@@ -1,4 +1,4 @@
-<!-- 工作流节点类型：Art + useTable -->
+<!-- 工作流节点类型：ElSplitter + Codemirror -->
 <template>
   <div class="fa-full-height">
     <FaSearchBar
@@ -34,7 +34,8 @@
             :perm-create="['module_task:workflow:node-type:create']"
             :perm-delete="['module_task:workflow:node-type:delete']"
             :delete-loading="batchDeleting"
-            @add="openDialog()"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -81,27 +82,92 @@
     <FaDialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="720px"
+      width="1000px"
       destroy-on-close
       @close="handleCloseDialog"
+      @opened="handleDialogOpened"
     >
-      <FaForm
-        :key="nodeTypeFormRenderKey"
-        ref="formRef"
-        v-model="formData"
-        :items="nodeTypeDialogFormItems"
-        :rules="rules"
-        label-width="100px"
-        label-position="right"
-        :span="24"
-        :gutter="16"
-        :show-reset="false"
-        :show-submit="false"
-        class="crud-dialog-art-form"
-      />
+      <ElSplitter direction="horizontal" :style="'height: 500px'">
+        <ElSplitterPanel size="320px" :min="240" :max="420">
+          <ElScrollbar :style="'height: 100%'">
+            <FaForm
+              :key="nodeTypeFormRenderKey"
+              ref="formRef"
+              v-model="formData"
+              :items="nodeTypeDialogFormItems"
+              :rules="rules"
+              label-suffix=":"
+              label-width="85px"
+              :span="24"
+              :gutter="16"
+              :show-reset="false"
+              :show-submit="false"
+              class="crud-dialog-art-form node-splitter-art-form"
+            >
+              <template #args>
+                <div class="dynamic-params">
+                  <div v-for="(_item, index) in argsList" :key="index" class="param-item">
+                    <ElInput v-model="argsList[index]" placeholder="参数值" />
+                    <ElButton
+                      type="danger"
+                      icon="Delete"
+                      circle
+                      @click="argsList.splice(index, 1)"
+                    />
+                  </div>
+                  <ElButton type="primary" icon="Plus" @click="argsList.push('')">
+                    添加位置参数
+                  </ElButton>
+                </div>
+              </template>
+              <template #kwargs>
+                <div class="dynamic-params">
+                  <div v-for="(item, index) in kwargsList" :key="index" class="param-item">
+                    <ElInput v-model="item.key" placeholder="键" />
+                    <ElInput v-model="item.value" placeholder="值" />
+                    <ElButton
+                      type="danger"
+                      icon="Delete"
+                      circle
+                      @click="kwargsList.splice(index, 1)"
+                    />
+                  </div>
+                  <ElButton
+                    type="primary"
+                    icon="Plus"
+                    @click="kwargsList.push({ key: '', value: '' })"
+                  >
+                    添加关键词参数
+                  </ElButton>
+                </div>
+              </template>
+            </FaForm>
+          </ElScrollbar>
+        </ElSplitterPanel>
+
+        <ElSplitterPanel>
+          <div class="code-editor-container">
+            <div class="code-editor-header">
+              <span class="code-editor-title">handler 代码</span>
+              <span class="code-editor-tip">须定义 handler(*args, **kwargs) 函数</span>
+            </div>
+            <Codemirror
+              ref="codeEditorRef"
+              v-model:value="formData.func"
+              :options="codeEditorOptions"
+              border
+              height="calc(100% - 40px)"
+              width="100%"
+            />
+          </div>
+        </ElSplitterPanel>
+      </ElSplitter>
+
       <template #footer>
-        <ElButton @click="dialogVisible = false">取消</ElButton>
-        <ElButton type="primary" :loading="submitting" @click="submitForm">保存</ElButton>
+        <div class="dialog-footer">
+          <ElButton @click="dialogVisible = false">取消</ElButton>
+          <ElButton type="primary" :loading="submitting" @click="submitForm">保存</ElButton>
+        </div>
       </template>
     </FaDialog>
   </div>
@@ -117,19 +183,19 @@ import WorkflowNodeTypeAPI, {
   type WorkflowNodeTypeForm,
   type WorkflowNodeTypeTable,
 } from "@/api/module_task/workflow/node-type";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormRules } from "element-plus";
-import { computed, h, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
+import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
+import type { EditorConfiguration } from "codemirror";
+import "codemirror/mode/python/python.js";
+import "codemirror/theme/dracula.css";
 
 const BATCH_DELETE_MSG = "确认删除选中的编排节点类型吗？";
 
@@ -198,6 +264,7 @@ const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
 );
 const batchDeleting = ref(false);
+const createLoading = ref(false);
 
 function onTableSelectionChange(rows: WorkflowNodeTypeTable[]) {
   selectedRows.value = rows;
@@ -309,10 +376,10 @@ const {
         label: "启用",
         width: 88,
         align: "center",
-        formatter: (row) =>
-          h(ElTag, { type: row.is_active ? "success" : "info" }, () =>
-            row.is_active ? "是" : "否"
-          ),
+        status: {
+          true: { type: "success", text: "是" },
+          false: { type: "info", text: "否" },
+        },
       },
       {
         prop: "created_time",
@@ -348,12 +415,53 @@ async function onResetSearch() {
   await resetSearchParams();
 }
 
+// ─── Codemirror ──────────────────────────────────────────────────
+
+const codeEditorOptions: EditorConfiguration = {
+  mode: "python",
+  lineNumbers: true,
+  smartIndent: true,
+  indentUnit: 4,
+  tabSize: 4,
+  theme: "dracula",
+  lineWrapping: true,
+  autofocus: false,
+};
+
+const codeEditorRef = ref<CmComponentRef>();
+
+// ─── 表单 ────────────────────────────────────────────────────────
+
 const dialogVisible = ref(false);
 const dialogTitle = ref("新增节点类型");
 const editingId = ref<number | null>(null);
 const submitting = ref(false);
 const formRef = ref<InstanceType<typeof FaForm> | null>(null);
 const nodeTypeFormRenderKey = ref(0);
+
+const defaultForm = (): WorkflowNodeTypeForm => ({
+  name: "",
+  code: "",
+  category: "action",
+  func: `def handler(*args, **kwargs):
+    """
+    编写你的处理逻辑
+    可访问:
+    - args: 位置参数
+    - kwargs: 关键字参数
+    """
+    print("handler executed")
+    return {"status": "success"}
+`,
+  args: "",
+  kwargs: "{}",
+  sort_order: 0,
+  is_active: true,
+});
+
+const formData = ref<WorkflowNodeTypeForm>(defaultForm());
+const argsList = ref<string[]>([]);
+const kwargsList = ref<{ key: string; value: string }[]>([]);
 
 const nodeTypeDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -386,33 +494,18 @@ const nodeTypeDialogFormItems = computed<FormItem[]>(() => [
     },
   },
   {
-    label: "代码块",
-    key: "func",
-    type: "input",
-    span: 24,
-    props: {
-      type: "textarea",
-      rows: 12,
-      placeholder: "须定义 handler(*args, **kwargs)，可接收 upstream、variables",
-    },
-  },
-  {
     label: "位置参数",
     key: "args",
     type: "input",
     span: 24,
-    props: { placeholder: "逗号分隔，如 a, b" },
+    placeholder: "",
   },
   {
     label: "关键字参数",
     key: "kwargs",
     type: "input",
     span: 24,
-    props: {
-      type: "textarea",
-      rows: 3,
-      placeholder: 'JSON，如 {"key": "v"}',
-    },
+    placeholder: "",
   },
   {
     label: "排序",
@@ -429,35 +522,40 @@ const nodeTypeDialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 
-const defaultForm = (): WorkflowNodeTypeForm => ({
-  name: "",
-  code: "",
-  category: "action",
-  func: "",
-  args: "",
-  kwargs: "{}",
-  sort_order: 0,
-  is_active: true,
-});
-
-const formData = ref<WorkflowNodeTypeForm>(defaultForm());
-
 const rules: FormRules = {
   name: [{ required: true, message: "请输入名称", trigger: "blur" }],
   code: [{ required: true, message: "请输入编码", trigger: "blur" }],
   category: [{ required: true, message: "请选择分类", trigger: "change" }],
-  func: [{ required: true, message: "请输入代码块", trigger: "blur" }],
 };
 
 function resetForm() {
   Object.assign(formData.value, defaultForm());
   editingId.value = null;
+  argsList.value = [];
+  kwargsList.value = [];
   formRef.value?.resetFields();
   formRef.value?.clearValidate();
 }
 
 function handleCloseDialog() {
   resetForm();
+}
+
+function handleDialogOpened() {
+  nextTick(() => {
+    setTimeout(() => {
+      codeEditorRef.value?.refresh?.();
+    }, 100);
+  });
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await openDialog();
+  } finally {
+    createLoading.value = false;
+  }
 }
 
 async function openDialog(id?: number) {
@@ -473,10 +571,15 @@ async function openDialog(id?: number) {
         formData.value.code = d.code || "";
         formData.value.category = (d.category as WorkflowNodeTypeForm["category"]) || "action";
         formData.value.func = d.func || "";
-        formData.value.args = d.args || "";
-        formData.value.kwargs = d.kwargs || "{}";
         formData.value.sort_order = d.sort_order ?? 0;
         formData.value.is_active = d.is_active ?? true;
+        argsList.value = d.args ? d.args.split(",").map((v: string) => v.trim()) : [];
+        kwargsList.value = d.kwargs
+          ? Object.entries(JSON.parse(d.kwargs)).map(([key, value]) => ({
+              key,
+              value: String(value),
+            }))
+          : [];
       }
     } catch {
       ElMessage.error("加载详情失败");
@@ -490,22 +593,32 @@ async function openDialog(id?: number) {
 async function submitForm() {
   if (!formRef.value) return;
   await formRef.value.validate();
-  if (formData.value.kwargs?.trim()) {
-    try {
-      JSON.parse(formData.value.kwargs);
-    } catch {
-      ElMessage.error("关键字参数须为合法 JSON");
-      return;
-    }
+
+  if (!formData.value.func || !formData.value.func.trim()) {
+    ElMessage.error("请输入 handler 代码");
+    return;
   }
+
   submitting.value = true;
   try {
+    const submitData = {
+      ...formData.value,
+      args: argsList.value.filter((v) => v.trim()).join(",") || undefined,
+      kwargs:
+        kwargsList.value.filter((v) => v.key.trim()).length > 0
+          ? JSON.stringify(
+              Object.fromEntries(
+                kwargsList.value.filter((v) => v.key.trim()).map((v) => [v.key, v.value])
+              )
+            )
+          : undefined,
+    };
     if (editingId.value) {
-      await WorkflowNodeTypeAPI.updateWorkflowNodeType(editingId.value, formData.value);
+      await WorkflowNodeTypeAPI.updateWorkflowNodeType(editingId.value, submitData);
       dialogVisible.value = false;
       await refreshUpdate();
     } else {
-      await WorkflowNodeTypeAPI.createWorkflowNodeType(formData.value);
+      await WorkflowNodeTypeAPI.createWorkflowNodeType(submitData);
       dialogVisible.value = false;
       await refreshCreate();
     }
@@ -517,4 +630,46 @@ async function submitForm() {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.code-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.code-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--el-fill-color-light);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  flex-shrink: 0;
+}
+
+.code-editor-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.code-editor-tip {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.dynamic-params {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.param-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .el-input {
+    flex: 1;
+  }
+}
+</style>

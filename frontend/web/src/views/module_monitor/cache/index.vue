@@ -262,7 +262,6 @@
 </template>
 
 <script lang="ts" setup>
-import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 import { ElMessageBox } from "element-plus";
 import CacheAPI, {
   type CacheInfo,

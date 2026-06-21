@@ -20,7 +20,7 @@
       >
         <template #suffix>
           <div
-            class="h-4.5 flex-cc rounded border border-g-300 dark:bg-g-200/50! bg-box! px-1.5 text-g-500"
+            class="h-4.5 flex items-center justify-center rounded border border-g-300 dark:bg-g-200/50! bg-box! px-1.5 text-g-500"
           >
             <FaSvgIcon icon="fluent:arrow-enter-left-20-filled" />
           </div>
@@ -29,12 +29,12 @@
       <ElScrollbar class="mt-5" max-height="370px" ref="searchResultScrollbar" always>
         <div class="result w-full" v-show="searchResult.length">
           <div
-            class="box mt-0! c-p text-base leading-none"
+            class="box mt-0! cursor-pointer text-base leading-none"
             v-for="(item, index) in searchResult"
             :key="index"
           >
             <div
-              class="mt-2 h-12 flex-cb rounded-custom-sm bg-g-200/80 px-4 text-sm text-g-700"
+              class="mt-2 h-12 flex items-center justify-between rounded-custom-sm bg-g-200/80 px-4 text-sm text-g-700"
               :class="isHighlighted(index) ? 'highlighted bg-theme/70! text-white!' : ''"
               @click="searchGoPage(item)"
               @mouseenter="highlightOnHover(index)"
@@ -49,7 +49,7 @@
           <p class="text-xs text-g-500">{{ $t("search.historyTitle") }}</p>
           <div class="mt-1.5 w-full">
             <div
-              class="box mt-2 h-12 c-p flex-cb rounded-custom-sm bg-g-200/80 px-4 text-sm text-g-800"
+              class="box mt-2 h-12 cursor-pointer flex items-center justify-between rounded-custom-sm bg-g-200/80 px-4 text-sm text-g-800"
               v-for="(item, index) in historyResult"
               :key="index"
               :class="
@@ -62,7 +62,7 @@
             >
               {{ formatMenuTitle(item.meta.title) }}
               <div
-                class="size-5 selected-icon select-none rounded-full text-g-500 flex-cc c-p"
+                class="size-5 selected-icon select-none rounded-full text-g-500 flex items-center justify-center cursor-pointer"
                 @click.stop="deleteHistory(index)"
               >
                 <FaSvgIcon icon="ri:close-large-fill" class="text-xs" />
@@ -73,15 +73,17 @@
       </ElScrollbar>
 
       <template #footer>
-        <div class="dialog-footer box-border flex-c border-t-d pt-4.5 pb-1">
-          <div class="flex-cc">
+        <div
+          class="dialog-footer box-border flex items-center border-t border-(--default-border) pt-4.5 pb-1"
+        >
+          <div class="flex items-center justify-center">
             <FaSvgIcon
               icon="fluent:arrow-enter-left-20-filled"
               class="mr-2 box-border h-5 w-5.5 rounded border border-g-400 px-1 text-g-500 shadow-[0_2px_0_var(--default-border-dashed)]"
             />
             <span class="mr-3.5 text-xs text-g-700">{{ $t("search.selectKeydown") }}</span>
           </div>
-          <div class="flex-c">
+          <div class="flex items-center">
             <FaSvgIcon
               icon="ri:arrow-up-wide-fill"
               class="mr-2 box-border h-5 w-5.5 rounded border border-g-400 px-1 text-g-500 shadow-[0_2px_0_var(--default-border-dashed)]"
@@ -92,9 +94,9 @@
             />
             <span class="mr-3.5 text-xs text-g-700">{{ $t("search.switchKeydown") }}</span>
           </div>
-          <div class="flex-c">
+          <div class="flex items-center">
             <i
-              class="mr-2 box-border h-5 rounded border border-g-400 px-1 text-g-500 shadow-[0_2px_0_var(--default-border-dashed)] w-8! flex-cc"
+              class="mr-2 box-border h-5 rounded border border-g-400 px-1 text-g-500 shadow-[0_2px_0_var(--default-border-dashed)] w-8! flex items-center justify-center"
               ><p class="text-[10px] font-medium">ESC</p></i
             >
             <span class="mr-3.5 text-xs text-g-700">{{ $t("search.exitKeydown") }}</span>
@@ -111,7 +113,6 @@ import { Search } from "@element-plus/icons-vue";
 import { mittBus, formatMenuTitle, handleMenuJump } from "@utils";
 import { useUserStore, useMenuStore } from "@stores";
 import { type ScrollbarInstance } from "element-plus";
-
 defineOptions({ name: "FaGlobalSearch" });
 
 const userStore = useUserStore();
@@ -295,9 +296,11 @@ const scrollToHighlightedHistoryItem = () => {
 
 const selectHighlighted = () => {
   if (searchVal.value && searchResult.value.length) {
-    searchGoPage(searchResult.value[highlightedIndex.value]);
+    const target = searchResult.value[highlightedIndex.value];
+    if (target) searchGoPage(target);
   } else if (!searchVal.value && historyResult.value.length) {
-    searchGoPage(historyResult.value[historyHIndex.value]);
+    const target = historyResult.value[historyHIndex.value];
+    if (target) searchGoPage(target);
   }
 };
 

@@ -138,6 +138,7 @@ export interface GenTableSchema extends BaseType {
   pk_column?: GenTableColumnSchema;
   columns: GenTableColumnSchema[];
   sub_table?: GenTableSchema;
+  status?: number;
 }
 
 export interface GenTableColumnSchema extends BaseType {
@@ -161,10 +162,12 @@ export interface GenTableColumnSchema extends BaseType {
   is_list?: boolean | null;
   is_query?: boolean | null;
   query_type?: string | null;
+  status?: number;
+  description?: string;
 }
 
 /** 查询参数：生成表 */
-export interface GenTablePageQuery extends PageQuery {
+export interface GenTablePageQuery extends PageQuery, UserByQueryParams {
   table_name?: string;
   table_comment?: string;
 }

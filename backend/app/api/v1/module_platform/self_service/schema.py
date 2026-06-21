@@ -1,162 +1,229 @@
-"""租户自助服务 Schema"""
-from pydantic import BaseModel, Field
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.common.enums import OrderTypeEnum
+
+OrderType = OrderTypeEnum  # 兼容旧代码的类型别名
+PackageAction = Literal["buy", "renew", "upgrade", "downgrade"]
+PayMethod = Literal["alipay", "wxpay", "free"]
 
 
 class PackageAvailableItem(BaseModel):
-    """可选套餐项"""
-    id: int
-    name: str
-    price: int  # 分
-    period: str  # month/year
-    trial_days: int = 0
-    max_users: int = 0
-    max_roles: int = 0
-    max_depts: int = 0
-    max_storage_mb: int = 0
-    description: str | None = None
-    is_current: bool = False
-    available_actions: list[str] = []  # [buy, renew, upgrade, downgrade]
+    """
+    可选套餐项
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="套餐ID")
+    name: str = Field(..., description="套餐名称")
+    price: int = Field(..., ge=0, description="价格(分)")
+    period: str = Field(..., description="计费周期(month/year)")
+    trial_days: int = Field(default=0, ge=0, description="试用天数")
+    max_users: int = Field(default=0, ge=0, description="最大用户数")
+    max_roles: int = Field(default=0, ge=0, description="最大角色数")
+    max_depts: int = Field(default=0, ge=0, description="最大部门数")
+    max_storage_mb: int = Field(default=0, ge=0, description="最大存储(MB)")
+    description: str | None = Field(default=None, description="套餐描述")
+    is_current: bool = Field(default=False, description="是否为当前套餐")
+    available_actions: list[PackageAction] = Field(default_factory=list, description="可执行操作列表")
 
 
 class PackageAvailableOut(BaseModel):
-    """可选套餐列表"""
-    current_package_id: int | None = None
-    packages: list[PackageAvailableItem]
+    """
+    可选套餐列表
+    """
 
+    model_config = ConfigDict(from_attributes=True)
 
-class PackagePreviewQuery(BaseModel):
-    """套餐变更预览请求"""
-    target_package_id: int = Field(..., ge=1)
+    current_package_id: int | None = Field(default=None, description="当前套餐ID")
+    packages: list[PackageAvailableItem] = Field(default_factory=list, description="可选套餐列表")
 
 
 class PackagePreviewOut(BaseModel):
-    """套餐变更预览结果"""
-    current_package: str = ""
-    target_package: str = ""
-    action: str = ""  # upgrade/downgrade/buy/renew
-    amount: int = 0  # 分
-    period: str = ""
-    gained_menus: list[dict] = []
-    lost_menus: list[dict] = []
-    affected_roles: list[str] = []
-    affected_users: int = 0
+    """
+    套餐变更预览结果
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    current_package: str = Field(default="", description="当前套餐名称")
+    target_package: str = Field(default="", description="目标套餐名称")
+    action: PackageAction = Field(default="buy", description="操作类型")
+    amount: int = Field(default=0, ge=0, description="金额(分)")
+    period: str = Field(default="", description="计费周期")
+    gained_menus: list[dict] = Field(default_factory=list, description="新增菜单清单")
+    lost_menus: list[dict] = Field(default_factory=list, description="移除菜单清单")
+    affected_roles: list[str] = Field(default_factory=list, description="受影响的角色名")
+    affected_users: int = Field(default=0, ge=0, description="受影响用户数")
 
 
 class SelfOrderCreate(BaseModel):
-    """自助订单创建"""
-    package_id: int = Field(..., ge=1)
-    order_type: str = Field(..., pattern="^(buy|renew|upgrade|downgrade)$")
+    """
+    自助订单创建
+    """
+
+    package_id: int = Field(..., ge=1, description="套餐ID")
+    order_type: PackageAction = Field(..., description="订单类型(buy/renew/upgrade/downgrade)")
 
 
 class PluginPurchaseCreate(BaseModel):
-    """插件购买"""
+    """
+    插件购买
+    """
+
     plugin_id: int = Field(..., ge=1, description="插件ID")
-    pay_method: str | None = Field(default=None, pattern=r"^(alipay|wxpay)?$")
-
-
-# ─── 订单 ───
+    pay_method: PayMethod | None = Field(default=None, description="支付方式(alipay/wxpay/free)")
 
 
 class SelfOrderOut(BaseModel):
-    """自助订单创建结果"""
-    order_id: int
-    order_no: str
-    amount: int
-    need_pay: bool
+    """
+    自助订单创建结果
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    order_id: int = Field(..., description="订单ID")
+    order_no: str = Field(..., description="订单号")
+    amount: int = Field(..., ge=0, description="订单金额(分)")
+    need_pay: bool = Field(..., description="是否需要支付")
 
 
 class SelfOrderListItem(BaseModel):
-    """我的订单列表项"""
-    id: int
-    order_no: str
-    package_name: str = ""
-    order_type: str
-    amount: int
-    status: int
-    pay_method: str | None = None
-    pay_time: str | None = None
-    created_at: str | None = None
+    """
+    我的订单列表项
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="订单ID")
+    order_no: str = Field(..., description="订单号")
+    package_name: str = Field(default="", description="套餐名称")
+    order_type: OrderType = Field(..., description="订单类型")
+    amount: int = Field(..., ge=0, description="订单金额(分)")
+    status: int = Field(..., description="订单状态(0:待支付 1:已支付 2:已取消 3:已退款)")
+    pay_method: str | None = Field(default=None, description="支付方式")
+    pay_time: str | None = Field(default=None, description="支付时间")
+    created_at: str | None = Field(default=None, description="创建时间")
 
 
 class SelfOrderListOut(BaseModel):
-    """我的订单列表"""
-    items: list[SelfOrderListItem]
-    total: int
-    page_no: int
-    page_size: int
+    """
+    我的订单列表
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    items: list[SelfOrderListItem] = Field(default_factory=list, description="订单列表")
+    total: int = Field(..., ge=0, description="总记录数")
+    page_no: int = Field(..., ge=1, description="页码")
+    page_size: int = Field(..., ge=1, description="每页数量")
 
 
 class SelfOrderDetailOut(BaseModel):
-    """订单详情"""
-    id: int
-    order_no: str
-    package_id: int | None = None
-    package_name: str = ""
-    amount: int
-    order_type: str
-    status: int
-    pay_method: str | None = None
-    pay_time: str | None = None
-    created_at: str | None = None
+    """
+    订单详情
+    """
 
+    model_config = ConfigDict(from_attributes=True)
 
-# ─── 工作台 ───
+    id: int = Field(..., description="订单ID")
+    order_no: str = Field(..., description="订单号")
+    package_id: int | None = Field(default=None, description="套餐ID")
+    package_name: str = Field(default="", description="套餐名称")
+    amount: int = Field(..., ge=0, description="订单金额(分)")
+    order_type: OrderType = Field(..., description="订单类型")
+    status: int = Field(..., description="订单状态(0:待支付 1:已支付 2:已取消 3:已退款)")
+    pay_method: str | None = Field(default=None, description="支付方式")
+    pay_time: str | None = Field(default=None, description="支付时间")
+    created_at: str | None = Field(default=None, description="创建时间")
 
 
 class WorkspaceTenantInfo(BaseModel):
-    """工作台-租户信息"""
-    id: int
-    name: str
-    code: str
-    status: int
-    status_label: str
-    start_time: str | None = None
-    end_time: str | None = None
-    days_remaining: int = 0
+    """
+    工作台-租户信息
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="租户ID")
+    name: str = Field(..., description="租户名称")
+    code: str = Field(..., description="租户编码")
+    status: int = Field(..., description="租户状态(0:正常 1:宽限期 2:已暂停 3:已冻结 4:已过期 5:已归档)")
+    status_label: str = Field(..., description="租户状态描述")
+    start_time: str | None = Field(default=None, description="开始时间")
+    end_time: str | None = Field(default=None, description="结束时间")
+    days_remaining: int = Field(default=0, description="剩余天数")
 
 
 class WorkspacePackageInfo(BaseModel):
-    """工作台-套餐信息"""
-    id: int
-    name: str
-    price: int
-    period: str
-    max_users: int
-    max_roles: int
-    max_depts: int
+    """
+    工作台-套餐信息
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="套餐ID")
+    name: str = Field(..., description="套餐名称")
+    price: int = Field(..., ge=0, description="价格(分)")
+    period: str = Field(..., description="计费周期")
+    max_users: int = Field(..., ge=0, description="最大用户数")
+    max_roles: int = Field(..., ge=0, description="最大角色数")
+    max_depts: int = Field(..., ge=0, description="最大部门数")
 
 
 class WorkspaceUsagePercent(BaseModel):
-    """工作台-用量百分比"""
-    users: float = 0
-    roles: float = 0
-    depts: float = 0
+    """
+    工作台-用量百分比
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    users: float = Field(default=0.0, ge=0, description="用户用量占比(%)")
+    roles: float = Field(default=0.0, ge=0, description="角色用量占比(%)")
+    depts: float = Field(default=0.0, ge=0, description="部门用量占比(%)")
 
 
 class WorkspaceQuotaInfo(BaseModel):
-    """工作台-配额用量"""
-    max_users: int = 0
-    max_roles: int = 0
-    max_depts: int = 0
-    current_users: int = 0
-    current_roles: int = 0
-    current_depts: int = 0
-    usage_percent: WorkspaceUsagePercent = Field(default_factory=WorkspaceUsagePercent)
+    """
+    工作台-配额用量
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    max_users: int = Field(default=0, ge=0, description="最大用户数")
+    max_roles: int = Field(default=0, ge=0, description="最大角色数")
+    max_depts: int = Field(default=0, ge=0, description="最大部门数")
+    current_users: int = Field(default=0, ge=0, description="当前用户数")
+    current_roles: int = Field(default=0, ge=0, description="当前角色数")
+    current_depts: int = Field(default=0, ge=0, description="当前部门数")
+    usage_percent: WorkspaceUsagePercent = Field(default_factory=WorkspaceUsagePercent, description="用量占比")
 
 
 class WorkspaceOrderItem(BaseModel):
-    """工作台-近期订单项"""
-    id: int
-    order_no: str
-    amount: int
-    order_type: str
-    status: int
-    created_at: str | None = None
+    """
+    工作台-近期订单项
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="订单ID")
+    order_no: str = Field(..., description="订单号")
+    amount: int = Field(..., ge=0, description="订单金额(分)")
+    order_type: OrderType = Field(..., description="订单类型")
+    status: int = Field(..., description="订单状态(0:待支付 1:已支付 2:已取消 3:已退款)")
+    created_at: str | None = Field(default=None, description="创建时间")
 
 
 class WorkspaceOut(BaseModel):
-    """工作台概览"""
-    tenant: WorkspaceTenantInfo
-    package: WorkspacePackageInfo | None = None
-    quota: WorkspaceQuotaInfo
-    recent_orders: list[WorkspaceOrderItem] = []
+    """
+    工作台概览
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    tenant: WorkspaceTenantInfo = Field(..., description="租户信息")
+    package: WorkspacePackageInfo | None = Field(default=None, description="当前套餐信息")
+    quota: WorkspaceQuotaInfo = Field(..., description="配额用量")
+    recent_orders: list[WorkspaceOrderItem] = Field(default_factory=list, description="近期订单(最多5条)")

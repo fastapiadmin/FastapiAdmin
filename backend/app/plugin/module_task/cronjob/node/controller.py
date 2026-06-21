@@ -18,7 +18,7 @@ from .schema import (
 )
 from .service import NodeService
 
-NodeRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/node", tags=["定时任务/节点管理"])
+NodeRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/node", tags=["任务调度", "节点管理"])
 
 
 @NodeRouter.get(
@@ -29,16 +29,8 @@ NodeRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/node", ta
 async def get_node_options_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:query"]))],
 ) -> JSONResponse:
-    """
-    获取数据库中的定时任务节点定义（task_node），与编排节点类型无关。
-
-    参数:
-    - auth (AuthSchema): 认证信息。
-
-    返回:
-    - JSONResponse: 成功响应，data 为选项列表。
-    """
-    result = await NodeService.get_node_options_service(auth=auth)
+    service = NodeService(auth)
+    result = await service.options()
     return SuccessResponse(data=result, msg="获取定时任务节点选项成功")
 
 
@@ -51,17 +43,8 @@ async def get_obj_detail_controller(
     id: Annotated[int, Path(description="节点ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:detail"]))],
 ) -> JSONResponse:
-    """
-    获取节点详情
-
-    参数:
-    - id (int): 节点ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含节点详情的JSON响应
-    """
-    result_dict = await NodeService.get_node_detail_service(id=id, auth=auth)
+    service = NodeService(auth)
+    result_dict = await service.detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取节点详情成功")
 
 
@@ -75,19 +58,8 @@ async def get_obj_list_controller(
     search: Annotated[NodeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:query"]))],
 ) -> JSONResponse:
-    """
-    查询节点
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数模型
-    - search (NodeQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含分页后的节点列表的JSON响应
-    """
-    result_dict = await NodeService.get_node_page_service(
-        auth=auth,
+    service = NodeService(auth)
+    result_dict = await service.page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
@@ -105,17 +77,8 @@ async def create_obj_controller(
     data: NodeCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:create"]))],
 ) -> JSONResponse:
-    """
-    创建节点
-
-    参数:
-    - data (NodeCreateSchema): 创建参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含创建节点结果的JSON响应
-    """
-    result_dict = await NodeService.create_node_service(auth=auth, data=data)
+    service = NodeService(auth)
+    result_dict = await service.create(data=data)
     return SuccessResponse(data=result_dict, msg="创建节点成功")
 
 
@@ -129,18 +92,8 @@ async def update_obj_controller(
     id: Annotated[int, Path(description="节点ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:update"]))],
 ) -> JSONResponse:
-    """
-    修改节点
-
-    参数:
-    - data (NodeUpdateSchema): 更新参数模型
-    - id (int): 节点ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含修改节点结果的JSON响应
-    """
-    result_dict = await NodeService.update_node_service(auth=auth, id=id, data=data)
+    service = NodeService(auth)
+    result_dict = await service.update(id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改节点成功")
 
 
@@ -153,17 +106,8 @@ async def delete_obj_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:delete"]))],
 ) -> JSONResponse:
-    """
-    删除节点
-
-    参数:
-    - ids (list[int]): ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含删除节点结果的JSON响应
-    """
-    await NodeService.delete_node_service(auth=auth, ids=ids)
+    service = NodeService(auth)
+    await service.delete(ids=ids)
     return SuccessResponse(msg="删除节点成功")
 
 
@@ -175,16 +119,8 @@ async def delete_obj_controller(
 async def clear_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:delete"]))],
 ) -> JSONResponse:
-    """
-    清空所有节点
-
-    参数:
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含清空节点结果的JSON响应
-    """
-    await NodeService.clear_node_service(auth=auth)
+    service = NodeService(auth)
+    await service.clear()
     return SuccessResponse(msg="清空节点成功")
 
 
@@ -198,18 +134,8 @@ async def execute_job_controller(
     data: NodeExecuteSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:execute"]))],
 ) -> JSONResponse:
-    """
-    调试节点
-
-    参数:
-    - id (int): 节点ID
-    - data (NodeExecuteSchema): 执行参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含调试结果的JSON响应
-    """
-    result = await NodeService.execute_node_service(auth=auth, id=id, execute_data=data)
+    service = NodeService(auth)
+    result = await service.execute(id=id, execute_data=data)
     return SuccessResponse(data=result, msg="调试节点成功")
 
 
@@ -220,19 +146,9 @@ async def execute_job_controller(
 )
 async def batch_set_status_controller(
     ids: Annotated[list[int], Body(description="节点ID列表")],
-    status: Annotated[str, Body(description="状态值")],
+    status: Annotated[int, Body(description="状态值")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:update"]))],
 ) -> JSONResponse:
-    """
-    批量设置节点状态
-
-    参数:
-    - ids (list[int]): 节点ID列表
-    - status (str): 状态值
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 成功响应
-    """
-    await NodeService.batch_set_status_service(auth=auth, ids=ids, status=status)
+    service = NodeService(auth)
+    await service.batch_set_status(ids=ids, status=status)
     return SuccessResponse(msg="批量设置节点状态成功")

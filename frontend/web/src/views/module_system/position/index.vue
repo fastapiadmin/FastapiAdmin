@@ -45,7 +45,9 @@
             :perm-delete="['module_system:position:delete']"
             :perm-patch="['module_system:position:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -123,6 +125,7 @@
 </template>
 
 <script setup lang="ts">
+import { h } from "vue";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
@@ -140,19 +143,12 @@ import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
-import {
-  ElTag,
-  ElMessage,
-  ElTooltip,
-  ElDropdown,
-  ElDropdownMenu,
-  ElDropdownItem,
-} from "element-plus";
+import { resolveStatusColumns } from "@utils";
+import { ElMessage, ElTooltip, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
 
 defineOptions({
   name: "Position",
@@ -165,7 +161,7 @@ const userStore = useUserStore();
 
 type PositionSearchForm = {
   name?: string;
-  status?: string;
+  status?: number;
   created_time?: string[];
   created_id?: number;
 };
@@ -361,6 +357,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<PositionTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 const opCtx = {
   onDetail: (id: number) => void handleOpenDialog("detail", id),
   onEdit: (id: number) => void handleOpenDialog("update", id),
@@ -390,7 +389,7 @@ const {
       page_no: 1,
       page_size: 10,
     },
-    columnsFactory: (): ColumnOption<PositionTable>[] => [
+    columnsFactory: resolveStatusColumns<PositionTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "岗位名称", minWidth: 100, showOverflowTooltip: true },
@@ -398,10 +397,10 @@ const {
         prop: "status",
         label: "状态",
         width: 88,
-        formatter: (row: PositionTable) =>
-          h(ElTag, { type: row.status === 0 ? "success" : "danger" }, () =>
-            row.status === 0 ? "启用" : "停用"
-          ),
+        status: {
+          0: { type: "success", text: "启用" },
+          1: { type: "danger", text: "停用" },
+        },
       },
       { prop: "order", label: "岗位排序", width: 100, showOverflowTooltip: true },
       { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
@@ -427,7 +426,7 @@ const {
         align: "right",
         formatter: (row: PositionTable) => formatPositionOperationCell(row, opCtx),
       },
-    ],
+    ]),
   },
 });
 
@@ -486,6 +485,7 @@ const positionDetailItems: import("@/components/others/fa-descriptions/index.vue
 const formData = ref<PositionForm>({
   id: undefined,
   name: undefined,
+  code: undefined,
   order: 1,
   status: 0,
   description: undefined,
@@ -495,6 +495,7 @@ const { dialogVisible } = useCrudDialog();
 
 const rules = reactive({
   name: [{ required: true, message: "请输入岗位名称", trigger: "blur" }],
+  code: [{ required: true, message: "请输入岗位编码", trigger: "blur" }],
   order: [{ required: true, message: "请输入岗位排序", trigger: "blur" }],
   status: [{ required: true, message: "请选择岗位状态", trigger: "blur" }],
 });
@@ -502,6 +503,7 @@ const rules = reactive({
 const initialFormData: PositionForm = {
   id: undefined,
   name: undefined,
+  code: undefined,
   order: 1,
   status: 0,
   description: undefined,
@@ -534,6 +536,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
     },
   });
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 const positionDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "岗位名称",
@@ -541,6 +552,13 @@ const positionDialogFormItems = computed<FormItem[]>(() => [
     type: "input",
     span: 24,
     props: { placeholder: "请输入岗位名称", maxlength: 50 },
+  },
+  {
+    label: "岗位编码",
+    key: "code",
+    type: "input",
+    span: 24,
+    props: { placeholder: "请输入岗位编码", maxlength: 64 },
   },
   {
     label: "排序",
@@ -628,7 +646,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -636,11 +654,14 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await PositionAPI.batchPosition({ ids, status });
     await refreshData();
     await userStore.getUserInfo();
   } catch {
     // 用户取消
+  } finally {
+    moreLoading.value = false;
   }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div ref="messagesContainer" class="chat-messages">
+  <ElScrollbar ref="messagesContainer" class="chat-messages">
     <WelcomeScreen v-if="messages.length === 0" @prompt-click="handlePromptClick" />
     <div v-else class="messages-list">
       <FaMessageItem
@@ -12,11 +12,12 @@
     <div v-if="error" class="error-banner">
       <ElAlert :title="error" type="error" :closable="true" show-icon @close="handleErrorClose" />
     </div>
-  </div>
+  </ElScrollbar>
 </template>
 
 <script setup lang="ts">
 import { ref, nextTick, watch } from "vue";
+import { ElScrollbar } from "element-plus";
 import WelcomeScreen from "./FaWelcomeScreen.vue";
 import FaMessageItem from "./FaMessageItem.vue";
 import type { ChatMessage } from "../types";
@@ -34,13 +35,12 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const messagesContainer = ref<HTMLElement>();
+const messagesContainer = ref<InstanceType<typeof ElScrollbar>>();
 
 const scrollToBottom = () => {
   nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-    }
+    const wrap = messagesContainer.value?.wrapRef;
+    if (wrap) wrap.scrollTop = wrap.scrollHeight;
   });
 };
 
@@ -71,9 +71,6 @@ defineExpose({
 
 <style lang="scss" scoped>
 .chat-messages {
-  height: 100%;
-  overflow-y: auto;
-
   /* 与 index chat-main 同底，避免 disabled 灰 + page 色打架 */
   background: transparent;
 

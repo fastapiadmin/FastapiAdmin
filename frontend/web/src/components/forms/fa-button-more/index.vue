@@ -11,7 +11,7 @@
               :disabled="item.disabled"
               @click="handleClick(item)"
             >
-              <div class="flex-c gap-2" :style="{ color: item.color }">
+              <div class="flex items-center gap-2" :style="{ color: item.color }">
                 <FaSvgIcon v-if="item.icon" :icon="item.icon" />
                 <span>{{ item.label }}</span>
               </div>

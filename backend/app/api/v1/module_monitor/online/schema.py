@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from fastapi import Query
 from pydantic import BaseModel, Field
 
@@ -14,7 +16,7 @@ class OnlineOutSchema(BaseModel):
     session_id: str = Field(..., description="会话编号")
     user_id: int = Field(..., description="用户ID")
     tenant_id: int = Field(..., description="租户ID")
-    is_super_admin: bool = Field(default=False, description="是否为超级管理员")
+    is_superuser: bool = Field(default=False, description="是否为超级管理员")
     user_name: str = Field(..., description="用户名")
     ipaddr: str | None = Field(default=None, description="登陆IP地址")
     login_location: str | None = Field(default=None, description="登录所属地")
@@ -24,6 +26,7 @@ class OnlineOutSchema(BaseModel):
     login_type: str | None = Field(default=None, description="登录类型 PC端 | 移动端")
 
 
+@dataclass
 class OnlineQueryParam:
     """在线用户查询参数"""
 
@@ -33,10 +36,6 @@ class OnlineQueryParam:
         ipaddr: str | None = Query(None, description="登陆IP地址"),
         login_location: str | None = Query(None, description="登录所属地"),
     ) -> None:
-
-        # 模糊查询字段
         self.name = (QueueEnum.like.value, f"%{name}%") if name else None
-        self.login_location = (
-            (QueueEnum.like.value, f"%{login_location}%") if login_location else None
-        )
+        self.login_location = (QueueEnum.like.value, f"%{login_location}%") if login_location else None
         self.ipaddr = (QueueEnum.like.value, f"%{ipaddr}%") if ipaddr else None

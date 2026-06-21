@@ -12,7 +12,7 @@ export function useSettingsHandlers() {
   const domOperations = {
     // 设置HTML类名
     setHtmlClass: (className: string, add: boolean) => {
-      const el = document.getElementsByTagName("html")[0];
+      const el = document.getElementsByTagName("html")[0]!;
       if (add) {
         el.classList.add(className);
       } else {
@@ -28,7 +28,7 @@ export function useSettingsHandlers() {
 
     // 设置body类名
     setBodyClass: (className: string, add: boolean) => {
-      const el = document.getElementsByTagName("body")[0];
+      const el = document.getElementsByTagName("body")[0]!;
       if (add) {
         el.classList.add(className);
       } else {

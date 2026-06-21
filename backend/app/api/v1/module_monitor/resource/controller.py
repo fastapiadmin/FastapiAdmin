@@ -22,7 +22,7 @@ from .schema import (
 )
 from .service import ResourceService
 
-ResourceRouter = APIRouter(route_class=OperationLogRoute, prefix="/resource", tags=["系统监控/资源管理"])
+ResourceRouter = APIRouter(route_class=OperationLogRoute, prefix="/resource", tags=["系统监控", "资源管理"])
 
 
 @ResourceRouter.get(
@@ -36,28 +36,12 @@ async def get_directory_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[ResourceSearchQueryParam, Depends()],
 ) -> JSONResponse:
-    """
-    获取目录列表
-
-    参数:
-    - request (Request): FastAPI请求对象，用于获取基础URL。
-    - page (PaginationQueryParam): 分页查询参数模型。
-    - search (ResourceSearchQueryParam): 资源查询参数模型。
-
-    返回:
-    - JSONResponse: 包含目录列表的JSON响应。
-    """
-    # 获取资源列表（与案例模块保持一致的分页实现）
-    result_dict_list = await ResourceService.get_resources_list_service(
-        search=search, base_url=str(request.base_url)
-    )
-    # 目录列表来自本地文件系统扫描，无 SQL 分页
+    result_dict_list = await ResourceService.get_resources_list(search=search, base_url=str(request.base_url))
     result_dict = await PaginationService.paginate(
         data_list=result_dict_list,
         page_no=page.page_no,
         page_size=page.page_size,
     )
-
     return SuccessResponse(data=result_dict, msg="获取目录列表成功")
 
 
@@ -72,18 +56,6 @@ async def upload_file_controller(
     request: Request,
     target_path: Annotated[str | None, Form(description="目标目录路径")] = None,
 ) -> JSONResponse:
-    """
-    上传文件
-
-    参数:
-    - file (UploadFile): 要上传的文件对象。
-    - request (Request): FastAPI请求对象，用于获取基础URL。
-    - target_path (str | None): 目标目录路径，默认为None。
-
-    返回:
-    - JSONResponse: 包含上传文件信息的JSON响应。
-    """
-    # 调用统一上传接口，使用 resource 类型
     result = await FileService.upload_service(
         base_url=str(request.base_url),
         file=file,
@@ -101,18 +73,8 @@ async def upload_file_controller(
 async def download_file_controller(
     path: Annotated[str, Query(description="文件路径")],
 ) -> FileResponse:
-    """
-    下载文件
+    file_path = await ResourceService.download_file(file_path=path)
 
-    参数:
-    - path (str): 文件路径。
-
-    返回:
-    - FileResponse: 包含文件内容的文件响应。
-    """
-    file_path = await ResourceService.download_file_service(file_path=path)
-
-    # 获取文件名
     import os
 
     filename = os.path.basename(file_path)
@@ -133,16 +95,7 @@ async def download_file_controller(
 async def delete_files_controller(
     paths: Annotated[list[str], Body(description="文件路径列表")],
 ) -> JSONResponse:
-    """
-    删除文件
-
-    参数:
-    - paths (list[str]): 文件路径列表。
-
-    返回:
-    - JSONResponse: 包含删除结果的JSON响应。
-    """
-    await ResourceService.delete_file_service(paths=paths)
+    await ResourceService.delete_file(paths=paths)
     return SuccessResponse(msg="删除文件成功")
 
 
@@ -153,16 +106,7 @@ async def delete_files_controller(
     dependencies=[Depends(AuthPermission(["module_monitor:resource:move"]))],
 )
 async def move_file_controller(data: ResourceMoveSchema) -> JSONResponse:
-    """
-    移动文件
-
-    参数:
-    - data (ResourceMoveSchema): 移动文件参数模型。
-
-    返回:
-    - JSONResponse: 包含移动结果的JSON响应。
-    """
-    await ResourceService.move_file_service(data=data)
+    await ResourceService.move_file(data=data)
     return SuccessResponse(msg="移动文件成功")
 
 
@@ -173,16 +117,7 @@ async def move_file_controller(data: ResourceMoveSchema) -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_monitor:resource:copy"]))],
 )
 async def copy_file_controller(data: ResourceCopySchema) -> JSONResponse:
-    """
-    复制文件
-
-    参数:
-    - data (ResourceCopySchema): 复制文件参数模型。
-
-    返回:
-    - JSONResponse: 包含复制结果的JSON响应。
-    """
-    await ResourceService.copy_file_service(data=data)
+    await ResourceService.copy_file(data=data)
     return SuccessResponse(msg="复制文件成功")
 
 
@@ -193,16 +128,7 @@ async def copy_file_controller(data: ResourceCopySchema) -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_monitor:resource:rename"]))],
 )
 async def rename_file_controller(data: ResourceRenameSchema) -> JSONResponse:
-    """
-    重命名文件
-
-    参数:
-    - data (ResourceRenameSchema): 重命名文件参数模型。
-
-    返回:
-    - JSONResponse: 包含重命名结果的JSON响应。
-    """
-    await ResourceService.rename_file_service(data=data)
+    await ResourceService.rename_file(data=data)
     return SuccessResponse(msg="重命名文件成功")
 
 
@@ -215,16 +141,7 @@ async def rename_file_controller(data: ResourceRenameSchema) -> JSONResponse:
 async def create_directory_controller(
     data: ResourceCreateDirSchema,
 ) -> JSONResponse:
-    """
-    创建目录
-
-    参数:
-    - data (ResourceCreateDirSchema): 创建目录参数模型。
-
-    返回:
-    - JSONResponse: 包含创建目录结果的JSON响应。
-    """
-    await ResourceService.create_directory_service(data=data)
+    await ResourceService.create_directory(data=data)
     return SuccessResponse(msg="创建目录成功")
 
 
@@ -234,24 +151,9 @@ async def create_directory_controller(
     response_model=ResponseSchema[None],
     dependencies=[Depends(AuthPermission(["module_monitor:resource:export"]))],
 )
-async def export_resource_list_controller(
-    request: Request, search: Annotated[ResourceSearchQueryParam, Depends()]
-) -> StreamingResponse:
-    """
-    导出资源列表
-
-    参数:
-    - request (Request): FastAPI请求对象，用于获取基础URL。
-    - search (ResourceSearchQueryParam): 资源查询参数模型。
-
-    返回:
-    - StreamingResponse: 包含导出资源列表的流式响应。
-    """
-    # 获取搜索结果
-    result_dict_list = await ResourceService.get_resources_list_service(
-        search=search, base_url=str(request.base_url)
-    )
-    export_result = await ResourceService.export_resource_service(data_list=result_dict_list)
+async def export_resource_list_controller(request: Request, search: Annotated[ResourceSearchQueryParam, Depends()]) -> StreamingResponse:
+    result_dict_list = await ResourceService.get_resources_list(search=search, base_url=str(request.base_url))
+    export_result = await ResourceService.export_resource(data_list=result_dict_list)
 
     return StreamResponse(
         data=bytes2file_response(export_result),

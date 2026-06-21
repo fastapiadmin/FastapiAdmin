@@ -165,7 +165,7 @@ function resolveTagType(value: unknown, tag: boolean | TagConfig): TagType {
   if (tag.map) {
     const raw = value == null ? "" : String(value);
     if (raw in tag.map) {
-      const t = tag.map[raw].type;
+      const t = tag.map[raw]!.type;
       if (t && TAG_TYPES.has(t)) return t;
     }
   }
@@ -181,7 +181,7 @@ function resolveTagText(value: unknown, tag: boolean | TagConfig): string {
     return raw;
   }
   if (tag.map && raw in tag.map) {
-    return tag.map[raw].text ?? raw;
+    return tag.map[raw]!.text ?? raw;
   }
   return raw;
 }

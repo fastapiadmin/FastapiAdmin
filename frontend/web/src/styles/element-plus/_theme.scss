@@ -1,0 +1,76 @@
+/**
+ * Element Plus 主题 SCSS 入口（vite additionalData 注入）。
+ *
+ * 原理
+ * ----
+ * vite.config.ts 的 css.preprocessorOptions.scss.additionalData 把本文件
+ * 注入到每个 SCSS 文件开头（含 EP 内部组件）。
+ *
+ * 本文件用 @use "element-plus/theme-chalk/src/common/var.scss" with(...)
+ * **直接修改 common/var 模块本身**（带我们的 colors / $button / $messagebox /
+ * $popover）—— Sass 模块缓存机制下：
+ *   - 此 @use 是 common/var 模块在 Sass cache 中的首次加载
+ *   - with 参数覆盖模块内部的 !default 默认值
+ *   - 后续所有 @use "common/var" 拿到的都是带我们配置的实例
+ *   - 包含 EP 组件内 @use "common/var"（如 button.scss 的 button-variant mixin）
+ *     与 var.scss 内 @use "common/var"
+ *
+ * 这就是 Element Plus 官方推荐的"从源头解决"方式：
+ * https://element-plus.org/zh-CN/guide/theming
+ *
+ * 关键陷阱
+ * --------
+ * @forward with(...) 与 @use with(...) 不同：
+ *   - @forward with(...) 创建新的转发实例（不影响原 common/var 模块）
+ *   - @use with(...) 替换原 common/var 模块的默认参数（影响所有消费者）
+ *
+ * 与运行时 setElementThemeColor() 的协作
+ * ---------------------------------------
+ * - 本文件注入 success / warning / danger / error / info（业务固定色板）
+ *   以及 $button / $messagebox / $popover 等组件样式偏好。
+ * - primary 由运行时 setElementThemeColor() 动态写入 :root
+ *   （因为用户在设置面板里可切换 themeColorPresets）
+ * - SCSS 注入的 primary 退化为默认值 #4080ff，与 themeColorPresets 首项保持一致。
+ */
+
+@use "../core/fa-tokens.scss" as *;
+
+// 关键：@use with 直接修改 common/var 模块本身（影响所有 @use common/var 的消费者）
+@use "element-plus/theme-chalk/src/common/var.scss" with (
+  $colors: (
+    "primary": (
+      "base": $fa-primary,
+    ),
+    "success": (
+      "base": $fa-success,
+    ),
+    "warning": (
+      "base": $fa-warning,
+    ),
+    "danger": (
+      "base": $fa-danger,
+    ),
+    "error": (
+      "base": $fa-error,
+    ),
+    "info": (
+      "base": $fa-info,
+    ),
+  ),
+
+  // 按钮样式偏好：primary 链路按钮 hover 用浅色背景（更柔和的视觉反馈）
+  $button: (
+      "hover-bg-color": var(--el-color-primary-light-9),
+      "hover-border-color": var(--el-color-primary),
+      "border-color": var(--el-color-primary),
+      "text-color": var(--el-color-primary),
+    ),
+
+  // 圆角偏好
+  $messagebox: (
+      "border-radius": "12px",
+    ),
+  $popover: (
+    "border-radius": "12px",
+  )
+);

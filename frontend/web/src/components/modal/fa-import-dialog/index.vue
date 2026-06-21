@@ -294,7 +294,7 @@ const handleUpload = async () => {
   }
 
   try {
-    const file = importFormData.files[0].raw as File;
+    const file = importFormData.files[0]!.raw as File;
     const formData = new FormData();
     formData.append(props.uploadFileName, file);
 

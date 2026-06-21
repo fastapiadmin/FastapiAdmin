@@ -32,8 +32,9 @@
 </template>
 
 <script setup lang="ts">
-import "@styles/core/md.scss";
-import "@styles/custom/one-dark-pro.scss";
+// 第三方 markdown 渲染样式（仅本组件需要，按需 import）
+import "@/views/fastlink/article/components/_markdown.scss";
+import "@/views/fastlink/article/components/_highlight.scss";
 import axios from "axios";
 import DOMPurify from "dompurify";
 

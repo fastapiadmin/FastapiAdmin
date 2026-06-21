@@ -75,7 +75,7 @@ const NodeAPI = {
 
 export default NodeAPI;
 
-export interface NodePageQuery extends PageQuery {
+export interface NodePageQuery extends PageQuery, UserByQueryParams {
   name?: string;
   code?: string;
 }
@@ -112,10 +112,11 @@ export interface NodeTable extends BaseType {
   created_by?: CommonType;
   updated_by?: CommonType;
   deleted_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
-export interface NodeForm {
-  id?: number;
+export interface NodeForm extends BaseFormType {
   name: string;
   code?: string;
   jobstore?: string;
@@ -127,6 +128,8 @@ export interface NodeForm {
   max_instances?: number;
   start_date?: string;
   end_date?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface NodeType {

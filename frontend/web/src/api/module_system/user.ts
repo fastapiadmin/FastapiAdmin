@@ -152,7 +152,7 @@ export interface RegisterForm {
   email?: string;
 }
 
-export interface UserPageQuery extends PageQuery {
+export interface UserPageQuery extends PageQuery, UserByQueryParams, TenantByQueryParams {
   username?: string;
   name?: string;
   mobile?: string;
@@ -162,7 +162,7 @@ export interface UserPageQuery extends PageQuery {
 
 export interface searchSelectDataType {
   name?: string;
-  status?: string;
+  status?: number;
 }
 
 export interface UserInfo extends BaseType {
@@ -194,6 +194,7 @@ export interface UserInfo extends BaseType {
   github_login?: string;
   wx_login?: string;
   qq_login?: string;
+  status?: number;
   description?: string;
 }
 
@@ -208,7 +209,7 @@ export interface roleSelectorType {
   id?: number;
   name?: string;
   code?: string;
-  status?: string;
+  status?: number;
   description?: string;
   menus?: MenuForm[];
 }
@@ -216,7 +217,7 @@ export interface roleSelectorType {
 export interface positionSelectorType {
   id?: number;
   name?: string;
-  status?: string;
+  status?: number;
   description?: string;
 }
 
@@ -263,6 +264,8 @@ export interface UserForm extends BaseFormType {
   is_superuser?: boolean;
   avatar?: string;
   tenant_id?: number;
+  status?: number;
+  description?: string;
 }
 
 export interface CurrentUserFormState {

@@ -30,14 +30,14 @@ const TicketAPI = {
       responseType: "blob",
     });
   },
-  batchTicket(body: { ids: number[]; status: string }) {
+  batchTicket(body: { ids: number[]; status: number }) {
     return request<ApiResponse>({ url: `${API_PATH}/batch`, method: "put", data: body });
   },
 };
 
 export default TicketAPI;
 
-export interface TicketPageQuery extends PageQuery {
+export interface TicketPageQuery extends PageQuery, UserByQueryParams {
   title?: string;
   ticket_type?: string;
   assigned_id?: number;
@@ -51,9 +51,9 @@ export interface TicketTable extends BaseType {
   images?: string;
   reply?: string;
   assigned_id?: number;
-  assigned_by?: { id: number; name: string; avatar?: string };
-  created_by?: { id: number; name: string; avatar?: string };
-  updated_by?: { id: number; name: string; avatar?: string };
+  assigned_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
 export interface TicketCreateForm {
@@ -77,7 +77,6 @@ export interface TicketUpdateForm {
 }
 
 export interface TicketForm extends BaseFormType {
-  id?: number;
   title: string;
   ticket_content?: string;
   summary?: string;
@@ -85,4 +84,6 @@ export interface TicketForm extends BaseFormType {
   images?: string;
   reply?: string;
   assigned_id?: number;
+  status?: number;
+  description?: string;
 }

@@ -1,6 +1,6 @@
 <!-- 系统 logo：优先使用接口 sys_web_logo，缺省用内置图 -->
 <template>
-  <div class="flex-cc">
+  <div class="flex items-center justify-center">
     <img
       :style="logoStyle"
       :src="resolvedSrc"

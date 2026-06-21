@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 
 from fastapi import Query
 from pydantic import (
@@ -10,8 +11,8 @@ from pydantic import (
 )
 
 from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema
-from app.core.validator import DateTimeStr
+from app.core.base_params import BaseQueryParam, TenantByQueryParam, UserByQueryParam
+from app.core.base_schema import BaseSchema, TenantBySchema, UserBySchema
 
 
 class DictTypeCreateSchema(BaseModel):
@@ -77,44 +78,24 @@ class DictTypeUpdateSchema(DictTypeCreateSchema):
     """字典类型更新模型"""
 
 
-class DictTypeOutSchema(DictTypeCreateSchema, BaseSchema):
+class DictTypeOutSchema(DictTypeCreateSchema, BaseSchema, UserBySchema, TenantBySchema):
     """字典类型响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class DictTypeQueryParam:
+@dataclass
+class DictTypeQueryParam(BaseQueryParam, UserByQueryParam, TenantByQueryParam):
     """字典类型查询参数"""
 
-    def __init__(
-        self,
-        dict_name: str | None = Query(default=None, description="字典名称", max_length=100),
-        dict_type: str | None = Query(default=None, description="字典类型", max_length=100),
-        status: str | None = Query(default=None, description="状态（0正常 1停用）"),
-        created_time: list[DateTimeStr] | None = Query(
-            None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-    ) -> None:
+    dict_name: str | None = Query(default=None, description="字典名称", max_length=100)
+    dict_type: str | None = Query(default=None, description="字典类型", max_length=100)
 
-        # 模糊查询字段
-        self.dict_name = (QueueEnum.like.value, dict_name)
-
-        # 精确查询字段
-        self.dict_type = (QueueEnum.eq.value, dict_type)
-        self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))
+    def __post_init__(self) -> None:
+        if self.dict_name:
+            self.dict_name = (QueueEnum.like.value, self.dict_name)
+        if self.dict_type:
+            self.dict_type = (QueueEnum.eq.value, self.dict_type)
 
 
 class DictDataCreateSchema(BaseModel):
@@ -127,9 +108,7 @@ class DictDataCreateSchema(BaseModel):
     dict_value: str = Field(..., min_length=1, max_length=255, description="字典键值")
     dict_type: str = Field(..., max_length=255, description="字典类型")
     dict_type_id: int = Field(..., gt=0, description="字典类型ID")
-    css_class: str | None = Field(
-        default=None, max_length=255, description="样式属性"
-    )
+    css_class: str | None = Field(default=None, max_length=255, description="样式属性")
     list_class: str | None = Field(default=None, max_length=255, description="表格回显样式")
     is_default: bool = Field(default=False, description="是否默认")
     status: int = Field(default=0, ge=0, le=1, description="状态(0:正常 1:停用)")
@@ -174,43 +153,24 @@ class DictDataUpdateSchema(DictDataCreateSchema):
     """字典数据更新模型"""
 
 
-class DictDataOutSchema(DictDataCreateSchema, BaseSchema):
+class DictDataOutSchema(DictDataCreateSchema, BaseSchema, UserBySchema, TenantBySchema):
     """字典数据响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class DictDataQueryParam:
+@dataclass
+class DictDataQueryParam(BaseQueryParam, UserByQueryParam, TenantByQueryParam):
     """字典数据查询参数"""
 
-    def __init__(
-        self,
-        dict_label: str | None = Query(default=None, description="字典标签", max_length=100),
-        dict_type: str | None = Query(default=None, description="字典类型", max_length=100),
-        dict_type_id: int | None = Query(default=None, description="字典类型ID"),
-        status: str | None = Query(default=None, description="状态（0正常 1停用）"),
-        created_time: list[DateTimeStr] | None = Query(
-            default=None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            default=None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-    ) -> None:
+    dict_label: str | None = Query(default=None, description="字典标签", max_length=100)
+    dict_type: str | None = Query(default=None, description="字典类型", max_length=100)
+    dict_type_id: int | None = Query(default=None, description="字典类型ID")
 
-        # 模糊查询字段
-        self.dict_label = (QueueEnum.like.value, dict_label)
-
-        # 精确查询字段
-        self.dict_type = (QueueEnum.eq.value, dict_type)
-        self.dict_type_id = (QueueEnum.eq.value, dict_type_id)
-        self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))
+    def __post_init__(self) -> None:
+        if self.dict_label:
+            self.dict_label = (QueueEnum.like.value, self.dict_label)
+        if self.dict_type:
+            self.dict_type = (QueueEnum.eq.value, self.dict_type)
+        if self.dict_type_id is not None:
+            self.dict_type_id = (QueueEnum.eq.value, self.dict_type_id)

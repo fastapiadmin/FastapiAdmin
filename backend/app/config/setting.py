@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"  # JWT算法
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 60 * 12  # access_token过期时间(秒)12 小时
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 60 * 12  # refresh_token过期时间(秒)12 小时
-    TOKEN_TYPE: str = "bearer"  # token类型
+    TOKEN_TYPE: str = "Bearer"  # token类型（RFC 6750 标准大小写）
     TOKEN_REQUEST_PATH_EXCLUDE: list[str] = ["api/v1/auth/login"]  # JWT / RBAC 路由白名单
     TOKEN_SLIDING_EXPIRE: bool = True  # 是否启用滑动过期(用户操作时自动续期)
 
@@ -113,8 +113,9 @@ class Settings(BaseSettings):
     POOL_USE_LIFO: bool = True  # 是否使用LIFO连接池
     POOL_PRE_PING: bool = True  # 是否开启连接预检
     FUTURE: bool = True  # 是否使用SQLAlchemy 2.0特性
-    AUTOCOMMIT: bool = False  # 是否自动提交
-    AUTOFETCH: bool = False  # 是否自动刷新
+    AUTOCOMMIT: bool = False  # 是否自动提交（映射 SQLAlchemy sessionmaker(autocommit=...)）
+    AUTOFLUSH: bool = False  # 是否自动刷新（映射 SQLAlchemy sessionmaker(autoflush=...)）
+    AUTOFETCH: bool | None = None  # 兼容旧环境变量名（保留别名，避免 .env 中已有 AUTOFETCH 的部署报错）
     EXPIRE_ON_COMMIT: bool = False  # 是否在提交时过期
 
     # MySQL/PostgreSQL数据库连接
@@ -247,18 +248,14 @@ class Settings(BaseSettings):
     # ******************* 请求限制配置 ****************** #
     # ================================================= #
     REQUEST_LIMITER_REDIS_PREFIX: str = "fastapiadmin:request_limiter:"
+    RATE_LIMITER_TIMES: int = 200
+    RATE_LIMITER_SECONDS: int = 10
 
     # ================================================= #
     # ******************* 重构配置 ******************* #
     # ================================================= #
     @property
     def MIDDLEWARE_LIST(self) -> list[str | None]:
-        """
-        根据开关组装的中间件类路径列表（未启用的项为 None）。
-
-        返回:
-        - list[str | None]: 中间件 import 路径或 None。
-        """
         # 中间件列表（注册时逆序叠加：下列第一项在列表中最前，最终位于最外层，优先生效）
         # 中间件执行顺序（从外到内）：
         #   CORS → RequestLog → SecurityHeaders → GZip → CorrelationId → 业务路由
@@ -274,12 +271,6 @@ class Settings(BaseSettings):
 
     @property
     def EVENT_LIST(self) -> list[str | None]:
-        """
-        应用启动时加载的全局异步事件模块路径列表。
-
-        返回:
-        - list[str | None]: 事件模块路径或 None。
-        """
         EVENTS: list[str | None] = [
             "app.core.database.redis_connect" if self.REDIS_ENABLE else None,
         ]
@@ -287,15 +278,6 @@ class Settings(BaseSettings):
 
     @property
     def ASYNC_DB_URI(self) -> str:
-        """
-        异步 SQLAlchemy 数据库 URL。
-
-        返回:
-        - str: 异步驱动连接串。
-
-        异常:
-        - ValueError: 数据库类型不支持时抛出。
-        """
         if self.DATABASE_TYPE not in ("mysql", "postgres", "sqlite"):
             raise ValueError(
                 f"数据库驱动不支持: {self.DATABASE_TYPE}, 异步数据库请选择 mysql、postgres、sqlite"
@@ -311,15 +293,6 @@ class Settings(BaseSettings):
 
     @property
     def DB_URI(self) -> str:
-        """
-        同步 SQLAlchemy 数据库 URL。
-
-        返回:
-        - str: 同步驱动连接串。
-
-        异常:
-        - ValueError: 数据库类型不支持时抛出。
-        """
         if self.DATABASE_TYPE not in ("mysql", "postgres", "sqlite"):
             raise ValueError(
                 f"数据库驱动不支持: {self.DATABASE_TYPE}, 同步数据库请选择 mysql、postgres、sqlite"
@@ -335,22 +308,10 @@ class Settings(BaseSettings):
 
     @property
     def REDIS_URI(self) -> str:
-        """
-        Redis 连接 URL。
-
-        返回:
-        - str: redis:// 连接串。
-        """
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB_NAME}"
 
     @property
     def FASTAPI_CONFIG(self) -> dict[str, Any]:
-        """
-        创建 FastAPI 应用实例时使用的关键字参数子集。
-
-        返回:
-        - dict[str, Any]: debug、title、responses 等配置。
-        """
         return {
             "debug": self.DEBUG,
             "title": self.TITLE,
@@ -374,12 +335,6 @@ class Settings(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """
-    获取全局 Settings 单例（lru_cache 缓存）。
-
-    返回:
-    - Settings: 配置实例。
-    """
     return Settings()
 
 

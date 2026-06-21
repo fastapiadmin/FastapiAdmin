@@ -70,7 +70,7 @@ const RoleAPI = {
 
 export default RoleAPI;
 
-export interface TablePageQuery extends PageQuery {
+export interface TablePageQuery extends PageQuery, UserByQueryParams {
   name?: string;
 }
 
@@ -81,6 +81,8 @@ export interface RoleTable extends BaseType {
   data_scope?: number;
   menus?: permissionMenuType[];
   depts?: permissionDeptType[];
+  status?: number;
+  description?: string;
 }
 
 export interface RoleForm extends BaseFormType {
@@ -88,6 +90,8 @@ export interface RoleForm extends BaseFormType {
   order?: number;
   code: string;
   data_scope?: number;
+  status?: number;
+  description?: string;
 }
 
 export interface permissionDataType {

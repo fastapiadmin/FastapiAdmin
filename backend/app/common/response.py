@@ -1,12 +1,11 @@
 from collections.abc import Mapping
 from datetime import date, datetime, time
-from typing import Any, Generic
+from typing import Any
 
 from fastapi import status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
-from pydantic.types import T
 from starlette.background import BackgroundTask
 
 from app.common.constant import DATE_DISPLAY_FMT, DATETIME_DISPLAY_FMT, RET, TIME_DISPLAY_FMT
@@ -23,7 +22,7 @@ def jsonable_response_content(content: Any) -> Any:
     return jsonable_encoder(content, custom_encoder=_JSON_DATETIME_CUSTOM_ENCODER)
 
 
-class ResponseSchema(BaseModel, Generic[T]):
+class ResponseSchema[T](BaseModel):
     """响应模型"""
 
     code: int = Field(default=RET.OK.code, description="业务状态码")

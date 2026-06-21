@@ -21,9 +21,7 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         self.auth = auth
         super().__init__(model=JobModel, auth=auth)
 
-    async def get_obj_by_id_crud(
-        self, id: int, preload: list[str | Any] | None = None
-    ) -> JobModel | None:
+    async def get_obj_by_id_crud(self, id: int, preload: list[str | Any] | None = None) -> JobModel | None:
         """
         获取执行日志详情
 
@@ -53,7 +51,7 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         返回:
         - Sequence[JobModel]: 执行日志模型序列
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
     async def create_obj_crud(self, data: JobCreateSchema) -> JobModel | None:
         """

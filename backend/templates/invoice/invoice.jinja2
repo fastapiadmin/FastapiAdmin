@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>电子发票 - {{ invoice_no }}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 12mm 10mm;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 11px;
+    color: #1a1a2e;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+  }
+  .invoice {
+    border: 2px solid #000;
+    padding: 16px 20px;
+    position: relative;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px dashed #888;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .title {
+    flex: 1;
+    text-align: center;
+  }
+  .title h1 {
+    font-size: 20px;
+    margin: 0 0 4px 0;
+    letter-spacing: 4px;
+  }
+  .title .subtitle {
+    font-size: 13px;
+    color: #444;
+  }
+  .supervision {
+    border: 2px solid #c00;
+    color: #c00;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    width: 90px;
+  }
+  .meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 24px;
+    margin-bottom: 10px;
+    font-size: 11px;
+  }
+  .meta .item span { font-weight: bold; }
+  .parties {
+    display: flex;
+    border: 1px solid #333;
+    margin-bottom: 10px;
+  }
+  .party {
+    flex: 1;
+    padding: 8px 10px;
+    border-right: 1px solid #333;
+  }
+  .party:last-child { border-right: none; }
+  .party h3 {
+    font-size: 12px;
+    margin: 0 0 6px 0;
+    background: #f0f0f0;
+    padding: 3px 6px;
+  }
+  .party table { width: 100%; font-size: 10.5px; }
+  .party td { padding: 2px 4px; vertical-align: top; }
+  .party td:first-child { color: #666; width: 80px; }
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0;
+    font-size: 10.5px;
+  }
+  table.items th, table.items td {
+    border: 1px solid #333;
+    padding: 6px 6px;
+    text-align: center;
+  }
+  table.items th {
+    background: #f0f0f0;
+    font-weight: bold;
+  }
+  table.items td.left { text-align: left; }
+  table.items td.right { text-align: right; }
+  table.items td.amount {
+    font-family: "Courier New", monospace;
+    text-align: right;
+  }
+  .totals {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+    font-size: 11px;
+  }
+  .totals td {
+    border: 1px solid #333;
+    padding: 6px 8px;
+  }
+  .totals .label-cell {
+    width: 70%;
+    background: #f0f0f0;
+  }
+  .totals .amount-cell {
+    text-align: right;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+  }
+  .remarks {
+    border: 1px solid #333;
+    border-top: none;
+    padding: 6px 8px;
+    font-size: 10.5px;
+    min-height: 28px;
+  }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 16px;
+  }
+  .footer .seal {
+    width: 110px;
+    height: 110px;
+    border: 2px solid #c00;
+    border-radius: 50%;
+    color: #c00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    transform: rotate(-8deg);
+    opacity: 0.85;
+  }
+  .footer .info {
+    text-align: right;
+    font-size: 10px;
+    color: #555;
+  }
+  .footer .info div { margin-bottom: 3px; }
+  .qr {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    text-align: center;
+    color: #777;
+  }
+</style>
+</head>
+<body>
+<div class="invoice">
+  <div class="header">
+    <div style="width:90px;"></div>
+    <div class="title">
+      <h1>电 子 发 票</h1>
+      <div class="subtitle">{{ invoice_type_label }}</div>
+    </div>
+    <div class="supervision">
+      发票<br>监制
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="item">发票号码：<span>{{ invoice_no }}</span></div>
+    <div class="item">开票日期：<span>{{ invoice_date }}</span></div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <h3>购买方信息</h3>
+      <table>
+        <tr><td>名称：</td><td>{{ buyer_name }}</td></tr>
+        <tr><td>纳税人识别号：</td><td>{{ buyer_tax_no }}</td></tr>
+        {% if invoice_type == 'vat_special' %}
+        <tr><td>地址、电话：</td><td>{{ buyer_address_info }}</td></tr>
+        <tr><td>开户行及账号：</td><td>{{ buyer_bank_info }}</td></tr>
+        {% endif %}
+      </table>
+    </div>
+    <div class="party">
+      <h3>销售方信息</h3>
+      <table>
+        <tr><td>名称：</td><td>{{ seller_name }}</td></tr>
+        <tr><td>纳税人识别号：</td><td>{{ seller_tax_no }}</td></tr>
+        <tr><td>地址、电话：</td><td>{{ seller_address_info }}</td></tr>
+        <tr><td>开户行及账号：</td><td>{{ seller_bank_info }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <table class="items">
+    <thead>
+      <tr>
+        <th style="width:5%;">序号</th>
+        <th style="width:30%;">项目名称</th>
+        <th style="width:10%;">规格型号</th>
+        <th style="width:8%;">单位</th>
+        <th style="width:8%;">数量</th>
+        <th style="width:12%;">单价</th>
+        <th style="width:12%;">金额</th>
+        <th style="width:8%;">税率</th>
+        <th style="width:7%;">税额</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td class="left">{{ item.name }}</td>
+        <td>{{ item.spec or '-' }}</td>
+        <td>{{ item.unit }}</td>
+        <td class="right">{{ item.quantity }}</td>
+        <td class="amount">{{ item.unit_price }}</td>
+        <td class="amount">{{ item.amount }}</td>
+        <td>{{ item.tax_rate }}%</td>
+        <td class="amount">{{ item.tax_amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="totals">
+    <tr>
+      <td class="label-cell">价税合计（大写）<br>{{ amount_cn_uppercase }}</td>
+      <td class="amount-cell">（小写）¥{{ amount_total_yuan }}</td>
+    </tr>
+  </table>
+  <div class="remarks">备注：{{ remarks or '-' }}</div>
+
+  <div class="footer">
+    <div class="qr">发票查验<br>二维码占位</div>
+    <div class="seal">销售方<br>发票专用章</div>
+    <div class="info">
+      <div>校验码：{{ check_code }}</div>
+      <div>开票人：{{ issuer_name }}</div>
+      <div>收款人：{{ receiver_name }}</div>
+      <div>复核人：{{ reviewer_name }}</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

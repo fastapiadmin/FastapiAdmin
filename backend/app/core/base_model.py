@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -84,15 +84,12 @@ class ModelMixin(MappedBase):
         comment="UUID全局唯一标识",
         index=True,
     )
-    status: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
         nullable=False,
-        comment="状态",
+        comment="是否已删除(0:未删除 1:已删除)",
         index=True,
-    )
-    description: Mapped[str | None] = mapped_column(
-        Text, default=None, nullable=True, comment="备注/描述"
     )
     created_time: Mapped[datetime] = mapped_column(
         DateTime,
@@ -107,14 +104,6 @@ class ModelMixin(MappedBase):
         onupdate=datetime.now,
         nullable=False,
         comment="更新时间",
-        index=True,
-    )
-
-    is_deleted: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        nullable=False,
-        comment="是否已删除(0:未删除 1:已删除)",
         index=True,
     )
     deleted_time: Mapped[datetime | None] = mapped_column(

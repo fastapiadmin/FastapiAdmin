@@ -1,5 +1,5 @@
 """订单与支付 CRUD"""
-from datetime import datetime
+
 from typing import Any
 
 from app.core.base_crud import CRUDBase
@@ -43,32 +43,13 @@ class OrderCRUD(CRUDBase[OrderModel, OrderCreateInternalSchema, OrderUpdateInter
 
     async def mark_refunded(self, order_id: int) -> None:
         from sqlalchemy import update as sa_update
+
         await self.db.execute(
             sa_update(OrderModel)
             .where(OrderModel.id == order_id)
             .where(OrderModel.is_deleted == False)  # noqa: E712
             .values(status=3)
         )
-
-    @staticmethod
-    async def cancel_expired_orders() -> None:
-        """定时任务：取消超时未支付订单"""
-        from sqlalchemy import update as sa_update
-
-        from app.core.database import async_db_session
-        from app.core.logger import logger
-
-        now = datetime.now()
-        async with async_db_session() as session:
-            async with session.begin():
-                result = await session.execute(
-                    sa_update(OrderModel)
-                    .where(OrderModel.status == 0)
-                    .where(OrderModel.expire_time < now)
-                    .where(OrderModel.is_deleted == False)  # noqa: E712
-                    .values(status=2)
-                )
-            logger.info(f"超时订单取消: 已取消 {result.rowcount} 条订单")
 
 
 class PaymentRecordCRUD(CRUDBase[PaymentRecordModel, PaymentRecordCreateSchema, Any]):
@@ -77,9 +58,7 @@ class PaymentRecordCRUD(CRUDBase[PaymentRecordModel, PaymentRecordCreateSchema, 
     def __init__(self, auth: AuthSchema) -> None:
         super().__init__(model=PaymentRecordModel, auth=auth)
 
-    async def query(
-        self, offset: int = 0, limit: int = 20
-    ) -> tuple[list[PaymentRecordModel], int]:
+    async def query(self, offset: int = 0, limit: int = 20) -> tuple[list[PaymentRecordModel], int]:
         result = await self.page(
             order_by=[{"created_time": "desc"}],
             offset=offset,
@@ -98,9 +77,7 @@ class RefundCRUD(CRUDBase[RefundModel, RefundCreateSchema, RefundUpdateSchema]):
     async def get_by_order_id(self, order_id: int) -> RefundModel | None:
         return await self.get(order_id=order_id)
 
-    async def query(
-        self, status: int | None = None, offset: int = 0, limit: int = 20
-    ) -> tuple[list[RefundModel], int]:
+    async def query(self, status: int | None = None, offset: int = 0, limit: int = 20) -> tuple[list[RefundModel], int]:
         result = await self.page(
             search={"status": status},
             order_by=[{"created_time": "desc"}],

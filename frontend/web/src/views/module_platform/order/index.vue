@@ -134,16 +134,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, h } from "vue";
-import { ElMessageBox, ElButton, ElTabs, ElTabPane, ElTag } from "element-plus";
+import { ref, reactive, computed } from "vue";
+import { ElMessageBox, ElButton, ElTabs, ElTabPane } from "element-plus";
 import { useTable } from "@/hooks/core/useTable";
 import { useAuth } from "@/hooks/core/useAuth";
 import OrderAPI from "@/api/module_platform/order";
 import type { OrderTable, PaymentRecordTable, RefundTable } from "@/api/module_platform/order";
-import type { ColumnOption } from "@/types/component";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import { renderTableOperationCell, type TableOperationAction, resolveStatusColumns } from "@utils";
 
 defineOptions({ name: "Order" });
 
@@ -165,25 +164,9 @@ function orderTypeLabel(t: string): string {
   return m[t] || t;
 }
 
-function orderStatusLabel(s: number): string {
-  const m: Record<number, string> = {
-    0: "待支付",
-    1: "已支付",
-    2: "已取消",
-    3: "已退款",
-    4: "已过期",
-  };
-  return m[s] ?? String(s);
-}
-
 function payMethodLabel(m: string): string {
   const mp: Record<string, string> = { alipay: "支付宝", wxpay: "微信支付" };
   return mp[m] || m;
-}
-
-function refundStatusLabel(s: number): string {
-  const m: Record<number, string> = { 0: "待审核", 1: "已批准", 2: "已驳回", 3: "已完成" };
-  return m[s] ?? String(s);
 }
 
 // ══════════════════ 订单列表 ════════════════════
@@ -254,8 +237,6 @@ const orderSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const orderSearchBarRef = ref();
-
 const {
   columns: orderColumns,
   columnChecks: orderColumnChecks,
@@ -274,8 +255,7 @@ const {
       page_no: 1,
       page_size: 20,
     },
-    columnsFactory: (): ColumnOption<OrderTable>[] => [
-      { prop: "id", label: "ID", width: 60 },
+    columnsFactory: resolveStatusColumns<OrderTable>(() => [
       { prop: "order_no", label: "订单号", minWidth: 180, showOverflowTooltip: true },
       { prop: "tenant_id", label: "租户ID", width: 80 },
       { prop: "package_id", label: "套餐ID", width: 80 },
@@ -283,8 +263,12 @@ const {
         prop: "order_type",
         label: "类型",
         width: 90,
-        formatter: (row: OrderTable) =>
-          h(ElTag, { size: "small" as const }, () => orderTypeLabel(row.order_type)),
+        status: {
+          new: { type: "info", text: "新购" },
+          renew: { type: "info", text: "续费" },
+          upgrade: { type: "info", text: "升级" },
+          downgrade: { type: "info", text: "降级" },
+        },
       },
       {
         prop: "amount",
@@ -296,14 +280,12 @@ const {
         prop: "status",
         label: "状态",
         width: 90,
-        formatter: (row: OrderTable) => {
-          const typeMap = ["warning", "success", "info", "warning", "danger"] as const;
-          const t = typeMap[row.status] || "info";
-          return h(
-            ElTag,
-            { type: t as "warning" | "success" | "info" | "danger", size: "small" as const },
-            () => orderStatusLabel(row.status)
-          );
+        status: {
+          0: { type: "warning", text: "待支付" },
+          1: { type: "success", text: "已支付" },
+          2: { type: "info", text: "已取消" },
+          3: { type: "danger", text: "已退款" },
+          4: { type: "danger", text: "已过期" },
         },
       },
       {
@@ -327,7 +309,7 @@ const {
         align: "center",
         formatter: (row: OrderTable) => formatOrderOpCell(row),
       },
-    ],
+    ]),
   },
 });
 
@@ -422,8 +404,7 @@ const {
       page_no: 1,
       page_size: 20,
     },
-    columnsFactory: (): ColumnOption<PaymentRecordTable>[] => [
-      { prop: "id", label: "ID", width: 60 },
+    columnsFactory: resolveStatusColumns<PaymentRecordTable>(() => [
       { prop: "order_id", label: "订单ID", width: 80 },
       {
         prop: "transaction_id",
@@ -448,19 +429,14 @@ const {
         prop: "status",
         label: "状态",
         width: 90,
-        formatter: (row: PaymentRecordTable) =>
-          h(
-            ElTag,
-            {
-              type: (row.status === 1 ? "success" : "danger") as "success" | "danger",
-              size: "small" as const,
-            },
-            () => (row.status === 1 ? "成功" : "失败")
-          ),
+        status: {
+          1: { type: "success", text: "成功" },
+          0: { type: "danger", text: "失败" },
+        },
       },
       { prop: "pay_time", label: "支付时间", width: 160, showOverflowTooltip: true },
       { prop: "created_time", label: "创建时间", width: 160, showOverflowTooltip: true },
-    ],
+    ]),
   },
 });
 
@@ -516,8 +492,6 @@ const refundSearchItems = computed<SearchFormItem[]>(() => [
   },
 ]);
 
-const refundSearchBarRef = ref();
-
 const {
   columns: refundColumns,
   columnChecks: refundColumnChecks,
@@ -536,8 +510,7 @@ const {
       page_no: 1,
       page_size: 20,
     },
-    columnsFactory: (): ColumnOption<RefundTable>[] => [
-      { prop: "id", label: "ID", width: 60 },
+    columnsFactory: resolveStatusColumns<RefundTable>(() => [
       { prop: "refund_no", label: "退款单号", minWidth: 180, showOverflowTooltip: true },
       { prop: "order_id", label: "订单ID", width: 80 },
       {
@@ -551,14 +524,11 @@ const {
         prop: "status",
         label: "状态",
         width: 100,
-        formatter: (row: RefundTable) => {
-          const typeMap = ["warning", "success", "danger", "info"] as const;
-          const t = typeMap[row.status] || "info";
-          return h(
-            ElTag,
-            { type: t as "warning" | "success" | "info" | "danger", size: "small" as const },
-            () => refundStatusLabel(row.status)
-          );
+        status: {
+          0: { type: "warning", text: "待审核" },
+          1: { type: "success", text: "已批准" },
+          2: { type: "danger", text: "已驳回" },
+          3: { type: "info", text: "已完成" },
         },
       },
       {
@@ -578,7 +548,7 @@ const {
         align: "center",
         formatter: (row: RefundTable) => formatRefundOpCell(row),
       },
-    ],
+    ]),
   },
 });
 

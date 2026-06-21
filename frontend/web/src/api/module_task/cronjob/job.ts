@@ -131,10 +131,10 @@ export interface SchedulerJob {
   name: string;
   trigger: string;
   next_run_time?: string;
-  status: string;
+  status: number;
 }
 
-export interface JobLogPageQuery extends PageQuery {
+export interface JobLogPageQuery extends PageQuery, UserByQueryParams {
   job_id?: string;
   job_name?: string;
   trigger_type?: string;
@@ -148,4 +148,6 @@ export interface JobLogTable extends BaseType {
   job_state?: string;
   result?: string;
   error?: string;
+  status?: number;
+  description?: string;
 }

@@ -18,7 +18,7 @@ from .schema import (
 )
 from .service import ChatService
 
-ChatRouter = APIRouter(route_class=OperationLogRoute, prefix="/chat", tags=["AI服务/AI对话"])
+ChatRouter = APIRouter(route_class=OperationLogRoute, prefix="/chat", tags=["AI管理", "AI对话"])
 
 
 @ChatRouter.get(
@@ -30,17 +30,8 @@ async def get_session_detail_controller(
     session_id: Annotated[str, Path(description="会话ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:detail"]))],
 ) -> JSONResponse:
-    """
-    获取会话详情
-
-    参数:
-    - session_id (str): 会话ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含会话详情的JSON响应
-    """
-    result = await ChatService.get_session_service(auth=auth, session_id=session_id)
+    service = ChatService(auth)
+    result = await service.get_session(session_id=session_id)
     return SuccessResponse(data=result, msg="获取会话详情成功")
 
 
@@ -54,19 +45,8 @@ async def get_session_list_controller(
     search: Annotated[ChatSessionQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
 ) -> JSONResponse:
-    """
-    查询会话列表
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数
-    - search (ChatSessionQueryParam): 查询参数
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含会话列表分页信息的JSON响应
-    """
-    result_dict = await ChatService.page_service(
-        auth=auth,
+    service = ChatService(auth)
+    result_dict = await service.page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
@@ -84,17 +64,8 @@ async def create_session_controller(
     data: ChatSessionCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:create"]))],
 ) -> JSONResponse:
-    """
-    创建会话
-
-    参数:
-    - data (ChatSessionCreateSchema): 会话创建模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含创建会话详情的JSON响应
-    """
-    result = await ChatService.create_service(auth=auth, data=data)
+    service = ChatService(auth)
+    result = await service.create(data=data)
     return SuccessResponse(data=result, msg="创建会话成功")
 
 
@@ -108,18 +79,8 @@ async def update_session_controller(
     data: ChatSessionUpdateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
 ) -> JSONResponse:
-    """
-    更新会话
-
-    参数:
-    - session_id (str): 会话ID
-    - data (ChatSessionUpdateSchema): 会话更新模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含更新会话详情的JSON响应
-    """
-    await ChatService.update_service(auth=auth, session_id=session_id, data=data)
+    service = ChatService(auth)
+    await service.update(session_id=session_id, data=data)
     return SuccessResponse(data=None, msg="更新会话成功")
 
 
@@ -132,17 +93,8 @@ async def delete_session_controller(
     session_ids: list[str],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:delete"]))],
 ) -> JSONResponse:
-    """
-    删除会话
-
-    参数:
-    - session_ids (list[str]): 会话ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含删除结果的JSON响应
-    """
-    await ChatService.delete_service(auth=auth, session_ids=session_ids)
+    service = ChatService(auth)
+    await service.delete(session_ids=session_ids)
     return SuccessResponse(data=None, msg="删除会话成功")
 
 
@@ -155,20 +107,10 @@ async def ai_chat_controller(
     data: AiChatRequestSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
 ) -> JSONResponse:
-    """
-    AI 对话（非流式）
-
-    参数:
-    - data (AiChatRequestSchema): 对话请求数据
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含 AI 回复、会话ID和函数调用信息的JSON响应
-    """
-    result = await ChatService.chat_non_stream(
+    service = ChatService(auth)
+    result = await service.chat_non_stream(
         message=data.message,
         session_id=data.session_id,
-        auth=auth,
     )
     return SuccessResponse(
         data=AiChatResponseSchema(

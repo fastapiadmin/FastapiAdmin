@@ -134,7 +134,7 @@ import AppConfig from "@/config";
 import { useConfigStore, useSettingsStore, useMenuStore } from "@stores";
 import { MenuTypeEnum, MenuWidth } from "@/enums/appEnum";
 import { isIframe, handleMenuJump } from "@utils";
-import SidebarSubmenu from "./widget/FaSidebarSubmenu.vue";
+import SidebarSubmenu from "./widgets/FaSidebarSubmenu.vue";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useWindowSize, useTimeoutFn } from "@vueuse/core";
 

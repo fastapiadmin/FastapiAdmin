@@ -155,10 +155,10 @@ export function validateChineseIDCard(value: string): boolean {
   const checkCodes = ["1", "0", "X", "9", "8", "7", "6", "5", "4", "3", "2"];
 
   let sum = 0;
-  for (let i = 0; i < 17; i++) sum += parseInt(trimmedValue[i]) * weights[i];
+  for (let i = 0; i < 17; i++) sum += parseInt(trimmedValue[i]!) * weights[i]!;
 
   const checkCode = checkCodes[sum % 11];
-  return trimmedValue[17].toUpperCase() === checkCode;
+  return trimmedValue[17]!.toUpperCase() === checkCode;
 }
 
 export function validateBankCard(value: string): boolean {
@@ -171,7 +171,7 @@ export function validateBankCard(value: string): boolean {
   let shouldDouble = false;
 
   for (let i = trimmedValue.length - 1; i >= 0; i--) {
-    let digit = parseInt(trimmedValue[i]);
+    let digit = parseInt(trimmedValue[i]!);
 
     if (shouldDouble) {
       digit *= 2;

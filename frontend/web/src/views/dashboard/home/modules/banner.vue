@@ -1,6 +1,6 @@
 <template>
   <FaBasicBanner
-    class="justify-center h-53! max-sm:pt-8! max-sm:h-48!"
+    class="justify-center h-54! max-sm:pt-8! max-sm:h-48!"
     :title="bannerTitle"
     :subtitle="bannerSubtitle"
     boxStyle="bg-theme/10!"
@@ -56,7 +56,7 @@ const userStore = useUserStore();
 const userInfo = computed(() => userStore.basicInfo);
 
 const handleBannerClick = (): void => {
-  console.log("banner clicked");
+  // TODO: 接入真实跳转或路由
 };
 
 const timefix = greetings();

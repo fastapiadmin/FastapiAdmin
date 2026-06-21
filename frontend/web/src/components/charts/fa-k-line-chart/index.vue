@@ -81,7 +81,7 @@ const {
           type: "cross",
         },
         formatter: (params: Array<{ name: string; data: number[] }>) => {
-          const param = params[0];
+          const param = params[0]!;
           const data = param.data;
           return `
               <div :style="'padding: 5px;'">

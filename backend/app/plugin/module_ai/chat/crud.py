@@ -23,11 +23,7 @@ class ChatSessionCRUD:
         """初始化CRUD数据层"""
         self.auth = auth
         self.user_id = auth.user.username if auth and auth.user else "user"
-        self.team_id = (
-            str(auth.user.dept_id)
-            if auth and auth.user and hasattr(auth.user, "dept_id") and auth.user.dept_id
-            else None
-        )
+        self.team_id = str(auth.user.dept_id) if auth and auth.user and hasattr(auth.user, "dept_id") and auth.user.dept_id else None
         self.db = self._get_db()
 
     def _get_db(self) -> Any:
@@ -36,9 +32,7 @@ class ChatSessionCRUD:
         db_uri = settings.DB_URI
 
         db_mapping = {
-            "mysql": lambda: MySQLDb(
-                db_url=db_uri, db_schema=settings.DATABASE_NAME, create_schema=False
-            ),
+            "mysql": lambda: MySQLDb(db_url=db_uri, db_schema=settings.DATABASE_NAME, create_schema=False),
             "postgres": lambda: PostgresDb(db_url=db_uri, db_schema="public", create_schema=False),
             "sqlite": lambda: SqliteDb(db_file=db_uri.replace("sqlite:///", "")),
         }
@@ -59,9 +53,7 @@ class ChatSessionCRUD:
         - TeamSession | None: 会话对象；失败或不存在时为 None。
         """
         try:
-            return self.db.get_session(
-                session_id=session_id, session_type=self.SESSION_TYPE, user_id=self.user_id
-            )
+            return self.db.get_session(session_id=session_id, session_type=self.SESSION_TYPE, user_id=self.user_id)
         except Exception as e:
             logger.error(f"获取会话详情失败: {e}")
             return None

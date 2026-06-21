@@ -206,10 +206,10 @@ export function useTableColumns<T = any>(
       propsToToggle.forEach((p) => {
         const i = next.findIndex((c) => getColumnKey(c) === p);
         if (i > -1) {
-          const currentVisibility = getColumnVisibility(next[i]);
+          const currentVisibility = getColumnVisibility(next[i]!);
           const newVisibility = visible ?? !currentVisibility;
           // 同时更新 checked 和 visible 以保持兼容性
-          next[i] = { ...next[i], checked: newVisibility, visible: newVisibility };
+          next[i] = { ...next[i]!, checked: newVisibility, visible: newVisibility };
         }
       });
 
@@ -253,7 +253,7 @@ export function useTableColumns<T = any>(
         }
         const next = [...cols];
         const [moved] = next.splice(fromIndex, 1);
-        next.splice(toIndex, 0, moved);
+        if (moved) next.splice(toIndex, 0, moved);
         return next;
       }),
 

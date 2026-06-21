@@ -73,20 +73,20 @@ class Permission:
         )
 
         # 根据策略选择过滤方法
-        if strategy == PermissionFilterStrategy.ROLE_BASED:
-            return await self.__filter_by_role_based()
-        elif strategy == PermissionFilterStrategy.DEPT_BASED:
-            return await self.__filter_by_dept_based()
-        elif strategy == PermissionFilterStrategy.SELF_ONLY:
-            return await self.__filter_by_self_only()
-        elif strategy == PermissionFilterStrategy.USER_ROLE:
-            return await self.__filter_by_user_role()
+        if strategy == PermissionFilterStrategy.MENU_AUTH:
+            return await self.__filter_by_menu_auth()
+        elif strategy == PermissionFilterStrategy.DEPT_RELATION:
+            return await self.__filter_by_dept_relation()
+        elif strategy == PermissionFilterStrategy.OWN:
+            return await self.__filter_by_own()
+        elif strategy == PermissionFilterStrategy.USER_BINDING:
+            return await self.__filter_by_user_binding()
         else:
             return await self.__filter_by_data_scope()
 
-    async def __filter_by_role_based(self) -> ColumnElement | None:
+    async def __filter_by_menu_auth(self) -> ColumnElement | None:
         """
-        基于角色授权的权限过滤（适用于菜单等）
+        基于角色-菜单授权的过滤（适用于菜单模型）
 
         只显示用户角色授权的菜单，同时受租户套餐约束。
         """
@@ -124,9 +124,9 @@ class Permission:
             return id_attr == -1
         return None
 
-    async def __filter_by_user_role(self) -> ColumnElement | None:
+    async def __filter_by_user_binding(self) -> ColumnElement | None:
         """
-        基于当前用户绑定角色的权限过滤（适用于角色列表）
+        基于当前用户绑定角色的过滤（适用于角色模型）
 
         只显示当前用户绑定的角色
         """
@@ -143,9 +143,9 @@ class Permission:
             return id_attr.in_(role_ids)
         return None
 
-    async def __filter_by_dept_based(self) -> ColumnElement | None:
+    async def __filter_by_dept_relation(self) -> ColumnElement | None:
         """
-        基于部门关联的权限过滤（适用于部门、角色等）
+        基于部门关联的过滤（适用于部门模型、角色模型）
 
         根据用户的部门权限范围过滤数据
         """
@@ -183,9 +183,9 @@ class Permission:
         else:
             return None
 
-    async def __filter_by_self_only(self) -> ColumnElement | None:
+    async def __filter_by_own(self) -> ColumnElement | None:
         """
-        仅本人数据权限过滤
+        仅本人数据过滤
         """
         created_id_attr = getattr(self.model, "created_id", None)
         if created_id_attr is not None and self.auth.user:

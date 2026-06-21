@@ -1,11 +1,16 @@
 from datetime import datetime
-from typing import Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.validator import DateTimeStr
 
-T = TypeVar("T")
+if TYPE_CHECKING:
+    # 仅供 IDE 类型推断，运行时不会触发导入，避免 app.core ↔ app.api.v1 循环依赖
+    from app.api.v1.module_system.user.model import UserModel
+
+UserT = TypeVar("UserT")
 
 
 class CommonSchema(BaseModel):
@@ -24,8 +29,6 @@ class BaseSchema(BaseModel):
 
     id: int | None = Field(default=None, description="主键ID")
     uuid: str | None = Field(default=None, description="UUID")
-    status: int = Field(default=0, description="状态")
-    description: str | None = Field(default=None, description="描述")
     created_time: DateTimeStr | None = Field(default=None, description="创建时间")
     updated_time: DateTimeStr | None = Field(default=None, description="更新时间")
     is_deleted: bool = Field(default=False, description="是否已删除")
@@ -86,14 +89,26 @@ class BatchDelete(BaseModel):
 
 
 class AuthSchema(BaseModel):
-    """权限认证模型"""
+    """权限认证模型
+
+    ``user`` 字段运行时为 ``Any``（避免与 SQLAlchemy 懒加载冲突，也避免
+    循环依赖）。通过 ``get_user()`` 方法获得 IDE 类型推断。
+    """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    user: Any = Field(default=None, description="用户信息", exclude=True)
+    user: Any = Field(default=None, description="用户信息（UserModel 实例）", exclude=True)
     check_data_scope: bool = Field(default=True, description="是否检查数据权限")
-    db: Any = Field(default=None, description="数据库会话", exclude=True)
+    db: AsyncSession | None = Field(default=None, description="数据库会话", exclude=True)
     tenant_id: int | None = Field(default=None, description="租户ID,用于用户认证前查询")
+
+    def get_user(self) -> "UserModel | None":
+        """类型化的用户访问方法。
+
+        业务方 ``auth.get_user()`` 由 IDE 推断为 ``UserModel | None``，
+        享受自动补全。``auth.user`` 仍可用但无类型补全。
+        """
+        return self.user  # type: ignore[return-value]
 
 
 class JWTPayloadSchema(BaseModel):
@@ -133,7 +148,7 @@ class LogoutPayloadSchema(BaseModel):
     token: str = Field(..., min_length=1, description="token")
 
 
-class PageResultSchema(BaseModel, Generic[T]):
+class PageResultSchema[T](BaseModel):
     """分页查询结果模型"""
 
     model_config = ConfigDict(from_attributes=True)

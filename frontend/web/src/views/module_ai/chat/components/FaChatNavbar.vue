@@ -99,9 +99,6 @@ const toggleSidebar = () => {
     align-items: center;
 
     .collapse-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       width: 32px;
       height: 32px;
       padding: 0;

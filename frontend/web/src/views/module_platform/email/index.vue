@@ -36,7 +36,8 @@
                 :perm-create="['module_platform:email:update']"
                 :perm-delete="['module_platform:email:update']"
                 :delete-loading="configBatchDeleting"
-                @add="openConfigDialog('create')"
+                :create-loading="configCreateLoading"
+                @add="handleConfigAdd"
                 @delete="handleConfigBatchDelete"
               />
             </template>
@@ -89,7 +90,8 @@
                 :perm-create="['module_platform:email:update']"
                 :perm-delete="['module_platform:email:update']"
                 :delete-loading="templateBatchDeleting"
-                @add="openTemplateDialog('create')"
+                :create-loading="templateCreateLoading"
+                @add="handleTemplateAdd"
                 @delete="handleTemplateBatchDelete"
               />
             </template>
@@ -272,13 +274,13 @@
 </template>
 
 <script setup lang="ts">
+import { h } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import { useTable } from "@/hooks/core/useTable";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
-import type { ColumnOption } from "@/types/component";
+import { renderTableOperationCell, type TableOperationAction, resolveStatusColumns } from "@utils";
 import EmailAPI, {
   type EmailConfigTable,
   type EmailConfigCreateForm,
@@ -290,9 +292,9 @@ import EmailAPI, {
 } from "@/api/module_platform/email";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import { ElTag, ElMessage } from "element-plus";
+import type FaForm from "@/components/forms/fa-form/index.vue";
+import FaStatusTag from "@/components/others/fa-status-tag/index.vue";
+import { ElMessage } from "element-plus";
 
 defineOptions({ name: "Email" });
 
@@ -324,6 +326,8 @@ const {
   onTableSelectionChange: onConfigSelectionChange,
 } = useTableSelection<EmailConfigTable>();
 
+const configCreateLoading = ref(false);
+
 const {
   columns: configColumns,
   columnChecks: configColumnChecks,
@@ -343,7 +347,7 @@ const {
   core: {
     apiFn: EmailAPI.listConfig,
     apiParams: { page_no: 1, page_size: 10 },
-    columnsFactory: (): ColumnOption<EmailConfigTable>[] => [
+    columnsFactory: resolveStatusColumns<EmailConfigTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "配置名称", minWidth: 140, showOverflowTooltip: true },
@@ -355,30 +359,28 @@ const {
         prop: "use_tls",
         label: "SSL/TLS",
         width: 90,
-        formatter: (row: EmailConfigTable) =>
-          h(ElTag, { type: row.use_tls ? "success" : "info", size: "small" }, () =>
-            row.use_tls ? "启用" : "禁用"
-          ),
+        status: {
+          true: { type: "success", text: "启用" },
+          false: { type: "info", text: "禁用" },
+        },
       },
       {
         prop: "is_default",
         label: "默认",
         width: 70,
-        formatter: (row: EmailConfigTable) =>
-          row.is_default
-            ? h(ElTag, { type: "warning", size: "small" }, () => "默认")
-            : h("span", { class: "text-g-400" }, () => "—"),
+        status: {
+          true: { type: "warning", size: "small", text: "默认" },
+          false: { type: "info", size: "small", text: "—" },
+        },
       },
       {
         prop: "status",
         label: "状态",
         width: 70,
-        formatter: (row: EmailConfigTable) =>
-          h(
-            ElTag,
-            { type: row.status === ("0" as any) ? "success" : "danger", size: "small" },
-            () => (row.status === ("0" as any) ? "正常" : "禁用")
-          ),
+        status: {
+          "0": { type: "success", size: "small", text: "正常" },
+          "1": { type: "danger", size: "small", text: "禁用" },
+        },
       },
       {
         prop: "operation",
@@ -413,7 +415,7 @@ const {
           return renderTableOperationCell(actions.filter((a) => a.perm != null && hasAuth(a.perm)));
         },
       },
-    ],
+    ]),
   },
 });
 
@@ -450,6 +452,8 @@ const {
   onTableSelectionChange: onTemplateSelectionChange,
 } = useTableSelection<EmailTemplateTable>();
 
+const templateCreateLoading = ref(false);
+
 const {
   columns: templateColumns,
   columnChecks: templateColumnChecks,
@@ -469,7 +473,7 @@ const {
   core: {
     apiFn: EmailAPI.listTemplate,
     apiParams: { page_no: 1, page_size: 10 },
-    columnsFactory: (): ColumnOption<EmailTemplateTable>[] => [
+    columnsFactory: resolveStatusColumns<EmailTemplateTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "模板名称", minWidth: 140, showOverflowTooltip: true },
@@ -478,19 +482,17 @@ const {
         label: "模板编码",
         width: 140,
         formatter: (row: EmailTemplateTable) =>
-          h(ElTag, { type: "info", size: "small" }, () => row.template_code),
+          h(FaStatusTag, { type: "info", size: "small", label: row.template_code }),
       },
       { prop: "subject", label: "邮件主题", minWidth: 200, showOverflowTooltip: true },
       {
         prop: "status",
         label: "状态",
         width: 70,
-        formatter: (row: EmailTemplateTable) =>
-          h(
-            ElTag,
-            { type: row.status === ("0" as any) ? "success" : "danger", size: "small" },
-            () => (row.status === ("0" as any) ? "正常" : "禁用")
-          ),
+        status: {
+          "0": { type: "success", size: "small", text: "正常" },
+          "1": { type: "danger", size: "small", text: "禁用" },
+        },
       },
       { prop: "description", label: "备注", minWidth: 120, showOverflowTooltip: true },
       {
@@ -519,7 +521,7 @@ const {
           return renderTableOperationCell(actions.filter((a) => a.perm != null && hasAuth(a.perm)));
         },
       },
-    ],
+    ]),
   },
 });
 
@@ -569,7 +571,7 @@ const {
   core: {
     apiFn: EmailAPI.listLog,
     apiParams: { page_no: 1, page_size: 10 },
-    columnsFactory: (): ColumnOption<EmailLogTable>[] => [
+    columnsFactory: resolveStatusColumns<EmailLogTable>(() => [
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "to_email", label: "收件人", minWidth: 180, showOverflowTooltip: true },
       { prop: "subject", label: "主题", minWidth: 200, showOverflowTooltip: true },
@@ -579,7 +581,7 @@ const {
         width: 120,
         formatter: (row: EmailLogTable) =>
           row.template_code
-            ? h(ElTag, { type: "info", size: "small" }, () => row.template_code!)
+            ? h(FaStatusTag, { type: "info", size: "small", label: row.template_code! })
             : h("span", { class: "text-g-400" }, () => "—"),
       },
       {
@@ -587,16 +589,16 @@ const {
         label: "业务类型",
         width: 110,
         formatter: (row: EmailLogTable) =>
-          h(ElTag, { size: "small" }, () => bizTypeLabel(row.biz_type)),
+          h(FaStatusTag, { size: "small", label: bizTypeLabel(row.biz_type) }),
       },
       {
         prop: "status",
         label: "发送状态",
         width: 90,
-        formatter: (row: EmailLogTable) =>
-          h(ElTag, { type: row.status === 1 ? "success" : "danger", size: "small" }, () =>
-            row.status === 1 ? "成功" : "失败"
-          ),
+        status: {
+          1: { type: "success", text: "成功" },
+          0: { type: "danger", text: "失败" },
+        },
       },
       { prop: "retry_count", label: "重试", width: 60 },
       {
@@ -608,7 +610,7 @@ const {
           row.error_msg || h("span", { class: "text-g-400" }, () => "—"),
       },
       { prop: "created_time", label: "发送时间", width: 168, showOverflowTooltip: true },
-    ],
+    ]),
   },
 });
 
@@ -702,6 +704,15 @@ const configDialogFormItems = computed<FormItem[]>(() => [
     props: { rows: 2, maxlength: 255, placeholder: "可选" },
   },
 ]);
+
+async function handleConfigAdd() {
+  configCreateLoading.value = true;
+  try {
+    await openConfigDialog("create");
+  } finally {
+    configCreateLoading.value = false;
+  }
+}
 
 async function openConfigDialog(type: "create" | "update", row?: EmailConfigTable) {
   configDialogVisible.type = type;
@@ -835,6 +846,15 @@ const templateDialogFormItems = computed<FormItem[]>(() => [
     props: { rows: 2, maxlength: 255, placeholder: "可选" },
   },
 ]);
+
+async function handleTemplateAdd() {
+  templateCreateLoading.value = true;
+  try {
+    await openTemplateDialog("create");
+  } finally {
+    templateCreateLoading.value = false;
+  }
+}
 
 async function openTemplateDialog(type: "create" | "update", row?: EmailTemplateTable) {
   templateDialogVisible.type = type;
@@ -1063,7 +1083,7 @@ async function handleTemplateBatchDelete() {
 // ══════════════════ 搜索逻辑 ════════════════════
 
 async function handleConfigSearch(p: ConfigSearchForm) {
-  replaceConfigSearchParams({ name: p.name || undefined } as any);
+  replaceConfigSearchParams({ name: p.name || undefined } as unknown as ConfigSearchForm);
   getConfigData();
 }
 function onConfigResetSearch() {
@@ -1075,7 +1095,7 @@ async function handleTemplateSearch(p: TemplateSearchForm) {
   replaceTemplateSearchParams({
     name: p.name || undefined,
     template_code: p.template_code || undefined,
-  } as any);
+  } as unknown as TemplateSearchForm);
   getTemplateData();
 }
 function onTemplateResetSearch() {
@@ -1087,7 +1107,7 @@ async function handleLogSearch(p: LogSearchForm) {
   replaceLogSearchParams({
     to_email: p.to_email || undefined,
     template_code: p.template_code || undefined,
-  } as any);
+  } as unknown as LogSearchForm);
   getLogData();
 }
 function onLogResetSearch() {

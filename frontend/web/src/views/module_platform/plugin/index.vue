@@ -254,9 +254,6 @@ import PluginAPI, { type PluginForm, type PluginTable } from "@/api/module_platf
 import { useAuth } from "@/hooks/core/useAuth";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import FaPagination from "@/components/others/fa-pagination/index.vue";
 import {
   ElTag,
   ElMessage,
@@ -276,10 +273,10 @@ defineOptions({
 const { hasAuth } = useAuth();
 
 // ─── 搜索表单 ───
-const searchForm = ref<{ name?: string; category?: string; status?: string }>({
+const searchForm = ref<{ name?: string; category?: string; status?: number }>({
   name: "",
   category: "",
-  status: "",
+  status: undefined,
 });
 const showSearchBar = ref(true);
 
@@ -331,8 +328,7 @@ async function fetchData() {
   loading.value = true;
   try {
     const res = await PluginAPI.list(
-      { page_no: pageNo.value, page_size: pageSize.value },
-      searchForm.value as any
+      { page_no: pageNo.value, page_size: pageSize.value, ...searchForm.value }
     );
     const result = res.data?.data;
     data.value = (result?.items as PluginTable[]) || [];
@@ -356,14 +352,14 @@ async function handleSearchBarSearch(params: Record<string, unknown>) {
   searchForm.value = {
     name: (params.name as string) ?? "",
     category: (params.category as string) ?? "",
-    status: (params.status as string) ?? "",
+    status: params.status !== undefined ? Number(params.status) : undefined,
   };
   pageNo.value = 1;
   await fetchData();
 }
 
 async function onResetSearch() {
-  searchForm.value = { name: "", category: "", status: "" };
+  searchForm.value = { name: "", category: "", status: undefined };
   pageNo.value = 1;
   await fetchData();
 }
@@ -580,7 +576,9 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
     dialogVisible,
     dataFormRef,
     formRenderKey: pluginFormRenderKey,
-    detailApi: PluginAPI.detail as any,
+    detailApi: PluginAPI.detail as unknown as (
+      id: number
+    ) => Promise<{ data: { data?: PluginForm } }>,
     createApi: PluginAPI.create,
     updateApi: PluginAPI.update,
     titles: { create: "新增插件", update: "编辑插件", detail: "插件详情" },

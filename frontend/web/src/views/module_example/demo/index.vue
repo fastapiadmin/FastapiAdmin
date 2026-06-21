@@ -1,7 +1,7 @@
 <!-- 示例 CRUD：与角色页同一套 Fa 布局；弹窗与 Crud 一致（FaDialog + crud-embed-dialog） -->
 <template>
   <div class="fa-full-height">
-    <FaSearchBarWithAudit
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -13,6 +13,7 @@
       :show-search="true"
       :disabled-search="false"
       :default-expanded="false"
+      :include-audit="true"
       @search="handleSearch"
       @reset="onResetSearch"
     />
@@ -37,7 +38,8 @@
             :perm-delete="['module_example:demo:delete']"
             :perm-patch="['module_example:demo:patch']"
             :delete-loading="batchDeleting"
-            @add="openEditDialog('add')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @import="openImport"
             @export="openExport"
             @delete="handleBatchDelete"
@@ -160,7 +162,7 @@ import { useImportExport } from "@/hooks/core/useImportExport";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { confirmDelete, confirmBatchDelete, confirmAction } from "@/hooks/core/useConfirm";
-import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
+import { stripPaginationParams } from "@/utils/query";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
@@ -172,7 +174,7 @@ import DemoAPI, {
   type DemoTable,
 } from "@/api/module_example/demo";
 import { ResultEnum } from "@/enums/api/result.enum";
-import { ElTag, ElMessage } from "element-plus";
+import { ElMessage } from "element-plus";
 
 defineOptions({
   name: "Demo",
@@ -181,18 +183,34 @@ defineOptions({
 
 const { hasAuth } = useAuth();
 
-type DemoSearchFormParams = { name?: string; status?: string } & AuditSearchFormParams;
+// 常量定义
+const STATUS_OPTIONS = [
+  { label: "启用", value: 0 },
+  { label: "停用", value: 1 },
+] as const;
 
-function normalizeDemoQuery(params: Record<string, unknown>): DemoPageQuery {
-  return cleanEmptyArrayParams({ ...params }, [
-    "created_time",
-    "updated_time",
-  ]) as unknown as DemoPageQuery;
-}
+const createInitialFormData = (): DemoForm => ({
+  id: undefined,
+  name: "",
+  status: 0,
+  description: undefined,
+  int_val: undefined,
+  bigint_val: undefined,
+  float_val: undefined,
+  bool_val: true,
+  date_val: undefined,
+  time_val: undefined,
+  datetime_val: undefined,
+  text_val: undefined,
+  json_val: undefined,
+});
+
+type DemoSearchFormParams = { name?: string; status?: number; tenant_id?: number } & AuditSearchFormParams;
 
 const searchForm = ref<DemoSearchFormParams>({
   name: undefined,
   status: undefined,
+  tenant_id: undefined,
   created_id: undefined,
   updated_id: undefined,
   created_time: [],
@@ -204,11 +222,8 @@ const showSearchBar = ref(true);
 
 const searchBarRef = ref<{ validate: () => Promise<boolean> } | null>(null);
 const searchBarRules: Record<string, unknown> = {};
-const statusOptions = ref([
-  { label: "启用", value: 0 },
-  { label: "停用", value: 1 },
-]);
-/** 名称、状态；创建人/更新人/时间由 FaSearchBarWithAudit 追加 */
+
+/** 名称、状态；创建人/更新人/时间由 FaSearchBar 的 includeAudit 属性追加 */
 const demoBusinessSearchItems = computed(() => [
   {
     label: "名称",
@@ -224,7 +239,7 @@ const demoBusinessSearchItems = computed(() => [
     type: "select",
     props: {
       placeholder: "请选择状态",
-      options: statusOptions.value,
+      options: STATUS_OPTIONS,
       clearable: true,
     },
     span: 6,
@@ -234,6 +249,8 @@ const demoBusinessSearchItems = computed(() => [
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<DemoTable>();
+
+const createLoading = ref(false);
 
 const {
   columns,
@@ -261,19 +278,14 @@ const {
     columnsFactory: (): ColumnOption<DemoTable>[] => [
       { type: "globalIndex", width: 56, label: "序号" },
       { type: "selection", width: 48, fixed: "left" },
-      { prop: "id", label: "ID", width: 72 },
       { prop: "name", label: "名称", minWidth: 120, showOverflowTooltip: true },
-      { prop: "uuid", label: "UUID", minWidth: 168, showOverflowTooltip: true },
       {
         prop: "status",
         label: "状态",
         width: 88,
-        formatter: (row: DemoTable) => {
-          const ok = row.status === 0;
-          const cfg = ok
-            ? { type: "success" as const, text: "启用" }
-            : { type: "info" as const, text: "停用" };
-          return h(ElTag, { type: cfg.type }, () => cfg.text);
+        status: {
+          0: { type: "success", text: "启用" },
+          1: { type: "info", text: "停用" },
         },
       },
       { prop: "int_val", label: "整数", minWidth: 88, showOverflowTooltip: true },
@@ -283,24 +295,15 @@ const {
         prop: "bool_val",
         label: "布尔",
         width: 80,
-        formatter: (row: DemoTable) =>
-          h(ElTag, { type: row.bool_val ? "success" : "danger" }, () =>
-            row.bool_val ? "是" : "否"
-          ),
+        status: {
+          true: { type: "success", text: "是" },
+          false: { type: "danger", text: "否" },
+        },
       },
       { prop: "date_val", label: "日期", minWidth: 112, showOverflowTooltip: true },
       { prop: "time_val", label: "时间", minWidth: 96, showOverflowTooltip: true },
       { prop: "datetime_val", label: "日期时间", minWidth: 168, showOverflowTooltip: true },
       { prop: "text_val", label: "长文本", minWidth: 120, showOverflowTooltip: true },
-      {
-        prop: "json_val",
-        label: "元数据",
-        minWidth: 160,
-        formatter: (row: DemoTable) => {
-          if (row.json_val == null) return h("span", { class: "text-g-500" }, "—");
-          return h(FaJsonPretty, { value: row.json_val, height: "120px" });
-        },
-      },
       { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
       { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
       { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
@@ -342,8 +345,7 @@ const demoCrudCols = computed(() =>
 );
 
 const exportQueryParams = computed(() => {
-  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
-  return normalizeDemoQuery(sp);
+  return stripPaginationParams(searchParams as Record<string, unknown>);
 });
 
 const demoImportContentConfig = computed<IContentConfig>(() => ({
@@ -357,11 +359,11 @@ const demoExportContentConfig = computed(() => ({
   permPrefix: "module_example:demo",
   cols: demoCrudCols.value,
   exportsBlobAction: async (params: IObject) => {
-    const merged = normalizeDemoQuery({
+    const merged = {
       ...(exportQueryParams.value as unknown as Record<string, unknown>),
       ...params,
-    } as Record<string, unknown>);
-    const res = await DemoAPI.exportDemo(merged as DemoPageQuery);
+    } as unknown as DemoPageQuery;
+    const res = await DemoAPI.exportDemo(merged);
     return res.data as Blob;
   },
 }));
@@ -474,21 +476,7 @@ const demoDialogFormItems: FormItem[] = [
   { key: "json_val", label: "元数据", type: "input" /* 由 #json_val 插槽接管 */ },
 ];
 
-const formData = ref<DemoForm>({
-  id: undefined,
-  name: "",
-  status: 0,
-  description: undefined,
-  int_val: undefined,
-  bigint_val: undefined,
-  float_val: undefined,
-  bool_val: true,
-  date_val: undefined,
-  time_val: undefined,
-  datetime_val: undefined,
-  text_val: undefined,
-  json_val: undefined,
-});
+const formData = ref<DemoForm>(createInitialFormData());
 
 const rules = reactive({
   name: [{ required: true, message: "请输入名称", trigger: "blur" }],
@@ -506,27 +494,12 @@ const metadataList = ref<{ key: string; value: string }[]>([]);
 
 const { importVisible, exportVisible, openImport, openExport } = useImportExport();
 
-const initialFormData: DemoForm = {
-  id: undefined,
-  name: "",
-  status: 0,
-  description: undefined,
-  int_val: undefined,
-  bigint_val: undefined,
-  float_val: undefined,
-  bool_val: true,
-  date_val: undefined,
-  time_val: undefined,
-  datetime_val: undefined,
-  text_val: undefined,
-  json_val: undefined,
-};
-
 const handleSearch = async (params: DemoSearchFormParams) => {
   await searchBarRef.value?.validate();
   replaceSearchParams({
     name: params.name,
     status: params.status,
+    tenant_id: params.tenant_id,
     created_id: params.created_id ?? undefined,
     updated_id: params.updated_id ?? undefined,
     created_time:
@@ -545,6 +518,7 @@ const onResetSearch = async () => {
   searchForm.value = {
     name: undefined,
     status: undefined,
+    tenant_id: undefined,
     created_id: undefined,
     updated_id: undefined,
     created_time: [],
@@ -597,11 +571,20 @@ async function openDetailDialog(row: DemoTable) {
   dialogVisible.visible = true;
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await openEditDialog("add");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function openEditDialog(type: "add" | "edit", row?: DemoTable) {
   dialogVisible.type = type === "add" ? "create" : "update";
   if (type === "add") {
-    dialogVisible.title = "新增示例";
-    Object.assign(formData.value, initialFormData);
+    dialogVisible.title = "新增";
+    Object.assign(formData.value, createInitialFormData());
     formData.value.id = undefined;
     metadataList.value = [];
     demoFormRenderKey.value += 1;
@@ -627,7 +610,7 @@ async function resetForm() {
     dataFormRef.value.resetFields();
     dataFormRef.value.clearValidate();
   }
-  Object.assign(formData.value, initialFormData);
+  Object.assign(formData.value, createInitialFormData());
   metadataList.value = [];
 }
 
@@ -696,7 +679,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function runBatchStatus(status: string) {
+async function runBatchStatus(status: number) {
   const ids = selectedIds.value;
   if (ids.length === 0) {
     ElMessage.warning("请先在列表中勾选数据");
@@ -704,7 +687,7 @@ async function runBatchStatus(status: string) {
   }
   try {
     await confirmAction(
-      `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
+      `确认对选中的 ${ids.length} 条数据${status === 0 ? "启用" : "停用"}？`,
       "批量设置"
     );
     await DemoAPI.batchDemo({ ids, status });

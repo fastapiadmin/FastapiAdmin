@@ -1,28 +1,28 @@
-"""健康检查 Schema"""
-from __future__ import annotations
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DependencyStatus(BaseModel):
     """依赖状态"""
-    status: str
-    latency_ms: float | None = None
+
+    status: str = Field(..., description="状态")
+    latency_ms: float | None = Field(default=None, description="延迟(毫秒)")
 
 
 class HealthOut(BaseModel):
     """基础健康检查响应"""
-    status: str
-    timestamp: str
-    version: str
-    uptime_seconds: float
+
+    status: str = Field(..., description="状态")
+    timestamp: str = Field(..., description="时间戳")
+    version: str = Field(..., description="版本号")
+    uptime_seconds: float = Field(..., description="运行时间(秒)")
 
 
 class ReadinessOut(BaseModel):
     """就绪探针响应"""
-    status: str
-    timestamp: str
-    version: str
-    uptime_seconds: float
-    dependencies: dict[str, DependencyStatus]
-    disk_usage: float
+
+    status: str = Field(..., description="状态")
+    timestamp: str = Field(..., description="时间戳")
+    version: str = Field(..., description="版本号")
+    uptime_seconds: float = Field(..., description="运行时间(秒)")
+    dependencies: dict[str, DependencyStatus] = Field(..., description="依赖状态")
+    disk_usage: float = Field(..., description="磁盘使用率")

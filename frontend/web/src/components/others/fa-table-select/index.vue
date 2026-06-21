@@ -247,7 +247,7 @@ const queryParams = reactive<{
 const tableSelectRef = ref();
 const popoverWidth = ref(width);
 useResizeObserver(tableSelectRef, (entries) => {
-  popoverWidth.value = `${entries[0].contentRect.width}px`;
+  popoverWidth.value = `${entries[0]!.contentRect.width}px`;
 });
 
 // 表单操作

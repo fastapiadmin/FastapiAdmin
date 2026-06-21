@@ -48,7 +48,7 @@
                 <ElTag
                   v-for="item in filteredNodes"
                   :key="item.id"
-                  :type="getCategoryType(item.category) as any"
+                  :type="getCategoryType(item.category)"
                   effect="plain"
                   draggable="true"
                   :style="'justify-content: center; cursor: move; user-select: none'"
@@ -196,11 +196,10 @@ import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 import "@vue-flow/minimap/dist/style.css";
-import "element-plus/dist/index.css";
 
 import FaDynamicNode from "./FaDynamicNode.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import WorkflowDefinitionAPI, {
   type WorkflowTable,
   type WorkflowForm,
@@ -456,14 +455,16 @@ const filteredNodes = computed(() => {
   return allNodes.value.filter((node) => node.name.toLowerCase().includes(keyword));
 });
 
-const getCategoryType = (category: string) => {
-  const typeMap: Record<string, string> = {
-    trigger: "warning",
-    action: "primary",
-    condition: "success",
-    control: "info",
+type ElTagType = 'success' | 'warning' | 'info' | 'primary' | 'danger';
+
+const getCategoryType = (category: string): ElTagType => {
+  const typeMap: Record<string, ElTagType> = {
+    trigger: 'warning',
+    action: 'primary',
+    condition: 'success',
+    control: 'info',
   };
-  return typeMap[category] || "info";
+  return typeMap[category] || 'info';
 };
 
 const getCategoryText = (category: string) => {
@@ -850,10 +851,11 @@ function updateNodeData(
   if (nodeIndex === -1) return false;
 
   const updatedNodes = [...currentNodes];
+  const targetNode = updatedNodes[nodeIndex]!;
   updatedNodes[nodeIndex] = {
-    ...updatedNodes[nodeIndex],
+    ...targetNode,
     data: {
-      ...updatedNodes[nodeIndex].data,
+      ...targetNode.data,
       ...data,
     },
   };
@@ -889,10 +891,10 @@ function updateEdgeData(
 
   const updatedEdges = [...currentEdges];
   updatedEdges[edgeIndex] = {
-    ...updatedEdges[edgeIndex],
+    ...updatedEdges[edgeIndex]!,
     ...data,
     data: {
-      ...updatedEdges[edgeIndex].data,
+      ...updatedEdges[edgeIndex]!.data,
       ...data,
     },
   };

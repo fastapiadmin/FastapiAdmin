@@ -18,14 +18,17 @@ UPLOAD_DIR = STATIC_DIR / "upload"
 # 下载文件目录
 DOWNLOAD_DIR = STATIC_DIR / "download"
 
+# 发票 PDF 输出目录
+INVOICE_DIR = STATIC_DIR / "invoice"
+
 # 环境配置目录
 ENV_DIR = BASE_DIR / "env"
 
 # 初始化脚本
 SCRIPT_DIR: Path = BASE_DIR / "app" / "scripts" / "data"
 
-# 模版文件配置
-TEMPLATE_DIR: Path = BASE_DIR / "app" / "plugin" / "module_generator" / "gencode" / "templates"
+# 模版文件配置（统一管理代码生成模板 + HTML 模板）
+TEMPLATE_DIR: Path = BASE_DIR / "templates"
 
 # banner.txt 文件路径
 BANNER_FILE = BASE_DIR / "banner.txt"

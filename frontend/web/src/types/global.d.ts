@@ -103,18 +103,35 @@ declare global {
   }
 
   /**
-   * 分页查询参数
+   * 基础查询参数（基础层：状态 + 时间范围）
    */
-  interface PageQuery {
-    page_no: number;
-    page_size: number;
-    description?: string;
+  interface BaseQueryParams {
     status?: number;
     created_time?: string[];
     updated_time?: string[];
+  }
+
+  /**
+   * 审计人查询参数（继承基础查询 + 创建人/更新人）
+   */
+  interface UserByQueryParams extends BaseQueryParams {
     created_id?: number;
     updated_id?: number;
+  }
+
+  /**
+   * 租户查询参数（继承基础查询 + 租户ID）
+   */
+  interface TenantByQueryParams extends BaseQueryParams {
     tenant_id?: number;
+  }
+
+  /**
+   * 分页查询参数（继承基础查询 + 分页字段）
+   */
+  interface PageQuery extends BaseQueryParams {
+    page_no: number;
+    page_size: number;
   }
 
   /**
@@ -146,14 +163,19 @@ declare global {
   }
 
   /**
-   * 基础类型
+   * 基础表单类型（基础层：仅包含 id）
    */
-  interface BaseType {
-    index?: number;
+  interface BaseFormType {
     id?: number;
+  }
+
+  /**
+   * 基础类型（基础层：包含通用字段）
+   */
+  interface BaseType extends BaseFormType {
+    index?: number;
     uuid?: string;
-    status?: number;
-    description?: string;
+    is_deleted?: boolean;
     created_time?: string;
     updated_time?: string;
     deleted_time?: string;
@@ -164,22 +186,11 @@ declare global {
   }
 
   /**
-   * 基础表单类型
-   */
-  interface BaseFormType {
-    id?: number;
-    status?: number;
-    description?: string;
-    remark?: string;
-    order?: number;
-  }
-
-  /**
    * 批量操作类型
    */
   interface BatchType {
     ids: number[];
-    status: string;
+    status: number;
   }
 
   /**

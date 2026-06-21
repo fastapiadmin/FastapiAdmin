@@ -33,7 +33,11 @@
             </div>
 
             <div class="grow mb-5">
-              <div v-for="feat in getFeatures(plan)" :key="feat" class="flex-c mb-2.5 text-sm">
+              <div
+                v-for="feat in getFeatures(plan)"
+                :key="feat"
+                class="flex items-center mb-2.5 text-sm"
+              >
                 <ElIcon class="mr-2.5 text-theme!"><Check /></ElIcon>
                 <span>{{ feat }}</span>
               </div>
@@ -125,7 +129,7 @@ async function loadPackages() {
   loading.value = true;
   try {
     const res = await SelfServiceAPI.getAvailablePackages();
-    const data = (res.data as any)?.data;
+    const data = res.data?.data;
     packages.value = data?.packages || [];
   } catch {
     ElMessage.error("加载套餐信息失败");
@@ -142,7 +146,7 @@ async function buyPackage(pkg: AvailablePackage) {
       package_id: pkg.id,
       order_type: (action || "buy") as "buy" | "renew" | "upgrade" | "downgrade",
     });
-    const data = (res.data as any)?.data;
+    const data = res.data?.data;
     if (data?.amount > 0) {
       router.push(`/payment/${data.order_id}`);
     } else {

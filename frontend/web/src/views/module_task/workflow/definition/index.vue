@@ -34,7 +34,8 @@
             :perm-create="['module_task:workflow:definition:create']"
             :perm-delete="['module_task:workflow:definition:delete']"
             :delete-loading="batchDeleting"
-            @add="handleCreate"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -119,24 +120,21 @@ defineOptions({
 });
 
 import WorkflowDefinitionAPI, { type WorkflowTable } from "@/api/module_task/workflow/definition";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaWorkflowDesignDrawer from "./components/FaWorkflowDesignDrawer.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
 import { ArrowDown } from "@element-plus/icons-vue";
-import { ElMessage, ElMessageBox, ElTag } from "element-plus";
-import { computed, h, ref } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { computed, ref } from "vue";
 
 const BATCH_DELETE_MSG = "确认删除选中的工作流吗？";
 
 type WorkflowSearchForm = {
   name?: string;
   code?: string;
-  status?: string;
+  status?: number;
 };
 
 function buildWorkflowReplaceParams(u: WorkflowSearchForm): Record<string, unknown> {
@@ -197,8 +195,9 @@ const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
 );
 const batchDeleting = ref(false);
-
-function onTableSelectionChange(rows: WorkflowTable[]) {
+  const createLoading = ref(false);
+  
+  function onTableSelectionChange(rows: WorkflowTable[]) {
   selectedRows.value = rows;
 }
 
@@ -236,24 +235,6 @@ async function handleBatchDelete() {
   } finally {
     batchDeleting.value = false;
   }
-}
-
-function getStatusType(status: string): "success" | "warning" | "info" | "danger" | "primary" {
-  const typeMap: Record<string, "success" | "warning" | "info" | "danger" | "primary"> = {
-    draft: "info",
-    published: "success",
-    archived: "warning",
-  };
-  return typeMap[status] ?? "info";
-}
-
-function getStatusText(status: string) {
-  const textMap: Record<string, string> = {
-    draft: "草稿",
-    published: "已发布",
-    archived: "已归档",
-  };
-  return textMap[status] || status;
 }
 
 const {
@@ -303,10 +284,11 @@ const {
         label: "状态",
         minWidth: 100,
         align: "center",
-        formatter: (row) =>
-          h(ElTag, { type: getStatusType(String(row.status ?? "")) }, () =>
-            getStatusText(String(row.status ?? ""))
-          ),
+        status: {
+          draft: { type: "info", text: "草稿" },
+          published: { type: "success", text: "已发布" },
+          archived: { type: "warning", text: "已归档" },
+        },
       },
       {
         prop: "description",
@@ -350,6 +332,15 @@ async function onResetSearch() {
 
 const selectedWorkflow = ref<WorkflowTable>();
 const createVisible = ref(false);
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    handleCreate();
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 function handleCreate() {
   selectedWorkflow.value = undefined;

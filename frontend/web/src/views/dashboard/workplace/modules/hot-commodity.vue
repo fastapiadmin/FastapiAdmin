@@ -15,8 +15,11 @@
       height="9rem"
     />
     <div class="mt-10 space-y-5">
-      <div v-for="item in weeklyList" :key="item.title" class="flex-c">
-        <div class="size-10.5 flex-cc rounded-lg" :class="item.iconBgClass">
+      <div v-for="item in weeklyList" :key="item.title" class="flex items-center">
+        <div
+          class="size-10.5 flex items-center justify-center rounded-lg"
+          :class="item.iconBgClass"
+        >
           <FaSvgIcon :icon="item.icon" class="text-xl" />
         </div>
         <div class="ml-2.5">

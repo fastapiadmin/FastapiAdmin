@@ -2,49 +2,49 @@
   {
     "tenant_id": 1,
     "plugin_id": 1,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 1,
     "plugin_id": 2,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 1,
     "plugin_id": 3,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 1,
     "plugin_id": 4,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 1,
     "plugin_id": 5,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 2,
     "plugin_id": 1,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 2,
     "plugin_id": 3,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   },
   {
     "tenant_id": 2,
     "plugin_id": 5,
-    "enabled": "1",
+    "enabled": true,
     "installed_time": "2024-01-01 00:00:00"
   }
 ]

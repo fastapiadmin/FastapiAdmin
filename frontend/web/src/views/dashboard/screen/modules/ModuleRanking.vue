@@ -55,9 +55,6 @@ function rankColor(i: number) {
 }
 
 .rank-no {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 18px;
   height: 18px;
   font-size: 10px;

@@ -35,7 +35,8 @@
             :perm-create="['module_task:cronjob:node:create']"
             :perm-delete="['module_task:cronjob:node:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -278,14 +279,10 @@ defineOptions({
 
 import NodeAPI, { NodeTable, NodeForm, TriggerType } from "@/api/module_task/cronjob/node";
 import { useDictStore } from "@stores";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import IntervalTab from "@/components/others/fa-interval-tab/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
@@ -532,6 +529,7 @@ const executeFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const nodeFormRenderKey = ref(0);
 const executeFormRenderKey = ref(0);
 const submitLoading = ref(false);
+const createLoading = ref(false);
 const openCron = ref(false);
 const openInterval = ref(false);
 const codeEditorRef = ref<CmComponentRef>();
@@ -789,6 +787,15 @@ async function handleCloseDialog() {
   resetForm();
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function handleOpenDialog(type: "create" | "update", id?: number) {
   dialogVisible.type = type;
   if (id) {
@@ -852,7 +859,7 @@ async function handleSubmit() {
           await refreshCreate();
         }
       } catch (error: any) {
-        console.log(error);
+        console.error(error);
       } finally {
         submitLoading.value = false;
       }
@@ -966,16 +973,6 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.code-preview {
-  max-height: 200px;
-  padding: 10px;
-  overflow-y: auto;
-  font-family: monospace;
-  word-break: break-all;
-  white-space: pre-wrap;
-  border-radius: 4px;
 }
 
 .execution-log-drawer {

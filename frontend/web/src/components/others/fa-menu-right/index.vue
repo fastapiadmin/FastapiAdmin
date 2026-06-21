@@ -12,7 +12,7 @@
             <!-- 普通菜单项 -->
             <li
               v-if="!item.children"
-              class="menu-item relative flex-c c-p select-none rounded text-xs transition-colors duration-150 hover:bg-(--el-color-primary-light-9)"
+              class="menu-item relative flex items-center cursor-pointer select-none rounded text-xs transition-colors duration-150 hover:bg-(--el-color-primary-light-9)"
               :class="{ 'is-disabled': item.disabled, 'has-line': item.showLine }"
               :style="menuItemStyle"
               @click="handleMenuClick(item)"
@@ -32,10 +32,10 @@
             <!-- 子菜单 -->
             <li
               v-else
-              class="menu-item submenu relative flex-c c-p select-none rounded text-xs transition-colors duration-150 hover:bg-(--el-color-primary-light-9)"
+              class="menu-item submenu relative flex items-center cursor-pointer select-none rounded text-xs transition-colors duration-150 hover:bg-(--el-color-primary-light-9)"
               :style="menuItemStyle"
             >
-              <div class="submenu-title flex-c w-full">
+              <div class="submenu-title flex items-center w-full">
                 <FaSvgIcon
                   v-if="item.icon"
                   class="mr-2 shrink-0 text-base text-g-800"
@@ -58,7 +58,7 @@
                 <li
                   v-for="child in item.children"
                   :key="child.key"
-                  class="menu-item relative mx-1.5 flex-c c-p select-none rounded text-xs transition-colors duration-150 hover:bg-(--el-color-primary-light-9)"
+                  class="menu-item relative mx-1.5 flex items-center cursor-pointer select-none rounded text-xs transition-colors duration-150 hover:bg-(--el-color-primary-light-9)"
                   :class="{ 'is-disabled': child.disabled, 'has-line': child.showLine }"
                   :style="menuItemStyle"
                   @click="handleMenuClick(child)"

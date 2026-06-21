@@ -44,13 +44,15 @@
       :disabled="props.disabled"
     >
       <template #default>
-        <template v-if="internalFileList && internalFileList.length > 0 && internalFileList[0].url">
+        <template
+          v-if="internalFileList && internalFileList.length > 0 && internalFileList[0]!.url"
+        >
           <ElImage
-            :key="internalFileList[0].url"
+            :key="internalFileList[0]!.url"
             class="single-upload__image"
-            :src="internalFileList[0].url"
+            :src="internalFileList[0]!.url"
             fit="cover"
-            :preview-src-list="props.enablePreview ? [internalFileList[0].url] : []"
+            :preview-src-list="props.enablePreview ? [internalFileList[0]!.url] : []"
             :preview-teleported="true"
             @click.stop="handleImageClick"
           />
@@ -237,8 +239,8 @@ watch(
 watch(
   () => internalFileList.value,
   (newVal) => {
-    if (newVal && newVal.length > 0 && newVal[0].url) {
-      modelValue.value = newVal[0].url;
+    if (newVal && newVal.length > 0 && newVal[0]!.url) {
+      modelValue.value = newVal[0]!.url;
     } else {
       modelValue.value = "";
     }
@@ -333,7 +335,7 @@ function handleImageClick(event: Event) {
     props.enablePreview &&
     internalFileList.value &&
     internalFileList.value.length > 0 &&
-    internalFileList.value[0].url
+    internalFileList.value[0]!.url
   ) {
     // Element Plus的el-image组件会自动处理preview-src-list的预览功能
     // 这里只需要阻止冒泡即可

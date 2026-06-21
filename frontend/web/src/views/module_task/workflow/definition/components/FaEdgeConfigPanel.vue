@@ -7,7 +7,7 @@
       </ElButton>
     </div>
 
-    <div class="panel-content">
+    <ElScrollbar class="panel-content" view-class="p-4">
       <FaForm
         v-model="formData"
         :items="edgeFormItems"
@@ -29,15 +29,14 @@
         <ElButton type="primary" size="small" @click="handleSave">保存</ElButton>
         <ElButton type="danger" size="small" @click="handleDelete">删除连线</ElButton>
       </div>
-    </div>
+    </ElScrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
-import { ElButton, ElColorPicker, ElIcon } from "element-plus";
+import { ElButton, ElColorPicker, ElIcon, ElScrollbar } from "element-plus";
 import { Close } from "@element-plus/icons-vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 
 interface Props {
   edge?: Record<string, any>;
@@ -178,8 +177,6 @@ function handleDelete() {
 
 .panel-content {
   flex: 1;
-  padding: 16px;
-  overflow-y: auto;
 }
 
 .panel-actions {

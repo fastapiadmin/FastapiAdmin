@@ -96,10 +96,10 @@ def create_async_engine_and_session(
         raise
     else:
         # 异步数据库会话工厂
-        AsyncSessionLocal = async_sessionmaker(
+        AsyncSessionLocal = async_sessionmaker[AsyncSession](
             bind=async_engine,
             autocommit=settings.AUTOCOMMIT,
-            autoflush=settings.AUTOFETCH,
+            autoflush=settings.AUTOFLUSH if settings.AUTOFETCH is None else settings.AUTOFETCH,
             expire_on_commit=settings.EXPIRE_ON_COMMIT,
             class_=AsyncSession,
         )

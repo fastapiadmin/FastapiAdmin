@@ -15,7 +15,7 @@
       class="grid grid-cols-5 gap-5 max-2xl:grid-cols-4 max-xl:grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 mb-5 list-none p-0 m-0"
     >
       <li
-        class="relative p-4 c-p aspect-16/12 duration-300 hover:-translate-y-1.5 rounded-custom-sm"
+        class="relative p-4 cursor-pointer aspect-16/12 duration-300 hover:-translate-y-1.5 rounded-custom-sm"
         :style="{ background: item.color }"
         v-for="item in commentsWithColors"
         :key="item.id"
@@ -23,13 +23,13 @@
       >
         <p class="text-g-600 text-sm">{{ item.date }}</p>
         <p class="mt-4 text-sm text-gray-800">{{ item.content }}</p>
-        <div class="absolute bottom-4 left-0 px-4 flex-cb w-full">
-          <div class="flex-c">
-            <div class="flex-c mr-5 text-xs text-g-600">
+        <div class="absolute bottom-4 left-0 px-4 flex items-center justify-between w-full">
+          <div class="flex items-center">
+            <div class="flex items-center mr-5 text-xs text-g-600">
               <FaSvgIcon icon="ri:heart-line" class="mr-1 text-base" />
               <span>{{ item.collection }}</span>
             </div>
-            <div class="flex-c mr-5 text-xs text-g-600">
+            <div class="flex items-center mr-5 text-xs text-g-600">
               <FaSvgIcon icon="ri:message-3-line" class="mr-1 text-base" />
               <span>{{ item.comment }}</span>
             </div>
@@ -59,13 +59,13 @@
           >
             <p class="text-g-500 text-sm">{{ clickItem.date }}</p>
             <p class="mt-4 text-sm text-gray-800">{{ clickItem.content }}</p>
-            <div class="absolute bottom-4 left-0 px-4 flex-cb w-full">
-              <div class="flex-c">
-                <div class="flex-c mr-5 text-xs text-g-600">
+            <div class="absolute bottom-4 left-0 px-4 flex items-center justify-between w-full">
+              <div class="flex items-center">
+                <div class="flex items-center mr-5 text-xs text-g-600">
                   <FaSvgIcon icon="ri:heart-line" class="mr-1 text-base" />
                   <span>{{ clickItem.collection }}</span>
                 </div>
-                <div class="flex-c mr-5 text-xs text-g-600">
+                <div class="flex items-center mr-5 text-xs text-g-600">
                   <FaSvgIcon icon="ri:message-3-line" class="mr-1 text-base" />
                   <span>{{ clickItem.comment }}</span>
                 </div>

@@ -1,3 +1,4 @@
+
 import platform
 import socket
 import time
@@ -20,30 +21,18 @@ from .schema import (
 class ServerService:
     """服务监控模块服务层"""
 
-    @classmethod
-    async def get_server_monitor_info_service(cls) -> ServerMonitorSchema:
-        """
-        获取服务器监控信息
-
-        返回:
-        - Dict: 包含服务器监控信息的字典。
-        """
+    @staticmethod
+    async def get_server_monitor_info() -> ServerMonitorSchema:
         return ServerMonitorSchema(
-            cpu=cls._get_cpu_info(),
-            mem=cls._get_memory_info(),
-            sys=cls._get_system_info(),
-            py=cls._get_python_info(),
-            disks=cls._get_disk_info(),
+            cpu=ServerService._get_cpu_info(),
+            mem=ServerService._get_memory_info(),
+            sys=ServerService._get_system_info(),
+            py=ServerService._get_python_info(),
+            disks=ServerService._get_disk_info(),
         )
 
-    @classmethod
-    def _get_cpu_info(cls) -> CpuInfoSchema:
-        """
-        获取CPU信息
-
-        返回:
-        - CpuInfoSchema: CPU信息模型。
-        """
+    @staticmethod
+    def _get_cpu_info() -> CpuInfoSchema:
         cpu_times = psutil.cpu_times_percent()
         cpu_num = psutil.cpu_count(logical=True)
         if not cpu_num:
@@ -55,14 +44,8 @@ class ServerService:
             free=cpu_times.idle,
         )
 
-    @classmethod
-    def _get_memory_info(cls) -> MemoryInfoSchema:
-        """
-        获取内存信息
-
-        返回:
-        - MemoryInfoSchema: 内存信息模型。
-        """
+    @staticmethod
+    def _get_memory_info() -> MemoryInfoSchema:
         memory = psutil.virtual_memory()
         return MemoryInfoSchema(
             total=bytes2human(memory.total),
@@ -71,14 +54,8 @@ class ServerService:
             usage=memory.percent,
         )
 
-    @classmethod
-    def _get_system_info(cls) -> SysInfoSchema:
-        """
-        获取系统信息
-
-        返回:
-        - SysInfoSchema: 系统信息模型。
-        """
+    @staticmethod
+    def _get_system_info() -> SysInfoSchema:
         hostname = socket.gethostname()
         return SysInfoSchema(
             computer_ip=socket.gethostbyname(hostname),
@@ -88,14 +65,8 @@ class ServerService:
             user_dir=str(Path.cwd()),
         )
 
-    @classmethod
-    def _get_python_info(cls) -> PyInfoSchema:
-        """
-        获取Python解释器信息
-
-        返回:
-        - PyInfoSchema: Python解释器信息模型。
-        """
+    @staticmethod
+    def _get_python_info() -> PyInfoSchema:
         current_process = psutil.Process()
         memory = psutil.virtual_memory()
         process_memory = current_process.memory_info()
@@ -115,47 +86,30 @@ class ServerService:
             memory_usage=round((process_memory.rss / memory.available) * 100, 2),
         )
 
-    @classmethod
-    def _get_disk_info(cls) -> list[DiskInfoSchema]:
-        """
-        获取磁盘信息
-
-        返回:
-        - list[DiskInfoSchema]: 磁盘信息模型列表。
-        """
+    @staticmethod
+    def _get_disk_info() -> list[DiskInfoSchema]:
         disk_info = []
         for partition in psutil.disk_partitions():
             try:
-                # 使用mountpoint而不是device来获取磁盘使用情况
                 usage = psutil.disk_usage(partition.mountpoint)
                 mount_point = str(Path(partition.mountpoint))
                 disk_info.append(
                     DiskInfoSchema(
-                        dir_name=mount_point,  # 使用mountpoint替代device
+                        dir_name=mount_point,
                         sys_type_name=partition.fstype,
                         type_name=f"本地固定磁盘（{mount_point}）",
                         total=bytes2human(usage.total),
                         used=bytes2human(usage.used),
                         free=bytes2human(usage.free),
-                        usage=usage.percent,  # 直接使用数字而不是字符串
+                        usage=usage.percent,
                     )
                 )
             except (PermissionError, FileNotFoundError):
-                # 明确指定可能的异常
                 continue
         return disk_info
 
-    @classmethod
-    def _calculate_run_time(cls, start_time: float) -> str:
-        """
-        计算运行时间
-
-        参数:
-        - start_time (float): 进程启动时间（时间戳）
-
-        返回:
-        - str: 格式化后的运行时间字符串（例如："1天2小时3分钟"）
-        """
+    @staticmethod
+    def _calculate_run_time(start_time: float) -> str:
         difference = time.time() - start_time
         days = int(difference // (24 * 60 * 60))
         hours = int((difference % (24 * 60 * 60)) // (60 * 60))

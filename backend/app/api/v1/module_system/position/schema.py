@@ -1,9 +1,11 @@
+from dataclasses import dataclass
+
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema, UserBySchema
-from app.core.validator import DateTimeStr
+from app.core.base_params import BaseQueryParam, TenantByQueryParam, UserByQueryParam
+from app.core.base_schema import BaseSchema, TenantBySchema, UserBySchema
 
 
 class PositionCreateSchema(BaseModel):
@@ -12,7 +14,7 @@ class PositionCreateSchema(BaseModel):
     name: str = Field(..., min_length=1, max_length=64, description="岗位名称")
     code: str = Field(..., min_length=1, max_length=64, description="岗位编码")
     order: int = Field(default=1, ge=0, description="显示排序")
-    status: int = Field(default=0, ge=0, le=1, description="状态(0:正常 1:禁用)")
+    status: int = Field(default=0, ge=0, le=1, description="状态(0:启动 1:停用)")
     description: str | None = Field(default=None, max_length=255, description="描述")
 
     @field_validator("name")
@@ -43,50 +45,17 @@ class PositionUpdateSchema(PositionCreateSchema):
     """岗位更新模型"""
 
 
-class PositionOutSchema(PositionCreateSchema, BaseSchema, UserBySchema):
+class PositionOutSchema(PositionCreateSchema, BaseSchema, UserBySchema, TenantBySchema):
     """岗位信息响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class PositionQueryParam:
+@dataclass
+class PositionQueryParam(BaseQueryParam, UserByQueryParam, TenantByQueryParam):
     """岗位管理查询参数"""
 
-    def __init__(
-        self,
-        name: str | None = Query(None, description="岗位名称"),
-        description: str | None = Query(None, description="描述"),
-        status: str | None = Query(None, description="是否启用"),
-        created_time: list[DateTimeStr] | None = Query(
-            None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        created_id: int | None = Query(None, description="创建人"),
-        updated_id: int | None = Query(None, description="更新人"),
-    ) -> None:
-        # 模糊查询字段
-        self.name = (QueueEnum.like.value, name)
-        if description:
-            self.description = (QueueEnum.like.value, description)
+    name: str | None = Query(None, description="岗位名称")
 
-        # 精确查询字段
-        if status:
-            self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))
-
-        # 关联查询字段
-        if created_id:
-            self.created_id = (QueueEnum.eq.value, created_id)
-        if updated_id:
-            self.updated_id = (QueueEnum.eq.value, updated_id)
+    def __post_init__(self) -> None:
+        self.name = (QueueEnum.like.value, self.name)

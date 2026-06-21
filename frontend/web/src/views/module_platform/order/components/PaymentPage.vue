@@ -120,7 +120,7 @@ const methodLabel = computed(() => (selectedMethod.value === "alipay" ? "支付�
 async function loadOrderStatus() {
   try {
     const res = await OrderAPI.queryPaymentStatus(orderId.value);
-    const data = (res.data as any)?.data;
+    const data = res.data?.data;
     if (data?.paid) {
       paid.value = true;
       orderNo.value = data.order_no || "";
@@ -136,7 +136,7 @@ async function startPay() {
   paying.value = true;
   try {
     const res = await OrderAPI.payOrder(orderId.value, { pay_method: selectedMethod.value });
-    const data = (res.data as any)?.data;
+    const data = res.data?.data;
     orderNo.value = data.order_no;
     amount.value = data.amount;
     qrCodeUrl.value = data.qr_code_url || "";
@@ -171,7 +171,7 @@ function startPolling() {
   pollTimer = setInterval(async () => {
     try {
       const res = await OrderAPI.queryPaymentStatus(orderId.value);
-      const data = (res.data as any)?.data;
+      const data = res.data?.data;
       if (data?.paid) {
         paid.value = true;
         orderNo.value = data.order_no || orderNo.value;

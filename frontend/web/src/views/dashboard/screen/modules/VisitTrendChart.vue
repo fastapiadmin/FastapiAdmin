@@ -102,8 +102,8 @@ function handleResize() {
 
 function tick() {
   if (!chart || chart.isDisposed()) return;
-  pv.push(Math.round(pv[pv.length - 1] * (0.85 + Math.random() * 0.3)));
-  uv.push(Math.round(uv[uv.length - 1] * (0.85 + Math.random() * 0.3)));
+  pv.push(Math.round(pv[pv.length - 1]! * (0.85 + Math.random() * 0.3)));
+  uv.push(Math.round(uv[uv.length - 1]! * (0.85 + Math.random() * 0.3)));
   pv.shift();
   uv.shift();
   chart.setOption({

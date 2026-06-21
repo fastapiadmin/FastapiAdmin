@@ -46,8 +46,8 @@ function tick() {
   if (!chart || chart.isDisposed()) return;
   const n = +(1.5 + Math.random() * 1.5).toFixed(1);
   val.value = n;
-  const d = chart.getOption() as any;
-  const arr = d.series[0].data as number[];
+  const d = chart.getOption() as { series: [{ data: number[] }] };
+  const arr = d.series[0].data;
   arr.push(n);
   arr.shift();
   chart.setOption({ series: [{ data: arr }] });

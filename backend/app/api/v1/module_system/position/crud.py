@@ -9,13 +9,4 @@ class PositionCRUD(CRUDBase[PositionModel, PositionCreateSchema, PositionUpdateS
     """岗位模块数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
-        """
-        初始化岗位数据层。
-
-        参数:
-        - auth (AuthSchema): 认证信息模型（含 DB 会话等上下文）。
-
-        返回:
-        - None
-        """
         super().__init__(model=PositionModel, auth=auth)

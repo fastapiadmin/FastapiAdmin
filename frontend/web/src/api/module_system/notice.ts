@@ -97,7 +97,7 @@ const NoticeAPI = {
 
 export default NoticeAPI;
 
-export interface NoticePageQuery extends PageQuery {
+export interface NoticePageQuery extends PageQuery, UserByQueryParams {
   notice_title?: string;
   notice_type?: string;
 }
@@ -106,15 +106,16 @@ export interface NoticeTable extends BaseType {
   notice_title?: string;
   notice_type?: string;
   notice_content?: string;
-  created_by?: CommonType;
-  updated_by?: CommonType;
-  deleted_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
 export interface NoticeForm extends BaseFormType {
   notice_title?: string;
   notice_type?: string;
   notice_content?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface NotificationPanelMessage {

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // 样式（顺序：tailwind 基础 → 项目全局 → Element Plus 暗色 → 动画库）
 // ---------------------------------------------------------------------------
-import "@styles/core/tailwind.css";
+import "@styles/tailwind.css";
 import "@styles/index.scss";
 import "animate.css";
 

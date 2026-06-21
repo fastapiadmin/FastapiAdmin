@@ -62,7 +62,7 @@ const PositionAPI = {
 
 export default PositionAPI;
 
-export interface PositionPageQuery extends PageQuery {
+export interface PositionPageQuery extends PageQuery, UserByQueryParams {
   name?: string;
 }
 
@@ -70,13 +70,14 @@ export interface PositionTable extends BaseType {
   name?: string;
   code?: string;
   order?: number;
-  created_by?: CommonType;
-  updated_by?: CommonType;
-  deleted_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
 export interface PositionForm extends BaseFormType {
   name?: string;
   code?: string;
   order?: number;
+  status?: number;
+  description?: string;
 }

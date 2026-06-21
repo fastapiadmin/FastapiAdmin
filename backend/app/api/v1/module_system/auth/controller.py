@@ -4,19 +4,19 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ErrorResponse, ResponseSchema, SuccessResponse
 from app.config.setting import settings
+from app.core import cache_util
 from app.core.base_schema import (
     AuthSchema,
     JWTOutSchema,
     LogoutPayloadSchema,
     RefreshTokenPayloadSchema,
 )
+from app.core.cache_util import cache
 from app.core.dependencies import db_getter, get_current_user, redis_getter
 from app.core.exceptions import CustomException
 from app.core.logger import logger
@@ -54,7 +54,7 @@ from .service import (
     TenantRegisterService,
 )
 
-AuthRouter = APIRouter(route_class=OperationLogRoute, prefix="/auth", tags=["系统管理/认证授权"])
+AuthRouter = APIRouter(route_class=OperationLogRoute, prefix="/auth", tags=["系统管理", "认证授权"])
 
 _AUTH_TENANTS_NS = "auth_tenants"
 
@@ -70,28 +70,10 @@ async def login_for_access_token_controller(
     login_form: Annotated[CustomOAuth2PasswordRequestForm, Depends()],
     db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse | dict:
-    """
-    用户登录
-
-    参数:
-    - request (Request): FastAPI请求对象
-    - redis (Redis): Redis 客户端对象
-    - login_form (CustomOAuth2PasswordRequestForm): 登录表单数据
-    - db (AsyncSession): 数据库会话对象
-
-    返回:
-    - LoginWithTenantsSchema: 包含令牌、租户列表和用户信息的响应模型
-
-    异常:
-    - CustomException: 认证失败时抛出异常。
-    """
-    login_result = await LoginService.authenticate_user_service(
-        request=request, redis=redis, login_form=login_form, db=db
-    )
+    login_result = await LoginService.authenticate_user(request=request, redis=redis, login_form=login_form, db=db)
 
     logger.info(f"用户{login_form.username}登录成功")
 
-    # 如果是文档请求，则不记录日志
     if settings.DOCS_URL in request.headers.get("referer", ""):
         return login_result
     return SuccessResponse(data=login_result, msg="登录成功")
@@ -107,23 +89,7 @@ async def get_new_token_controller(
     db: Annotated[AsyncSession, Depends(db_getter)],
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
-    """
-    刷新token
-
-    参数:
-    - payload (RefreshTokenPayloadSchema): 刷新令牌负载模型
-    - db (AsyncSession): 数据库会话对象
-    - redis (Redis): Redis 客户端对象
-
-    返回:
-    - JWTOutSchema: 包含新的访问令牌和刷新令牌的响应模型
-
-    异常:
-    - CustomException: 刷新令牌失败时抛出异常。
-    """
-    new_token = await LoginService.refresh_token_service(
-        db=db, redis=redis, refresh_token=payload
-    )
+    new_token = await LoginService.refresh_token(db=db, redis=redis, refresh_token=payload)
     return SuccessResponse(data=new_token, msg="刷新成功")
 
 
@@ -135,20 +101,7 @@ async def get_new_token_controller(
 async def get_captcha_for_login_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
-    """
-    获取登录验证码
-
-    参数:
-    - redis (Redis): Redis客户端对象
-
-    返回:
-    - CaptchaOutSchema: 包含验证码图片和key的响应模型
-
-    异常:
-    - CustomException: 获取验证码失败时抛出异常。
-    """
-    # 获取验证码
-    captcha = await CaptchaService.get_captcha_service(redis=redis)
+    captcha = await CaptchaService.get_captcha(redis=redis)
     return SuccessResponse(data=captcha, msg="获取验证码成功")
 
 
@@ -162,20 +115,7 @@ async def logout_controller(
     payload: LogoutPayloadSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
-    """
-    退出登录
-
-    参数:
-    - payload (LogoutPayloadSchema): 退出登录负载模型
-    - redis (Redis): Redis客户端对象
-
-    返回:
-    - JSONResponse: 包含退出登录结果的响应模型
-
-    异常:
-    - CustomException: 退出登录失败时抛出异常。
-    """
-    if await LoginService.logout_service(redis=redis, token=payload):
+    if await LoginService.logout(redis=redis, token=payload):
         logger.info("退出成功")
         return SuccessResponse(msg="退出成功")
     return ErrorResponse(msg="退出失败")
@@ -190,18 +130,8 @@ async def get_auto_login_users_controller(
     auth: Annotated[AuthSchema, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    获取免登录用户列表
-
-    参数:
-    - auth (AuthSchema): 认证信息
-    - db (AsyncSession): 数据库会话对象
-
-    返回:
-    - list[AutoLoginUserSchema]: 免登录用户列表
-    """
     tenant_id = None if auth.user.is_superuser else auth.user.tenant_id
-    users = await AutoLoginService.get_auto_login_users_service(db=db, tenant_id=tenant_id)
+    users = await AutoLoginService.get_auto_login_users(db=db, tenant_id=tenant_id)
     return SuccessResponse(data=users, msg="获取成功")
 
 
@@ -216,22 +146,8 @@ async def get_auto_login_token_controller(
     db: Annotated[AsyncSession, Depends(db_getter)],
     user_id: int,
 ) -> JSONResponse:
-    """
-    获取免登录Token
-
-    参数:
-    - auth (AuthSchema): 认证信息
-    - redis (Redis): Redis客户端对象
-    - db (AsyncSession): 数据库会话对象
-    - user_id (int): 用户ID
-
-    返回:
-    - AutoLoginTokenSchema: 免登录Token和用户信息
-    """
     tenant_id = None if auth.user.is_superuser else auth.user.tenant_id
-    result = await AutoLoginService.create_auto_login_token_service(
-        redis=redis, db=db, user_id=user_id, tenant_id=tenant_id
-    )
+    result = await AutoLoginService.create_auto_login_token(redis=redis, db=db, user_id=user_id, tenant_id=tenant_id)
     return SuccessResponse(data=result, msg="获取成功")
 
 
@@ -246,21 +162,7 @@ async def auto_login_controller(
     db: Annotated[AsyncSession, Depends(db_getter)],
     token: str,
 ) -> JSONResponse:
-    """
-    免登录
-
-    参数:
-    - request (Request): FastAPI请求对象
-    - redis (Redis): Redis客户端对象
-    - db (AsyncSession): 数据库会话对象
-    - token (str): 免登录Token
-
-    返回:
-    - JWTOutSchema: JWT令牌信息
-    """
-    login_token = await AutoLoginService.auto_login_service(
-        request=request, redis=redis, db=db, token=token
-    )
+    login_token = await AutoLoginService.auto_login(request=request, redis=redis, db=db, token=token)
     logger.info("用户免登录成功")
     return SuccessResponse(data=login_token, msg="登录成功")
 
@@ -277,24 +179,8 @@ async def select_tenant_controller(
     auth: Annotated[AuthSchema, Depends(get_current_user)],
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
-    """
-    选择租户
-
-    验证用户是否属于该租户，签发包含 tenant_id 的新 JWT Token。
-
-    参数:
-    - request (Request): FastAPI请求对象
-    - data (SelectTenantSchema): 租户选择请求
-    - auth (AuthSchema): 当前认证信息
-    - redis (Redis): Redis客户端对象
-
-    返回:
-    - SelectTenantOutSchema: 包含新令牌的响应
-    """
-    result = await LoginService.select_tenant_service(
-        request=request, redis=redis, auth=auth, tenant_id=data.tenant_id
-    )
-    await FastAPICache.clear(namespace=_AUTH_TENANTS_NS)
+    result = await LoginService(auth).select_tenant(request=request, redis=redis, tenant_id=data.tenant_id)
+    await cache_util.clear(namespace=_AUTH_TENANTS_NS)
     return SuccessResponse(data=result, msg="租户切换成功")
 
 
@@ -309,17 +195,8 @@ async def get_user_tenants_controller(
     auth: Annotated[AuthSchema, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    获取当前用户的租户列表
-
-    参数:
-    - auth (AuthSchema): 当前认证信息
-    - db (AsyncSession): 数据库会话对象
-
-    返回:
-    - list[TenantOptionSchema]: 租户选项列表
-    """
-    tenants = await LoginService.get_user_tenants_service(auth=auth, db=db)
+    service = LoginService(auth)
+    tenants = await service.get_user_tenants()
     return SuccessResponse(data=tenants, msg="获取租户列表成功")
 
 
@@ -426,15 +303,6 @@ async def tenant_register_controller(
     data: TenantRegisterSchema,
     db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    租户自助注册（PRD §4.5）
-
-    参数:
-    - data (TenantRegisterSchema): 注册信息
-
-    返回:
-    - TenantRegisterOutSchema: 注册结果，含 tenant_id/user_id/试用到期日
-    """
     result = await TenantRegisterService.register(
         db=db,
         username=data.username,
@@ -446,8 +314,6 @@ async def tenant_register_controller(
     return SuccessResponse(data=result, msg=result.message)
 
 
-# ─── 忘记密码（自助重置）────────────────────────────────────
-
 @AuthRouter.post(
     "/forgot-password",
     summary="忘记密码",
@@ -458,18 +324,7 @@ async def forgot_password_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    忘记密码：提交邮箱，接收重置邮件
-
-    参数:
-    - data (ForgotPasswordSchema): 邮箱
-
-    返回:
-    - str: 提示信息（无论成功与否均返回相同文案）
-    """
-    msg = await PasswordResetService.forgot_password_service(
-        redis=redis, db=db, email=data.email
-    )
+    msg = await PasswordResetService.forgot_password(redis=redis, db=db, email=data.email)
     return SuccessResponse(data=msg, msg="邮件已发送")
 
 
@@ -483,16 +338,5 @@ async def reset_password_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    重置密码：使用令牌 + 新密码
-
-    参数:
-    - data (ResetPasswordWithTokenSchema): 令牌 + 新密码
-
-    返回:
-    - str: 重置结果
-    """
-    msg = await PasswordResetService.reset_password_with_token_service(
-        redis=redis, db=db, token=data.token, new_password=data.new_password
-    )
+    msg = await PasswordResetService.reset_password_with_token(redis=redis, db=db, token=data.token, new_password=data.new_password)
     return SuccessResponse(data=msg, msg="密码已重置")

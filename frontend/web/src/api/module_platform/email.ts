@@ -114,7 +114,7 @@ export default EmailAPI;
 
 // ─── EmailConfig 类型 ──────────────────────────────────────
 
-export interface EmailConfigPageQuery extends PageQuery {
+export interface EmailConfigPageQuery extends PageQuery, UserByQueryParams {
   name?: string;
   is_default?: boolean;
 }
@@ -128,6 +128,7 @@ export interface EmailConfigTable extends BaseType {
   use_tls: boolean;
   is_default: boolean;
   timeout: number;
+  status?: number;
   description?: string;
 }
 
@@ -141,6 +142,7 @@ export interface EmailConfigCreateForm {
   use_tls?: boolean;
   is_default?: boolean;
   timeout?: number;
+  status?: number;
   description?: string;
 }
 
@@ -154,6 +156,7 @@ export interface EmailConfigUpdateForm {
   use_tls?: boolean;
   is_default?: boolean;
   timeout?: number;
+  status?: number;
   description?: string;
 }
 
@@ -164,7 +167,7 @@ export interface EmailTestForm {
 
 // ─── EmailTemplate 类型 ──────────────────────────────────────
 
-export interface EmailTemplatePageQuery extends PageQuery {
+export interface EmailTemplatePageQuery extends PageQuery, UserByQueryParams {
   name?: string;
   template_code?: string;
 }
@@ -176,6 +179,7 @@ export interface EmailTemplateTable extends BaseType {
   body_html: string;
   body_text?: string;
   variables?: string;
+  status?: number;
   description?: string;
 }
 
@@ -201,10 +205,9 @@ export interface EmailTemplateUpdateForm {
 
 // ─── EmailLog 类型 ──────────────────────────────────────────
 
-export interface EmailLogPageQuery extends PageQuery {
+export interface EmailLogPageQuery extends PageQuery, UserByQueryParams {
   to_email?: string;
   biz_type?: string;
-  status?: number;
   template_code?: string;
 }
 

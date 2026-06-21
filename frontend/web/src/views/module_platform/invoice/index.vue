@@ -49,7 +49,7 @@
         <ElCard shadow="hover" class="fa-table-card" :style="{ 'margin-top': '0' }">
           <FaTableHeader :loading="myLoading" @refresh="getMyData">
             <template #left>
-              <FaTableHeaderLeft perm-create="tenant:admin" @add="openApplyDialog" />
+              <FaTableHeaderLeft perm-create="tenant:admin" :create-loading="createLoading" @add="handleAdd" />
             </template>
           </FaTableHeader>
 
@@ -84,16 +84,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, h } from "vue";
-import { ElMessageBox, ElButton, ElTabs, ElTabPane, ElTag } from "element-plus";
+import { ref, reactive, computed } from "vue";
+import { ElMessageBox, ElButton, ElTabs, ElTabPane } from "element-plus";
 import { useTable } from "@/hooks/core/useTable";
 import { useAuth } from "@/hooks/core/useAuth";
 import InvoiceAPI from "@/api/module_platform/invoice";
 import type { InvoiceTable } from "@/api/module_platform/invoice";
-import type { ColumnOption } from "@/types/component";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import { renderTableOperationCell, type TableOperationAction, resolveStatusColumns } from "@utils";
 
 defineOptions({ name: "Invoice" });
 
@@ -102,18 +101,6 @@ const { hasAuth } = useAuth();
 const activeTab = ref("my");
 const isSuperAdmin = ref(true);
 const platformShowSearchBar = ref(true);
-
-// ══════════════════ 标签函数 ════════════════════
-
-function invoiceStatusLabel(status: number): string {
-  const map: Record<number, string> = { 0: "待开具", 1: "已开具", 2: "开票失败", 3: "已作废" };
-  return map[status] || String(status);
-}
-
-function invoiceStatusType(status: number): string {
-  const map: Record<number, string> = { 0: "warning", 1: "success", 2: "danger", 3: "info" };
-  return map[status] || "info";
-}
 
 // ══════════════════ 平台端：全部发票 ════════════════════
 
@@ -196,8 +183,7 @@ const {
       page_no: 1,
       page_size: 50,
     },
-    columnsFactory: (): ColumnOption<InvoiceTable>[] => [
-      { prop: "id", label: "ID", width: 60 },
+    columnsFactory: resolveStatusColumns<InvoiceTable>(() => [
       { prop: "tenant_id", label: "租户ID", width: 80 },
       { prop: "invoice_no", label: "发票号", width: 180, showOverflowTooltip: true },
       { prop: "title", label: "抬头", minWidth: 180, showOverflowTooltip: true },
@@ -217,11 +203,11 @@ const {
         prop: "status",
         label: "状态",
         width: 100,
-        formatter: (row) => {
-          const t = invoiceStatusType(row.status) as "warning" | "success" | "info" | "danger";
-          return h(ElTag, { type: t, size: "small" as const }, () =>
-            invoiceStatusLabel(row.status)
-          );
+        status: {
+          0: { type: "warning", text: "待开具" },
+          1: { type: "success", text: "已开具" },
+          2: { type: "danger", text: "开票失败" },
+          3: { type: "info", text: "已作废" },
         },
       },
       { prop: "address_info", label: "地址电话", width: 180, showOverflowTooltip: true },
@@ -233,7 +219,7 @@ const {
         align: "center",
         formatter: (row) => formatPlatformOpCell(row),
       },
-    ],
+    ]),
   },
 });
 
@@ -288,8 +274,7 @@ const {
       page_no: 1,
       page_size: 50,
     },
-    columnsFactory: (): ColumnOption<InvoiceTable>[] => [
-      { prop: "id", label: "ID", width: 60 },
+    columnsFactory: resolveStatusColumns<InvoiceTable>(() => [
       { prop: "invoice_no", label: "发票号", width: 180, showOverflowTooltip: true },
       { prop: "title", label: "抬头", minWidth: 180, showOverflowTooltip: true },
       {
@@ -308,11 +293,11 @@ const {
         prop: "status",
         label: "状态",
         width: 100,
-        formatter: (row) => {
-          const t = invoiceStatusType(row.status) as "warning" | "success" | "info" | "danger";
-          return h(ElTag, { type: t, size: "small" as const }, () =>
-            invoiceStatusLabel(row.status)
-          );
+        status: {
+          0: { type: "warning", text: "待开具" },
+          1: { type: "success", text: "已开具" },
+          2: { type: "danger", text: "开票失败" },
+          3: { type: "info", text: "已作废" },
         },
       },
       {
@@ -322,7 +307,7 @@ const {
         showOverflowTooltip: true,
         formatter: (row) => row.created_time || "—",
       },
-    ],
+    ]),
   },
 });
 
@@ -394,6 +379,17 @@ const applyRules = {
   order_id: [{ required: true, message: "请输入订单ID", trigger: "blur" }],
   title: [{ required: true, message: "请输入发票抬头", trigger: "blur" }],
 };
+
+const createLoading = ref(false);
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    openApplyDialog();
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 function openApplyDialog() {
   Object.assign(applyFormData, {

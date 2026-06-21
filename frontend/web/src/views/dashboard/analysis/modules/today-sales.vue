@@ -5,7 +5,9 @@
         <h4>今日销售</h4>
         <p>销售总结</p>
       </div>
-      <div class="flex-cc h-7.5 min-w-17 border border-g-300 rounded-lg text-g-500 c-p">
+      <div
+        class="flex items-center justify-center h-7.5 min-w-17 border border-g-300 rounded-lg text-g-500 cursor-pointer"
+      >
         <FaSvgIcon icon="ri:arrow-up-line" class="text-base mr-1.5" />
         <span class="text-xs">导出</span>
       </div>
@@ -17,7 +19,7 @@
           <div
             class="flex px-5 flex-col justify-center h-55 border border-g-300/85 rounded-xl max-lg:mb-4 max-sm:flex-row max-sm:justify-between max-sm:items-center max-sm:h-40"
           >
-            <div class="size-12 rounded-lg flex-cc bg-theme/10">
+            <div class="size-12 rounded-lg flex items-center justify-center bg-theme/10">
               <FaSvgIcon :icon="item.icon" class="text-xl text-theme" />
             </div>
 

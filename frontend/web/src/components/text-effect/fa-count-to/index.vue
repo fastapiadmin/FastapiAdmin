@@ -110,7 +110,7 @@ const formatNumber = (
   // 处理千分位分隔符
   if (separator) {
     const parts = result.split(decimal);
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+    parts[0] = parts[0]!.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
     result = parts.join(decimal);
   }
 

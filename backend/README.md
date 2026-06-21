@@ -15,7 +15,7 @@
 | APScheduler | 3.11.0 | 定时任务调度 |
 | Redis | 5.2.1 | 缓存与会话存储 |
 | Uvicorn | 0.30.6 | ASGI 服务器 |
-| Python | 3.10+ | 运行环境 |
+| Python | 3.12+ | 运行环境 |
 
 ## 项目结构
 
@@ -66,7 +66,7 @@ module_*/
 
 ### 环境要求
 
-- **Python**: 3.10+
+- **Python**: 3.12+
 - **数据库**: MySQL 8.0+ / PostgreSQL 13+ / SQLite 3.x（连接串在 `env/.env.dev`）
 - **Redis**: 与 `.env.dev` 中配置一致
 
@@ -116,6 +116,10 @@ ruff check --watch
 uv run ruff check
 uv run ruff check --fix
 uv run ruff check --watch
+
+# 生成开源授权函 JSON 文件
+#uv run --with pip-licenses pip-licenses --format=json \
+  > app/api/v1/module_platform/invoice/oss_licenses.json
 ```
 
 ## 后端约定（日期与序列化）

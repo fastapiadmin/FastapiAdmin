@@ -24,7 +24,7 @@
         >
           <ElScrollbar>
             <div
-              class="login-page-panel__scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-6 [-webkit-overflow-scrolling:touch]"
+              class="login-page-panel__scroll pb-6"
               :class="panelAlign === 'center' && 'login-page-panel__scroll--centered'"
             >
               <div
@@ -176,7 +176,6 @@
 </template>
 
 <script setup lang="ts">
-import { ElScrollbar } from "element-plus";
 import type { LocationQuery, RouteLocationRaw } from "vue-router";
 import AuthAPI, {
   type CaptchaInfo,
@@ -189,13 +188,13 @@ import { useConfigStore, useAppStore, useSettingsStore, useUserStore } from "@st
 import { Auth, HttpError, startOAuthLogin } from "@utils";
 import { ElMessage, ElNotification, type FormRules } from "element-plus";
 import type { Account, AccountKey } from "./types";
-import FaLoginAccountForm from "@/components/views/fa-login/FaLoginAccountForm.vue";
-import FaLoginForgetPanel from "@/components/views/fa-login/FaLoginForgetPanel.vue";
-import FaLoginMobilePanel from "@/components/views/fa-login/FaLoginMobilePanel.vue";
-import FaLoginQrPanel from "@/components/views/fa-login/FaLoginQrPanel.vue";
-import FaLoginRegisterPanel from "@/components/views/fa-login/FaLoginRegisterPanel.vue";
-import FaAuthTopBar from "@/components/views/fa-login/FaAuthTopBar.vue";
-import { useLoginPanelAlign } from "@/components/views/fa-login/useLoginPanelAlign";
+import FaLoginAccountForm from "@/components/views/fa-login/forms/FaLoginAccountForm.vue";
+import FaLoginForgetPanel from "@/components/views/fa-login/panels/FaLoginForgetPanel.vue";
+import FaLoginMobilePanel from "@/components/views/fa-login/panels/FaLoginMobilePanel.vue";
+import FaLoginQrPanel from "@/components/views/fa-login/panels/FaLoginQrPanel.vue";
+import FaLoginRegisterPanel from "@/components/views/fa-login/panels/FaLoginRegisterPanel.vue";
+import FaAuthTopBar from "@/components/views/fa-login/widgets/FaAuthTopBar.vue";
+import { useLoginPanelAlign } from "@/components/views/fa-login/composables/useLoginPanelAlign";
 
 defineOptions({ name: "Login" });
 
@@ -681,5 +680,5 @@ async function submitForget() {
 </script>
 
 <style scoped lang="scss">
-@use "@styles/custom/fa-login";
+@use "../../../../components/views/fa-login/fa-login";
 </style>

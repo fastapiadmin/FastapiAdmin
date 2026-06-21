@@ -1,0 +1,16 @@
+/* highlight.js 代码块主题：One Dark Pro 风格 */
+/* 实际是 highlight.js 主题色（项目自定义文件，误命名 one-dark-pro 后未跟进） */
+.hljs {
+  display: block;
+  padding: 0.5em;
+  overflow-x: auto;
+  color: #a6accd;
+}
+
+.hljs-string,
+.hljs-section,
+.hljs-selector-class,
+.hljs-template-variable,
+.hljs-deletion {
+  color: #aed07e !important;
+}

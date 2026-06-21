@@ -7,7 +7,7 @@
       </ElButton>
     </div>
 
-    <div class="panel-content">
+    <ElScrollbar class="panel-content" view-class="p-4">
       <FaForm
         v-model="formData"
         :items="nodePanelFormItems"
@@ -51,15 +51,22 @@
         <ElButton type="primary" size="small" @click="handleSave">保存</ElButton>
         <ElButton type="danger" size="small" @click="handleDelete">删除节点</ElButton>
       </div>
-    </div>
+    </ElScrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from "vue";
-import { ElButton, ElInput, ElSelect, ElOption, ElMessage, ElIcon } from "element-plus";
+import {
+  ElButton,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElMessage,
+  ElIcon,
+  ElScrollbar,
+} from "element-plus";
 import { Close } from "@element-plus/icons-vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import WorkflowNodeTypeAPI, {
   type WorkflowNodeTypeOption,
@@ -229,8 +236,6 @@ onMounted(() => {
 
 .panel-content {
   flex: 1;
-  padding: 16px;
-  overflow-y: auto;
 }
 
 .field-hint {

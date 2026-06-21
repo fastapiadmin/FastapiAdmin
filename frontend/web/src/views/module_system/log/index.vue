@@ -90,10 +90,16 @@
               }}</ElTag>
             </template>
             <template #request_payload="{ row }">
-              <FaJsonPretty :value="row?.request_payload as any" height="80px" />
+              <FaJsonPretty
+                :value="(row as unknown as OperationLogTable)?.request_payload"
+                height="80px"
+              />
             </template>
             <template #response_json="{ row }">
-              <FaJsonPretty :value="row?.response_json as any" height="140px" />
+              <FaJsonPretty
+                :value="(row as unknown as OperationLogTable)?.response_json"
+                height="140px"
+              />
             </template>
           </FaDescriptions>
         </FaDialog>
@@ -187,6 +193,7 @@
 </template>
 
 <script setup lang="ts">
+import { h } from "vue";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
@@ -201,13 +208,17 @@ import OperationLogAPI, {
   LoginLogAPI,
 } from "@/api/module_system/log";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import {
+  renderTableOperationCell,
+  type TableOperationAction,
+  resolveStatusColumns,
+  type StatusType,
+} from "@utils";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import FaStatusTag from "@/components/others/fa-status-tag/index.vue";
 import FaCopyButton from "@/components/others/fa-copy-button/index.vue";
-import { ElTag } from "element-plus";
 
 defineOptions({
   name: "Log",
@@ -306,16 +317,20 @@ const {
         label: "请求方法",
         minWidth: 100,
         formatter: (row: OperationLogTable) =>
-          h(ElTag, { type: getMethodType(row.request_method) }, () => row.request_method ?? ""),
+          h(FaStatusTag, {
+            type: getMethodType(row.request_method),
+            label: row.request_method ?? "",
+          }),
       },
       {
         prop: "response_code",
         label: "状态码",
         minWidth: 100,
         formatter: (row: OperationLogTable) =>
-          h(ElTag, { type: getStatusCodeType(row.response_code) }, () =>
-            String(row.response_code ?? "")
-          ),
+          h(FaStatusTag, {
+            type: getStatusCodeType(row.response_code),
+            label: String(row.response_code ?? ""),
+          }),
       },
       { prop: "process_time", label: "处理时间", minWidth: 120 },
       { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
@@ -351,11 +366,11 @@ const opExportContentConfig = computed(() => ({
   permPrefix: "module_system:log",
   cols: opCrudCols.value,
   exportsBlobAction: async (params: IObject) => {
-    const res = await (OperationLogAPI as any).exportLog(
+    const res = await OperationLogAPI.export(
       cleanEmptyArrayParams({
         ...(opExportQueryParams.value as unknown as Record<string, unknown>),
         ...params,
-      })
+      }) as OperationLogPageQuery
     );
     return res.data as Blob;
   },
@@ -535,17 +550,17 @@ const {
   core: {
     apiFn: LoginLogAPI.list,
     apiParams: { page_no: 1, page_size: 10 },
-    columnsFactory: (): ColumnOption<LoginLogTable>[] => [
+    columnsFactory: resolveStatusColumns<LoginLogTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       {
         prop: "status",
         label: "登录状态",
         width: 88,
-        formatter: (row: LoginLogTable) =>
-          h(ElTag, { type: row.status === 1 ? "success" : "danger" }, () =>
-            row.status === 1 ? "成功" : "失败"
-          ),
+        status: {
+          1: { type: "success", text: "成功" },
+          0: { type: "danger", text: "失败" },
+        },
       },
       { prop: "username", label: "用户名", minWidth: 120, showOverflowTooltip: true },
       {
@@ -573,7 +588,7 @@ const {
         align: "right",
         formatter: (row: LoginLogTable) => formatLoginActionCell(row),
       },
-    ],
+    ]),
   },
 });
 
@@ -685,14 +700,14 @@ watch(activeTab, (tab) => {
 
 // ==================== 通用 ====================
 
-function getStatusCodeType(code?: number) {
+function getStatusCodeType(code?: number): StatusType {
   if (code === undefined) return "info";
   if (code >= 200 && code < 300) return "success";
   if (code >= 300 && code < 400) return "warning";
   return "danger";
 }
 
-function getMethodType(method?: string) {
+function getMethodType(method?: string): StatusType {
   if (method === undefined) return "info";
   if (method === "GET") return "info";
   if (method === "POST") return "success";

@@ -149,7 +149,7 @@
           :views="imageCards.views"
           :comments="imageCards.comments"
           :date="imageCards.date"
-          @click="handleImageCardClick(imageCards)"
+          @click="handleImageCardClick"
         />
       </ElCol>
       <ElCol :xs="24" :sm="6" :md="5" class="mb-5">
@@ -198,10 +198,10 @@ import AboutProject from "./modules/about-project.vue";
 import QuickLinks from "./modules/quick-links.vue";
 
 function handleBannerDemoConfirm() {
-  console.log("confirm clicked");
+  // TODO: 接入真实操作
 }
 function handleBannerDemoCancel() {
-  console.log("cancel clicked");
+  // TODO: 接入真实操作
 }
 // === 卡片演示数据 ← workplace ===
 const imageCards = {
@@ -313,8 +313,8 @@ const timelineData = [
 function handleMore() {
   ElMessage.info("查看更多");
 }
-function handleImageCardClick(card: typeof imageCards) {
-  console.log("点击卡片:", card);
+function handleImageCardClick() {
+  // TODO: 接入真实跳转
 }
 </script>
 

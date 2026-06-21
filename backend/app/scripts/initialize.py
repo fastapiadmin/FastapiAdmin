@@ -35,7 +35,7 @@ from app.core.database import async_db_session, create_tables
 from app.core.logger import logger
 from app.plugin.module_example.demo.model import DemoModel
 from app.plugin.module_task.cronjob.node.model import NodeModel
-from app.plugin.module_task.workflow.node_type.model import WorkflowNodeTypeModel
+from app.plugin.module_task.workflow.nodes.model import WorkflowNodeTypeModel
 
 
 class InitializeData:
@@ -100,10 +100,6 @@ class InitializeData:
             async with session.begin():
                 await self.__init_data(session)
 
-    # ==========================================================================
-    # 主入口
-    # ==========================================================================
-
     async def __init_data(self, db: AsyncSession) -> None:
         """按依赖顺序初始化各表种子数据"""
         dict_type_mapping: dict[str, Any] = {}  # dict_type → DictTypeModel 实例
@@ -113,7 +109,7 @@ class InitializeData:
 
             data = await self.__load_json(table_name)
             if not data:
-                logger.warning(f"⚠️  跳过 {table_name} 表，无初始化数据")
+                logger.info(f"⏭️  跳过 {table_name} 表，无初始化数据")
                 continue
 
             try:
@@ -121,7 +117,7 @@ class InitializeData:
                 if table_name in self._RECURSIVE_TABLES:
                     count = await db.execute(select(func.count()).select_from(model))
                     if count.scalar():
-                        logger.warning(f"⚠️  跳过 {table_name} 表数据初始化（表已有数据）")
+                        logger.info(f"⏭️  跳过 {table_name} 表数据初始化（表已有数据）")
                         continue
                     objs = self.__create_objects_with_children(data, model)
                     db.add_all(objs)
@@ -133,7 +129,7 @@ class InitializeData:
                 if table_name == "sys_dict_type":
                     count = await db.execute(select(func.count()).select_from(model))
                     if count.scalar():
-                        logger.warning(f"⚠️  跳过 {table_name} 表数据初始化（表已有数据）")
+                        logger.info(f"⏭️  跳过 {table_name} 表数据初始化（表已有数据）")
                         continue
                     objs = []
                     for item in data:
@@ -149,7 +145,7 @@ class InitializeData:
                 if table_name == "sys_dict_data":
                     count = await db.execute(select(func.count()).select_from(model))
                     if count.scalar():
-                        logger.warning(f"⚠️  跳过 {table_name} 表数据初始化（表已有数据）")
+                        logger.info(f"⏭️  跳过 {table_name} 表数据初始化（表已有数据）")
                         continue
                     objs = []
                     for item in data:
@@ -168,7 +164,7 @@ class InitializeData:
                 if table_name in ("sys_login_log", "sys_operation_log"):
                     count = await db.execute(select(func.count()).select_from(model))
                     if count.scalar():
-                        logger.info(f"⏭️  {table_name} 已有数据，跳过")
+                        logger.info(f"⏭️  跳过 {table_name} 表数据初始化（表已有数据）")
                         continue
                     objs = [model(**item) for item in data]
                     db.add_all(objs)
@@ -179,7 +175,7 @@ class InitializeData:
                 # 普通表：空表时插入，已有数据跳过
                 count = await db.execute(select(func.count()).select_from(model))
                 if count.scalar():
-                    logger.warning(f"⚠️  跳过 {table_name} 表数据初始化（表已有数据）")
+                    logger.info(f"⏭️  跳过 {table_name} 表数据初始化（表已有数据）")
                     continue
                 objs = [model(**item) for item in data]
                 db.add_all(objs)
@@ -189,10 +185,6 @@ class InitializeData:
             except Exception:
                 logger.error(f"❌️ 初始化 {table_name} 表数据失败")
                 raise
-
-    # ==========================================================================
-    # 递归创建对象（含嵌套 children）
-    # ==========================================================================
 
     @staticmethod
     def __create_objects_with_children(data: list[dict], model_class: type) -> list:
@@ -210,10 +202,6 @@ class InitializeData:
             return obj
 
         return [_create(item) for item in data]
-
-    # ==========================================================================
-    # JSON 文件加载
-    # ==========================================================================
 
     async def __load_json(self, filename: str) -> list[dict]:
         """读取并解析种子数据 JSON 文件"""

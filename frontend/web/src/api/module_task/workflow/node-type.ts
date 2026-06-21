@@ -71,7 +71,7 @@ export interface WorkflowNodeTypeOption {
   kwargs?: string;
 }
 
-export interface WorkflowNodeTypePageQuery extends PageQuery {
+export interface WorkflowNodeTypePageQuery extends PageQuery, UserByQueryParams {
   name?: string;
   code?: string;
   category?: string;
@@ -90,9 +90,11 @@ export interface WorkflowNodeTypeTable extends BaseType {
   created_by?: CommonType;
   updated_by?: CommonType;
   deleted_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
-export interface WorkflowNodeTypeForm {
+export interface WorkflowNodeTypeForm extends BaseFormType {
   name: string;
   code: string;
   category?: string;
@@ -101,4 +103,6 @@ export interface WorkflowNodeTypeForm {
   kwargs?: string;
   sort_order?: number;
   is_active?: boolean;
+  status?: number;
+  description?: string;
 }

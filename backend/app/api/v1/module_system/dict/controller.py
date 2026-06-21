@@ -2,13 +2,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from redis.asyncio.client import Redis
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission, redis_getter
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
@@ -25,10 +25,9 @@ from .schema import (
 )
 from .service import DictDataService, DictTypeService
 
-DictRouter = APIRouter(route_class=OperationLogRoute, prefix="/dict", tags=["系统管理/字典管理"])
+DictRouter = APIRouter(route_class=OperationLogRoute, prefix="/dict", tags=["系统管理", "字典管理"])
 
 _DICT_TYPE_NS = "dict_type"
-
 
 @DictRouter.get(
     "/type/detail/{id}",
@@ -37,24 +36,10 @@ _DICT_TYPE_NS = "dict_type"
 )
 async def get_type_detail_controller(
     id: Annotated[int, Path(description="字典类型ID", ge=1)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:detail']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:detail"]))],
 ) -> JSONResponse:
-    """
-    获取字典类型详情
-
-    参数:
-    - id (int): 字典类型ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含字典类型详情的响应模型
-
-    异常:
-    - CustomException: 获取字典类型详情失败时抛出异常。
-    """
-    result_dict = await DictTypeService.get_obj_detail_service(id=id, auth=auth)
+    result_dict = await DictTypeService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取字典类型详情成功")
-
 
 @DictRouter.get(
     "/type/list",
@@ -64,31 +49,15 @@ async def get_type_detail_controller(
 async def get_type_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[DictTypeQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:query']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:query"]))],
 ) -> JSONResponse:
-    """
-    查询字典类型
-
-    参数:
-    - page (PaginationQueryParam): 分页参数模型
-    - search (DictTypeQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含查询字典类型结果的响应模型
-
-    异常:
-    - CustomException: 查询字典类型失败时抛出异常。
-    """
-    result_dict = await DictTypeService.get_obj_page_service(
-        auth=auth,
+    result_dict = await DictTypeService(auth).page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
         order_by=page.order_by,
     )
     return SuccessResponse(data=result_dict, msg="查询字典类型列表成功")
-
 
 @DictRouter.get(
     "/type/optionselect",
@@ -97,23 +66,10 @@ async def get_type_list_controller(
 )
 @cache(expire=300, namespace=_DICT_TYPE_NS)
 async def get_type_optionselect_controller(
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:query']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:query"]))],
 ) -> JSONResponse:
-    """
-    获取全部字典类型
-
-    参数:
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含全部字典类型的响应模型
-
-    异常:
-    - CustomException: 获取字典类型列表失败时抛出异常。
-    """
-    result_dict_list = await DictTypeService.get_obj_list_service(auth=auth)
+    result_dict_list = await DictTypeService(auth).get_list()
     return SuccessResponse(data=result_dict_list, msg="获取字典类型列表成功")
-
 
 @DictRouter.post(
     "/type/create",
@@ -123,26 +79,11 @@ async def get_type_optionselect_controller(
 async def create_type_controller(
     data: DictTypeCreateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:create']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:create"]))],
 ) -> JSONResponse:
-    """
-    创建字典类型
-
-    参数:
-    - data (DictTypeCreateSchema): 创建字典类型的入参模型
-    - redis (Redis): Redis数据库连接
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含创建字典类型结果的响应模型
-
-    异常:
-    - CustomException: 创建字典类型失败时抛出异常。
-    """
-    result_dict = await DictTypeService.create_obj_service(auth=auth, redis=redis, data=data)
-    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
+    result_dict = await DictTypeService(auth).create(redis=redis, data=data)
+    await cache_util.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(data=result_dict, msg="创建字典类型成功")
-
 
 @DictRouter.put(
     "/type/update/{id}",
@@ -153,27 +94,11 @@ async def update_type_controller(
     data: DictTypeUpdateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
     id: Annotated[int, Path(description="字典类型ID", ge=1)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:update']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:update"]))],
 ) -> JSONResponse:
-    """
-    修改字典类型
-
-    参数:
-    - data (DictTypeUpdateSchema): 修改字典类型的入参模型
-    - redis (Redis): Redis数据库连接
-    - id (int): 字典类型ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含修改字典类型结果的响应模型
-
-    异常:
-    - CustomException: 修改字典类型失败时抛出异常。
-    """
-    result_dict = await DictTypeService.update_obj_service(auth=auth, redis=redis, id=id, data=data)
-    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
+    result_dict = await DictTypeService(auth).update(redis=redis, id=id, data=data)
+    await cache_util.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(data=result_dict, msg="修改字典类型成功")
-
 
 @DictRouter.delete(
     "/type/delete",
@@ -183,26 +108,11 @@ async def update_type_controller(
 async def delete_type_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:delete']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:delete"]))],
 ) -> JSONResponse:
-    """
-    删除字典类型
-
-    参数:
-    - redis (Redis): Redis数据库连接
-    - ids (list[int]): 字典类型ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含删除字典类型结果的响应模型
-
-    异常:
-    - CustomException: 删除字典类型失败时抛出异常。
-    """
-    await DictTypeService.delete_obj_service(auth=auth, redis=redis, ids=ids)
-    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
+    await DictTypeService(auth).delete(redis=redis, ids=ids)
+    await cache_util.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(msg="删除字典类型成功")
-
 
 @DictRouter.patch(
     "/type/status/batch",
@@ -211,25 +121,11 @@ async def delete_type_controller(
 )
 async def batch_set_available_dict_type_controller(
     data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:patch']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:patch"]))],
 ) -> JSONResponse:
-    """
-    批量修改字典类型状态
-
-    参数:
-    - data (BatchSetAvailable): 批量修改字典类型状态负载模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含批量修改字典类型状态结果的响应模型
-
-    异常:
-    - CustomException: 批量修改字典类型状态失败时抛出异常。
-    """
-    await DictTypeService.set_obj_available_service(auth=auth, data=data)
-    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
+    await DictTypeService(auth).set_available(data=data)
+    await cache_util.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(msg="批量修改字典类型状态成功")
-
 
 @DictRouter.post(
     "/type/export",
@@ -238,32 +134,18 @@ async def batch_set_available_dict_type_controller(
 )
 async def export_type_list_controller(
     search: Annotated[DictTypeQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_type:export']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:export"]))],
 ) -> StreamingResponse:
-    """
-    导出字典类型
-
-    参数:
-    - search (DictTypeQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - StreamingResponse: 包含导出字典类型结果的响应模型
-
-    异常:
-    - CustomException: 导出字典类型失败时抛出异常。
-    """
     # 获取全量数据并转为dict列表
-    result_dict_list = await DictTypeService.get_obj_list_service(search=search, auth=auth)
+    result_dict_list = await DictTypeService(auth).get_list(search=search)
     export_data = [item.model_dump() for item in result_dict_list]
-    export_result = await DictTypeService.export_obj_service(data_list=export_data)
+    export_result = DictTypeService.export(data_list=export_data)
 
     return StreamResponse(
         data=bytes2file_response(export_result),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=dict_type.xlsx"},
     )
-
 
 @DictRouter.get(
     "/data/detail/{id}",
@@ -272,24 +154,10 @@ async def export_type_list_controller(
 )
 async def get_data_detail_controller(
     id: Annotated[int, Path(description="字典数据ID", ge=1)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:detail']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:detail"]))],
 ) -> JSONResponse:
-    """
-    获取字典数据详情
-
-    参数:
-    - id (int): 字典数据ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含字典数据详情的响应模型
-
-    异常:
-    - CustomException: 获取字典数据详情失败时抛出异常。
-    """
-    result_dict = await DictDataService.get_obj_detail_service(id=id, auth=auth)
+    result_dict = await DictDataService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取字典数据详情成功")
-
 
 @DictRouter.get(
     "/data/list",
@@ -299,34 +167,18 @@ async def get_data_detail_controller(
 async def get_data_list_controller(
     page: Annotated[PaginationQueryParam, Depends()],
     search: Annotated[DictDataQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:query']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:query"]))],
 ) -> JSONResponse:
-    """
-    查询字典数据
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数模型
-    - search (DictDataQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含字典数据列表的响应模型
-
-    异常:
-    - CustomException: 查询字典数据列表失败时抛出异常。
-    """
     order_by = [{"order": "asc"}]
     if page.order_by:
         order_by = page.order_by
-    result_dict = await DictDataService.get_obj_page_service(
-        auth=auth,
+    result_dict = await DictDataService(auth).page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
         order_by=order_by,
     )
     return SuccessResponse(data=result_dict, msg="查询字典数据列表成功")
-
 
 @DictRouter.post(
     "/data/create",
@@ -336,25 +188,10 @@ async def get_data_list_controller(
 async def create_data_controller(
     data: DictDataCreateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:create']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:create"]))],
 ) -> JSONResponse:
-    """
-    创建字典数据
-
-    参数:
-    - data (DictDataCreateSchema): 创建字典数据负载模型
-    - redis (Redis): Redis数据库连接
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含创建字典数据结果的响应模型
-
-    异常:
-    - CustomException: 创建字典数据失败时抛出异常。
-    """
-    result_dict = await DictDataService.create_obj_service(auth=auth, redis=redis, data=data)
+    result_dict = await DictDataService(auth).create(redis=redis, data=data)
     return SuccessResponse(data=result_dict, msg="创建字典数据成功")
-
 
 @DictRouter.put(
     "/data/update/{id}",
@@ -365,26 +202,10 @@ async def update_data_controller(
     data: DictDataUpdateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
     id: Annotated[int, Path(description="字典数据ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:update']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:update"]))],
 ) -> JSONResponse:
-    """
-    修改字典数据
-
-    参数:
-    - data (DictDataUpdateSchema): 修改字典数据负载模型
-    - redis (Redis): Redis数据库连接
-    - id (int): 字典数据ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含修改字典数据结果的响应模型
-
-    异常:
-    - CustomException: 修改字典数据失败时抛出异常。
-    """
-    result_dict = await DictDataService.update_obj_service(auth=auth, redis=redis, id=id, data=data)
+    result_dict = await DictDataService(auth).update(redis=redis, id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改字典数据成功")
-
 
 @DictRouter.delete(
     "/data/delete",
@@ -394,25 +215,10 @@ async def update_data_controller(
 async def delete_data_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:delete']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:delete"]))],
 ) -> JSONResponse:
-    """
-    删除字典数据
-
-    参数:
-    - redis (Redis): Redis数据库连接
-    - ids (list[int]): 字典数据ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含删除字典数据结果的响应模型
-
-    异常:
-    - CustomException: 删除字典数据失败时抛出异常。
-    """
-    await DictDataService.delete_obj_service(auth=auth, redis=redis, ids=ids)
+    await DictDataService(auth).delete(redis=redis, ids=ids)
     return SuccessResponse(msg="删除字典数据成功")
-
 
 @DictRouter.patch(
     "/data/status/batch",
@@ -421,24 +227,10 @@ async def delete_data_controller(
 )
 async def batch_set_available_dict_data_controller(
     data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:patch']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:patch"]))],
 ) -> JSONResponse:
-    """
-    批量修改字典数据状态
-
-    参数:
-    - data (BatchSetAvailable): 批量修改字典数据状态负载模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含批量修改字典数据状态结果的响应模型
-
-    异常:
-    - CustomException: 批量修改字典数据状态失败时抛出异常。
-    """
-    await DictDataService.set_obj_available_service(auth=auth, data=data)
+    await DictDataService(auth).set_available(data=data)
     return SuccessResponse(msg="批量修改字典数据状态成功")
-
 
 @DictRouter.post(
     "/data/export",
@@ -448,27 +240,11 @@ async def batch_set_available_dict_data_controller(
 async def export_data_list_controller(
     search: Annotated[DictDataQueryParam, Depends()],
     page: Annotated[PaginationQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dict_data:export']))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:export"]))],
 ) -> StreamingResponse:
-    """
-    导出字典数据
-
-    参数:
-    - search (DictDataQueryParam): 查询参数模型
-    - page (PaginationQueryParam): 分页参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - StreamingResponse: 包含导出字典数据结果的响应模型
-
-    异常:
-    - CustomException: 导出字典数据失败时抛出异常。
-    """
-    result_dict_list = await DictDataService.get_obj_list_service(
-        auth=auth, search=search, order_by=page.order_by
-    )
+    result_dict_list = await DictDataService(auth).get_list(search=search, order_by=page.order_by)
     export_data = [item.model_dump() for item in result_dict_list]
-    export_result = await DictDataService.export_obj_service(data_list=export_data)
+    export_result = DictDataService.export(data_list=export_data)
 
     return StreamResponse(
         data=bytes2file_response(export_result),
@@ -476,30 +252,12 @@ async def export_data_list_controller(
         headers={"Content-Disposition": "attachment; filename=dice_data.xlsx"},
     )
 
-
 @DictRouter.get(
     "/data/info/{dict_type}",
     summary="根据字典类型获取数据",
     response_model=ResponseSchema[list[DictDataOutSchema]],
 )
-async def get_init_dict_data_controller(
-    dict_type: str, redis: Annotated[Redis, Depends(redis_getter)]
-) -> JSONResponse:
-    """
-    根据字典类型获取数据
-
-    参数:
-    - dict_type (str): 字典类型
-    - redis (Redis): Redis数据库连接
-
-    返回:
-    - JSONResponse: 包含根据字典类型获取数据结果的响应模型
-
-    异常:
-    - CustomException: 根据字典类型获取数据失败时抛出异常。
-    """
-    dict_data_query_result = await DictDataService.get_init_dict_service(
-        redis=redis, dict_type=dict_type, tenant_id=1
-    )
+async def get_init_dict_data_controller(dict_type: str, redis: Annotated[Redis, Depends(redis_getter)]) -> JSONResponse:
+    dict_data_query_result = await DictDataService.get_init_cache(redis=redis, dict_type=dict_type, tenant_id=1)
 
     return SuccessResponse(data=dict_data_query_result, msg="获取初始化字典数据成功")

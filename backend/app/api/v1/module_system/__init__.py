@@ -1,18 +1,3 @@
-"""
-系统级模块 - module_system
-
-租户内部管理功能，受租户隔离限制：
-- 认证授权 (auth)
-- 用户管理 (user)
-- 角色管理 (role)
-- 部门管理 (dept)
-- 岗位管理 (position)
-- 字典管理 (dict)
-- 公告管理 (notice)
-- 参数管理 (params)
-- 日志管理 (log)
-- 工单管理 (ticket)
-"""
 from fastapi import APIRouter
 
 from app.api.v1.module_system.auth.controller import AuthRouter

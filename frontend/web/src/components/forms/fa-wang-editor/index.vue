@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import "@wangeditor-next/editor/dist/css/style.css";
-import { onBeforeUnmount, onMounted, shallowRef, computed } from "vue";
+import { onBeforeUnmount, onMounted, onUnmounted, shallowRef, computed } from "vue";
 import { Editor, Toolbar } from "@wangeditor-next/editor-for-vue";
 import { useUserStore } from "@stores";
 import { request, EmojiText } from "@utils";
@@ -185,17 +185,21 @@ const onCreateEditor = (editor: IDomEditor) => {
 };
 
 // 应用自定义图标（带重试机制）
+//
+// 注意：递归 setTimeout 用于等待 wangEditor 工具栏 DOM 渲染完成。
+// 组件卸载时必须清理，避免定时器在编辑器实例已销毁后继续执行。
 const applyCustomIcons = () => {
   let retryCount = 0;
   const maxRetries = 10;
   const retryDelay = 100;
+  let timerId: ReturnType<typeof setTimeout> | null = null;
 
   const tryApplyIcons = () => {
     const editor = editorRef.value;
     if (!editor) {
       if (retryCount < maxRetries) {
         retryCount++;
-        setTimeout(tryApplyIcons, retryDelay);
+        timerId = setTimeout(tryApplyIcons, retryDelay);
       }
       return;
     }
@@ -205,7 +209,7 @@ const applyCustomIcons = () => {
     if (!editorContainer) {
       if (retryCount < maxRetries) {
         retryCount++;
-        setTimeout(tryApplyIcons, retryDelay);
+        timerId = setTimeout(tryApplyIcons, retryDelay);
       }
       return;
     }
@@ -220,7 +224,7 @@ const applyCustomIcons = () => {
     // 如果工具栏还没渲染完成，继续重试
     if (retryCount < maxRetries) {
       retryCount++;
-      setTimeout(tryApplyIcons, retryDelay);
+      timerId = setTimeout(tryApplyIcons, retryDelay);
     } else {
       console.warn("工具栏渲染超时，无法应用自定义图标 - 编辑器实例:", editor.id);
     }
@@ -228,6 +232,14 @@ const applyCustomIcons = () => {
 
   // 使用 requestAnimationFrame 确保在下一帧执行
   requestAnimationFrame(tryApplyIcons);
+
+  // 组件卸载时清理挂起的重试定时器
+  onUnmounted(() => {
+    if (timerId !== null) {
+      clearTimeout(timerId);
+      timerId = null;
+    }
+  });
 };
 
 // 暴露编辑器实例和方法

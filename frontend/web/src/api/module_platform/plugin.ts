@@ -102,10 +102,9 @@ const PluginAPI = {
 
 export default PluginAPI;
 
-export interface PluginQueryParam {
+export interface PluginQueryParam extends PageQuery, UserByQueryParams, TenantByQueryParams {
   name?: string;
   category?: string;
-  status?: string;
 }
 
 export interface PluginTable extends BaseType {
@@ -121,6 +120,8 @@ export interface PluginTable extends BaseType {
   permission_prefix?: string;
   dependencies?: string;
   sort?: number;
+  status?: number;
+  description?: string;
 }
 
 export interface PluginForm extends BaseFormType {
@@ -135,4 +136,6 @@ export interface PluginForm extends BaseFormType {
   menu_path?: string;
   permission_prefix?: string;
   dependencies?: string;
+  status?: number;
+  description?: string;
 }

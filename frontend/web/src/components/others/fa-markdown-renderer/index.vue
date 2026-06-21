@@ -7,17 +7,23 @@ import { computed } from "vue";
 import MarkdownIt from "markdown-it";
 import markdownItHighlightjs from "markdown-it-highlightjs";
 import hljs from "highlight.js";
+import DOMPurify from "dompurify";
 import "highlight.js/styles/atom-one-light.css";
 
 defineOptions({ name: "FaMarkdownRenderer" });
 
 interface Props {
+  /** Markdown 源文本 */
   content: string;
+  /** 超过此长度则截断并追加 "..."（按字符数，不按渲染后长度） */
   maxLength?: number;
+  /** 是否对渲染后的 HTML 做 XSS 消毒，默认 true（AI 场景默认开；可信后端 HTML 渲染时可关闭） */
+  sanitize?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   maxLength: undefined,
+  sanitize: true,
 });
 
 const md: MarkdownIt = new MarkdownIt({
@@ -57,11 +63,12 @@ md.renderer.rules.link_open = function (
 
 const renderedContent = computed(() => {
   if (!props.content) return "";
-  const content =
+  const source =
     props.maxLength && props.content.length > props.maxLength
       ? props.content.substring(0, props.maxLength) + "..."
       : props.content;
-  return md.render(content);
+  const html = md.render(source);
+  return props.sanitize ? DOMPurify.sanitize(html) : html;
 });
 </script>
 

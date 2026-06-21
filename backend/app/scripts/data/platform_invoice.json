@@ -11,6 +11,9 @@
     "tax_amount": 4485,
     "status": 1,
     "tenant_id": 3,
+    "pdf_url": "/static/invoice/3/INV20260101001.pdf",
+    "oss_license_pdf_url": "/static/invoice/3/INV20260101001_license.pdf",
+    "api_response": null,
     "description": "星辰科技-标准版年付发票（已开具）"
   },
   {
@@ -25,6 +28,9 @@
     "tax_amount": 1485,
     "status": 1,
     "tenant_id": 3,
+    "pdf_url": "/static/invoice/3/INV20260315001.pdf",
+    "oss_license_pdf_url": "/static/invoice/3/INV20260315001_license.pdf",
+    "api_response": null,
     "description": "星辰科技-AI助手发票（已开具）"
   },
   {
@@ -39,6 +45,9 @@
     "tax_amount": 4485,
     "status": 0,
     "tenant_id": 4,
+    "pdf_url": null,
+    "oss_license_pdf_url": null,
+    "api_response": null,
     "description": "创新工坊-标准版月付发票（待开具）"
   },
   {
@@ -53,6 +62,9 @@
     "tax_amount": 735,
     "status": 0,
     "tenant_id": 4,
+    "pdf_url": null,
+    "oss_license_pdf_url": null,
+    "api_response": null,
     "description": "创新工坊-数据大屏发票（待开具）"
   }
 ]

@@ -163,8 +163,8 @@ export const isHttpError = (error: unknown): error is HttpError => {
 let isRefreshing = false;
 let pendingRequests: Array<{
   config: InternalAxiosRequestConfig;
-  resolve: (value: any) => void;
-  reject: (reason?: any) => void;
+  resolve: (value: Promise<AxiosResponse>) => void;
+  reject: (reason?: Error) => void;
 }> = [];
 
 function onRefreshed(newToken: string) {
@@ -185,7 +185,7 @@ function onRefreshFailed() {
 
 export const request: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
-  timeout: Number(import.meta.env.VITE_TIMEOUT) || 15000,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 15000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
   paramsSerializer: (params) => qs.stringify(params, { indices: false }),
 });

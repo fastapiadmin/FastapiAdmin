@@ -53,7 +53,7 @@ import { Handle, Position } from "@vue-flow/core";
 interface Props {
   id?: string;
   data?: Record<string, any>;
-  nodeStatus?: string;
+  nodeStatus?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {});

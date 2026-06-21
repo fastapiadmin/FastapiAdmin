@@ -13,13 +13,13 @@ class NoticeModel(ModelMixin, TenantMixin, UserMixin):
 
     __tablename__: str = "sys_notice"
     __table_args__: dict[str, str] = {"comment": "通知公告表"}
-    __loader_options__: list[str] = ["created_by", "updated_by", "deleted_by"]
+    __loader_options__: list[str] = ["created_by", "updated_by", "deleted_by", "tenant_by"]
 
     notice_title: Mapped[str] = mapped_column(String(64), nullable=False, comment="公告标题")
-    notice_type: Mapped[str] = mapped_column(
-        String(1), nullable=False, comment="公告类型(1通知 2公告)"
-    )
+    notice_type: Mapped[str] = mapped_column(String(1), nullable=False, comment="公告类型(1通知 2公告)")
     notice_content: Mapped[str | None] = mapped_column(Text, nullable=True, comment="公告内容")
+    status: Mapped[int] = mapped_column(Integer, default=0, nullable=False, comment="状态(0:启动 1:停用)", index=True)
+    description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注")
 
 
 class NoticeReadModel(MappedBase):
@@ -39,16 +39,11 @@ class NoticeReadModel(MappedBase):
         UniqueConstraint("user_id", "notice_id", name="uq_user_notice_read"),
         {"comment": "通知已读记录表"},
     )
+    __loader_options__: list[str] = ["notice"]
 
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("sys_user.id", ondelete="CASCADE"), primary_key=True, comment="用户ID"
-    )
-    notice_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("sys_notice.id", ondelete="CASCADE"), primary_key=True, comment="通知ID"
-    )
-    read_time: Mapped[datetime] = mapped_column(
-        DateTime, nullable=False, default=datetime.now, comment="已读时间"
-    )
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("sys_user.id", ondelete="CASCADE"), primary_key=True, comment="用户ID")
+    notice_id: Mapped[int] = mapped_column(Integer, ForeignKey("sys_notice.id", ondelete="CASCADE"), primary_key=True, comment="通知ID")
+    read_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now, comment="已读时间")
 
     # 关联
     notice: Mapped[NoticeModel] = relationship("NoticeModel", lazy="selectin")

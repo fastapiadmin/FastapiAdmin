@@ -2,11 +2,14 @@
 <template>
   <div
     ref="containerRef"
-    class="relative overflow-hidden rounded-custom-sm border flex-c box-border text-sm"
+    class="relative overflow-hidden rounded-custom-sm border flex items-center box-border text-sm"
     :class="themeClasses"
     :style="containerStyle"
   >
-    <div class="flex-cc absolute left-0 h-full w-9 z-10" :style="{ backgroundColor: bgColor }">
+    <div
+      class="flex items-center justify-center absolute left-0 h-full w-9 z-10"
+      :style="{ backgroundColor: bgColor }"
+    >
       <FaSvgIcon icon="ri:volume-down-line" class="text-lg" />
     </div>
 
@@ -33,7 +36,7 @@
 
     <div
       v-if="showClose"
-      class="flex-cc absolute right-0 h-full w-9 c-p"
+      class="flex items-center justify-center absolute right-0 h-full w-9 cursor-pointer"
       :style="{ backgroundColor: bgColor }"
       @click="handleClose"
     >
@@ -328,7 +331,6 @@ onBeforeUnmount(() => {
 defineOptions({ name: "FaTextScroll" });
 
 const handleClose = () => {
-  console.log("文本滚动组件已关闭");
   ElMessage.info("已关闭");
 };
 </script> -->

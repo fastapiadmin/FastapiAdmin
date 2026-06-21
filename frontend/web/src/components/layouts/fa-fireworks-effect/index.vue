@@ -249,7 +249,7 @@ class FireworkSystem {
   private getAvailableParticle(): Firework | null {
     for (let i = 0; i < CONFIG.POOL_SIZE; i++) {
       const index = (this.poolIndex + i) % CONFIG.POOL_SIZE;
-      const particle = this.particlePool[index];
+      const particle = this.particlePool[index]!;
 
       if (!particle.active) {
         this.poolIndex = (index + 1) % CONFIG.POOL_SIZE;
@@ -330,13 +330,15 @@ class FireworkSystem {
       // 复杂的速度计算，模拟真实烟花爆炸轨迹
       particle.vx = Math.cos(angle) * Math.cos(spread) * speed * (Math.random() * 0.5 + 0.5);
       particle.vy = Math.sin(angle) * speed - 15; // 向上初始速度
-      particle.color = CONFIG.COLORS[Math.floor(Math.random() * CONFIG.COLORS.length)];
+      const colors = CONFIG.COLORS;
+      const shapes = availableShapes;
+      particle.color = colors[Math.floor(Math.random() * colors.length)] ?? colors[0]!;
       particle.rotation = Math.random() * 360;
       particle.rotationSpeed =
         (Math.random() * CONFIG.ROTATION.RANDOM_SPEED + CONFIG.ROTATION.BASE_SPEED) *
         (Math.random() > 0.5 ? 1 : -1); // 随机旋转方向
       particle.scale = 0.8 + Math.random() * 0.4; // 随机缩放
-      particle.shape = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+      particle.shape = shapes[Math.floor(Math.random() * shapes.length)] ?? shapes[0]!;
       particle.opacity = 1;
       particle.imageUrl = imageUrl && this.imageCache[imageUrl] ? imageUrl : undefined;
 
@@ -357,7 +359,7 @@ class FireworkSystem {
 
     // 使用倒序遍历，避免删除元素时的索引混乱问题
     for (let i = this.activeParticles.length - 1; i >= 0; i--) {
-      const particle = this.activeParticles[i];
+      const particle = this.activeParticles[i]!;
 
       // 更新粒子位置 (匀加速运动)
       particle.x += particle.vx;
@@ -389,7 +391,7 @@ class FireworkSystem {
    * @param index 要回收的粒子在活动数组中的索引
    */
   private recycleParticle(index: number): void {
-    const particle = this.activeParticles[index];
+    const particle = this.activeParticles[index]!;
     particle.active = false; // 标记为非活动状态
     this.activeParticles.splice(index, 1); // 从活动数组中移除
   }

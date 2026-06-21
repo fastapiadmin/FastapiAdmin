@@ -1,6 +1,6 @@
 <!-- 混合菜单 -->
 <template>
-  <div id="app-menu-top-left" class="relative box-border flex-c w-full overflow-hidden">
+  <div id="app-menu-top-left" class="relative box-border flex items-center w-full overflow-hidden">
     <!-- 左侧滚动按钮 -->
     <div v-show="showLeftArrow" class="button-arrow" @click="scroll('left')">
       <ElIcon>
@@ -16,11 +16,11 @@
       @scroll="handleScroll"
       @wheel="handleWheel"
     >
-      <div class="box-border flex-c shrink-0 flex-nowrap h-15 whitespace-nowrap">
+      <div class="box-border flex items-center shrink-0 flex-nowrap h-15 whitespace-nowrap">
         <template v-for="item in processedMenuList" :key="item.meta.title">
           <div
             v-if="!item.meta.isHide"
-            class="menu-item relative shrink-0 h-10 px-3 text-sm flex-c c-p hover:text-theme"
+            class="menu-item relative shrink-0 h-10 px-3 text-sm flex items-center cursor-pointer hover:text-theme"
             :class="{
               'menu-item-active text-theme': item.isActive,
             }"

@@ -1,75 +1,91 @@
-"""订单与支付 Schema"""
-from __future__ import annotations
-
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal
 
+from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.core.base_schema import BaseSchema
-
-# ─── Internal Create/Update Schemas（CRUD 层用，字段映射 Model 1:1）───
+from app.common.enums import QueueEnum
+from app.core.base_params import BaseQueryParam
+from app.core.base_schema import BaseSchema, TenantBySchema
 
 
 class OrderCreateInternalSchema(BaseModel):
     """订单创建（内部 CRUD 用，包含所有业务字段）"""
-    order_no: str
-    tenant_id: int
-    package_id: int | None = None
-    plugin_id: int | None = None
-    order_type: str
-    amount: int
-    period_count: int = 1
-    pay_method: str | None = None
-    pay_time: datetime | None = None
-    expire_time: datetime
-    status: int = 0
+
+    order_no: str = Field(..., description="订单号")
+    tenant_id: int = Field(..., description="租户ID")
+    package_id: int | None = Field(default=None, description="套餐ID")
+    plugin_id: int | None = Field(default=None, description="插件ID")
+    order_type: str = Field(..., description="订单类型")
+    amount: int = Field(..., description="订单金额(分)")
+    period_count: int = Field(default=1, description="时长(月)")
+    pay_method: str | None = Field(default=None, description="支付方式")
+    pay_time: datetime | None = Field(default=None, description="支付时间")
+    expire_time: datetime = Field(..., description="过期时间")
+    status: int = Field(default=0, description="订单状态")
+    description: str | None = Field(default=None, description="备注")
 
 
 class OrderUpdateInternalSchema(BaseModel):
     """订单更新（内部 CRUD 用）"""
-    status: int | None = None
-    pay_method: str | None = None
-    pay_time: datetime | None = None
+
+    status: int | None = Field(default=None, description="订单状态")
+    pay_method: str | None = Field(default=None, description="支付方式")
+    pay_time: datetime | None = Field(default=None, description="支付时间")
+    description: str | None = Field(default=None, description="备注")
 
 
 class PaymentRecordCreateSchema(BaseModel):
     """支付记录创建"""
-    order_id: int
-    transaction_id: str | None = None
-    pay_method: str
-    amount: int
-    status: int = 1
-    raw_response: str | None = None
-    pay_time: datetime | None = None
+
+    order_id: int = Field(..., description="订单ID")
+    transaction_id: str | None = Field(default=None, description="交易流水号")
+    pay_method: str = Field(..., description="支付方式")
+    amount: int = Field(..., description="支付金额(分)")
+    status: int = Field(default=1, description="支付状态")
+    raw_response: str | None = Field(default=None, description="原始响应")
+    pay_time: datetime | None = Field(default=None, description="支付时间")
+    description: str | None = Field(default=None, description="备注")
 
 
 class RefundCreateSchema(BaseModel):
     """退款记录创建"""
-    order_id: int
-    refund_no: str
-    amount: int
-    reason: str
-    status: int = 1
+
+    order_id: int = Field(..., description="订单ID")
+    refund_no: str = Field(..., description="退款单号")
+    amount: int = Field(..., description="退款金额(分)")
+    reason: str = Field(..., description="退款原因")
+    refund_transaction_id: str | None = Field(default=None, description="退款交易流水号")
+    reviewer_id: int | None = Field(default=None, description="审核人ID")
+    review_time: datetime | None = Field(default=None, description="审核时间")
+    reject_reason: str | None = Field(default=None, description="驳回原因")
+    status: int = Field(default=1, description="退款状态")
+    description: str | None = Field(default=None, description="备注")
 
 
 class RefundUpdateSchema(BaseModel):
     """退款记录更新"""
-    status: int | None = None
-    reviewer_id: int | None = None
-    review_time: datetime | None = None
-    reject_reason: str | None = None
 
-
-# ─── Order ──────────────────────────────────────────────
+    status: int | None = Field(default=None, description="退款状态")
+    reviewer_id: int | None = Field(default=None, description="审核人ID")
+    review_time: datetime | None = Field(default=None, description="审核时间")
+    reject_reason: str | None = Field(default=None, description="驳回原因")
+    refund_transaction_id: str | None = Field(default=None, description="退款交易流水号")
+    description: str | None = Field(default=None, description="备注")
 
 
 class OrderCreateSchema(BaseModel):
     """创建订单（套餐或插件）"""
-    tenant_id: int
-    package_id: int | None = Field(default=None, description="套餐ID（套餐订单必填）")
-    plugin_id: int | None = Field(default=None, description="插件ID（插件订单必填）")
-    order_type: str = Field(pattern=r"^(new|renew|upgrade|downgrade|plugin)$")
-    pay_method: str | None = Field(default=None, pattern=r"^(alipay|wxpay)?$")
+
+    tenant_id: int = Field(..., ge=1, description="租户ID")
+    package_id: int | None = Field(default=None, ge=1, description="套餐ID（套餐订单必填）")
+    plugin_id: int | None = Field(default=None, ge=1, description="插件ID（插件订单必填）")
+    order_type: Literal["new", "renew", "upgrade", "downgrade", "plugin"] = Field(
+        ...,
+        description="订单类型(new:新购 renew:续费 upgrade:升级 downgrade:降级 plugin:插件)",
+    )
+    pay_method: Literal["alipay", "wxpay", "free"] | None = Field(default=None, description="支付方式(留空=自动)")
 
     @field_validator("tenant_id")
     @classmethod
@@ -79,108 +95,130 @@ class OrderCreateSchema(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def check_target(self) -> OrderCreateSchema:
+    def check_target(self) -> None:
         if self.order_type == "plugin":
             if not self.plugin_id or self.plugin_id <= 0:
                 raise ValueError("插件订单必须指定 plugin_id")
         else:
             if not self.package_id or self.package_id <= 0:
                 raise ValueError("套餐订单必须指定 package_id")
-        return self
 
 
-class OrderOutSchema(BaseSchema):
+class OrderOutSchema(BaseSchema, TenantBySchema):
     """订单输出"""
-    order_no: str
-    tenant_id: int
-    package_id: int | None = None
-    plugin_id: int | None = None
-    order_type: str
-    amount: int
-    period_count: int
-    pay_method: str | None = None
-    pay_time: datetime | None = None
-    expire_time: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
+    order_no: str = Field(..., description="订单号")
+    package_id: int | None = Field(default=None, description="套餐ID")
+    plugin_id: int | None = Field(default=None, description="插件ID")
+    order_type: str = Field(..., description="订单类型")
+    amount: int = Field(..., description="订单金额(分)")
+    period_count: int = Field(..., description="时长(月)")
+    pay_method: str | None = Field(default=None, description="支付方式")
+    pay_time: datetime | None = Field(default=None, description="支付时间")
+    expire_time: datetime = Field(..., description="过期时间")
+    status: int = Field(..., description="订单状态(0:待支付 1:已支付 2:已取消 3:已退款)")
+    description: str | None = Field(default=None, description="备注")
 
-class OrderQueryParam(BaseModel):
+
+@dataclass
+class OrderQueryParam(BaseQueryParam):
     """订单查询参数"""
-    tenant_id: int | None = None
-    status: int | None = None
-    order_type: str | None = None
 
+    tenant_id: int | None = Query(None, description="租户ID")
+    status: int | None = Query(None, description="订单状态(0:待支付 1:已支付 2:已取消 3:已退款)")
+    order_type: str | None = Query(None, description="订单类型")
+    order_no: str | None = Query(None, description="订单号")
 
-# ─── Payment ────────────────────────────────────────────
+    def __post_init__(self) -> None:
+        if self.tenant_id is not None:
+            self.tenant_id = (QueueEnum.eq.value, self.tenant_id)
+        if self.status is not None:
+            self.status = (QueueEnum.eq.value, self.status)
+        if self.order_type:
+            self.order_type = (QueueEnum.eq.value, self.order_type)
+        if self.order_no:
+            self.order_no = (QueueEnum.like.value, self.order_no)
+
 
 class PaymentCallbackSchema(BaseModel):
     """支付回调数据"""
-    transaction_id: str | None = None
-    amount: int
-    order_id: int | None = None
-    raw_data: dict | None = None
+
+    transaction_id: str | None = Field(default=None, description="交易流水号")
+    amount: int = Field(..., description="支付金额(分)")
+    order_id: int | None = Field(default=None, description="订单ID")
+    raw_data: dict | None = Field(default=None, description="原始数据")
 
 
-class PaymentRecordOutSchema(BaseSchema):
+class PaymentRecordOutSchema(BaseSchema, TenantBySchema):
     """支付记录输出"""
-    order_id: int
-    transaction_id: str | None = None
-    pay_method: str
-    amount: int
-    pay_time: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    order_id: int = Field(..., description="订单ID")
+    transaction_id: str | None = Field(default=None, description="交易流水号")
+    pay_method: str = Field(..., description="支付方式")
+    amount: int = Field(..., description="支付金额(分)")
+    pay_time: datetime | None = Field(default=None, description="支付时间")
+    status: int = Field(..., description="支付状态")
+    description: str | None = Field(default=None, description="备注")
 
 
 class PaymentCreateOut(BaseModel):
     """创建支付结果"""
-    pay_url: str
-    qr_code_url: str
-    trade_no: str
-    order_id: int
-    order_no: str
-    amount: int
+
+    pay_url: str = Field(..., description="支付链接")
+    qr_code_url: str = Field(..., description="二维码链接")
+    trade_no: str = Field(..., description="交易流水号")
+    order_id: int = Field(..., description="订单ID")
+    order_no: str = Field(..., description="订单号")
+    amount: int = Field(..., description="支付金额(分)")
 
 
 class PaymentStatusOut(BaseModel):
     """支付状态查询结果"""
-    exists: bool
-    order_id: int | None = None
-    status: int | None = None
-    paid: bool = False
-    pay_method: str | None = None
-    pay_time: str | None = None
+
+    exists: bool = Field(..., description="是否存在")
+    order_id: int | None = Field(default=None, description="订单ID")
+    status: int | None = Field(default=None, description="支付状态")
+    paid: bool = Field(default=False, description="是否已支付")
+    pay_method: str | None = Field(default=None, description="支付方式")
+    pay_time: str | None = Field(default=None, description="支付时间")
 
 
 class OrderStatusMessage(BaseModel):
     """订单/退款操作结果消息"""
-    id: int
-    status: int
-    message: str
 
+    id: int = Field(..., description="订单/退款ID")
+    status: int = Field(..., description="状态")
+    message: str = Field(..., description="消息")
 
-# ─── Refund ─────────────────────────────────────────────
 
 class RefundApplySchema(BaseModel):
     """退款申请"""
-    reason: str = Field(min_length=1, max_length=500)
+
+    reason: str = Field(..., min_length=1, max_length=500, description="退款原因")
 
 
 class RefundReviewSchema(BaseModel):
     """退款审核"""
-    reject_reason: str | None = Field(default=None, max_length=500)
+
+    reject_reason: str | None = Field(default=None, max_length=500, description="驳回原因(审核通过时可不填)")
 
 
-class RefundOutSchema(BaseSchema):
+class RefundOutSchema(BaseSchema, TenantBySchema):
     """退款记录输出"""
-    order_id: int
-    refund_no: str
-    amount: int
-    reason: str
-    refund_transaction_id: str | None = None
-    reviewer_id: int | None = None
-    review_time: datetime | None = None
-    reject_reason: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    order_id: int = Field(..., description="订单ID")
+    refund_no: str = Field(..., description="退款单号")
+    amount: int = Field(..., description="退款金额(分)")
+    reason: str = Field(..., description="退款原因")
+    refund_transaction_id: str | None = Field(default=None, description="退款交易流水号")
+    reviewer_id: int | None = Field(default=None, description="审核人ID")
+    review_time: datetime | None = Field(default=None, description="审核时间")
+    reject_reason: str | None = Field(default=None, description="驳回原因")
+    status: int = Field(..., description="退款状态")
+    description: str | None = Field(default=None, description="备注")

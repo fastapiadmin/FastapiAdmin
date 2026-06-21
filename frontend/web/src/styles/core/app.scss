@@ -89,14 +89,10 @@
   --tw-backdrop-sepia: ;
 }
 
-// 色弱模式
+// 色弱模式（用户偏好开关，通过 useSettingsHandlers.ts 动态加到 <html> 上）
 .color-weak {
   -webkit-filter: invert(80%);
   filter: invert(80%);
-}
-
-#noop {
-  display: none;
 }
 
 // 语言切换选中样式

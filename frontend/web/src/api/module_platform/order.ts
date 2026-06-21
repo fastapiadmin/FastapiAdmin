@@ -40,7 +40,9 @@ const OrderAPI = {
 
   // ─── 支付操作 ───
   payOrder(orderId: number, body?: { pay_method?: string }) {
-    return request<ApiResponse<{ pay_url?: string; qr_code?: string }>>({
+    return request<
+      ApiResponse<{ order_no: string; amount: number; qr_code_url?: string; pay_url?: string }>
+    >({
       url: `${PAYMENT_API}/pay/${orderId}`,
       method: "post",
       data: body,
@@ -48,7 +50,7 @@ const OrderAPI = {
   },
 
   queryPaymentStatus(orderId: number) {
-    return request<ApiResponse<{ status: number; message?: string }>>({
+    return request<ApiResponse<{ paid: boolean; order_no?: string; amount?: number }>>({
       url: `${PAYMENT_API}/status/${orderId}`,
       method: "get",
     });
@@ -123,9 +125,7 @@ export default OrderAPI;
 
 // ─── Order 类型 ──────────────────────────────────────────
 
-export interface OrderPageQuery extends PageQuery {
-  tenant_id?: number;
-  status?: number;
+export interface OrderPageQuery extends PageQuery, TenantByQueryParams {
   order_type?: string;
 }
 
@@ -168,8 +168,7 @@ export interface PaymentRecordTable {
 
 // ─── Refund 类型 ─────────────────────────────────────────
 
-export interface RefundPageQuery extends PageQuery {
-  status?: number;
+export interface RefundPageQuery extends PageQuery, UserByQueryParams, TenantByQueryParams {
 }
 
 export interface RefundTable {

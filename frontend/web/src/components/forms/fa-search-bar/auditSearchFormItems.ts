@@ -26,7 +26,8 @@ export interface GetAuditSearchFormItemsOptions {
 
 /**
  * 常见「创建人 / 更新人 / 创建时间 / 更新时间」搜索项，供 FaSearchBar `items` 使用。
- * 创建人、更新人需配合 `#created_id`、`#updated_id` 插槽（如 FaSearchBarWithAudit）。
+ * 当 FaSearchBar 设置 `includeAudit` 为 true 时，会自动追加这四个字段。
+ * 创建人、更新人插槽由 FaSearchBar 内置提供，也可通过 `#created_id`、`#updated_id` 覆盖。
  */
 export function getAuditSearchFormItems(
   options?: GetAuditSearchFormItemsOptions

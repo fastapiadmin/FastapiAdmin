@@ -1,4 +1,3 @@
-
 from app.api.v1.module_platform.menu.crud import MenuCRUD
 from app.api.v1.module_system.dept.crud import DeptCRUD
 from app.core.base_crud import CRUDBase
@@ -13,15 +12,6 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
     """角色模块数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
-        """
-        初始化角色数据层。
-
-        参数:
-        - auth (AuthSchema): 认证信息模型（含 DB 会话等上下文）。
-
-        返回:
-        - None
-        """
         super().__init__(model=RoleModel, auth=auth)
 
     async def set_role_menus_crud(self, role_ids: list[int], menu_ids: list[int]) -> None:
@@ -35,19 +25,13 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
         返回:
         - None
         """
-        roles = await self.list(search={"id": ("in", role_ids)})
-        menus = (
-            []
-            if not menu_ids
-            else await MenuCRUD(self.auth).list(search={"id": ("in", menu_ids)})
-        )
+        roles = await self.get_list(search={"id": ("in", role_ids)})
+        menus = [] if not menu_ids else await MenuCRUD(self.auth).get_list(search={"id": ("in", menu_ids)})
 
         from app.api.v1.module_platform.package.service import PackageService
 
         if self.auth.user and not self.auth.user.is_superuser and self.auth.tenant_id:
-            allowed_menu_ids = await PackageService.get_tenant_available_menu_ids(
-                self.auth, self.auth.tenant_id
-            )
+            allowed_menu_ids = await PackageService.get_tenant_available_menu_ids(self.auth, self.auth.tenant_id)
             allowed_set = set(allowed_menu_ids)
             for menu in menus:
                 if int(menu.id) not in allowed_set:
@@ -70,12 +54,8 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
         返回:
         - None
         """
-        roles = await self.list(search={"id": ("in", role_ids)})
-        depts = (
-            []
-            if not dept_ids
-            else await DeptCRUD(self.auth).list(search={"id": ("in", dept_ids)})
-        )
+        roles = await self.get_list(search={"id": ("in", role_ids)})
+        depts = [] if not dept_ids else await DeptCRUD(self.auth).get_list(search={"id": ("in", dept_ids)})
 
         for obj in roles:
             relationship = obj.depts

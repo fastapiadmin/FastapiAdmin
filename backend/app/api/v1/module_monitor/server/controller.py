@@ -8,7 +8,7 @@ from app.core.router_class import OperationLogRoute
 
 from .service import ServerService
 
-ServerRouter = APIRouter(route_class=OperationLogRoute, prefix="/server", tags=["系统监控/服务器监控"])
+ServerRouter = APIRouter(route_class=OperationLogRoute, prefix="/server", tags=["系统监控", "服务器监控"])
 
 
 @ServerRouter.get(
@@ -18,12 +18,5 @@ ServerRouter = APIRouter(route_class=OperationLogRoute, prefix="/server", tags=[
     response_model=ResponseSchema[ServerMonitorSchema],
 )
 async def get_monitor_server_info_controller() -> JSONResponse:
-    """
-    查询服务器监控信息
-
-    返回:
-    - JSONResponse: 包含服务器监控信息的JSON响应。
-    """
-    result_dict = await ServerService.get_server_monitor_info_service()
-
+    result_dict = await ServerService.get_server_monitor_info()
     return SuccessResponse(data=result_dict, msg="获取服务器监控信息成功")

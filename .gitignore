@@ -76,7 +76,7 @@ frontend/docs/*
 frontend/app/*
 !frontend/app/.gitkeep
 
-.plan/*
+.plan
 CLAUDE.md
 AGENTS.md
 .codebuddy

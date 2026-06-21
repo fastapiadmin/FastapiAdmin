@@ -77,7 +77,7 @@ function tick() {
   if (!chart || chart.isDisposed()) return;
   const d1 = xData.map(() => Math.round(80 + Math.random() * 180));
   const d2 = d1.map((v) => Math.round(v * (0.05 + Math.random() * 0.25)));
-  const d3 = d1.map((v, i) => Math.round(v - d2[i]));
+  const d3 = d1.map((v, i) => Math.round(v - d2[i]!));
   chart.setOption({ series: [{ data: d1 }, { data: d2 }, { data: d3 }] });
 }
 

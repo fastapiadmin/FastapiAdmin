@@ -47,6 +47,14 @@ from app.core.logger import logger
 from app.plugin.module_task.cronjob.node.model import NodeModel
 from app.utils.cron_util import CronUtil
 
+# 任务状态常量（与 JobModel.status 注释保持一致：0:待执行 1:执行中 2:成功 3:失败 4:超时 5:已取消）
+JOB_STATUS_PENDING = 0
+JOB_STATUS_RUNNING = 1
+JOB_STATUS_SUCCESS = 2
+JOB_STATUS_FAILED = 3
+JOB_STATUS_TIMEOUT = 4
+JOB_STATUS_CANCELLED = 5
+
 scheduler = AsyncIOScheduler()
 scheduler.configure(
     jobstores={
@@ -149,7 +157,7 @@ class SchedulerUtil:
             if trigger_type in ("cron", "interval"):
                 cls._update_job_log(
                     job_id=job_id,
-                    status="running",
+                    status=JOB_STATUS_RUNNING,
                 )
             else:
                 # 一次性任务（manual/date）：创建新的 running 状态日志
@@ -157,7 +165,7 @@ class SchedulerUtil:
                     job_id=job_id,
                     job_name=job.name,
                     trigger_type=trigger_type,
-                    status="running",
+                    status=JOB_STATUS_RUNNING,
                 )
         else:
             # 任务可能已经被移除（一次性任务执行完毕后自动移除）
@@ -174,7 +182,7 @@ class SchedulerUtil:
                 job_id=original_job_id,
                 job_name=job_name,
                 trigger_type="manual",
-                status="running",
+                status=JOB_STATUS_RUNNING,
             )
             if result:
                 logger.info(f"任务 {original_job_id} 日志创建成功，id={result}")
@@ -199,7 +207,7 @@ class SchedulerUtil:
         # 更新执行日志
         cls._update_latest_job_log(
             job_id=job_id,
-            status="success",
+            status=JOB_STATUS_SUCCESS,
             result=str(retval) if retval else None,
         )
 
@@ -212,7 +220,7 @@ class SchedulerUtil:
                     job_id=job_id,
                     job_name=job.name,
                     trigger_type=trigger_type,
-                    status="pending",
+                    status=JOB_STATUS_PENDING,
                 )
                 logger.debug(f"任务 {job_id} 已创建新的 pending 状态日志，等待下次执行")
 
@@ -235,7 +243,7 @@ class SchedulerUtil:
         # 更新执行日志
         cls._update_latest_job_log(
             job_id=job_id,
-            status="failed",
+            status=JOB_STATUS_FAILED,
             result="failed",
             error=str(exception) if exception else "未知错误",
         )
@@ -249,7 +257,7 @@ class SchedulerUtil:
                     job_id=job_id,
                     job_name=job.name,
                     trigger_type=trigger_type,
-                    status="pending",
+                    status=JOB_STATUS_PENDING,
                 )
                 logger.debug(f"任务 {job_id} 已创建新的 pending 状态日志，等待下次执行")
 
@@ -268,7 +276,7 @@ class SchedulerUtil:
         # 更新执行日志
         cls._update_latest_job_log(
             job_id=job_id,
-            status="timeout",
+            status=JOB_STATUS_TIMEOUT,
             result="timeout",
             error="任务错过执行时间",
         )
@@ -281,7 +289,7 @@ class SchedulerUtil:
                     job_id=job_id,
                     job_name=job.name,
                     trigger_type=trigger_type,
-                    status="pending",
+                    status=JOB_STATUS_PENDING,
                 )
                 logger.debug(f"任务 {job_id} 已创建新的 pending 状态日志，等待下次执行")
 
@@ -335,7 +343,7 @@ class SchedulerUtil:
                     job_id=job_id,
                     job_name=job.name,
                     trigger_type=trigger_type,
-                    status="pending",
+                    status=JOB_STATUS_PENDING,
                 )
                 logger.info(f"任务 {job_id} 已创建初始 pending 状态日志")
         else:
@@ -609,8 +617,8 @@ class SchedulerUtil:
             from app.plugin.module_task.cronjob.job.model import JobModel
 
             with Session(engine) as session:
-                session.query(JobModel).filter(JobModel.status == "pending").update({
-                    "status": "cancelled"
+                session.query(JobModel).filter(JobModel.status == JOB_STATUS_PENDING).update({
+                    "status": JOB_STATUS_CANCELLED
                 })
                 session.commit()
                 logger.info("所有待执行任务日志已标记为已取消")
@@ -871,7 +879,7 @@ class SchedulerUtil:
             with Session(engine) as session:
                 deleted = (
                     session.query(JobModel)
-                    .filter(JobModel.job_id == job_id, JobModel.status == "pending")
+                    .filter(JobModel.job_id == job_id, JobModel.status == JOB_STATUS_PENDING)
                     .delete(synchronize_session=False)
                 )
                 session.commit()
@@ -886,7 +894,7 @@ class SchedulerUtil:
         job_id: str,
         job_name: str | None = None,
         trigger_type: str = "manual",
-        status: str = "running",
+        status: int = JOB_STATUS_RUNNING,
     ) -> int | None:
         """
         创建执行日志
@@ -922,7 +930,7 @@ class SchedulerUtil:
 
     @classmethod
     def _update_job_log(
-        cls, job_id: str, status: str, result: str | None = None, error: str | None = None
+        cls, job_id: str, status: int, result: str | None = None, error: str | None = None
     ) -> None:
         """
         更新执行日志（更新该 job_id 最新的 pending 状态日志）
@@ -940,7 +948,7 @@ class SchedulerUtil:
             job_log = (
                 session
                 .query(JobModel)
-                .filter(JobModel.job_id == job_id, JobModel.status == "pending")
+                .filter(JobModel.job_id == job_id, JobModel.status == JOB_STATUS_PENDING)
                 .order_by(JobModel.created_time.desc())
                 .first()
             )
@@ -960,7 +968,7 @@ class SchedulerUtil:
 
     @classmethod
     def _update_latest_job_log(
-        cls, job_id: str, status: str, result: str | None = None, error: str | None = None
+        cls, job_id: str, status: int, result: str | None = None, error: str | None = None
     ) -> None:
         """
         更新最新的执行日志（更新该 job_id 最新的一条日志）
@@ -980,7 +988,7 @@ class SchedulerUtil:
                 job_log = (
                     session
                     .query(JobModel)
-                    .filter(JobModel.job_id == job_id, JobModel.status == "running")
+                    .filter(JobModel.job_id == job_id, JobModel.status == JOB_STATUS_RUNNING)
                     .order_by(JobModel.created_time.desc())
                     .first()
                 )
@@ -1003,7 +1011,7 @@ class SchedulerUtil:
                 job_log = (
                     session
                     .query(JobModel)
-                    .filter(JobModel.job_id == job_id, JobModel.status == "cancelled")
+                    .filter(JobModel.job_id == job_id, JobModel.status == JOB_STATUS_CANCELLED)
                     .order_by(JobModel.created_time.desc())
                     .first()
                 )
@@ -1076,38 +1084,38 @@ class SchedulerUtil:
             job_log = (
                 session
                 .query(JobModel)
-                .filter(JobModel.job_id == job_id, JobModel.status.in_(["pending", "running"]))
+                .filter(JobModel.job_id == job_id, JobModel.status.in_([JOB_STATUS_PENDING, JOB_STATUS_RUNNING]))
                 .order_by(JobModel.created_time.desc())
                 .first()
             )
             if job_log:
-                job_log.status = "cancelled"
+                job_log.status = JOB_STATUS_CANCELLED
                 session.commit()
                 logger.info(f"任务 {job_id} 的执行日志已标记为已取消")
 
     @classmethod
-    def get_job_status(cls, job_id: str | int) -> str:
+    def get_job_status(cls, job_id: str | int) -> int:
         """
-        获取单个任务的当前状态文案。
+        获取单个任务的当前状态。
 
         参数:
         - job_id (str | int): 调度器任务 ID。
 
         返回:
-        - str: 运行中 / 暂停中 / 已停止 / 未知 等。
+        - int: 0=运行中 1=暂停中 2=已停止 3=未知。
         """
         job = cls.get_job(job_id=str(job_id))
         if not job:
-            return "未知"
+            return 3
 
         # 判断是否暂停：next_run_time 为 None 表示任务已暂停
         if job.next_run_time is None:
-            return "暂停中"
+            return 1
 
         if scheduler.state == 0:
-            return "已停止"
+            return 2
 
-        return "运行中"
+        return 0
 
     @classmethod
     def add_and_run_job_now(cls, job_info: NodeModel) -> Job:
@@ -1501,7 +1509,7 @@ class SchedulerUtil:
                 existing_log = (
                     session
                     .query(JobModel)
-                    .filter(JobModel.job_id == str(job.id), JobModel.status == "pending")
+                    .filter(JobModel.job_id == str(job.id), JobModel.status == JOB_STATUS_PENDING)
                     .first()
                 )
                 if not existing_log:
@@ -1509,7 +1517,7 @@ class SchedulerUtil:
                         job_id=str(job.id),
                         job_name=job.name,
                         trigger_type=cls._get_trigger_type(str(job.id)),
-                        status="pending",
+                        status=JOB_STATUS_PENDING,
                         next_run_time=str(job.next_run_time) if job.next_run_time else None,
                         job_state=cls._get_job_state(job),
                     )

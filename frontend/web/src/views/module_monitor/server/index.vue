@@ -10,8 +10,8 @@
               <span class="font-medium">CPU使用情况</span>
             </div>
           </template>
-          <div class="flex-c flex-col gap-4">
-            <div class="flex-c gap-6">
+          <div class="flex items-center flex-col gap-4">
+            <div class="flex items-center gap-6">
               <ElProgress
                 type="circle"
                 :percentage="server.cpu?.used || 0"
@@ -49,12 +49,12 @@
         <ElCard :loading="loading" shadow="hover" class="server-card">
           <template #header>
             <div class="flex items-center gap-2">
-              <FaSvgIcon icon="ri:memory-line" class="text-lg" />
+              <FaSvgIcon icon="ri:ram-line" class="text-lg" />
               <span class="font-medium">内存使用情况</span>
             </div>
           </template>
-          <div class="flex-c flex-col gap-4">
-            <div class="flex-c gap-6">
+          <div class="flex items-center flex-col gap-4">
+            <div class="flex items-center gap-6">
               <ElProgress
                 type="circle"
                 :percentage="server.mem?.usage || 0"
@@ -186,7 +186,6 @@
 </template>
 
 <script lang="ts" setup>
-import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 import ServerAPI, { type ServerInfo } from "@/api/module_monitor/server";
 
 defineOptions({ name: "ServerMonitor" });

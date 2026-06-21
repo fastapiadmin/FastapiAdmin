@@ -1,5 +1,5 @@
 <template>
-  <div class="fa-card p-5 pb-3 h-53 max-sm:h-53 flex flex-col">
+  <div class="fa-card p-5 pb-3 h-54 max-sm:h-54 flex flex-col">
     <div class="fa-card-header">
       <div class="title">
         <h4>
@@ -10,35 +10,40 @@
         </h4>
       </div>
     </div>
-    <div class="flex-1 overflow-y-auto -mr-1 pr-1">
-      <div v-if="quickLinks.length > 0" class="grid grid-cols-4 gap-2">
+    <ElScrollbar class="flex-1 min-h-0">
+      <div v-if="quickLinks.length" class="grid grid-cols-4 gap-2">
         <div
-          v-for="item in linksWithColor"
+          v-for="(item, i) in quickLinks"
           :key="item.id || item.href"
-          class="quick-link-item relative flex flex-col items-center gap-1 py-2 px-1 rounded-lg cursor-pointer hover:bg-(--el-fill-color-lighter) transition-colors"
+          class="group relative flex flex-col items-center gap-1 py-2 px-1 rounded-lg cursor-pointer hover:bg-(--el-fill-color-lighter) transition-colors"
           @click="handleClick(item)"
         >
           <span
             class="flex items-center justify-center w-9 h-9 rounded text-white"
-            :style="{ backgroundColor: item._color }"
+            :style="{ backgroundColor: PALETTE[i % PALETTE.length] }"
           >
             <FaMenuRouteIcon :icon="item.icon || 'menu'" :size="18" />
           </span>
           <span class="text-xs text-center leading-tight line-clamp-2 text-g-700">{{
             item.title
           }}</span>
-          <span class="quick-link-close" @click.stop="handleRemove(item)">
+          <button
+            type="button"
+            class="absolute -top-1 right-0 flex items-center justify-center w-4 h-4 rounded-full bg-(--el-bg-color) text-(--el-text-color-placeholder) opacity-0 group-hover:opacity-100 transition-opacity border-0 cursor-pointer hover:text-(--el-color-danger)! hover:bg-(--el-color-danger-light-9)!"
+            :aria-label="`移除 ${item.title}`"
+            @click.stop="handleRemove(item)"
+          >
             <ElIcon :size="10"><Close /></ElIcon>
-          </span>
+          </button>
         </div>
       </div>
       <ElEmpty v-else description="暂无链接" :image-size="50" />
-    </div>
+    </ElScrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { onScopeDispose, ref } from "vue";
 import { useRouter } from "vue-router";
 import { Close, QuestionFilled } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
@@ -47,69 +52,21 @@ import { quickStartManager, type QuickLink } from "@utils";
 const router = useRouter();
 
 const quickLinks = ref<QuickLink[]>(quickStartManager.getQuickLinks());
+const sync = (links: QuickLink[]) => {
+  quickLinks.value = links;
+};
+quickStartManager.addListener(sync);
+onScopeDispose(() => quickStartManager.removeListener(sync));
 
-const QUICK_LINK_PALETTE = ["#4080ff", "#23c343", "#ff9a2e", "#f76560", "#a9aeb8", "#00b42a"];
-const linksWithColor = computed(() =>
-  quickLinks.value.map((item, i) => ({
-    ...item,
-    _color: QUICK_LINK_PALETTE[i % QUICK_LINK_PALETTE.length],
-  }))
-);
+const PALETTE = ["#4080ff", "#23c343", "#ff9a2e", "#f76560", "#a9aeb8", "#00b42a"];
 
 const handleClick = (item: QuickLink) => {
-  if (item.href) {
-    router.push(item.href).catch(() => {
-      ElMessage.warning(`路由 ${item.href} 不存在，请检查配置`);
-    });
-  } else {
-    ElMessage.info(`${item.title} 功能待开发`);
-  }
+  if (!item.href) return ElMessage.info(`${item.title} 功能待开发`);
+  router.push(item.href).catch(() => ElMessage.warning(`路由 ${item.href} 不存在，请检查配置`));
 };
 
 const handleRemove = (item: QuickLink) => {
-  if (item.id) {
-    quickStartManager.removeQuickLink(item.id);
-  } else if (item.href) {
-    quickStartManager.removeQuickLinkByHref(item.href);
-  }
+  if (item.id) quickStartManager.removeQuickLink(item.id);
+  else if (item.href) quickStartManager.removeQuickLinkByHref(item.href);
 };
-
-const updateQuickLinks = (links: QuickLink[]) => {
-  quickLinks.value = links;
-};
-
-onMounted(() => {
-  quickStartManager.addListener(updateQuickLinks);
-});
-onUnmounted(() => {
-  quickStartManager.removeListener(updateQuickLinks);
-});
 </script>
-
-<style scoped>
-.quick-link-close {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  color: var(--el-text-color-placeholder);
-  cursor: pointer;
-  background: var(--el-bg-color);
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.quick-link-item:hover .quick-link-close {
-  opacity: 1;
-}
-
-.quick-link-close:hover {
-  color: var(--el-color-danger);
-  background-color: var(--el-color-danger-light-9);
-}
-</style>

@@ -27,46 +27,70 @@
               <component v-if="typeof item.label !== 'string'" :is="item.label" />
               <span v-else>{{ item.label }}</span>
             </template>
-            <slot :name="item.key" :item="item" :modelValue="modelValue">
-              <component
-                :is="getComponent(item)"
-                :model-value="getFieldValue(item.key)"
-                @update:model-value="setFieldValue(item.key, $event)"
-                v-bind="getProps(item)"
-              >
-                <!-- 下拉选择 -->
-                <template v-if="item.type === 'select' && getProps(item)?.options">
-                  <ElOption
-                    v-for="option in getProps(item).options"
-                    v-bind="option"
-                    :key="option.value"
-                  />
-                </template>
+            <!-- 创建人插槽 -->
+            <template v-if="item.key === 'created_id' && !$slots.created_id">
+              <div class="w-full min-w-0">
+                <FaUserTableSelect
+                  :model-value="modelValue?.created_id == null ? undefined : modelValue.created_id"
+                  @update:model-value="(v: number | undefined) => patchAuditField('created_id', v)"
+                  @confirm-click="emitImmediateSearch"
+                  @clear-click="emitImmediateSearch"
+                />
+              </div>
+            </template>
+            <!-- 更新人插槽 -->
+            <template v-else-if="item.key === 'updated_id' && !$slots.updated_id">
+              <div class="w-full min-w-0">
+                <FaUserTableSelect
+                  :model-value="modelValue?.updated_id == null ? undefined : modelValue.updated_id"
+                  @update:model-value="(v: number | undefined) => patchAuditField('updated_id', v)"
+                  @confirm-click="emitImmediateSearch"
+                  @clear-click="emitImmediateSearch"
+                />
+              </div>
+            </template>
+            <template v-else>
+              <slot :name="item.key" :item="item" :modelValue="modelValue">
+                <component
+                  :is="getComponent(item)"
+                  :model-value="getFieldValue(item.key)"
+                  @update:model-value="setFieldValue(item.key, $event)"
+                  v-bind="getProps(item)"
+                >
+                  <!-- 下拉选择 -->
+                  <template v-if="item.type === 'select' && getProps(item)?.options">
+                    <ElOption
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
 
-                <!-- 复选框组 -->
-                <template v-if="item.type === 'checkboxgroup' && getProps(item)?.options">
-                  <ElCheckbox
-                    v-for="option in getProps(item).options"
-                    v-bind="option"
-                    :key="option.value"
-                  />
-                </template>
+                  <!-- 复选框组 -->
+                  <template v-if="item.type === 'checkboxgroup' && getProps(item)?.options">
+                    <ElCheckbox
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
 
-                <!-- 单选框组 -->
-                <template v-if="item.type === 'radiogroup' && getProps(item)?.options">
-                  <ElRadio
-                    v-for="option in getProps(item).options"
-                    v-bind="option"
-                    :key="option.value"
-                  />
-                </template>
+                  <!-- 单选框组 -->
+                  <template v-if="item.type === 'radiogroup' && getProps(item)?.options">
+                    <ElRadio
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
 
-                <!-- 动态插槽支持 -->
-                <template v-for="(slotFn, slotName) in getSlots(item)" :key="slotName" #[slotName]>
-                  <component :is="slotFn" />
-                </template>
-              </component>
-            </slot>
+                  <!-- 动态插槽支持 -->
+                  <template v-for="(slotFn, slotName) in getSlots(item)" :key="slotName" #[slotName]>
+                    <component :is="slotFn" />
+                  </template>
+                </component>
+              </slot>
+            </template>
           </ElFormItem>
         </ElCol>
         <ElCol :xs="24" :sm="24" :md="span" :lg="span" :xl="span" class="action-column">
@@ -114,6 +138,11 @@ import { useWindowSize } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import { toRaw, type Component } from "vue";
 import FaDatePicker from "@/components/forms/fa-search-bar/FaDatePicker.vue";
+import FaUserTableSelect from "./FaUserTableSelect.vue";
+import {
+  getAuditSearchFormItems,
+  type GetAuditSearchFormItemsOptions,
+} from "./auditSearchFormItems";
 import {
   ElCascader,
   ElCheckbox,
@@ -217,6 +246,10 @@ interface Props {
   disabledSearch?: boolean;
   /** 搜索时是否清洗空值 */
   sanitizeOutput?: Partial<SanitizeOutputOptions>;
+  /** 是否自动追加审计四字段（创建人/更新人/创建时间/更新时间） */
+  includeAudit?: boolean;
+  /** 传给 getAuditSearchFormItems 的选项 */
+  auditItemOptions?: GetAuditSearchFormItemsOptions;
 }
 
 interface SanitizeOutputOptions {
@@ -248,6 +281,7 @@ const props = withDefaults(defineProps<Props>(), {
   showSearch: true,
   disabledSearch: false,
   sanitizeOutput: () => ({}),
+  includeAudit: false,
 });
 
 interface Emits {
@@ -259,6 +293,15 @@ const emit = defineEmits<Emits>();
 
 const modelValue = defineModel<Record<string, any>>({ default: {} });
 const initialModelValue = ref<Record<string, any>>({});
+
+// 审计字段配置
+const auditItems = computed(() => getAuditSearchFormItems(props.auditItemOptions));
+
+// 合并业务字段和审计字段
+const mergedItems = computed(() => {
+  if (!props.includeAudit) return props.items;
+  return [...props.items, ...auditItems.value];
+});
 
 // 保存组件初始化时的表单快照，用于 reset 时恢复默认筛选条件。
 const cloneModelValue = (value: Record<string, any> | undefined) => {
@@ -427,10 +470,21 @@ const getComponent = (item: SearchFormItem) => {
 };
 
 /**
+ * 更新审计字段并立即触发搜索
+ */
+const patchAuditField = (key: "created_id" | "updated_id", val: number | undefined) => {
+  modelValue.value = { ...modelValue.value, [key]: val };
+};
+
+const emitImmediateSearch = () => {
+  emit("search", getSanitizedOutput());
+};
+
+/**
  * 可见的表单项
  */
 const visibleFormItems = computed(() => {
-  const filteredItems = props.items.filter((item) => !item.hidden);
+  const filteredItems = mergedItems.value.filter((item) => !item.hidden);
   const shouldShowLess = !props.isExpand && !isExpanded.value;
   if (shouldShowLess) {
     const maxItemsPerRow = Math.floor(24 / props.span) - 1;

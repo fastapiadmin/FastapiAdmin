@@ -1,7 +1,7 @@
 <!-- 卡片横幅组件 -->
 <template>
-  <div class="fa-card p-5 flex-c flex-col pb-6 h-full" :style="{ height: height }">
-    <div class="flex-c flex-col gap-4 text-center">
+  <div class="fa-card p-5 flex items-center flex-col pb-6 h-full" :style="{ height: height }">
+    <div class="flex items-center flex-col gap-4 text-center">
       <div class="w-45">
         <img :src="image" :alt="title" class="w-full h-full object-contain" loading="eager" />
       </div>
@@ -9,10 +9,10 @@
         <p class="mb-2 text-lg font-semibold text-g-800">{{ title }}</p>
         <p class="m-0 text-sm text-g-600">{{ description }}</p>
       </div>
-      <div class="flex-c gap-3">
+      <div class="flex items-center gap-3">
         <div
           v-if="cancelButton?.show"
-          class="inline-block h-9 px-3 text-sm/9 c-p select-none rounded-md border border-g-300"
+          class="inline-block h-9 px-3 text-sm/9 cursor-pointer select-none rounded-md border border-g-300"
           :style="{
             backgroundColor: cancelButton?.color,
             color: cancelButton?.textColor,
@@ -23,7 +23,7 @@
         </div>
         <div
           v-if="button?.show"
-          class="inline-block h-9 px-3 text-sm/9 c-p select-none rounded-md"
+          class="inline-block h-9 px-3 text-sm/9 cursor-pointer select-none rounded-md"
           :style="{ backgroundColor: button?.color, color: button?.textColor }"
           @click="handleClick"
         >

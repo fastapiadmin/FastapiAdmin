@@ -23,8 +23,8 @@ export async function confirmBatchDelete(count: number): Promise<void> {
 }
 
 /** 状态切换确认 */
-export async function confirmToggleStatus(status: string): Promise<void> {
-  await ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+export async function confirmToggleStatus(status: number): Promise<void> {
+  await ElMessageBox.confirm(`确认${status === 0 ? "启用" : "停用"}该项数据?`, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",

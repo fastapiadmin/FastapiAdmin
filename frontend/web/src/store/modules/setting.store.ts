@@ -1,6 +1,6 @@
 /**
  * 全局界面设置：布局、主题、页签、水印、工具栏显隐等；部分字段持久化（useStorage / persist）。
- * `reload` 翻转 `refresh` 布尔值，触发 `ArtPageContent` 重建 RouterView（与 useCommon.refresh 一致）。
+ * `reload` 翻转 `refresh` 布尔值，触发 `FaPageContent` 重建 RouterView（与 useCommon.refresh 一致）。
  */
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
@@ -136,9 +136,9 @@ export const useSettingsStore = defineStore(
     const getMenuTheme = computed((): MenuThemeType => {
       const list = AppConfig.themeList.filter((item) => item.theme === menuThemeType.value);
       if (isDark.value) {
-        return AppConfig.darkMenuStyles[0];
+        return AppConfig.darkMenuStyles[0]!;
       } else {
-        return list[0];
+        return list[0]!;
       }
     });
 

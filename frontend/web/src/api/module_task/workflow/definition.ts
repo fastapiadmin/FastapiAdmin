@@ -63,7 +63,7 @@ const WorkflowDefinitionAPI = {
 export default WorkflowDefinitionAPI;
 export { WorkflowDefinitionAPI };
 
-export interface WorkflowPageQuery extends PageQuery {
+export interface WorkflowPageQuery extends PageQuery, UserByQueryParams {
   name?: string;
   code?: string;
 }
@@ -73,9 +73,8 @@ export interface WorkflowTable extends BaseType {
   code?: string;
   nodes?: any[];
   edges?: any[];
-  created_by?: CommonType;
-  updated_by?: CommonType;
-  deleted_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
 export interface WorkflowForm extends BaseFormType {
@@ -83,6 +82,8 @@ export interface WorkflowForm extends BaseFormType {
   code?: string;
   nodes?: any[];
   edges?: any[];
+  status?: number;
+  description?: string;
 }
 
 export interface WorkflowPublishForm {

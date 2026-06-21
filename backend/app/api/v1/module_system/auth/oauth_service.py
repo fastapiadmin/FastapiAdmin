@@ -8,8 +8,6 @@
 环境变量见 Settings 中 OAUTH_* 字段。
 """
 
-from __future__ import annotations
-
 import json
 import secrets
 from typing import Any, Literal
@@ -48,14 +46,14 @@ def _frontend_error_redirect(frontend_base: str, message: str) -> str:
     return f"{frontend_base}{sep}oauth_error={quote(message, safe='')}"
 
 
-def _frontend_success_redirect(
-    frontend_base: str, access_token: str, refresh_token: str, token_type: str
-) -> str:
-    q = urlencode({
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": token_type,
-    })
+def _frontend_success_redirect(frontend_base: str, access_token: str, refresh_token: str, token_type: str) -> str:
+    q = urlencode(
+        {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": token_type,
+        }
+    )
     sep = "&" if "?" in frontend_base else "?"
     return f"{frontend_base}{sep}{q}"
 
@@ -111,9 +109,7 @@ def build_authorize_url(
             "scope": "snsapi_login",
             "state": state,
         }
-        return (
-            "https://open.weixin.qq.com/connect/qrconnect?" + urlencode(params) + "#wechat_redirect"
-        )
+        return "https://open.weixin.qq.com/connect/qrconnect?" + urlencode(params) + "#wechat_redirect"
 
     if provider == "qq":
         params = {
@@ -149,9 +145,7 @@ async def _http_text(method: str, url: str, **kwargs: Any) -> str:
         return r.text
 
 
-async def exchange_github_token(
-    client_id: str, client_secret: str, code: str, redirect_uri: str
-) -> str:
+async def exchange_github_token(client_id: str, client_secret: str, code: str, redirect_uri: str) -> str:
     data = await _http_json(
         "POST",
         "https://github.com/login/oauth/access_token",
@@ -171,16 +165,16 @@ async def exchange_github_token(
     return str(token)
 
 
-async def exchange_gitee_token(
-    client_id: str, client_secret: str, code: str, redirect_uri: str
-) -> str:
-    qs = urlencode({
-        "grant_type": "authorization_code",
-        "code": code,
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "redirect_uri": redirect_uri,
-    })
+async def exchange_gitee_token(client_id: str, client_secret: str, code: str, redirect_uri: str) -> str:
+    qs = urlencode(
+        {
+            "grant_type": "authorization_code",
+            "code": code,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uri": redirect_uri,
+        }
+    )
     data = await _http_json("GET", f"https://gitee.com/oauth/token?{qs}")
     if not isinstance(data, dict):
         raise CustomException(msg="Gitee token 响应格式错误")
@@ -191,12 +185,14 @@ async def exchange_gitee_token(
 
 
 async def exchange_wechat_token(app_id: str, secret: str, code: str) -> tuple[str, str]:
-    qs = urlencode({
-        "appid": app_id,
-        "secret": secret,
-        "code": code,
-        "grant_type": "authorization_code",
-    })
+    qs = urlencode(
+        {
+            "appid": app_id,
+            "secret": secret,
+            "code": code,
+            "grant_type": "authorization_code",
+        }
+    )
     data = await _http_json("GET", f"https://api.weixin.qq.com/sns/oauth2/access_token?{qs}")
     if not isinstance(data, dict):
         raise CustomException(msg="微信 token 响应格式错误")
@@ -207,16 +203,16 @@ async def exchange_wechat_token(app_id: str, secret: str, code: str) -> tuple[st
     return str(token), str(openid)
 
 
-async def exchange_qq_token(
-    client_id: str, client_secret: str, code: str, redirect_uri: str
-) -> tuple[str, str]:
-    qs = urlencode({
-        "grant_type": "authorization_code",
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "code": code,
-        "redirect_uri": redirect_uri,
-    })
+async def exchange_qq_token(client_id: str, client_secret: str, code: str, redirect_uri: str) -> tuple[str, str]:
+    qs = urlencode(
+        {
+            "grant_type": "authorization_code",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+        }
+    )
     text = await _http_text("GET", f"https://graph.qq.com/oauth2.0/token?{qs}")
     parts = dict(p.split("=", 1) for p in text.split("&") if "=" in p)
     token = parts.get("access_token")
@@ -278,11 +274,13 @@ async def fetch_wechat_profile(access_token: str, openid: str) -> tuple[str, str
 
 
 async def fetch_qq_profile(access_token: str, app_id: str, openid: str) -> tuple[str, str]:
-    qs = urlencode({
-        "access_token": access_token,
-        "oauth_consumer_key": app_id,
-        "openid": openid,
-    })
+    qs = urlencode(
+        {
+            "access_token": access_token,
+            "oauth_consumer_key": app_id,
+            "openid": openid,
+        }
+    )
     user = await _http_json("GET", f"https://graph.qq.com/user/get_user_info?{qs}")
     if not isinstance(user, dict):
         raise CustomException(msg="QQ 用户信息格式错误")
@@ -323,7 +321,7 @@ async def ensure_oauth_user(
         role_ids=list(settings.OAUTH_DEFAULT_ROLE_IDS),
     )
     try:
-        await UserService.register_user_service(auth=auth, data=reg)
+        await UserService(auth).register(data=reg)
     except Exception:
         # 并发创建可能触发唯一约束冲突，回退到再次查询
         existing = await UserCRUD(auth).get(username=username)
@@ -384,16 +382,12 @@ async def complete_oauth_login(
     if user.status == 1:
         raise CustomException(msg="用户已被停用")
 
-    user = await UserCRUD(
-        AuthSchema(db=db, user=None, tenant_id=1, check_data_scope=False)
-    ).update_last_login_crud(id=user.id)
+    user = await UserCRUD(AuthSchema(db=db, user=None, tenant_id=1, check_data_scope=False)).update_last_login_crud(id=user.id)
     if not user:
         raise CustomException(msg="用户不存在")
 
     login_type = f"oauth_{provider}"
-    token = await LoginService.create_token_service(
-        request=request, redis=redis, user=user, login_type=login_type
-    )
+    token = await LoginService.create_token(request=request, redis=redis, user=user, login_type=login_type)
     await rc.delete(f"{STATE_PREFIX}{state}")
     return token, frontend
 

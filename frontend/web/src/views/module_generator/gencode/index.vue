@@ -161,10 +161,8 @@ import DictAPI, { DictTable } from "@/api/module_system/dict";
 import { MenuTypeEnum } from "@/enums";
 import { useSettingsStore } from "@stores";
 import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaGenCodeDrawer from "./components/FaGenCodeDrawer.vue";
 import FaImportDbTableDialog from "./components/FaImportDbTableDialog.vue";
 import { CreateTableSubmitMeta } from "./components/FaCreateTableDialog.vue";
@@ -996,7 +994,7 @@ async function handleImportTable(): Promise<void> {
       await nextTick();
       const list = tableListData.value as unknown as GenTableSchema[];
       const importedTable = list.find(
-        (t: GenTableSchema) => t.table_name === tables.value[0].table_name
+        (t: GenTableSchema) => t.table_name === tables.value[0]!.table_name
       );
       if (importedTable) {
         await handlePreviewTable(importedTable);
@@ -1254,7 +1252,7 @@ function bulkSet(field: string | string[], value: any): void {
   info.columns.forEach((column) => {
     if (column && typeof column === "object") {
       fieldsToUpdate.forEach((f) => {
-        (column as any)[f] = value;
+        (column as Record<string, unknown>)[f] = value;
       });
     }
   });

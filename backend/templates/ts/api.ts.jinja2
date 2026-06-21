@@ -1,0 +1,126 @@
+import { request } from "@utils";
+
+// API 前缀来自分系统包 module_xxx → /xxx
+// 对齐 module_example/demo：业务接口固定为 /{prefix}/{module_name}
+const API_PATH = "/{{ api_route_prefix }}/{{ module_name }}";
+
+const {{ class_name }}API = {
+  get{{ class_name }}List(query: {{ class_name }}PageQuery) {
+    return request<ApiResponse<PageResult<{{ class_name }}Table>>>({
+      url: `${API_PATH}/list`,
+      method: "get",
+      params: query,
+    });
+  },
+
+  get{{ class_name }}Detail(query: number) {
+    return request<ApiResponse<{{ class_name }}Table>>({
+      url: `${API_PATH}/detail/${query}`,
+      method: "get",
+    });
+  },
+
+  create{{ class_name }}(body: {{ class_name }}Form) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/create`,
+      method: "post",
+      data: body,
+    });
+  },
+
+  update{{ class_name }}(id: number, body: {{ class_name }}Form) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/update/${id}`,
+      method: "put",
+      data: body,
+    });
+  },
+
+  delete{{ class_name }}(body: number[]) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/delete`,
+      method: "delete",
+      data: body,
+    });
+  },
+
+  batch{{ class_name }}(body: BatchType) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/status/batch`,
+      method: "patch",
+      data: body,
+    });
+  },
+
+  export{{ class_name }}(body: {{ class_name }}PageQuery) {
+    return request<Blob>({
+      url: `${API_PATH}/export`,
+      method: "post",
+      data: body,
+      responseType: "blob",
+    });
+  },
+
+  downloadTemplate{{ class_name }}() {
+    return request<ApiResponse>({
+      url: `${API_PATH}/download/template`,
+      method: "post",
+      responseType: "blob",
+    });
+  },
+
+  import{{ class_name }}(body: FormData) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/import`,
+      method: "post",
+      data: body,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+};
+
+export default {{ class_name }}API;
+
+// ------------------------------
+// TS 类型声明
+// ------------------------------
+
+/** 列表查询参数 */
+export interface {{ class_name }}PageQuery extends PageQuery {
+  {% for column in columns %}
+  {# 主键列默认不参与查询 #}
+  {% if column.is_query and column.column_name != pk_column_name and column.column_name not in ['created_time', 'updated_time'] %}
+  {{ column.column_name }}?: {{
+    'string' if column.query_type == 'LIKE'
+    else (column.python_type | python_to_ts_type)
+  }};
+  {% endif %}
+  {% endfor %}
+  created_time?: string[];
+  updated_time?: string[];
+  created_id?: number;
+  updated_id?: number;
+}
+
+/** 列表展示项 */
+export interface {{ class_name }}Table extends BaseType {
+  {% for column in columns %}
+  {% if column.column_name not in ['id', 'uuid', 'status', 'description', 'created_time', 'updated_time'] and column.column_name != pk_column_name %}
+  {{ column.column_name }}?: {{ column.python_type | python_to_ts_type }};
+  {% endif %}
+  {% endfor %}
+  created_by?: CommonType;
+  updated_by?: CommonType;
+  deleted_by?: CommonType;
+}
+
+/** 新增/修改表单参数 */
+export interface {{ class_name }}Form extends BaseFormType {
+  {% for column in columns %}
+  {% if (column.is_insert or column.is_edit) and column.column_name not in ['uuid', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id'] and column.column_name != pk_column_name %}
+  {{ column.column_name }}?: {{ column.python_type | python_to_ts_type }};
+  {% endif %}
+  {% endfor %}
+}

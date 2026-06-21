@@ -63,8 +63,13 @@ function tick() {
   const data = names.map((name) => ({
     value: Math.round(100 + Math.random() * 600),
     name,
-    itemStyle: (chart as any).getOption().series[0].data?.find((d: any) => d.name === name)
-      ?.itemStyle,
+    itemStyle: (
+      chart as unknown as {
+        getOption: () => { series: [{ data: { name: string; itemStyle?: unknown }[] }] };
+      }
+    )
+      .getOption()
+      .series[0].data?.find((d: { name: string }) => d.name === name)?.itemStyle,
   }));
   chart.setOption({ series: [{ data }] });
 }

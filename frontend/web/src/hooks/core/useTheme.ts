@@ -63,7 +63,7 @@ export function useTheme() {
     // 临时禁用过渡效果
     disableTransitions();
 
-    const el = document.getElementsByTagName("html")[0];
+    const el = document.getElementsByTagName("html")[0]!;
     const isDark = theme === SystemThemeEnum.DARK;
 
     if (!themeMode) {
@@ -82,7 +82,7 @@ export function useTheme() {
     for (let i = 1; i <= 9; i++) {
       document.documentElement.style.setProperty(
         `--el-color-primary-light-${i}`,
-        isDark ? `${getDarkColor(primary, i / 10)}` : `${getLightColor(primary, i / 10)}`
+        isDark ? `${getDarkColor(primary!, i / 10)}` : `${getLightColor(primary!, i / 10)}`
       );
     }
 
@@ -132,7 +132,7 @@ export function initializeTheme() {
 
   // 根据系统偏好应用主题
   const applyThemeByMode = () => {
-    const el = document.getElementsByTagName("html")[0];
+    const el = document.getElementsByTagName("html")[0]!;
     let actualTheme = settingStore.systemThemeType;
 
     // 如果是 AUTO 模式，检测系统偏好
@@ -149,7 +149,7 @@ export function initializeTheme() {
     }
 
     // 设置主题颜色
-    setElementThemeColor(settingStore.systemThemeColor);
+    setElementThemeColor(settingStore.systemThemeColor!);
 
     // 设置圆角
     document.documentElement.style.setProperty(

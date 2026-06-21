@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+
+{% for model_import in model_import_list %}
+{{ model_import }}
+{% endfor %}
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.base_model import ModelMixin, TenantMixin, UserMixin
+{% if table.sub and not is_sub_entity %}
+from ..{{ sub_module_name }}.model import {{ sub_model_class_name }}
+{% endif %}
+
+
+class {{ class_name }}Model(ModelMixin, TenantMixin, UserMixin):
+    """
+    {{ function_name }}表
+    """
+    __tablename__: str = '{{ table_name }}'
+    __table_args__: dict[str, str] = {'comment': '{{ function_name }}'}
+    __loader_options__: list[str] = ["created_by", "updated_by", "deleted_by", "tenant_by"{% if table.sub and not is_sub_entity %}, "{{ sub_rel_list_name }}"{% endif %}]
+
+{% if not is_sub_entity %}
+    {% for column in columns %}
+    {% if column.column_name not in ['id', 'uuid', 'tenant_id', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] %}
+    {% set sqlalchemy_type = column|get_sqlalchemy_type %}
+    {{ column.column_name }}: Mapped[{{ column.python_type }} | None] = mapped_column({{ sqlalchemy_type }}, {% if column.is_pk %}primary_key=True, {% endif %}{% if column.is_increment %}autoincrement=True, {% endif %}{% if (not column.is_nullable) or column.is_pk %}nullable=False{% else %}nullable=True{% endif %}, comment='{{ column.column_comment }}')
+    {% endif %}
+    {% endfor %}
+
+    {% if table.sub %}
+    {{ sub_rel_list_name }} = relationship('{{ sub_model_class_name }}', back_populates='{{ parent_rel_name }}')
+    {% endif %}
+{% else %}
+    {% for column in columns %}
+    {% if column.column_name not in ['id', 'uuid', 'tenant_id', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] %}
+    {% set sqlalchemy_type = column|get_sqlalchemy_type %}
+    {% if column.column_name == sub_table_fk_name %}
+    {{ column.column_name }}: Mapped[{{ column.python_type }} | None] = mapped_column({{ sqlalchemy_type }}, ForeignKey('{{ parent_table_name }}.{{ parent_pk_column_name }}', ondelete='CASCADE'), {% if column.is_pk %}primary_key=True, {% endif %}{% if column.is_increment %}autoincrement=True, {% endif %}{% if (not column.is_nullable) or column.is_pk %}nullable=False{% else %}nullable=True{% endif %}, comment='{{ column.column_comment }}')
+    {% else %}
+    {{ column.column_name }}: Mapped[{{ column.python_type }} | None] = mapped_column({{ sqlalchemy_type }}, {% if column.is_pk %}primary_key=True, {% endif %}{% if column.is_increment %}autoincrement=True, {% endif %}{% if (not column.is_nullable) or column.is_pk %}nullable=False{% else %}nullable=True{% endif %}, comment='{{ column.column_comment }}')
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+
+    {{ parent_rel_name }} = relationship('{{ parent_model_class_name }}', back_populates='{{ parent_list_rel_name }}')
+{% endif %}

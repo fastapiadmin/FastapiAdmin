@@ -66,10 +66,8 @@ import OnlineAPI, { type OnlineUserTable } from "@/api/module_monitor/online";
 import type { ColumnOption } from "@/types/component";
 import { ElMessage, ElMessageBox, ElTooltip } from "element-plus";
 import { useAuth } from "@/hooks/core/useAuth";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaCopyButton from "@/components/others/fa-copy-button/index.vue";
 import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
 

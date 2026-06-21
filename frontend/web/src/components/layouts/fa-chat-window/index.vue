@@ -2,25 +2,25 @@
 <template>
   <div>
     <ElDrawer v-model="isDrawerVisible" :size="isMobile ? '100%' : '480px'" :with-header="false">
-      <div class="mb-5 flex-cb">
+      <div class="mb-5 flex items-center justify-between">
         <div>
           <span class="text-base font-medium">Art Bot</span>
-          <div class="mt-1.5 flex-c gap-1">
+          <div class="mt-1.5 flex items-center gap-1">
             <div class="h-2 w-2 rounded-full" :class="isOnline ? 'bg-success' : 'bg-danger'"></div>
             <span class="text-xs text-g-600">{{ isOnline ? "在线" : "离线" }}</span>
           </div>
         </div>
         <div>
-          <ElIcon class="c-p" :size="20" @click="closeChat">
+          <ElIcon class="cursor-pointer" :size="20" @click="closeChat">
             <Close />
           </ElIcon>
         </div>
       </div>
       <div class="flex h-[calc(100%-70px)] flex-col">
         <!-- 聊天消息区域 -->
-        <div
-          class="flex-1 overflow-y-auto border-t-d px-4 py-7.5 [&::-webkit-scrollbar]:w-1!"
+        <ElScrollbar
           ref="messageContainer"
+          class="flex-1 border-t border-(--default-border) px-4 py-7.5"
         >
           <template v-for="(message, index) in messages" :key="index">
             <div
@@ -53,7 +53,7 @@
               </div>
             </div>
           </template>
-        </div>
+        </ElScrollbar>
 
         <!-- 聊天输入区域 -->
         <div class="px-4 pt-4">
@@ -73,10 +73,13 @@
               </div>
             </template>
           </ElInput>
-          <div class="mt-3 flex-cb">
-            <div class="flex-c">
-              <FaSvgIcon icon="ri:image-line" class="mr-5 c-p text-g-600 text-lg" />
-              <FaSvgIcon icon="ri:emotion-happy-line" class="mr-5 c-p text-g-600 text-lg" />
+          <div class="mt-3 flex items-center justify-between">
+            <div class="flex items-center">
+              <FaSvgIcon icon="ri:image-line" class="mr-5 cursor-pointer text-g-600 text-lg" />
+              <FaSvgIcon
+                icon="ri:emotion-happy-line"
+                class="mr-5 cursor-pointer text-g-600 text-lg"
+              />
             </div>
             <ElButton type="primary" @click="sendMessage" v-ripple class="min-w-20">发送</ElButton>
           </div>
@@ -88,6 +91,7 @@
 
 <script setup lang="ts">
 import { Picture, Paperclip, Close } from "@element-plus/icons-vue";
+import { ElScrollbar } from "element-plus";
 import { mittBus } from "@utils";
 import meAvatar from "@imgs/avatar/avatar5.webp";
 import aiAvatar from "@imgs/avatar/avatar10.webp";
@@ -121,7 +125,7 @@ const isOnline = ref(true);
 // 消息相关状态
 const messageText = ref("");
 const messageId = ref(10);
-const messageContainer = ref<HTMLElement | null>(null);
+const messageContainer = ref<InstanceType<typeof ElScrollbar> | null>(null);
 
 // 初始化聊天消息数据
 const initializeMessages = (): ChatMessage[] => [
@@ -212,9 +216,8 @@ const formatCurrentTime = (): string => {
 const scrollToBottom = (): void => {
   nextTick(() => {
     setTimeout(() => {
-      if (messageContainer.value) {
-        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-      }
+      const wrap = messageContainer.value?.wrapRef;
+      if (wrap) wrap.scrollTop = wrap.scrollHeight;
     }, SCROLL_DELAY);
   });
 };

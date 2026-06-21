@@ -13,9 +13,7 @@ from app.core.router_class import OperationLogRoute
 from .schema import JobOutSchema, JobQueryParam
 from .service import JobService
 
-JobRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/job", tags=["定时任务/调度器监控"])
-
-# ==================== 调度器状态和操作 ====================
+JobRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/job", tags=["任务调度", "调度器监控"])
 
 
 @JobRouter.get(
@@ -25,13 +23,7 @@ JobRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/job", tags
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:query"]))],
 )
 async def get_scheduler_status_controller() -> JSONResponse:
-    """
-    获取调度器状态
-
-    返回:
-    - JSONResponse: 调度器状态信息
-    """
-    data = JobService.get_scheduler_status_service()
+    data = JobService.get_scheduler_status()
     return SuccessResponse(data=data, msg="获取调度器状态成功")
 
 
@@ -42,13 +34,7 @@ async def get_scheduler_status_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:query"]))],
 )
 async def get_scheduler_jobs_controller() -> JSONResponse:
-    """
-    获取调度器中的任务列表
-
-    返回:
-    - JSONResponse: 调度器任务列表
-    """
-    data = JobService.get_scheduler_jobs_service()
+    data = JobService.get_scheduler_jobs()
     return SuccessResponse(data=data, msg="获取调度器任务列表成功")
 
 
@@ -59,12 +45,6 @@ async def get_scheduler_jobs_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:scheduler"]))],
 )
 async def start_scheduler_controller() -> JSONResponse:
-    """
-    启动调度器。
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.start()
     return SuccessResponse(msg="调度器已启动")
 
@@ -76,12 +56,6 @@ async def start_scheduler_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:scheduler"]))],
 )
 async def pause_scheduler_controller() -> JSONResponse:
-    """
-    暂停调度器。
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.pause()
     return SuccessResponse(msg="调度器已暂停")
 
@@ -93,12 +67,6 @@ async def pause_scheduler_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:scheduler"]))],
 )
 async def resume_scheduler_controller() -> JSONResponse:
-    """
-    恢复调度器。
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.resume()
     return SuccessResponse(msg="调度器已恢复")
 
@@ -110,12 +78,6 @@ async def resume_scheduler_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:scheduler"]))],
 )
 async def shutdown_scheduler_controller() -> JSONResponse:
-    """
-    关闭调度器。
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     await SchedulerUtil.shutdown()
     return SuccessResponse(msg="调度器已关闭")
 
@@ -127,12 +89,6 @@ async def shutdown_scheduler_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:task"]))],
 )
 async def clear_jobs_controller() -> JSONResponse:
-    """
-    清空调度器中的所有任务。
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.clear_jobs()
     return SuccessResponse(msg="已清空所有任务")
 
@@ -144,12 +100,6 @@ async def clear_jobs_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:query"]))],
 )
 async def get_scheduler_console_controller() -> JSONResponse:
-    """
-    获取调度器控制台信息
-
-    返回:
-    - JSONResponse: 调度器任务的控制台输出
-    """
     console_output = SchedulerUtil.print_jobs()
     return SuccessResponse(data=console_output, msg="获取控制台信息成功")
 
@@ -161,16 +111,8 @@ async def get_scheduler_console_controller() -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_task:cronjob:job:update"]))],
 )
 async def sync_jobs_controller() -> JSONResponse:
-    """
-    同步调度器任务到数据库
-
-    返回:
-    - JSONResponse: 同步的任务数量
-    """
     sync_count = SchedulerUtil.sync_jobs_to_db()
     return SuccessResponse(data=sync_count, msg=f"同步完成，共同步 {sync_count} 个任务")
-
-# ==================== 调度器任务操作 ====================
 
 
 @JobRouter.post(
@@ -182,15 +124,6 @@ async def sync_jobs_controller() -> JSONResponse:
 async def pause_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
 ) -> JSONResponse:
-    """
-    暂停调度器中的任务
-
-    参数:
-    - job_id (str): 调度器任务ID
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.pause_job(job_id=job_id)
     return SuccessResponse(msg="暂停任务成功")
 
@@ -204,15 +137,6 @@ async def pause_job_controller(
 async def resume_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
 ) -> JSONResponse:
-    """
-    恢复调度器中的任务
-
-    参数:
-    - job_id (str): 调度器任务ID
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.resume_job(job_id=job_id)
     return SuccessResponse(msg="恢复任务成功")
 
@@ -226,15 +150,6 @@ async def resume_job_controller(
 async def run_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
 ) -> JSONResponse:
-    """
-    立即执行调度器中的任务
-
-    参数:
-    - job_id (str): 调度器任务ID
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.run_job_now(job_id=job_id)
     return SuccessResponse(msg="立即执行任务成功")
 
@@ -248,19 +163,8 @@ async def run_job_controller(
 async def remove_job_controller(
     job_id: Annotated[str, Path(description="调度器任务ID")],
 ) -> JSONResponse:
-    """
-    从调度器中移除任务
-
-    参数:
-    - job_id (str): 调度器任务ID
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
     SchedulerUtil.remove_job(job_id=job_id)
     return SuccessResponse(msg="移除任务成功")
-
-# ==================== 执行日志 ====================
 
 
 @JobRouter.get(
@@ -273,22 +177,10 @@ async def get_job_log_list_controller(
     search: Annotated[JobQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:job:query"]))],
 ) -> JSONResponse:
-    """
-    查询执行日志列表
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数模型
-    - search (JobQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含分页后的执行日志列表
-    """
     order_by = [{"created_time": "desc"}]
     if page.order_by:
         order_by = page.order_by
-    result_dict = await JobService.get_job_log_page_service(
-        auth=auth,
+    result_dict = await JobService(auth).get_job_log_page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
@@ -306,17 +198,7 @@ async def get_job_log_detail_controller(
     id: Annotated[int, Path(description="日志ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:job:detail"]))],
 ) -> JSONResponse:
-    """
-    获取执行日志详情
-
-    参数:
-    - id (int): 日志ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含执行日志详情
-    """
-    result_dict = await JobService.get_job_log_detail_service(id=id, auth=auth)
+    result_dict = await JobService(auth).get_job_log_detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取执行日志详情成功")
 
 
@@ -329,15 +211,5 @@ async def delete_job_log_controller(
     ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:job:delete"]))],
 ) -> JSONResponse:
-    """
-    删除执行日志
-
-    参数:
-    - ids (list[int]): ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 成功提示响应。
-    """
-    await JobService.delete_job_log_service(auth=auth, ids=ids)
+    await JobService(auth).delete_job_log(ids=ids)
     return SuccessResponse(msg="删除执行日志成功")

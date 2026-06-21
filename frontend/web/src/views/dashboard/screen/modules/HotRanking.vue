@@ -53,8 +53,8 @@ function tick() {
   const vals = list.map(() => Math.round(100 + Math.random() * 800));
   const max = Math.max(...vals);
   list.forEach((item, i) => {
-    item.value = vals[i] + "单";
-    item.ratio = vals[i] / max;
+    item.value = vals[i]! + "单";
+    item.ratio = vals[i]! / max;
   });
   list.sort((a, b) => parseInt(b.value) - parseInt(a.value));
 }

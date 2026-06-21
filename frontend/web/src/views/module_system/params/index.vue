@@ -35,7 +35,8 @@
             :perm-export="['module_system:param:export']"
             :perm-delete="['module_system:param:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
           />
@@ -130,10 +131,9 @@ import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useConfigStore } from "@stores";
 import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import { ElTag } from "element-plus";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 
 defineOptions({
   name: "Params",
@@ -234,6 +234,8 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<ConfigTable>();
 
+const createLoading = ref(false);
+
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
 
@@ -308,6 +310,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
       await configStore.getConfig();
     },
   });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const paramDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -386,10 +397,10 @@ const {
         prop: "config_type",
         label: "系统内置",
         minWidth: 100,
-        formatter: (row: ConfigTable) =>
-          h(ElTag, { type: row.config_type ? "success" : "danger" }, () =>
-            row.config_type ? "是" : "否"
-          ),
+        status: {
+          true: { type: "success", text: "是" },
+          false: { type: "danger", text: "否" },
+        },
       },
       { prop: "description", label: "描述", minWidth: 120, showOverflowTooltip: true },
       { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },

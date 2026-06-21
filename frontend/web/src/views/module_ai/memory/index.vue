@@ -34,7 +34,8 @@
             :perm-create="['module_ai:chat:create']"
             :perm-delete="['module_ai:chat:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -153,9 +154,9 @@ import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import { formatToDateTime, renderTableOperationCell, type TableOperationAction } from "@utils";
@@ -246,6 +247,8 @@ const editingTitle = ref("");
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<ChatSession>();
+
+const createLoading = ref(false);
 
 async function deleteSessionRow(id: string) {
   try {
@@ -435,6 +438,15 @@ async function resetForm() {
 async function handleCloseDialog() {
   closeDialog();
   await resetForm();
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
 }
 
 async function handleOpenDialog(type: "create" | "detail", id?: string) {

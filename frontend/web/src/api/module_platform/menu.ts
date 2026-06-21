@@ -53,12 +53,8 @@ const MenuAPI = {
 
 export default MenuAPI;
 
-export interface MenuPageQuery {
+export interface MenuPageQuery extends BaseQueryParams {
   name?: string;
-  status?: string;
-  created_time?: string[];
-  updated_time?: string[];
-  /** 与后端 Query `menu_client` 一致：pc | app；菜单管理 Tab 切换时传入 */
   menu_client?: "pc" | "app";
 }
 
@@ -89,12 +85,15 @@ export interface MenuTable extends BaseType {
   show_badge?: boolean;
   show_text_badge?: string;
   scope?: "platform" | "tenant";
+  status?: number;
+  description?: string;
 }
 
 export interface MenuForm extends BaseFormType {
   name?: string;
   type?: number;
   icon?: string;
+  order?: number;
   permission?: string;
   route_name?: string;
   route_path?: string;
@@ -115,6 +114,8 @@ export interface MenuForm extends BaseFormType {
   show_badge?: boolean;
   show_text_badge?: string;
   scope?: "platform" | "tenant";
+  status?: number;
+  description?: string;
 }
 
 export interface KeyValue {

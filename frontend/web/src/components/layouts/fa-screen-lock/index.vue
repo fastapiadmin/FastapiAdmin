@@ -4,7 +4,7 @@
     <!-- 开发者工具警告覆盖层 -->
     <div
       v-if="showDevToolsWarning"
-      class="fixed top-0 left-0 z-999999 flex-cc w-full h-full text-white bg-linear-to-br from-[#1e1e1e] to-black animate-fade-in"
+      class="fixed top-0 left-0 z-999999 flex items-center justify-center w-full h-full text-white bg-linear-to-br from-[#1e1e1e] to-black animate-fade-in"
     >
       <div class="p-5 text-center select-none">
         <div class="mb-7.5 text-5xl">🔒</div>
@@ -66,20 +66,20 @@
         <span>{{ t("lock.unlock") }}</span>
       </div>
 
-      <div class="time-container w-screen h-screen">
+      <div class="time-container flex-cc w-screen h-screen">
         <div class="hour-container mr-5 md:mr-20 w-2/5 h-2/5 md:h-4/5">
           <span>{{ hour }}</span>
           <span v-show="showClock" class="meridiem absolute left-5 top-5 text-md xl:text-xl">
             {{ meridiem }}
           </span>
         </div>
-        <div class="minute-container w-2/5 h-2/5 md:h-4/5">
+        <div class="minute-container flex-cc w-2/5 h-2/5 md:h-4/5">
           <span>{{ minute }}</span>
         </div>
       </div>
 
       <transition name="fade-slide">
-        <div v-show="!showClock" class="entry-wrapper">
+        <div v-show="!showClock" class="entry-wrapper flex-cc">
           <div class="entry-content">
             <div class="avatar-container">
               <img v-if="userAvatar" :src="userAvatar" alt="" class="avatar object-cover" />
@@ -581,9 +581,6 @@ onUnmounted(() => {
 
     .hour-container {
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 1rem;
       margin-bottom: 2rem;
       font-size: 220px;

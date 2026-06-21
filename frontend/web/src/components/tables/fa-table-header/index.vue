@@ -1,11 +1,11 @@
 <!-- 表格头部，包含表格大小、刷新、全屏、列设置、其他设置 -->
 <template>
-  <div class="flex-cb max-md:block!" id="fa-table-header">
+  <div class="flex items-center justify-between max-md:block!" id="fa-table-header">
     <div class="flex-wrap">
       <slot name="left"></slot>
     </div>
 
-    <div class="flex-c md:justify-end max-md:mt-3 max-sm:hidden!">
+    <div class="flex items-center md:justify-end max-md:mt-3 max-sm:hidden!">
       <!-- 搜索区域显示/隐藏：默认展示搜索（未高亮）；点按收起后高亮表示当前为隐藏状态 -->
       <ElTooltip
         v-if="showSearchBar != null"
@@ -97,11 +97,11 @@
               <div
                 v-for="item in columns"
                 :key="item.prop || item.type"
-                class="column-option flex-c"
+                class="column-option flex items-center"
                 :class="{ 'fixed-column': item.fixed }"
               >
                 <div
-                  class="drag-icon mr-2 h-4.5 flex-cc text-g-500"
+                  class="drag-icon mr-2 h-4.5 flex items-center justify-center text-g-500"
                   :class="item.fixed ? 'cursor-default text-g-300' : 'cursor-move'"
                 >
                   <FaSvgIcon
@@ -157,7 +157,6 @@ import { useTableStore } from "@stores";
 import { VueDraggable } from "vue-draggable-plus";
 import { useI18n } from "vue-i18n";
 import type { ColumnOption } from "@/types/component";
-import { ElScrollbar } from "element-plus";
 
 defineOptions({ name: "FaTableHeader" });
 
@@ -351,7 +350,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@reference '@styles/core/tailwind.css';
+@reference '@styles/tailwind.css';
 
 .button {
   @apply ml-2 

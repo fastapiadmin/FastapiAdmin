@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.base_schema import JWTOutSchema
@@ -56,7 +55,7 @@ class SelectTenantOutSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     access_token: str = Field(..., description="访问token（含租户上下文）")
-    token_type: str = Field(default="Bearer", description="token类型")
+    token_type: str = Field(default="Bearer", description="token类型（RFC 6750）")
     expires_in: int = Field(..., gt=0, description="过期时间(秒)")
 
 
@@ -67,17 +66,13 @@ class LoginWithTenantsSchema(JWTOutSchema):
     user_info: dict = Field(default_factory=dict, description="用户信息")
 
 
-# ─── 租户自助注册 ──────────────────────────────────────────────────────────────
-
 class TenantRegisterSchema(BaseModel):
     """租户自助注册请求"""
 
     username: str = Field(..., min_length=3, max_length=32, description="登录账号")
     password: str = Field(..., min_length=6, max_length=128, description="登录密码")
     email: str = Field(..., max_length=128, description="邮箱（用于接收通知）")
-    tenant_name: str | None = Field(
-        default=None, max_length=100, description="企业/团队名称（可选，默认：{用户名}的租户）"
-    )
+    tenant_name: str | None = Field(default=None, max_length=100, description="企业/团队名称（可选，默认：{用户名}的租户）")
 
 
 class TenantRegisterOutSchema(BaseModel):
@@ -92,8 +87,6 @@ class TenantRegisterOutSchema(BaseModel):
     trial_end: str = Field(..., description="试用到期日")
     message: str = Field(default="注册成功", description="提示信息")
 
-
-# ─── 忘记密码（自助重置）─────────────────────────────────────────
 
 class ForgotPasswordSchema(BaseModel):
     """忘记密码：提交邮箱，接收重置邮件"""

@@ -63,7 +63,7 @@
                 <li
                   v-for="icon in filteredElementIcons"
                   :key="icon"
-                  class="icon-grid-item"
+                  class="icon-grid-item flex-cc"
                   @click="selectIcon(icon)"
                 >
                   <ElIcon>
@@ -195,9 +195,6 @@ onMounted(() => {
 }
 
 .icon-grid-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px;
   margin: 4px;
   cursor: pointer;

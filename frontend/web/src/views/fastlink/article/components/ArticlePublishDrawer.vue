@@ -49,7 +49,7 @@
                   >
                     <div
                       v-if="!cover"
-                      class="flex-cc flex-col w-65 h-40 border border-dashed border-[#d9d9d9] rounded-md"
+                      class="flex items-center justify-center flex-col w-65 h-40 border border-dashed border-[#d9d9d9] rounded-md"
                     >
                       <ElIcon class="text-xl! text-g-600!"><Plus /></ElIcon>
                       <div class="mt-2 text-sm text-g-600">点击上传封面</div>
@@ -296,9 +296,7 @@ const addArticle = async () => {
   if (!validateArticle()) return;
 
   try {
-    const cleanedContent = cleanCodeContent(editorHtml.value);
-
-    console.log("新增文章:", { cleanedContent });
+    cleanCodeContent(editorHtml.value);
 
     await new Promise<void>((resolve) => setTimeout(resolve, 400));
     resultPhase.value = "success";
@@ -312,9 +310,7 @@ const editArticle = async () => {
   if (!validateArticle()) return;
 
   try {
-    const cleanedContent = cleanCodeContent(editorHtml.value);
-
-    console.log("编辑文章:", { cleanedContent });
+    cleanCodeContent(editorHtml.value);
 
     await new Promise<void>((resolve) => setTimeout(resolve, 400));
     resultPhase.value = "success";

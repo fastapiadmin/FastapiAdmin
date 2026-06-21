@@ -4,6 +4,7 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.common.enums import QueueEnum
+from app.core.base_params import BaseQueryParam
 from app.core.base_schema import BaseSchema
 
 
@@ -12,9 +13,9 @@ class PackageCreateSchema(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=100, description="套餐名称")
     code: str = Field(..., min_length=2, max_length=100, description="套餐编码")
-    status: int = Field(default=0, ge=0, le=1, description="状态(0:正常 1:禁用)")
-    sort: int = Field(default=0, ge=0, description="排序")
+    status: int = Field(default=0, ge=0, le=1, description="状态(0:启动 1:停用)")
     description: str | None = Field(default=None, max_length=255, description="描述")
+    sort: int = Field(default=0, ge=0, description="排序")
     price: int = Field(default=0, ge=0, description="价格(分)")
     period: str = Field(default="month", pattern=r"^(month|year)$", description="计费周期")
     trial_days: int = Field(default=0, ge=0, description="免费试用天数")
@@ -55,7 +56,7 @@ class PackageUpdateSchema(PackageCreateSchema):
 
     name: str | None = Field(default=None, max_length=100, description="套餐名称")  # type: ignore[assignment]
     code: str | None = Field(default=None, max_length=100, description="套餐编码")  # type: ignore[assignment]
-    status: int | None = Field(default=None, ge=0, le=1, description="状态(0:正常 1:禁用)")
+    status: int | None = Field(default=None, ge=0, le=1, description="状态(0:启动 1:停用)")
     sort: int | None = Field(default=None, ge=0, description="排序")
     description: str | None = Field(default=None, max_length=255, description="描述")
     price: int | None = Field(default=None, ge=0, description="价格(分)")
@@ -94,21 +95,17 @@ class PackageOutSchema(PackageCreateSchema, BaseSchema):
 
 
 @dataclass
-class PackageQueryParam:
+class PackageQueryParam(BaseQueryParam):
     """套餐查询参数"""
 
-    def __init__(
-        self,
-        name: str | None = Query(None, description="套餐名称"),
-        code: str | None = Query(None, description="套餐编码"),
-        status: str | None = Query(None, description="状态"),
-    ) -> None:
-        if name:
-            self.name = (QueueEnum.like.value, name)
-        if code:
-            self.code = (QueueEnum.like.value, code)
-        if status:
-            self.status = (QueueEnum.eq.value, status)
+    name: str | None = Query(None, description="套餐名称")
+    code: str | None = Query(None, description="套餐编码")
+
+    def __post_init__(self) -> None:
+        if self.name:
+            self.name = (QueueEnum.like.value, self.name)
+        if self.code:
+            self.code = (QueueEnum.like.value, self.code)
 
 
 class PackageMenuSetSchema(BaseModel):

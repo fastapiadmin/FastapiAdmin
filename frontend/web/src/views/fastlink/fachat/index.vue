@@ -13,7 +13,7 @@
       class="box-border w-90 h-full p-5 border-r border-g-300 max-md:w-full max-md:h-42 max-md:border-r-0"
     >
       <div class="pb-5 max-md:hidden!">
-        <div class="flex-c gap-3">
+        <div class="flex items-center gap-3">
           <ElAvatar :size="50" :src="selectedPerson?.avatar" />
           <div>
             <div class="text-base font-medium">{{ selectedPerson?.name }}</div>
@@ -24,7 +24,7 @@
           <ElInput v-model="searchQuery" placeholder="搜索联系人" prefix-icon="Search" clearable />
         </div>
         <ElDropdown trigger="click" placement="bottom-start">
-          <span class="mt-5 c-p">
+          <span class="mt-5 cursor-pointer">
             排序方式
             <ElIcon class="el-icon--right">
               <ArrowDown />
@@ -43,7 +43,7 @@
         <div
           v-for="item in personList"
           :key="item.id"
-          class="flex-c p-3 c-p rounded-lg tad-200 hover:bg-active-color/30 mb-1"
+          class="flex items-center p-3 cursor-pointer rounded-lg transition duration-200 hover:bg-active-color/30 mb-1"
           :class="{ 'bg-active-color': selectedPerson?.id === item.id }"
           @click="selectPerson(item)"
         >
@@ -57,11 +57,11 @@
             ></div>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="flex-cb mb-1">
+            <div class="flex items-center justify-between mb-1">
               <span class="text-sm font-medium">{{ item.name }}</span>
               <span class="text-xs text-g-600">{{ item.lastTime }}</span>
             </div>
-            <div class="flex-cb">
+            <div class="flex items-center justify-between">
               <span class="overflow-hidden text-xs text-g-600 text-ellipsis whitespace-nowrap">
                 {{ item.email }}
               </span>
@@ -71,15 +71,15 @@
       </ElScrollbar>
     </div>
     <div class="box-border flex-1 h-full max-md:h-[calc(70%-30px)]">
-      <div class="flex-cb pt-4 px-4 pb-0 mb-5">
+      <div class="flex items-center justify-between pt-4 px-4 pb-0 mb-5">
         <div>
           <span class="text-base font-medium">Art Bot</span>
-          <div class="flex-c gap-1 mt-1.5">
+          <div class="flex items-center gap-1 mt-1.5">
             <div class="w-2 h-2 rounded-full" :class="isOnline ? 'bg-success' : 'bg-danger'"></div>
             <span class="text-xs text-g-600">{{ isOnline ? "在线" : "离线" }}</span>
           </div>
         </div>
-        <div class="flex-c gap-2">
+        <div class="flex items-center gap-2">
           <FaIconButton icon="ri:phone-line" circle class="size-11 text-g-600" />
           <FaIconButton icon="ri:video-on-line" circle class="size-11 text-g-600" />
           <FaIconButton icon="ri:more-2-fill" circle class="size-11 text-g-600" />
@@ -87,9 +87,9 @@
       </div>
       <div class="flex flex-col h-[calc(100%-85px)]">
         <!-- 聊天消息区域 -->
-        <div
-          class="flex-1 py-7.5 px-4 overflow-y-auto border-t-d [&::-webkit-scrollbar]:w-1!"
+        <ElScrollbar
           ref="messageContainer"
+          class="flex-1 py-7.5 px-4 border-t border-(--default-border)"
         >
           <template v-for="message in messages" :key="message.id">
             <div
@@ -119,7 +119,7 @@
               </div>
             </div>
           </template>
-        </div>
+        </ElScrollbar>
 
         <!-- 聊天输入区域 -->
         <div class="p-4 shrink-0">
@@ -139,10 +139,13 @@
               </div>
             </template>
           </ElInput>
-          <div class="flex-cb mt-3">
-            <div class="flex-c">
-              <FaSvgIcon icon="ri:image-line" class="mr-5 c-p text-g-600 text-lg" />
-              <FaSvgIcon icon="ri:emotion-happy-line" class="mr-5 c-p text-g-600 text-lg" />
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center">
+              <FaSvgIcon icon="ri:image-line" class="mr-5 cursor-pointer text-g-600 text-lg" />
+              <FaSvgIcon
+                icon="ri:emotion-happy-line"
+                class="mr-5 cursor-pointer text-g-600 text-lg"
+              />
             </div>
             <ElButton type="primary" @click="sendMessage" v-ripple class="min-w-20">发送</ElButton>
           </div>
@@ -154,6 +157,7 @@
 
 <script setup lang="ts">
 import { Picture, Paperclip, ArrowDown } from "@element-plus/icons-vue";
+import { ElScrollbar } from "element-plus";
 import { mittBus } from "@utils";
 import meAvatar from "@imgs/avatar/avatar5.webp";
 import aiAvatar from "@imgs/avatar/avatar10.webp";
@@ -192,7 +196,7 @@ const selectedPerson = ref<Person | null>(null);
 const messageText = ref("");
 const messageId = ref(10);
 const userAvatar = ref(meAvatar);
-const messageContainer = ref<HTMLElement | null>(null);
+const messageContainer = ref<InstanceType<typeof ElScrollbar> | null>(null);
 
 /**
  * 联系人列表数据
@@ -429,9 +433,8 @@ const sendMessage = () => {
  */
 const scrollToBottom = () => {
   setTimeout(() => {
-    if (messageContainer.value) {
-      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-    }
+    const wrap = messageContainer.value?.wrapRef;
+    if (wrap) wrap.scrollTop = wrap.scrollHeight;
   }, 100);
 };
 
@@ -445,7 +448,8 @@ const openChat = () => {
 onMounted(() => {
   scrollToBottom();
   mittBus.on("openChat", openChat);
-  selectedPerson.value = personList.value[0];
+  const first = personList.value[0];
+  if (first) selectedPerson.value = first;
 });
 
 onUnmounted(() => {

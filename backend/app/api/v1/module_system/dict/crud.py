@@ -42,9 +42,7 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         """
         super().__init__(model=DictDataModel, auth=auth)
 
-    async def batch_delete(
-        self, ids: list[int], exclude_system: bool = True
-    ) -> int:
+    async def batch_delete(self, ids: list[int], exclude_system: bool = True) -> int:
         """
         批量删除数据字典数据
 
@@ -56,10 +54,12 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         - int: 删除的记录数量
         """
         if exclude_system:
-            system_data = await self.list(search={
-                "id__in": ids,
-                "remark__contains": "系统默认",
-            })
+            system_data = await self.get_list(
+                search={
+                    "id__in": ids,
+                    "remark__contains": "系统默认",
+                }
+            )
             system_ids = [item.id for item in system_data]
             ids = [id for id in ids if id not in system_ids]
 
@@ -67,9 +67,7 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
             await self.delete(ids=ids)
         return len(ids)
 
-    async def get_list_by_dict_type(
-        self, dict_type: str, status: int | None = 0
-    ) -> Sequence[DictDataModel]:
+    async def get_list_by_dict_type(self, dict_type: str, status: int | None = 0) -> Sequence[DictDataModel]:
         """
         根据字典类型获取字典数据列表
 
@@ -83,4 +81,4 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         search = {"dict_type": dict_type}
         if status is not None:
             search["status"] = status
-        return await self.list(search=search, order_by=[{"id": "asc"}])
+        return await self.get_list(search=search, order_by=[{"id": "asc"}])

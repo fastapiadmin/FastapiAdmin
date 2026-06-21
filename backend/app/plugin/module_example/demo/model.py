@@ -36,6 +36,8 @@ class DemoModel(ModelMixin, TenantMixin, UserMixin):
 
     # 字符串类型
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="名称")
+    status: Mapped[int] = mapped_column(Integer, default=0, nullable=False, comment="状态(0:启动 1:停用)", index=True)
+    description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注")
     int_val: Mapped[int | None] = mapped_column(Integer, nullable=True, comment="整数")
     bigint_val: Mapped[int | None] = mapped_column(BIGINT, nullable=True, comment="大整数")
     float_val: Mapped[float | None] = mapped_column(Float, nullable=True, comment="浮点数")

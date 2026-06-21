@@ -16,4 +16,4 @@ class OperationLogCRUD(CRUDBase[OperationLogModel, None, None]):
     """操作日志 CRUD"""
 
     def __init__(self, auth: AuthSchema):
-        super().__init__(OperationLogModel, auth)
+        super().__init__(model=OperationLogModel, auth=auth)

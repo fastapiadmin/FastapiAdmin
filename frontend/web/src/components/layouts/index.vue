@@ -64,5 +64,5 @@ function onGuideFinished(): void {
 </script>
 
 <style lang="scss" scoped>
-@use "@styles/custom/fa-layouts";
+@use "./fa-layouts";
 </style>

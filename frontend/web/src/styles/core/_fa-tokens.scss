@@ -1,0 +1,11 @@
+// 主题色 token 单一来源（partial，不单独编译）
+// 任何 SCSS 模块需要使用功能性色 hex 值，都从这里 @use 引入：
+//   @use "@styles/core/fa-tokens" as *;
+// 保证整个项目只有这一处定义 success/warning/danger/error/info 的 hex 值。
+
+$fa-primary: #4080ff;
+$fa-success: #13deb9;
+$fa-warning: #ffae1f;
+$fa-danger: #ff4d4f;
+$fa-error: #fa896b;
+$fa-info: #909399;

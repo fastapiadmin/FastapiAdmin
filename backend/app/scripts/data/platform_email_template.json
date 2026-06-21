@@ -3,8 +3,8 @@
     "name": "注册验证码",
     "template_code": "register_code",
     "subject": "【FastapiAdmin】注册验证码",
-    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>欢迎注册 FastapiAdmin</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{username} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的验证码是：</p><div style='background:linear-gradient(135deg,#667eea,#764ba2);padding:16px 24px;border-radius:6px;text-align:center;margin:20px 0;'><span style='color:#fff;font-size:28px;font-weight:bold;letter-spacing:6px;'>{{ code }}</span></div><p style='color:#999;font-size:13px;line-height:1.6;'>验证码 5 分钟内有效，请勿泄露给他人。</p><hr style='border:none;border-top:1px solid #eee;margin:24px 0;'><p style='color:#bbb;font-size:12px;text-align:center;'>此邮件由系统自动发送，请勿回复。</p></div></div>",
-    "body_text": "欢迎注册 FastapiAdmin\n\n{username} 您好：\n\n您的验证码是：{{ code }}\n\n验证码 5 分钟内有效，请勿泄露给他人。\n\n此邮件由系统自动发送，请勿回复。",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>欢迎注册 FastapiAdmin</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{{ username }} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的验证码是：</p><div style='background:linear-gradient(135deg,#667eea,#764ba2);padding:16px 24px;border-radius:6px;text-align:center;margin:20px 0;'><span style='color:#fff;font-size:28px;font-weight:bold;letter-spacing:6px;'>{{ code }}</span></div><p style='color:#999;font-size:13px;line-height:1.6;'>验证码 5 分钟内有效，请勿泄露给他人。</p><hr style='border:none;border-top:1px solid #eee;margin:24px 0;'><p style='color:#bbb;font-size:12px;text-align:center;'>此邮件由系统自动发送，请勿回复。</p></div></div>",
+    "body_text": "欢迎注册 FastapiAdmin\n\n{{ username }} 您好：\n\n您的验证码是：{{ code }}\n\n验证码 5 分钟内有效，请勿泄露给他人。\n\n此邮件由系统自动发送，请勿回复。",
     "variables": "{\"username\":\"用户名\",\"code\":\"验证码\"}",
     "description": "用户注册发送邮箱验证码"
   },
@@ -12,18 +12,27 @@
     "name": "密码重置",
     "template_code": "reset_password",
     "subject": "【FastapiAdmin】密码重置",
-    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>密码重置</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{username} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您正在申请重置密码，点击下方链接设置新密码（30 分钟内有效）：</p><div style='text-align:center;margin:24px 0;'><a href='{{ reset_link }}' style='display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:bold;'>重置密码</a></div><p style='color:#999;font-size:13px;'>如非本人操作，请忽略此邮件。</p><hr style='border:none;border-top:1px solid #eee;margin:24px 0;'><p style='color:#bbb;font-size:12px;text-align:center;'>此邮件由系统自动发送，请勿回复。</p></div></div>",
-    "body_text": "密码重置\n\n{username} 您好：\n\n您正在申请重置密码，请点击以下链接设置新密码（30 分钟内有效）：\n{{ reset_link }}\n\n如非本人操作，请忽略此邮件。\n\n此邮件由系统自动发送，请勿回复。",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>密码重置</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{{ username }} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您正在申请重置密码，点击下方链接设置新密码（30 分钟内有效）：</p><div style='text-align:center;margin:24px 0;'><a href='{{ reset_link }}' style='display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:bold;'>重置密码</a></div><p style='color:#999;font-size:13px;'>如非本人操作，请忽略此邮件。</p><hr style='border:none;border-top:1px solid #eee;margin:24px 0;'><p style='color:#bbb;font-size:12px;text-align:center;'>此邮件由系统自动发送，请勿回复。</p></div></div>",
+    "body_text": "密码重置\n\n{{ username }} 您好：\n\n您正在申请重置密码，请点击以下链接设置新密码（30 分钟内有效）：\n{{ reset_link }}\n\n如非本人操作，请忽略此邮件。\n\n此邮件由系统自动发送，请勿回复。",
     "variables": "{\"username\":\"用户名\",\"reset_link\":\"密码重置链接\"}",
-    "description": "忘记密码发送重置链接"
+    "description": "用户申请重置登录密码"
+  },
+  {
+    "name": "邮箱验证",
+    "template_code": "email_verify",
+    "subject": "【FastapiAdmin】请验证您的邮箱",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>验证您的邮箱</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{{ username }} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>感谢您注册 FastapiAdmin！请点击下方按钮完成邮箱验证（24 小时内有效）：</p><div style='text-align:center;margin:24px 0;'><a href='{{ verify_link }}' style='display:inline-block;background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:bold;'>验证邮箱</a></div><p style='color:#999;font-size:13px;'>如果按钮无法点击，请复制以下链接到浏览器：<br>{{ verify_link }}</p></div></div>",
+    "body_text": "邮箱验证\n\n{{ username }} 您好：\n\n请点击以下链接完成邮箱验证（24 小时内有效）：\n{{ verify_link }}",
+    "variables": "{\"username\":\"用户名\",\"verify_link\":\"验证链接\"}",
+    "description": "新用户邮箱地址验证"
   },
   {
     "name": "工单回复通知",
     "template_code": "ticket_reply",
     "subject": "【FastapiAdmin】工单回复通知 - {{ ticket_title }}",
-    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>工单回复通知</h2><p style='color:#666;font-size:15px;line-height:1.8;'>您的工单 <strong>{{ ticket_title }}</strong> 收到新回复：</p><div style='background:#f8f9fb;border-left:4px solid #667eea;padding:16px 20px;margin:16px 0;border-radius:4px;'><p style='color:#444;font-size:14px;line-height:1.8;margin:0;'>{{ reply_content }}</p></div><p style='color:#999;font-size:13px;'>回复时间：{{ reply_time }}</p></div></div>",
-    "body_text": "工单回复通知\n\n您的工单「{{ ticket_title }}」收到新回复：\n\n{{ reply_content }}\n\n回复时间：{{ reply_time }}",
-    "variables": "{\"ticket_title\":\"工单标题\",\"reply_content\":\"回复内容\",\"reply_time\":\"回复时间\"}",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>工单回复通知</h2><p style='color:#666;font-size:15px;line-height:1.8;'>您的工单 <strong>{{ ticket_title }}</strong> 收到新回复：</p><div style='background:#f8f9fb;border-left:4px solid #667eea;padding:16px 20px;margin:16px 0;border-radius:4px;'><p style='color:#444;font-size:14px;line-height:1.8;margin:0;'>{{ reply_content }}</p></div><p style='color:#999;font-size:13px;'>回复时间：{{ reply_time }}</p><div style='text-align:center;margin:24px 0;'><a href='{{ ticket_link }}' style='display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:14px;'>查看工单</a></div></div></div>",
+    "body_text": "工单回复通知\n\n您的工单 {{ ticket_title }} 收到新回复：\n{{ reply_content }}\n\n回复时间：{{ reply_time }}\n查看工单：{{ ticket_link }}",
+    "variables": "{\"ticket_title\":\"工单标题\",\"reply_content\":\"回复内容\",\"reply_time\":\"回复时间\",\"ticket_link\":\"工单链接\"}",
     "description": "工单被回复时通知提交人"
   },
   {
@@ -52,5 +61,50 @@
     "body_text": "发票已开具\n\n尊敬的客户：您的发票已开具完成。\n发票号码：{{ invoice_no }}\n发票抬头：{{ invoice_title }}\n开票金额：¥{{ invoice_amount }}\n下载 PDF：{{ pdf_link }}",
     "variables": "{\"invoice_no\":\"发票号\",\"invoice_title\":\"发票抬头\",\"invoice_amount\":\"开票金额\",\"pdf_link\":\"PDF下载链接\"}",
     "description": "发票开具完成通知客户"
+  },
+  {
+    "name": "订单支付成功",
+    "template_code": "order_paid",
+    "subject": "【FastapiAdmin】订单支付成功 - {{ order_no }}",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#27ae60;margin-top:0;'>✓ 订单支付成功</h2><p style='color:#666;font-size:15px;line-height:1.8;'>尊敬的 {{ username }}：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的订单已支付成功，详情如下：</p><table style='width:100%;border-collapse:collapse;margin:16px 0;'><tr><td style='padding:8px 12px;color:#888;'>订单号</td><td style='padding:8px 12px;color:#333;'>{{ order_no }}</td></tr><tr style='background:#f8f9fb;'><td style='padding:8px 12px;color:#888;'>订单金额</td><td style='padding:8px 12px;color:#333;font-weight:bold;'>¥{{ order_amount }}</td></tr><tr><td style='padding:8px 12px;color:#888;'>支付方式</td><td style='padding:8px 12px;color:#333;'>{{ pay_method }}</td></tr><tr style='background:#f8f9fb;'><td style='padding:8px 12px;color:#888;'>套餐名称</td><td style='padding:8px 12px;color:#333;'>{{ package_name }}</td></tr></table><p style='color:#999;font-size:13px;'>支付时间：{{ paid_time }}</p><div style='text-align:center;margin:24px 0;'><a href='{{ order_link }}' style='display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:14px;'>查看订单详情</a></div></div></div>",
+    "body_text": "订单支付成功\n\n尊敬的 {{ username }}：\n\n您的订单已支付成功：\n订单号：{{ order_no }}\n订单金额：¥{{ order_amount }}\n支付方式：{{ pay_method }}\n套餐名称：{{ package_name }}\n支付时间：{{ paid_time }}\n\n查看订单：{{ order_link }}",
+    "variables": "{\"username\":\"用户名\",\"order_no\":\"订单号\",\"order_amount\":\"订单金额\",\"pay_method\":\"支付方式\",\"package_name\":\"套餐名称\",\"paid_time\":\"支付时间\",\"order_link\":\"订单链接\"}",
+    "description": "订单支付完成通知"
+  },
+  {
+    "name": "套餐升级成功",
+    "template_code": "package_upgraded",
+    "subject": "【FastapiAdmin】套餐升级成功",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>套餐升级成功 🎉</h2><p style='color:#666;font-size:15px;line-height:1.8;'>尊敬的 {{ tenant_name }}：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的套餐已从 <strong>{{ old_package }}</strong> 升级为 <strong style='color:#27ae60;'>{{ new_package }}</strong>。</p><div style='background:#f8f9fb;border-left:4px solid #27ae60;padding:16px 20px;margin:16px 0;border-radius:4px;'><p style='color:#444;font-size:14px;line-height:1.8;margin:0;'>新套餐有效期至：<strong>{{ expire_date }}</strong></p></div><p style='color:#999;font-size:13px;'>升级时间：{{ upgrade_time }}</p><div style='text-align:center;margin:24px 0;'><a href='{{ console_link }}' style='display:inline-block;background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:14px;'>立即体验</a></div></div></div>",
+    "body_text": "套餐升级成功\n\n尊敬的 {{ tenant_name }}：\n\n您的套餐已从 {{ old_package }} 升级为 {{ new_package }}。\n新套餐有效期至：{{ expire_date }}\n升级时间：{{ upgrade_time }}\n\n立即体验：{{ console_link }}",
+    "variables": "{\"tenant_name\":\"租户名称\",\"old_package\":\"原套餐\",\"new_package\":\"新套餐\",\"expire_date\":\"到期日期\",\"upgrade_time\":\"升级时间\",\"console_link\":\"控制台链接\"}",
+    "description": "租户套餐升级完成通知"
+  },
+  {
+    "name": "退款成功通知",
+    "template_code": "refund_success",
+    "subject": "【FastapiAdmin】退款已到账 - {{ refund_no }}",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#27ae60;margin-top:0;'>退款已到账</h2><p style='color:#666;font-size:15px;line-height:1.8;'>尊敬的 {{ username }}：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的退款申请已处理完成：</p><table style='width:100%;border-collapse:collapse;margin:16px 0;'><tr><td style='padding:8px 12px;color:#888;'>退款单号</td><td style='padding:8px 12px;color:#333;'>{{ refund_no }}</td></tr><tr style='background:#f8f9fb;'><td style='padding:8px 12px;color:#888;'>原订单号</td><td style='padding:8px 12px;color:#333;'>{{ order_no }}</td></tr><tr><td style='padding:8px 12px;color:#888;'>退款金额</td><td style='padding:8px 12px;color:#e74c3c;font-weight:bold;'>¥{{ refund_amount }}</td></tr><tr style='background:#f8f9fb;'><td style='padding:8px 12px;color:#888;'>退回账户</td><td style='padding:8px 12px;color:#333;'>{{ refund_account }}</td></tr></table><p style='color:#999;font-size:13px;'>到账时间：{{ refund_time }}<br>预计 1-3 个工作日内到账，请注意查收。</p></div></div>",
+    "body_text": "退款已到账\n\n尊敬的 {{ username }}：\n\n您的退款申请已处理完成：\n退款单号：{{ refund_no }}\n原订单号：{{ order_no }}\n退款金额：¥{{ refund_amount }}\n退回账户：{{ refund_account }}\n到账时间：{{ refund_time }}",
+    "variables": "{\"username\":\"用户名\",\"refund_no\":\"退款单号\",\"order_no\":\"原订单号\",\"refund_amount\":\"退款金额\",\"refund_account\":\"退回账户\",\"refund_time\":\"到账时间\"}",
+    "description": "用户退款成功通知"
+  },
+  {
+    "name": "登录提醒",
+    "template_code": "login_notify",
+    "subject": "【FastapiAdmin】账号登录提醒",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#1a1a2e;margin-top:0;'>账号登录提醒</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{{ username }} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的账号于 <strong>{{ login_time }}</strong> 在 <strong>{{ login_location }}</strong> 登录。</p><table style='width:100%;border-collapse:collapse;margin:16px 0;'><tr><td style='padding:8px 12px;color:#888;'>登录 IP</td><td style='padding:8px 12px;color:#333;'>{{ login_ip }}</td></tr><tr style='background:#f8f9fb;'><td style='padding:8px 12px;color:#888;'>设备类型</td><td style='padding:8px 12px;color:#333;'>{{ device }}</td></tr><tr><td style='padding:8px 12px;color:#888;'>浏览器</td><td style='padding:8px 12px;color:#333;'>{{ browser }}</td></tr></table><p style='color:#e74c3c;font-size:13px;'>如非本人操作，请立即<a href='{{ change_pwd_link }}' style='color:#e74c3c;'>修改密码</a>并联系客服。</p><hr style='border:none;border-top:1px solid #eee;margin:24px 0;'><p style='color:#bbb;font-size:12px;text-align:center;'>此邮件由系统自动发送，请勿回复。</p></div></div>",
+    "body_text": "账号登录提醒\n\n{{ username }} 您好：\n\n您的账号于 {{ login_time }} 在 {{ login_location }} 登录。\n登录 IP：{{ login_ip }}\n设备类型：{{ device }}\n浏览器：{{ browser }}\n\n如非本人操作，请立即修改密码并联系客服。",
+    "variables": "{\"username\":\"用户名\",\"login_time\":\"登录时间\",\"login_location\":\"登录地点\",\"login_ip\":\"登录IP\",\"device\":\"设备类型\",\"browser\":\"浏览器\",\"change_pwd_link\":\"改密链接\"}",
+    "description": "异地/新设备登录提醒（安全）"
+  },
+  {
+    "name": "密码已修改",
+    "template_code": "password_changed",
+    "subject": "【FastapiAdmin】密码修改成功",
+    "body_html": "<div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,sans-serif;background:#f5f7fa;border-radius:8px;'><div style='background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);'><h2 style='color:#27ae60;margin-top:0;'>密码修改成功</h2><p style='color:#666;font-size:15px;line-height:1.8;'>{{ username }} 您好：</p><p style='color:#666;font-size:15px;line-height:1.8;'>您的账号密码已于 <strong>{{ change_time }}</strong> 修改成功。</p><div style='background:#f8f9fb;border-left:4px solid #27ae60;padding:16px 20px;margin:16px 0;border-radius:4px;'><p style='color:#444;font-size:14px;line-height:1.8;margin:0;'>操作 IP：{{ change_ip }}<br>操作地点：{{ change_location }}</p></div><p style='color:#e74c3c;font-size:13px;'>如非本人操作，请立即联系客服冻结账号！</p><hr style='border:none;border-top:1px solid #eee;margin:24px 0;'><p style='color:#bbb;font-size:12px;text-align:center;'>此邮件由系统自动发送，请勿回复。</p></div></div>",
+    "body_text": "密码修改成功\n\n{{ username }} 您好：\n\n您的账号密码已于 {{ change_time }} 修改成功。\n操作 IP：{{ change_ip }}\n操作地点：{{ change_location }}\n\n如非本人操作，请立即联系客服冻结账号！",
+    "variables": "{\"username\":\"用户名\",\"change_time\":\"修改时间\",\"change_ip\":\"操作IP\",\"change_location\":\"操作地点\"}",
+    "description": "用户修改密码成功通知"
   }
 ]

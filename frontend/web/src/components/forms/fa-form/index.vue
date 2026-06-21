@@ -76,7 +76,7 @@
           </ElCol>
           <ElCol :xs="24" :sm="24" :md="span" :lg="span" :xl="span" class="max-w-full flex-1">
             <div
-              class="mb-3 flex-c flex-wrap justify-end md:flex-row md:items-stretch md:gap-2"
+              class="mb-3 flex items-center flex-wrap justify-end md:flex-row md:items-stretch md:gap-2"
               :style="actionButtonsStyle"
             >
               <div class="flex gap-2 md:justify-center">
@@ -90,6 +90,7 @@
                   @click="handleSubmit"
                   v-ripple
                   :disabled="disabledSubmit"
+                  :loading="loading"
                 >
                   {{ t("table.form.submit") }}
                 </ElButton>
@@ -163,7 +164,7 @@
         </ElCol>
         <ElCol :xs="24" :sm="24" :md="span" :lg="span" :xl="span" class="max-w-full flex-1">
           <div
-            class="mb-3 flex-c flex-wrap justify-end md:flex-row md:items-stretch md:gap-2"
+            class="mb-3 flex items-center flex-wrap justify-end md:flex-row md:items-stretch md:gap-2"
             :style="actionButtonsStyle"
           >
             <div class="flex gap-2 md:justify-center">
@@ -177,6 +178,7 @@
                 @click="handleSubmit"
                 v-ripple
                 :disabled="disabledSubmit"
+                :loading="loading"
               >
                 {{ t("table.form.submit") }}
               </ElButton>
@@ -296,6 +298,8 @@ interface Props {
   showSubmit?: boolean;
   /** 是否禁用提交按钮 */
   disabledSubmit?: boolean;
+  /** 提交按钮 loading（防止重复提交） */
+  loading?: boolean;
   /** 提交时是否清洗空值 */
   sanitizeOutput?: Partial<SanitizeOutputOptions>;
   /** 是否需要内置 ElScrollbar 包裹 */
@@ -329,6 +333,7 @@ const props = withDefaults(defineProps<Props>(), {
   showReset: true,
   showSubmit: true,
   disabledSubmit: false,
+  loading: false,
   sanitizeOutput: () => ({}),
   scrollbar: false,
   maxHeight: "75vh",

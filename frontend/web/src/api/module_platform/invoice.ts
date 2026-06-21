@@ -57,8 +57,7 @@ const InvoiceAPI = {
 
 export default InvoiceAPI;
 
-export interface InvoicePageQuery extends PageQuery {
-  tenant_id?: number;
+export interface InvoicePageQuery extends PageQuery, TenantByQueryParams {
   invoice_type?: string;
 }
 
@@ -76,6 +75,9 @@ export interface InvoiceTable {
   bank_info?: string;
   address_info?: string;
   pdf_url?: string;
+  oss_license_pdf_url?: string;
+  api_response?: string;
+  description?: string;
   created_time?: string;
 }
 

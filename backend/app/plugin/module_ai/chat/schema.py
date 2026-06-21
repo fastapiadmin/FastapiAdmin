@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.core.validator import DateTimeStr
+from app.core.base_params import BaseQueryParam, TenantByQueryParam, UserByQueryParam
 
 
 class ChatQuerySchema(BaseModel):
@@ -55,26 +55,10 @@ class ChatSessionMessageSchema(BaseModel):
 
 
 @dataclass
-class ChatSessionQueryParam:
+class ChatSessionQueryParam(BaseQueryParam, UserByQueryParam, TenantByQueryParam):
     """会话查询参数"""
 
-    def __init__(
-        self,
-        title: str | None = Query(None, description="会话标题"),
-        created_at: list[DateTimeStr] | None = Query(
-            None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_at: list[DateTimeStr] | None = Query(
-            None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-    ) -> None:
-        self.title = title
-        self.created_at = created_at
-        self.updated_at = updated_at
+    title: str | None = Query(None, description="会话标题")
 
 
 class AiChatRequestSchema(BaseModel):

@@ -1,16 +1,16 @@
 <!-- 面包屑导航 -->
 <template>
   <nav class="ml-2.5 max-lg:hidden!" aria-label="breadcrumb">
-    <ul class="flex-c h-full">
+    <ul class="flex items-center h-full">
       <li
         v-for="(item, index) in breadcrumbItems"
         :key="item.path"
-        class="box-border flex-c h-7 text-sm leading-7"
+        class="box-border flex items-center h-7 text-sm leading-7"
       >
         <div
           :class="
             isClickable(item, index)
-              ? 'c-p py-1 rounded tad-200 hover:bg-active-color hover:[&_span]:text-g-600'
+              ? 'cursor-pointer py-1 rounded transition duration-200 hover:bg-active-color hover:[&_span]:text-g-600'
               : ''
           "
           @click="handleBreadcrumbClick(item, index)"
@@ -58,16 +58,16 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
   if (!matchedLength) {
     return [];
   }
-  const leafRoute = matched[matchedLength - 1];
+  const leafRoute = matched[matchedLength - 1]!;
   if (leafRoute.name === "Home") {
     return [];
   }
 
   // 处理一级菜单和普通路由
-  const firstRoute = matched[0];
+  const firstRoute = matched[0]!;
   const isFirstLevel = firstRoute.meta?.isFirstLevel;
   const lastIndex = matchedLength - 1;
-  const currentRoute = matched[lastIndex];
+  const currentRoute = matched[lastIndex]!;
   const currentRouteMeta = currentRoute.meta;
 
   let items = isFirstLevel
@@ -75,7 +75,8 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
     : matched.map(createBreadcrumbItem);
 
   // 过滤包裹容器：如果有多个项目且第一个是容器路由（如 /outside），则移除它
-  if (items.length > 1 && isWrapperContainer(items[0])) {
+  const firstItem = items[0];
+  if (items.length > 1 && firstItem && isWrapperContainer(firstItem)) {
     items = items.slice(1);
   }
 

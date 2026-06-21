@@ -178,22 +178,14 @@ def reload_dynamic_router() -> APIRouter:
     # ── 2. 清除插件模块缓存，迫使 importlib 重新执行模块代码 ──
     _purge_plugin_modules()
 
-    # ── 3. 重新扫描并构建 ──
-    _dynamic_router_cache = _build_dynamic_router()
-
-    # ── 4. 将新路由挂载回 app ──
+    # ── 3. 将新路由挂载回 app ──
     if app:
         # 构造与 init_app.py 中相同的依赖项
-        try:
-            from fastapi_limiter.depends import RateLimiter
-            rate_deps = [Depends(RateLimiter(times=200, seconds=10))]
-        except Exception:
-            rate_deps = []
-        app.include_router(_dynamic_router_cache, dependencies=rate_deps)
+        app.include_router(_build_dynamic_router())
         logger.info("✅ 新插件路由已挂载到运行中的 app")
 
     logger.info("✅ 插件动态路由热重载完成")
-    return _dynamic_router_cache
+    return _build_dynamic_router()
 
 
 def _purge_plugin_modules() -> None:

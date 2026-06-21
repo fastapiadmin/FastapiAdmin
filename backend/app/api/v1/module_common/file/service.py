@@ -22,21 +22,8 @@ class FileService:
         upload_type: str = "file",
         target_path: str | None = None,
     ) -> UploadResponseSchema:
-        """
-        上传文件。
-
-        参数:
-        - base_url (str): 基础访问 URL。
-        - file (UploadFile): 上传文件对象。
-        - upload_type (str): 上传类型，'file'、'avatar'、'param'、'resource'，默认 'file'。
-        - target_path (str | None): 目标目录路径，仅 resource 类型支持。
-
-        返回:
-        - Dict: 上传响应字典。
-
-        异常:
-        - CustomException: 当未选择文件或上传类型错误时抛出。
-        """
+        """上传文件"""
+        
         filename, filepath, file_url = await UploadUtil.upload_file(
             file=file,
             base_url=base_url,
@@ -51,20 +38,10 @@ class FileService:
             file_url=f"{file_url}",
         )
 
-    @staticmethod
-    def _validate_download_path(file_path: str) -> str:
-        """
-        验证下载路径是否安全。
+    @classmethod
+    async def download_service(cls, file_path: str) -> DownloadFileSchema:
+        """下载文件"""
 
-        参数:
-        - file_path (str): 文件路径。
-
-        返回:
-        - str: 安全的绝对路径。
-
-        异常:
-        - CustomException: 当路径不安全时抛出。
-        """
         if not file_path:
             raise CustomException(msg="请选择要下载的文件")
 
@@ -81,30 +58,12 @@ class FileService:
             logger.error(f"路径不在上传目录内: {file_path}")
             raise CustomException(msg="非法的文件路径")
 
-        return abs_path
-
-    @classmethod
-    async def download_service(cls, file_path: str) -> DownloadFileSchema:
-        """
-        下载文件。
-
-        参数:
-        - file_path (str): 文件路径。
-
-        返回:
-        - DownloadFileSchema: 下载文件响应对象。
-
-        异常:
-        - CustomException: 当未选择文件或文件不存在时抛出。
-        """
-        safe_path = cls._validate_download_path(file_path)
-
-        if not UploadUtil.check_file_exists(safe_path):
+        if not UploadUtil.check_file_exists(abs_path):
             raise CustomException(msg="文件不存在")
 
-        file_name = UploadUtil.download_file(safe_path)
+        file_name = UploadUtil.download_file(abs_path)
 
         return DownloadFileSchema(
-            file_path=safe_path,
+            file_path=abs_path,
             file_name=str(file_name),
         )

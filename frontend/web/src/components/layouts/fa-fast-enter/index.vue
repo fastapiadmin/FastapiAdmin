@@ -14,7 +14,7 @@
     }"
   >
     <template #reference>
-      <div class="flex-c gap-2">
+      <div class="flex items-center gap-2">
         <slot />
       </div>
     </template>
@@ -26,10 +26,12 @@
           <div
             v-for="application in enabledApplications"
             :key="application.name"
-            class="mr-3 c-p flex-c gap-3 rounded-lg p-2 hover:bg-g-200/70 dark:hover:bg-g-200/90 hover:[&_.app-icon]:bg-transparent!"
+            class="mr-3 cursor-pointer flex items-center gap-3 rounded-lg p-2 hover:bg-g-200/70 dark:hover:bg-g-200/90 hover:[&_.app-icon]:bg-transparent!"
             @click="handleApplicationClick(application)"
           >
-            <div class="app-icon size-12 flex-cc rounded-lg bg-g-200/80 dark:bg-g-300/30">
+            <div
+              class="app-icon size-12 flex items-center justify-center rounded-lg bg-g-200/80 dark:bg-g-300/30"
+            >
               <FaSvgIcon
                 class="text-xl"
                 :icon="application.icon"
@@ -44,13 +46,13 @@
         </div>
       </div>
 
-      <div class="border-l-d pl-6 pt-2">
+      <div class="border-l border-[var(--default-border)] pl-6 pt-2">
         <h3 class="mb-2.5 text-base font-medium text-g-800">快速链接</h3>
         <ul>
           <li
             v-for="quickLink in enabledQuickLinks"
             :key="quickLink.name"
-            class="c-p py-2 hover:[&_span]:text-theme"
+            class="cursor-pointer py-2 hover:[&_span]:text-theme"
             @click="handleQuickLinkClick(quickLink)"
           >
             <span class="text-g-600 no-underline">{{ quickLink.name }}</span>
@@ -69,7 +71,9 @@
   >
     <div class="px-2">
       <div class="mb-5 flex items-start gap-4">
-        <div class="flex-cc size-14 rounded-xl bg-linear-to-br from-purple-400 to-indigo-500">
+        <div
+          class="flex items-center justify-center size-14 rounded-xl bg-linear-to-br from-purple-400 to-indigo-500"
+        >
           <FaSvgIcon icon="ri:loader-line" class="text-2xl text-white" />
         </div>
         <div class="flex-1">

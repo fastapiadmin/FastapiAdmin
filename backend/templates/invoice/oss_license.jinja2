@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>开源项目授权声明 - {{ invoice_no }}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 11px;
+    color: #1a1a2e;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .doc {
+    border: 1.5px solid #1a1a2e;
+    padding: 22px 26px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 18px;
+    margin: 0 0 4px 0;
+    letter-spacing: 2px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #555;
+    font-size: 10px;
+    margin-bottom: 18px;
+  }
+  .meta {
+    background: #f4f6fa;
+    border-left: 3px solid #3454d1;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 10.5px;
+  }
+  .meta table { border-collapse: collapse; width: 100%; }
+  .meta td { padding: 2px 6px; }
+  .meta td:first-child { color: #555; width: 90px; }
+  .section-title {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 16px 0 6px 0;
+    padding-left: 8px;
+    border-left: 4px solid #3454d1;
+  }
+  .declaration {
+    text-indent: 2em;
+    font-size: 11px;
+    line-height: 1.8;
+    margin: 6px 0;
+  }
+  .license-group {
+    margin-bottom: 14px;
+    page-break-inside: avoid;
+  }
+  .license-group-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+  }
+  .license-group-header .count {
+    color: #c5cae9;
+    font-weight: normal;
+  }
+  table.pkg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5px;
+  }
+  table.pkg-table th, table.pkg-table td {
+    border: 1px solid #c5c9d6;
+    padding: 4px 8px;
+    text-align: left;
+  }
+  table.pkg-table th {
+    background: #eef0f5;
+    font-weight: bold;
+  }
+  table.pkg-table td.col-name { width: 50%; }
+  table.pkg-table td.col-version { width: 20%; font-family: "Menlo", "Consolas", monospace; }
+  table.pkg-table td.col-pkgs { width: 30%; text-align: right; color: #666; }
+  .footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px dashed #888;
+    font-size: 9.5px;
+    color: #555;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <h1>开源项目授权声明函</h1>
+  <div class="subtitle">Open Source Components Authorization Statement</div>
+
+  <div class="meta">
+    <table>
+      <tr>
+        <td>关联发票号</td><td><b>{{ invoice_no }}</b></td>
+        <td>开票日期</td><td>{{ invoice_date }}</td>
+      </tr>
+      <tr>
+        <td>产品名称</td><td colspan="3">FastapiAdmin 企业管理后台</td>
+      </tr>
+      <tr>
+        <td>产品版本</td><td colspan="3">{{ product_version }}</td>
+      </tr>
+      <tr>
+        <td>许可证总数</td><td>{{ groups | length }} 类</td>
+        <td>依赖包总数</td><td>{{ total_packages }} 个</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section-title">一、声明</div>
+  <p class="declaration">
+    兹声明，本产品 <b>FastapiAdmin 企业管理后台</b> 在开发与部署过程中使用了 {{ total_packages }} 个第三方开源软件包，
+    涵盖 {{ groups | length }} 类许可证。本产品严格遵循各开源许可证的条款要求，
+    在使用、修改、分发相关开源组件时保留原始版权声明及许可证文本。
+    本声明函随同电子发票一同提供给客户，便于客户进行开源合规审计与软件资产管理。
+  </p>
+
+  <div class="section-title">二、许可证分类清单</div>
+
+  {% for group in groups %}
+  <div class="license-group">
+    <div class="license-group-header">
+      <span>{{ group.license }}</span>
+      <span class="count">共 {{ group.packages | length }} 个包</span>
+    </div>
+    <table class="pkg-table">
+      <thead>
+        <tr>
+          <th>包名 (Package)</th>
+          <th>版本 (Version)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pkg in group.packages %}
+        <tr>
+          <td class="col-name">{{ pkg.name }}</td>
+          <td class="col-version">{{ pkg.version }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+  <div class="section-title">三、通用合规承诺</div>
+  <p class="declaration">
+    1. 上述所有开源组件均通过官方包管理器（PyPI）合法获取，并保留其原始许可证文本；<br>
+    2. 本产品未对 GPL/AGPL 等强 copyleft 协议组件进行源码闭源分发；<br>
+    3. 各许可证全文可访问各组件官方仓库或开源许可证标准文本；<br>
+    4. 如客户在二次开发或再分发过程中对许可证合规有进一步要求，本平台可提供完整的 LicenseText 文本。
+  </p>
+
+  <div class="footer">
+    本声明函由 FastapiAdmin 平台自动生成 · 生成时间 {{ generated_at }}<br>
+    本文件为电子授权声明，与发票具有同等合规效力
+  </div>
+
+</div>
+</body>
+</html>

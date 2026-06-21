@@ -36,7 +36,7 @@
         class="grid grid-cols-5 gap-5 max-2xl:grid-cols-4 max-xl:grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1"
       >
         <div
-          class="group c-p overflow-hidden border border-g-300/60 rounded-custom-sm"
+          class="group cursor-pointer overflow-hidden border border-g-300/60 rounded-custom-sm"
           v-for="item in articleList"
           :key="item.id"
           @click="toDetail(item)"
@@ -55,8 +55,8 @@
           </div>
           <div class="px-2 py-1">
             <h2 class="text-base text-g-800 font-medium">{{ item.title }}</h2>
-            <div class="flex-b w-full h-6 mt-1">
-              <div class="flex-c text-g-500">
+            <div class="flex justify-between w-full h-6 mt-1">
+              <div class="flex items-center text-g-500">
                 <FaSvgIcon icon="ri:time-line" class="mr-1 text-sm" />
                 <span class="text-sm">{{ useDateFormat(item.create_time, "YYYY-MM-DD") }}</span>
                 <div class="w-px h-3 bg-g-400 mx-3.5"></div>

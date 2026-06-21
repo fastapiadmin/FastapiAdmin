@@ -1,16 +1,3 @@
-"""
-平台级模块 - module_platform
-
-包含平台级管理功能，不受租户隔离限制：
-- 租户管理 (tenant)
-- 套餐管理 (package)
-- 插件管理 (plugin)
-- 邮件服务 (email)
-- 订单与支付 (order)
-- 发票管理 (invoice)
-- 租户自助服务 (self_service)
-- 菜单管理 (menu)
-"""
 from fastapi import APIRouter
 
 from app.api.v1.module_platform.email.controller import EmailRouter

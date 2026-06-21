@@ -9,7 +9,7 @@
         :key="item.version"
         class="fa-card-sm rounded-lg p-6 transition-shadow max-md:p-4"
       >
-        <div class="flex-cb gap-3 mb-4 flex-wrap">
+        <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <span class="px-3 py-1 bg-theme/10 text-theme text-sm font-medium rounded-full">
             {{ item.version }}
           </span>
@@ -22,7 +22,7 @@
           <li
             v-for="(detail, index) in item.detail"
             :key="index"
-            class="flex-c gap-2 text-sm text-g-600"
+            class="flex items-center gap-2 text-sm text-g-600"
           >
             <span class="mt-0.5">•</span>
             <span class="text-g-700">{{ detail }}</span>

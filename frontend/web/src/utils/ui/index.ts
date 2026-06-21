@@ -4,7 +4,6 @@ import NProgress from "nprogress";
 import { ThemeMode } from "@/enums";
 import { useSettingsStore } from "@stores";
 import { fourDotsSpinnerSvg } from "@/assets/svg/loading";
-import { useCommon } from "@/hooks/core/useCommon";
 import { useTheme } from "@/hooks/core/useTheme";
 import { SystemThemeEnum } from "@/enums/appEnum";
 
@@ -58,7 +57,11 @@ export function hexToRgba(hex: string, opacity: number): RgbaResult {
       .join("");
   }
 
-  const [red, green, blue] = cleanHex.match(/\w\w/g)!.map((x) => parseInt(x, 16));
+  const [red, green, blue] = cleanHex.match(/\w\w/g)!.map((x) => parseInt(x, 16)) as [
+    number,
+    number,
+    number,
+  ];
   const validOpacity = Math.max(0, Math.min(1, opacity));
   const rgba = `rgba(${red}, ${green}, ${blue}, ${validOpacity.toFixed(2)})`;
   return { red, green, blue, rgba };
@@ -104,11 +107,11 @@ export function colourBlend(color1: string, color2: string, ratio: number): stri
   const rgb2 = hexToRgb(color2);
 
   const blendedRgb = rgb1.map((value1, index) => {
-    const value2 = rgb2[index];
+    const value2 = rgb2[index]!;
     return Math.round(value1 * (1 - validRatio) + value2 * validRatio);
   });
 
-  return rgbToHex(blendedRgb[0], blendedRgb[1], blendedRgb[2]);
+  return rgbToHex(blendedRgb[0]!, blendedRgb[1]!, blendedRgb[2]!);
 }
 
 export function getLightColor(color: string, level: number, isDark: boolean = false): string {
@@ -121,7 +124,7 @@ export function getLightColor(color: string, level: number, isDark: boolean = fa
 
   const rgb = hexToRgb(color);
   const lightRgb = rgb.map((value) => Math.floor((255 - value) * level + value));
-  return rgbToHex(lightRgb[0], lightRgb[1], lightRgb[2]);
+  return rgbToHex(lightRgb[0]!, lightRgb[1]!, lightRgb[2]!);
 }
 
 export function getDarkColor(color: string, level: number): string {
@@ -132,7 +135,7 @@ export function getDarkColor(color: string, level: number): string {
 
   const rgb = hexToRgb(color);
   const darkRgb = rgb.map((value) => Math.floor(value * (1 - level)));
-  return rgbToHex(darkRgb[0], darkRgb[1], darkRgb[2]);
+  return rgbToHex(darkRgb[0]!, darkRgb[1]!, darkRgb[2]!);
 }
 
 export function handleElementThemeColor(theme: string, isDark: boolean = false): void {
@@ -303,8 +306,10 @@ export const themeAnimation = (e: MouseEvent) => {
 };
 
 const toggleTheme = () => {
+  // 主题切换通过 CSS 变量 + html.dark 类名实时应用，无需重建 RouterView。
+  // 历史代码曾在这里调用 useCommon().refresh() 触发整页重建，会造成闪烁，
+  // 且对正确实现的主题切换没有必要 —— 移除后切换即无刷新。
   useTheme().switchThemeStyles(useSettingsStore().systemThemeType === LIGHT ? DARK : LIGHT);
-  useCommon().refresh();
 };
 
 export const toggleTransition = (enable: boolean) => {

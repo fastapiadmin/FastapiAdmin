@@ -58,7 +58,7 @@ export function useSettingsPanel() {
     // 初始化系统颜色
     const initSystemColor = () => {
       if (!AppConfig.systemMainColor.includes(systemThemeColor.value)) {
-        settingStore.setElementTheme(AppConfig.systemMainColor[0]);
+        settingStore.setElementTheme(AppConfig.systemMainColor[0]!);
         settingStore.reload();
       }
     };

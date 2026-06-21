@@ -45,6 +45,17 @@ export interface SearchChangeParams {
   val: unknown;
 }
 
+// 状态列配置（自动渲染 StatusTag）
+// 与 statusFormatter 中的 StatusMap / StatusItem 对齐；只列必要字段即可
+export interface StatusColumnItem {
+  type: "primary" | "success" | "warning" | "danger" | "info";
+  text: string;
+  size?: "large" | "default" | "small";
+  effect?: "light" | "dark" | "plain";
+}
+// 部分映射：只需列出需要配置的值对应的状态项
+export type StatusColumnConfig = Partial<Record<string, StatusColumnItem>>;
+
 // 表格列配置接口
 export interface ColumnOption<T = any> {
   // 列类型
@@ -75,6 +86,9 @@ export interface ColumnOption<T = any> {
   checked?: boolean;
   // 自定义渲染函数
   formatter?: (row: T) => any;
+  // 状态列快捷配置：value -> { type, text }，会自动生成 formatter
+  // 与 formatter 互斥，同时配置时 formatter 优先
+  status?: StatusColumnConfig;
   // 插槽相关配置
   // 是否使用插槽渲染内容
   useSlot?: boolean;

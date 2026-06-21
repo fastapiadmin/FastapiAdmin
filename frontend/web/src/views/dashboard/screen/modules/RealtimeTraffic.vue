@@ -30,19 +30,19 @@ const data = reactive([
 let timer = 0;
 
 function tick() {
-  data[0].base += Math.round((Math.random() - 0.5) * 120);
-  data[1].base += Math.round((Math.random() - 0.5) * 60);
-  data[2].base += Math.round((Math.random() - 0.5) * 40);
-  data[3].base = +(30 + Math.random() * 8).toFixed(1);
-  data[0].value = data[0].base.toLocaleString();
-  data[1].value = data[1].base.toLocaleString();
-  data[2].value = data[2].base.toLocaleString();
-  data[3].value = data[3].base.toFixed(1);
-  const max = Math.max(data[0].base, data[1].base, data[2].base);
-  data[0].pct = (data[0].base / max) * 100;
-  data[1].pct = (data[1].base / max) * 100;
-  data[2].pct = (data[2].base / max) * 100;
-  data[3].pct = +data[3].value;
+  data[0]!.base += Math.round((Math.random() - 0.5) * 120);
+  data[1]!.base += Math.round((Math.random() - 0.5) * 60);
+  data[2]!.base += Math.round((Math.random() - 0.5) * 40);
+  data[3]!.base = +(30 + Math.random() * 8).toFixed(1);
+  data[0]!.value = data[0]!.base.toLocaleString();
+  data[1]!.value = data[1]!.base.toLocaleString();
+  data[2]!.value = data[2]!.base.toLocaleString();
+  data[3]!.value = data[3]!.base.toFixed(1);
+  const max = Math.max(data[0]!.base, data[1]!.base, data[2]!.base);
+  data[0]!.pct = (data[0]!.base / max) * 100;
+  data[1]!.pct = (data[1]!.base / max) * 100;
+  data[2]!.pct = (data[2]!.base / max) * 100;
+  data[3]!.pct = +data[3]!.value;
 }
 
 onMounted(() => {

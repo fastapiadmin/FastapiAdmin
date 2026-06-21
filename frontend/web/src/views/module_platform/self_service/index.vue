@@ -274,9 +274,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import type { TabPaneName } from "element-plus";
-import { ElTag, ElButton } from "element-plus";
 import { useRouter } from "vue-router";
 import { useTable } from "@/hooks/core/useTable";
 import FaStatsCard from "@/components/cards/fa-stats-card/index.vue";
@@ -290,7 +289,7 @@ import type {
   SelfServiceOrderItem,
   WorkspaceData,
 } from "@/api/module_platform/self_service";
-import type { ColumnOption } from "@/types/component";
+import { resolveStatusColumns } from "@utils";
 import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
 
 defineOptions({ name: "SelfService" });
@@ -354,15 +353,19 @@ const {
       page_no: 1,
       page_size: 20,
     },
-    columnsFactory: (): ColumnOption<SelfServiceOrderItem>[] => [
+    columnsFactory: resolveStatusColumns<SelfServiceOrderItem>(() => [
       { prop: "order_no", label: "订单号", minWidth: 200, showOverflowTooltip: true },
       { prop: "package_name", label: "套餐", width: 120 },
       {
         prop: "order_type",
         label: "类型",
         width: 100,
-        formatter: (row: SelfServiceOrderItem) =>
-          h(ElTag, { size: "small" as const }, () => orderTypeLabel(row.order_type)),
+        status: {
+          new: { type: "info", text: "新购" },
+          renew: { type: "info", text: "续费" },
+          upgrade: { type: "info", text: "升级" },
+          downgrade: { type: "info", text: "降级" },
+        },
       },
       {
         prop: "amount",
@@ -374,14 +377,11 @@ const {
         prop: "status",
         label: "状态",
         width: 100,
-        formatter: (row: SelfServiceOrderItem) => {
-          const typeMap = ["warning", "success", "info", "danger"] as const;
-          const t = typeMap[row.status] || "info";
-          return h(
-            ElTag,
-            { type: t as "warning" | "success" | "info" | "danger", size: "small" as const },
-            () => orderStatusLabel(row.status)
-          );
+        status: {
+          0: { type: "warning", text: "待支付" },
+          1: { type: "success", text: "已支付" },
+          2: { type: "info", text: "已取消" },
+          3: { type: "danger", text: "已退款" },
         },
       },
       {
@@ -392,7 +392,7 @@ const {
       },
       { prop: "pay_time", label: "支付时间", width: 160, showOverflowTooltip: true },
       { prop: "created_at", label: "创建时间", width: 160, showOverflowTooltip: true },
-    ],
+    ]),
   },
 });
 
@@ -433,21 +433,6 @@ function actionTypeTag(
     downgrade: "warning",
   };
   return map[action];
-}
-
-function orderTypeLabel(type: string): string {
-  const map: Record<string, string> = {
-    buy: "新购",
-    renew: "续费",
-    upgrade: "升级",
-    downgrade: "降级",
-  };
-  return map[type] || type;
-}
-
-function orderStatusLabel(status: number): string {
-  const map: Record<number, string> = { 0: "待支付", 1: "已支付", 2: "已取消", 3: "已退款" };
-  return map[status] || String(status);
 }
 
 // ─── 加载 ───
@@ -497,10 +482,10 @@ async function confirmAction() {
       package_id: currentPackage.value.id,
       order_type: currentAction.value as "buy" | "renew" | "upgrade" | "downgrade",
     });
-    const orderData = res?.data as { id: number; order_no: string; amount?: number } | undefined;
+    const orderData = res?.data as { order_id: number; amount?: number } | undefined;
     actionDialogVisible.value = false;
-    if (orderData?.id && (orderData?.amount || 0) > 0) {
-      router.push(`/payment/${orderData.id}`);
+    if (orderData?.order_id && (orderData?.amount || 0) > 0) {
+      router.push(`/payment/${orderData.order_id}`);
     } else {
       activeTab.value = "orders";
       getOrderData();

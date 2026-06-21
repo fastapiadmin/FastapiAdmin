@@ -5,7 +5,7 @@ const API_PATH = "/platform/tenant";
 const SelfServiceAPI = {
   /** 可选购的套餐列表 */
   getAvailablePackages() {
-    return request<ApiResponse<AvailablePackage[]>>({
+    return request<ApiResponse<{ packages: AvailablePackage[] }>>({
       url: `${API_PATH}/package/available`,
       method: "get",
     });
@@ -22,7 +22,7 @@ const SelfServiceAPI = {
 
   /** 创建自助订单 */
   createOrder(body: SelfServiceOrderForm) {
-    return request<ApiResponse<{ id: number; order_no: string }>>({
+    return request<ApiResponse<{ order_id: number; amount: number }>>({
       url: `${API_PATH}/order/create`,
       method: "post",
       data: body,

@@ -10,7 +10,7 @@ from app.config.setting import settings
 console = get_console()
 
 
-def console_run(
+def console_start(
     host: str,
     port: int,
     reload: bool,
@@ -96,7 +96,7 @@ def console_run(
     console.print(result)
 
 
-def console_close() -> None:
+def console_end() -> None:
     """
     在终端输出服务关闭提示面板。
 

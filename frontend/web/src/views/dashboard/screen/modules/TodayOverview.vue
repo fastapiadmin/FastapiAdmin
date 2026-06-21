@@ -64,16 +64,16 @@ const data = reactive([
 let timer = 0;
 
 function tick() {
-  const orders = data[1].base + Math.round((Math.random() - 0.5) * 80);
-  const users = data[2].base + Math.round((Math.random() - 0.5) * 60);
-  data[0].base = orders * 420 + Math.round(Math.random() * 10000);
-  data[1].base = orders;
-  data[2].base = users;
-  data[3].base = +(3.5 + Math.random() * 2).toFixed(2);
-  data[0].value = (data[0].base / 10000).toFixed(1);
-  data[1].value = data[1].base.toLocaleString();
-  data[2].value = data[2].base.toLocaleString();
-  data[3].value = data[3].base.toFixed(2);
+  const orders = data[1]!.base + Math.round((Math.random() - 0.5) * 80);
+  const users = data[2]!.base + Math.round((Math.random() - 0.5) * 60);
+  data[0]!.base = orders * 420 + Math.round(Math.random() * 10000);
+  data[1]!.base = orders;
+  data[2]!.base = users;
+  data[3]!.base = +(3.5 + Math.random() * 2).toFixed(2);
+  data[0]!.value = (data[0]!.base / 10000).toFixed(1);
+  data[1]!.value = data[1]!.base.toLocaleString();
+  data[2]!.value = data[2]!.base.toLocaleString();
+  data[3]!.value = data[3]!.base.toFixed(2);
   for (const d of data) {
     d.change = (Math.random() * 15 - 3).toFixed(1) + "%";
     d.up = Math.random() > 0.4;

@@ -15,8 +15,8 @@
           :color="item.status"
           :center="true"
         >
-          <div class="flex-c gap-3">
-            <div class="flex-c gap-2">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <span class="text-sm">{{ item.content }}</span>
               <span v-if="item.code" class="text-sm text-theme">#{{ item.code }}</span>
             </div>

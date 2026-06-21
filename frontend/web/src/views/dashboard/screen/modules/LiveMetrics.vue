@@ -30,18 +30,18 @@ const metrics = reactive([
 let timer = 0;
 
 function tick() {
-  metrics[0].base = Math.round(2800 + Math.random() * 800);
-  metrics[1].base = Math.round(8 + Math.random() * 20);
-  metrics[2].base = +(0.01 + Math.random() * 0.08).toFixed(2);
-  metrics[3].base = +(99.95 + Math.random() * 0.05).toFixed(2);
-  metrics[0].value = (metrics[0].base / 1000).toFixed(1);
-  metrics[1].value = String(metrics[1].base);
-  metrics[2].value = String(metrics[2].base);
-  metrics[3].value = String(metrics[3].base);
-  metrics[0].pct = (metrics[0].base / 4000) * 100;
-  metrics[1].pct = (metrics[1].base / 30) * 100;
-  metrics[2].pct = (metrics[2].base / 0.1) * 100;
-  metrics[3].pct = (+(metrics[3].base - 99.9) / 0.1) * 100;
+  metrics[0]!.base = Math.round(2800 + Math.random() * 800);
+  metrics[1]!.base = Math.round(8 + Math.random() * 20);
+  metrics[2]!.base = +(0.01 + Math.random() * 0.08).toFixed(2);
+  metrics[3]!.base = +(99.95 + Math.random() * 0.05).toFixed(2);
+  metrics[0]!.value = (metrics[0]!.base / 1000).toFixed(1);
+  metrics[1]!.value = String(metrics[1]!.base);
+  metrics[2]!.value = String(metrics[2]!.base);
+  metrics[3]!.value = String(metrics[3]!.base);
+  metrics[0]!.pct = (metrics[0]!.base / 4000) * 100;
+  metrics[1]!.pct = (metrics[1]!.base / 30) * 100;
+  metrics[2]!.pct = (metrics[2]!.base / 0.1) * 100;
+  metrics[3]!.pct = (+(metrics[3]!.base - 99.9) / 0.1) * 100;
 }
 
 onMounted(() => {

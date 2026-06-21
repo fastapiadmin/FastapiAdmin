@@ -3,7 +3,7 @@
   <div class="fa-card overflow-hidden" :style="{ height: `${height}rem` }">
     <div class="flex box-border h-full p-5 pr-2">
       <div class="flex w-full items-start gap-5">
-        <div class="flex-b h-full flex-1 flex-col">
+        <div class="flex justify-between h-full flex-1 flex-col">
           <p class="m-0 text-xl font-medium leading-tight text-g-900">
             {{ title }}
           </p>
@@ -20,17 +20,17 @@
             </div>
           </div>
           <div class="mt-2 flex gap-4 text-xs text-g-600">
-            <div v-if="currentValue" class="flex-cc">
+            <div v-if="currentValue" class="flex items-center justify-center">
               <div class="size-2 bg-theme rounded mr-2"></div>
               {{ currentValue }}
             </div>
-            <div v-if="previousValue" class="flex-cc">
+            <div v-if="previousValue" class="flex items-center justify-center">
               <div class="size-2 bg-g-400 rounded mr-2"></div>
               {{ previousValue }}
             </div>
           </div>
         </div>
-        <div class="flex-c h-full max-w-40 flex-1">
+        <div class="flex items-center h-full max-w-40 flex-1">
           <div ref="chartRef" class="h-30 w-full"></div>
         </div>
       </div>

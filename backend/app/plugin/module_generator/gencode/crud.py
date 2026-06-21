@@ -34,9 +34,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         """
         super().__init__(model=GenTableModel, auth=auth)
 
-    async def get_gen_table_by_id(
-        self, table_id: int, preload: list | None = None
-    ) -> GenTableModel | None:
+    async def get_gen_table_by_id(self, table_id: int, preload: list | None = None) -> GenTableModel | None:
         """
         根据业务表ID获取需要生成的业务表信息。
 
@@ -49,9 +47,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         """
         return await self.get(id=table_id, preload=preload)
 
-    async def get_gen_table_by_name(
-        self, table_name: str, preload: list | None = None
-    ) -> GenTableModel | None:
+    async def get_gen_table_by_name(self, table_name: str, preload: list | None = None) -> GenTableModel | None:
         """
         根据业务表名称获取需要生成的业务表信息。
 
@@ -74,7 +70,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         返回:
         - Sequence[GenTableModel]: 所有业务表信息列表。
         """
-        return await self.list(preload=preload)
+        return await self.get_list(preload=preload)
 
     async def get_gen_table_list(
         self,
@@ -91,8 +87,8 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         返回:
         - Sequence[GenTableModel]: 业务表列表信息。
         """
-        return await self.list(
-            search=search.__dict__,
+        return await self.get_list(
+            search=vars(search) if search else None,
             order_by=[{"created_time": "desc"}],
             preload=preload,
         )
@@ -160,11 +156,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         for table_name in table_names:
             try:
                 table_comment = inspector.get_table_comment(table_name)
-                comment = (
-                    table_comment.get("text", "")
-                    if isinstance(table_comment, dict)
-                    else table_comment
-                )
+                comment = table_comment.get("text", "") if isinstance(table_comment, dict) else table_comment
                 table_comment = comment or ""
             except Exception as e:
                 logger.warning(f"获取表 {table_name} 的注释失败: {e}")
@@ -173,18 +165,10 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
             # 统一处理 search 为 None 的情况，避免重复判断
             if search:
                 # 表名过滤：忽略大小写，支持模糊匹配
-                if (
-                    search.table_name
-                    and search.table_name[1]
-                    and search.table_name[1].lower() not in table_name.lower()
-                ):
+                if search.table_name and search.table_name[1] and search.table_name[1].lower() not in table_name.lower():
                     continue
                 # 表注释过滤：忽略大小写，支持模糊匹配；table_comment 为 None 时视为空字符串
-                if (
-                    search.table_comment
-                    and search.table_comment[1]
-                    and search.table_comment[1] not in table_comment
-                ):
+                if search.table_comment and search.table_comment[1] and search.table_comment[1] not in table_comment:
                     continue
 
             table_info = {
@@ -248,12 +232,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
                 params["comment_kw"] = f"%{comment_kw}%"
 
             count_sql = text(f"SELECT COUNT(1) AS cnt FROM information_schema.tables {where_sql}")
-            rows_sql = text(
-                "SELECT table_name, table_comment "
-                f"FROM information_schema.tables {where_sql} "
-                "ORDER BY table_name ASC "
-                "LIMIT :limit OFFSET :offset"
-            )
+            rows_sql = text(f"SELECT table_name, table_comment FROM information_schema.tables {where_sql} ORDER BY table_name ASC LIMIT :limit OFFSET :offset")
             total_res = await self.auth.db.execute(count_sql, params)
             total = int(total_res.scalar() or 0)
             res = await self.auth.db.execute(rows_sql, params)
@@ -275,9 +254,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         # PostgreSQL
         if db_type in {"postgresql", "postgres"}:
             # pg_description 需要通过 objsubid=0 获取 table comment
-            where_sql = (
-                "WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND c.relkind = 'r'"
-            )
+            where_sql = "WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND c.relkind = 'r'"
             params = {"offset": offset, "limit": limit}
             if name_kw:
                 where_sql += " AND c.relname ILIKE :name_kw"
@@ -286,18 +263,9 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
                 where_sql += " AND COALESCE(d.description,'') ILIKE :comment_kw"
                 params["comment_kw"] = f"%{comment_kw}%"
 
-            base_from = (
-                "FROM pg_catalog.pg_class c "
-                "JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
-                "LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0 "
-            )
+            base_from = "FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0 "
             count_sql = text(f"SELECT COUNT(1) AS cnt {base_from} {where_sql}")
-            rows_sql = text(
-                "SELECT c.relname AS table_name, COALESCE(d.description,'') AS table_comment "
-                f"{base_from} {where_sql} "
-                "ORDER BY c.relname ASC "
-                "LIMIT :limit OFFSET :offset"
-            )
+            rows_sql = text(f"SELECT c.relname AS table_name, COALESCE(d.description,'') AS table_comment {base_from} {where_sql} ORDER BY c.relname ASC LIMIT :limit OFFSET :offset")
             total_res = await self.auth.db.execute(count_sql, params)
             total = int(total_res.scalar() or 0)
             res = await self.auth.db.execute(rows_sql, params)
@@ -347,11 +315,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
                 continue
             try:
                 table_comment = inspector.get_table_comment(table_name)
-                comment = (
-                    table_comment.get("text", "")
-                    if isinstance(table_comment, dict)
-                    else (table_comment or "")
-                )
+                comment = table_comment.get("text", "") if isinstance(table_comment, dict) else (table_comment or "")
             except Exception as e:
                 logger.warning(f"获取表 {table_name} 的注释失败: {e}")
                 comment = ""
@@ -399,11 +363,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
             return ""
         try:
             table_comment = inspector.get_table_comment(table_name)
-            comment = (
-                table_comment.get("text", "")
-                if isinstance(table_comment, dict)
-                else (table_comment or "")
-            )
+            comment = table_comment.get("text", "") if isinstance(table_comment, dict) else (table_comment or "")
             return comment or ""
         except Exception as e:
             logger.warning(f"获取表 {table_name} 的注释失败: {e}")
@@ -463,9 +423,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         # 获取主键信息
         try:
             pk_constraint = inspector.get_pk_constraint(table_name)
-            primary_keys = (
-                set(pk_constraint.get("constrained_columns", [])) if pk_constraint else set()
-            )
+            primary_keys = set(pk_constraint.get("constrained_columns", [])) if pk_constraint else set()
         except Exception:
             primary_keys = set()
 
@@ -513,9 +471,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
 
         return columns_list
 
-    async def get_gen_table_column_by_id(
-        self, id: int, preload: list | None = None
-    ) -> GenTableColumnModel | None:
+    async def get_gen_table_column_by_id(self, id: int, preload: list | None = None) -> GenTableColumnModel | None:
         """根据业务表字段ID获取业务表字段信息。
 
         参数:
@@ -527,9 +483,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.get(id=id, preload=preload)
 
-    async def get_gen_table_column_list_by_table_id(
-        self, table_id: int, preload: list | None = None
-    ) -> GenTableColumnModel | None:
+    async def get_gen_table_column_list_by_table_id(self, table_id: int, preload: list | None = None) -> GenTableColumnModel | None:
         """根据业务表ID获取业务表字段列表信息。
 
         参数:
@@ -557,11 +511,9 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         返回:
         - Sequence[GenTableColumnModel]: 业务表字段列表信息对象序列。
         """
-        return await self.list(search={"table_id": table_id}, order_by=order_by, preload=preload)
+        return await self.get_list(search={"table_id": table_id}, order_by=order_by, preload=preload)
 
-    async def get_gen_db_table_columns_by_name(
-        self, table_name: str | None
-    ) -> list[GenTableColumnOutSchema]:
+    async def get_gen_db_table_columns_by_name(self, table_name: str | None) -> list[GenTableColumnOutSchema]:
         """
         根据业务表名称获取业务表字段列表信息。
 
@@ -608,11 +560,9 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         返回:
         - Sequence[GenTableColumnModel]: 业务表字段列表信息对象序列。
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
-    async def create_gen_table_column_crud(
-        self, data: GenTableColumnSchema
-    ) -> GenTableColumnModel | None:
+    async def create_gen_table_column_crud(self, data: GenTableColumnSchema) -> GenTableColumnModel | None:
         """创建业务表字段。
 
         参数:
@@ -623,9 +573,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         """
         return await self.create(data=data)
 
-    async def update_gen_table_column_crud(
-        self, id: int, data: GenTableColumnSchema
-    ) -> GenTableColumnModel | None:
+    async def update_gen_table_column_crud(self, id: int, data: GenTableColumnSchema) -> GenTableColumnModel | None:
         """更新业务表字段。
 
         参数:

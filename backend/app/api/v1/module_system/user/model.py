@@ -1,11 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base_model import MappedBase, ModelMixin, TenantMixin, UserMixin
-from app.core.base_schema import AuthSchema
 
 if TYPE_CHECKING:
     from app.api.v1.module_platform.tenant.model import TenantModel
@@ -69,81 +68,33 @@ class UserModel(ModelMixin, TenantMixin, UserMixin):
 
     __tablename__: str = "sys_user"
     __table_args__ = (UniqueConstraint("tenant_id", "username"), {"comment": "用户表"})
-    __loader_options__: list[str] = [
-        "tenant_by",
-        "dept",
-        "roles",
-        "positions",
-        "created_by",
-        "updated_by",
-        "deleted_by",
-    ]
+    __loader_options__: list[str] = ["dept", "roles", "positions", "created_by", "updated_by", "deleted_by", "tenant_by"]
 
     username: Mapped[str] = mapped_column(String(64), nullable=False, comment="用户名/登录账号")
     password: Mapped[str] = mapped_column(String(255), nullable=False, comment="密码哈希")
     name: Mapped[str] = mapped_column(String(32), nullable=False, comment="昵称")
     mobile: Mapped[str | None] = mapped_column(String(11), nullable=True, comment="手机号")
     email: Mapped[str | None] = mapped_column(String(64), nullable=True, comment="邮箱")
-    gender: Mapped[str | None] = mapped_column(
-        String(1), default="2", nullable=True, comment="性别(0:男 1:女 2:未知)"
-    )
+    gender: Mapped[str | None] = mapped_column(String(1), default="2", nullable=True, comment="性别(0:男 1:女 2:未知)")
     avatar: Mapped[str | None] = mapped_column(String(255), nullable=True, comment="头像URL地址")
-    is_superuser: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False, comment="是否超管"
-    )
-    last_login: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, comment="最后登录时间"
-    )
-
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment="是否超管")
+    last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, comment="最后登录时间")
     gitee_login: Mapped[str | None] = mapped_column(String(32), nullable=True, comment="Gitee登录")
-    github_login: Mapped[str | None] = mapped_column(
-        String(32), nullable=True, comment="Github登录"
-    )
+    github_login: Mapped[str | None] = mapped_column(String(32), nullable=True, comment="Github登录")
     wx_login: Mapped[str | None] = mapped_column(String(32), nullable=True, comment="微信登录")
     qq_login: Mapped[str | None] = mapped_column(String(32), nullable=True, comment="QQ登录")
+    status: Mapped[int] = mapped_column(Integer, default=0, nullable=False, comment="状态(0:启动 1:停用)", index=True)
+    description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注")
 
-    dept_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("sys_dept.id", ondelete="SET NULL", onupdate="CASCADE"),
-        nullable=True,
-        index=True,
-        comment="部门ID",
-    )
+    dept_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("sys_dept.id", ondelete="SET NULL", onupdate="CASCADE"), nullable=True, index=True, comment="部门ID")
     tenant: Mapped["TenantModel | None"] = relationship(
         "TenantModel",
         foreign_keys="UserModel.tenant_id",
         lazy="selectin",
         viewonly=True,
     )
-    dept: Mapped["DeptModel | None"] = relationship(
-        back_populates="users", foreign_keys=[dept_id], lazy="selectin"
-    )
-    roles: Mapped[list["RoleModel"]] = relationship(
-        secondary="sys_user_roles", back_populates="users", lazy="selectin"
-    )
-    positions: Mapped[list["PositionModel"]] = relationship(
-        secondary="sys_user_positions", back_populates="users", lazy="selectin"
-    )
-
-    # 覆盖 UserMixin 的关系定义,显式指定 foreign_keys 避免自引用混淆
-    created_by: Mapped["UserModel | None"] = relationship(
-        "UserModel",
-        foreign_keys="UserModel.created_id",
-        remote_side="UserModel.id",
-        lazy="selectin",
-        uselist=False,
-        viewonly=True,  # 防止级联操作
-    )
-
-    updated_by: Mapped["UserModel | None"] = relationship(
-        "UserModel",
-        foreign_keys="UserModel.updated_id",
-        remote_side="UserModel.id",
-        lazy="selectin",
-        uselist=False,
-        viewonly=True,  # 防止级联操作
-    )
-
-
-# 修复 Pydantic 循环引用问题：UserModel 定义完成后重建 AuthSchema
-AuthSchema.model_rebuild()
+    dept: Mapped["DeptModel | None"] = relationship(back_populates="users", foreign_keys=[dept_id], lazy="selectin")
+    roles: Mapped[list["RoleModel"]] = relationship(secondary="sys_user_roles", back_populates="users", lazy="selectin")
+    positions: Mapped[list["PositionModel"]] = relationship(secondary="sys_user_positions", back_populates="users", lazy="selectin")
+    created_by: Mapped["UserModel | None"] = relationship("UserModel", foreign_keys="UserModel.created_id", remote_side="UserModel.id", lazy="selectin", uselist=False, viewonly=True)
+    updated_by: Mapped["UserModel | None"] = relationship("UserModel", foreign_keys="UserModel.updated_id", remote_side="UserModel.id", lazy="selectin", uselist=False, viewonly=True)

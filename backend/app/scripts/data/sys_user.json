@@ -2,7 +2,7 @@
   {
     "tenant_id": 1,
     "username": "super",
-    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "password": "$pbkdf2-sha256$600000$XX20aO1v73xS0JnoewXNtw==$PEaVHV1N5L7PfYQw2lCAQOc4hAEyCiwsGR48/jgVBjU=",
     "name": "超级管理员",
     "mobile": "13800138000",
     "email": "super@example.com",
@@ -23,7 +23,7 @@
   {
     "tenant_id": 1,
     "username": "admin",
-    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "password": "$pbkdf2-sha256$600000$XX20aO1v73xS0JnoewXNtw==$PEaVHV1N5L7PfYQw2lCAQOc4hAEyCiwsGR48/jgVBjU=",
     "name": "管理员",
     "mobile": "13800138001",
     "email": "admin@example.com",
@@ -44,7 +44,7 @@
   {
     "tenant_id": 1,
     "username": "user",
-    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "password": "$pbkdf2-sha256$600000$XX20aO1v73xS0JnoewXNtw==$PEaVHV1N5L7PfYQw2lCAQOc4hAEyCiwsGR48/jgVBjU=",
     "name": "普通用户",
     "mobile": "13800138002",
     "email": "user@example.com",
@@ -65,7 +65,7 @@
   {
     "tenant_id": 1,
     "username": "product",
-    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "password": "$pbkdf2-sha256$600000$XX20aO1v73xS0JnoewXNtw==$PEaVHV1N5L7PfYQw2lCAQOc4hAEyCiwsGR48/jgVBjU=",
     "name": "产品经理",
     "mobile": "13800138003",
     "email": "product@example.com",
@@ -86,7 +86,7 @@
   {
     "tenant_id": 1,
     "username": "hr",
-    "password": "$2b$12$e2IJgS/cvHgJ0H3G7Xa08OXoXnk6N/NX3IZRtubBDElA0VLZhkNOa",
+    "password": "$pbkdf2-sha256$600000$XX20aO1v73xS0JnoewXNtw==$PEaVHV1N5L7PfYQw2lCAQOc4hAEyCiwsGR48/jgVBjU=",
     "name": "HR专员",
     "mobile": "13800138004",
     "email": "hr@example.com",
@@ -107,7 +107,7 @@
   {
     "tenant_id": 3,
     "username": "zhang_admin",
-    "password": "$2b$12$rej/LQJMp5Zujt2YglsaCulQ4wNzYlPupSG0glJPYGzt.nSMV5QDe",
+    "password": "$pbkdf2-sha256$600000$E8jfd18sWu7N9DWsx/nYKg==$9DNKCv+dm1QDvYXwpQlZH6e7trYp1WCPdsvSyzXwuo0=",
     "name": "张明",
     "mobile": "13800001001",
     "email": "zhang@star-tech.dev",
@@ -118,7 +118,7 @@
   {
     "tenant_id": 3,
     "username": "wang_dev",
-    "password": "$2b$12$rej/LQJMp5Zujt2YglsaCulQ4wNzYlPupSG0glJPYGzt.nSMV5QDe",
+    "password": "$pbkdf2-sha256$600000$E8jfd18sWu7N9DWsx/nYKg==$9DNKCv+dm1QDvYXwpQlZH6e7trYp1WCPdsvSyzXwuo0=",
     "name": "王华",
     "mobile": "13800001002",
     "email": "wang@star-tech.dev",
@@ -129,7 +129,7 @@
   {
     "tenant_id": 4,
     "username": "li_admin",
-    "password": "$2b$12$rej/LQJMp5Zujt2YglsaCulQ4wNzYlPupSG0glJPYGzt.nSMV5QDe",
+    "password": "$pbkdf2-sha256$600000$E8jfd18sWu7N9DWsx/nYKg==$9DNKCv+dm1QDvYXwpQlZH6e7trYp1WCPdsvSyzXwuo0=",
     "name": "李芳",
     "mobile": "13800002001",
     "email": "li@inno.work",
@@ -140,7 +140,7 @@
   {
     "tenant_id": 4,
     "username": "zhao_eng",
-    "password": "$2b$12$rej/LQJMp5Zujt2YglsaCulQ4wNzYlPupSG0glJPYGzt.nSMV5QDe",
+    "password": "$pbkdf2-sha256$600000$E8jfd18sWu7N9DWsx/nYKg==$9DNKCv+dm1QDvYXwpQlZH6e7trYp1WCPdsvSyzXwuo0=",
     "name": "赵强",
     "mobile": "13800002002",
     "email": "zhao@inno.work",

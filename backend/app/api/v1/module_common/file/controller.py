@@ -21,8 +21,7 @@ from app.utils.upload_util import UploadUtil
 
 from .service import FileService
 
-FileRouter = APIRouter(route_class=OperationLogRoute, prefix="/file", tags=["公共服务/文件管理"])
-
+FileRouter = APIRouter(route_class=OperationLogRoute, prefix="/file", tags=["公共模块", "文件管理"])
 
 @FileRouter.post(
     "/upload",
@@ -35,26 +34,10 @@ async def upload_controller(
     request: Request,
     upload_type: Annotated[
         Literal["file", "avatar", "param", "resource"] | None,
-        Query(
-            description="上传类型: file=通用文件, avatar=头像, param=参数配置, resource=监控资源"
-        ),
+        Query(description="上传类型: file=通用文件, avatar=头像, param=参数配置, resource=监控资源"),
     ] = "file",
-    target_path: Annotated[
-        str | None, Form(description="目标目录路径（仅 resource 类型支持）")
-    ] = None,
+    target_path: Annotated[str | None, Form(description="目标目录路径（仅 resource 类型支持）")] = None,
 ) -> JSONResponse:
-    """
-    统一文件上传接口
-
-    参数:
-    - file (UploadFile): 上传的文件
-    - request (Request): 请求对象
-    - upload_type (str): 上传类型，默认 "file"
-    - target_path (str | None): 目标目录路径，仅 resource 类型支持
-
-    返回:
-    - JSONResponse: 包含上传文件详情的JSON响应
-    """
     result = await FileService.upload_service(
         base_url=str(request.base_url),
         file=file,
@@ -62,7 +45,6 @@ async def upload_controller(
         target_path=target_path,
     )
     return SuccessResponse(data=result, msg="上传文件成功")
-
 
 @FileRouter.post(
     "/download",
@@ -74,17 +56,6 @@ async def download_controller(
     file_path: Annotated[str, Body(description="文件路径")],
     delete: Annotated[bool, Body(description="是否删除文件")] = False,
 ) -> FileResponse:
-    """
-    下载文件
-
-    参数:
-    - background_tasks (BackgroundTasks): 后台任务对象
-    - file_path (str): 文件路径
-    - delete (bool): 是否删除文件
-
-    返回:
-    - FileResponse: 包含下载文件的响应
-    """
     result = await FileService.download_service(file_path=file_path)
     if delete:
         background_tasks.add_task(UploadUtil.delete_file, Path(result.file_path))

@@ -34,7 +34,8 @@
             :perm-create="['module_system:tenant:create']"
             :perm-delete="['module_system:tenant:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -206,7 +207,6 @@ import { useTable } from "@/hooks/core/useTable";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
-import type { ColumnOption } from "@/types/component";
 import TenantAPI, {
   type TenantCreateForm,
   type TenantForm,
@@ -214,22 +214,12 @@ import TenantAPI, {
   type TenantUpdateForm,
 } from "@/api/module_platform/tenant";
 import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import FaUpload from "@/components/others/fa-upload/index.vue";
+import { renderTableOperationCell, type TableOperationAction, resolveStatusColumns } from "@utils";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import {
-  ElTag,
-  ElMessage,
-  ElTabs,
-  ElTabPane,
-  ElForm,
-  ElFormItem,
-  ElRow,
-  ElCol,
-} from "element-plus";
+import type FaForm from "@/components/forms/fa-form/index.vue";
+import { ElMessage, ElTabs, ElTabPane, ElForm, ElFormItem, ElRow, ElCol } from "element-plus";
 import { h, ref } from "vue";
 
 defineOptions({
@@ -242,7 +232,7 @@ const { hasAuth } = useAuth();
 type TenantSearchForm = {
   name?: string;
   code?: string;
-  status?: string;
+  status?: number;
   created_time?: string[];
 };
 
@@ -366,6 +356,8 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 
 const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<TenantTable>();
 
+const createLoading = ref(false);
+
 async function deleteTenantRow(id: number) {
   try {
     await confirmDelete();
@@ -420,19 +412,19 @@ const {
       page_no: 1,
       page_size: 10,
     },
-    columnsFactory: (): ColumnOption<TenantTable>[] => [
+    columnsFactory: resolveStatusColumns<TenantTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "name", label: "租户名称", minWidth: 120, showOverflowTooltip: true },
-      { prop: "code", label: "租户编码", minWidth: 80, showOverflowTooltip: true },
+      { prop: "code", label: "租户编码", minWidth: 120, showOverflowTooltip: true },
       {
         prop: "status",
         label: "状态",
         width: 80,
-        formatter: (row: TenantTable) =>
-          h(ElTag, { type: row.status === 0 ? "success" : "danger" }, () =>
-            row.status === 0 ? "正常" : "禁用"
-          ),
+        status: {
+          0: { type: "success", text: "正常" },
+          1: { type: "danger", text: "禁用" },
+        },
       },
       { prop: "contact_name", label: "联系人", minWidth: 100, showOverflowTooltip: true },
       { prop: "contact_phone", label: "联系电话", width: 110, showOverflowTooltip: true },
@@ -448,7 +440,7 @@ const {
         formatter: (row: TenantTable) =>
           renderTableOperationCell(buildTenantRowActions(row, opCtx)),
       },
-    ],
+    ]),
   },
 });
 
@@ -608,6 +600,15 @@ function brandCropBind(key: string) {
       };
     default:
       return {};
+  }
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
   }
 }
 
@@ -834,9 +835,9 @@ function onResetSearch() {
 async function handleSubmit() {
   const formRef = dataFormRef.value;
   if (!formRef) return;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const valid = await formRef.validate().catch(() => false);
+  const valid = await (formRef as unknown as { validate: () => Promise<boolean> })
+    .validate()
+    .catch(() => false);
   if (!valid) return;
   submitLoading.value = true;
   const id = formData.value.id as number | undefined;

@@ -183,17 +183,17 @@
                   <ElCol :span="6">
                     <ElButton
                       v-hasPerm="['module_task:cronjob:job:task']"
-                      :type="job.status === '暂停中' ? 'primary' : 'warning'"
+                      :type="job.status === 1 ? 'primary' : 'warning'"
                       size="small"
                       plain
                       class="w-full"
-                      :icon="job.status === '暂停中' ? 'VideoPlay' : 'VideoPause'"
-                      :disabled="job.status !== '暂停中' && job.status !== '运行中'"
+                      :icon="job.status === 1 ? 'VideoPlay' : 'VideoPause'"
+                      :disabled="job.status !== 1 && job.status !== 0"
                       @click="
-                        job.status === '暂停中' ? handleResumeJob(job.id) : handlePauseJob(job.id)
+                        job.status === 1 ? handleResumeJob(job.id) : handlePauseJob(job.id)
                       "
                     >
-                      {{ job.status === "暂停中" ? "恢复" : "暂停" }}
+                      {{ job.status === 1 ? "恢复" : "暂停" }}
                     </ElButton>
                   </ElCol>
                   <ElCol :span="6">
@@ -204,7 +204,7 @@
                       plain
                       class="w-full"
                       icon="CaretRight"
-                      :disabled="job.status === '已停止' || job.status === '未知'"
+                      :disabled="job.status === 2 || job.status === 3"
                       @click="handleRunJobNow(job.id)"
                     >
                       调试
@@ -231,7 +231,7 @@
                       plain
                       class="w-full"
                       icon="Close"
-                      :disabled="job.status === '未知'"
+                      :disabled="job.status === 3"
                       @click="handleRemoveJob(job.id)"
                     >
                       移除
@@ -343,18 +343,12 @@ defineOptions({
 });
 
 import JobAPI, { SchedulerStatus, SchedulerJob, JobLogTable } from "@/api/module_task/cronjob/job";
-import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaTableHeaderLeft from "@/components/tables/fa-table-header-left/index.vue";
-import FaJsonPretty from "@/components/others/fa-json-pretty/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
-import { ElDivider, ElMessageBox, ElTag } from "element-plus";
-import { computed, h, nextTick, onMounted, ref } from "vue";
+import { ElDivider, ElMessageBox } from "element-plus";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { Terminal, TerminalApi } from "vue-web-terminal";
 
 const schedulerStatus = ref<SchedulerStatus>({
@@ -365,7 +359,7 @@ const schedulerStatus = ref<SchedulerStatus>({
 
 type JobSearchForm = {
   name?: string;
-  status?: string;
+  status?: number;
 };
 
 const searchForm = ref<JobSearchForm>({
@@ -441,7 +435,7 @@ async function fetchSchedulerJobs() {
     const statusQ = searchForm.value.status;
     jobList.value = list.filter((j) => {
       if (nameQ && !(j.name ?? "").includes(nameQ)) return false;
-      if (!matchesJobStatusFilter(j.status, statusQ)) return false;
+      if (!matchesJobStatusFilter(j.status.toString(), statusQ?.toString())) return false;
       return true;
     });
     await loadSchedulerStatus();
@@ -473,7 +467,7 @@ onMounted(() => {
 });
 
 type LogSearchForm = {
-  status?: string;
+  status?: number;
   trigger_type?: string;
 };
 
@@ -584,17 +578,25 @@ const {
         prop: "trigger_type",
         label: "触发方式",
         minWidth: 120,
-        formatter: (row) =>
-          h(ElTag, { size: "small" }, () => getTriggerTypeLabel(row.trigger_type)),
+        status: {
+          cron: { type: "info", text: "Cron表达式" },
+          interval: { type: "info", text: "时间间隔" },
+          date: { type: "info", text: "固定日期" },
+          manual: { type: "info", text: "一次性任务" },
+        },
       },
       {
         prop: "status",
         label: "状态",
         minWidth: 80,
-        formatter: (row) =>
-          h(ElTag, { type: getLogStatusType(String(row.status)), size: "small" }, () =>
-            getLogStatusLabel(String(row.status))
-          ),
+        status: {
+          pending: { type: "info", text: "待执行" },
+          running: { type: "primary", text: "执行中" },
+          success: { type: "success", text: "成功" },
+          failed: { type: "danger", text: "失败" },
+          timeout: { type: "warning", text: "超时" },
+          cancelled: { type: "info", text: "已取消" },
+        },
       },
       {
         prop: "next_run_time",
@@ -738,30 +740,30 @@ function getSchedulerStatusType(status: string) {
   }
 }
 
-function getJobStatusType(status: string) {
+function getJobStatusType(status: number) {
   switch (status) {
-    case "运行中":
+    case 0:
       return "success";
-    case "暂停中":
+    case 1:
       return "warning";
-    case "已停止":
+    case 2:
       return "danger";
-    case "未知":
+    case 3:
       return "info";
     default:
       return "info";
   }
 }
 
-function getJobStatusLabel(status: string) {
+function getJobStatusLabel(status: number) {
   switch (status) {
-    case "运行中":
+    case 0:
       return "运行中";
-    case "暂停中":
+    case 1:
       return "暂停中";
-    case "已停止":
+    case 2:
       return "已停止";
-    case "未知":
+    case 3:
       return "未知";
     default:
       return status;
@@ -776,7 +778,7 @@ function formatTrigger(trigger: string) {
   if (trigger.includes("cron")) {
     const match = trigger.match(/cron\[([^\]]+)\]/);
     if (match) {
-      const params = match[1];
+      const params = match[1]!;
       // 提取关键参数
       const month = params.match(/month='([^']+)'/);
       const day = params.match(/day='([^']+)'/);
@@ -974,23 +976,13 @@ async function handleOpenExecutionLogDrawer(job: SchedulerJob) {
   getLogData();
 }
 
-function getTriggerTypeLabel(type: string | undefined) {
-  const map: Record<string, string> = {
-    cron: "Cron表达式",
-    interval: "时间间隔",
-    date: "固定日期",
-    manual: "一次性任务",
-  };
-  return map[type || ""] || type || "-";
-}
-
-function getJobStatusClass(status: string) {
+function getJobStatusClass(status: number) {
   switch (status) {
-    case "运行中":
+    case 0:
       return "running";
-    case "暂停中":
+    case 1:
       return "paused";
-    case "已停止":
+    case 2:
       return "stopped";
     default:
       return "unknown";
@@ -1003,30 +995,6 @@ function getTriggerIcon(trigger: string | undefined) {
   if (t.includes("interval")) return "ri:repeat-line";
   if (t.includes("date")) return "ri:calendar-event-line";
   return "ri:flashlight-line";
-}
-
-function getLogStatusType(status: string): "primary" | "success" | "warning" | "info" | "danger" {
-  const map: Record<string, "primary" | "success" | "warning" | "info" | "danger"> = {
-    pending: "info",
-    running: "primary",
-    success: "success",
-    failed: "danger",
-    timeout: "warning",
-    cancelled: "info",
-  };
-  return map[status] || "info";
-}
-
-function getLogStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    pending: "待执行",
-    running: "执行中",
-    success: "成功",
-    failed: "失败",
-    timeout: "超时",
-    cancelled: "已取消",
-  };
-  return map[status] || status;
 }
 
 function handleViewJobState(row: JobLogTable) {

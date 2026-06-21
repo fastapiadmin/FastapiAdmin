@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <div class="sidebar-content">
+    <ElScrollbar class="sidebar-content" view-class="p-4">
       <template v-if="!isCollapsed">
         <div class="new-session-section">
           <ElButton type="primary" class="new-session-btn" @click="handleNewSession">
@@ -70,7 +70,7 @@
           </div>
         </div>
       </template>
-    </div>
+    </ElScrollbar>
 
     <div class="sidebar-footer">
       <div v-if="!isCollapsed" class="user-info">
@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, ElScrollbar } from "element-plus";
 import {
   ChatLineRound,
   User,
@@ -365,8 +365,6 @@ defineExpose({
 
   .sidebar-content {
     flex: 1;
-    padding: 16px;
-    overflow-y: auto;
 
     .new-session-section {
       margin-bottom: 16px;

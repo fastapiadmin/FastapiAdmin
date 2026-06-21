@@ -153,7 +153,7 @@ export const useWorktabStore = defineStore(
         current.value = newTab;
       } else {
         // 更新现有标签页（当动态路由参数或查询变更时，复用同一标签）
-        const existingTab = opened.value[existingIndex];
+        const existingTab = opened.value[existingIndex]!;
 
         opened.value[existingIndex] = {
           ...existingTab,
@@ -167,7 +167,7 @@ export const useWorktabStore = defineStore(
           icon: tab.icon || existingTab.icon,
         };
 
-        current.value = opened.value[existingIndex];
+        current.value = opened.value[existingIndex]!;
       }
     };
 
@@ -177,7 +177,7 @@ export const useWorktabStore = defineStore(
     const findFixedTabInsertIndex = (): number => {
       let insertIndex = 0;
       for (let i = 0; i < opened.value.length; i++) {
-        if (opened.value[i].fixedTab) {
+        if (opened.value[i]!.fixedTab) {
           insertIndex = i + 1;
         } else {
           break;
@@ -225,8 +225,10 @@ export const useWorktabStore = defineStore(
       // 如果关闭的是当前激活标签，需要激活其他标签
       if (current.value.path === path) {
         const newIndex = targetIndex >= opened.value.length ? opened.value.length - 1 : targetIndex;
-        current.value = opened.value[newIndex];
-        safeRouterPush(current.value);
+        const nextTab = opened.value[newIndex];
+        if (!nextTab) return;
+        current.value = nextTab;
+        safeRouterPush(nextTab);
       }
     };
 
@@ -370,9 +372,10 @@ export const useWorktabStore = defineStore(
       // 选择激活的标签页：优先首页，其次第一个可用标签
       const homeTab = opened.value.find((tab) => tab.path === homePath.value);
       const targetTab = homeTab || opened.value[0];
+      if (!targetTab) return;
 
       current.value = targetTab;
-      safeRouterPush(targetTab);
+      safeRouterPush(targetTab as Partial<WorkTab>);
     };
 
     /**
@@ -433,7 +436,7 @@ export const useWorktabStore = defineStore(
         return;
       }
 
-      const tab = { ...opened.value[targetIndex] };
+      const tab = { ...opened.value[targetIndex]! };
       tab.fixedTab = !tab.fixedTab;
 
       // 移除原位置
@@ -508,7 +511,8 @@ export const useWorktabStore = defineStore(
 
         if (!isCurrentValid && validTabs.length > 0) {
           console.warn("当前激活标签无效，已自动切换");
-          current.value = validTabs[0];
+          const firstValid = validTabs[0];
+          if (firstValid) current.value = firstValid;
         } else if (!isCurrentValid) {
           current.value = {};
         }

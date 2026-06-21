@@ -2,16 +2,47 @@
 email_util.py — 邮件发送工具
 
 职责：
-- 渲染 Jinja2 模板
+- 渲染 Jinja2 模板（文件 & 内联字符串）
 - 通过 fastapi-mail 发送邮件
 
 使用方：EmailService.send_email_service()
 """
 
+from pathlib import Path
 from typing import Any
 
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
-from jinja2 import Environment, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
+
+_TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "templates"
+_file_env: Environment | None = None
+
+
+def _get_file_env() -> Environment:
+    """获取文件模板 Jinja2 环境（懒加载）。"""
+    global _file_env
+    if _file_env is None:
+        _file_env = Environment(
+            loader=FileSystemLoader(str(_TEMPLATES_DIR)),
+            undefined=StrictUndefined,
+            autoescape=True,
+        )
+    return _file_env
+
+
+def render_template_file(file_path: str, variables: dict[str, Any]) -> str:
+    """
+    从 templates/ 目录加载 Jinja2 文件模板并渲染。
+
+    参数：
+    - file_path: 相对于 templates/ 的模板路径，如 "emails/welcome.html"
+    - variables: 变量字典
+
+    返回：渲染后的字符串
+    """
+    env = _get_file_env()
+    tmpl = env.get_template(file_path)
+    return tmpl.render(**variables)
 
 
 def render_template(template_str: str, variables: dict[str, Any]) -> str:

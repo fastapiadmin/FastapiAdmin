@@ -216,7 +216,7 @@ const calculateColumnWidths = (data: Record<string, string>[]): XLSX.ColInfo[] =
   if (data.length === 0) return [];
 
   const sampleSize = Math.min(data.length, 100); // 只取前100行计算列宽
-  const columns = Object.keys(data[0]);
+  const columns = Object.keys(data[0]!);
 
   return columns.map((column) => {
     // 使用配置的列宽度
@@ -514,7 +514,6 @@ const handleImportError = (error: Error) => {
  * 处理 Excel 导出成功
  */
 const handleExportSuccess = () => {
-  console.log("导出成功");
   ElMessage.success("Excel 导出成功");
 };
 
@@ -531,7 +530,7 @@ const handleExportError = (error: Error) => {
  * @param progress 导出进度百分比
  */
 const handleProgress = (progress: number) => {
-  console.log("导出进度:", progress);
+  // 进度由进度条 UI 实时显示
 };
 
 /**

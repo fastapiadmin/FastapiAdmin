@@ -9,18 +9,20 @@
     v-show="visible"
     @click.stop
   >
-    <div class="flex-cb px-3.5 mt-3.5">
+    <div class="flex items-center justify-between px-3.5 mt-3.5">
       <span class="text-base font-medium text-g-800">{{ $t("notice.title") }}</span>
-      <span class="text-xs text-g-800 px-1.5 py-1 c-p select-none rounded hover:bg-g-200">
+      <span
+        class="text-xs text-g-800 px-1.5 py-1 cursor-pointer select-none rounded hover:bg-g-200"
+      >
         {{ $t("notice.btnRead") }}
       </span>
     </div>
 
-    <ul class="box-border flex items-end w-full h-12.5 px-3.5 border-b-d">
+    <ul class="box-border flex items-end w-full h-12.5 px-3.5 border-b border-(--default-border)">
       <li
         v-for="(item, index) in barList"
         :key="index"
-        class="h-12 leading-12 mr-5 overflow-hidden text-[13px] text-g-700 c-p select-none"
+        class="h-12 leading-12 mr-5 overflow-hidden text-[13px] text-g-700 cursor-pointer select-none"
         :class="{ 'bar-active': barActiveIndex === index }"
         @click="changeBar(index)"
       >
@@ -29,16 +31,16 @@
     </ul>
 
     <div class="w-full h-[calc(100%-95px)]">
-      <div class="h-[calc(100%-60px)] overflow-y-scroll scrollbar-thin">
+      <ElScrollbar class="h-[calc(100%-60px)]">
         <!-- 通知 -->
         <ul v-show="barActiveIndex === 0">
           <li
             v-for="(item, index) in noticeList"
             :key="index"
-            class="box-border flex-c px-3.5 py-3.5 c-p last:border-b-0 hover:bg-g-200/60"
+            class="box-border flex items-center px-3.5 py-3.5 cursor-pointer last:border-b-0 hover:bg-g-200/60"
           >
             <div
-              class="size-9 leading-9 text-center rounded-lg flex-cc"
+              class="size-9 leading-9 text-center rounded-lg flex items-center justify-center"
               :class="[getNoticeStyle(item.type).iconClass]"
             >
               <FaSvgIcon class="text-lg bg-transparent!" :icon="getNoticeStyle(item.type).icon" />
@@ -55,9 +57,11 @@
           <li
             v-for="(item, index) in msgList"
             :key="index"
-            class="box-border flex-c px-3.5 py-3.5 c-p last:border-b-0 hover:bg-g-200/60"
+            class="box-border flex items-center px-3.5 py-3.5 cursor-pointer last:border-b-0 hover:bg-g-200/60"
           >
-            <div class="size-9 leading-9 text-center rounded-lg flex-cc bg-info/12 text-info">
+            <div
+              class="size-9 leading-9 text-center rounded-lg flex items-center justify-center bg-info/12 text-info"
+            >
               <FaSvgIcon class="text-lg bg-transparent!" icon="ri:message-3-line" />
             </div>
             <div class="w-[calc(100%-45px)] ml-3.5">
@@ -86,10 +90,10 @@
         >
           <FaSvgIcon icon="system-uicons:inbox" class="text-5xl" />
           <p class="mt-3.5 text-xs bg-transparent!">
-            {{ $t("notice.text[0]") }}{{ barList[barActiveIndex].name }}
+            {{ $t("notice.text[0]") }}{{ barList[barActiveIndex]?.name }}
           </p>
         </div>
-      </div>
+      </ElScrollbar>
 
       <div class="relative box-border w-full px-3.5">
         <ElButton class="w-full mt-3" @click="handleViewAll" v-ripple>
@@ -106,6 +110,7 @@
 import { computed, ref, watch, onMounted, type Ref, type ComputedRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+
 import NoticeAPI, {
   type NoticeTable,
   type NotificationPanelMessage,
@@ -397,17 +402,5 @@ watch(
 .bar-active {
   color: var(--theme-color) !important;
   border-bottom: 2px solid var(--theme-color);
-}
-
-.scrollbar-thin::-webkit-scrollbar {
-  width: 5px !important;
-}
-
-.dark .scrollbar-thin::-webkit-scrollbar-track {
-  background-color: var(--default-box-color);
-}
-
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #222 !important;
 }
 </style>

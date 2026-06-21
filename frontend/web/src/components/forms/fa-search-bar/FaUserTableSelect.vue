@@ -105,7 +105,7 @@ interface IUser {
   gender?: string;
   avatar?: string;
   email?: string | null;
-  status?: string;
+  status?: number;
   dept_name?: string;
   role_names?: string[];
   created_time?: string;

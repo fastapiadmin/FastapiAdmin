@@ -108,7 +108,7 @@ const primaryColor = computed(() => getCssVar("--el-color-primary"));
 
 const getColor = (customColor?: string, index?: number): string => {
   if (customColor) return customColor;
-  if (index !== undefined) return props.colors![index % props.colors!.length];
+  if (index !== undefined) return props.colors![index % props.colors!.length]!;
   return primaryColor.value;
 };
 

@@ -45,7 +45,7 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
         authorization = request.headers.get("Authorization")
         scheme, token = get_authorization_scheme_param(authorization)
 
-        if not authorization or scheme.lower() != settings.TOKEN_TYPE:
+        if not authorization or scheme.lower() != settings.TOKEN_TYPE.lower():
             if self.auto_error:
                 raise CustomException(msg="认证失败,请登录后再试", code=10401, status_code=401)
             return None

@@ -83,7 +83,7 @@ const PackageAPI = {
 
 export default PackageAPI;
 
-export interface PackagePageQuery extends PageQuery {
+export interface PackagePageQuery extends PageQuery, UserByQueryParams, TenantByQueryParams {
   name?: string;
   code?: string;
 }
@@ -100,6 +100,8 @@ export interface PackageTable extends BaseType {
   max_depts: number;
   max_storage_mb: number;
   rate_limit: number;
+  status?: number;
+  description?: string;
 }
 
 export interface PackageForm extends BaseFormType {
@@ -114,6 +116,8 @@ export interface PackageForm extends BaseFormType {
   max_depts?: number;
   max_storage_mb?: number;
   rate_limit?: number;
+  status?: number;
+  description?: string;
 }
 
 export interface PackageCreateForm {

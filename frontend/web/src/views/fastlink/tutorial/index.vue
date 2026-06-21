@@ -816,6 +816,42 @@
             </div>
           </div>
         </ElTabPane>
+
+        <!-- 组件展示 Tab -->
+        <ElTabPane :label="t('manualPage.widgetsTab')" name="widgets">
+          <div class="fa-card-sm mt-2 p-5">
+            <FaShowcase tag="h1" class="mb-2">{{ t("manualPage.widgetsTitle") }}</FaShowcase>
+            <p class="mb-6 text-sm text-g-600 dark:text-g-400">
+              {{ t("manualPage.widgetsIntro") }}
+            </p>
+
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <!-- Markdown 渲染 -->
+              <section class="rounded-lg border border-g-200 p-4 dark:border-g-700">
+                <FaShowcase tag="h2" class="mb-3 text-base">
+                  {{ t("manualPage.widgetsMarkdown") }}
+                </FaShowcase>
+                <FaMarkdownRenderer :content="markdownSample" />
+              </section>
+
+              <!-- 评论组件 -->
+              <section class="rounded-lg border border-g-200 p-4 dark:border-g-700">
+                <FaShowcase tag="h2" class="mb-3 text-base">
+                  {{ t("manualPage.widgetsComment") }}
+                </FaShowcase>
+                <FaCommentWidget />
+              </section>
+
+              <!-- ECharts 图表 -->
+              <section class="rounded-lg border border-g-200 p-4 dark:border-g-700">
+                <FaShowcase tag="h2" class="mb-3 text-base">
+                  {{ t("manualPage.widgetsECharts") }}
+                </FaShowcase>
+                <FaECharts :options="echartsOption" height="280px" />
+              </section>
+            </div>
+          </div>
+        </ElTabPane>
       </ElTabs>
     </div>
   </div>
@@ -980,11 +1016,49 @@ const { DEFAULT_URL, PLAYER_ID } = VIDEO_CONFIG;
 
 // ============ 状态管理 ============
 
-const activeTab = ref<"video" | "manual">("video");
+const activeTab = ref<"video" | "manual" | "widgets">("video");
 const videoUrl = ref(DEFAULT_URL);
 const posterUrl = ref(lockImg);
 const scrollbarRef = ref<{ $el?: HTMLElement } | null>(null);
 const tocFilter = ref("");
+
+// ============ 组件展示 Tab 状态 ============
+
+const markdownSample = ref(
+  [
+    "# Markdown 渲染示例",
+    "",
+    "支持 **加粗**、*斜体*、`行内代码`、链接 [FastapiAdmin](https://github.com)。",
+    "",
+    "```ts",
+    "const greeting: string = 'Hello, FastapiAdmin';",
+    "console.log(greeting);",
+    "```",
+    "",
+    "- 列表项 A",
+    "- 列表项 B",
+    "",
+    "> 代码高亮、表格、引用块均可识别。",
+  ].join("\n")
+);
+const echartsOption = {
+  title: { text: "示例图表", left: "center", textStyle: { fontSize: 14 } },
+  tooltip: { trigger: "axis" },
+  grid: { left: 40, right: 20, top: 40, bottom: 30 },
+  xAxis: {
+    type: "category",
+    data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  },
+  yAxis: { type: "value" },
+  series: [
+    {
+      name: "PV",
+      type: "bar",
+      data: [120, 200, 150, 80, 70, 110, 130],
+      itemStyle: { color: "#4080ff" },
+    },
+  ],
+};
 
 // ============ 计算属性 ============
 

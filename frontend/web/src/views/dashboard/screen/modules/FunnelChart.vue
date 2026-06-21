@@ -36,11 +36,11 @@ let timer = 0;
 function tick() {
   const bases = [12850, 4320, 1845, 963];
   const vals = bases.map((b, i) => Math.round(b + (Math.random() - 0.5) * b * 0.08 * (4 - i)));
-  const max = vals[0];
+  const max = vals[0]!;
   data.forEach((item, i) => {
-    item.value = vals[i].toLocaleString();
-    item.rate = Math.round((vals[i] / max) * 100);
-    item.pct = (vals[i] / max) * 100;
+    item.value = vals[i]!.toLocaleString();
+    item.rate = Math.round((vals[i]! / max) * 100);
+    item.pct = (vals[i]! / max) * 100;
   });
 }
 

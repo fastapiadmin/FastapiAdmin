@@ -476,7 +476,7 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
       globalListNetworkInflight.set(dedupeKey, networkPromise as Promise<ApiResponse<unknown>>);
       networkPromise.finally(() => {
         globalListNetworkInflight.delete(dedupeKey);
-      });
+      }).catch(() => {});  // 忽略取消/reject，仅用于清理全局 Map
 
       inFlightDedupePromise = networkPromise;
 

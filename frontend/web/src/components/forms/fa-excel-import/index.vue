@@ -48,8 +48,8 @@ async function importExcel(file: File): Promise<Array<Record<string, unknown>>> 
       try {
         const data = e.target?.result;
         const workbook = XLSX.read(data, { type: "array" });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+        const firstSheetName = workbook.SheetNames[0]!;
+        const worksheet = workbook.Sheets[firstSheetName]!;
         const results = XLSX.utils.sheet_to_json(worksheet);
         resolve(results as Array<Record<string, unknown>>);
       } catch (error) {
@@ -206,7 +206,6 @@ const handleImportError = (error: Error) => {
  * 处理 Excel 导出成功
  */
 const handleExportSuccess = () => {
-  console.log("导出成功");
   ElMessage.success("Excel 导出成功");
 };
 
@@ -223,7 +222,7 @@ const handleExportError = (error: Error) => {
  * @param progress 导出进度百分比
  */
 const handleProgress = (progress: number) => {
-  console.log("导出进度:", progress);
+  // 进度由进度条 UI 实时显示
 };
 
 /**

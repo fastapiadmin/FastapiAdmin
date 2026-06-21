@@ -82,7 +82,7 @@ const ParamsAPI = {
 
 export default ParamsAPI;
 
-export interface ConfigPageQuery extends PageQuery {
+export interface ConfigPageQuery extends PageQuery, UserByQueryParams {
   config_name?: string;
   config_key?: string;
   config_type?: boolean;
@@ -93,6 +93,8 @@ export interface ConfigTable extends BaseType {
   config_key?: string;
   config_value?: string;
   config_type?: boolean;
+  status?: number;
+  description?: string;
 }
 
 export interface ConfigForm extends BaseFormType {
@@ -100,4 +102,6 @@ export interface ConfigForm extends BaseFormType {
   config_key?: string;
   config_value?: string;
   config_type?: boolean;
+  status?: number;
+  description?: string;
 }

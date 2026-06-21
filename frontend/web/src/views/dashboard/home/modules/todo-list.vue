@@ -2,7 +2,7 @@
   <div class="fa-card p-5 h-134 overflow-hidden">
     <div class="fa-card-header">
       <div class="title">
-        <h4>代办事项</h4>
+        <h4>待办事项</h4>
         <p>
           待处理
           <span class="text-danger">3</span>
@@ -10,25 +10,23 @@
       </div>
     </div>
 
-    <div class="h-[calc(100%-40px)] overflow-auto">
-      <ElScrollbar>
-        <div
-          class="flex-cb h-17.5 border-b border-g-300 text-sm last:border-b-0"
-          v-for="(item, index) in list"
-          :key="index"
-        >
-          <div>
-            <p class="text-sm">
-              <span class="text-g-800 font-medium">{{ item.username }}</span>
-              <span class="mx-2 text-g-600">{{ item.type }}</span>
-              <span class="text-theme">{{ item.target }}</span>
-            </p>
-            <p class="text-g-500 mt-1">{{ item.date }}</p>
-          </div>
-          <ElCheckbox v-model="item.complate" />
+    <ElScrollbar class="h-[calc(100%-40px)]">
+      <div
+        class="flex items-center justify-between h-17.5 border-b border-g-300 text-sm last:border-b-0"
+        v-for="(item, index) in list"
+        :key="index"
+      >
+        <div>
+          <p class="text-sm">
+            <span class="text-g-800 font-medium">{{ item.username }}</span>
+            <span class="mx-2 text-g-600">{{ item.type }}</span>
+            <span class="text-theme">{{ item.target }}</span>
+          </p>
+          <p class="text-g-500 mt-1">{{ item.date }}</p>
         </div>
-      </ElScrollbar>
-    </div>
+        <ElCheckbox v-model="item.complate" />
+      </div>
+    </ElScrollbar>
   </div>
 </template>
 

@@ -130,10 +130,9 @@ const TenantAPI = {
 
 export default TenantAPI;
 
-export interface TenantPageQuery extends PageQuery {
+export interface TenantPageQuery extends PageQuery, UserByQueryParams, TenantByQueryParams {
   name?: string;
   code?: string;
-  created_time?: string[];
 }
 
 export interface TenantTable extends BaseType {
@@ -158,12 +157,13 @@ export interface TenantTable extends BaseType {
   privacy?: string;
   clause?: string;
   git_code?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface TenantForm extends BaseFormType {
   name?: string;
   code?: string;
-  description?: string;
   package_id?: number;
   start_time?: string;
   end_time?: string;
@@ -183,6 +183,8 @@ export interface TenantForm extends BaseFormType {
   privacy?: string;
   clause?: string;
   git_code?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface TenantCreateForm extends BaseFormType {
@@ -207,6 +209,8 @@ export interface TenantCreateForm extends BaseFormType {
   privacy?: string;
   clause?: string;
   git_code?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface TenantUpdateForm extends BaseFormType {
@@ -231,6 +235,8 @@ export interface TenantUpdateForm extends BaseFormType {
   privacy?: string;
   clause?: string;
   git_code?: string;
+  status?: number;
+  description?: string;
 }
 
 /** 套餐变更影响预览 */

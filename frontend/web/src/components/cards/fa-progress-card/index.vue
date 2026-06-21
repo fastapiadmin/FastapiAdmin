@@ -1,8 +1,15 @@
 <!-- 进度条卡片 -->
 <template>
   <div class="fa-card h-32 flex flex-col justify-center px-5">
-    <div class="mb-3.5 flex-c" :style="{ justifyContent: icon ? 'space-between' : 'flex-start' }">
-      <div v-if="icon" class="size-11 flex-cc bg-g-300 text-xl rounded-lg" :class="iconStyle">
+    <div
+      class="mb-3.5 flex items-center"
+      :style="{ justifyContent: icon ? 'space-between' : 'flex-start' }"
+    >
+      <div
+        v-if="icon"
+        class="size-11 flex items-center justify-center bg-g-300 text-xl rounded-lg"
+        :class="iconStyle"
+      >
         <FaSvgIcon :icon="icon" class="text-2xl"></FaSvgIcon>
       </div>
       <div>

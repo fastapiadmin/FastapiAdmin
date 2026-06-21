@@ -17,9 +17,7 @@ class AgnoFactory:
     AGENT_TEMPERATURE = 0.7
     NUM_HISTORY_RUNS = 3
 
-    def create_agent(
-        self, user_id: str, dept_id: str, session_id: str, db: Any | None = None
-    ) -> Team:
+    def create_agent(self, user_id: str, dept_id: str, session_id: str, db: Any | None = None) -> Team:
         """
         创建带 Agent 的 Team 实例。
 

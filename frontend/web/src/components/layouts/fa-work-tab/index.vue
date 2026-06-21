@@ -37,7 +37,7 @@
           }"
         >
           <li
-            class="worktab-tab fa-card-xs inline-flex flex-cc h-8 mr-1.5 text-xs c-p hover:text-theme group"
+            class="worktab-tab fa-card-xs inline-flex flex items-center justify-center h-8 mr-1.5 text-xs cursor-pointer hover:text-theme group"
             :class="[
               item.path === activeTab
                 ? chromeTabStrip
@@ -99,7 +99,7 @@
             />
             <span
               v-if="list.length > 1 && !item.fixedTab"
-              class="worktab-close inline-flex flex-cc relative ml-0.5 rounded-full p-1 tad-200"
+              class="worktab-close inline-flex flex items-center justify-center relative ml-0.5 rounded-full p-1 transition duration-200"
               @click.stop="closeWorktab('current', item.path)"
             >
               <FaSvgIcon icon="ri:close-large-fill" class="text-[10px]" />
@@ -443,13 +443,13 @@ const useEventHandlers = () => {
   };
 
   const handleTouchStart = (event: TouchEvent) => {
-    touchState.value.startX = event.touches[0].clientX;
+    touchState.value.startX = event.touches[0]!.clientX;
   };
 
   const handleTouchMove = (event: TouchEvent) => {
     if (!scrollRef.value || !tabsRef.value) return;
 
-    touchState.value.currentX = event.touches[0].clientX;
+    touchState.value.currentX = event.touches[0]!.clientX;
     const deltaX = touchState.value.currentX - touchState.value.startX;
     const xMin = scrollRef.value.offsetWidth - tabsRef.value.offsetWidth;
 
@@ -586,8 +586,8 @@ const SCROLL_STEP = 200;
 function showGoogleTabDivider(index: number): boolean {
   const tabs = list.value;
   if (index <= 0 || index >= tabs.length) return false;
-  const prev = tabs[index - 1];
-  const cur = tabs[index];
+  const prev = tabs[index - 1]!;
+  const cur = tabs[index]!;
   if (prev.fixedTab && !cur.fixedTab) return true;
   if (prev.path === activeTab.value || cur.path === activeTab.value) return false;
   return true;

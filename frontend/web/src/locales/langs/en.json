@@ -19,6 +19,12 @@
     "intro": "Watch the walkthrough video and browse the built-in checklist mapped to implemented UI and permission codes (coverage / completeness, not a quality score). Replace the demo video URL with your own CDN in production.",
     "videoTab": "Video",
     "manualTab": "Acceptance checklist",
+    "widgetsTab": "Widgets",
+    "widgetsTitle": "Component showcase",
+    "widgetsIntro": "This page centralizes the public components that are not yet referenced by any business page, serving as a usage example.",
+    "widgetsMarkdown": "Markdown renderer",
+    "widgetsComment": "Comment widget",
+    "widgetsECharts": "ECharts wrapper",
     "videoHint": "Pause, change speed, or go fullscreen anytime.",
     "manualHint": "Use the TOC, filter, and anchors. “Functional completeness” items mirror implemented search bars, toolbars, row actions, and dialogs for gap checking."
   },

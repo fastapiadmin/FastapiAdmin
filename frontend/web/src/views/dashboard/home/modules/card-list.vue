@@ -26,7 +26,7 @@
           </div>
           <div
             v-if="item.icon"
-            class="size-10 rounded-xl flex-cc"
+            class="size-10 rounded-xl flex items-center justify-center"
             :class="item.iconBg || 'bg-theme/10'"
           >
             <FaSvgIcon
@@ -83,7 +83,6 @@ interface CardDataItem {
   totalLabel?: string;
   totalValue?: number | string;
   updateTime?: string;
-  // 动画计数
   animatedCount?: number;
 }
 
@@ -154,16 +153,16 @@ const dataList = ref<CardDataItem[]>([
 
 onMounted(() => {
   // 更新 UV/PV 动态数据
-  dataList.value[1].animatedCount = Math.round(transitionUvCount.value);
-  dataList.value[1].totalValue = visitStats.value.totalUvCount;
-  dataList.value[2].animatedCount = Math.round(transitionPvCount.value);
-  dataList.value[2].totalValue = visitStats.value.totalPvCount;
+  dataList.value[1]!.animatedCount = Math.round(transitionUvCount.value);
+  dataList.value[1]!.totalValue = visitStats.value.totalUvCount;
+  dataList.value[2]!.animatedCount = Math.round(transitionPvCount.value);
+  dataList.value[2]!.totalValue = visitStats.value.totalPvCount;
 
   // 生成增长率显示
   const uvRate = visitStats.value.uvGrowthRate;
   const pvRate = visitStats.value.pvGrowthRate;
-  dataList.value[1].change = uvRate > 0 ? `+${uvRate}%` : `${uvRate}%`;
-  dataList.value[2].change = pvRate > 0 ? `+${pvRate}%` : `${pvRate}%`;
+  dataList.value[1]!.change = uvRate > 0 ? `+${uvRate}%` : `${uvRate}%`;
+  dataList.value[2]!.change = pvRate > 0 ? `+${pvRate}%` : `${pvRate}%`;
 });
 </script>
 

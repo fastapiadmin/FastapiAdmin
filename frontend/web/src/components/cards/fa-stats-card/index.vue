@@ -1,10 +1,14 @@
 <!-- 统计卡片 -->
 <template>
   <div
-    class="fa-card h-30 flex-c px-5 transition-transform duration-200 hover:-translate-y-0.5"
+    class="fa-card h-30 flex items-center px-5 transition-transform duration-200 hover:-translate-y-0.5"
     :class="boxStyle"
   >
-    <div v-if="icon" class="mr-4 size-11 flex-cc rounded-lg text-xl text-white" :class="iconStyle">
+    <div
+      v-if="icon"
+      class="mr-4 size-11 flex items-center justify-center rounded-lg text-xl text-white"
+      :class="iconStyle"
+    >
       <FaSvgIcon :icon="icon"></FaSvgIcon>
     </div>
     <div class="flex-1">
