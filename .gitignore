@@ -5,6 +5,7 @@ __pycache__
 .idea
 .DS_Store
 .git
+.trae
 
 backend/__pycache__
 backend/.vscode
