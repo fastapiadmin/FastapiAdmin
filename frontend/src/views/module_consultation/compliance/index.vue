@@ -6,8 +6,21 @@
       <el-tab-pane label="诊断记录" name="diagnosis">
         <el-card class="search-card" shadow="never">
           <el-form ref="searchFormRef" :model="searchForm" :inline="true" label-width="90px">
-            <el-form-item label="咨询会ID" prop="consultation_id">
-              <el-input-number v-model="searchForm.consultation_id" :min="1" style="width: 150px" />
+            <el-form-item label="咨询会" prop="consultation_id">
+              <el-select
+                v-model="searchForm.consultation_id"
+                placeholder="请选择咨询会"
+                clearable
+                filterable
+                style="width: 220px"
+              >
+                <el-option
+                  v-for="item in consultationOptions"
+                  :key="item.id"
+                  :label="item.title"
+                  :value="item.id"
+                />
+              </el-select>
             </el-form-item>
             <el-form-item label="合规等级" prop="compliance_level">
               <el-select
@@ -80,7 +93,11 @@
           >
             <el-table-column type="selection" width="55" align="center" />
             <el-table-column type="index" label="序号" width="60" align="center" />
-            <el-table-column prop="consultation_id" label="咨询会ID" width="100" />
+            <el-table-column prop="consultation_id" label="咨询会" width="180" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ getConsultationName(row.consultation_id) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="compliance_score" label="合规评分" width="100" align="center">
               <template #default="{ row }">
                 <el-tag :type="getScoreType(row.compliance_score)">
@@ -321,8 +338,8 @@
     <!-- 诊断详情弹窗 -->
     <el-dialog v-model="diagnosisDetailDialog.visible" title="诊断详情" width="600px">
       <el-descriptions v-if="diagnosisDetailDialog.data" :column="2" border>
-        <el-descriptions-item label="咨询会ID">
-          {{ diagnosisDetailDialog.data.consultation_id }}
+        <el-descriptions-item label="咨询会">
+          {{ getConsultationName(diagnosisDetailDialog.data.consultation_id) }}
         </el-descriptions-item>
         <el-descriptions-item label="合规评分">
           <el-tag :type="getScoreType(diagnosisDetailDialog.data.compliance_score)">
@@ -365,8 +382,21 @@
         :rules="diagnosisRules"
         label-width="100px"
       >
-        <el-form-item label="咨询会ID" prop="consultation_id">
-          <el-input-number v-model="diagnosisForm.consultation_id" :min="1" style="width: 200px" />
+        <el-form-item label="咨询会" prop="consultation_id">
+          <el-select
+            v-model="diagnosisForm.consultation_id"
+            placeholder="请选择咨询会"
+            clearable
+            filterable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in consultationOptions"
+              :key="item.id"
+              :label="item.title"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="合规评分" prop="compliance_score">
           <el-input-number
@@ -496,8 +526,29 @@ import type {
   RuleItem,
   RuleQuery,
 } from "@/api/module_consultation/compliance";
+import ConsultationInfoAPI, {
+  type ConsultationOption,
+} from "@/api/module_consultation/consultation";
 
 const activeTab = ref("diagnosis");
+
+// 咨询会下拉选项
+const consultationOptions = ref<ConsultationOption[]>([]);
+const loadConsultationOptions = async () => {
+  try {
+    const res = await ConsultationInfoAPI.getApprovedOptions();
+    if (res.data?.data) {
+      consultationOptions.value = res.data.data;
+    }
+  } catch {
+    // ignore
+  }
+};
+const getConsultationName = (id: number | undefined) => {
+  if (!id) return "-";
+  const item = consultationOptions.value.find((c) => c.id === id);
+  return item?.title || String(id);
+};
 
 // 诊断相关
 const searchForm = reactive<DiagnosisQuery>({
@@ -529,7 +580,7 @@ const diagnosisForm = reactive<any>({
   risk_warning: "",
 });
 const diagnosisRules: FormRules = {
-  consultation_id: [{ required: true, message: "请输入咨询会ID", trigger: "blur" }],
+  consultation_id: [{ required: true, message: "请选择咨询会", trigger: "change" }],
   compliance_score: [{ required: true, message: "请输入合规评分", trigger: "blur" }],
   compliance_level: [{ required: true, message: "请选择合规等级", trigger: "change" }],
 };
@@ -808,6 +859,7 @@ const getRiskType = (level: string) => {
 const getLevelLabel = (level: string) => ({ high: "高", medium: "中", low: "低" })[level] || level;
 
 onMounted(() => {
+  loadConsultationOptions();
   fetchDiagnosisList();
 });
 </script>
