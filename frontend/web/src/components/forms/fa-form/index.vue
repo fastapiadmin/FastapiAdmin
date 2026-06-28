@@ -247,7 +247,7 @@ const componentMap = {
 
 const { width } = useWindowSize();
 const { t } = useI18n();
-const isMobile = computed(() => width.value < 500);
+const isMobile = computed(() => width.value < 500); // 表单窄布局阈值
 
 const formInstance = useTemplateRef<FormInstance>("formRef");
 

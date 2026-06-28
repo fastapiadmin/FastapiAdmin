@@ -15,7 +15,6 @@
       :key="child.path"
       :item="child"
       :theme="theme"
-      :is-mobile="isMobile"
       :level="level + 1"
       @close="closeMenu"
     />
@@ -54,7 +53,6 @@ defineOptions({ name: "FaHorizontalSubmenu" });
 interface Props {
   item: AppRouteRecord;
   theme?: Record<string, any>;
-  isMobile?: boolean;
   level?: number;
 }
 

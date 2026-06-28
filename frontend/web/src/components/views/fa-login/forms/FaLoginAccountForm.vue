@@ -70,14 +70,11 @@
             @keyup.enter="$emit('submit')"
           >
             <template #prefix>
-              <FaSvgIcon
-                icon="mdi:shield-lock-outline"
-                class="size-[18px] text-(--el-text-color-secondary)"
-              />
+              <ElIcon><Unlock /></ElIcon>
             </template>
           </ElInput>
           <div
-            class="login-captcha-img flex h-10 w-[100px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded"
+            class="login-captcha-img flex h-10 max-md:h-6 w-[100px] max-md:w-[80px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded"
             role="button"
             :title="$t('login.captchaClickHint')"
             @click="$emit('getCaptcha')"
@@ -171,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { Loading, Lock, User } from "@element-plus/icons-vue";
+import { Loading, Lock, Unlock, User } from "@element-plus/icons-vue";
 import type { CaptchaInfo, LoginFormData } from "@/api/module_system/auth";
 import type { FormRules } from "element-plus";
 import type { Account, AccountKey } from "@views/module_system/auth/login/types";

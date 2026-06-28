@@ -94,7 +94,7 @@ const props = withDefaults(defineProps<Props>(), {
   filename: () => `export_${new Date().toISOString().slice(0, 10)}`,
   sheetName: "Sheet1",
   type: "primary",
-  size: "default",
+  size: undefined,
   disabled: false,
   buttonText: "导出 Excel",
   loadingText: "导出中...",

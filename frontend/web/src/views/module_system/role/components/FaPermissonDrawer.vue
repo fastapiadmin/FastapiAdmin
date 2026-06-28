@@ -115,7 +115,7 @@ import RoleAPI, { permissionDataType } from "@/api/module_system/role";
 import DeptAPI from "@/api/module_system/dept";
 import MenuAPI, { MenuTable } from "@/api/module_platform/menu";
 import { DeviceEnum } from "@/enums/settings/device.enum";
-import { useAppStore, useUserStore } from "@stores";
+import { useUserStore, useAppStore } from "@stores";
 import { ElMessage } from "element-plus";
 
 const props = defineProps<{
@@ -132,7 +132,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const appStore = useAppStore();
-const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "1200px" : "90%"));
+const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "740px" : "90%"));
 
 const drawerVisible = computed({
   get: () => props.modelValue,

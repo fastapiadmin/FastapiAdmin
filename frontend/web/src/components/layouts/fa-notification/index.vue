@@ -1,7 +1,7 @@
 <!-- 通知组件 -->
 <template>
   <div
-    class="absolute top-14.5 right-5 w-90 h-125 overflow-hidden transition-all duration-300 origin-top will-change-[top,left] max-[640px]:top-[65px] max-[640px]:right-0 max-[640px]:w-full max-[640px]:h-[80vh] fa-card-sm shadow-xl!"
+    class="fa-notification-panel fa-card-sm !shadow-xl flex flex-col"
     :style="{
       transform: show ? 'scaleY(1)' : 'scaleY(0.9)',
       opacity: show ? 1 : 0,
@@ -9,20 +9,18 @@
     v-show="visible"
     @click.stop
   >
-    <div class="flex items-center justify-between px-3.5 mt-3.5">
+    <div class="flex-cb px-3.5 mt-3.5 flex-shrink-0">
       <span class="text-base font-medium text-g-800">{{ $t("notice.title") }}</span>
-      <span
-        class="text-xs text-g-800 px-1.5 py-1 cursor-pointer select-none rounded hover:bg-g-200"
-      >
+      <span class="text-xs text-g-800 px-1.5 py-1 c-p select-none rounded hover:bg-g-200">
         {{ $t("notice.btnRead") }}
       </span>
     </div>
 
-    <ul class="box-border flex items-end w-full h-12.5 px-3.5 border-b border-(--default-border)">
+    <ul class="box-border flex items-end w-full h-12.5 px-3.5 border-b-d flex-shrink-0">
       <li
         v-for="(item, index) in barList"
         :key="index"
-        class="h-12 leading-12 mr-5 overflow-hidden text-[13px] text-g-700 cursor-pointer select-none"
+        class="h-12 leading-12 mr-5 overflow-hidden text-[13px] text-g-700 c-p select-none"
         :class="{ 'bar-active': barActiveIndex === index }"
         @click="changeBar(index)"
       >
@@ -30,79 +28,73 @@
       </li>
     </ul>
 
-    <div class="w-full h-[calc(100%-95px)]">
-      <ElScrollbar class="h-[calc(100%-60px)]">
-        <!-- 通知 -->
-        <ul v-show="barActiveIndex === 0">
-          <li
-            v-for="(item, index) in noticeList"
-            :key="index"
-            class="box-border flex items-center px-3.5 py-3.5 cursor-pointer last:border-b-0 hover:bg-g-200/60"
-          >
-            <div
-              class="size-9 leading-9 text-center rounded-lg flex items-center justify-center"
-              :class="[getNoticeStyle(item.type).iconClass]"
-            >
-              <FaSvgIcon class="text-lg bg-transparent!" :icon="getNoticeStyle(item.type).icon" />
-            </div>
-            <div class="w-[calc(100%-45px)] ml-3.5">
-              <h4 class="text-sm font-normal leading-5.5 text-g-900">{{ item.title }}</h4>
-              <p class="mt-1.5 text-xs text-g-500">{{ item.time }}</p>
-            </div>
-          </li>
-        </ul>
-
-        <!-- 消息 -->
-        <ul v-show="barActiveIndex === 1">
-          <li
-            v-for="(item, index) in msgList"
-            :key="index"
-            class="box-border flex items-center px-3.5 py-3.5 cursor-pointer last:border-b-0 hover:bg-g-200/60"
-          >
-            <div
-              class="size-9 leading-9 text-center rounded-lg flex items-center justify-center bg-info/12 text-info"
-            >
-              <FaSvgIcon class="text-lg bg-transparent!" icon="ri:message-3-line" />
-            </div>
-            <div class="w-[calc(100%-45px)] ml-3.5">
-              <h4 class="text-sm font-normal leading-5.5 text-g-900">{{ item.title }}</h4>
-              <p class="mt-1.5 text-xs text-g-500">{{ item.time }}</p>
-            </div>
-          </li>
-        </ul>
-
-        <!-- 待办 -->
-        <ul v-show="barActiveIndex === 2">
-          <li
-            v-for="(item, index) in pendingList"
-            :key="index"
-            class="box-border px-5 py-3.5 last:border-b-0"
-          >
-            <h4>{{ item.title }}</h4>
-            <p class="text-xs text-g-500">{{ item.time }}</p>
-          </li>
-        </ul>
-
-        <!-- 空状态 -->
-        <div
-          v-show="currentTabIsEmpty"
-          class="relative top-25 h-full text-g-500 text-center bg-transparent!"
+    <ElScrollbar class="flex-1 min-h-0 overflow-y-scroll scrollbar-thin">
+      <!-- 通知 -->
+      <ul v-show="barActiveIndex === 0">
+        <li
+          v-for="(item, index) in noticeList"
+          :key="index"
+          class="box-border flex-c px-3.5 py-3.5 c-p last:border-b-0 hover:bg-g-200/60"
         >
-          <FaSvgIcon icon="system-uicons:inbox" class="text-5xl" />
-          <p class="mt-3.5 text-xs bg-transparent!">
-            {{ $t("notice.text[0]") }}{{ barList[barActiveIndex]?.name }}
-          </p>
-        </div>
-      </ElScrollbar>
+          <div
+            class="size-9 leading-9 text-center rounded-lg flex-cc"
+            :class="[getNoticeStyle(item.type).iconClass]"
+          >
+            <FaSvgIcon class="text-lg bg-transparent!" :icon="getNoticeStyle(item.type).icon" />
+          </div>
+          <div class="w-[calc(100%-45px)] ml-3.5">
+            <h4 class="text-sm font-normal leading-5.5 text-g-900">{{ item.title }}</h4>
+            <p class="mt-1.5 text-xs text-g-500">{{ item.time }}</p>
+          </div>
+        </li>
+      </ul>
 
-      <div class="relative box-border w-full px-3.5">
-        <ElButton class="w-full mt-3" @click="handleViewAll" v-ripple>
-          {{ $t("notice.viewAll") }}
-        </ElButton>
+      <!-- 消息 -->
+      <ul v-show="barActiveIndex === 1">
+        <li
+          v-for="(item, index) in msgList"
+          :key="index"
+          class="box-border flex-c px-3.5 py-3.5 c-p last:border-b-0 hover:bg-g-200/60"
+        >
+          <div class="w-9 h-9">
+            <FaSvgIcon class="w-full h-full rounded-lg" icon="ri:message-3-line" />
+          </div>
+          <div class="w-[calc(100%-45px)] ml-3.5">
+            <h4 class="text-xs font-normal leading-5.5">{{ item.title }}</h4>
+            <p class="mt-1.5 text-xs text-g-500">{{ item.time }}</p>
+          </div>
+        </li>
+      </ul>
+
+      <!-- 待办 -->
+      <ul v-show="barActiveIndex === 2">
+        <li
+          v-for="(item, index) in pendingList"
+          :key="index"
+          class="box-border px-5 py-3.5 last:border-b-0"
+        >
+          <h4>{{ item.title }}</h4>
+          <p class="text-xs text-g-500">{{ item.time }}</p>
+        </li>
+      </ul>
+
+      <!-- 空状态 -->
+      <div
+        v-show="currentTabIsEmpty"
+        class="h-full text-g-500 text-center !bg-transparent flex flex-col items-center justify-center mt-12"
+      >
+        <FaSvgIcon icon="system-uicons:inbox" class="text-5xl" />
+        <p class="mt-3.5 text-xs !bg-transparent">
+          {{ $t("notice.text[0]") }}{{ barList[barActiveIndex]?.name }}
+        </p>
       </div>
-    </div>
+    </ElScrollbar>
 
-    <div class="h-25"></div>
+    <div class="box-border w-full px-3.5 pt-2 pb-3.5 flex-shrink-0">
+      <ElButton class="w-full" @click="handleViewAll" v-ripple>
+        {{ $t("notice.viewAll") }}
+      </ElButton>
+    </div>
   </div>
 </template>
 
@@ -261,7 +253,7 @@ const useNotificationStyles = () => {
       iconClass: "bg-success/12 text-success",
     },
     collection: {
-      icon: "ri:hefa-3-line",
+      icon: "ri:heart-3-line",
       iconClass: "bg-danger/12 text-danger",
     },
     user: {
@@ -399,8 +391,43 @@ watch(
 </script>
 
 <style scoped>
+@reference '@styles/tailwind.css';
+
+.fa-notification-panel {
+  @apply absolute 
+  top-14.5
+  right-5 
+  w-90 
+  h-125
+  overflow-hidden 
+  transition-all 
+  duration-300
+  origin-top 
+  will-change-[top,left] 
+  max-[640px]:top-[65px]
+  max-[640px]:right-0
+  max-[640px]:w-full 
+  max-[640px]:h-[80vh];
+}
+
+.fa-notification-panel.fa-notification-panel {
+  border-radius: calc(var(--custom-radius) + 2px) !important;
+}
+
 .bar-active {
-  color: var(--theme-color) !important;
+  color: var(--theme-color) important;
   border-bottom: 2px solid var(--theme-color);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-track {
+  background-color: var(--default-box-color);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--fa-scrollbar-thumb-dark) !important;
 }
 </style>

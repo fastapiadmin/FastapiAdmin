@@ -40,6 +40,8 @@
 </template>
 
 <script setup lang="ts">
+import { useWindowSize } from "@vueuse/core";
+
 defineOptions({ name: "FaDragVerify" });
 
 // 事件定义
@@ -97,6 +99,11 @@ const props = withDefaults(defineProps<Props>(), {
   textSize: "13px",
   textColor: "#333",
 });
+
+const { width: winWidth } = useWindowSize();
+const effectiveHeight = computed(() =>
+  props.height === 40 && winWidth.value < 768 ? 24 : props.height
+);
 
 // 组件状态接口定义
 interface StateType {
@@ -188,30 +195,30 @@ onBeforeUnmount(() => {
 });
 
 // 滑块样式计算
-const handlerStyle = {
+const handlerStyle = computed(() => ({
   left: "0",
-  width: props.height + "px",
-  height: props.height + "px",
+  width: effectiveHeight.value + "px",
+  height: effectiveHeight.value + "px",
   background: props.handlerBg,
-};
+}));
 
 // 主容器样式计算
 const dragVerifyStyle = computed(() => ({
   width: getStyleWidth(),
-  height: props.height + "px",
-  lineHeight: props.height + "px",
+  height: effectiveHeight.value + "px",
+  lineHeight: effectiveHeight.value + "px",
   background: props.background,
-  borderRadius: props.circle ? props.height / 2 + "px" : props.radius,
+  borderRadius: props.circle ? effectiveHeight.value / 2 + "px" : props.radius,
 }));
 
 // 进度条样式计算
-const progressBarStyle = {
+const progressBarStyle = computed(() => ({
   background: props.progressBarBg,
-  height: props.height + "px",
+  height: effectiveHeight.value + "px",
   borderRadius: props.circle
-    ? props.height / 2 + "px 0 0 " + props.height / 2 + "px"
+    ? effectiveHeight.value / 2 + "px 0 0 " + effectiveHeight.value / 2 + "px"
     : props.radius,
-};
+}));
 
 // 文本样式计算
 const textStyle = computed(() => ({

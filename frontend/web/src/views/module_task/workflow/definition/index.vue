@@ -7,7 +7,7 @@
       v-model="searchForm"
       :items="workflowSearchItems"
       :rules="searchBarRules"
-      :is-expand="true"
+      :is-expand="false"
       :show-expand="true"
       :show-reset="true"
       :show-search="true"
@@ -18,11 +18,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -53,56 +49,6 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       >
-        <template #workflow-operation="{ row }">
-          <ElSpace class="flex">
-            <ElButton
-              v-if="row.status === 0"
-              v-hasPerm="['module_task:workflow:definition:update']"
-              type="success"
-              size="small"
-              link
-              icon="upload"
-              @click="handlePublish(row)"
-            >
-              发布
-            </ElButton>
-            <ElDropdown
-              v-if="row.status === 1"
-              v-hasPerm="['module_task:workflow:definition:execute']"
-              @command="(e: string) => handleExecute(e, row)"
-            >
-              <ElButton type="warning" size="small" link icon="video-play">
-                执行
-                <ElIcon><ArrowDown /></ElIcon>
-              </ElButton>
-              <template #dropdown>
-                <ElDropdownMenu>
-                  <ElDropdownItem command="execute">立即执行</ElDropdownItem>
-                </ElDropdownMenu>
-              </template>
-            </ElDropdown>
-            <ElButton
-              v-hasPerm="['module_task:workflow:definition:update']"
-              type="primary"
-              size="small"
-              link
-              icon="edit"
-              @click="handleEdit(row)"
-            >
-              编辑
-            </ElButton>
-            <ElButton
-              v-hasPerm="['module_task:workflow:definition:delete']"
-              type="danger"
-              size="small"
-              link
-              icon="delete"
-              @click="deleteWorkflowRow(row.id)"
-            >
-              删除
-            </ElButton>
-          </ElSpace>
-        </template>
       </FaTable>
     </ElCard>
 
@@ -126,9 +72,12 @@ import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaWorkflowDesignDrawer from "./components/FaWorkflowDesignDrawer.vue";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
-import { ArrowDown } from "@element-plus/icons-vue";
+import { useAuth } from "@/hooks/core/useAuth";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { computed, ref } from "vue";
+
+const { hasAuth } = useAuth();
 
 const BATCH_DELETE_MSG = "确认删除选中的工作流吗？";
 
@@ -238,6 +187,49 @@ async function handleBatchDelete() {
   }
 }
 
+function buildWorkflowRowActions(row: WorkflowTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [];
+  if (row.status === 0) {
+    all.push({
+      key: "publish",
+      label: "发布",
+      artType: "add",
+      perm: "module_task:workflow:definition:update",
+      run: () => handlePublish(row),
+    });
+  }
+  if (row.status === 1) {
+    all.push({
+      key: "execute",
+      label: "执行",
+      artType: "view",
+      perm: "module_task:workflow:definition:execute",
+      run: () => handleExecute("execute", row),
+    });
+  }
+  all.push(
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      perm: "module_task:workflow:definition:update",
+      run: () => handleEdit(row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      perm: "module_task:workflow:definition:delete",
+      run: () => deleteWorkflowRow(row.id),
+    }
+  );
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatWorkflowOperationCell(row: WorkflowTable) {
+  return renderTableOperationCell(buildWorkflowRowActions(row));
+}
+
 const {
   columns,
   columnChecks,
@@ -306,11 +298,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 260,
+        width: 160,
         fixed: "right",
         align: "center",
-        useSlot: true,
-        slotName: "workflow-operation",
+        formatter: (row: WorkflowTable) => formatWorkflowOperationCell(row),
       },
     ],
   },

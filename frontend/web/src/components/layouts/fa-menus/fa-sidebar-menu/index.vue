@@ -100,12 +100,7 @@
           :show-timeout="50"
           :hide-timeout="50"
         >
-          <SidebarSubmenu
-            :list="menuList"
-            :isMobile="isMobileMode"
-            :theme="getMenuTheme"
-            @close="handleMenuClose"
-          />
+          <SidebarSubmenu :list="menuList" :theme="getMenuTheme" @close="handleMenuClose" />
         </ElMenu>
       </ElScrollbar>
 
@@ -137,10 +132,10 @@ import { isIframe, handleMenuJump } from "@utils";
 import SidebarSubmenu from "./widgets/FaSidebarSubmenu.vue";
 import { useCommon } from "@/hooks/core/useCommon";
 import { useWindowSize, useTimeoutFn } from "@vueuse/core";
+import { MOBILE_BREAKPOINT } from "@utils/constants";
 
 defineOptions({ name: "FaSidebarMenu" });
 
-const MOBILE_BREAKPOINT = 800;
 const ANIMATION_DELAY = 350;
 const MENU_CLOSE_WIDTH = MenuWidth.CLOSE;
 
@@ -173,7 +168,6 @@ const {
 
 // 组件内部状态
 const defaultOpenedMenus = ref<string[]>([]);
-const isMobileMode = ref(false);
 const showMobileModal = ref(false);
 
 // 使用 VueUse 的窗口尺寸监听
@@ -379,7 +373,7 @@ watch(menuOpen, (isMenuOpen: boolean) => {
 
   :deep(.el-scrollbar__thumb) {
     right: -2px;
-    background-color: #ccc;
+    background-color: var(--fa-gray-400);
     border-radius: 2px;
   }
 
@@ -588,7 +582,7 @@ watch(menuOpen, (isMenuOpen: boolean) => {
       display: block;
       width: 100%;
       height: 100vh;
-      background: rgba($color: #000, $alpha: 50%);
+      background: var(--fa-overlay-heavy);
       transition: opacity 0.2s ease-in-out;
     }
   }
@@ -602,14 +596,14 @@ watch(menuOpen, (isMenuOpen: boolean) => {
 
 .dark {
   .layout-sidebar {
-    border-right: 1px solid rgb(255 255 255 / 13%);
+    border-right: 1px solid var(--fa-dark-border-subtle);
 
     :deep(.el-scrollbar__thumb) {
-      background-color: #777;
+      background-color: var(--fa-scrollbar-thumb);
     }
 
     .dual-menu-left {
-      border-right: 1px solid rgb(255 255 255 / 9%) !important;
+      border-right: 1px solid var(--fa-dark-border-subtle) !important;
     }
   }
 }
@@ -622,7 +616,7 @@ watch(menuOpen, (isMenuOpen: boolean) => {
 $menu-height: 42px;
 $menu-icon-size: 20px;
 $menu-font-size: 14px;
-$hover-bg-color: var(--fa-gray-200);
+$hover-bg-color: var(--el-color-primary-light-9);
 $popup-menu-height: 40px;
 $popup-menu-padding: 8px;
 $popup-menu-margin: 5px;
@@ -783,8 +777,8 @@ $popup-menu-radius: 6px;
   /* ---------------------- Dark theme menu ---------------------- */
   .el-menu-dark {
     @include theme-menu-base;
-    @include menu-active(#fff, #27282d, #fff);
-    @include menu-hover(#0f1015);
+    @include menu-active(var(--fa-gray-900), var(--fa-gray-300), var(--fa-gray-900));
+    @include menu-hover(var(--fa-gray-200));
 
     .el-sub-menu__icon-arrow {
       color: var(--fa-gray-400);
@@ -843,14 +837,18 @@ $popup-menu-radius: 6px;
 /* 菜单折叠 hover 弹窗样式（浅色主题） */
 .el-menu--vertical,
 .el-menu--popup-container {
-  @include popup-menu-base(var(--fa-gray-200), var(--fa-gray-900), var(--fa-gray-200));
+  @include popup-menu-base(var(--el-color-primary-light-9), var(--fa-gray-900), var(--fa-gray-200));
 }
 
 /* 暗黑模式菜单样式 */
 .dark {
   .el-menu--vertical,
   .el-menu--popup-container {
-    @include popup-menu-base(var(--fa-gray-200), var(--fa-gray-900), #292a2e);
+    @include popup-menu-base(
+      var(--el-color-primary-light-9),
+      var(--fa-gray-900),
+      var(--fa-gray-300)
+    );
   }
 
   .layout-sidebar {
@@ -858,6 +856,12 @@ $popup-menu-radius: 6px;
     .menu-icon .art-svg-icon,
     .menu-name {
       color: var(--fa-gray-800) !important;
+    }
+
+    /* 暗色模式：悬浮使用半透明主题色 */
+    .el-menu-item:not(.is-active):hover,
+    .el-sub-menu__title:not(.is-active):hover {
+      background-color: color-mix(in srgb, var(--el-color-primary) 15%, transparent) !important;
     }
 
     /* 选中的文字颜色跟图标颜色 */
@@ -870,7 +874,7 @@ $popup-menu-radius: 6px;
 
     /* 右侧箭头颜色 */
     .el-sub-menu__icon-arrow {
-      color: #fff;
+      color: var(--fa-gray-900);
     }
   }
 }

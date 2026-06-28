@@ -17,7 +17,6 @@
         v-for="item in filteredMenuItems"
         :key="item.path"
         :item="item"
-        :isMobile="false"
         :level="0"
       />
     </ElMenu>
@@ -105,5 +104,40 @@ const filterMenuItems = (items: AppRouteRecord[]): AppRouteRecord[] => {
 :deep(.el-menu--horizontal .el-sub-menu__title) {
   padding: 0 30px 0 10px !important;
   border: 0 !important;
+}
+
+/* Horizontal menu item hover background */
+:deep(.el-menu-item:hover),
+:deep(.el-sub-menu__title:hover) {
+  background-color: var(--el-color-primary-light-9) !important;
+}
+
+/* 暗色模式：水平菜单内联项（非弹出层）hover */
+.dark {
+  :deep(.el-menu-item:hover),
+  :deep(.el-sub-menu__title:hover) {
+    background-color: color-mix(in srgb, var(--el-color-primary) 15%, transparent) !important;
+  }
+}
+</style>
+
+<style lang="scss">
+/* 水平菜单弹出层 hover 背景（popper 在组件树外，需 un-scoped） */
+.horizontal-menu-popper {
+  .el-menu-item:hover,
+  .el-sub-menu__title:hover {
+    background-color: var(--el-color-primary-light-9) !important;
+    border-radius: 6px;
+  }
+}
+
+/* 暗色模式：hover 背景使用半透明主题色 */
+.dark {
+  .horizontal-menu-popper {
+    .el-menu-item:hover,
+    .el-sub-menu__title:hover {
+      background-color: color-mix(in srgb, var(--el-color-primary) 15%, transparent) !important;
+    }
+  }
 }
 </style>

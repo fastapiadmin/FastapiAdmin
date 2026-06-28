@@ -370,7 +370,12 @@
     "placeholder": {
       "username": "Please enter username",
       "password": "Please enter password",
+      "email": "Please enter email",
       "slider": "Please slide to verify"
+    },
+    "email": {
+      "required": "Please enter email",
+      "invalid": "Invalid email format"
     },
     "sliderText": "Please slide to verify",
     "sliderSuccessText": "Verification successful",

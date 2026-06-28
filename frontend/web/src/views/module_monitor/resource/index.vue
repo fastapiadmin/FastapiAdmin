@@ -223,7 +223,7 @@ import type { ColumnOption } from "@/types/component";
 import { useAuth } from "@/hooks/core/useAuth";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
 import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
-import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 
 const { hasAuth } = useAuth();
 
@@ -391,52 +391,50 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 220,
+        width: 136,
         fixed: "right",
         align: "center",
-        formatter: (row: ResourceItem) =>
-          h(
-            ElSpace,
-            { wrap: true, size: 4 },
-            () =>
-              [
-                !row.is_dir && hasAuth("module_monitor:resource:download")
-                  ? h(ElTooltip, { content: "下载", placement: "top" }, () =>
-                      h("span", { class: "inline-flex" }, [
-                        h(FaButtonTable, {
-                          type: "view",
-                          icon: "ri:download-line",
-                          onClick: () => void handleDownload(row),
-                        }),
-                      ])
-                    )
-                  : null,
-                hasAuth("module_monitor:resource:rename")
-                  ? h(ElTooltip, { content: "重命名", placement: "top" }, () =>
-                      h("span", { class: "inline-flex" }, [
-                        h(FaButtonTable, {
-                          type: "edit",
-                          onClick: () => void handleRenameOpen(row),
-                        }),
-                      ])
-                    )
-                  : null,
-                hasAuth("module_monitor:resource:delete")
-                  ? h(ElTooltip, { content: "删除", placement: "top" }, () =>
-                      h("span", { class: "inline-flex" }, [
-                        h(FaButtonTable, {
-                          type: "delete",
-                          onClick: () => void handleDelete(row),
-                        }),
-                      ])
-                    )
-                  : null,
-              ].filter(Boolean) as ReturnType<typeof h>[]
-          ),
+        formatter: (row: ResourceItem) => formatResourceOperationCell(row),
       },
     ],
   },
 });
+
+function buildResourceRowActions(row: ResourceItem): TableOperationAction[] {
+  const actions: TableOperationAction[] = [];
+  if (!row.is_dir && hasAuth("module_monitor:resource:download")) {
+    actions.push({
+      key: "download",
+      label: "下载",
+      artType: "view",
+      icon: "ri:download-line",
+      run: () => void handleDownload(row),
+    });
+  }
+  if (hasAuth("module_monitor:resource:rename")) {
+    actions.push({
+      key: "rename",
+      label: "重命名",
+      artType: "edit",
+      run: () => void handleRenameOpen(row),
+    });
+  }
+  if (hasAuth("module_monitor:resource:delete")) {
+    actions.push({
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      run: () => void handleDelete(row),
+    });
+  }
+  return actions;
+}
+
+function formatResourceOperationCell(row: ResourceItem) {
+  return renderTableOperationCell(buildResourceRowActions(row), {
+    wrapperClass: "inline-flex items-center justify-center gap-1",
+  });
+}
 
 function handleBreadcrumbClick(item: { path: string }) {
   currentPath.value = item.path;

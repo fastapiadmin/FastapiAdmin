@@ -67,7 +67,7 @@ onUnmounted(() => {
 
   .el-drawer {
     // 背景滤镜效果
-    background: rgba($color: #fff, $alpha: 50%) !important;
+    background: var(--fa-drawer-bg) !important;
     box-shadow: 0 0 30px rgb(0 0 0 / 10%) !important;
 
     @include backdropBlur();
@@ -129,7 +129,7 @@ onUnmounted(() => {
 .dark {
   .setting-modal {
     .el-drawer {
-      background: rgba($color: #000, $alpha: 50%) !important;
+      background: var(--fa-drawer-bg) !important;
 
       .setting-item {
         .box {

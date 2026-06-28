@@ -199,7 +199,7 @@
       <ElButton @click="handleCloseDialog">取消</ElButton>
       <ElButton
         v-if="activeTabRef !== 'aiModel'"
-        v-hasPerm="['module_system:config:update']"
+        v-hasPerm="['module_system:param:update']"
         type="primary"
         :disabled="!hasChanges"
         @click="submitChanges"
@@ -213,10 +213,9 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import ParamsAPI, { type ConfigTable } from "@/api/module_system/params";
-import { useAppStore, useConfigStore } from "@stores";
+import { useConfigStore } from "@stores";
 import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { DeviceEnum } from "@/enums/settings/device.enum";
 import FaAiModelConfigPanel from "@/views/module_ai/chat/components/FaAiModelConfigPanel.vue";
 
 defineOptions({ name: "FaConfigInfoDrawer" });
@@ -245,8 +244,7 @@ const isValidApiPath = (path: string): boolean => {
   return pathRegex.test(path);
 };
 
-const appStore = useAppStore();
-const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "60%" : "60%"));
+const drawerSize = ref("60%");
 
 const t = useI18n().t;
 const configStore = useConfigStore();

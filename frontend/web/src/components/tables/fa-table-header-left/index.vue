@@ -63,16 +63,18 @@
           >
             批量删除
           </ElButton>
-          <ElDropdown v-if="permPatch" v-hasPerm="permPatch" trigger="click">
-            <ElButton
-              type="default"
-              :disabled="removeIds.length === 0 || moreDisabled"
-              :loading="moreLoading"
-            >
-              <template #icon>
-                <ArrowDown />
-              </template>
+          <ElDropdown
+            v-if="permPatch"
+            v-hasPerm="permPatch"
+            trigger="click"
+            type="info"
+            :disabled="removeIds.length === 0 || moreDisabled"
+          >
+            <ElButton type="info" plain :loading="moreLoading">
               更多
+              <ElIcon class="el-icon--right">
+                <ArrowDown />
+              </ElIcon>
             </ElButton>
             <template #dropdown>
               <ElDropdownMenu>

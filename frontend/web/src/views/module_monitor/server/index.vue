@@ -1,9 +1,9 @@
 <template>
-  <div class="server-container">
-    <ElRow :gutter="16" class="server-row">
+  <div class="flex flex-col relative last:mb-0">
+    <ElRow :gutter="16">
       <!-- CPU 使用情况 -->
-      <ElCol :span="12" class="server-col">
-        <ElCard :loading="loading" shadow="hover" class="server-card">
+      <ElCol :xs="24" :sm="12" class="mb-5">
+        <ElCard :loading="loading" shadow="hover">
           <template #header>
             <div class="flex items-center gap-2">
               <FaSvgIcon icon="ri:cpu-line" class="text-lg" />
@@ -11,7 +11,7 @@
             </div>
           </template>
           <div class="flex items-center flex-col gap-4">
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-6 max-md:flex-col max-md:gap-3">
               <ElProgress
                 type="circle"
                 :percentage="server.cpu?.used || 0"
@@ -45,8 +45,8 @@
       </ElCol>
 
       <!-- 内存使用情况 -->
-      <ElCol :span="12" class="server-col">
-        <ElCard :loading="loading" shadow="hover" class="server-card">
+      <ElCol :xs="24" :sm="12" class="mb-5">
+        <ElCard :loading="loading" shadow="hover">
           <template #header>
             <div class="flex items-center gap-2">
               <FaSvgIcon icon="ri:ram-line" class="text-lg" />
@@ -54,7 +54,7 @@
             </div>
           </template>
           <div class="flex items-center flex-col gap-4">
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-6 max-md:flex-col max-md:gap-3">
               <ElProgress
                 type="circle"
                 :percentage="server.mem?.usage || 0"
@@ -88,10 +88,10 @@
       </ElCol>
     </ElRow>
 
-    <ElRow :gutter="16" class="server-row">
+    <ElRow :gutter="16">
       <!-- 服务器基本信息 -->
-      <ElCol :span="12" class="server-col">
-        <ElCard :loading="loading" shadow="hover" class="server-card">
+      <ElCol :xs="24" :sm="12" class="mb-5">
+        <ElCard :loading="loading" shadow="hover">
           <template #header>
             <div class="flex items-center gap-2">
               <FaSvgIcon icon="ri:server-line" class="text-lg" />
@@ -116,8 +116,8 @@
       </ElCol>
 
       <!-- Python运行环境 -->
-      <ElCol :span="12" class="server-col">
-        <ElCard :loading="loading" shadow="hover" class="server-card">
+      <ElCol :xs="24" :sm="12" class="mb-5">
+        <ElCard :loading="loading" shadow="hover">
           <template #header>
             <div class="flex items-center gap-2">
               <FaSvgIcon icon="ri:code-s-slash-line" class="text-lg" />
@@ -149,9 +149,9 @@
     </ElRow>
 
     <!-- 磁盘使用情况 -->
-    <ElRow :gutter="16" class="server-row">
-      <ElCol :span="24" class="server-col">
-        <ElCard :loading="loading" shadow="hover" class="server-card">
+    <ElRow :gutter="16">
+      <ElCol :span="24" class="mb-5">
+        <ElCard :loading="loading" shadow="hover">
           <template #header>
             <div class="flex items-center gap-2">
               <FaSvgIcon icon="ri:hard-drive-2-line" class="text-lg" />
@@ -227,34 +227,9 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-// 与 dashboard 首页一致：自定义圆角 + 边框色
 :deep(.el-card) {
   --el-card-border-radius: calc(var(--custom-radius) + 2px);
 
   border: 1px solid var(--fa-card-border);
-}
-
-.server-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.server-row {
-  .server-col {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-
-    .server-card {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-
-      :deep(.el-card__body) {
-        flex: 1;
-      }
-    }
-  }
 }
 </style>

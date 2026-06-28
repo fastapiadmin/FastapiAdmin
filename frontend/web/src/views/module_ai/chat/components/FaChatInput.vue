@@ -280,6 +280,10 @@ defineExpose({
     padding: 20px;
     margin: 0 auto;
 
+    @media (width <= 640px) {
+      padding: 12px 16px;
+    }
+
     .uploaded-files {
       display: flex;
       flex-wrap: wrap;
@@ -313,6 +317,11 @@ defineExpose({
           text-overflow: ellipsis;
           font-size: 13px;
           white-space: nowrap;
+
+          @media (width <= 640px) {
+            max-width: 120px;
+            font-size: 12px;
+          }
         }
 
         .file-remove {
@@ -420,6 +429,10 @@ defineExpose({
             text-overflow: ellipsis;
             font-weight: 500;
             white-space: nowrap;
+
+            @media (width <= 640px) {
+              max-width: 80px;
+            }
           }
 
           .model-arrow {
@@ -499,6 +512,12 @@ defineExpose({
 /* 下拉菜单项样式 - 因为 scoped 限制无法直接覆盖命令项 */
 .el-dropdown-menu {
   min-width: 240px;
+  max-width: calc(100vw - 20px);
+
+  @media (width <= 640px) {
+    width: 90vw;
+    min-width: 200px;
+  }
 
   .el-dropdown-menu__item {
     display: flex;

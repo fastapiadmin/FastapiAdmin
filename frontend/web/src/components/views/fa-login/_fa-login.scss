@@ -221,8 +221,11 @@ html.dark .login-page-footer--floating-layout {
     color: var(--fa-gray-600);
   }
 
-  .custom-height {
-    height: 40px !important;
+  // 桌面端保持原始高度；H5 由 ConfigProvider size="small" 接管
+  @media (width >= 768px) {
+    .custom-height {
+      height: 40px;
+    }
   }
 }
 
@@ -259,12 +262,15 @@ html.dark .login-page-panel {
 }
 
 .el-select__wrapper {
-  min-height: 42px !important;
+  min-height: 42px;
 }
 
-.login-secondary-actions .login-secondary-btn {
-  height: 42px;
-  border-radius: 8px;
+// 桌面端按钮保持原始高度；H5 由 ConfigProvider size="small" 接管
+@media (width >= 768px) {
+  .login-secondary-actions .login-secondary-btn {
+    height: 42px;
+    border-radius: 8px;
+  }
 }
 
 html.dark {
@@ -311,8 +317,10 @@ html.dark {
     }
   }
 
-  .login-secondary-actions .login-secondary-btn {
-    height: 42px;
+  @media (width >= 768px) {
+    .login-secondary-actions .login-secondary-btn {
+      height: 42px;
+    }
   }
 }
 

@@ -760,7 +760,7 @@ watch(
 }
 
 .dark .worktab-toolbar-end::before {
-  background: rgb(255 255 255 / 12%);
+  background: var(--fa-dark-border);
 }
 
 /* 工具区内部按钮分割线：拉满到标签栏高度 */
@@ -785,7 +785,7 @@ watch(
 }
 
 .dark .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell::before {
-  background: rgb(255 255 255 / 12%);
+  background: var(--fa-dark-border);
 }
 
 /*
@@ -837,20 +837,20 @@ watch(
 }
 
 .dark .worktab-tags-bar .worktab-bar-btn {
-  color: rgb(255 255 255 / 72%);
+  color: var(--fa-dark-text);
 }
 
 .dark .worktab-tags-bar .worktab-bar-cell--sep-r {
-  border-right-color: rgb(255 255 255 / 12%);
+  border-right-color: var(--fa-dark-border);
 }
 
 .dark .worktab-tags-bar .worktab-bar-btn:hover {
   color: var(--el-color-primary);
-  background-color: rgb(255 255 255 / 8%);
+  background-color: var(--fa-dark-hover);
 }
 
 .dark .worktab-tags-bar .worktab-bar-btn:active {
-  background-color: rgb(255 255 255 / 12%);
+  background-color: var(--fa-dark-active);
 }
 
 .dark .worktab-tags-bar .worktab-bar-btn:focus-visible {
@@ -1016,7 +1016,7 @@ html:not(.dark) .worktab-tags-shell--google {
 }
 
 .dark .worktab-tags-shell--google .worktab-google-divider {
-  background: rgb(255 255 255 / 14%);
+  background: var(--fa-dark-border-lighter);
 }
 
 /* 悬停当前标签：隐藏与本标签相邻的两条竖线（自身左缘 + 下一标签左缘） */
@@ -1039,27 +1039,27 @@ html:not(.dark) .worktab-tags-shell--google {
 
 /* 固定标签图钉（pushpin）：常用黄色，与路由菜单图标区分 */
 .worktab-pin {
-  color: #ca8a04 !important;
+  color: var(--fa-tab-pin) !important;
 }
 
 .dark .worktab-pin {
-  color: #fbbf24 !important;
+  color: var(--fa-tab-pin) !important;
 }
 
 .worktab-tags-shell--google .worktab-pin {
-  color: #ca8a04 !important;
+  color: var(--fa-tab-pin) !important;
 }
 
 .dark .worktab-tags-shell--google .worktab-pin {
-  color: #fbbf24 !important;
+  color: var(--fa-tab-pin) !important;
 }
 
 .group:hover .worktab-pin {
-  color: #a16207 !important;
+  color: var(--fa-tab-pin-group-hover) !important;
 }
 
 .dark .group:hover .worktab-pin {
-  color: #fcd34d !important;
+  color: var(--fa-tab-pin-group-hover) !important;
 }
 
 .google-tab::before,

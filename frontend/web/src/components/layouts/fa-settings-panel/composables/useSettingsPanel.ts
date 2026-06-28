@@ -1,7 +1,8 @@
 import { ref, computed, watch } from "vue";
 import { useSettingsStore } from "@stores";
 import { storeToRefs } from "pinia";
-import { useBreakpoints } from "@vueuse/core";
+import { useWindowSize } from "@vueuse/core";
+import { MOBILE_BREAKPOINT } from "@utils/constants";
 import AppConfig from "@/config";
 import { SystemThemeEnum, MenuTypeEnum } from "@/enums/appEnum";
 import { mittBus, StorageConfig } from "@utils";
@@ -26,9 +27,9 @@ export function useSettingsPanel() {
   // 响应式状态
   const showDrawer = ref(false);
 
-  // 使用 VueUse breakpoints 优化性能
-  const breakpoints = useBreakpoints({ tablet: 1000 });
-  const isMobile = breakpoints.smaller("tablet");
+  // 响应式布局
+  const { width } = useWindowSize();
+  const isMobile = computed(() => width.value < MOBILE_BREAKPOINT);
 
   // 记录窗口宽度变化前的菜单类型
   const getStoredDesktopMenuType = (): MenuTypeEnum | undefined => {

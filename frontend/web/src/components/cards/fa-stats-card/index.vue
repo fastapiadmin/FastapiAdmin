@@ -1,7 +1,7 @@
 <!-- 统计卡片 -->
 <template>
   <div
-    class="fa-card h-30 flex items-center px-5 transition-transform duration-200 hover:-translate-y-0.5"
+    class="fa-card h-32 flex items-center px-5 transition-transform duration-200 hover:-translate-y-0.5"
     :class="boxStyle"
   >
     <div

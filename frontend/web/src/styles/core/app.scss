@@ -95,6 +95,10 @@
   filter: invert(80%);
 }
 
+#noop {
+  display: none;
+}
+
 // 语言切换选中样式
 .langDropDownStyle {
   // 选中项背景颜色
@@ -151,6 +155,18 @@
 .fa-card-sm,
 .fa-card-xs {
   border: 1px solid var(--fa-card-border);
+}
+
+.fa-card {
+  border-radius: calc(var(--custom-radius) + 4px);
+}
+
+.fa-card-sm {
+  border-radius: calc(var(--custom-radius) + 2px);
+}
+
+.fa-card-xs {
+  border-radius: calc(var(--custom-radius) - 4px);
 }
 
 // 盒子边框
@@ -227,7 +243,7 @@
   background-color: var(--default-box-color);
 }
 
-// 表格卡片：与 FaTableHeader + FaTable 组成纵向 flex，表格区 flex 填满、分页在表格正下方
+// 表格卡片：表格区独立滚动模式（flex 链路撑满父级视口，内部 overflow）
 .fa-table-card {
   display: flex;
   flex: 1;
@@ -251,7 +267,8 @@
   }
 }
 
-// 容器全高：沿布局 flex 链填满 `#app-scroll-main` 内剩余高度，底部自然对齐 #app-content 的 padding（勿再用 100vh 估算）
+// 容器全高：沿布局 flex 链填满 `#app-content` 内剩余高度。
+// H5 端 #app-main 已用 100dvh 有明确高度，flex 链路同样能撑满，无需单独兼容
 .fa-full-height {
   box-sizing: border-box;
   display: flex;
@@ -262,9 +279,7 @@
   min-height: 0;
 
   @media (width <= 640px) {
-    flex: 0 1 auto;
     height: auto;
-    min-height: 0;
   }
 }
 

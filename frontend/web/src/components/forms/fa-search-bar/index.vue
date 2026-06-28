@@ -191,7 +191,10 @@ const componentMap = {
 
 const { width } = useWindowSize();
 const { t } = useI18n();
-const isMobile = computed(() => width.value < 500);
+const isMobile = computed(() => width.value < 500); // 表单窄布局阈值
+/** H5 压缩模式：收起时只显示 1 个搜索项 */
+const h5Compact = computed(() => width.value < 768);
+const maxItemsPerRow = computed(() => (h5Compact.value ? 1 : Math.floor(24 / props.span) - 1));
 
 const formInstance = useTemplateRef<FormInstance>("formRef");
 
@@ -493,10 +496,9 @@ const visibleFormItems = computed(() => {
   const filteredItems = mergedItems.value.filter((item) => !item.hidden);
   const shouldShowLess = !props.isExpand && !isExpanded.value;
   if (shouldShowLess) {
-    const maxItemsPerRow = Math.floor(24 / props.span) - 1;
     // 收起时：只显示非 expandOnly 的字段，且不超过最大数量
     const nonExpandOnlyItems = filteredItems.filter((item) => !item.expandOnly);
-    return nonExpandOnlyItems.slice(0, maxItemsPerRow);
+    return nonExpandOnlyItems.slice(0, maxItemsPerRow.value);
   }
   // 展开时：显示所有字段
   return filteredItems;
@@ -512,9 +514,7 @@ const visibleItemCount = computed(() => mergedItems.value.filter((item) => !item
  * 当合并后的总字段数超过一行可展示数量时显示展开按钮
  */
 const shouldShowExpandToggle = computed(() => {
-  return (
-    !props.isExpand && props.showExpand && visibleItemCount.value > Math.floor(24 / props.span) - 1
-  );
+  return !props.isExpand && props.showExpand && visibleItemCount.value > maxItemsPerRow.value;
 });
 
 /**
@@ -636,9 +636,10 @@ const { span, gutter, labelPosition, labelWidth } = toRefs(props);
 
     .action-column {
       .action-buttons-wrapper {
-        flex-direction: column;
+        flex-direction: row;
         gap: 8px;
-        align-items: stretch;
+        align-items: center;
+        justify-content: center;
 
         .form-buttons {
           justify-content: center;

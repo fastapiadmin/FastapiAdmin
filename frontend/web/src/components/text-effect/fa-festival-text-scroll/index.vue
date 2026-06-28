@@ -1,20 +1,18 @@
 <!-- 节日 / 公告顶栏：文案来自 festival 配置（占位符 {{version}}、{{introduceUrl}}） -->
 <template>
-  <div
-    class="overflow-hidden transition-[height] duration-300 ease-in-out"
-    :style="{ height: showFestivalStrip ? '48px' : '0' }"
-  >
-    <FaTextScroll
-      v-if="showFestivalStrip"
-      class="mb-3!"
-      type="theme"
-      :text="festivalScrollDisplayHtml"
-      height="40px"
-      :speed="55"
-      :always-scroll="true"
-      show-close
-      @close="closeFestivalScroll"
-    />
+  <div :class="{ 'mb-5': showFestivalStrip }">
+    <Transition name="festival-strip">
+      <FaTextScroll
+        v-if="showFestivalStrip"
+        type="theme"
+        :text="festivalScrollDisplayHtml"
+        height="40px"
+        :speed="55"
+        :always-scroll="true"
+        show-close
+        @close="closeFestivalScroll"
+      />
+    </Transition>
   </div>
 </template>
 

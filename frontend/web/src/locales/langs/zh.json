@@ -370,7 +370,12 @@
     "placeholder": {
       "username": "请输入用户名",
       "password": "请输入密码",
+      "email": "请输入邮箱",
       "slider": "请拖动滑块完成验证"
+    },
+    "email": {
+      "required": "请输入邮箱",
+      "invalid": "邮箱格式不正确"
     },
     "sliderText": "按住滑块拖动",
     "sliderSuccessText": "验证成功",

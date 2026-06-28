@@ -23,11 +23,7 @@
       <ElTabPane label="APP 移动端菜单管理" name="app" />
     </ElTabs>
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -346,9 +342,9 @@ defineOptions({
 });
 
 import { CirclePlusFilled, DeleteFilled } from "@element-plus/icons-vue";
-import { useAppStore, useUserStore } from "@stores";
-import { DeviceEnum } from "@/enums/settings/device.enum";
+import { useUserStore, useAppStore } from "@stores";
 import { useTableColumns } from "@/hooks/core/useTableColumns";
+import { DeviceEnum } from "@/enums/settings/device.enum";
 import MenuAPI, {
   type MenuForm,
   type MenuPageQuery,
@@ -366,7 +362,6 @@ import FaMenuRouteIcon from "@/components/others/fa-menu-route-icon/index.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
-const appStore = useAppStore();
 const userStore = useUserStore();
 
 type MenuSearchForm = {
@@ -738,6 +733,7 @@ const dialogVisible = reactive({
   type: "create" as "create" | "update" | "detail",
 });
 
+const appStore = useAppStore();
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "900px" : "90%"));
 
 function typesAllowedUnderParent(parentType: MenuTypeEnum): MenuTypeEnum[] {
@@ -1009,7 +1005,7 @@ const { columnChecks, columns } = useTableColumns<MenuTable>(
       label: "操作",
       width: 220,
       fixed: "right",
-      align: "right",
+      align: "center",
       formatter: (row: MenuTable) => formatMenuOperationCell(row, opCtx),
     },
   ])

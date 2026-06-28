@@ -1,6 +1,6 @@
 <template>
   <FaBasicBanner
-    class="justify-center h-54! max-sm:pt-8! max-sm:h-48!"
+    class="justify-center h-54! max-sm:pt-5! max-sm:h-auto!"
     :title="bannerTitle"
     :subtitle="bannerSubtitle"
     boxStyle="bg-theme/10!"

@@ -95,6 +95,7 @@ import { ElScrollbar } from "element-plus";
 import { mittBus } from "@utils";
 import meAvatar from "@imgs/avatar/avatar5.webp";
 import aiAvatar from "@imgs/avatar/avatar10.webp";
+import { MOBILE_BREAKPOINT } from "@/utils/constants/definitions";
 
 defineOptions({ name: "FaChatWindow" });
 
@@ -109,7 +110,6 @@ interface ChatMessage {
 }
 
 // 常量定义
-const MOBILE_BREAKPOINT = 640;
 const SCROLL_DELAY = 100;
 const BOT_NAME = "Art Bot";
 const USER_NAME = "Ricky";

@@ -248,6 +248,15 @@ onMounted(initScrollState);
   background-color: var(--theme-color);
 }
 
+.menu-item:hover {
+  background-color: var(--el-color-primary-light-9);
+  border-radius: 6px;
+}
+
+.dark .menu-item:hover {
+  background-color: color-mix(in srgb, var(--el-color-primary) 15%, transparent);
+}
+
 @media (width <= 1440px) {
   :deep(.scrollbar-wrapper) {
     margin: 0 45px;

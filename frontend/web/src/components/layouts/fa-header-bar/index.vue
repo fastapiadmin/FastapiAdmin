@@ -72,14 +72,16 @@
         <!-- 搜索 -->
         <div
           v-if="shouldShowGlobalSearch"
-          class="flex items-center justify-between w-40 h-9 px-2.5 cursor-pointer border border-g-400 rounded-custom-sm max-md:hidden! transition duration-300 hover:-translate-y-0.5 hover:shadow-md"
+          class="search-bar-trigger flex items-center justify-between w-40 h-9 px-2.5 cursor-pointer border border-g-400 rounded-custom-sm max-md:hidden! transition duration-300 hover:-translate-y-0.5 hover:shadow-md"
           @click="openSearchDialog"
         >
           <div class="flex items-center">
             <FaSvgIcon icon="ri:search-line" class="text-sm text-g-500" />
             <span class="ml-1 text-xs font-normal text-g-500">{{ $t("topBar.search.title") }}</span>
           </div>
-          <div class="flex items-center h-5 px-1.5 text-g-500/80 border border-g-400 rounded">
+          <div
+            class="flex items-center h-5 px-1.5 text-g-500/80 border border-(--el-color-primary) rounded"
+          >
             <FaSvgIcon v-if="isWindows" icon="vaadin:ctrl-a" class="text-sm" />
             <FaSvgIcon v-else icon="ri:command-fill" class="text-xs" />
             <span class="ml-0.5 text-xs">k</span>
@@ -491,6 +493,11 @@ const openChat = (): void => {
 
 .exit-full-screen-btn:hover :deep(.fa-svg-icon) {
   animation: shrink 0.6s forwards;
+}
+
+/* 搜索触发按钮 hover 边框变主题色 */
+.search-bar-trigger:hover {
+  border-color: var(--el-color-primary) !important;
 }
 
 .notice-button:hover :deep(.fa-svg-icon) {

@@ -17,7 +17,6 @@
 
       <FaSidebarSubmenu
         :list="item.children"
-        :is-mobile="isMobile"
         :level="level + 1"
         :theme="theme"
         @close="closeMenu"
@@ -75,8 +74,6 @@ interface Props {
   list?: AppRouteRecord[];
   /** 主题配置 */
   theme?: MenuTheme;
-  /** 是否为移动端模式 */
-  isMobile?: boolean;
   /** 菜单层级 */
   level?: number;
 }
@@ -90,7 +87,6 @@ const props = withDefaults(defineProps<Props>(), {
   title: "",
   list: () => [],
   theme: () => ({}),
-  isMobile: false,
   level: 0,
 });
 

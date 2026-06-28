@@ -128,7 +128,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   column: 4,
   border: true,
-  size: "default",
+  size: undefined,
   labelWidth: undefined,
   items: () => [],
   data: null,

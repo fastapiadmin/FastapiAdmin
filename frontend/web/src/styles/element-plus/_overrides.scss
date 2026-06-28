@@ -1,34 +1,36 @@
 // 优化 Element Plus 组件库默认样式
-// 颜色 hex 全部从 _fa-tokens.scss 引入，保证整个项目只有一处定义业务色。
-// 运行时 setElementThemeColor() 仍会覆盖 --el-color-primary（用户可切换主题色）。
+// 业务色 hex 全部从 _fa-tokens.scss 引入（唯一来源）。
+// 运行时 setElementThemeColor() 动态覆盖 --el-color-primary。
 
 @use "../core/fa-tokens" as *;
 
 :root {
-  // 系统主色 fallback（setElementThemeColor 运行时动态覆盖）
-  --el-color-primary: #{$fa-primary};
-  // 固定业务色板（EP 组件内部 var(--el-color-*) 消费）
+  // ── EP 语义色 ──
+  --el-color-primary: #{$fa-primary}; // fallback，运行时 JS 覆盖
   --el-color-success: #{$fa-success};
   --el-color-warning: #{$fa-warning};
   --el-color-danger: #{$fa-danger};
   --el-color-error: #{$fa-error};
   --el-color-info: #{$fa-info};
 
-  // 系统主色
-  --main-color: var(--el-color-primary);
+  // ── 系统主色调链路 ──
+  --main-color: var(--el-color-primary); // JS 动态 primary 的别名
+  --theme-color: var(--main-color);
   --el-color-white: white !important;
-  --el-color-black: white !important;
-  // 按钮样式偏好
-  --el-button-hover-bg-color: #e8f2ff !important;
+  --el-color-black: white !important; // EP dark 模式下用 white 色值
+
+  // ── 按钮 ──
+  --el-button-hover-bg-color: var(--el-color-primary-light-9, #e8f2ff) !important;
   --el-button-hover-border-color: var(--el-color-primary) !important;
   --el-button-border-color: var(--el-color-primary) !important;
   --el-button-text-color: var(--el-color-primary) !important;
-  // 按钮粗度
   --el-font-weight-primary: 400 !important;
+
+  // ── 组件尺寸 ──
   --el-component-custom-height: 36px !important;
   --el-component-size: var(--el-component-custom-height) !important;
 
-  // 边框、按钮圆角...
+  // ── 圆角 ──
   --el-border-radius-base: calc(var(--custom-radius) / 3 + 2px) !important;
   --el-border-radius-small: calc(var(--custom-radius) / 3 + 4px) !important;
   --el-messagebox-border-radius: calc(var(--custom-radius) / 3 + 4px) !important;
@@ -75,7 +77,6 @@ html.dark .el-card {
 
 .el-pager li {
   padding: 0 10px !important;
-  // border: 1px solid red !important;
 }
 
 // 优化菜单折叠展开动画（提升动画流畅度）
@@ -128,7 +129,6 @@ html.dark .el-card {
 
 .el-dialog {
   overflow: hidden;
-  border-radius: 100px !important;
   border-radius: calc(var(--custom-radius) / 1.2 + 2px) !important;
 }
 

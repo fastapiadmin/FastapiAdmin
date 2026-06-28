@@ -21,11 +21,7 @@
           @reset="onOpResetSearch"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': opShowSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': opShowSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="opColumnChecks"
             v-model:showSearchBar="opShowSearchBar"
@@ -125,11 +121,7 @@
           @reset="onLoginResetSearch"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': loginShowSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': loginShowSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="loginColumnChecks"
             v-model:showSearchBar="loginShowSearchBar"
@@ -318,7 +310,7 @@ const {
         label: "操作",
         width: 160,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: OperationLogTable) => formatOpActionCell(row),
       },
     ],
@@ -573,7 +565,7 @@ const {
         label: "操作",
         width: 120,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: LoginLogTable) => formatLoginActionCell(row),
       },
     ]),

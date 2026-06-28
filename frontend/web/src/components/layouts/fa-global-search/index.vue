@@ -381,7 +381,7 @@ const highlightOnHoverHistory = (index: number) => {
 <style lang="scss" scoped>
 .layout-search {
   :deep(.search-modal) {
-    background-color: rgb(0 0 0 / 20%);
+    background-color: var(--fa-overlay-light);
   }
 
   :deep(.el-dialog__body) {
@@ -409,18 +409,18 @@ const highlightOnHoverHistory = (index: number) => {
 .dark .layout-search {
   .el-input {
     :deep(.el-input__wrapper) {
-      background-color: #333;
-      border: 1px solid #4c4d50;
+      background-color: var(--fa-input-bg);
+      border: 1px solid var(--fa-input-border);
     }
   }
 
   :deep(.search-modal) {
-    background-color: rgb(23 23 26 / 60%);
+    background-color: var(--fa-overlay-light);
     backdrop-filter: none;
   }
 
   :deep(.el-dialog) {
-    background-color: #252526;
+    background-color: var(--fa-dialog-bg);
   }
 }
 </style>

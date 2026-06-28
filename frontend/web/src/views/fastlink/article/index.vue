@@ -82,7 +82,6 @@
 
     <div :style="'display: flex; justify-content: center; margin-top: 20px'">
       <ElPagination
-        size="default"
         background
         v-model:current-page="currentPage"
         :page-size="pageSize"

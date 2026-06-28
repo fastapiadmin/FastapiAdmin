@@ -21,7 +21,6 @@
         />
 
         <ElCard
-          shadow="hover"
           class="fa-table-card"
           :style="{ 'margin-top': platformShowSearchBar ? '12px' : '0' }"
         >
@@ -46,7 +45,7 @@
 
       <!-- 租户端：我的发票 -->
       <ElTabPane label="我的发票" name="my">
-        <ElCard shadow="hover" class="fa-table-card" :style="{ 'margin-top': '0' }">
+        <ElCard class="fa-table-card" :style="{ 'margin-top': '0' }">
           <FaTableHeader :loading="myLoading" @refresh="getMyData">
             <template #left>
               <FaTableHeaderLeft
@@ -248,10 +247,11 @@ const {
       { prop: "created_time", label: "申请时间", width: 160, showOverflowTooltip: true },
       {
         label: "操作",
+        prop: "operation",
         width: 150,
         fixed: "right",
         align: "center",
-        formatter: (row) => formatPlatformOpCell(row),
+        formatter: (row: InvoiceTable) => formatPlatformOpCell(row),
       },
     ]),
   },

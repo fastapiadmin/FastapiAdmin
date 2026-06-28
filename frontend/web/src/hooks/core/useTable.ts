@@ -27,6 +27,7 @@ import { useWindowSize } from "@vueuse/core";
 import type { AxiosResponse } from "axios";
 import { useTableColumns } from "./useTableColumns";
 import type { ColumnOption } from "@/types/component";
+import { MOBILE_BREAKPOINT } from "@utils/constants";
 import {
   TableCache,
   CacheInvalidationStrategy,
@@ -262,7 +263,7 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   const { width } = useWindowSize();
   const mobilePagination = computed(() => ({
     ...pagination,
-    small: width.value < 768,
+    small: width.value < MOBILE_BREAKPOINT,
   }));
 
   // 列配置

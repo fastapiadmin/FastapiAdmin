@@ -112,6 +112,13 @@ async function handleSwitch(tenantId: number) {
   height: 32px;
   padding: 0 10px;
   font-size: 13px;
+
+  @media (width <= 640px) {
+    max-width: 120px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
   color: var(--el-text-color-primary);
   cursor: pointer;
   user-select: none;
@@ -166,7 +173,13 @@ async function handleSwitch(tenantId: number) {
 /* 全局样式：下拉面板（scoped 无法深入 ElDropdownMenu） */
 .fa-tenant-dropdown {
   min-width: 240px;
+  max-width: calc(100vw - 20px);
   padding: 0 !important;
+
+  @media (width <= 640px) {
+    width: 90vw;
+    min-width: 200px;
+  }
 
   .el-dropdown-menu__item {
     padding: 0 !important;

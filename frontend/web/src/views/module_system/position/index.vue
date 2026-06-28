@@ -19,11 +19,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -118,7 +114,6 @@
 </template>
 
 <script setup lang="ts">
-import { h } from "vue";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
 import { useCrudDialog } from "@/hooks/core/useCrudDialog";
@@ -139,16 +134,14 @@ import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue"
 import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type FaForm from "@/components/forms/fa-form/index.vue";
-import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
-import { resolveStatusColumns } from "@utils";
-import { ElMessage, ElTooltip, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
+import { resolveStatusColumns, renderTableOperationCell } from "@utils";
+import { ElMessage } from "element-plus";
 
 defineOptions({
   name: "Position",
   inheritAttrs: false,
 });
 
-const MAX_INLINE_ROW_ACTIONS = 3;
 const { hasAuth } = useAuth();
 const userStore = useUserStore();
 
@@ -221,70 +214,9 @@ function formatPositionOperationCell(
   row: PositionTable,
   ctx: Parameters<typeof buildPositionRowActions>[1]
 ) {
-  const actions = buildPositionRowActions(row, ctx);
-  if (actions.length === 0) {
-    return h("span", { class: "text-g-400" }, "—");
-  }
-  const inline = actions.slice(0, MAX_INLINE_ROW_ACTIONS);
-  const overflow = actions.slice(MAX_INLINE_ROW_ACTIONS);
-
-  const inlineNodes = inline.map((a) =>
-    h(ElTooltip, { content: a.label, placement: "top" }, () =>
-      h("span", { class: "inline-flex" }, [
-        h(FaButtonTable, {
-          type: a.artType,
-          icon: a.icon,
-          onClick: a.run,
-        }),
-      ])
-    )
-  );
-
-  if (overflow.length === 0) {
-    return h(
-      "div",
-      { class: "inline-flex flex-wrap items-center justify-end gap-1 position-table-actions" },
-      inlineNodes
-    );
-  }
-
-  const dropdown = h(
-    ElDropdown,
-    { trigger: "click" },
-    {
-      default: () =>
-        h(ElTooltip, { content: "更多", placement: "top" }, () =>
-          h("span", { class: "inline-flex align-middle" }, [
-            h(FaButtonTable, {
-              type: "more",
-              onClick: () => {},
-            }),
-          ])
-        ),
-      dropdown: () =>
-        h(
-          ElDropdownMenu,
-          null,
-          overflow.map((a) =>
-            h(
-              ElDropdownItem,
-              {
-                key: a.key,
-                disabled: a.disabled,
-                onClick: () => a.run(),
-              },
-              () => a.label
-            )
-          )
-        ),
-    }
-  );
-
-  return h(
-    "div",
-    { class: "inline-flex flex-wrap items-center justify-end gap-1 position-table-actions" },
-    [...inlineNodes, dropdown]
-  );
+  return renderTableOperationCell(buildPositionRowActions(row, ctx), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 position-table-actions",
+  });
 }
 
 const searchForm = ref<PositionSearchForm>({
@@ -395,7 +327,7 @@ const {
         label: "操作",
         width: 200,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: PositionTable) => formatPositionOperationCell(row, opCtx),
       },
     ]),

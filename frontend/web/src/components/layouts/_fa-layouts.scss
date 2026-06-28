@@ -2,7 +2,7 @@
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background: var(--default-bg-color);
+  background: var(--app-bg);
 
   #app-sidebar {
     flex-shrink: 0;
@@ -74,14 +74,19 @@
       height: 100vh;
     }
 
+    /** H5 端：使用 100dvh（动态视口高度，排除移动浏览器地址栏）
+     *  让 #app-main 有明确高度，#app-content 的 flex:1 才能撑满，
+     *  表格区才能像 PC 端一样在视口内独立滚动（而非整页滚动） */
     #app-main {
       width: 100%;
-      height: auto;
-      overflow: visible;
+      height: 100dvh;
+      overflow: hidden;
 
       #app-content {
+        padding: 12px;
+
         :deep(.layout-content) {
-          width: calc(100% - 40px);
+          width: calc(100% - 24px);
         }
       }
     }
@@ -92,8 +97,10 @@
   .app-layout {
     #app-main {
       #app-content {
+        padding: 8px;
+
         :deep(.layout-content) {
-          width: calc(100% - 30px);
+          width: calc(100% - 16px);
         }
       }
     }

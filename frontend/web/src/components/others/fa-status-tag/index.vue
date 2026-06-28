@@ -30,7 +30,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   label: "",
   type: undefined,
-  size: "default",
+  size: undefined,
   effect: "light",
   round: false,
   closable: false,

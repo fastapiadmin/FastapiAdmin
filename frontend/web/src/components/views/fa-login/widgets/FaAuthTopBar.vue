@@ -16,7 +16,7 @@
     </div>
 
     <div
-      class="auth-top-bar-actions-panel pointer-events-auto flex shrink-0 flex items-center justify-center gap-1.5 px-2 py-1.5 max-sm:mr-1"
+      class="auth-top-bar-actions-panel pointer-events-auto flex shrink-0 items-center justify-center gap-1.5 px-2 py-1.5 max-sm:mr-1"
     >
       <div class="color-picker-expandable relative flex items-center max-sm:hidden!">
         <div

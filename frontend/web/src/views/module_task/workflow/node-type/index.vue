@@ -7,7 +7,7 @@
       v-model="searchForm"
       :items="nodeTypeSearchItems"
       :rules="searchBarRules"
-      :is-expand="true"
+      :is-expand="false"
       :show-expand="true"
       :show-reset="true"
       :show-search="true"
@@ -18,11 +18,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -52,32 +48,7 @@
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
-      >
-        <template #node-type-operation="{ row }">
-          <ElSpace class="flex">
-            <ElButton
-              v-hasPerm="['module_task:workflow:node-type:update']"
-              type="primary"
-              size="small"
-              link
-              icon="edit"
-              @click="openDialog(row.id)"
-            >
-              编辑
-            </ElButton>
-            <ElButton
-              v-hasPerm="['module_task:workflow:node-type:delete']"
-              type="danger"
-              size="small"
-              link
-              icon="delete"
-              @click="deleteNodeTypeRow(row.id)"
-            >
-              删除
-            </ElButton>
-          </ElSpace>
-        </template>
-      </FaTable>
+      />
     </ElCard>
 
     <FaDialog
@@ -188,9 +159,13 @@ import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue"
 import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type FaForm from "@/components/forms/fa-form/index.vue";
+import { useAuth } from "@/hooks/core/useAuth";
+import { useTableSelection } from "@/hooks/core/useTableSelection";
+import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 import { useTable } from "@/hooks/core/useTable";
 import type { ColumnOption } from "@/types/component";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import type { FormRules } from "element-plus";
 import { computed, nextTick, ref } from "vue";
 import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
@@ -198,7 +173,7 @@ import type { EditorConfiguration } from "codemirror";
 import "codemirror/mode/python/python.js";
 import "codemirror/theme/dracula.css";
 
-const BATCH_DELETE_MSG = "确认删除选中的节点类型吗？";
+const { hasAuth } = useAuth();
 
 type NodeTypeSearchForm = {
   name?: string;
@@ -289,16 +264,9 @@ const nodeTypeSearchItems = computed<SearchFormItem[]>(() => [
 ]);
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const selectedRows = ref<WorkflowNodeTypeTable[]>([]);
-const selectedIds = computed(() =>
-  selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
-);
-const batchDeleting = ref(false);
+const { selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<WorkflowNodeTypeTable>();
 const createLoading = ref(false);
-
-function onTableSelectionChange(rows: WorkflowNodeTypeTable[]) {
-  selectedRows.value = rows;
-}
 
 function categoryLabel(c?: string) {
   const m: Record<string, string> = {
@@ -310,40 +278,60 @@ function categoryLabel(c?: string) {
   return c ? m[c] || c : "-";
 }
 
-async function deleteNodeTypeRow(id: number | undefined) {
-  if (id == null) return;
+const deleteNodeTypeRow = async (row: WorkflowNodeTypeTable) => {
+  if (!row.id) return;
   try {
-    await ElMessageBox.confirm("确认删除该节点类型吗？", "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    await WorkflowNodeTypeAPI.deleteWorkflowNodeType([id]);
+    await confirmDelete(`确定删除节点类型「${row.name ?? row.id}」吗？`);
+    await WorkflowNodeTypeAPI.deleteWorkflowNodeType([row.id]);
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
     // 用户取消
   }
-}
+};
 
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await ElMessageBox.confirm(BATCH_DELETE_MSG, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await confirmBatchDelete(ids.length);
     batchDeleting.value = true;
     await WorkflowNodeTypeAPI.deleteWorkflowNodeType(ids);
-    selectedRows.value = [];
+    faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
     // 用户取消
   } finally {
     batchDeleting.value = false;
   }
+}
+
+function buildNodeTypeRowActions(row: WorkflowNodeTypeTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "module_task:workflow:node-type:update",
+      run: () => void openDialog(row.id),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "module_task:workflow:node-type:delete",
+      run: () => void deleteNodeTypeRow(row),
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatNodeTypeOperationCell(row: WorkflowNodeTypeTable) {
+  return renderTableOperationCell(buildNodeTypeRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1",
+  });
 }
 
 const {
@@ -420,11 +408,10 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 140,
+        width: 160,
         fixed: "right",
         align: "center",
-        useSlot: true,
-        slotName: "node-type-operation",
+        formatter: (row: WorkflowNodeTypeTable) => formatNodeTypeOperationCell(row),
       },
     ],
   },

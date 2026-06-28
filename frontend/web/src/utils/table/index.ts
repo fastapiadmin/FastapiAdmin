@@ -19,6 +19,7 @@ import { h } from "vue";
 import type { VNode } from "vue";
 import { ElTooltip } from "element-plus";
 import { hash } from "ohash";
+import { MOBILE_BREAKPOINT } from "@/utils/constants/definitions";
 import FaButtonMore from "@/components/forms/fa-button-more/index.vue";
 import type { ButtonMoreItem } from "@/components/forms/fa-button-more/types";
 import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
@@ -523,7 +524,9 @@ export function renderTableOperationCell(
   actions: TableOperationAction[],
   options?: RenderTableOperationCellOptions
 ): VNode {
-  const maxInline = options?.maxInline ?? DEFAULT_MAX_INLINE_TABLE_OPERATIONS;
+  // H5（< 768px）全部收进「更多」下拉菜单
+  const isMobile = typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
+  const maxInline = isMobile ? 0 : (options?.maxInline ?? DEFAULT_MAX_INLINE_TABLE_OPERATIONS);
   const wrapperClass =
     options?.wrapperClass ?? "inline-flex flex-wrap items-center justify-end gap-1";
   const emptyText = options?.emptyText ?? "—";

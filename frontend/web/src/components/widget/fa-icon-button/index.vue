@@ -1,7 +1,7 @@
 <!-- 按钮组件 -->
 <template>
   <div
-    class="size-8.5 inline-flex flex items-center justify-center cursor-pointer text-g-600 dark:text-g-800 text-xl rounded transition duration-300 hover:bg-hover-color"
+    class="fa-icon-button size-8.5 inline-flex items-center justify-center cursor-pointer text-g-600 dark:text-g-800 text-xl rounded transition duration-300 hover:bg-hover-color"
     :class="{ 'rounded-full': circle }"
   >
     <FaSvgIcon :icon="icon"></FaSvgIcon>
@@ -21,3 +21,11 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {});
 </script>
+
+<style lang="scss" scoped>
+.fa-icon-button {
+  &:hover :deep(.fa-svg-icon) {
+    color: var(--el-color-primary);
+  }
+}
+</style>

@@ -34,13 +34,13 @@ html.dark {
 
   // 富文本编辑器
   // 工具栏背景颜色
-  --w-e-toolbar-bg-color: #18191c;
+  --w-e-toolbar-bg-color: var(--fa-editor-toolbar-bg);
   // 输入区域背景颜色
-  --w-e-textarea-bg-color: #090909;
+  --w-e-textarea-bg-color: var(--fa-editor-textarea-bg);
   // 工具栏文字颜色
   --w-e-toolbar-color: var(--fa-gray-600);
   // 选中菜单颜色
-  --w-e-toolbar-active-bg-color: #25262b;
+  --w-e-toolbar-active-bg-color: var(--fa-editor-toolbar-active-bg);
   // 弹窗边框颜色
   --w-e-toolbar-border-color: var(--default-border-dashed);
   // 分割线颜色
@@ -48,16 +48,16 @@ html.dark {
   // 链接输入框边框颜色
   --w-e-modal-button-border-color: var(--default-border-dashed);
   // 表格头颜色
-  --w-e-textarea-slight-bg-color: #090909;
+  --w-e-textarea-slight-bg-color: var(--fa-editor-textarea-bg);
   // 按钮背景颜色
-  --w-e-modal-button-bg-color: #090909;
+  --w-e-modal-button-bg-color: var(--fa-editor-textarea-bg);
   // hover toolbar 背景颜色
   --w-e-toolbar-active-color: var(--fa-gray-800);
 }
 
 .dark {
   .page-content .article-list .item .left .outer > div {
-    border-right-color: var(--dark-border-color) !important;
+    border-right-color: var(--default-border) !important;
   }
 
   // 富文本编辑器
@@ -95,13 +95,13 @@ html.dark {
   .w-e-select-list ul li:hover,
     /* 工具栏 hover 按钮背景颜色 */
     .w-e-bar-item button:hover {
-    background-color: #090909 !important;
+    background-color: var(--fa-editor-textarea-bg) !important;
   }
 
   /* 代码块 */
   .w-e-text-container [data-slate-editor] pre > code {
     text-shadow: none !important;
-    background-color: #25262b !important;
+    background-color: var(--fa-editor-toolbar-active-bg) !important;
   }
 
   /* 引用 */

@@ -6,57 +6,83 @@
 <template>
   <div class="fa-table" :class="{ 'is-empty': isEmpty }">
     <div class="fa-table__main">
-      <VueDraggable
-        class="fa-table__drag-wrap"
-        target="tbody"
-        v-model="dragModel"
-        :animation="150"
-        :disabled="rowDragDisabled"
-        @end="onRowDragEnd"
-      >
-        <ElTable ref="elTableRef" v-loading="!!loading" v-bind="mergedTableProps">
-          <template v-for="col in columns" :key="col.prop || col.type">
-            <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
-              <template #default="{ $index }">
-                <span>{{ getGlobalIndex($index) }}</span>
-              </template>
-            </ElTableColumn>
-            <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
-              <template #default="{ row: expandRow }">
-                <component :is="col.formatter ? col.formatter(expandRow) : null" />
-              </template>
-            </ElTableColumn>
-            <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
-              <template #header="headerScope">
-                <component
-                  v-if="col.useHeaderSlot && col.prop"
-                  :is="() => renderColumnHeader(headerScope, col)"
-                />
-              </template>
-              <template #default="slotScope">
-                <component
-                  v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
-                  :is="() => renderCellSlot(slotScope, col)"
-                />
-                <TableFormatterOutlet
-                  v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
-                  :column="col"
-                  :record="slotScope.row"
-                />
-              </template>
-            </ElTableColumn>
+      <!-- 初始加载骨架屏：仅在 loading 且无数据时显示 -->
+      <div v-if="loading && isEmpty" class="fa-table-skeleton">
+        <ElSkeleton animated>
+          <template #template>
+            <div class="fa-table-skeleton__header">
+              <ElSkeletonItem variant="rect" class="sk-c-1" />
+              <ElSkeletonItem variant="rect" class="sk-c-2" />
+              <ElSkeletonItem variant="rect" class="sk-c-3" />
+              <ElSkeletonItem variant="rect" class="sk-c-4" />
+              <ElSkeletonItem variant="rect" class="sk-c-5" />
+              <ElSkeletonItem variant="rect" class="sk-c-6" />
+            </div>
+            <div v-for="i in 8" :key="i" class="fa-table-skeleton__row">
+              <ElSkeletonItem variant="text" class="sk-c-1" />
+              <ElSkeletonItem variant="text" class="sk-c-2" />
+              <ElSkeletonItem variant="text" class="sk-c-3" />
+              <ElSkeletonItem variant="text" class="sk-c-4" />
+              <ElSkeletonItem variant="text" class="sk-c-5" />
+              <ElSkeletonItem variant="text" class="sk-c-6" />
+            </div>
           </template>
-          <slot v-if="$slots.default" />
-          <template #empty>
-            <div v-if="loading"></div>
-            <ElEmpty v-else :description="emptyText" :image-size="80" />
-          </template>
-        </ElTable>
-      </VueDraggable>
+        </ElSkeleton>
+      </div>
+      <!-- 数据表格 -->
+      <template v-else>
+        <VueDraggable
+          class="fa-table__drag-wrap"
+          target="tbody"
+          v-model="dragModel"
+          :animation="150"
+          :disabled="rowDragDisabled"
+          @end="onRowDragEnd"
+        >
+          <ElTable ref="elTableRef" :key="tableKey" v-loading="!!loading" v-bind="mergedTableProps">
+            <template v-for="col in columns" :key="col.prop || col.type">
+              <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
+                <template #default="{ $index }">
+                  <span>{{ getGlobalIndex($index) }}</span>
+                </template>
+              </ElTableColumn>
+              <ElTableColumn v-else-if="col.type === 'expand'" v-bind="cleanColumnProps(col)">
+                <template #default="{ row: expandRow }">
+                  <component :is="col.formatter ? col.formatter(expandRow) : null" />
+                </template>
+              </ElTableColumn>
+              <ElTableColumn v-else v-bind="cleanBodyColumnProps(col)">
+                <template #header="headerScope">
+                  <component
+                    v-if="col.useHeaderSlot && col.prop"
+                    :is="() => renderColumnHeader(headerScope, col)"
+                  />
+                </template>
+                <template #default="slotScope">
+                  <component
+                    v-if="col.useSlot && col.prop && shouldRenderSlotScope(slotScope)"
+                    :is="() => renderCellSlot(slotScope, col)"
+                  />
+                  <TableFormatterOutlet
+                    v-else-if="col.formatter && !col.useSlot && shouldRenderSlotScope(slotScope)"
+                    :column="col"
+                    :record="slotScope.row"
+                  />
+                </template>
+              </ElTableColumn>
+            </template>
+            <slot v-if="$slots.default" />
+            <template #empty>
+              <div v-if="loading"></div>
+              <ElEmpty v-else :description="emptyText" :image-size="80" />
+            </template>
+          </ElTable>
+        </VueDraggable>
+      </template>
     </div>
 
     <div
-      class="pagination custom-pagination"
+      class="pagination"
       v-if="showPagination"
       :class="mergedPaginationOptions?.align"
       ref="paginationRef"
@@ -101,10 +127,14 @@ import { useCommon } from "@/hooks/core/useCommon";
 import { useTableHeight } from "@/hooks/core/useTableHeight";
 import { useWindowSize } from "@vueuse/core";
 import { VueDraggable } from "vue-draggable-plus";
+import { MOBILE_BREAKPOINT } from "@utils/constants/definitions";
 
 defineOptions({ name: "FaTable" });
 
 const { width } = useWindowSize();
+const isMobile = computed(() => width.value < MOBILE_BREAKPOINT);
+// H5 ↔ 桌面切换时强制重建 ElTable，使列宽 / formatter 重新计算
+const tableKey = computed(() => (isMobile.value ? "mobile" : "desktop"));
 const elTableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const paginationRef = ref<HTMLElement>();
 const tableHeaderRef = ref<HTMLElement>();
@@ -197,7 +227,7 @@ const LAYOUT = {
 };
 
 const layout = computed(() => {
-  if (width.value < 768) {
+  if (width.value < MOBILE_BREAKPOINT) {
     return LAYOUT.MOBILE;
   } else if (width.value < 1024) {
     return LAYOUT.IPAD;
@@ -213,7 +243,7 @@ const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
   background: true,
   layout: layout.value,
   hideOnSinglePage: false,
-  size: "default",
+  size: undefined,
   pagerCount: width.value > 1200 ? 7 : 5,
 };
 
@@ -305,7 +335,7 @@ const mergedTableProps = computed(() => ({
   height: height.value,
   stripe: stripe.value,
   border: border.value,
-  size: size.value,
+  size: hasExplicitTableProp("size") ? size.value : undefined,
   headerCellStyle: headerCellStyle.value,
   highlightCurrentRow: highlightCurrentRow.value,
   // Element Plus 默认值为 true，未显式传入时不应被 FaTable 覆盖成 false。
@@ -420,6 +450,11 @@ const cleanColumnProps = (col: ColumnOption) => {
 const cleanBodyColumnProps = (col: ColumnOption) => {
   const columnProps = cleanColumnProps(col);
   delete columnProps.formatter;
+  // H5 端：操作列只显示「更多」按钮，宽度收窄到 80；响应式跟随窗口变化
+  const isOpCol = col.prop === "operation" || col.label === "操作";
+  if (isOpCol && isMobile.value) {
+    columnProps.width = 80;
+  }
   return columnProps;
 };
 
@@ -514,6 +549,57 @@ defineExpose({
     }
   }
 
+  /* ── 表格骨架屏 ── */
+  .fa-table-skeleton {
+    padding: 12px 0;
+
+    .fa-table-skeleton__header {
+      display: grid;
+      grid-template-columns: 56px 1fr 1fr 120px 1fr 100px;
+      gap: 4px;
+      padding: 10px 16px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+
+      .el-skeleton__item {
+        height: 22px;
+      }
+    }
+
+    .fa-table-skeleton__row {
+      display: grid;
+      grid-template-columns: 56px 1fr 1fr 120px 1fr 100px;
+      gap: 4px;
+      align-items: center;
+      padding: 12px 16px;
+    }
+
+    /* 每行 6 列宽度的别名 */
+    .sk-c-1 {
+      grid-column: 1;
+    }
+
+    .sk-c-2 {
+      grid-column: 2;
+    }
+
+    .sk-c-3 {
+      grid-column: 3;
+    }
+
+    .sk-c-4 {
+      grid-column: 4;
+    }
+
+    .sk-c-5 {
+      grid-column: 5;
+    }
+
+    .sk-c-6 {
+      grid-column: 6;
+    }
+  }
+
   .el-table {
     height: 100%;
   }
@@ -541,14 +627,11 @@ defineExpose({
     }
   }
 
+  /* 分页按钮样式已统一由 FaPagination 组件处理 */
   .pagination {
     display: flex;
     flex-shrink: 0;
     padding-top: 13px;
-
-    :deep(.el-select) {
-      width: 102px !important;
-    }
 
     /* 分页对齐方式 */
     &.left {
@@ -562,53 +645,6 @@ defineExpose({
     &.right {
       justify-content: flex-end;
     }
-
-    /* 自定义分页组件样式 */
-    &.custom-pagination {
-      :deep(.el-pagination) {
-        .btn-prev,
-        .btn-next {
-          background-color: transparent;
-          border: 1px solid var(--fa-gray-300);
-          transition: border-color 0.15s;
-
-          &:hover:not(.is-disabled) {
-            color: var(--theme-color);
-            border-color: var(--theme-color);
-          }
-        }
-
-        li {
-          box-sizing: border-box;
-          font-weight: 400 !important;
-          background-color: transparent;
-          border: 1px solid var(--fa-gray-300);
-          transition: border-color 0.15s;
-
-          &.is-active {
-            font-weight: 400;
-            color: #fff;
-            background-color: var(--theme-color);
-            border: 1px solid var(--theme-color);
-          }
-
-          &:hover:not(.is-disabled) {
-            border-color: var(--theme-color);
-          }
-        }
-      }
-    }
-  }
-}
-
-/* 移动端分页 */
-@media (width <= 640px) {
-  :deep(.el-pagination) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px 0;
-    align-items: center;
-    justify-content: center;
   }
 }
 </style>

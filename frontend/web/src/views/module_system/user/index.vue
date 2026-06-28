@@ -38,11 +38,7 @@
           @reset="onResetSearch"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="columnChecks"
             v-model:showSearchBar="showSearchBar"
@@ -211,8 +207,9 @@ defineOptions({
 import { h } from "vue";
 import { UserFilled } from "@element-plus/icons-vue";
 import { ElAvatar } from "element-plus";
-import { DeviceEnum } from "@/enums/settings/device.enum";
 import { ResultEnum } from "@/enums/api/result.enum";
+import { useAppStore } from "@stores";
+import { DeviceEnum } from "@/enums/settings/device.enum";
 import { useTable } from "@/hooks/core/useTable";
 import { useImportExport } from "@/hooks/core/useImportExport";
 import { useTableSelection } from "@/hooks/core/useTableSelection";
@@ -233,7 +230,7 @@ import {
 import PositionAPI from "@/api/module_system/position";
 import DeptAPI from "@/api/module_system/dept";
 import RoleAPI from "@/api/module_system/role";
-import { useAppStore, useUserStore } from "@stores";
+import { useUserStore } from "@stores";
 import { useAuth } from "@/hooks/core/useAuth";
 import type { ColumnOption } from "@/types/component";
 import type { DescriptionsItem } from "@/components/others/fa-descriptions/index.vue";
@@ -246,7 +243,6 @@ import FaDeptTree from "./components/FaDeptTree.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
-const appStore = useAppStore();
 const userStore = useUserStore();
 
 type UserSearchForm = {
@@ -351,6 +347,7 @@ const createLoading = ref(false);
 const moreLoading = ref(false);
 const deptFilterId = ref<string | number | undefined>(undefined);
 
+const appStore = useAppStore();
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450px" : "90%"));
 const deptOptions = ref<OptionType[]>();
 const roleOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
@@ -627,7 +624,7 @@ const {
         label: "操作",
         width: 280,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: UserInfo) => formatUserOperationCell(row, opCtx),
       },
     ]),

@@ -19,11 +19,7 @@
           @reset="onConfigResetSearch"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': configShowSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': configShowSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="configColumnChecks"
             v-model:showSearchBar="configShowSearchBar"
@@ -74,7 +70,6 @@
         />
 
         <ElCard
-          shadow="hover"
           class="fa-table-card"
           :style="{ 'margin-top': templateShowSearchBar ? '12px' : '0' }"
         >
@@ -128,11 +123,7 @@
           @reset="onLogResetSearch"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': logShowSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': logShowSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="logColumnChecks"
             v-model:showSearchBar="logShowSearchBar"
@@ -342,6 +333,37 @@ const {
 
 const configCreateLoading = ref(false);
 
+function buildConfigRowActions(row: EmailConfigTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "test",
+      label: "测试",
+      artType: "view",
+      perm: "module_platform:email:update",
+      run: () => openTestDialog(row),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      perm: "module_platform:email:update",
+      run: () => openConfigDialog("update", row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      perm: "module_platform:email:update",
+      run: () => deleteConfigRow(row),
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatConfigOperationCell(row: EmailConfigTable) {
+  return renderTableOperationCell(buildConfigRowActions(row));
+}
+
 const {
   columns: configColumns,
   columnChecks: configColumnChecks,
@@ -401,33 +423,8 @@ const {
         label: "操作",
         width: 240,
         fixed: "right",
-        align: "right",
-        formatter: (row: EmailConfigTable) => {
-          const actions: TableOperationAction[] = [
-            {
-              key: "test",
-              label: "测试",
-              artType: "view" as const,
-              perm: "module_platform:email:update",
-              run: () => openTestDialog(row),
-            },
-            {
-              key: "edit",
-              label: "编辑",
-              artType: "edit" as const,
-              perm: "module_platform:email:update",
-              run: () => openConfigDialog("update", row),
-            },
-            {
-              key: "delete",
-              label: "删除",
-              artType: "delete" as const,
-              perm: "module_platform:email:update",
-              run: () => deleteConfigRow(row),
-            },
-          ];
-          return renderTableOperationCell(actions.filter((a) => a.perm != null && hasAuth(a.perm)));
-        },
+        align: "center",
+        formatter: (row: EmailConfigTable) => formatConfigOperationCell(row),
       },
     ]),
   },
@@ -482,6 +479,30 @@ const {
 
 const templateCreateLoading = ref(false);
 
+function buildTemplateRowActions(row: EmailTemplateTable): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      perm: "module_platform:email:update",
+      run: () => openTemplateDialog("update", row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      perm: "module_platform:email:update",
+      run: () => deleteTemplateRow(row),
+    },
+  ];
+  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+}
+
+function formatTemplateOperationCell(row: EmailTemplateTable) {
+  return renderTableOperationCell(buildTemplateRowActions(row));
+}
+
 const {
   columns: templateColumns,
   columnChecks: templateColumnChecks,
@@ -528,26 +549,8 @@ const {
         label: "操作",
         width: 160,
         fixed: "right",
-        align: "right",
-        formatter: (row: EmailTemplateTable) => {
-          const actions: TableOperationAction[] = [
-            {
-              key: "edit",
-              label: "编辑",
-              artType: "edit" as const,
-              perm: "module_platform:email:update",
-              run: () => openTemplateDialog("update", row),
-            },
-            {
-              key: "delete",
-              label: "删除",
-              artType: "delete" as const,
-              perm: "module_platform:email:update",
-              run: () => deleteTemplateRow(row),
-            },
-          ];
-          return renderTableOperationCell(actions.filter((a) => a.perm != null && hasAuth(a.perm)));
-        },
+        align: "center",
+        formatter: (row: EmailTemplateTable) => formatTemplateOperationCell(row),
       },
     ]),
   },

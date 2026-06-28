@@ -17,11 +17,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -853,7 +849,7 @@ const {
         label: "操作",
         width: 220,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: GenTableSchema) => formatGencodeOperationCell(row),
       },
     ],

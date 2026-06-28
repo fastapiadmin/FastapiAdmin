@@ -527,12 +527,22 @@ onUnmounted(() => {
       width: 70px;
       height: 70px;
       border-radius: 50%;
+
+      @media (width <= 640px) {
+        width: 50px;
+        height: 50px;
+      }
     }
 
     &-name {
       margin: 10px 0;
       font-size: 14px;
       color: var(--top-header-text-color);
+
+      @media (width <= 640px) {
+        margin: 8px 0;
+        font-size: 12px;
+      }
     }
   }
 }
@@ -622,7 +632,7 @@ onUnmounted(() => {
     justify-content: center;
     width: 100%;
     height: 100%;
-    background-color: rgb(0 0 0 / 50%);
+    background-color: var(--fa-overlay-heavy);
     backdrop-filter: blur(8px);
   }
 
@@ -642,12 +652,22 @@ onUnmounted(() => {
     width: 70px;
     height: 70px;
     border-radius: 50%;
+
+    @media (width <= 640px) {
+      width: 50px;
+      height: 50px;
+    }
   }
 
   .username {
     margin: 0.625rem 0;
     font-size: 0.875rem;
     color: var(--el-text-color-primary);
+
+    @media (width <= 640px) {
+      margin: 0.5rem 0;
+      font-size: 0.75rem;
+    }
   }
 
   .password-input {

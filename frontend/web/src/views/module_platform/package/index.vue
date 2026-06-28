@@ -18,11 +18,7 @@
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -120,7 +116,7 @@
     <FaDrawer
       v-model="menuDialogVisible"
       title="套餐菜单权限"
-      size="1200px"
+      size="400px"
       destroy-on-close
       @close="menuDialogVisible = false"
     >
@@ -353,7 +349,7 @@ const {
         label: "操作",
         width: 200,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: PackageTable) => formatPkgOperationCell(row, opCtx),
       },
     ]),

@@ -181,7 +181,7 @@
 
       <!-- ─── 我的订单 ─── -->
       <ElTabPane label="我的订单" name="orders">
-        <ElCard shadow="hover" class="fa-table-card">
+        <ElCard class="fa-table-card">
           <FaTableHeader
             v-model:columns="orderColumnChecks"
             :loading="orderLoading"

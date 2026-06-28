@@ -20,11 +20,7 @@
           @reset="handleOrderReset"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': orderShowSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': orderShowSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="orderColumnChecks"
             v-model:showSearchBar="orderShowSearchBar"
@@ -46,7 +42,7 @@
 
       <!-- 支付记录 -->
       <ElTabPane label="支付记录" name="payments">
-        <ElCard shadow="hover" class="fa-table-card" :style="{ 'margin-top': '0' }">
+        <ElCard class="fa-table-card" :style="{ 'margin-top': '0' }">
           <FaTableHeader :loading="paymentLoading" @refresh="getPaymentData" />
 
           <FaTable
@@ -80,11 +76,7 @@
           @reset="handleRefundReset"
         />
 
-        <ElCard
-          shadow="hover"
-          class="fa-table-card"
-          :style="{ 'margin-top': refundShowSearchBar ? '12px' : '0' }"
-        >
+        <ElCard class="fa-table-card" :style="{ 'margin-top': refundShowSearchBar ? '12px' : '0' }">
           <FaTableHeader
             v-model:columns="refundColumnChecks"
             v-model:showSearchBar="refundShowSearchBar"
@@ -304,6 +296,7 @@ const {
       { prop: "expire_time", label: "过期时间", width: 160, showOverflowTooltip: true },
       {
         label: "操作",
+        prop: "operation",
         width: 140,
         fixed: "right",
         align: "center",
@@ -543,6 +536,7 @@ const {
       { prop: "created_time", label: "申请时间", width: 160, showOverflowTooltip: true },
       {
         label: "操作",
+        prop: "operation",
         width: 160,
         fixed: "right",
         align: "center",

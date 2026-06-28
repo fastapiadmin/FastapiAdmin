@@ -24,8 +24,10 @@
  * @author FastapiAdmin Team
  */
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
+import { useWindowSize } from "@vueuse/core";
 import { DeviceEnum } from "@/enums/settings/device.enum";
+import { MOBILE_BREAKPOINT } from "@/utils/constants";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
 import en from "element-plus/es/locale/lang/en";
 
@@ -34,6 +36,10 @@ export const useAppStore = defineStore(
   () => {
     /** 设备类型 */
     const device = ref<string>(DeviceEnum.DESKTOP);
+    const { width } = useWindowSize();
+    watch(width, (w) => {
+      device.value = w < MOBILE_BREAKPOINT ? DeviceEnum.MOBILE : DeviceEnum.DESKTOP;
+    });
 
     /** 布局大小 */
     const size = ref<string>("default");

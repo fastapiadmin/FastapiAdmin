@@ -70,6 +70,8 @@ export interface UseChartOptions {
 
 // 基础图表 Props 接口 - 统一所有图表的基础属性
 export interface BaseChartProps {
+  /** 卡片标题（可选，传入则自动渲染带标题的卡片容器） */
+  title?: string;
   /** 图表高度 */
   height?: string;
   /** 是否加载中 */
