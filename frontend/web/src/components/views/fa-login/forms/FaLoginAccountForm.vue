@@ -107,7 +107,7 @@
               :text="$t('login.sliderText')"
               :text-color="dragVerifyTextColor"
               :success-text="$t('login.sliderSuccessText')"
-              progress-bar-bg="var(--el-color-primary)"
+              progress-bar-bg="var(--el-color-success)"
               :background="isDark ? '#26272F' : '#F1F1F4'"
               handler-bg="var(--default-box-color)"
             />

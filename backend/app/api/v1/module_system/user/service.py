@@ -1,7 +1,6 @@
 import io
 from typing import Any
 
-import pandas as pd
 from fastapi import UploadFile
 
 from app.api.v1.module_platform.menu.crud import MenuCRUD
@@ -304,23 +303,26 @@ class UserService:
 
         try:
             contents = await file.read()
-            df = pd.read_excel(io.BytesIO(contents))
+            rows = ExcelUtil.read_excel_to_dicts(contents)
             await file.close()
 
-            if df.empty:
+            if not rows:
                 raise CustomException(msg="导入文件为空")
 
-            missing_headers = [header for header in header_dict if header not in df.columns]
+            missing_headers = [h for h in header_dict if h not in rows[0]]
             if missing_headers:
                 raise CustomException(msg=f"导入文件缺少必要的列: {', '.join(missing_headers)}")
 
-            df.rename(columns=header_dict, inplace=True)
+            # 将中文字段名映射为英文字段
+            mapped_rows = []
+            for row in rows:
+                mapped_rows.append({en: row.get(ch) for ch, en in header_dict.items()})
 
             required_fields = ["username", "name", "dept_id"]
             errors = []
             for field in required_fields:
-                if df[field].isnull().any():
-                    missing_count = df[field].isnull().sum()
+                missing_count = sum(1 for r in mapped_rows if r.get(field) is None)
+                if missing_count:
                     errors.append(f"字段'{field}'有{missing_count}行缺少数据")
 
             if errors:
@@ -329,10 +331,10 @@ class UserService:
             success_count = 0
             error_msgs = []
 
-            for i, (_, row) in enumerate(df.iterrows(), start=2):
+            for i, row in enumerate(mapped_rows, start=2):
                 try:
-                    username = str(row["username"]).strip() if pd.notna(row["username"]) else ""
-                    name = str(row["name"]).strip() if pd.notna(row["name"]) else ""
+                    username = (str(row["username"]) if row["username"] is not None else "").strip()
+                    name = (str(row["name"]) if row["name"] is not None else "").strip()
                     if not username:
                         error_msgs.append(f"第{i}行: 账号不能为空")
                         continue
@@ -343,9 +345,9 @@ class UserService:
                     user_data = {
                         "username": username,
                         "name": name,
-                        "email": str(row["email"]).strip() if pd.notna(row["email"]) else None,
-                        "mobile": str(row["mobile"]).strip() if pd.notna(row["mobile"]) else None,
-                        "gender": str(row["gender"]).strip() if pd.notna(row["gender"]) else "1",
+                        "email": str(row["email"]).strip() if row.get("email") is not None else None,
+                        "mobile": str(row["mobile"]).strip() if row.get("mobile") is not None else None,
+                        "gender": str(row["gender"]).strip() if row.get("gender") is not None else "1",
                         "status": 0 if str(row["status"]).strip() == "正常" else 1,
                         "dept_id": int(row["dept_id"]),
                         "password": PwdUtil.hash_password(password="123456"),

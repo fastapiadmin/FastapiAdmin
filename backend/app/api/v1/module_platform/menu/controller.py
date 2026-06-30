@@ -1,14 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from app.common.response import ResponseSchema, SuccessResponse
-from app.core import cache_util
 from app.core.base_schema import AuthSchema, BatchSetAvailable
-from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 
 from .schema import MenuCreateSchema, MenuOutSchema, MenuQueryParam, MenuUpdateSchema
 from .service import MenuService
@@ -25,8 +25,8 @@ _MENU_NS = "menu"
 )
 @cache(expire=300, namespace=_MENU_NS)
 async def get_menu_tree_controller(
-    search: Annotated[MenuQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:query"]))],
+    search: Annotated[MenuQueryParam, Query(description="菜单查询参数")],
 ) -> JSONResponse:
     order_by = [{"order": "asc"}]
     result_dict_tree = await MenuService(auth).tree(search=search, order_by=order_by)
@@ -39,8 +39,8 @@ async def get_menu_tree_controller(
     response_model=ResponseSchema[MenuOutSchema],
 )
 async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="菜单ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:detail"]))],
+    id: Annotated[int, Path(description="菜单ID", ge=1)],
 ) -> JSONResponse:
     result_dict = await MenuService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="查询菜单详情成功")
@@ -52,11 +52,11 @@ async def get_obj_detail_controller(
     response_model=ResponseSchema[MenuOutSchema],
 )
 async def create_obj_controller(
-    data: MenuCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:create"]))],
+    data: Annotated[MenuCreateSchema, Body(description="菜单创建参数")],
 ) -> JSONResponse:
     result_dict = await MenuService(auth).create(data=data)
-    await cache_util.clear(namespace=_MENU_NS)
+    await FastAPICache.clear(namespace=_MENU_NS)
     return SuccessResponse(data=result_dict, msg="创建菜单成功")
 
 
@@ -66,12 +66,12 @@ async def create_obj_controller(
     response_model=ResponseSchema[MenuOutSchema],
 )
 async def update_obj_controller(
-    data: MenuUpdateSchema,
-    id: Annotated[int, Path(description="菜单ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:update"]))],
+    id: Annotated[int, Path(description="菜单ID", ge=1)],
+    data: Annotated[MenuUpdateSchema, Body(description="菜单修改参数")],
 ) -> JSONResponse:
     result_dict = await MenuService(auth).update(id=id, data=data)
-    await cache_util.clear(namespace=_MENU_NS)
+    await FastAPICache.clear(namespace=_MENU_NS)
     return SuccessResponse(data=result_dict, msg="修改菜单成功")
 
 
@@ -81,11 +81,11 @@ async def update_obj_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_obj_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:delete"]))],
+    ids: Annotated[list[int], Body(description="菜单ID列表")],
 ) -> JSONResponse:
     await MenuService(auth).delete(ids=ids)
-    await cache_util.clear(namespace=_MENU_NS)
+    await FastAPICache.clear(namespace=_MENU_NS)
     return SuccessResponse(msg="删除菜单成功")
 
 
@@ -95,9 +95,9 @@ async def delete_obj_controller(
     response_model=ResponseSchema[None],
 )
 async def batch_set_available_obj_controller(
-    data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:patch"]))],
+    data: Annotated[BatchSetAvailable, Body(description="批量修改菜单状态参数")],
 ) -> JSONResponse:
     await MenuService(auth).set_available(data=data)
-    await cache_util.clear(namespace=_MENU_NS)
+    await FastAPICache.clear(namespace=_MENU_NS)
     return SuccessResponse(msg="批量修改菜单状态成功")

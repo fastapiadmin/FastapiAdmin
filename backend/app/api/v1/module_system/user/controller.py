@@ -1,7 +1,7 @@
 import urllib.parse
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, UploadFile
+from fastapi import APIRouter, Body, Depends, Path, Query, File, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -45,8 +45,8 @@ async def get_current_user_info_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def update_current_user_info_controller(
-    data: CurrentUserUpdateSchema,
     auth: Annotated[AuthSchema, Depends(get_current_user)],
+    data: Annotated[CurrentUserUpdateSchema, Body(description="更新用户基本信息参数")],
 ) -> JSONResponse:
     result_dict = await UserService(auth).update_current_info(data=data)
     return SuccessResponse(data=result_dict, msg="更新当前用户基本信息成功")
@@ -57,8 +57,8 @@ async def update_current_user_info_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def change_current_user_password_controller(
-    data: UserChangePasswordSchema,
     auth: Annotated[AuthSchema, Depends(get_current_user)],
+    data: Annotated[UserChangePasswordSchema, Body(description="修改用户密码参数")],
 ) -> JSONResponse:
     result_dict = await UserService(auth).change_password(data=data)
     return SuccessResponse(data=result_dict, msg="修改密码成功, 请重新登录")
@@ -69,9 +69,9 @@ async def change_current_user_password_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def reset_password_controller(
-    id: Annotated[int, Path(description="用户ID")],
-    data: ResetPasswordSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:update"]))],
+    id: Annotated[int, Path(description="用户ID")],
+    data: Annotated[ResetPasswordSchema, Body(description="重置用户密码参数")],
 ) -> JSONResponse:
     data.id = id
     result_dict = await UserService(auth).reset_password(data=data)
@@ -83,8 +83,8 @@ async def reset_password_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def register_user_controller(
-    data: UserRegisterSchema,
     db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[UserRegisterSchema, Body(description="注册用户参数")],
 ) -> JSONResponse:
     auth = AuthSchema(db=db, check_data_scope=False)
     user_register_result = await UserService(auth).register(data=data)
@@ -97,8 +97,8 @@ async def register_user_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def forget_password_controller(
-    data: UserForgetPasswordSchema,
     db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[UserForgetPasswordSchema, Body(description="忘记密码参数")],
 ) -> JSONResponse:
     auth = AuthSchema(db=db, check_data_scope=False)
     user_forget_password_result = await UserService(auth).forget_password(data=data)
@@ -111,9 +111,9 @@ async def forget_password_controller(
     response_model=ResponseSchema[PageResultSchema[UserOutSchema]],
 )
 async def get_user_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[UserQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[UserQueryParam, Query(description="用户查询参数")],
 ) -> JSONResponse:
     result_dict = await UserService(auth).page(
         page_no=page.page_no,
@@ -129,8 +129,8 @@ async def get_user_list_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def get_user_detail_controller(
-    id: Annotated[int, Path(description="用户ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:detail"]))],
+    id: Annotated[int, Path(description="用户ID")],
 ) -> JSONResponse:
     result_dict = await UserService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取用户详情成功")
@@ -141,8 +141,8 @@ async def get_user_detail_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def create_user_controller(
-    data: UserCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:create"]))],
+    data: Annotated[UserCreateSchema, Body(description="创建用户参数")],
 ) -> JSONResponse:
     result_dict = await UserService(auth).create(data=data)
     return SuccessResponse(data=result_dict, msg="创建用户成功")
@@ -153,9 +153,9 @@ async def create_user_controller(
     response_model=ResponseSchema[UserOutSchema],
 )
 async def update_user_controller(
-    data: UserUpdateSchema,
-    id: Annotated[int, Path(description="用户ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:update"]))],
+    id: Annotated[int, Path(description="用户ID")],
+    data: Annotated[UserUpdateSchema, Body(description="修改用户参数")],
 ) -> JSONResponse:
     result_dict = await UserService(auth).update(id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改用户成功")
@@ -166,8 +166,8 @@ async def update_user_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_user_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     await UserService(auth).delete(ids=ids)
     return SuccessResponse(msg="删除用户成功")
@@ -178,8 +178,8 @@ async def delete_user_controller(
     response_model=ResponseSchema[None],
 )
 async def batch_set_available_user_controller(
-    data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:patch"]))],
+    data: Annotated[BatchSetAvailable, Body(description="批量修改用户状态参数")],
 ) -> JSONResponse:
     await UserService(auth).set_available(data=data)
     return SuccessResponse(msg="批量修改用户状态成功")
@@ -208,9 +208,9 @@ async def export_user_import_template_controller() -> StreamingResponse:
     response_model=ResponseSchema[None],
 )
 async def export_user_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[UserQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:export"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[UserQueryParam, Query(description="用户查询参数")],
 ) -> StreamingResponse:
     user_list = await UserService(auth).get_list(search=search, order_by=page.order_by)
     user_export_result = UserService.export_list(user_list=user_list)
@@ -227,7 +227,7 @@ async def export_user_list_controller(
     response_model=ResponseSchema[None],
 )
 async def import_user_list_controller(
-    file: UploadFile,
+    file: Annotated[UploadFile, File(description="用户导入文件")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:import"]))],
 ) -> JSONResponse:
     batch_import_result = await UserService(auth).batch_import(file=file, update_support=True)

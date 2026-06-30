@@ -1,12 +1,12 @@
 {# =============================================================================
 # {{ function_name }} 页面
-# 架构：FaSearchBarWithAudit + FaTableHeader + FaTable + FaDialog
+# 架构：FaSearchBar(include-audit) + FaTableHeader + FaTable + FaDialog
 # 与 module_example/demo 完全对齐
 # 页面路由：/{{ menu_route_first_segment }}/{{ module_name }}
 # ============================================================================= #}
 <template>
   <div class="fa-full-height">
-    <FaSearchBarWithAudit
+    <FaSearchBar
       v-show="showSearchBar"
       ref="searchBarRef"
       v-model="searchForm"
@@ -18,15 +18,12 @@
       :show-search="true"
       :disabled-search="false"
       :default-expanded="false"
+      include-audit
       @search="handleSearch"
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -157,7 +154,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
 import { useAuth } from "@/hooks/core/useAuth";
 import { renderTableOperationCell, type TableOperationAction } from "@/utils/table";
 import { useTable } from "@/hooks/core/useTable";
@@ -177,9 +173,7 @@ import {{ class_name }}API, {
 } from "@/api/{{ package_name }}/{{ module_name }}";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { ElMessage } from "element-plus";
-{% if table.sub or has_dict_column %}
-import { computed } from "vue";
-{% endif %}
+
 {% if has_dict_column %}
 import { useDictStore } from "@/stores/modules/dict";
 {% endif %}
@@ -246,10 +240,10 @@ const searchBarRef = ref<{ validate: () => Promise<boolean> } | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 {% if has_dict_column %}
-/** 业务搜索项（审计四字段由 FaSearchBarWithAudit 自动追加） */
+/** 业务搜索项（审计四字段由 FaSearchBar 的 includeAudit 属性追加） */
 const businessSearchItemsRaw = computed(() => [
 {% else %}
-/** 业务搜索项（审计四字段由 FaSearchBarWithAudit 自动追加） */
+/** 业务搜索项（审计四字段由 FaSearchBar 的 includeAudit 属性追加） */
 const businessSearchItems = computed(() => [
 {% endif %}
   {% for column in columns %}
@@ -432,9 +426,9 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 220,
+        width: 180,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: {{ class_name }}Table) => formatOperationCell(row),
       },
     ],
@@ -792,6 +786,7 @@ async function runBatchStatus(status: number) {
       "批量设置"
     );
     await {{ class_name }}API.batch{{ class_name }}({ ids, status });
+    // 成功 / 失败提示由 axios 拦截器统一处理
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshData();
   } catch {
@@ -807,14 +802,13 @@ async function handleCrudImportUpload(formData: FormData) {
       importVisible.value = false;
       await refreshData();
     }
+    // 非 SUCCESS 分支提示由 axios 拦截器统一处理
   } catch (error) {
     console.error("[Import]", error);
+    /* 接口错误已由拦截器提示 */
   }
 }
 
-onMounted(() => {
-  getData();
-});
 </script>
 
 <style lang="scss" scoped></style>

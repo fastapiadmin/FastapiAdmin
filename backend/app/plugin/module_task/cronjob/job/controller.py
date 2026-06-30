@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from app.common.response import ResponseSchema, SuccessResponse
@@ -173,9 +173,9 @@ async def remove_job_controller(
     response_model=ResponseSchema[PageResultSchema[JobOutSchema]],
 )
 async def get_job_log_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[JobQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:job:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[JobQueryParam, Query(description="查询参数")],
 ) -> JSONResponse:
     order_by = [{"created_time": "desc"}]
     if page.order_by:
@@ -195,8 +195,8 @@ async def get_job_log_list_controller(
     response_model=ResponseSchema[JobOutSchema],
 )
 async def get_job_log_detail_controller(
-    id: Annotated[int, Path(description="日志ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:job:detail"]))],
+    id: Annotated[int, Path(description="日志ID")],
 ) -> JSONResponse:
     result_dict = await JobService(auth).get_job_log_detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取执行日志详情成功")
@@ -208,8 +208,8 @@ async def get_job_log_detail_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_job_log_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:job:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     await JobService(auth).delete_job_log(ids=ids)
     return SuccessResponse(msg="删除执行日志成功")

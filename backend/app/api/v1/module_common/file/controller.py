@@ -8,6 +8,7 @@ from fastapi import (
     Depends,
     Form,
     Query,
+    File,
     Request,
     UploadFile,
 )
@@ -30,8 +31,8 @@ FileRouter = APIRouter(route_class=OperationLogRoute, prefix="/file", tags=["公
     dependencies=[Depends(AuthPermission(["module_common:file:upload"]))],
 )
 async def upload_controller(
-    file: UploadFile,
     request: Request,
+    file: Annotated[UploadFile, File()],
     upload_type: Annotated[
         Literal["file", "avatar", "param", "resource"] | None,
         Query(description="上传类型: file=通用文件, avatar=头像, param=参数配置, resource=监控资源"),

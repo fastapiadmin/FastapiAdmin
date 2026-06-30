@@ -40,11 +40,21 @@ def setup_logger() -> None:
         "<level>{message}</level>"
         "{extra[ctx]}"
     )
-    logger.add(sys.stdout, format=LOG_FMT, level=settings.LOGGER_LEVEL)
     logger.add(
-        str(LOG_DIR / "fastapiadmin.log"),
+        sys.stdout,
         format=LOG_FMT,
-        level="INFO",
+        backtrace=True,
+        diagnose=True,
+        catch=True,
+        level=settings.LOGGER_LEVEL
+    )
+    logger.add(
+        sink=str(LOG_DIR / "fastapiadmin.log"),
+        format=LOG_FMT,
+        level=settings.LOGGER_LEVEL,
+        backtrace=True,
+        diagnose=True,
+        catch=True,
         rotation="00:00",
         retention=30,
         compression="gz",

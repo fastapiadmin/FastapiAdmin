@@ -1,14 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
-from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
-from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission, get_current_user
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 from app.core.logger import logger
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
@@ -32,8 +32,8 @@ _NOTICE_NS = "notice"
     response_model=ResponseSchema[NoticeOutSchema],
 )
 async def get_notice_detail_controller(
-    id: Annotated[int, Path(description="公告ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:detail"]))],
+    id: Annotated[int, Path(description="公告ID")],
 ) -> JSONResponse:
     result_dict = await NoticeService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取公告详情成功")
@@ -44,9 +44,9 @@ async def get_notice_detail_controller(
     response_model=ResponseSchema[PageResultSchema[NoticeOutSchema]],
 )
 async def get_notice_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[NoticeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[NoticeQueryParam, Query(description="公告查询参数")],
 ) -> JSONResponse:
     result_dict = await NoticeService(auth).page(
         page_no=page.page_no,
@@ -62,11 +62,11 @@ async def get_notice_list_controller(
     response_model=ResponseSchema[NoticeOutSchema],
 )
 async def create_notice_controller(
-    data: NoticeCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:create"]))],
+    data: Annotated[NoticeCreateSchema, Body(description="公告创建参数")],
 ) -> JSONResponse:
     result_dict = await NoticeService(auth).create(data=data)
-    await cache_util.clear(namespace=_NOTICE_NS)
+    await FastAPICache.clear(namespace=_NOTICE_NS)
     return SuccessResponse(data=result_dict, msg="创建公告成功")
 
 @NoticeRouter.put(
@@ -75,12 +75,12 @@ async def create_notice_controller(
     response_model=ResponseSchema[NoticeOutSchema],
 )
 async def update_notice_controller(
-    data: NoticeUpdateSchema,
-    id: Annotated[int, Path(description="公告ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:update"]))],
+    id: Annotated[int, Path(description="公告ID")],
+    data: Annotated[NoticeUpdateSchema, Body(description="公告修改参数")],
 ) -> JSONResponse:
     result_dict = await NoticeService(auth).update(id=id, data=data)
-    await cache_util.clear(namespace=_NOTICE_NS)
+    await FastAPICache.clear(namespace=_NOTICE_NS)
     return SuccessResponse(data=result_dict, msg="修改公告成功")
 
 @NoticeRouter.delete(
@@ -89,11 +89,11 @@ async def update_notice_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_notice_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     await NoticeService(auth).delete(ids=ids)
-    await cache_util.clear(namespace=_NOTICE_NS)
+    await FastAPICache.clear(namespace=_NOTICE_NS)
     return SuccessResponse(msg="删除公告成功")
 
 @NoticeRouter.patch(
@@ -102,11 +102,11 @@ async def delete_notice_controller(
     response_model=ResponseSchema[None],
 )
 async def batch_set_available_notice_controller(
-    data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:patch"]))],
+    data: Annotated[BatchSetAvailable, Body(description="批量修改公告状态参数")],
 ) -> JSONResponse:
     await NoticeService(auth).set_available(data=data)
-    await cache_util.clear(namespace=_NOTICE_NS)
+    await FastAPICache.clear(namespace=_NOTICE_NS)
     return SuccessResponse(msg="批量修改公告状态成功")
 
 @NoticeRouter.post(
@@ -114,8 +114,8 @@ async def batch_set_available_notice_controller(
     summary="导出公告",
 )
 async def export_notice_list_controller(
-    search: Annotated[NoticeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:export"]))],
+    search: Annotated[NoticeQueryParam, Query(description="公告查询参数")],
 ) -> StreamingResponse:
     result_dict_list = await NoticeService(auth).get_list(search=search)
     export_data = [item.model_dump() for item in result_dict_list]
@@ -158,12 +158,12 @@ async def get_notification_panel_controller(
     response_model=ResponseSchema[None],
 )
 async def mark_read_controller(
-    id: Annotated[int, Path(description="通知ID")],
     auth: Annotated[AuthSchema, Depends(get_current_user)],
+    id: Annotated[int, Path(description="通知ID")],
 ) -> JSONResponse:
     """标记已读。通过 `sys_notice_read` 表记录已读时间。"""
     await NoticeService(auth).mark_read(notice_id=id)
-    await cache_util.clear(namespace=_NOTICE_NS)
+    await FastAPICache.clear(namespace=_NOTICE_NS)
     logger.info(f"用户[{auth.user.id}]标记通知[{id}]已读")
     return SuccessResponse(msg="标记已读成功")
 
@@ -177,7 +177,7 @@ async def mark_all_read_controller(
 ) -> JSONResponse:
     """全部标记已读。返回本次操作标记的数量。"""
     count = await NoticeService(auth).mark_all_read()
-    await cache_util.clear(namespace=_NOTICE_NS)
+    await FastAPICache.clear(namespace=_NOTICE_NS)
     logger.info(f"用户[{auth.user.id}]全部已读, 数量={count}")
     return SuccessResponse(data=count, msg=f"全部标记已读成功，共标记 {count} 条")
 

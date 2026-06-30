@@ -51,7 +51,6 @@ class Settings(BaseSettings):
     # ================================================= #
     # ******************** 跨域配置 ******************** #
     # ================================================= #
-    CORS_ORIGIN_ENABLE: bool = True  # 是否启用跨域
     ALLOW_ORIGINS: list[str] = ["*"]  # 允许的域名列表
     ALLOW_METHODS: list[str] = ["*"]  # 允许的HTTP方法
     ALLOW_HEADERS: list[str] = ["*"]  # 允许的请求头
@@ -155,7 +154,6 @@ class Settings(BaseSettings):
     # ================================================= #
     # ********************* 日志配置 ******************* #
     # ================================================= #
-    OPERATION_LOG_RECORD: bool = True  # 是否记录操作日志
     OPERATION_RECORD_METHOD: list[str] = [
         "POST",
         "PUT",
@@ -168,9 +166,13 @@ class Settings(BaseSettings):
     # ================================================= #
     # ******************* Gzip压缩配置 ******************* #
     # ================================================= #
-    GZIP_ENABLE: bool = True  # 是否启用Gzip
     GZIP_MIN_SIZE: int = 1000  # 最小压缩大小(字节)
     GZIP_COMPRESS_LEVEL: int = 9  # 压缩级别(1-9)
+
+    # ================================================= #
+    # ******************* 安全中间件配置 ****************** #
+    # ================================================= #
+    ALLOWED_HOSTS: list[str] = ["service.fastapiadmin.com", "*.fastapiadmin.com"]  # 允许访问的主机名列表
 
     # ================================================= #
     # ***************** 静态文件配置 ***************** #
@@ -215,7 +217,15 @@ class Settings(BaseSettings):
     # ================================================= #
     # ******************* 请求限制配置 ****************** #
     # ================================================= #
-    REQUEST_LIMITER_REDIS_PREFIX: str = "fastapiadmin:request_limiter:"
+    @property
+    def REDIS_URI(self) -> str:
+        """构建 Redis 连接 URI（供 slowapi / 其他模块复用）。"""
+        auth_part = ""
+        if self.REDIS_USER and self.REDIS_PASSWORD:
+            auth_part = f"{self.REDIS_USER}:{self.REDIS_PASSWORD}@"
+        elif self.REDIS_PASSWORD:
+            auth_part = f":{self.REDIS_PASSWORD}@"
+        return f"redis://{auth_part}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB_NAME}"
 
     # ================================================= #
     # ******************* 动态配置 ******************* #
@@ -224,15 +234,18 @@ class Settings(BaseSettings):
     def MIDDLEWARE_LIST(self) -> list[str | None]:
         # 中间件列表（注册时逆序叠加：下列第一项在列表中最前，最终位于最外层，优先生效）
         # 中间件执行顺序（从外到内）：
-        #   CORS → RequestLog → GZip → CorrelationId → 业务路由
+        #   HTTPSRedirect → TrustedHost → CORS → RequestLog → GZip → CorrelationId → 业务路由
         # 安全响应头（X-Content-Type-Options / Referrer-Policy / Permissions-Policy / HSTS）
         # 由前置 Nginx / 反向代理通过 add_header 设置，避免应用层 BaseHTTPMiddleware 开销。
         MIDDLEWARES: list[str | None] = [
-            "app.core.middlewares.CustomCORSMiddleware" if self.CORS_ORIGIN_ENABLE else None,
-            "app.core.middlewares.RequestLogMiddleware" if self.OPERATION_LOG_RECORD else None,
-            "app.core.middlewares.CustomGZipMiddleware" if self.GZIP_ENABLE else None,
+            "app.core.middlewares.CustomHTTPSRedirectMiddleware" if self.ENVIRONMENT == EnvironmentEnum.PROD else None,
+            "app.core.middlewares.CustomTrustedHostMiddleware" if self.ENVIRONMENT == EnvironmentEnum.PROD else None,
+            "app.core.middlewares.CustomCORSMiddleware",
+            "app.core.middlewares.RequestLogMiddleware",
+            "app.core.middlewares.CustomGZipMiddleware",
             "app.core.middlewares.CorrelationIdMiddleware",  # 请求上下文
             "app.core.middlewares.TenantMiddleware",  # 租户上下文（需 JWT）
+            "slowapi.middleware.SlowAPIMiddleware",  # 接口限流（读取 app.state.limiter）
         ]
         return MIDDLEWARES
 
@@ -251,7 +264,7 @@ class Settings(BaseSettings):
             )
         db_connect: str = ""
         if self.DATABASE_TYPE == "mysql":
-            db_connect = f"mysql+asyncmy://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}?charset=utf8mb4"
+            db_connect = f"mysql+aiomysql://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}?charset=utf8mb4"
         elif self.DATABASE_TYPE == "postgres":
             db_connect = f"postgresql+asyncpg://{self.DATABASE_USER}:{quote_plus(self.DATABASE_PASSWORD)}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
         else:

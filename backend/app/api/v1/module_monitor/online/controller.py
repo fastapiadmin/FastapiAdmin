@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import JSONResponse
 from redis.asyncio.client import Redis
 
@@ -24,8 +24,8 @@ OnlineRouter = APIRouter(route_class=OperationLogRoute, prefix="/online", tags=[
 )
 async def get_online_list_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
-    paging_query: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[OnlineQueryParam, Depends()],
+    paging_query: Annotated[PaginationQueryParam, Query()],
+    search: Annotated[OnlineQueryParam, Query()],
 ) -> JSONResponse:
     result_dict_list = await OnlineService.get_online_list(redis=redis, search=search)
     result_dict = await PaginationService.paginate(

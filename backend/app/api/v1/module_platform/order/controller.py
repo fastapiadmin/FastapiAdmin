@@ -38,8 +38,8 @@ TenantOrderRouter = APIRouter(route_class=OperationLogRoute, prefix="/order", ta
     response_model=ResponseSchema[OrderOutSchema],
 )
 async def order_create_controller(
-    data: Annotated[OrderCreateSchema, Body()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:create"]))],
+    data: Annotated[OrderCreateSchema, Body(description="订单创建参数")],
 ) -> JSONResponse:
     result = await OrderService.create_order(auth=auth, data=data)
     return SuccessResponse(data=result, msg="订单创建成功")
@@ -50,8 +50,8 @@ async def order_create_controller(
     response_model=ResponseSchema[OrderOutSchema],
 )
 async def order_detail_controller(
-    order_id: Annotated[int, Path(ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:query"]))],
+    order_id: Annotated[int, Path(description="订单ID", ge=1)],
 ) -> JSONResponse:
     order = await OrderService.get_detail(auth=auth, order_id=order_id)
     if not order:
@@ -65,8 +65,8 @@ async def order_detail_controller(
 )
 async def order_list_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:query"]))],
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[OrderQueryParam, Depends()],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[OrderQueryParam, Query(description="查询参数")],
 ) -> JSONResponse:
     items, total = await OrderService.get_list(
         auth=auth,
@@ -91,8 +91,8 @@ async def order_list_controller(
     response_model=ResponseSchema[OrderStatusMessage],
 )
 async def order_cancel_controller(
-    order_id: Annotated[int, Path(ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:update"]))],
+    order_id: Annotated[int, Path(description="订单ID", ge=1)],
 ) -> JSONResponse:
     result = await OrderService.cancel_order(auth=auth, order_id=order_id)
     return SuccessResponse(data=result, msg=result["message"])
@@ -103,9 +103,9 @@ async def order_cancel_controller(
     response_model=ResponseSchema[PaymentCreateOut],
 )
 async def payment_create_controller(
-    order_id: Annotated[int, Path(ge=1)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:update"]))],
     request: Request,
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:update"]))],
+    order_id: Annotated[int, Path(description="订单ID", ge=1)],
     method: Annotated[str, Query(description="支付渠道: alipay / wxpay(留空=自动)")] = "",
 ) -> JSONResponse:
     base_url = str(request.base_url).rstrip("/")
@@ -118,8 +118,8 @@ async def payment_create_controller(
     response_model=ResponseSchema[PaymentStatusOut],
 )
 async def payment_status_controller(
-    order_id: Annotated[int, Path(ge=1)],
     db: Annotated[AsyncSession, Depends(db_getter)],
+    order_id: Annotated[int, Path(description="订单ID", ge=1)],
 ) -> JSONResponse:
     auth = AuthSchema(db=db, check_data_scope=False)
     result = await OrderService.check_payment_status(auth=auth, order_id=order_id)
@@ -131,9 +131,9 @@ async def payment_status_controller(
     response_model=ResponseSchema[dict],
 )
 async def payment_callback_controller(
-    method: Annotated[str, Path(description="支付渠道: alipay / wxpay / mock")],
-    data: Annotated[dict, Body()],
     db: Annotated[AsyncSession, Depends(db_getter)],
+    method: Annotated[str, Path(description="支付渠道: alipay / wxpay / mock")],
+    data: Annotated[dict, Body(description="支付回调数据")],
 ) -> JSONResponse:
     try:
         auth = AuthSchema(db=db, check_data_scope=False)
@@ -150,8 +150,8 @@ async def payment_callback_controller(
     response_model=ResponseSchema[dict],
 )
 async def payment_mock_callback_controller(
-    order_id: Annotated[int, Body(ge=1, description="订单 ID")],
     db: Annotated[AsyncSession, Depends(db_getter)],
+    order_id: Annotated[int, Body(description="订单ID", ge=1)],
 ) -> JSONResponse:
     from app.utils.payment import get_mock_gateway
 
@@ -175,8 +175,8 @@ async def payment_mock_callback_controller(
 )
 async def payment_record_list_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:query"]))],
-    page: Annotated[int, Query(ge=1)] = 1,
-    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    page: Annotated[int, Query(description="页码", ge="页码，从1开始")] = 1,
+    page_size: Annotated[int, Query(description="每页数量", ge="每页数量，范围1-100，默认1", le="每页数量，范围1-100，默认100")] = 20,
 ) -> JSONResponse:
     offset = (page - 1) * page_size
     items, total = await PaymentService.get_records(auth=auth, offset=offset, limit=page_size)
@@ -197,8 +197,8 @@ async def payment_record_list_controller(
 async def refund_list_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:query"]))],
     status: Annotated[int | None, Query(description="状态筛选")] = None,
-    page: Annotated[int, Query(ge=1)] = 1,
-    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    page: Annotated[int, Query(description="页码", ge="页码，从1开始")] = 1,
+    page_size: Annotated[int, Query(description="每页数量", ge="每页数量，范围1-100，默认1", le="每页数量，范围1-100，默认100")] = 20,
 ) -> JSONResponse:
     offset = (page - 1) * page_size
     items, total = await RefundService.get_list(auth=auth, status=status, offset=offset, limit=page_size)
@@ -217,8 +217,8 @@ async def refund_list_controller(
     response_model=ResponseSchema[OrderStatusMessage],
 )
 async def refund_approve_controller(
-    refund_id: Annotated[int, Path(ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:update"]))],
+    refund_id: Annotated[int, Path(description="退款ID", ge=1)],
 ) -> JSONResponse:
     result = await RefundService.approve(
         auth=auth,
@@ -234,9 +234,9 @@ async def refund_approve_controller(
     response_model=ResponseSchema[OrderStatusMessage],
 )
 async def refund_reject_controller(
-    refund_id: Annotated[int, Path(ge=1)],
-    data: Annotated[RefundReviewSchema, Body()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:order:update"]))],
+    refund_id: Annotated[int, Path(description="退款ID", ge=1)],
+    data: Annotated[RefundReviewSchema, Body(description="退款驳回数据")],
 ) -> JSONResponse:
     result = await RefundService.reject(
         auth=auth,
@@ -253,8 +253,8 @@ async def refund_reject_controller(
     response_model=ResponseSchema[OrderOutSchema],
 )
 async def tenant_order_create_controller(
-    data: Annotated[OrderCreateSchema, Body()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:order:create"]))],
+    data: Annotated[OrderCreateSchema, Body(description="订单创建数据")],
 ) -> JSONResponse:
     if data.tenant_id != auth.tenant_id:
         raise HTTPException(status_code=403, detail="无权操作")
@@ -267,9 +267,9 @@ async def tenant_order_create_controller(
     response_model=ResponseSchema[RefundOutSchema],
 )
 async def tenant_refund_apply_controller(
-    order_id: Annotated[int, Path(ge=1)],
-    data: Annotated[RefundApplySchema, Body()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:order:refund"]))],
+    order_id: Annotated[int, Path(description="订单ID", ge=1)],
+    data: Annotated[RefundApplySchema, Body(description="退款申请数据")],
 ) -> JSONResponse:
     result = await RefundService.apply(auth=auth, data=data, order_id=order_id)
     return SuccessResponse(data=result, msg="退款申请已提交")

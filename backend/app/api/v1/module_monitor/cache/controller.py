@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 from fastapi.responses import JSONResponse
 from redis.asyncio.client import Redis
 
@@ -44,7 +44,10 @@ async def get_monitor_cache_name_controller() -> JSONResponse:
     summary="获取缓存键名列表",
     response_model=ResponseSchema[list[CacheInfoSchema]],
 )
-async def get_monitor_cache_key_controller(cache_name: str, redis: Annotated[Redis, Depends(redis_getter)]) -> JSONResponse:
+async def get_monitor_cache_key_controller(
+    cache_name: Annotated[str, Path(description="缓存名称")],
+    redis: Annotated[Redis, Depends(redis_getter)]
+) -> JSONResponse:
     result = await CacheService.get_monitor_cache_keys(redis=redis, cache_name=cache_name)
     return SuccessResponse(data=result, msg=f"获取缓存{cache_name}的键名列表成功")
 
@@ -56,8 +59,8 @@ async def get_monitor_cache_key_controller(cache_name: str, redis: Annotated[Red
     response_model=ResponseSchema[CacheInfoSchema],
 )
 async def get_monitor_cache_value_controller(
-    cache_name: str,
-    cache_key: str,
+    cache_name: Annotated[str, Path(description="缓存名称")],
+    cache_key: Annotated[str, Path(description="缓存键名")],
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
     result = await CacheService.get_monitor_cache_value(redis=redis, cache_name=cache_name, cache_key=cache_key)
@@ -70,7 +73,10 @@ async def get_monitor_cache_value_controller(
     summary="清除指定缓存名称的所有缓存",
     response_model=ResponseSchema[None],
 )
-async def clear_monitor_cache_name_controller(cache_name: str, redis: Annotated[Redis, Depends(redis_getter)]) -> JSONResponse:
+async def clear_monitor_cache_name_controller(
+    cache_name: Annotated[str, Path(description="缓存名称")],
+    redis: Annotated[Redis, Depends(redis_getter)]
+) -> JSONResponse:
     result = await CacheService.clear_monitor_cache_by_name(redis=redis, cache_name=cache_name)
     return SuccessResponse(msg=f"{cache_name}对应键值清除成功", data=result)
 
@@ -81,7 +87,10 @@ async def clear_monitor_cache_name_controller(cache_name: str, redis: Annotated[
     summary="清除指定缓存键",
     response_model=ResponseSchema[None],
 )
-async def clear_monitor_cache_key_controller(cache_key: str, redis: Annotated[Redis, Depends(redis_getter)]) -> JSONResponse:
+async def clear_monitor_cache_key_controller(
+    cache_key: Annotated[str, Path(description="缓存键名")],
+    redis: Annotated[Redis, Depends(redis_getter)]
+) -> JSONResponse:
     result = await CacheService.clear_monitor_cache_by_key(redis=redis, cache_key=cache_key)
     return SuccessResponse(msg=f"{cache_key}清除成功", data=result)
 

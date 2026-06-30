@@ -1,8 +1,9 @@
-import traceback
+from math import ceil
 from typing import Any
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
@@ -32,30 +33,22 @@ class CustomException(Exception):
         return self.msg
 
 
-def _tb_source(exc: Exception) -> str:
-    """从 traceback 提取抛出的 文件名:行号:函数名"""
-    if exc.__traceback__ and (tb := traceback.extract_tb(exc.__traceback__)):
-        f = tb[-1]
-        return f"{f.filename}:{f.lineno}:{f.name}"
-    return "unknown"
-
-
-_VALIDATION_ERROR_MAP: dict[str, str] = {
-    "Field required": "请求失败，缺少必填项！",
-    "value is not a valid list": "类型错误，提交参数应该为列表！",
-    "value is not a valid int": "类型错误，提交参数应该为整数！",
-    "value could not be parsed to a boolean": "类型错误，提交参数应该为布尔值！",
-    "Input should be a valid list": "类型错误，输入应该是一个有效的列表！",
-}
-
-
 def handle_exception(app: FastAPI) -> None:
+    @app.exception_handler(RateLimitExceeded)
+    async def rate_limit_exception_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:
+        return ErrorResponse(
+            msg="请求过于频繁，请稍后重试！",
+            code=429,
+            status_code=429,
+            data={"Retry-After": str(ceil(getattr(exc, "retry_after", 60)))},
+        )
+
     @app.exception_handler(CustomException)
     async def custom_exception_handler(request: Request, exc: CustomException) -> JSONResponse:
         logger.error(
-            "[自定义异常] {} {} | source={} | code={} | msg={} | data={}",
+            "[自定义异常] {} {} | code={} | msg={} | data={}",
             request.method, request.url.path,
-            _tb_source(exc), exc.code, exc.msg, exc.data,
+            exc.code, exc.msg, exc.data,
         )
         return ErrorResponse(msg=exc.msg, code=exc.code, status_code=exc.status_code, data=exc.data)
 
@@ -69,15 +62,15 @@ def handle_exception(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-        raw_msg = exc.errors()[0].get("msg")
-        msg = _VALIDATION_ERROR_MAP.get(raw_msg, raw_msg)
-        if isinstance(msg, str) and msg.startswith("Value error"):
+        errors = exc.errors()
+        msg = errors[0].get("msg", str(errors[0])) if errors else "请求参数验证失败"
+        if msg.startswith("Value error"):
             msg = msg[11:].lstrip(" ,")
         logger.error(
-            "[参数验证异常] {} {} | msg={} | errors={}",
-            request.method, request.url.path, msg, exc.errors(),
+            "[参数验证异常] {} {} | errors={}",
+            request.method, request.url.path, errors,
         )
-        return ErrorResponse(msg=str(msg), status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, data=exc.body)
+        return ErrorResponse(msg=str(msg), status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, data=errors)
 
     @app.exception_handler(ResponseValidationError)
     async def response_validation_handler(request: Request, exc: ResponseValidationError) -> JSONResponse:
@@ -114,7 +107,6 @@ def handle_exception(app: FastAPI) -> None:
     async def value_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
         logger.error("[值异常] {} {} | msg={}", request.method, request.url.path, exc)
         return ErrorResponse(msg=str(exc), status_code=status.HTTP_400_BAD_REQUEST)
-
 
     @app.exception_handler(Exception)
     async def all_exception_handler(request: Request, exc: Exception) -> JSONResponse:

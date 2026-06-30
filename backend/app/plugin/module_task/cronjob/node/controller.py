@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from app.common.response import ResponseSchema, SuccessResponse
@@ -40,8 +40,8 @@ async def get_node_options_controller(
     response_model=ResponseSchema[NodeOutSchema],
 )
 async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="节点ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:detail"]))],
+    id: Annotated[int, Path(description="节点ID")],
 ) -> JSONResponse:
     service = NodeService(auth)
     result_dict = await service.detail(id=id)
@@ -54,9 +54,9 @@ async def get_obj_detail_controller(
     response_model=ResponseSchema[PageResultSchema[NodeOutSchema]],
 )
 async def get_obj_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[NodeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[NodeQueryParam, Query(description="查询参数")],
 ) -> JSONResponse:
     service = NodeService(auth)
     result_dict = await service.page(
@@ -74,8 +74,8 @@ async def get_obj_list_controller(
     response_model=ResponseSchema[NodeOutSchema],
 )
 async def create_obj_controller(
-    data: NodeCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:create"]))],
+    data: Annotated[NodeCreateSchema, Body(description="创建节点参数")],
 ) -> JSONResponse:
     service = NodeService(auth)
     result_dict = await service.create(data=data)
@@ -88,9 +88,9 @@ async def create_obj_controller(
     response_model=ResponseSchema[NodeOutSchema],
 )
 async def update_obj_controller(
-    data: NodeUpdateSchema,
-    id: Annotated[int, Path(description="节点ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:update"]))],
+    id: Annotated[int, Path(description="节点ID")],
+    data: Annotated[NodeUpdateSchema, Body(description="修改节点参数")],
 ) -> JSONResponse:
     service = NodeService(auth)
     result_dict = await service.update(id=id, data=data)
@@ -103,8 +103,8 @@ async def update_obj_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_obj_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     service = NodeService(auth)
     await service.delete(ids=ids)
@@ -130,9 +130,9 @@ async def clear_obj_controller(
     response_model=ResponseSchema[dict],
 )
 async def execute_job_controller(
-    id: Annotated[int, Path(description="节点ID")],
-    data: NodeExecuteSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:execute"]))],
+    id: Annotated[int, Path(description="节点ID")],
+    data: Annotated[NodeExecuteSchema, Body(description="调试节点参数")],
 ) -> JSONResponse:
     service = NodeService(auth)
     result = await service.execute(id=id, execute_data=data)
@@ -145,9 +145,9 @@ async def execute_job_controller(
     response_model=ResponseSchema[None],
 )
 async def batch_set_status_controller(
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:update"]))],
     ids: Annotated[list[int], Body(description="节点ID列表")],
     status: Annotated[int, Body(description="状态值")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:update"]))],
 ) -> JSONResponse:
     service = NodeService(auth)
     await service.batch_set_status(ids=ids, status=status)

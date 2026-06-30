@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Form, Query, Request, UploadFile
+from fastapi import APIRouter, Body, Depends, Form, Query, File, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from app.api.v1.module_common.file.service import FileService
@@ -33,8 +33,8 @@ ResourceRouter = APIRouter(route_class=OperationLogRoute, prefix="/resource", ta
 )
 async def get_directory_list_controller(
     request: Request,
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[ResourceSearchQueryParam, Depends()],
+    page: Annotated[PaginationQueryParam, Query()],
+    search: Annotated[ResourceSearchQueryParam, Query()],
 ) -> JSONResponse:
     result_dict_list = await ResourceService.get_resources_list(search=search, base_url=str(request.base_url))
     result_dict = await PaginationService.paginate(
@@ -52,8 +52,8 @@ async def get_directory_list_controller(
     dependencies=[Depends(AuthPermission(["module_monitor:resource:upload"]))],
 )
 async def upload_file_controller(
-    file: UploadFile,
     request: Request,
+    file: Annotated[UploadFile, File(description="上传文件")],
     target_path: Annotated[str | None, Form(description="目标目录路径")] = None,
 ) -> JSONResponse:
     result = await FileService.upload_service(
@@ -105,7 +105,9 @@ async def delete_files_controller(
     response_model=ResponseSchema[None],
     dependencies=[Depends(AuthPermission(["module_monitor:resource:move"]))],
 )
-async def move_file_controller(data: ResourceMoveSchema) -> JSONResponse:
+async def move_file_controller(
+    data: Annotated[ResourceMoveSchema, Body(description="移动文件参数")],
+) -> JSONResponse:
     await ResourceService.move_file(data=data)
     return SuccessResponse(msg="移动文件成功")
 
@@ -116,7 +118,9 @@ async def move_file_controller(data: ResourceMoveSchema) -> JSONResponse:
     response_model=ResponseSchema[None],
     dependencies=[Depends(AuthPermission(["module_monitor:resource:copy"]))],
 )
-async def copy_file_controller(data: ResourceCopySchema) -> JSONResponse:
+async def copy_file_controller(
+    data: Annotated[ResourceCopySchema, Body(description="复制文件参数")],
+) -> JSONResponse:
     await ResourceService.copy_file(data=data)
     return SuccessResponse(msg="复制文件成功")
 
@@ -127,7 +131,9 @@ async def copy_file_controller(data: ResourceCopySchema) -> JSONResponse:
     response_model=ResponseSchema[None],
     dependencies=[Depends(AuthPermission(["module_monitor:resource:rename"]))],
 )
-async def rename_file_controller(data: ResourceRenameSchema) -> JSONResponse:
+async def rename_file_controller(
+    data: Annotated[ResourceRenameSchema, Body(description="重命名文件参数")],
+) -> JSONResponse:
     await ResourceService.rename_file(data=data)
     return SuccessResponse(msg="重命名文件成功")
 
@@ -139,7 +145,7 @@ async def rename_file_controller(data: ResourceRenameSchema) -> JSONResponse:
     dependencies=[Depends(AuthPermission(["module_monitor:resource:create_dir"]))],
 )
 async def create_directory_controller(
-    data: ResourceCreateDirSchema,
+    data: Annotated[ResourceCreateDirSchema, Body(description="创建目录参数")],
 ) -> JSONResponse:
     await ResourceService.create_directory(data=data)
     return SuccessResponse(msg="创建目录成功")
@@ -151,7 +157,10 @@ async def create_directory_controller(
     response_model=ResponseSchema[None],
     dependencies=[Depends(AuthPermission(["module_monitor:resource:export"]))],
 )
-async def export_resource_list_controller(request: Request, search: Annotated[ResourceSearchQueryParam, Depends()]) -> StreamingResponse:
+async def export_resource_list_controller(
+    request: Request, 
+    search: Annotated[ResourceSearchQueryParam, Query()],
+) -> StreamingResponse:
     result_dict_list = await ResourceService.get_resources_list(search=search, base_url=str(request.base_url))
     export_result = await ResourceService.export_resource(data_list=result_dict_list)
 

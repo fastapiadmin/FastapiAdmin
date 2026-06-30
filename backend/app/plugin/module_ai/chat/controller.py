@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query, Body
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 
@@ -31,8 +31,8 @@ ChatRouter = APIRouter(route_class=OperationLogRoute, prefix="/chat", tags=["AI�
     response_model=ResponseSchema[dict[str, Any]],
 )
 async def get_session_detail_controller(
-    session_id: Annotated[str, Path(description="会话ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:detail"]))],
+    session_id: Annotated[str, Path(description="会话ID")],
 ) -> JSONResponse:
     service = ChatService(auth)
     result = await service.get_session(session_id=session_id)
@@ -45,9 +45,9 @@ async def get_session_detail_controller(
     response_model=ResponseSchema[dict],
 )
 async def get_session_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[ChatSessionQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[ChatSessionQueryParam, Query(description="查询参数")],
 ) -> JSONResponse:
     service = ChatService(auth)
     result_dict = await service.page(
@@ -65,8 +65,8 @@ async def get_session_list_controller(
     response_model=ResponseSchema[dict[str, Any]],
 )
 async def create_session_controller(
-    data: ChatSessionCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:create"]))],
+    data: Annotated[ChatSessionCreateSchema, Body(description="会话创建参数")],
 ) -> JSONResponse:
     service = ChatService(auth)
     result = await service.create(data=data)
@@ -79,9 +79,9 @@ async def create_session_controller(
     response_model=ResponseSchema[None],
 )
 async def update_session_controller(
-    session_id: Annotated[str, Path(description="会话ID")],
-    data: ChatSessionUpdateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
+    session_id: Annotated[str, Path(description="会话ID")],
+    data: Annotated[ChatSessionUpdateSchema, Body(description="会话更新参数")],
 ) -> JSONResponse:
     service = ChatService(auth)
     await service.update(session_id=session_id, data=data)
@@ -94,8 +94,8 @@ async def update_session_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_session_controller(
-    session_ids: list[str],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:delete"]))],
+    session_ids: Annotated[list[str], Body(description="会话ID列表")],
 ) -> JSONResponse:
     service = ChatService(auth)
     await service.delete(session_ids=session_ids)
@@ -108,8 +108,8 @@ async def delete_session_controller(
     response_model=ResponseSchema[AiChatResponseSchema],
 )
 async def ai_chat_controller(
-    data: AiChatRequestSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
+    data: Annotated[AiChatRequestSchema, Body(description="对话请求")],
 ) -> JSONResponse:
     service = ChatService(auth)
     result = await service.chat_non_stream(
@@ -150,9 +150,9 @@ async def list_model_config_controller(
     response_model=ResponseSchema[dict[str, Any]],
 )
 async def create_model_config_controller(
-    data: AiModelConfigUpdateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
+    data: Annotated[AiModelConfigUpdateSchema, Body(description="模型配置参数")],
 ) -> JSONResponse:
     service = AiModelConfigService(auth, redis)
     payload = AiModelConfigSchema(**data.model_dump())
@@ -166,10 +166,10 @@ async def create_model_config_controller(
     response_model=ResponseSchema[dict[str, Any]],
 )
 async def update_model_config_controller(
-    config_id: Annotated[str, Path(description="配置项 ID")],
-    data: AiModelConfigUpdateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
+    config_id: Annotated[str, Path(description="配置项 ID")],
+    data: Annotated[AiModelConfigUpdateSchema, Body(description="模型配置参数")],
 ) -> JSONResponse:
     service = AiModelConfigService(auth, redis)
     payload = AiModelConfigSchema(**data.model_dump())
@@ -183,9 +183,9 @@ async def update_model_config_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_model_config_controller(
-    config_id: Annotated[str, Path(description="配置项 ID")],
     redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
+    config_id: Annotated[str, Path(description="配置项 ID")],
 ) -> JSONResponse:
     service = AiModelConfigService(auth, redis)
     await service.delete(config_id)
@@ -198,9 +198,9 @@ async def delete_model_config_controller(
     response_model=ResponseSchema[None],
 )
 async def activate_model_config_controller(
-    config_id: Annotated[str, Path(description="配置项 ID；传 __default__ 使用系统默认")],
     redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
+    config_id: Annotated[str, Path(description="配置项 ID；传 __default__ 使用系统默认")],
 ) -> JSONResponse:
     service = AiModelConfigService(auth, redis)
     await service.set_active(config_id)

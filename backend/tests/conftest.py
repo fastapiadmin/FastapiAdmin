@@ -155,23 +155,11 @@ _mock_redis.info = AsyncMock(side_effect=_redis_info)
 _mock_redis.dbsize = AsyncMock(side_effect=_redis_dbsize)
 
 patch("redis.asyncio.Redis.from_url", return_value=_mock_redis).start()
-patch("app.init_app.FastAPILimiter.init", new=AsyncMock()).start()
-patch("app.init_app.FastAPILimiter.close", new=AsyncMock()).start()
+# slowapi 限流器由中间件处理，测试中无需 mock
 patch("app.core.ap_scheduler.SchedulerUtil.init_scheduler", new=AsyncMock()).start()
 patch("app.core.ap_scheduler.SchedulerUtil.shutdown", new=AsyncMock()).start()
 
-# RateLimiter → no-op（需匹配 FastAPI 依赖注入签名）
-from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
-from starlette.requests import Request
-from starlette.responses import Response
-
-
-async def _noop_rate_limit(request: Request, response: Response) -> None:
-    pass
-
-
-RateLimiter.__call__ = _noop_rate_limit
-WebSocketRateLimiter.__call__ = _noop_rate_limit
+# slowapi 通过中间件限流，测试无需 mock
 
 # ============================================================
 # 精简 lifespan — 仅做数据库初始化

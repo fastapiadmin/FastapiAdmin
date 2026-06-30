@@ -44,8 +44,8 @@ async def package_available_controller(
     response_model=ResponseSchema[PackagePreviewOut],
 )
 async def package_preview_controller(
-    target_package_id: Annotated[int, Query(ge=1, description="目标套餐ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:package:query"]))],
+    target_package_id: Annotated[int, Query(ge=1, description="目标套餐ID")],
 ) -> JSONResponse:
     result = await SelfService.preview_package_change(auth=auth, tenant_id=auth.tenant_id, target_package_id=target_package_id)
     return SuccessResponse(data=result, msg="查询成功")
@@ -56,8 +56,8 @@ async def package_preview_controller(
     response_model=ResponseSchema[SelfOrderOut],
 )
 async def order_create_controller(
-    data: SelfOrderCreate,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:order:create"]))],
+    data: Annotated[SelfOrderCreate, Body(description="自助订单创建参数")],
 ) -> JSONResponse:
     result = await SelfService.create_self_order(auth=auth, tenant_id=auth.tenant_id, data=data)
     return SuccessResponse(data=result, msg="订单创建成功")
@@ -68,8 +68,8 @@ async def order_create_controller(
     response_model=ResponseSchema[SelfOrderOut],
 )
 async def plugin_purchase_controller(
-    data: PluginPurchaseCreate,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:order:create"]))],
+    data: Annotated[PluginPurchaseCreate, Body(description="付费插件购买参数")],
 ) -> JSONResponse:
     result = await SelfService.create_plugin_purchase_order(auth=auth, tenant_id=auth.tenant_id, data=data)
     return SuccessResponse(data=result, msg="插件订单创建成功")
@@ -80,8 +80,8 @@ async def plugin_purchase_controller(
     response_model=ResponseSchema[SelfOrderListOut],
 )
 async def order_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:order:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
 ) -> JSONResponse:
     result = await SelfService.get_self_order_list(
         auth=auth,
@@ -98,8 +98,8 @@ async def order_list_controller(
     response_model=ResponseSchema[SelfOrderDetailOut],
 )
 async def order_detail_controller(
-    order_id: Annotated[int, Path(ge=1, description="订单ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["tenant:order:query"]))],
+    order_id: Annotated[int, Path(ge=1, description="订单ID")],
 ) -> JSONResponse:
     result = await SelfService.get_self_order_detail(auth=auth, order_id=order_id)
     return SuccessResponse(data=result, msg="查询成功")

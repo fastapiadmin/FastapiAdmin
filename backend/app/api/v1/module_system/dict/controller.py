@@ -1,15 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 from redis.asyncio.client import Redis
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
-from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
-from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission, redis_getter
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
@@ -35,8 +35,8 @@ _DICT_TYPE_NS = "dict_type"
     response_model=ResponseSchema[DictTypeOutSchema],
 )
 async def get_type_detail_controller(
-    id: Annotated[int, Path(description="字典类型ID", ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:detail"]))],
+    id: Annotated[int, Path(description="字典类型ID", ge=1)],
 ) -> JSONResponse:
     result_dict = await DictTypeService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取字典类型详情成功")
@@ -47,9 +47,9 @@ async def get_type_detail_controller(
     response_model=ResponseSchema[PageResultSchema[DictTypeOutSchema]],
 )
 async def get_type_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[DictTypeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页查询参数")],
+    search: Annotated[DictTypeQueryParam, Query(description="字典类型查询参数")],
 ) -> JSONResponse:
     result_dict = await DictTypeService(auth).page(
         page_no=page.page_no,
@@ -77,12 +77,12 @@ async def get_type_optionselect_controller(
     response_model=ResponseSchema[DictTypeOutSchema],
 )
 async def create_type_controller(
-    data: DictTypeCreateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:create"]))],
+    data: Annotated[DictTypeCreateSchema, Body(description="字典类型创建参数")],
 ) -> JSONResponse:
     result_dict = await DictTypeService(auth).create(redis=redis, data=data)
-    await cache_util.clear(namespace=_DICT_TYPE_NS)
+    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(data=result_dict, msg="创建字典类型成功")
 
 @DictRouter.put(
@@ -91,13 +91,13 @@ async def create_type_controller(
     response_model=ResponseSchema[DictTypeOutSchema],
 )
 async def update_type_controller(
-    data: DictTypeUpdateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
-    id: Annotated[int, Path(description="字典类型ID", ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:update"]))],
+    id: Annotated[int, Path(description="字典类型ID", ge=1)],
+    data: Annotated[DictTypeUpdateSchema, Body(description="字典类型修改参数")],
 ) -> JSONResponse:
     result_dict = await DictTypeService(auth).update(redis=redis, id=id, data=data)
-    await cache_util.clear(namespace=_DICT_TYPE_NS)
+    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(data=result_dict, msg="修改字典类型成功")
 
 @DictRouter.delete(
@@ -107,11 +107,11 @@ async def update_type_controller(
 )
 async def delete_type_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:delete"]))],
+    ids: Annotated[list[int], Body(description="字典类型ID列表")],
 ) -> JSONResponse:
     await DictTypeService(auth).delete(redis=redis, ids=ids)
-    await cache_util.clear(namespace=_DICT_TYPE_NS)
+    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(msg="删除字典类型成功")
 
 @DictRouter.patch(
@@ -120,11 +120,11 @@ async def delete_type_controller(
     response_model=ResponseSchema[None],
 )
 async def batch_set_available_dict_type_controller(
-    data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:patch"]))],
+    data: Annotated[BatchSetAvailable, Body(description="批量修改字典类型状态参数")],
 ) -> JSONResponse:
     await DictTypeService(auth).set_available(data=data)
-    await cache_util.clear(namespace=_DICT_TYPE_NS)
+    await FastAPICache.clear(namespace=_DICT_TYPE_NS)
     return SuccessResponse(msg="批量修改字典类型状态成功")
 
 @DictRouter.post(
@@ -133,8 +133,8 @@ async def batch_set_available_dict_type_controller(
     response_model=ResponseSchema[None],
 )
 async def export_type_list_controller(
-    search: Annotated[DictTypeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_type:export"]))],
+    search: Annotated[DictTypeQueryParam, Query(description="字典类型查询参数")],
 ) -> StreamingResponse:
     # 获取全量数据并转为dict列表
     result_dict_list = await DictTypeService(auth).get_list(search=search)
@@ -153,8 +153,8 @@ async def export_type_list_controller(
     response_model=ResponseSchema[DictDataOutSchema],
 )
 async def get_data_detail_controller(
-    id: Annotated[int, Path(description="字典数据ID", ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:detail"]))],
+    id: Annotated[int, Path(description="字典数据ID", ge=1)],
 ) -> JSONResponse:
     result_dict = await DictDataService(auth).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取字典数据详情成功")
@@ -165,9 +165,9 @@ async def get_data_detail_controller(
     response_model=ResponseSchema[PageResultSchema[DictDataOutSchema]],
 )
 async def get_data_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[DictDataQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[DictDataQueryParam, Query(description="字典数据查询参数")],
 ) -> JSONResponse:
     order_by = [{"order": "asc"}]
     if page.order_by:
@@ -186,9 +186,9 @@ async def get_data_list_controller(
     response_model=ResponseSchema[DictDataOutSchema],
 )
 async def create_data_controller(
-    data: DictDataCreateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:create"]))],
+    data: Annotated[DictDataCreateSchema, Body(description="字典数据创建参数")],
 ) -> JSONResponse:
     result_dict = await DictDataService(auth).create(redis=redis, data=data)
     return SuccessResponse(data=result_dict, msg="创建字典数据成功")
@@ -199,10 +199,10 @@ async def create_data_controller(
     response_model=ResponseSchema[DictDataOutSchema],
 )
 async def update_data_controller(
-    data: DictDataUpdateSchema,
     redis: Annotated[Redis, Depends(redis_getter)],
-    id: Annotated[int, Path(description="字典数据ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:update"]))],
+    id: Annotated[int, Path(description="字典数据ID")],
+    data: Annotated[DictDataUpdateSchema, Body(description="字典数据修改参数")],
 ) -> JSONResponse:
     result_dict = await DictDataService(auth).update(redis=redis, id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改字典数据成功")
@@ -214,8 +214,8 @@ async def update_data_controller(
 )
 async def delete_data_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     await DictDataService(auth).delete(redis=redis, ids=ids)
     return SuccessResponse(msg="删除字典数据成功")
@@ -226,8 +226,8 @@ async def delete_data_controller(
     response_model=ResponseSchema[None],
 )
 async def batch_set_available_dict_data_controller(
-    data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:patch"]))],
+    data: Annotated[BatchSetAvailable, Body(description="批量修改字典数据状态参数")],
 ) -> JSONResponse:
     await DictDataService(auth).set_available(data=data)
     return SuccessResponse(msg="批量修改字典数据状态成功")
@@ -238,9 +238,9 @@ async def batch_set_available_dict_data_controller(
     response_model=ResponseSchema[None],
 )
 async def export_data_list_controller(
-    search: Annotated[DictDataQueryParam, Depends()],
-    page: Annotated[PaginationQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dict_data:export"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[DictDataQueryParam, Query(description="字典数据查询参数")],
 ) -> StreamingResponse:
     result_dict_list = await DictDataService(auth).get_list(search=search, order_by=page.order_by)
     export_data = [item.model_dump() for item in result_dict_list]
@@ -257,7 +257,10 @@ async def export_data_list_controller(
     summary="根据字典类型获取数据",
     response_model=ResponseSchema[list[DictDataOutSchema]],
 )
-async def get_init_dict_data_controller(dict_type: str, redis: Annotated[Redis, Depends(redis_getter)]) -> JSONResponse:
+async def get_init_dict_data_controller(
+    redis: Annotated[Redis, Depends(redis_getter)],
+    dict_type: Annotated[str, Path(description="字典类型")],
+) -> JSONResponse:
     dict_data_query_result = await DictDataService.get_init_cache(redis=redis, dict_type=dict_type, tenant_id=1)
 
     return SuccessResponse(data=dict_data_query_result, msg="获取初始化字典数据成功")

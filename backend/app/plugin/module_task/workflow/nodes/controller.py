@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 
 from app.common.response import ResponseSchema, SuccessResponse
@@ -43,8 +43,8 @@ async def get_workflow_node_type_options_controller(
     response_model=ResponseSchema[WorkflowNodeTypeOutSchema],
 )
 async def get_workflow_node_type_detail_controller(
-    id: Annotated[int, Path(description="ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:node-type:query"]))],
+    id: Annotated[int, Path(description="ID")],
 ) -> JSONResponse:
     service = WorkflowNodeTypeService(auth)
     result_dict = await service.get_detail(id=id)
@@ -57,9 +57,9 @@ async def get_workflow_node_type_detail_controller(
     response_model=ResponseSchema[PageResultSchema[WorkflowNodeTypeOutSchema]],
 )
 async def get_workflow_node_type_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[WorkflowNodeTypeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:node-type:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[WorkflowNodeTypeQueryParam, Query(description="查询参数")],
 ) -> JSONResponse:
     order_by = [{"sort_order": "asc"}, {"id": "asc"}]
     if page.order_by:
@@ -80,8 +80,8 @@ async def get_workflow_node_type_list_controller(
     response_model=ResponseSchema[WorkflowNodeTypeOutSchema],
 )
 async def create_workflow_node_type_controller(
-    data: WorkflowNodeTypeCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:node-type:create"]))],
+    data: Annotated[WorkflowNodeTypeCreateSchema, Body(description="创建节点类型参数")],
 ) -> JSONResponse:
     service = WorkflowNodeTypeService(auth)
     result_dict = await service.create(data=data)
@@ -94,9 +94,9 @@ async def create_workflow_node_type_controller(
     response_model=ResponseSchema[WorkflowNodeTypeOutSchema],
 )
 async def update_workflow_node_type_controller(
-    id: Annotated[int, Path(description="ID")],
-    data: WorkflowNodeTypeUpdateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:node-type:update"]))],
+    id: Annotated[int, Path(description="节点类型ID")],
+    data: Annotated[WorkflowNodeTypeUpdateSchema, Body(description="更新节点类型参数")],
 ) -> JSONResponse:
     service = WorkflowNodeTypeService(auth)
     result_dict = await service.update(id=id, data=data)
@@ -109,8 +109,8 @@ async def update_workflow_node_type_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_workflow_node_type_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:workflow:node-type:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     service = WorkflowNodeTypeService(auth)
     await service.delete(ids=ids)

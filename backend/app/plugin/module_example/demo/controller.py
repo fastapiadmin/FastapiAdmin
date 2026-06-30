@@ -1,7 +1,7 @@
 import urllib.parse
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, UploadFile
+from fastapi import APIRouter, Body, Depends, Path, Query, File, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
@@ -23,8 +23,8 @@ DemoRouter = APIRouter(route_class=OperationLogRoute, prefix="/demo", tags=["开
     response_model=ResponseSchema[DemoOutSchema],
 )
 async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="示例ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:detail"]))],
+    id: Annotated[int, Path(description="示例ID")],
 ) -> JSONResponse:
     service = DemoService(auth)
     result_dict = await service.detail(id=id)
@@ -37,9 +37,9 @@ async def get_obj_detail_controller(
     response_model=ResponseSchema[PageResultSchema[DemoOutSchema]],
 )
 async def get_obj_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[DemoQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:query"]))],
+    page: Annotated[PaginationQueryParam, Query(description="分页参数")],
+    search: Annotated[DemoQueryParam, Query(description="查询参数")],
 ) -> JSONResponse:
     service = DemoService(auth)
     result_dict = await service.page(
@@ -57,8 +57,8 @@ async def get_obj_list_controller(
     response_model=ResponseSchema[DemoOutSchema],
 )
 async def create_obj_controller(
-    data: DemoCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:create"]))],
+    data: Annotated[DemoCreateSchema, Body(description="创建参数")],
 ) -> JSONResponse:
     service = DemoService(auth)
     result_dict = await service.create(data=data)
@@ -71,9 +71,9 @@ async def create_obj_controller(
     response_model=ResponseSchema[DemoOutSchema],
 )
 async def update_obj_controller(
-    data: DemoUpdateSchema,
-    id: Annotated[int, Path(description="示例ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:update"]))],
+    id: Annotated[int, Path(description="示例ID")],
+    data: Annotated[DemoUpdateSchema, Body(description="修改参数")],
 ) -> JSONResponse:
     service = DemoService(auth)
     result_dict = await service.update(id=id, data=data)
@@ -86,8 +86,8 @@ async def update_obj_controller(
     response_model=ResponseSchema[None],
 )
 async def delete_obj_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
 ) -> JSONResponse:
     service = DemoService(auth)
     await service.delete(ids=ids)
@@ -113,8 +113,8 @@ async def batch_set_available_obj_controller(
     summary="导出示例",
 )
 async def export_obj_list_controller(
-    search: Annotated[DemoQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:export"]))],
+    search: Annotated[DemoQueryParam, Query(description="查询参数")],
 ) -> StreamingResponse:
     service = DemoService(auth)
     result_dict_list = await service.get_list(search=search)
@@ -133,7 +133,7 @@ async def export_obj_list_controller(
     response_model=ResponseSchema[str],
 )
 async def import_obj_list_controller(
-    file: UploadFile,
+    file: Annotated[UploadFile, File(description="导入文件")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:import"]))],
 ) -> JSONResponse:
     service = DemoService(auth)

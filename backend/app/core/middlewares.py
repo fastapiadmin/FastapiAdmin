@@ -7,6 +7,8 @@ from types import MappingProxyType
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
@@ -80,7 +82,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             request.state.ctx = replace(ctx or RequestContext(), session_id=sid)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        start_time = time.time()
+        start_time = time.perf_counter()
         self._hydrate_session_id(request)
 
         client_ip = get_client_ip(request)
@@ -108,9 +110,9 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                 )
 
             response = await call_next(request)
-            process_time = round(time.time() - start_time, 5)
+            process_time = time.perf_counter() - start_time
             response.headers["X-Process-Time"] = str(process_time)
-            logger.info("响应: {} | {:.1f}ms", response.status_code, process_time * 1000)
+            logger.info("响应: {} | {:.4f}秒", response.status_code, process_time)
             return response
         except CustomException as e:
             logger.exception(f"中间件异常: {e!s}")
@@ -132,6 +134,19 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 class CustomGZipMiddleware(GZipMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app, minimum_size=settings.GZIP_MIN_SIZE, compresslevel=settings.GZIP_COMPRESS_LEVEL)
+
+
+class CustomHTTPSRedirectMiddleware(HTTPSRedirectMiddleware):
+    """HTTP → HTTPS 重定向中间件"""
+    def __init__(self, app: ASGIApp) -> None:
+        super().__init__(app)
+
+
+class CustomTrustedHostMiddleware(TrustedHostMiddleware):
+    """可信主机 Host 头校验中间件"""
+
+    def __init__(self, app: ASGIApp) -> None:
+        super().__init__(app, allowed_hosts=settings.ALLOWED_HOSTS)
 
 
 class CorrelationIdMiddleware(BaseHTTPMiddleware):

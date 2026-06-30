@@ -558,7 +558,7 @@ function buildDemoRowActions(row: DemoTable): TableOperationAction[] {
 
 function formatDemoOperationCell(row: DemoTable) {
   return renderTableOperationCell(buildDemoRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 demo-table-actions",
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1",
   });
 }
 

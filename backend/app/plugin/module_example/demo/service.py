@@ -1,7 +1,5 @@
-import io
 from typing import Any
 
-import pandas as pd
 from fastapi import UploadFile
 
 from app.core.base_schema import AuthSchema, BatchSetAvailable
@@ -114,46 +112,47 @@ class DemoService:
 
         try:
             contents = await file.read()
-            df = pd.read_excel(io.BytesIO(contents))
+            rows = ExcelUtil.read_excel_to_dicts(contents)
             await file.close()
 
-            if df.empty:
+            if not rows:
                 raise CustomException(msg="导入文件为空")
 
-            missing_headers = [header for header in header_dict if header not in df.columns]
+            missing_headers = [h for h in header_dict if h not in rows[0]]
             if missing_headers:
                 raise CustomException(msg=f"导入文件缺少必要的列: {', '.join(missing_headers)}")
 
-            df.rename(columns=header_dict, inplace=True)
+            # 将中文字段名映射为英文字段
+            mapped_rows = []
+            for row in rows:
+                mapped_rows.append({en: row.get(ch) for ch, en in header_dict.items()})
 
             required_fields = ["name", "status"]
             errors = []
             for field in required_fields:
-                missing_rows = df[df[field].isnull()].index.tolist()
-                if missing_rows:
+                missing_indices = [i + 1 for i, r in enumerate(mapped_rows) if r.get(field) is None]
+                if missing_indices:
                     field_name = next(k for k, v in header_dict.items() if v == field)
-                    rows_str = "、".join([str(i + 1) for i in missing_rows])
+                    rows_str = "、".join(str(i) for i in missing_indices)
                     errors.append(f"{field_name}不能为空，第{rows_str}行")
             if errors:
                 raise CustomException(msg=f"导入失败，以下行缺少必要字段：\n{'; '.join(errors)}")
 
             error_msgs = []
             success_count = 0
-            count = 0
 
-            for _index, row in df.iterrows():
-                count += 1
+            for i, row in enumerate(mapped_rows, start=1):
                 try:
                     try:
-                        status = 0 if row["status"] == "正常" else 1
+                        status = 0 if str(row["status"]).strip() == "正常" else 1
                     except ValueError:
-                        error_msgs.append(f"第{count}行: 状态必须是'正常'或'停用'")
+                        error_msgs.append(f"第{i}行: 状态必须是'正常'或'停用'")
                         continue
 
                     data = {
                         "name": str(row["name"]),
                         "status": status,
-                        "description": str(row["description"]),
+                        "description": str(row["description"] or ""),
                     }
 
                     exists_obj = await DemoCRUD(self.auth).get(name=data["name"])
@@ -162,13 +161,13 @@ class DemoService:
                             await DemoCRUD(self.auth).update(id=exists_obj.id, data=data)
                             success_count += 1
                         else:
-                            error_msgs.append(f"第{count}行: 对象 {data['name']} 已存在")
+                            error_msgs.append(f"第{i}行: 对象 {data['name']} 已存在")
                     else:
                         await DemoCRUD(self.auth).create(data=data)
                         success_count += 1
 
                 except Exception as e:
-                    error_msgs.append(f"第{count}行: {e!s}")
+                    error_msgs.append(f"第{i}行: {e!s}")
                     continue
 
             result = f"成功导入 {success_count} 条数据"

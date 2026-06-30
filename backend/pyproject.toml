@@ -11,21 +11,20 @@ dependencies = [
     "aiosqlite==0.22.1",                        # sqlite 异步操作数据库
     "alembic==1.18.4",                          # 数据库迁移
     "apscheduler==3.11.0",                      # 定时任务
-    "asyncmy==0.2.11",                          # mysql 异步操作数据库：基于 mysqlclient：asyncmy 是 mysqlclient 的异步版本，mysqlclient 是一个 C 语言编写的 MySQL 客户端，性能较高。性能：asyncmy 通常在性能上优于 aiomysql，特别是在高并发和大数据量的场景下。
+    "aiomysql>=0.2.0",                          # mysql 异步操作数据库：基于 pymysql，社区成熟稳定
     "asyncpg==0.31.0",                          # postgresql 异步操作数据库
     "bleach==6.4.0",                            # 过滤 HTML 标签
     "click==8.1.7",                             # 命令行参数解析
     "croniter>=1.0.12,<5.0.0",                  # cron 表达式解析
     "cryptography==49.0.0",                     # mysql8 密码加密
-    "fastapi==0.115.2",                         # fastapi 框架
-    "fastapi-limiter==0.1.6",                   # 接口限流
+    "fastapi==0.138.2",                         # fastapi 框架
+    "slowapi>=0.1.9",  # 接口限流
     "greenlet==3.5.2",                          # 协程核心依赖（SQLAlchemy 异步）
     "httpx==0.28.1",                            # HTTP 客户端
     "jinja2==3.1.6",                            # 模板引擎
     "loguru==0.7.3",                            # 日志
     "openai==2.28.0",                           # OpenAI API 客户端
-    "openpyxl==3.1.5",                          # Excel
-    "pandas==3.0.3",                            # 数据处理
+    "openpyxl==3.1.5",                          # Excel 文件处理
     "pillow==12.2.0",                           # 图片处理
     "psutil==7.2.2",                            # 系统信息
     "psycopg[binary]==3.3.2",                   # postgresql 同步驱动（含预编译 libpq，开箱即用）
@@ -35,7 +34,7 @@ dependencies = [
     "python-multipart==0.0.32",                 # request.form() 对表单进行「解析」时安装
     "redis==7.1.0",                             # redis 同/异步操作数据库(用户celery配套使用)redis 异步操作数据库 redis已经完全具备了aioredis的功能，无需重复安全,且aioredis已经不再维护也不兼容3.10+的版本
     "rich==15.0.0",                             # 终端打印美化
-    "sqlalchemy>=2.0.51,<2.1",                  # 数据库ORM
+    "sqlalchemy==2.0.51",                  # 数据库ORM
     "sqlglot[rs]==27.8.0",                      # sql 解析
     "typer==0.26.7",                            # 命令行工具
     "ua-parser==1.0.2",                         # 解析 User-Agent 获取 OS/浏览器
@@ -44,7 +43,7 @@ dependencies = [
     "fastapi-mail==1.5.1",                # 邮件发送（简化 EmailSendService 底层）
     "tinycss2==1.5.1",
     "weasyprint==69.0",
-    "fastapi-cache2[redis]>=0.1.8",
+    "fastapi-cache2-fork[redis]>=2.3.0",
 ]
 
 [dependency-groups]
