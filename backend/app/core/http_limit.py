@@ -9,7 +9,6 @@ from starlette.websockets import WebSocket
 
 from app.config.setting import settings
 
-
 # 全局限流器 —— slowapi 通过 storage_uri 创建自己的 Redis 连接
 limiter = Limiter(
     key_func=get_remote_address,

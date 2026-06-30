@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Form, Query, File, Request, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from app.api.v1.module_common.file.service import FileService
@@ -158,7 +158,7 @@ async def create_directory_controller(
     dependencies=[Depends(AuthPermission(["module_monitor:resource:export"]))],
 )
 async def export_resource_list_controller(
-    request: Request, 
+    request: Request,
     search: Annotated[ResourceSearchQueryParam, Query()],
 ) -> StreamingResponse:
     result_dict_list = await ResourceService.get_resources_list(search=search, base_url=str(request.base_url))

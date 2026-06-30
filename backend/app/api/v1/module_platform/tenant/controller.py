@@ -2,14 +2,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 from redis.asyncio.client import Redis
 
 from app.common.response import ResponseSchema, SuccessResponse
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
 from app.core.dependencies import AuthPermission, redis_getter
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from app.core.router_class import OperationLogRoute
 
 from .schema import (

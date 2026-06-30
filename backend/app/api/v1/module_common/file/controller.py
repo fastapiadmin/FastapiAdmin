@@ -6,9 +6,9 @@ from fastapi import (
     BackgroundTasks,
     Body,
     Depends,
+    File,
     Form,
     Query,
-    File,
     Request,
     UploadFile,
 )

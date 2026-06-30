@@ -2,8 +2,10 @@ import json
 import secrets
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Body, Form, Request
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, Form, Path, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,8 +18,6 @@ from app.core.base_schema import (
     RefreshTokenPayloadSchema,
 )
 from app.core.dependencies import db_getter, get_current_user, redis_getter
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from app.core.exceptions import CustomException
 from app.core.logger import logger
 from app.core.redis_crud import RedisCURD

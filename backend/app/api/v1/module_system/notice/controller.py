@@ -2,13 +2,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
 from app.core.dependencies import AuthPermission, get_current_user
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from app.core.logger import logger
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
