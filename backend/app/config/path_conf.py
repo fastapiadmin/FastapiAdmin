@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # 项目根目录
-BASE_DIR = Path(__file__).parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # alembic 迁移文件存放路径
 ALEMBIC_VERSION_DIR = BASE_DIR / "app" / "alembic" / "versions"
