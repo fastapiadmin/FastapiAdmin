@@ -202,5 +202,34 @@ class TestWorkflowNodeType:
     def test_wf_node_type_delete(self, test_client: TestClient) -> None:
         assert_route(test_client, "DELETE", "/task/workflow/node-type/delete", json=[9999])
 
+
+# ============================================================
+# 系统任务注册测试
+# ============================================================
+
+
+def test_commercial_system_jobs_not_registered():
+    """验证商业化系统任务已移除，只保留日志清理任务。"""
+    from app.core.ap_scheduler import SchedulerUtil
+
+    # 直接调用 classmethod 注册系统任务（测试环境）
+    SchedulerUtil._register_system_jobs()
+
+    from app.core.ap_scheduler import scheduler
+
+    job_ids = {j.id for j in scheduler.get_jobs()}
+
+    # 商业化任务应已移除
+    for jid in [
+        "system_tenant_expiry_check",
+        "system_grace_reminder",
+        "system_clean_expired",
+        "system_cancel_expired_orders",
+    ]:
+        assert jid not in job_ids, f"{jid} 应已在单租户化中移除"
+
+    # 日志清理任务应保留
+    assert "system_cleanup_operation_log" in job_ids, "日志清理任务应保留"
+
     def test_wf_node_type_select(self, test_client: TestClient) -> None:
         assert_route(test_client, "GET", "/task/workflow/node-type/select")

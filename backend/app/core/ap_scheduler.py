@@ -596,49 +596,10 @@ class SchedulerUtil:
 
     @classmethod
     def _register_system_jobs(cls) -> None:
-        """
-        注册系统级定时任务（租户到期/续费提醒/归档清理/订单取消/日志清理）。
-        在 init_scheduler 末尾自动调用。
-        """
+        """注册系统级定时任务(单租户化后仅保留日志清理;商业化账务任务已移除)。"""
         from apscheduler.triggers.cron import CronTrigger
-        from apscheduler.triggers.interval import IntervalTrigger
 
-        from app.api.v1.module_platform.order.service import OrderService
-        from app.api.v1.module_platform.tenant.service import TenantService
-
-        # 租户到期检查（每小时）
-        scheduler.add_job(
-            TenantService.check_tenant_expiry,
-            trigger=IntervalTrigger(hours=1),
-            id="system_tenant_expiry_check",
-            name="租户到期检查",
-            replace_existing=True,
-        )
-        # 宽限期续费提醒（每天 9:00）
-        scheduler.add_job(
-            TenantService.send_grace_reminders,
-            trigger=CronTrigger(hour=9, minute=0),
-            id="system_grace_reminder",
-            name="宽限期续费提醒",
-            replace_existing=True,
-        )
-        # 过期租户归档清理（每月 1 号 2:00）
-        scheduler.add_job(
-            TenantService.clean_expired_tenants,
-            trigger=CronTrigger(day=1, hour=2, minute=0),
-            id="system_clean_expired",
-            name="过期租户归档清理",
-            replace_existing=True,
-        )
-        # 超时订单取消（每 5 分钟）
-        scheduler.add_job(
-            OrderService.cancel_expired_orders,
-            trigger=IntervalTrigger(minutes=5),
-            id="system_cancel_expired_orders",
-            name="超时订单取消",
-            replace_existing=True,
-        )
-        # 操作日志清理（每周日 3:00）
+        # 操作日志清理(每周日 3:00)
         from app.api.v1.module_system.log.service import OperationLogService
 
         scheduler.add_job(
@@ -648,7 +609,7 @@ class SchedulerUtil:
             name="操作日志清理",
             replace_existing=True,
         )
-        logger.info("✅ 6 个系统周期任务已注册（租户到期/续费提醒/归档清理/订单取消/日志清理）")
+        logger.info("✅ 1 个系统周期任务已注册(操作日志清理)")
 
     @classmethod
     def _task_wrapper(cls, job_id: str | int, code_block: str | None, *args, **kwargs):
