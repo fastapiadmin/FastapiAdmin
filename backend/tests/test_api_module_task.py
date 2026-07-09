@@ -202,6 +202,9 @@ class TestWorkflowNodeType:
     def test_wf_node_type_delete(self, test_client: TestClient) -> None:
         assert_route(test_client, "DELETE", "/task/workflow/node-type/delete", json=[9999])
 
+    def test_wf_node_type_select(self, test_client: TestClient) -> None:
+        assert_route(test_client, "GET", "/task/workflow/node-type/select")
+
 
 # ============================================================
 # 系统任务注册测试
@@ -230,6 +233,3 @@ def test_commercial_system_jobs_not_registered():
 
     # 日志清理任务应保留
     assert "system_cleanup_operation_log" in job_ids, "日志清理任务应保留"
-
-    def test_wf_node_type_select(self, test_client: TestClient) -> None:
-        assert_route(test_client, "GET", "/task/workflow/node-type/select")
