@@ -256,7 +256,8 @@ async def _authenticate(
     if not username:
         raise CustomException(msg="认证已失效", code=10401, status_code=401)
     # 单租户化：不注入租户上下文，使套餐(package)权限校验自动短路
-    # （见 permission.py: `if self.auth.tenant_id ...` / `if auth.tenant_id:` 两处守卫）。
+    # （两处守卫：permission.py:106 `if self.auth.tenant_id and menu_ids:`
+    #   与本文件 AuthPermission.__call__ 中 `if auth.tenant_id:` —— tenant_id 为 None 时均跳过套餐裁剪）。
     # tenant_id 字段本身保留不动，仅运行时鉴权链路恒为 None —— 菜单权限只由 RBAC 角色决定。
     tenant_id = None
 
