@@ -255,7 +255,10 @@ async def _authenticate(
     username = user_info.get("user_name")
     if not username:
         raise CustomException(msg="认证已失效", code=10401, status_code=401)
-    tenant_id = user_info.get("tenant_id")
+    # 单租户化：不注入租户上下文，使套餐(package)权限校验自动短路
+    # （见 permission.py: `if self.auth.tenant_id ...` / `if auth.tenant_id:` 两处守卫）。
+    # tenant_id 字段本身保留不动，仅运行时鉴权链路恒为 None —— 菜单权限只由 RBAC 角色决定。
+    tenant_id = None
 
     # 用户查询使用独立只读会话（不参与请求事务，查询后立即释放快照）
     async with async_db_session() as lookup_db:
