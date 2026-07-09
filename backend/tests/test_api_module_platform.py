@@ -3,10 +3,12 @@
 认证数据测试：admin 登录后验证 CRUD 真实数据。
 """
 
+import pytest
 from conftest import assert_route  # noqa: F401
 from fastapi.testclient import TestClient
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestTenant:
     """租户管理接口。"""
 
@@ -80,6 +82,7 @@ class TestTenant:
         assert_route(test_client, "GET", "/platform/tenant/invoice/1/license/download", auth=auth_headers)
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestPackage:
     """套餐管理接口。"""
 
@@ -273,6 +276,7 @@ class TestEmail:
         assert_route(test_client, "GET", "/platform/email/log/list", auth=auth_headers)
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestOrder:
     """订单管理接口。"""
 
@@ -298,6 +302,7 @@ class TestOrder:
         )
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestPayment:
     """支付管理接口。"""
 
@@ -320,6 +325,7 @@ class TestPayment:
         assert_route(test_client, "POST", "/platform/payment/mock/callback", auth=auth_headers)
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestRefund:
     """退款管理接口。"""
 
@@ -333,6 +339,7 @@ class TestRefund:
         assert_route(test_client, "PUT", "/platform/refund/reject/1", auth=auth_headers)
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestInvoice:
     """发票管理接口。"""
 
@@ -352,6 +359,7 @@ class TestInvoice:
         assert_route(test_client, "PUT", "/platform/invoice/void/1", auth=auth_headers, json={"status": 2})
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestSelfService:
     """租户自助服务接口。"""
 
@@ -381,3 +389,19 @@ class TestSelfService:
 
     def test_self_workspace(self, test_client: TestClient, auth_headers: dict) -> None:
         assert_route(test_client, "GET", "/platform/tenant/workspace", auth=auth_headers)
+
+
+class TestCommercialRoutesDisabled:
+    """单租户化:商业化路由应被禁用(404)。"""
+
+    DISABLED_GETS = [
+        "/platform/order/list",
+        "/platform/package/list",
+        "/platform/tenant/package/available",
+        "/platform/tenant/order/list",
+    ]
+
+    def test_commercial_routes_return_404(self, test_client: TestClient, auth_headers: dict) -> None:
+        for path in self.DISABLED_GETS:
+            resp = test_client.get(path, headers=auth_headers)
+            assert resp.status_code == 404, f"{path} 应已禁用,却返回 {resp.status_code}"

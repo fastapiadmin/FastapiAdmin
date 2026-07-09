@@ -21,5 +21,5 @@ system_router.include_router(NoticeRouter)
 system_router.include_router(ParamsRouter)
 system_router.include_router(PositionRouter)
 system_router.include_router(RoleRouter)
-system_router.include_router(TicketRouter)
+# system_router.include_router(TicketRouter)  # 单租户化:内部控制面不需要工单
 system_router.include_router(UserRouter)
