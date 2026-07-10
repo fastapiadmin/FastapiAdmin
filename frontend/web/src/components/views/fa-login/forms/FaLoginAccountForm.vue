@@ -146,6 +146,17 @@
           </ElButton>
         </div>
 
+        <div class="login-feishu-entry mt-2">
+          <ElButton
+            class="login-feishu-btn w-full"
+            plain
+            @click="$emit('oauth', 'feishu')"
+          >
+            <FaSvgIcon icon="simple-icons:feishu" class="mr-1 size-[16px] text-[#00d6b9]" />
+            {{ $t("login.oauthTooltip.feishu") }}
+          </ElButton>
+        </div>
+
         <div v-if="SHOW_SAAS_AUTH" class="login-secondary-actions grid grid-cols-2 gap-2">
           <ElButton class="login-secondary-btn" plain @click="$emit('openMobile')">
             {{ $t("login.mobileLogin") }}
