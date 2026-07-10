@@ -3,6 +3,7 @@
 认证数据测试：admin 登录后验证 CRUD 真实数据。
 """
 
+import pytest
 from conftest import assert_route  # noqa: F401
 from fastapi.testclient import TestClient
 
@@ -428,6 +429,7 @@ class TestLog:
         assert_route(test_client, "GET", "/system/log/operation/detail/1", auth=auth_headers)
 
 
+@pytest.mark.skip(reason="单租户化已禁用商业化路由,见 Task 1")
 class TestTicket:
     """工单管理接口 — 数据验证。"""
 
@@ -454,3 +456,74 @@ class TestTicket:
 
     def test_ticket_batch(self, test_client: TestClient, auth_headers: dict) -> None:
         assert_route(test_client, "PUT", "/system/ticket/batch", auth=auth_headers)
+
+
+class TestSingleTenantAuth:
+    """单租户化：鉴权上下文不携带 tenant_id，套餐权限校验自动短路。"""
+
+    async def test_authenticate_does_not_inject_tenant_id(self) -> None:
+        """即使会话信息里带 tenant_id，_authenticate 也不应将其注入 AuthSchema。
+
+        这是让 permission.py 两处套餐守卫短路的唯一必需保证。
+        """
+        from unittest.mock import AsyncMock, patch
+
+        from app.core import dependencies
+
+        # 构造一份带非空 tenant_id 的会话信息（模拟历史 token / 多租户遗留数据）
+        session_info = {
+            "session_id": "test-session-id",
+            "user_name": "admin",
+            "tenant_id": 42,  # 故意非空，验证不会被注入
+        }
+
+        class _FakeUser:
+            id = 1
+            username = "admin"
+
+        with (
+            patch.object(dependencies, "_decode_token_info", new=AsyncMock(return_value=(session_info, ""))),
+            patch.object(dependencies, "_check_token_online", new=AsyncMock(return_value=None)),
+            patch.object(dependencies, "_try_sliding_refresh", new=AsyncMock(return_value=None)),
+            patch.object(dependencies, "_load_user_from_db", new=AsyncMock(return_value=_FakeUser())),
+            patch.object(dependencies, "async_db_session") as _mock_session_cm,
+        ):
+            # async_db_session() 用作 async context manager
+            _mock_session_cm.return_value.__aenter__ = AsyncMock(return_value=AsyncMock())
+            _mock_session_cm.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            auth = await dependencies._authenticate(
+                token="Bearer faketoken",
+                db=None,
+                redis=AsyncMock(),
+                request=None,
+            )
+
+        assert auth.tenant_id is None, "单租户化后鉴权上下文不应携带 tenant_id"
+
+    async def test_menu_filter_skips_package_when_no_tenant(self) -> None:
+        """tenant_id 为空时,菜单过滤只按 RBAC 角色,不调用 PackageService。"""
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        from app.core.base_schema import AuthSchema
+        from app.core.permission import Permission
+
+        # 构造一个带角色-菜单的用户（角色 status=0 可用，菜单 status=0 可用）
+        menu = MagicMock(id=100, status=0)
+        role = MagicMock(status=0, menus=[menu])
+        user = MagicMock(roles=[role], is_superuser=False)
+
+        auth = AuthSchema(db=None, tenant_id=None, check_data_scope=False)
+        auth.user = user
+
+        model = MagicMock()
+        model.id = MagicMock()
+        perm = Permission(model=model, auth=auth)
+
+        with patch(
+            "app.api.v1.module_platform.package.service.PackageService.get_tenant_available_menu_ids",
+            new=AsyncMock(),
+        ) as mock_pkg:
+            await perm._Permission__filter_by_menu_auth()
+
+        mock_pkg.assert_not_called()

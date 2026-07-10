@@ -10,7 +10,7 @@
       :validate-on-rule-change="false"
       @keyup.enter="$emit('submit')"
     >
-      <ElFormItem>
+      <ElFormItem v-if="SHOW_SAAS_AUTH">
         <ElSelect
           :model-value="demoAccountKey"
           class="w-full"
@@ -146,7 +146,7 @@
           </ElButton>
         </div>
 
-        <div class="login-secondary-actions grid grid-cols-2 gap-2">
+        <div v-if="SHOW_SAAS_AUTH" class="login-secondary-actions grid grid-cols-2 gap-2">
           <ElButton class="login-secondary-btn" plain @click="$emit('openMobile')">
             {{ $t("login.mobileLogin") }}
           </ElButton>
@@ -157,9 +157,10 @@
       </div>
     </ElForm>
 
-    <FaLoginThirdPartySection @oauth="$emit('oauth', $event)" />
+    <FaLoginThirdPartySection v-if="SHOW_SAAS_AUTH" @oauth="$emit('oauth', $event)" />
 
     <FaLoginAuthLinkRow
+      v-if="SHOW_SAAS_AUTH"
       :hint="$t('login.noAccount')"
       :link-text="$t('login.register')"
       @link="$emit('register')"
@@ -206,6 +207,9 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
+
+/** 内部控制面：隐藏注册/第三方/手机扫码/演示账号等 SaaS 登录入口，仅留账号密码 */
+const SHOW_SAAS_AUTH = false;
 
 const formRef = ref();
 const dragVerifyRef = ref<{ reset?: () => void } | null>(null);

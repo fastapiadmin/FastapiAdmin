@@ -22,6 +22,8 @@ from app.core.request_context import get_current_tenant_id as _get_ctx_tenant_id
 from app.core.security import OAuth2Schema, decode_access_token
 
 # 套餐菜单权限缓存: {tenant_id: (timestamp, [menu_ids])}
+# 单租户化:AuthPermission 中 `if auth.tenant_id:` 恒为 False(tenant_id 恒为 None),
+# 本缓存与 _get_cached_tenant_menu_ids 运行时不再触发(保留以备第二阶段多租户)。
 _package_menu_cache: dict[int, tuple[float, list[int]]] = {}
 
 
@@ -255,7 +257,11 @@ async def _authenticate(
     username = user_info.get("user_name")
     if not username:
         raise CustomException(msg="认证已失效", code=10401, status_code=401)
-    tenant_id = user_info.get("tenant_id")
+    # 单租户化：不注入租户上下文，使套餐(package)权限校验自动短路
+    # （两处守卫：permission.py:106 `if self.auth.tenant_id and menu_ids:`
+    #   与本文件 AuthPermission.__call__ 中 `if auth.tenant_id:` —— tenant_id 为 None 时均跳过套餐裁剪）。
+    # tenant_id 字段本身保留不动，仅运行时鉴权链路恒为 None —— 菜单权限只由 RBAC 角色决定。
+    tenant_id = None
 
     # 用户查询使用独立只读会话（不参与请求事务，查询后立即释放快照）
     async with async_db_session() as lookup_db:
@@ -280,6 +286,9 @@ async def _get_cached_tenant_menu_ids(auth: AuthSchema, tenant_id: int) -> list[
     """获取租户可用菜单 ID，带 60s 进程级缓存
 
     套餐菜单变更频率极低，缓存可大幅减少 AuthPermission 的 DB 查询次数。
+
+    单租户化:AuthPermission 中 `if auth.tenant_id:` 恒为 False(auth.tenant_id 恒为 None),
+    本函数运行时不再被调用(保留以备第二阶段多租户)。
 
     参数:
         auth: 认证信息

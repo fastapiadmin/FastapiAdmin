@@ -70,20 +70,20 @@
                       </template>
 
                       <FaLoginMobilePanel
-                        v-else-if="loginFlowMode === 'mobile'"
+                        v-else-if="SHOW_SAAS_AUTH && loginFlowMode === 'mobile'"
                         @back="backToAccountLogin"
                         @register="setAuthPanel('register')"
                       />
 
                       <FaLoginQrPanel
-                        v-else-if="loginFlowMode === 'qr'"
+                        v-else-if="SHOW_SAAS_AUTH && loginFlowMode === 'qr'"
                         @back="backToAccountLogin"
                         @register="setAuthPanel('register')"
                       />
                     </template>
 
                     <FaLoginRegisterPanel
-                      v-else-if="authPanel === 'register'"
+                      v-else-if="SHOW_SAAS_AUTH && authPanel === 'register'"
                       ref="registerPanelRef"
                       v-model:register-agreement-read="registerAgreementRead"
                       v-model:register-form="registerForm"
@@ -202,6 +202,9 @@ type AuthPanel = "login" | "register" | "forget";
 
 /** 登录区内：账号密码 ↔ 手机号 ↔ 扫码（扫码 / 手机号为演示交互） */
 type LoginFlowMode = "account" | "mobile" | "qr";
+
+/** 内部控制面：隐藏注册/手机/扫码面板,仅留账号密码 + 忘记密码 */
+const SHOW_SAAS_AUTH = false;
 
 const configStore = useConfigStore();
 const settingStore = useSettingsStore();
@@ -547,28 +550,7 @@ function resolveRedirectTarget(query: LocationQuery): RouteLocationRaw {
   }
 }
 
-let notificationInstance: ReturnType<typeof ElNotification> | null = null;
-
-const showVoteNotification = () => {
-  notificationInstance = ElNotification({
-    title: "⭐ FastapiAdmin 完全开源 · 期待您的 Star 支持 🙏",
-    message: `项目持续迭代中，若对您有所帮助，欢迎点亮 Star 支持！
-    <br/><a href="https://github.com/fastapiadmin/FastapiAdmin" target="_blank" style="color: var(--el-color-primary); text-decoration: none; font-weight: 500;">Github仓库 →</a>
-    <br/><a href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank" style="color: var(--el-color-warning); text-decoration: none; font-weight: 500;">Gitee仓库 →</a>`,
-    type: "success",
-    position:
-      panelAlign.value === "right" || panelAlign.value === "center"
-        ? "bottom-left"
-        : "bottom-right",
-    duration: 0,
-    dangerouslyUseHTMLString: true,
-  });
-};
-
-let voteTimer: ReturnType<typeof setTimeout> | null = null;
-
 onMounted(async () => {
-  setupAccount("super");
   await configStore.getConfig(true);
   await tryConsumeOAuthCallback();
   if (userStore.isLogin) {
@@ -576,19 +558,12 @@ onMounted(async () => {
     return;
   }
   getCaptcha();
-  voteTimer = setTimeout(showVoteNotification, 500);
 });
 
 onActivated(() => {
   if (authPanel.value !== "login" || loginFlowMode.value !== "account") return;
   getCaptcha();
   loginForm.captcha = "";
-});
-
-onBeforeUnmount(() => {
-  if (voteTimer !== null) clearTimeout(voteTimer);
-  notificationInstance?.close();
-  notificationInstance = null;
 });
 
 watch(
