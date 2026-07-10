@@ -30,7 +30,7 @@ from app.core.redis_crud import RedisCURD
 
 from .service import LoginService
 
-OAuthProvider = Literal["wechat", "qq", "github", "gitee"]
+OAuthProvider = Literal["wechat", "qq", "github", "gitee", "feishu"]
 
 STATE_PREFIX = "oauth_state:"
 STATE_TTL_SECONDS = 600
@@ -67,6 +67,8 @@ def _require_credentials(provider: OAuthProvider) -> tuple[str, str]:
         cid, sec = settings.OAUTH_WECHAT_OPEN_APP_ID, settings.OAUTH_WECHAT_OPEN_APP_SECRET
     elif provider == "qq":
         cid, sec = settings.OAUTH_QQ_APP_ID, settings.OAUTH_QQ_APP_SECRET
+    elif provider == "feishu":
+        cid, sec = settings.OAUTH_FEISHU_APP_ID, settings.OAUTH_FEISHU_APP_SECRET
     else:
         raise CustomException(msg="不支持的 OAuth 渠道")
     if not cid or not sec:
@@ -120,6 +122,14 @@ def build_authorize_url(
             "scope": "get_user_info",
         }
         return "https://graph.qq.com/oauth2.0/authorize?" + urlencode(params)
+
+    if provider == "feishu":
+        params = {
+            "app_id": cid,
+            "redirect_uri": callback_url,
+            "state": state,
+        }
+        return f"{_feishu_base()}/open-apis/authen/v1/authorize?" + urlencode(params)
 
     raise CustomException(msg="不支持的 OAuth 渠道")
 
@@ -290,6 +300,65 @@ async def fetch_qq_profile(access_token: str, app_id: str, openid: str) -> tuple
     return openid, nickname
 
 
+def _feishu_base() -> str:
+    return str(settings.OAUTH_FEISHU_API_BASE).rstrip("/")
+
+
+async def fetch_feishu_app_access_token() -> str:
+    """企业自建应用:用 app_id + app_secret 换 app_access_token。"""
+    app_id, app_secret = _require_credentials("feishu")
+    data = await _http_json(
+        "POST",
+        f"{_feishu_base()}/open-apis/auth/v3/app_access_token/internal",
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        json={"app_id": app_id, "app_secret": app_secret},
+    )
+    if not isinstance(data, dict) or data.get("code") not in (0, "0"):
+        raise CustomException(msg=(isinstance(data, dict) and data.get("msg")) or "飞书获取 app_access_token 失败")
+    token = data.get("app_access_token")
+    if not token:
+        raise CustomException(msg="飞书 app_access_token 为空")
+    return str(token)
+
+
+async def exchange_feishu_token(code: str) -> str:
+    """用 code 换 user_access_token(需先带上 app_access_token)。"""
+    app_at = await fetch_feishu_app_access_token()
+    data = await _http_json(
+        "POST",
+        f"{_feishu_base()}/open-apis/authen/v1/oidc/access_token",
+        headers={
+            "Authorization": f"Bearer {app_at}",
+            "Content-Type": "application/json; charset=utf-8",
+        },
+        json={"grant_type": "authorization_code", "code": code},
+    )
+    if not isinstance(data, dict) or data.get("code") not in (0, "0"):
+        raise CustomException(msg=(isinstance(data, dict) and data.get("msg")) or "飞书换取 user_access_token 失败")
+    inner = data.get("data") or {}
+    token = inner.get("access_token")
+    if not token:
+        raise CustomException(msg="飞书 user_access_token 为空")
+    return str(token)
+
+
+async def fetch_feishu_profile(user_access_token: str) -> tuple[str, str]:
+    """取飞书用户信息,返回 (unique_id, display_name)。unique_id 优先 union_id。"""
+    data = await _http_json(
+        "GET",
+        f"{_feishu_base()}/open-apis/authen/v1/user_info",
+        headers={"Authorization": f"Bearer {user_access_token}"},
+    )
+    if not isinstance(data, dict) or data.get("code") not in (0, "0"):
+        raise CustomException(msg=(isinstance(data, dict) and data.get("msg")) or "飞书获取用户信息失败")
+    inner = data.get("data") or {}
+    uid = inner.get("union_id") or inner.get("open_id")
+    if not uid:
+        raise CustomException(msg="飞书用户唯一标识缺失")
+    name = str(inner.get("name") or "feishu")
+    return str(uid), name
+
+
 def _username_for_oauth(provider: OAuthProvider, unique_id: str) -> str:
     """生成符合注册规则的登录名：oauth_{provider}_{id}。"""
     raw = f"oauth_{provider}_{unique_id}"
@@ -375,6 +444,9 @@ async def complete_oauth_login(
     elif provider == "qq":
         access, openid = await exchange_qq_token(cid, csec, code, callback_url)
         uid, name = await fetch_qq_profile(access, cid, openid)
+    elif provider == "feishu":
+        access = await exchange_feishu_token(code)
+        uid, name = await fetch_feishu_profile(access)
     else:
         raise CustomException(msg="不支持的 OAuth 渠道")
 
@@ -427,6 +499,9 @@ __all__ = [
     "STATE_PREFIX",
     "build_authorize_url",
     "complete_oauth_login",
+    "fetch_feishu_app_access_token",
+    "exchange_feishu_token",
+    "fetch_feishu_profile",
     "save_oauth_state",
     "_callback_url",
     "oauth_service_frontend_redirect_from_token",
