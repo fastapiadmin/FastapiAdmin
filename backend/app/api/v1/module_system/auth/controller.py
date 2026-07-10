@@ -207,13 +207,13 @@ async def get_user_tenants_controller(
 async def oauth_login_redirect_controller(
     request: Request,
     redis: Annotated[Redis, Depends(redis_getter)],
-    provider: Annotated[str, Path(description="wechat | qq | github | gitee")],
+    provider: Annotated[str, Path(description="wechat | qq | github | gitee | feishu")],
     redirect_uri: Annotated[
         str | None,
         Query(description="OAuth 完成后浏览器回到的前端登录页完整 URL"),
     ] = None,
 ) -> RedirectResponse:
-    allowed = {"wechat", "qq", "github", "gitee"}
+    allowed = {"wechat", "qq", "github", "gitee", "feishu"}
     fe = redirect_uri or settings.OAUTH_FRONTEND_FALLBACK
     if provider not in allowed:
         return RedirectResponse(
@@ -272,7 +272,7 @@ async def oauth_callback_controller(
         except json.JSONDecodeError:
             return fe_fallback
 
-    if provider not in {"wechat", "qq", "github", "gitee"}:
+    if provider not in {"wechat", "qq", "github", "gitee", "feishu"}:
         url = oauth_service_error_redirect(await resolve_frontend(), "不支持的 OAuth 渠道")
         return RedirectResponse(url=url, status_code=302)
     if not code or not state:
