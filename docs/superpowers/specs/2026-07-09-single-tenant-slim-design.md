@@ -117,5 +117,12 @@ FastapiAdmin 原本是**多租户 SaaS 商业化框架**,自带订单、发票�
 ## 后续阶段(备忘,非本次范围)
 
 - 第二阶段(可选):从内核彻底剥离 tenant,删除商业化模块物理代码。
+- plugin 模块租户一致性(第一阶段最终审查发现):`install` 已回退到平台默认租户 1,
+  但兄弟方法 `uninstall`/`toggle`/`my_plugins`/`marketplace` 仍用 `or user.tenant_id` 回退。
+  对 `user.tenant_id != 1` 的用户会造成读写租户不一致(install 写租户 1、uninstall 在租户 2 查不到)。
+  单租户部署若能保证所有用户 tenant_id 归一则无碍;否则应统一 plugin 全部方法的租户取值。
+- OAuth / select-tenant 残留(第一阶段最终审查发现):会话层 `create_token` 仍写 `tenant_id=user.tenant_id`,
+  `/system/auth/select-tenant`、`/system/auth/tenants` 路由仍存活。运行时被 `_authenticate` 恒覆盖为 None,
+  不影响鉴权(仅语义噪音)。彻底单租户可下线这两个路由并让 `create_token` 不写租户。
 - 集成阶段:CodataAdmin 控制面 ↔ Codata FastAPI sidecar ↔ 前端壳;
   SSO token 流转、定时任务落地到本地执行、任务打 `execution_target: portable|local` 标记。
