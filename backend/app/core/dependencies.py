@@ -22,6 +22,8 @@ from app.core.request_context import get_current_tenant_id as _get_ctx_tenant_id
 from app.core.security import OAuth2Schema, decode_access_token
 
 # 套餐菜单权限缓存: {tenant_id: (timestamp, [menu_ids])}
+# 单租户化:AuthPermission 中 `if auth.tenant_id:` 恒为 False(tenant_id 恒为 None),
+# 本缓存与 _get_cached_tenant_menu_ids 运行时不再触发(保留以备第二阶段多租户)。
 _package_menu_cache: dict[int, tuple[float, list[int]]] = {}
 
 
@@ -284,6 +286,9 @@ async def _get_cached_tenant_menu_ids(auth: AuthSchema, tenant_id: int) -> list[
     """获取租户可用菜单 ID，带 60s 进程级缓存
 
     套餐菜单变更频率极低，缓存可大幅减少 AuthPermission 的 DB 查询次数。
+
+    单租户化:AuthPermission 中 `if auth.tenant_id:` 恒为 False(auth.tenant_id 恒为 None),
+    本函数运行时不再被调用(保留以备第二阶段多租户)。
 
     参数:
         auth: 认证信息

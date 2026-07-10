@@ -183,6 +183,56 @@ class TestPlugin:
     def test_plugin_reload(self, test_client: TestClient, auth_headers: dict) -> None:
         assert_route(test_client, "POST", "/platform/plugin/reload", auth=auth_headers)
 
+    async def test_plugin_install_single_tenant_skips_package_check(self) -> None:
+        """单租户化:install 在 auth.tenant_id 为 None 时不受套餐/付费约束。
+
+        构造运行时真实场景:auth.tenant_id=None(单租户短路)、user.tenant_id=2(非 1 号租户)。
+        断言 install 归属到默认租户 1、跳过套餐/付费分支、PackageService 从不被调用,
+        且不因套餐/付费抛 CustomException。
+        """
+        from types import SimpleNamespace
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        from app.api.v1.module_platform.plugin.service import PluginService
+        from app.core.base_schema import AuthSchema
+
+        # 付费插件(price>0),若误入付费分支会抛 CustomException
+        plugin = SimpleNamespace(id=10, name="付费插件", status=0, price=999)
+
+        auth = AuthSchema.model_construct(
+            user=SimpleNamespace(tenant_id=2, is_superuser=False),
+            db=MagicMock(),
+            tenant_id=None,  # 单租户化运行时恒为 None
+            check_data_scope=False,
+        )
+        # 写记录路径:install 会查询是否已存在 -> 返回 None(未安装),再走 add + flush
+        exec_result = MagicMock()
+        exec_result.scalar_one_or_none.return_value = None
+        auth.db.execute = AsyncMock(return_value=exec_result)
+        auth.db.add = MagicMock()
+        auth.db.flush = AsyncMock()
+
+        svc = PluginService(auth)
+
+        pkg_service_cls = MagicMock()
+        with patch(
+            "app.api.v1.module_platform.plugin.crud.PluginCRUD.get",
+            new=AsyncMock(return_value=plugin),
+        ), patch(
+            "app.api.v1.module_platform.package.service.PackageService",
+            pkg_service_cls,
+        ):
+            # 不应因套餐/付费约束抛异常
+            await svc.install(plugin_id=10)
+
+        # 核心断言:套餐服务从未被实例化/调用(单租户短路)
+        pkg_service_cls.assert_not_called()
+        # 写入的记录归属到默认租户 1(而非 user.tenant_id=2),满足 NOT NULL + FK 约束
+        auth.db.add.assert_called_once()
+        written = auth.db.add.call_args.args[0]
+        assert written.tenant_id == 1
+        assert written.plugin_id == 10
+
 
 class TestMenu:
     """菜单管理接口。"""

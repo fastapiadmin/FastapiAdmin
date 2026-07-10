@@ -81,7 +81,12 @@ class PluginService:
         return result
 
     async def install(self, plugin_id: int) -> None:
-        tenant_id = getattr(self.auth, "tenant_id", None) or self.auth.user.tenant_id
+        # 单租户化:不再受套餐/付费约束。
+        # 运行时 self.auth.tenant_id 恒为 None(见 dependencies._authenticate),此处不再回退到
+        # user.tenant_id(否则非 1 号租户用户仍会误入下方套餐/付费校验),而是归属到平台默认租户
+        # (id 固定为 1,不受套餐限制)。tenant_id==1 使下方两处 `if tenant_id != 1` 分支自然跳过,
+        # 同时满足 platform_tenant_plugin.tenant_id 的 NOT NULL + 外键约束(避免写入 NULL)。
+        tenant_id = self.auth.tenant_id or 1
         if not tenant_id:
             raise CustomException(msg="无法获取租户信息")
 

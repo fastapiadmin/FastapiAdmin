@@ -89,6 +89,9 @@ class Permission:
         基于角色-菜单授权的过滤（适用于菜单模型）
 
         只显示用户角色授权的菜单，同时受租户套餐约束。
+
+        单租户化说明:运行时 auth.tenant_id 恒为 None(见 dependencies._authenticate),
+        下方套餐裁剪分支不生效,菜单仅由 RBAC 角色决定;代码保留以备第二阶段多租户。
         """
         roles = getattr(self.auth.user, "roles", []) or []
         if not roles:
@@ -103,6 +106,7 @@ class Permission:
                 menu_ids.update(menu.id for menu in role.menus if menu.status == 0)
 
         # 租户用户：菜单列表也受套餐约束（请求级缓存避免重复 DB 查询）
+        # 单租户化:auth.tenant_id 恒为 None,此套餐裁剪分支不生效(保留以备第二阶段)。
         if self.auth.tenant_id and menu_ids:
             cache_attr = "_cached_package_menu_ids"
             cached = getattr(self.auth, cache_attr, None)
