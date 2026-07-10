@@ -435,7 +435,8 @@
       "wechat": "微信",
       "qq": "QQ",
       "github": "GitHub",
-      "gitee": "Gitee"
+      "gitee": "Gitee",
+      "feishu": "飞书"
     },
     "otherLoginMethods": "其他登录方式",
     "resetPassword": "重置密码",

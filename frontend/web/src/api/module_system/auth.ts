@@ -3,7 +3,7 @@ import { request } from "@utils";
 const API_PATH = "/system/auth";
 
 /** 方案提供方 */
-export type OAuthProvider = "wechat" | "qq" | "github" | "gitee";
+export type OAuthProvider = "wechat" | "qq" | "github" | "gitee" | "feishu";
 
 const AuthAPI = {
   /**

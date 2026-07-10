@@ -66,6 +66,12 @@ const oauthItems = computed(() => [
     icon: "simple-icons:gitee",
     iconClass: "size-[22px] max-sm:size-[18px] text-[#c71d23]",
   },
+  {
+    provider: "feishu" as const,
+    tip: t("login.oauthTooltip.feishu"),
+    icon: "simple-icons:feishu",
+    iconClass: "size-[22px] max-sm:size-[18px] text-[#00d6b9]",
+  },
 ]);
 </script>
 

@@ -203,7 +203,7 @@ interface Emits {
   openQr: [];
   forget: [];
   register: [];
-  oauth: [provider: "wechat" | "qq" | "github" | "gitee"];
+  oauth: [provider: "wechat" | "qq" | "github" | "gitee" | "feishu"];
 }
 
 const emit = defineEmits<Emits>();
