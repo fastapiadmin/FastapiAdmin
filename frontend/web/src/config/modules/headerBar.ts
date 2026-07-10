@@ -23,7 +23,7 @@ export const headerBarConfig: HeaderBarFeatureConfig = {
     description: "页面刷新按钮",
   },
   fastEnter: {
-    enabled: true,
+    enabled: false,
     description: "快速入口功能，提供常用应用和链接的快速访问",
   },
   breadcrumb: {
