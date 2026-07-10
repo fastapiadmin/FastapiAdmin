@@ -11,6 +11,7 @@ def _feishu_creds(monkeypatch):
     monkeypatch.setattr(oauth_service.settings, "OAUTH_FEISHU_APP_ID", "cli_test", raising=False)
     monkeypatch.setattr(oauth_service.settings, "OAUTH_FEISHU_APP_SECRET", "secret_test", raising=False)
     monkeypatch.setattr(oauth_service.settings, "OAUTH_FEISHU_API_BASE", "https://open.feishu.cn", raising=False)
+    monkeypatch.setattr(oauth_service.settings, "OAUTH_FEISHU_AUTH_BASE", "https://accounts.feishu.cn", raising=False)
 
 
 def _mock_http_json(monkeypatch, responses):
@@ -87,7 +88,8 @@ def test_build_authorize_url_feishu():
         callback_url="https://x.com/api/v1/system/auth/oauth/feishu/callback",
         state="st-1",
     )
-    assert url.startswith("https://open.feishu.cn/open-apis/authen/v1/authorize?")
-    assert "app_id=cli_test" in url
+    assert url.startswith("https://accounts.feishu.cn/open-apis/authen/v1/authorize?")
+    assert "client_id=cli_test" in url
+    assert "response_type=code" in url
     assert "state=st-1" in url
     assert "redirect_uri=" in url

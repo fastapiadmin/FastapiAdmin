@@ -149,6 +149,8 @@ class Settings(BaseSettings):
     OAUTH_FEISHU_APP_ID: str = ""
     OAUTH_FEISHU_APP_SECRET: str = ""
     OAUTH_FEISHU_API_BASE: str = "https://open.feishu.cn"
+    # 授权页域名,与 API 域名不同;Lark 国际版为 https://accounts.larksuite.com
+    OAUTH_FEISHU_AUTH_BASE: str = "https://accounts.feishu.cn"
 
     # ================================================= #
     # ******************* 外部 HTTP（httpx）******************* #

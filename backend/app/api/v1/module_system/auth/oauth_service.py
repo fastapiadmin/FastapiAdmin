@@ -125,11 +125,13 @@ def build_authorize_url(
 
     if provider == "feishu":
         params = {
-            "app_id": cid,
+            "client_id": cid,
             "redirect_uri": callback_url,
+            "response_type": "code",
             "state": state,
         }
-        return f"{_feishu_base()}/open-apis/authen/v1/authorize?" + urlencode(params)
+        auth_base = str(settings.OAUTH_FEISHU_AUTH_BASE).rstrip("/")
+        return f"{auth_base}/open-apis/authen/v1/authorize?" + urlencode(params)
 
     raise CustomException(msg="不支持的 OAuth 渠道")
 
