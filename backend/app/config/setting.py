@@ -145,6 +145,10 @@ class Settings(BaseSettings):
     OAUTH_WECHAT_OPEN_APP_SECRET: str = ""
     OAUTH_QQ_APP_ID: str = ""
     OAUTH_QQ_APP_SECRET: str = ""
+    # 飞书企业自建应用(国内版 open.feishu.cn);Lark 国际版把 API_BASE 改为 https://open.larksuite.com
+    OAUTH_FEISHU_APP_ID: str = ""
+    OAUTH_FEISHU_APP_SECRET: str = ""
+    OAUTH_FEISHU_API_BASE: str = "https://open.feishu.cn"
 
     # ================================================= #
     # ******************* 外部 HTTP（httpx）******************* #
