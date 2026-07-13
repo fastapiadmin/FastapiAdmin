@@ -333,8 +333,8 @@ async def exchange_feishu_token(client_id: str, client_secret: str, code: str, r
     return str(token)
 
 
-async def fetch_feishu_profile(user_access_token: str) -> tuple[str, str]:
-    """取飞书用户信息,返回 (unique_id, display_name)。unique_id 优先 union_id。"""
+async def fetch_feishu_profile(user_access_token: str) -> tuple[str, str, str]:
+    """取飞书用户信息,返回 (unique_id, display_name, avatar_url)。unique_id 优先 union_id。"""
     data = await _http_json(
         "GET",
         f"{_feishu_base()}/open-apis/authen/v1/user_info",
@@ -346,8 +346,15 @@ async def fetch_feishu_profile(user_access_token: str) -> tuple[str, str]:
     uid = inner.get("union_id") or inner.get("open_id")
     if not uid:
         raise CustomException(msg="飞书用户唯一标识缺失")
-    name = str(inner.get("name") or "feishu")
-    return str(uid), name
+    # name 为真实姓名(飞书 user_info 无需额外权限即返回);en_name 作为回退
+    name = str(inner.get("name") or inner.get("en_name") or "").strip()
+    # avatar_url 为 https 头像地址,无需额外权限即返回
+    avatar = str(inner.get("avatar_url") or "").strip()
+    logger.info(
+        f"飞书 user_info 返回字段: {sorted(inner.keys())}; "
+        f"name={'有' if name else '空'}; avatar={'有' if avatar else '空'}"
+    )
+    return str(uid), name, avatar
 
 
 def _username_for_oauth(provider: OAuthProvider, unique_id: str) -> str:
@@ -367,17 +374,30 @@ async def ensure_oauth_user(
     provider: OAuthProvider,
     unique_id: str,
     display_name: str,
+    avatar: str = "",
 ) -> UserModel:
     auth = AuthSchema(db=db, user=None, tenant_id=1, check_data_scope=False)
     username = _username_for_oauth(provider, unique_id)
+    real_name = (display_name or "").strip()[:32]
+    avatar_url = (avatar or "").strip()[:255]
     existing = await UserCRUD(auth).get(username=username)
     if existing:
+        # 已存在用户:若拿到真实姓名/头像且与库中不同(含历史遗留占位名)则刷新
+        changes: dict[str, str] = {}
+        if real_name and existing.name != real_name:
+            changes["name"] = real_name
+        if avatar_url and existing.avatar != avatar_url:
+            changes["avatar"] = avatar_url
+        if changes:
+            await UserCRUD(auth).set(ids=[existing.id], **changes)
+            for k, v in changes.items():
+                setattr(existing, k, v)
         return existing
 
     reg = UserRegisterSchema(
         username=username,
         password=secrets.token_urlsafe(24),
-        name=(display_name or username)[:32],
+        name=(real_name or username)[:32],
         role_ids=list(settings.OAUTH_DEFAULT_ROLE_IDS),
     )
     try:
@@ -391,6 +411,10 @@ async def ensure_oauth_user(
     user = await UserCRUD(auth).get(username=username)
     if not user:
         raise CustomException(msg="OAuth 注册失败")
+    # 注册 schema 无 avatar 字段,建号后单独写入头像
+    if avatar_url:
+        await UserCRUD(auth).set(ids=[user.id], avatar=avatar_url)
+        user.avatar = avatar_url
     logger.info(f"OAuth 自动注册用户: {username} ({provider})")
     return user
 
@@ -420,6 +444,7 @@ async def complete_oauth_login(
 
     callback_url = _callback_url(request, provider)
     cid, csec = _require_credentials(provider)
+    avatar = ""  # 目前仅飞书返回头像;其它 provider 保持空
 
     if provider == "github":
         access = await exchange_github_token(cid, csec, code, callback_url)
@@ -437,17 +462,17 @@ async def complete_oauth_login(
         uid, name = await fetch_qq_profile(access, cid, openid)
     elif provider == "feishu":
         access = await exchange_feishu_token(cid, csec, code, callback_url)
-        uid, name = await fetch_feishu_profile(access)
+        uid, name, avatar = await fetch_feishu_profile(access)
     else:
         raise CustomException(msg="不支持的 OAuth 渠道")
 
-    user = await ensure_oauth_user(db=db, provider=provider, unique_id=uid, display_name=name)
+    user = await ensure_oauth_user(
+        db=db, provider=provider, unique_id=uid, display_name=name, avatar=avatar
+    )
     if user.status == 1:
         raise CustomException(msg="用户已被停用")
 
-    user = await UserCRUD(AuthSchema(db=db, user=None, tenant_id=1, check_data_scope=False)).update_last_login_crud(id=user.id)
-    if not user:
-        raise CustomException(msg="用户不存在")
+    await UserCRUD(AuthSchema(db=db, user=None, tenant_id=1, check_data_scope=False)).update_last_login(id=user.id)
 
     login_type = f"oauth_{provider}"
     token = await LoginService.create_token(request=request, redis=redis, user=user, login_type=login_type)

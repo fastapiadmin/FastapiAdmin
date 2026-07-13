@@ -51,20 +51,25 @@ async def test_exchange_feishu_token_error(monkeypatch):
 
 async def test_fetch_feishu_profile_prefers_union_id(monkeypatch):
     _mock_http_json(monkeypatch, [
-        {"code": 0, "data": {"union_id": "on_union_1", "open_id": "ou_open_1", "name": "张三"}},
+        {"code": 0, "data": {
+            "union_id": "on_union_1", "open_id": "ou_open_1", "name": "张三",
+            "avatar_url": "https://avatar.feishu.cn/u/on_union_1",
+        }},
     ])
-    uid, name = await oauth_service.fetch_feishu_profile("u-at-456")
+    uid, name, avatar = await oauth_service.fetch_feishu_profile("u-at-456")
     assert uid == "on_union_1"
     assert name == "张三"
+    assert avatar == "https://avatar.feishu.cn/u/on_union_1"
 
 
 async def test_fetch_feishu_profile_fallback_open_id(monkeypatch):
     _mock_http_json(monkeypatch, [
         {"code": 0, "data": {"open_id": "ou_open_1", "name": "李四"}},
     ])
-    uid, name = await oauth_service.fetch_feishu_profile("u-at-456")
+    uid, name, avatar = await oauth_service.fetch_feishu_profile("u-at-456")
     assert uid == "ou_open_1"
     assert name == "李四"
+    assert avatar == ""
 
 
 async def test_fetch_feishu_profile_error(monkeypatch):

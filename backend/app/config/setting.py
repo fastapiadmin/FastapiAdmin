@@ -135,8 +135,8 @@ class Settings(BaseSettings):
     # ================================================= #
     # 自动注册用户的默认角色 ID 列表（须与库中角色主键一致）
     OAUTH_DEFAULT_ROLE_IDS: list[int] = [2]
-    # 回调异常时回跳的前端地址（与前端实际 /login 一致，含协议与端口）
-    OAUTH_FRONTEND_FALLBACK: str = "http://127.0.0.1:5173/login"
+    # 回调异常时回跳的前端地址（前端为 Hash 路由 + /web base，登录页为 <origin>/web/#/login）
+    OAUTH_FRONTEND_FALLBACK: str = "http://127.0.0.1:5173/web/#/login"
     OAUTH_GITHUB_CLIENT_ID: str = ""
     OAUTH_GITHUB_CLIENT_SECRET: str = ""
     OAUTH_GITEE_CLIENT_ID: str = ""
