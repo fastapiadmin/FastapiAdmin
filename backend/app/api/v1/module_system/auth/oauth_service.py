@@ -306,39 +306,28 @@ def _feishu_base() -> str:
     return str(settings.OAUTH_FEISHU_API_BASE).rstrip("/")
 
 
-async def fetch_feishu_app_access_token() -> str:
-    """企业自建应用:用 app_id + app_secret 换 app_access_token。"""
-    app_id, app_secret = _require_credentials("feishu")
+async def exchange_feishu_token(client_id: str, client_secret: str, code: str, redirect_uri: str) -> str:
+    """用 code 换 user_access_token(authen/v2/oauth/token 单步,遵循 RFC 6749)。
+
+    v2 响应为扁平结构:成功 code=0 且 access_token 在顶层;失败为非 0 code + error/error_description。
+    redirect_uri 需与授权时一致。
+    """
     data = await _http_json(
         "POST",
-        f"{_feishu_base()}/open-apis/auth/v3/app_access_token/internal",
+        f"{_feishu_base()}/open-apis/authen/v2/oauth/token",
         headers={"Content-Type": "application/json; charset=utf-8"},
-        json={"app_id": app_id, "app_secret": app_secret},
-    )
-    if not isinstance(data, dict) or data.get("code") not in (0, "0"):
-        raise CustomException(msg=(isinstance(data, dict) and data.get("msg")) or "飞书获取 app_access_token 失败")
-    token = data.get("app_access_token")
-    if not token:
-        raise CustomException(msg="飞书 app_access_token 为空")
-    return str(token)
-
-
-async def exchange_feishu_token(code: str) -> str:
-    """用 code 换 user_access_token(需先带上 app_access_token)。"""
-    app_at = await fetch_feishu_app_access_token()
-    data = await _http_json(
-        "POST",
-        f"{_feishu_base()}/open-apis/authen/v1/oidc/access_token",
-        headers={
-            "Authorization": f"Bearer {app_at}",
-            "Content-Type": "application/json; charset=utf-8",
+        json={
+            "grant_type": "authorization_code",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
         },
-        json={"grant_type": "authorization_code", "code": code},
     )
     if not isinstance(data, dict) or data.get("code") not in (0, "0"):
-        raise CustomException(msg=(isinstance(data, dict) and data.get("msg")) or "飞书换取 user_access_token 失败")
-    inner = data.get("data") or {}
-    token = inner.get("access_token")
+        msg = (isinstance(data, dict) and (data.get("error_description") or data.get("msg"))) or "飞书换取 user_access_token 失败"
+        raise CustomException(msg=msg)
+    token = data.get("access_token")
     if not token:
         raise CustomException(msg="飞书 user_access_token 为空")
     return str(token)
@@ -447,7 +436,7 @@ async def complete_oauth_login(
         access, openid = await exchange_qq_token(cid, csec, code, callback_url)
         uid, name = await fetch_qq_profile(access, cid, openid)
     elif provider == "feishu":
-        access = await exchange_feishu_token(code)
+        access = await exchange_feishu_token(cid, csec, code, callback_url)
         uid, name = await fetch_feishu_profile(access)
     else:
         raise CustomException(msg="不支持的 OAuth 渠道")
@@ -501,7 +490,6 @@ __all__ = [
     "STATE_PREFIX",
     "build_authorize_url",
     "complete_oauth_login",
-    "fetch_feishu_app_access_token",
     "exchange_feishu_token",
     "fetch_feishu_profile",
     "save_oauth_state",

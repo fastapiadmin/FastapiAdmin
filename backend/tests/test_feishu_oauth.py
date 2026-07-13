@@ -27,35 +27,26 @@ def _mock_http_json(monkeypatch, responses):
     return calls
 
 
-async def test_fetch_app_access_token_success(monkeypatch):
-    _mock_http_json(monkeypatch, [{"code": 0, "app_access_token": "a-at-123"}])
-    token = await oauth_service.fetch_feishu_app_access_token()
-    assert token == "a-at-123"
-
-
-async def test_fetch_app_access_token_error_code(monkeypatch):
-    _mock_http_json(monkeypatch, [{"code": 10003, "msg": "invalid app_secret"}])
-    with pytest.raises(CustomException):
-        await oauth_service.fetch_feishu_app_access_token()
-
-
 async def test_exchange_feishu_token_success(monkeypatch):
-    # 第 1 次调用:app_access_token;第 2 次:oidc/access_token
+    # v2 单步:authen/v2/oauth/token 直接用 client_id+client_secret+code 换,响应扁平
     _mock_http_json(monkeypatch, [
-        {"code": 0, "app_access_token": "a-at-123"},
-        {"code": 0, "data": {"access_token": "u-at-456"}},
+        {"code": 0, "access_token": "u-at-456", "token_type": "Bearer", "expires_in": 7200},
     ])
-    token = await oauth_service.exchange_feishu_token("the-code")
+    token = await oauth_service.exchange_feishu_token(
+        "cli_test", "secret_test", "the-code", "https://x.com/cb"
+    )
     assert token == "u-at-456"
 
 
 async def test_exchange_feishu_token_error(monkeypatch):
+    # v2 失败:非 0 code + OAuth 风格 error/error_description
     _mock_http_json(monkeypatch, [
-        {"code": 0, "app_access_token": "a-at-123"},
-        {"code": 20037, "msg": "code expired"},
+        {"code": 20037, "error": "invalid_grant", "error_description": "code expired"},
     ])
     with pytest.raises(CustomException):
-        await oauth_service.exchange_feishu_token("the-code")
+        await oauth_service.exchange_feishu_token(
+            "cli_test", "secret_test", "the-code", "https://x.com/cb"
+        )
 
 
 async def test_fetch_feishu_profile_prefers_union_id(monkeypatch):

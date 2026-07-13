@@ -27,3 +27,5 @@ OAUTH_FRONTEND_FALLBACK=http://127.0.0.1:5173/login
 ## 3. 流程
 登录页点击「飞书」→ 跳转飞书授权 → 授权后回调后端 → 自动注册/登录 → 带 token 跳回前端 `/login` → 进入系统。
 首次登录自动创建用户名 `oauth_feishu_{union_id}`,分配 `OAUTH_DEFAULT_ROLE_IDS` 默认角色。
+
+> 技术说明:授权码换 `user_access_token` 走飞书标准 OAuth2 端点 `authen/v2/oauth/token`(单步,直接用 `client_id`+`client_secret`+`code`+`redirect_uri`,不再经 `app_access_token` 中转)。回调地址 `redirect_uri` 换 token 时会与授权时严格比对,必须与飞书后台配置的「重定向 URL」完全一致。
