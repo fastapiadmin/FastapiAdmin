@@ -46,21 +46,14 @@
                       <template v-if="loginFlowMode === 'account'">
                         <FaLoginAccountForm
                           ref="accountFormRef"
-                          v-model:is-passing="isPassing"
-                          v-model:is-click-pass="isClickPass"
                           v-model:login-form="loginForm"
                           :rules="rules"
-                          :captcha-state="captchaState"
-                          :code-loading="codeLoading"
                           :demo-account-key="demoAccountKey"
                           :accounts="accounts"
                           :form-key="formKey"
-                          :is-dark="isDark"
-                          :drag-verify-text-color="dragVerifyTextColor"
                           :loading="loading"
                           @submit="handleSubmit"
                           @setup-account="setupAccount"
-                          @get-captcha="getCaptcha"
                           @open-mobile="openMobileLogin"
                           @open-qr="openQrLogin"
                           @forget="setAuthPanel('forget')"
@@ -178,7 +171,6 @@
 <script setup lang="ts">
 import type { LocationQuery, RouteLocationRaw } from "vue-router";
 import AuthAPI, {
-  type CaptchaInfo,
   type LoginFormData,
   type OAuthProvider,
 } from "@/api/module_system/auth";
@@ -209,7 +201,6 @@ const SHOW_SAAS_AUTH = false;
 const configStore = useConfigStore();
 const settingStore = useSettingsStore();
 const appStore = useAppStore();
-const { isDark } = storeToRefs(settingStore);
 const { t, locale } = useI18n();
 
 const { panelAlign } = useLoginPanelAlign();
@@ -265,13 +256,6 @@ function openQrLogin() {
 
 function backToAccountLogin() {
   loginFlowMode.value = "account";
-  nextTick(() => {
-    getCaptcha();
-    loginForm.captcha = "";
-    accountFormRef.value?.resetDragVerify?.();
-    isPassing.value = false;
-    isClickPass.value = false;
-  });
 }
 
 function handleOAuthLogin(provider: OAuthProvider) {
@@ -320,23 +304,10 @@ async function tryConsumeOAuthCallback() {
   }
 }
 
-const dragVerifyTextColor = computed(() =>
-  isDark.value ? "rgba(255, 255, 255, 0.45)" : "var(--fa-gray-700)"
-);
 const formKey = ref(0);
 
 watch(locale, () => {
   formKey.value++;
-});
-
-watch(authPanel, (panel) => {
-  if (panel !== "login") return;
-  if (loginFlowMode.value !== "account") return;
-  getCaptcha();
-  loginForm.captcha = "";
-  accountFormRef.value?.resetDragVerify?.();
-  isPassing.value = false;
-  isClickPass.value = false;
 });
 
 const accounts = computed<Account[]>(() => [
@@ -367,8 +338,6 @@ const demoAccountKey = ref<AccountKey>("super");
 const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
-const isPassing = ref(false);
-const isClickPass = ref(false);
 
 const accountFormRef = ref<InstanceType<typeof FaLoginAccountForm> | null>(null);
 const registerPanelRef = ref<InstanceType<typeof FaLoginRegisterPanel> | null>(null);
@@ -377,7 +346,6 @@ const forgetPanelRef = ref<InstanceType<typeof FaLoginForgetPanel> | null>(null)
 const loading = ref(false);
 const registerLoading = ref(false);
 const forgetLoading = ref(false);
-const codeLoading = ref(false);
 
 const registerAgreementRead = ref(false);
 
@@ -466,74 +434,37 @@ const forgetRules = computed<FormRules<ForgetPasswordForm>>(() => ({
 const loginForm = reactive<LoginFormData>({
   username: "",
   password: "",
-  captcha: "",
-  captcha_key: "",
   remember: true,
   login_type: "PC端",
 });
 
-const captchaState = reactive<CaptchaInfo>({
-  enable: false,
-  key: "",
-  img_base: "",
-});
-
-const rules = computed<FormRules>(() => {
-  const base: FormRules = {
-    username: [
-      {
-        required: true,
-        trigger: "blur",
-        message: t("login.message.username.required"),
-      },
-    ],
-    password: [
-      {
-        required: true,
-        trigger: "blur",
-        message: t("login.message.password.required"),
-      },
-      {
-        min: 6,
-        message: t("login.message.password.min"),
-        trigger: "blur",
-      },
-    ],
-  };
-  if (captchaState.enable) {
-    base.captcha = [
-      {
-        required: true,
-        trigger: "blur",
-        message: t("login.message.captchaCode.required"),
-      },
-    ];
-  }
-  return base;
-});
+const rules = computed<FormRules>(() => ({
+  username: [
+    {
+      required: true,
+      trigger: "blur",
+      message: t("login.message.username.required"),
+    },
+  ],
+  password: [
+    {
+      required: true,
+      trigger: "blur",
+      message: t("login.message.password.required"),
+    },
+    {
+      min: 6,
+      message: t("login.message.password.min"),
+      trigger: "blur",
+    },
+  ],
+}));
 
 function setupAccount(key: AccountKey) {
   const selected = accounts.value.find((a: Account) => a.key === key);
   demoAccountKey.value = key;
   loginForm.username = selected?.username ?? "";
   loginForm.password = selected?.password ?? "";
-}
-
-async function getCaptcha() {
-  try {
-    codeLoading.value = true;
-    const response = await AuthAPI.getCaptcha();
-    const data = response.data.data;
-    loginForm.captcha_key = data.key;
-    captchaState.img_base = data.img_base;
-    captchaState.enable = data.enable;
-  } catch {
-    captchaState.enable = false;
-    loginForm.captcha = "";
-    loginForm.captcha_key = "";
-  } finally {
-    codeLoading.value = false;
-  }
 }
 
 function resolveRedirectTarget(query: LocationQuery): RouteLocationRaw {
@@ -557,23 +488,7 @@ onMounted(async () => {
     await router.replace(resolveRedirectTarget(route.query));
     return;
   }
-  getCaptcha();
 });
-
-onActivated(() => {
-  if (authPanel.value !== "login" || loginFlowMode.value !== "account") return;
-  getCaptcha();
-  loginForm.captcha = "";
-});
-
-watch(
-  () => route.fullPath,
-  () => {
-    if (authPanel.value !== "login" || loginFlowMode.value !== "account") return;
-    getCaptcha();
-    loginForm.captcha = "";
-  }
-);
 
 const handleSubmit = async () => {
   if (!accountFormRef.value) return;
@@ -581,11 +496,6 @@ const handleSubmit = async () => {
   try {
     const valid = await accountFormRef.value.validate?.();
     if (!valid) return;
-
-    if (!isPassing.value) {
-      isClickPass.value = true;
-      return;
-    }
 
     loading.value = true;
 
@@ -596,7 +506,6 @@ const handleSubmit = async () => {
       appStore.showGuide(true);
     }
   } catch (error) {
-    await getCaptcha();
     if (!(error instanceof HttpError)) {
       console.error("[Login] Unexpected error:", error);
       ElNotification({
@@ -607,7 +516,6 @@ const handleSubmit = async () => {
     }
   } finally {
     loading.value = false;
-    accountFormRef.value?.resetDragVerify?.();
   }
 };
 
