@@ -6,8 +6,7 @@ __pycache__
 .DS_Store
 .git
 .trae
-
-.trae/*
+.runtime
 
 backend/__pycache__
 backend/.vscode
