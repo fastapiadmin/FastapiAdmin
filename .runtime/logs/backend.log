@@ -1,0 +1,222 @@
+项目启动中...
+2026-07-14 10:08:43.467 | INFO     | app.utils.banner:worship:18 - 🚀 当前运行环境: dev
+
+    ___               _                   _                __                _            
+  .' ..]             / |_                (_)              |  ]              (_)           
+ _| |_  ,--.   .--. `| |-',--.  _ .--.   __   ,--.    .--.| |  _ .--..--.   __   _ .--.   
+'-| |-'`'_\ : ( (`\] | | `'_\ :[ '/'`\ \[  | `'_\ : / /'`\' | [ `.-. .-. | [  | [ `.-. |  
+  | |  // | |, `'.'. | |,// | |,| \__/ | | | // | |,| \__/  |  | | | | | |  | |  | | | |  
+ [___] \'-;__/[\__) )\__/\'-;__/| ;.__/ [___]\'-;__/ '.__.;__][___||__||__][___][___||__] 
+                               [__|                                                       
+
+2026-07-14 10:08:43.467 | INFO     | uvicorn.config:__init__:317 - Will watch for changes in these directories: ['/Users/kukafei/python/high-school-college/backend']
+2026-07-14 10:08:43.468 | INFO     | uvicorn.config:bind_socket:523 - Uvicorn running on http://localhost:18001 (Press CTRL+C to quit)
+2026-07-14 10:08:43.469 | INFO     | uvicorn.supervisors.basereload:startup:79 - Started reloader process [66752] using StatReload
+2026-07-14 10:08:45.254 | INFO     | app.core.discover:get_dynamic_router:154 - 🚀 开始动态路由发现与注册
+2026-07-14 10:08:45.255 | INFO     | app.core.discover:get_dynamic_router:167 - 📂 扫描 app.plugin 目录...
+2026-07-14 10:08:45.265 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ChatRouter` ← app.plugin.module_ai.chat.controller
+2026-07-14 10:08:45.284 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `DemoRouter` ← app.plugin.module_example.demo.controller
+2026-07-14 10:08:45.298 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `Demo01Router` ← app.plugin.module_example.demo01.controller
+2026-07-14 10:08:45.404 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `GenRouter` ← app.plugin.module_generator.gencode.controller
+2026-07-14 10:08:45.425 | DEBUG    | tzlocal.unix:_get_localzone_name:120 - /etc/localtime found
+2026-07-14 10:08:45.426 | DEBUG    | tzlocal.unix:_get_localzone_name:136 - 1 found:
+ {'/etc/localtime is a symlink to': 'Asia/Shanghai'}
+2026-07-14 10:08:45.452 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `JobRouter` ← app.plugin.module_task.cronjob.job.controller
+2026-07-14 10:08:45.455 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `NodeRouter` ← app.plugin.module_task.cronjob.node.controller
+2026-07-14 10:08:45.794 | DEBUG    | httpx._config:load_ssl_context:82 - load_ssl_context verify=True cert=None trust_env=True http2=False
+2026-07-14 10:08:45.797 | DEBUG    | httpx._config:load_ssl_context_verify:148 - load_verify_locations cafile='/Users/kukafei/python/high-school-college/backend/.venv/lib/python3.10/site-packages/certifi/cacert.pem'
+2026-07-14 10:08:45.808 | DEBUG    | httpx._config:load_ssl_context:82 - load_ssl_context verify=False cert=None trust_env=True http2=False
+2026-07-14 10:08:46.024 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `WorkflowRouter` ← app.plugin.module_task.workflow.definition.controller
+2026-07-14 10:08:46.034 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `WorkflowNodeTypeRouter` ← app.plugin.module_task.workflow.node_type.controller
+2026-07-14 10:08:46.034 | INFO     | app.core.discover:get_dynamic_router:181 - 📂 扫描 app.api.v1 目录...
+2026-07-14 10:08:46.054 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `PortalRouter` ← app.api.v1.module_application.portal.controller
+2026-07-14 10:08:46.234 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `AwardRouter` ← app.api.v1.module_campus_return.award.controller
+2026-07-14 10:08:46.244 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `BatchRouter` ← app.api.v1.module_campus_return.batch.controller
+2026-07-14 10:08:46.247 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `CheckInRouter` ← app.api.v1.module_campus_return.checkin.controller
+2026-07-14 10:08:46.251 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `HighSchoolRouter` ← app.api.v1.module_campus_return.highschool.controller
+2026-07-14 10:08:46.253 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `InsuranceRouter` ← app.api.v1.module_campus_return.insurance.controller
+2026-07-14 10:08:46.257 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ItineraryRouter` ← app.api.v1.module_campus_return.itinerary.controller
+2026-07-14 10:08:46.260 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `MaterialRouter` ← app.api.v1.module_campus_return.material.controller
+2026-07-14 10:08:46.263 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `RegistrationRouter` ← app.api.v1.module_campus_return.registration.controller
+2026-07-14 10:08:46.267 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `TeamRouter` ← app.api.v1.module_campus_return.team.controller
+2026-07-14 10:08:46.272 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `TrainingRouter` ← app.api.v1.module_campus_return.training.controller
+2026-07-14 10:08:46.275 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `VolunteerRouter` ← app.api.v1.module_campus_return.volunteer.controller
+2026-07-14 10:08:46.277 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `FileRouter` ← app.api.v1.module_common.file.controller
+2026-07-14 10:08:46.278 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `HealthRouter` ← app.api.v1.module_common.health.controller
+2026-07-14 10:08:46.705 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ComplianceDiagnosisRouter` ← app.api.v1.module_consultation.compliance.controller
+2026-07-14 10:08:46.708 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ComplianceRuleRouter` ← app.api.v1.module_consultation.compliance.controller
+2026-07-14 10:08:46.730 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `InfoCollectionRouter` ← app.api.v1.module_consultation.info_collection.controller
+2026-07-14 10:08:46.766 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ItineraryRouter` ← app.api.v1.module_consultation.itinerary.controller
+2026-07-14 10:08:46.780 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `RegistrationRouter` ← app.api.v1.module_consultation.registration.controller
+2026-07-14 10:08:46.794 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ScreeningRouter` ← app.api.v1.module_consultation.screening.controller
+2026-07-14 10:08:46.802 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `UniversityRouter` ← app.api.v1.module_consultation.university.controller
+2026-07-14 10:08:46.805 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `CacheRouter` ← app.api.v1.module_monitor.cache.controller
+2026-07-14 10:08:46.808 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `OnlineRouter` ← app.api.v1.module_monitor.online.controller
+2026-07-14 10:08:46.813 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ResourceRouter` ← app.api.v1.module_monitor.resource.controller
+2026-07-14 10:08:46.813 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ServerRouter` ← app.api.v1.module_monitor.server.controller
+2026-07-14 10:08:47.272 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ActivityApplyRouter` ← app.api.v1.module_promotion.activity_apply.controller
+2026-07-14 10:08:47.274 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ApprovalRecordRouter` ← app.api.v1.module_promotion.approval_record.controller
+2026-07-14 10:08:47.296 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `CheckinRouter` ← app.api.v1.module_promotion.checkin.controller
+2026-07-14 10:08:47.301 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `DocumentRouter` ← app.api.v1.module_promotion.document.controller
+2026-07-14 10:08:47.309 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ExpenseRouter` ← app.api.v1.module_promotion.expense.controller
+2026-07-14 10:08:47.315 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `MaterialRouter` ← app.api.v1.module_promotion.material.controller
+2026-07-14 10:08:47.323 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `PersonnelRouter` ← app.api.v1.module_promotion.personnel.controller
+2026-07-14 10:08:47.328 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `SchoolLibraryRouter` ← app.api.v1.module_promotion.school_library.controller
+2026-07-14 10:08:47.333 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `SummaryRouter` ← app.api.v1.module_promotion.summary.controller
+2026-07-14 10:08:47.340 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `TargetSchoolRouter` ← app.api.v1.module_promotion.target_school.controller
+2026-07-14 10:08:47.346 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `TeamRouter` ← app.api.v1.module_promotion.team.controller
+2026-07-14 10:08:47.349 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `AuthRouter` ← app.api.v1.module_system.auth.controller
+2026-07-14 10:08:47.366 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `DeptRouter` ← app.api.v1.module_system.dept.controller
+2026-07-14 10:08:47.406 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `DictRouter` ← app.api.v1.module_system.dict.controller
+2026-07-14 10:08:47.420 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `LogRouter` ← app.api.v1.module_system.log.controller
+2026-07-14 10:08:47.430 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `MenuRouter` ← app.api.v1.module_system.menu.controller
+2026-07-14 10:08:47.453 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `NoticeRouter` ← app.api.v1.module_system.notice.controller
+2026-07-14 10:08:47.463 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `ParamsRouter` ← app.api.v1.module_system.params.controller
+2026-07-14 10:08:47.473 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `PositionRouter` ← app.api.v1.module_system.position.controller
+2026-07-14 10:08:47.482 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `RoleRouter` ← app.api.v1.module_system.role.controller
+2026-07-14 10:08:47.491 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `TenantRouter` ← app.api.v1.module_system.tenant.controller
+2026-07-14 10:08:47.507 | DEBUG    | app.core.discover:_scan_controllers:131 -   ↳ 注册 APIRouter 变量 `UserRouter` ← app.api.v1.module_system.user.controller
+2026-07-14 10:08:47.511 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /ai (子路由数: 6)
+2026-07-14 10:08:47.516 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /application (子路由数: 7)
+2026-07-14 10:08:47.539 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /campus_return (子路由数: 53)
+2026-07-14 10:08:47.541 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /common (子路由数: 4)
+2026-07-14 10:08:47.632 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /consultation (子路由数: 90)
+2026-07-14 10:08:47.665 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /example (子路由数: 18)
+2026-07-14 10:08:47.677 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /generator (子路由数: 12)
+2026-07-14 10:08:47.684 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /monitor (子路由数: 20)
+2026-07-14 10:08:47.734 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /promotion (子路由数: 100)
+2026-07-14 10:08:47.931 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /system (子路由数: 94)
+2026-07-14 10:08:47.950 | INFO     | app.core.discover:get_dynamic_router:202 - ✅️ 注册容器: /task (子路由数: 37)
+2026-07-14 10:08:47.950 | INFO     | app.core.discover:get_dynamic_router:204 - ✅️ 动态路由发现完成: 共 11 个容器前缀
+2026-07-14 10:08:48.362 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_tenant 表数据初始化（表已存在 1 条记录）
+2026-07-14 10:08:48.364 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_menu 表数据初始化（表已存在 188 条记录）
+2026-07-14 10:08:48.365 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_param 表数据初始化（表已存在 17 条记录）
+2026-07-14 10:08:48.370 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_dept 表数据初始化（表已存在 1 条记录）
+2026-07-14 10:08:48.371 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_role 表数据初始化（表已存在 1 条记录）
+2026-07-14 10:08:48.373 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_dict_type 表数据初始化（表已存在 10 条记录）
+2026-07-14 10:08:48.374 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_dict_data 表数据初始化（表已存在 34 条记录）
+2026-07-14 10:08:48.375 | WARNING  | app.scripts.initialize:__init_data:83 - ⚠️  跳过 sys_position 表，无初始化数据
+2026-07-14 10:08:48.375 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_user 表数据初始化（表已存在 1 条记录）
+2026-07-14 10:08:48.376 | WARNING  | app.scripts.initialize:__init_data:76 - ⚠️  跳过 sys_user_roles 表数据初始化（表已存在 1 条记录）
+2026-07-14 10:08:48.377 | INFO     | app.scripts.init_app:lifespan:44 - ✅ mysql数据库初始化完成
+2026-07-14 10:08:48.383 | INFO     | app.scripts.init_app:lifespan:48 - ✅ 全局事件模块加载完成
+2026-07-14 10:08:48.477 | INFO     | app.scripts.init_app:lifespan:56 - ✅ Redis系统配置初始化完成
+2026-07-14 10:08:48.488 | INFO     | app.scripts.init_app:lifespan:58 - ✅ Redis数据字典初始化完成
+2026-07-14 10:08:48.499 | INFO     | apscheduler.schedulers.base:start:214 - Scheduler started
+2026-07-14 10:08:48.499 | INFO     | app.scripts.init_app:lifespan:60 - ✅ 定时任务调度器初始化完成
+2026-07-14 10:08:48.504 | INFO     | app.core.ap_scheduler:_handle_job_added:327 - 任务 consultation_crawl_daily (咨询会信息抓取(每日)) 已添加到 default 存储器
+2026-07-14 10:08:48.537 | INFO     | app.core.ap_scheduler:_create_job_log:838 - 执行日志创建成功: job_id=consultation_crawl_daily, id=568
+2026-07-14 10:08:48.537 | DEBUG    | app.core.ap_scheduler:_handle_job_added:338 - 任务 consultation_crawl_daily 已创建初始 pending 状态日志
+2026-07-14 10:08:48.537 | INFO     | apscheduler.schedulers.base:_real_add_job:1090 - Added job "咨询会信息抓取(每日)" to job store "default"
+2026-07-14 10:08:48.537 | INFO     | app.api.v1.module_consultation.cron_tasks:register_consultation_cron_jobs:155 - 定时任务已注册: consultation_crawl_daily (咨询会信息抓取(每日))
+2026-07-14 10:08:48.538 | INFO     | app.core.ap_scheduler:_handle_job_added:327 - 任务 consultation_update_expired_hourly (咨询会状态更新(每小时)) 已添加到 default 存储器
+2026-07-14 10:08:48.543 | INFO     | app.core.ap_scheduler:_create_job_log:838 - 执行日志创建成功: job_id=consultation_update_expired_hourly, id=569
+2026-07-14 10:08:48.544 | DEBUG    | app.core.ap_scheduler:_handle_job_added:338 - 任务 consultation_update_expired_hourly 已创建初始 pending 状态日志
+2026-07-14 10:08:48.544 | INFO     | apscheduler.schedulers.base:_real_add_job:1090 - Added job "咨询会状态更新(每小时)" to job store "default"
+2026-07-14 10:08:48.544 | INFO     | app.api.v1.module_consultation.cron_tasks:register_consultation_cron_jobs:155 - 定时任务已注册: consultation_update_expired_hourly (咨询会状态更新(每小时))
+2026-07-14 10:08:48.547 | INFO     | app.core.ap_scheduler:_handle_job_added:327 - 任务 consultation_deduplicate_daily (自动去重(每日)) 已添加到 default 存储器
+2026-07-14 10:08:48.552 | INFO     | app.core.ap_scheduler:_create_job_log:838 - 执行日志创建成功: job_id=consultation_deduplicate_daily, id=570
+2026-07-14 10:08:48.553 | DEBUG    | app.core.ap_scheduler:_handle_job_added:338 - 任务 consultation_deduplicate_daily 已创建初始 pending 状态日志
+2026-07-14 10:08:48.553 | INFO     | apscheduler.schedulers.base:_real_add_job:1090 - Added job "自动去重(每日)" to job store "default"
+2026-07-14 10:08:48.553 | INFO     | app.api.v1.module_consultation.cron_tasks:register_consultation_cron_jobs:155 - 定时任务已注册: consultation_deduplicate_daily (自动去重(每日))
+2026-07-14 10:08:48.554 | INFO     | app.core.ap_scheduler:_handle_job_added:327 - 任务 itinerary_reminder_daily (行程提醒(每日)) 已添加到 default 存储器
+2026-07-14 10:08:48.557 | INFO     | app.core.ap_scheduler:_create_job_log:838 - 执行日志创建成功: job_id=itinerary_reminder_daily, id=571
+2026-07-14 10:08:48.557 | DEBUG    | app.core.ap_scheduler:_handle_job_added:338 - 任务 itinerary_reminder_daily 已创建初始 pending 状态日志
+2026-07-14 10:08:48.557 | INFO     | apscheduler.schedulers.base:_real_add_job:1090 - Added job "行程提醒(每日)" to job store "default"
+2026-07-14 10:08:48.557 | INFO     | app.api.v1.module_consultation.cron_tasks:register_consultation_cron_jobs:155 - 定时任务已注册: itinerary_reminder_daily (行程提醒(每日))
+2026-07-14 10:08:48.557 | INFO     | app.api.v1.module_consultation.cron_tasks:register_consultation_cron_jobs:159 - 招生咨询会定时任务注册完成: 4/4 个
+2026-07-14 10:08:48.557 | INFO     | app.scripts.init_app:lifespan:66 - ✅ 招生咨询会定时任务注册完成
+2026-07-14 10:08:48.557 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1151 - Looking for jobs to run
+2026-07-14 10:08:48.562 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1258 - Next wakeup is due at 2026-07-14 11:00:00+08:00 (in 3071.437783 seconds)
+2026-07-14 10:08:48.562 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1151 - Looking for jobs to run
+2026-07-14 10:08:48.564 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1258 - Next wakeup is due at 2026-07-14 11:00:00+08:00 (in 3071.435895 seconds)
+2026-07-14 10:08:48.564 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1151 - Looking for jobs to run
+2026-07-14 10:08:48.567 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1258 - Next wakeup is due at 2026-07-14 11:00:00+08:00 (in 3071.432988 seconds)
+2026-07-14 10:08:48.567 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1151 - Looking for jobs to run
+2026-07-14 10:08:48.568 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1258 - Next wakeup is due at 2026-07-14 11:00:00+08:00 (in 3071.431527 seconds)
+2026-07-14 10:08:48.568 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1151 - Looking for jobs to run
+2026-07-14 10:08:48.569 | DEBUG    | apscheduler.schedulers.base:_process_jobs:1258 - Next wakeup is due at 2026-07-14 11:00:00+08:00 (in 3071.430438 seconds)
+2026-07-14 10:08:48.570 | INFO     | app.scripts.init_app:lifespan:74 - ✅ 请求限流器初始化完成
+╭────────────────────────────── 🚀 服务启动完成 ───────────────────────────────╮
+│                                                                              │
+│  服务名称 高中高校联动平台-dev • 优雅 • 简洁 • 高效                          │
+│  当前版本 v0.1.0                                                             │
+│  服务地址 http://localhost:18001                                             │
+│  运行环境 dev                                                                │
+│  重载配置: ✅ 启动                                                           │
+│  调试模式: ✅ 启动                                                           │
+│  mysql: ✅ 启动                                                              │
+│  Redis: ✅ 启动                                                              │
+│  调度器: ✅ 启动                                                             │
+│  限流器: ✅ 启动                                                             │
+│                                                                              │
+│  ────────────────────────────────────────                                    │
+│  📖 文档                                                                     │
+│  🔗 Swagger: http://localhost:18001/api/v1/docs                              │
+│  🔗 ReDoc: http://localhost:18001/api/v1/redoc                               │
+│  🔗 LangJin: http://localhost:18001/api/v1/ljdoc                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+2026-07-14 10:08:50.779 | INFO     | app.core.middlewares:dispatch:109 - 请求来源: 127.0.0.1,请求方法: GET,请求路径: /api/v1/system/notice/available
+2026-07-14 10:08:50.782 | ERROR    | app.core.exceptions:CustomExceptionHandler:80 - [自定义异常] GET /api/v1/system/notice/available | 错误码: 10401 | 错误信息: 认证已过期,请重新登录 | 详情: None
+2026-07-14 10:08:50.783 | INFO     | app.core.middlewares:dispatch:195 - 响应状态: 401, 响应内容长度: 100, 处理时间: 3.92ms
+2026-07-14 10:08:51.100 | INFO     | app.core.middlewares:dispatch:109 - 请求来源: 127.0.0.1,请求方法: GET,请求路径: /api/v1/system/auth/captcha/get
+2026-07-14 10:08:51.120 | INFO     | app.api.v1.module_system.auth.service:get_captcha_service:361 - 生成验证码成功,验证码:9
+2026-07-14 10:08:51.120 | INFO     | app.api.v1.module_system.auth.controller:get_captcha_for_login_controller:127 - 获取验证码成功
+2026-07-14 10:08:51.121 | INFO     | app.core.middlewares:dispatch:195 - 响应状态: 200, 响应内容长度: 1822, 处理时间: 21.24ms
+2026-07-14 10:08:55.131 | INFO     | app.core.middlewares:dispatch:109 - 请求来源: 127.0.0.1,请求方法: POST,请求路径: /api/v1/system/auth/login
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_begin with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_field with data[42:61]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_value with data[63:89]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_header_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_headers_finished with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_part_data with data[93:98]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_begin with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_field with data[142:161]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_value with data[163:189]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_header_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_headers_finished with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_part_data with data[193:199]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_begin with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_field with data[243:262]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_value with data[264:289]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_header_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_headers_finished with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_part_data with data[293:294]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_begin with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_field with data[338:357]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_value with data[359:388]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_header_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_headers_finished with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_part_data with data[392:424]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_end with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_begin with no data
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_field with data[468:487]
+2026-07-14 10:08:55.134 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_value with data[489:515]
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_header_end with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_headers_finished with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:623 - Calling on_part_data with data[519:523]
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_end with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_begin with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_field with data[567:586]
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:623 - Calling on_header_value with data[588:616]
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_header_end with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_headers_finished with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:623 - Calling on_part_data with data[620:625]
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_part_end with no data
+2026-07-14 10:08:55.135 | DEBUG    | multipart.multipart:callback:626 - Calling on_end with no data
+2026-07-14 10:08:55.137 | INFO     | app.api.v1.module_system.auth.service:check_captcha_service:404 - 验证码校验成功,key:ce0f2e8a163f47798e3ee619436f2fce
+2026-07-14 10:08:55.159 | DEBUG    | passlib.handlers.bcrypt:_load_backend_mixin:625 - detected 'bcrypt' backend, version '4.0.1'
+2026-07-14 10:08:55.160 | DEBUG    | passlib.handlers.bcrypt:_finalize_backend_mixin:406 - 'bcrypt' backend lacks $2$ support, enabling workaround
+2026-07-14 10:08:55.447 | INFO     | app.api.v1.module_system.auth.service:create_token_service:160 - 用户ID: 1, 用户名: admin 正在生成JWT令牌
+2026-07-14 10:08:55.448 | INFO     | app.api.v1.module_system.auth.controller:login_for_access_token_controller:59 - 用户admin登录成功
+2026-07-14 10:08:55.454 | INFO     | app.core.middlewares:dispatch:195 - 响应状态: 200, 响应内容长度: 600, 处理时间: 322.53ms
+2026-07-14 10:08:55.460 | INFO     | app.core.middlewares:dispatch:109 - 请求来源: 127.0.0.1,请求方法: GET,请求路径: /api/v1/system/user/current/info
+2026-07-14 10:08:55.484 | INFO     | app.api.v1.module_system.user.controller:get_current_user_info_controller:52 - 获取当前用户信息成功
+2026-07-14 10:08:55.488 | INFO     | app.core.middlewares:dispatch:195 - 响应状态: 200, 响应内容长度: 4102, 处理时间: 27.76ms
+2026-07-14 10:08:55.615 | INFO     | app.core.middlewares:dispatch:109 - 请求来源: 127.0.0.1,请求方法: GET,请求路径: /api/v1/system/notice/available
+2026-07-14 10:08:55.670 | INFO     | app.api.v1.module_system.notice.controller:get_obj_list_available_controller:231 - 查询已启用公告列表成功
+2026-07-14 10:08:55.672 | INFO     | app.core.middlewares:dispatch:195 - 响应状态: 200, 响应内容长度: 159, 处理时间: 57.07ms
