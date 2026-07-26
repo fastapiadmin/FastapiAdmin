@@ -11,7 +11,7 @@
 // ECharts 按需导入配置
 import * as echarts from "echarts/core";
 
-// 导入图表类型
+// 导入图表类型（按需引入，仅导入项目中实际使用的）
 import {
   BarChart,
   LineChart,
@@ -20,27 +20,23 @@ import {
   RadarChart,
   MapChart,
   CandlestickChart,
+  GaugeChart,
 } from "echarts/charts";
 
-// 导入组件
+// 导入组件（按需引入，仅导入项目中实际使用的）
 import {
-  TitleComponent,
   TooltipComponent,
   GridComponent,
   LegendComponent,
   DataZoomComponent,
-  MarkPointComponent,
-  MarkLineComponent,
-  ToolboxComponent,
-  BrushComponent,
   GeoComponent,
-  VisualMapComponent,
+  TitleComponent,
 } from "echarts/components";
 
 // 导入渲染器
 import { CanvasRenderer } from "echarts/renderers";
 
-// 注册必要的组件
+// 注册必要的组件（按需注册）
 echarts.use([
   // 图表类型
   BarChart,
@@ -50,19 +46,15 @@ echarts.use([
   RadarChart,
   MapChart,
   CandlestickChart,
+  GaugeChart,
 
-  // 组件
-  TitleComponent,
+  // 组件（仅保留实际使用的）
   TooltipComponent,
   GridComponent,
   LegendComponent,
   DataZoomComponent,
-  MarkPointComponent,
-  MarkLineComponent,
-  ToolboxComponent,
-  BrushComponent,
   GeoComponent,
-  VisualMapComponent,
+  TitleComponent,
 
   // 渲染器
   CanvasRenderer,

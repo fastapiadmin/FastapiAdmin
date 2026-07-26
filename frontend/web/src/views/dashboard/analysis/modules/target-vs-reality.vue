@@ -16,9 +16,12 @@
     />
 
     <div class="px-5 mt-4">
-      <div v-for="item in totalItems" :key="item.label" class="flex-c mb-5 last:mb-0">
-        <div class="flex-c justify-start w-3/5 text-sm">
-          <div class="w-10 h-10 mr-3 text-lg rounded-md flex-cc" :class="item.iconClass">
+      <div v-for="item in totalItems" :key="item.label" class="flex items-center mb-5 last:mb-0">
+        <div class="flex items-center justify-start w-3/5 text-sm">
+          <div
+            class="w-10 h-10 mr-3 text-lg rounded-md flex items-center justify-center"
+            :class="item.iconClass"
+          >
             <FaSvgIcon :icon="item.icon" />
           </div>
 

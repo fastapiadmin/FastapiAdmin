@@ -1,16 +1,16 @@
 {
   "httpMsg": {
-    "unauthorized": "未授权访问，请重新登录",
-    "forbidden": "禁止访问该资源",
+    "unauthorized": "登录已过期，请重新登录",
+    "forbidden": "您没有权限执行此操作",
     "notFound": "请求的资源不存在",
     "methodNotAllowed": "请求方法不允许",
     "requestTimeout": "请求超时，请稍后重试",
-    "internalServerError": "服务器内部错误，请稍后重试",
+    "internalServerError": "服务器繁忙，请稍后重试",
     "badGateway": "网关错误，请稍后重试",
     "serviceUnavailable": "服务暂时不可用，请稍后重试",
     "gatewayTimeout": "网关超时，请稍后重试",
     "requestCancelled": "请求已取消",
-    "networkError": "网络连接异常，请检查网络连接",
+    "networkError": "网络连接异常，请检查您的网络连接",
     "requestFailed": "请求失败",
     "requestConfigError": "请求配置错误"
   },
@@ -19,6 +19,12 @@
     "intro": "视频演示常用操作流程；「功能验收」正文按模块列出已实现界面与权限，用于核对功能是否覆盖完整（非评价好坏）。正式环境可将演示视频替换为自有 CDN / 静态资源地址。",
     "videoTab": "视频演示",
     "manualTab": "功能验收",
+    "widgetsTab": "组件展示",
+    "widgetsTitle": "组件展示",
+    "widgetsIntro": "本页集中展示仓库内尚未在其他业务页出现的公共组件，作为「引用案例」。",
+    "widgetsMarkdown": "Markdown 渲染",
+    "widgetsComment": "评论组件",
+    "widgetsECharts": "ECharts 图表",
     "videoHint": "可随时暂停、调速与全屏观看。",
     "manualHint": "支持目录锚点与筛选；正文「功能完整性验收」与代码已实现的检索、工具栏、行操作、弹层等逐项对应，便于漏项检查。"
   },
@@ -303,7 +309,8 @@
   "notice": {
     "title": "通知",
     "btnRead": "标为已读",
-    "bar": ["通知", "消息", "代办"],
+    "bar": ["通知", "消息", "待办"],
+    "empty": "暂无通知",
     "text": ["暂无"],
     "viewAll": "查看全部"
   },
@@ -362,9 +369,14 @@
       "user": "普通用户"
     },
     "placeholder": {
-      "username": "请输入用户名",
+      "username": "请输入账号",
       "password": "请输入密码",
+      "email": "请输入邮箱",
       "slider": "请拖动滑块完成验证"
+    },
+    "email": {
+      "required": "请输入邮箱",
+      "invalid": "邮箱格式不正确"
     },
     "sliderText": "按住滑块拖动",
     "sliderSuccessText": "验证成功",
@@ -460,7 +472,8 @@
     "placeholder": {
       "username": "请输入账号",
       "password": "请输入密码",
-      "confirmPassword": "请再次输入密码"
+      "confirmPassword": "请再次输入密码",
+      "name": "请输入昵称"
     },
     "rule": {
       "confirmPasswordRequired": "请再次输入密码",
@@ -598,19 +611,24 @@
     }
   },
   "table": {
-    "form": {
-      "reset": "重置",
-      "submit": "提交"
-    },
     "searchBar": {
       "reset": "重置",
       "search": "查询",
       "expand": "展开",
       "collapse": "收起",
       "searchInputPlaceholder": "请输入",
-      "searchSelectPlaceholder": "请选择"
+      "searchSelectPlaceholder": "请选择",
+      "searchTooltip": "Ctrl+Enter 搜索",
+      "resetTooltip": "清除所有筛选条件"
+    },
+    "form": {
+      "reset": "重置",
+      "submit": "提交",
+      "submitAndContinue": "提交并继续添加",
+      "submitAndClose": "提交并关闭"
     },
     "selection": "选择",
+    "batchDelete": "批量删除 ({count})",
     "sizeOptions": {
       "small": "紧凑",
       "default": "默认",
@@ -629,7 +647,9 @@
       "hideSearch": "隐藏搜索区域",
       "showSearch": "显示搜索区域",
       "enableRowDrag": "开启行拖拽排序（当前页）",
-      "disableRowDrag": "关闭行拖拽排序"
+      "disableRowDrag": "关闭行拖拽排序",
+      "fullscreen": "全屏",
+      "exitFullscreen": "退出全屏"
     }
   },
   "navbar": {

@@ -1,13 +1,11 @@
 <!-- 单图上传组件 -->
 <template>
-  <div class="single-image-upload">
-    <ElDialog
+  <div class="flex flex-col items-start">
+    <FaDialog
       v-model="cropVisible"
       :title="cropDialogTitle"
-      width="640px"
-      append-to-body
-      destroy-on-close
-      class="single-image-upload__crop-dialog"
+      width="960px"
+      :draggable="false"
       @closed="onCropDialogClosed"
     >
       <FaCutterImg
@@ -28,7 +26,7 @@
         @update:img-url="onCropConfirm"
         @error="onCropError"
       />
-    </ElDialog>
+    </FaDialog>
 
     <ElUpload
       v-model:file-list="internalFileList"
@@ -44,13 +42,15 @@
       :disabled="props.disabled"
     >
       <template #default>
-        <template v-if="internalFileList && internalFileList.length > 0 && internalFileList[0].url">
+        <template
+          v-if="internalFileList && internalFileList.length > 0 && internalFileList[0]!.url"
+        >
           <ElImage
-            :key="internalFileList[0].url"
-            class="single-upload__image"
-            :src="internalFileList[0].url"
+            :key="internalFileList[0]!.url"
+            class="cursor-pointer rounded-md"
+            :src="internalFileList[0]!.url"
             fit="cover"
-            :preview-src-list="props.enablePreview ? [internalFileList[0].url] : []"
+            :preview-src-list="props.enablePreview ? [internalFileList[0]!.url] : []"
             :preview-teleported="true"
             @click.stop="handleImageClick"
           />
@@ -69,7 +69,7 @@
         </template>
       </template>
     </ElUpload>
-    <div v-if="props.showTip" class="el-upload__tip">
+    <div v-if="props.showTip" class="mt-1.75 text-xs text-(--el-text-color-regular)">
       {{ props.tipText || `支持 ${props.accept} 格式，文件大小不超过 ${props.maxFileSize}MB` }}
     </div>
   </div>
@@ -79,7 +79,9 @@
 defineOptions({ name: "FaUpload" });
 
 import { ref, watch } from "vue";
-import { UploadRawFile, UploadRequestOptions, ElMessage, type UploadUserFile } from "element-plus";
+import { ElMessage } from "element-plus";
+import type { UploadRawFile, UploadRequestOptions, UploadUserFile } from "element-plus";
+import { CircleCloseFilled, Plus } from "@element-plus/icons-vue";
 import ParamsAPI from "@/api/module_system/params";
 import { dataURLToFile } from "@utils";
 
@@ -144,11 +146,11 @@ const props = withDefaults(defineProps<Props>(), {
   tipText: "",
   enablePreview: true,
   enableCrop: false,
-  cropBoxWidth: 520,
-  cropBoxHeight: 360,
-  cropCutWidth: 400,
-  cropCutHeight: 300,
-  cropQuality: 0.92,
+  cropBoxWidth: 530,
+  cropBoxHeight: 300,
+  cropCutWidth: 360,
+  cropCutHeight: 200,
+  cropQuality: 1,
   cropFileType: "jpeg",
   cropDialogTitle: "裁剪图片",
   cropInnerTitle: "调整图片",
@@ -237,8 +239,8 @@ watch(
 watch(
   () => internalFileList.value,
   (newVal) => {
-    if (newVal && newVal.length > 0 && newVal[0].url) {
-      modelValue.value = newVal[0].url;
+    if (newVal && newVal.length > 0 && newVal[0]!.url) {
+      modelValue.value = newVal[0]!.url;
     } else {
       modelValue.value = "";
     }
@@ -333,7 +335,7 @@ function handleImageClick(event: Event) {
     props.enablePreview &&
     internalFileList.value &&
     internalFileList.value.length > 0 &&
-    internalFileList.value[0].url
+    internalFileList.value[0]!.url
   ) {
     // Element Plus的el-image组件会自动处理preview-src-list的预览功能
     // 这里只需要阻止冒泡即可
@@ -373,37 +375,19 @@ const onError = (error: any) => {
 </script>
 
 <style scoped lang="scss">
-.single-image-upload {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
+.single-upload__delete-btn {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: none;
+  font-size: 16px;
+  color: var(--el-color-warning);
+  cursor: pointer;
+  background: var(--el-bg-color-overlay);
+  border-radius: 100%;
 
-.single-upload {
-  &__image {
-    cursor: pointer;
-    border-radius: 6px;
-  }
-
-  &__delete-btn {
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    display: none;
-    font-size: 16px;
-    color: var(--el-color-warning);
-    cursor: pointer;
-    background: var(--el-bg-color-overlay);
-    border-radius: 100%;
-
-    &:hover {
-      color: var(--el-color-danger);
-    }
-  }
-
-  &__add-btn {
-    font-size: 28px;
-    color: var(--el-text-color-placeholder);
+  &:hover {
+    color: var(--el-color-danger);
   }
 }
 
@@ -417,11 +401,5 @@ const onError = (error: any) => {
       display: block;
     }
   }
-}
-
-.el-upload__tip {
-  margin-top: 7px;
-  font-size: 12px;
-  color: var(--el-text-color-regular);
 }
 </style>

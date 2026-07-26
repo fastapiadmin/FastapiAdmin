@@ -1,5 +1,5 @@
 <template>
-  <FaDialog ref="dialogRef" v-model="open" title="导入表" width="min(960px, 96vw)" append-to-body>
+  <FaDialog ref="dialogRef" v-model="open" title="导入表" append-to-body>
     <ElForm ref="importQueryRef" :model="query" :inline="true">
       <ElFormItem label="表名称" prop="table_name">
         <ElInput
@@ -23,63 +23,58 @@
         <ElButton
           v-hasPerm="['module_generator:dblist:query']"
           type="primary"
-          icon="Search"
+          :icon="Search"
           @click="emit('query')"
         >
           搜索
         </ElButton>
         <ElButton
           v-hasPerm="['module_generator:dblist:query']"
-          icon="Refresh"
+          :icon="Refresh"
           @click="emit('reset')"
         >
           重置
         </ElButton>
       </ElFormItem>
     </ElForm>
-    <div>
-      <ElTable
-        ref="tableRef"
-        :data="data"
-        :height="tableHeight"
-        @row-click="onRowClick"
-        @selection-change="onSelectionChange"
-      >
-        <template #empty>
-          <ElEmpty :image-size="80" description="暂无数据" />
+    <ElTable
+      ref="tableRef"
+      :data="data"
+      height="calc(100vh - 400px)"
+      @row-click="onRowClick"
+      @selection-change="onSelectionChange"
+      class="mb-5"
+    >
+      <template #empty>
+        <ElEmpty :image-size="80" description="暂无数据" />
+      </template>
+      <ElTableColumn type="selection" width="55"></ElTableColumn>
+      <ElTableColumn label="序号" type="index" min-width="30" align="center" fixed>
+        <template #default="scope">
+          <span>
+            {{ ((query.page_no ?? 1) - 1) * (query.page_size ?? 10) + scope.$index + 1 }}
+          </span>
         </template>
-        <ElTableColumn type="selection" width="55"></ElTableColumn>
-        <ElTableColumn label="序号" type="index" min-width="30" align="center" fixed>
-          <template #default="scope">
-            <span>
-              {{ ((query.page_no ?? 1) - 1) * (query.page_size ?? 10) + scope.$index + 1 }}
-            </span>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn
-          prop="database_name"
-          label="数据库名称"
-          :show-overflow-tooltip="true"
-        ></ElTableColumn>
-        <ElTableColumn
-          prop="table_name"
-          label="表名称"
-          :show-overflow-tooltip="true"
-        ></ElTableColumn>
-        <ElTableColumn
-          prop="table_comment"
-          label="表描述"
-          :show-overflow-tooltip="true"
-        ></ElTableColumn>
-        <ElTableColumn prop="table_type" label="表类型"></ElTableColumn>
-      </ElTable>
-      <FaPagination
-        v-model:page="query.page_no"
-        v-model:limit="query.page_size"
-        :total="total"
-        @pagination="emit('fetch')"
-      />
-    </div>
+      </ElTableColumn>
+      <ElTableColumn
+        prop="database_name"
+        label="数据库名称"
+        :show-overflow-tooltip="true"
+      ></ElTableColumn>
+      <ElTableColumn prop="table_name" label="表名称" :show-overflow-tooltip="true"></ElTableColumn>
+      <ElTableColumn
+        prop="table_comment"
+        label="表描述"
+        :show-overflow-tooltip="true"
+      ></ElTableColumn>
+      <ElTableColumn prop="table_type" label="表类型"></ElTableColumn>
+    </ElTable>
+    <FaPagination
+      v-model:page="query.page_no"
+      v-model:limit="query.page_size"
+      :total="total"
+      @pagination="emit('fetch')"
+    />
     <template #footer>
       <div class="dialog-footer">
         <ElButton type="primary" :loading="confirmLoading" @click="emit('confirm')">确 定</ElButton>
@@ -90,11 +85,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import type { FormInstance, TableInstance } from "element-plus";
+import { Search, Refresh } from "@element-plus/icons-vue";
 import type { DBTableSchema, GenTablePageQuery } from "@/api/module_generator/gencode";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaPagination from "@/components/others/fa-pagination/index.vue";
 
 defineOptions({ name: "ImportDbTableDialog" });
 
@@ -119,12 +114,6 @@ const emit = defineEmits<Emits>();
 
 const importQueryRef = ref<FormInstance>();
 const tableRef = ref<TableInstance>();
-const isFullscreen = ref(false);
-
-// 根据全屏状态计算表格高度
-const tableHeight = computed(() => {
-  return isFullscreen.value ? "calc(100vh - 320px)" : "100%";
-});
 
 function onRowClick(row: DBTableSchema) {
   tableRef.value?.toggleRowSelection(row);

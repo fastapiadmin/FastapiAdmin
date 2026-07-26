@@ -1,184 +1,77 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query, Security, status
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ResponseSchema, SuccessResponse
 from app.core.base_schema import AuthSchema, BatchSetAvailable
-from app.core.dependencies import AuthPermission
+from app.core.dependencies import AuthPermission, db_getter
 from app.core.router_class import OperationLogRoute
 
 from .schema import DeptCreateSchema, DeptOutSchema, DeptQueryParam, DeptUpdateSchema
 from .service import DeptService
 
-DeptRouter = APIRouter(route_class=OperationLogRoute, prefix="/dept", tags=["系统管理/部门管理"])
-
-_DEPT_NS = "dept"
+DeptRouter = APIRouter(route_class=OperationLogRoute, prefix="/dept", tags=["部门管理"])
 
 
-@DeptRouter.get(
-    "/tree",
-    summary="查询部门树",
-    response_model=ResponseSchema[list[DeptOutSchema]],
-)
-@cache(expire=300, namespace=_DEPT_NS)
+@DeptRouter.get("/tree", summary="查询部门树", response_model=ResponseSchema[list[DeptOutSchema]])
 async def get_dept_tree_controller(
-    search: Annotated[DeptQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dept:query']))],
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:dept:query"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    search: Annotated[DeptQueryParam, Query()],
 ) -> JSONResponse:
-    """
-    查询部门树
-
-    参数:
-    - search (DeptQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含部门树的响应模型
-
-    异常:
-    - CustomException: 查询部门树失败时抛出异常。
-    """
     order_by = [{"order": "asc"}]
-    result_dict_list = await DeptService.get_dept_tree_service(
-        search=search, auth=auth, order_by=order_by
-    )
-    return SuccessResponse(data=result_dict_list, msg="查询部门树成功")
+    result_dict_tree = await DeptService(auth, db).tree(search=search, order_by=order_by)
+    return SuccessResponse(data=result_dict_tree, msg="查询部门树成功")
 
 
-@DeptRouter.get(
-    "/detail/{id}",
-    summary="查询部门详情",
-    response_model=ResponseSchema[DeptOutSchema],
-)
+@DeptRouter.get("/detail/{id}", summary="查询部门详情", response_model=ResponseSchema[DeptOutSchema])
 async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="部门ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dept:detail']))],
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:dept:detail"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    id: Annotated[int, Path(description="部门ID", ge=1)],
 ) -> JSONResponse:
-    """
-    查询部门详情
-
-    参数:
-    - id (int): 部门ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含部门详情的响应模型
-
-    异常:
-    - CustomException: 查询部门详情失败时抛出异常。
-    """
-    result_dict = await DeptService.get_dept_detail_service(id=id, auth=auth)
+    result_dict = await DeptService(auth, db).detail(id=id)
     return SuccessResponse(data=result_dict, msg="查询部门详情成功")
 
 
-@DeptRouter.post(
-    "/create",
-    summary="创建部门",
-    response_model=ResponseSchema[DeptOutSchema],
-)
+@DeptRouter.post("/create", status_code=status.HTTP_201_CREATED, summary="创建部门", response_model=ResponseSchema[DeptOutSchema])
 async def create_obj_controller(
-    data: DeptCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dept:create']))],
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:dept:create"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[DeptCreateSchema, Body(description="部门创建参数")],
 ) -> JSONResponse:
-    """
-    创建部门
-
-    参数:
-    - data (DeptCreateSchema): 创建部门负载模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含创建部门结果的响应模型
-
-    异常:
-    - CustomException: 创建部门失败时抛出异常。
-    """
-    result_dict = await DeptService.create_dept_service(data=data, auth=auth)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    result_dict = await DeptService(auth, db).create(data=data)
     return SuccessResponse(data=result_dict, msg="创建部门成功")
 
 
-@DeptRouter.put(
-    "/update/{id}",
-    summary="修改部门",
-    response_model=ResponseSchema[DeptOutSchema],
-)
+@DeptRouter.put("/update/{id}", summary="修改部门", response_model=ResponseSchema[DeptOutSchema])
 async def update_obj_controller(
-    data: DeptUpdateSchema,
-    id: Annotated[int, Path(description="部门ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dept:update']))],
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:dept:update"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    id: Annotated[int, Path(description="部门ID", ge=1)],
+    data: Annotated[DeptUpdateSchema, Body(description="部门修改参数")],
 ) -> JSONResponse:
-    """
-    修改部门
-
-    参数:
-    - data (DeptUpdateSchema): 修改部门负载模型
-    - id (int): 部门ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含修改部门结果的响应模型
-
-    异常:
-    - CustomException: 修改部门失败时抛出异常。
-    """
-    result_dict = await DeptService.update_dept_service(auth=auth, id=id, data=data)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    result_dict = await DeptService(auth, db).update(id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改部门成功")
 
 
-@DeptRouter.delete(
-    "/delete",
-    summary="删除部门",
-    response_model=ResponseSchema[None],
-)
+@DeptRouter.delete("/delete", summary="删除部门", response_model=ResponseSchema[None])
 async def delete_obj_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:dept:delete"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dept:delete']))],
 ) -> JSONResponse:
-    """
-    删除部门
-
-    参数:
-    - ids (list[int]): 部门ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含删除部门结果的响应模型
-
-    异常:
-    - CustomException: 删除部门失败时抛出异常。
-    """
-    await DeptService.delete_dept_service(ids=ids, auth=auth)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    await DeptService(auth, db).delete(ids=ids)
     return SuccessResponse(msg="删除部门成功")
 
 
-@DeptRouter.patch(
-    "/status/batch",
-    summary="批量修改部门状态",
-    response_model=ResponseSchema[None],
-)
+@DeptRouter.patch("/status/batch", summary="批量修改部门状态", response_model=ResponseSchema[None])
 async def batch_set_available_obj_controller(
-    data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:dept:patch']))],
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:dept:patch"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[BatchSetAvailable, Body(description="状态设置")],
 ) -> JSONResponse:
-    """
-    批量修改部门状态
-
-    参数:
-    - data (BatchSetAvailable): 批量修改部门状态负载模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含批量修改部门状态结果的响应模型
-
-    异常:
-    - CustomException: 批量修改部门状态失败时抛出异常。
-    """
-    await DeptService.batch_set_available_service(data=data, auth=auth)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    await DeptService(auth, db).batch_set_available(data=data)
     return SuccessResponse(msg="批量修改部门状态成功")

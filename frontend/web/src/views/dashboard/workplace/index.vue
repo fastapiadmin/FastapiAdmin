@@ -1,33 +1,27 @@
 <template>
-  <div class="workplace-container">
-    <!-- 电商模块 -->
-    <div class="card-group">
-      <ElRow :gutter="24">
-        <ElCol :sm="12" :md="12" :lg="6"><TotalOrderVolume /></ElCol>
-        <ElCol :sm="12" :md="12" :lg="6"><TotalProducts /></ElCol>
-        <ElCol :sm="24" :md="12" :lg="6"><ProductSales /></ElCol>
-        <ElCol :sm="24" :md="12" :lg="6"><SalesGrowth /></ElCol>
-      </ElRow>
+  <div class="flex flex-col relative last:mb-0">
+    <ElRow :gutter="24">
+      <ElCol :sm="12" :md="12" :lg="6" class="mb-5"><TotalOrderVolume /></ElCol>
+      <ElCol :sm="12" :md="12" :lg="6" class="mb-5"><TotalProducts /></ElCol>
+      <ElCol :sm="24" :md="12" :lg="6" class="mb-5"><ProductSales /></ElCol>
+      <ElCol :sm="24" :md="12" :lg="6" class="mb-5"><SalesGrowth /></ElCol>
+    </ElRow>
 
-      <ElRow :gutter="24">
-        <ElCol :span="24"><CartConversionRate /></ElCol>
-      </ElRow>
+    <ElRow :gutter="24">
+      <ElCol :span="24" class="mb-5"><CartConversionRate /></ElCol>
+    </ElRow>
 
-      <ElRow :gutter="24">
-        <ElCol :sm="12" :md="12" :lg="6"><SalesTrend /></ElCol>
-        <ElCol :sm="12" :md="12" :lg="6"><SalesClassification /></ElCol>
-        <ElCol :sm="24" :md="12" :lg="6"><HotCommodity /></ElCol>
-        <ElCol :sm="24" :md="12" :lg="6"><AnnualSales /></ElCol>
-      </ElRow>
-    </div>
+    <ElRow :gutter="24">
+      <ElCol :sm="12" :md="12" :lg="6" class="mb-5"><SalesTrend /></ElCol>
+      <ElCol :sm="12" :md="12" :lg="6" class="mb-5"><SalesClassification /></ElCol>
+      <ElCol :sm="24" :md="12" :lg="6" class="mb-5"><HotCommodity /></ElCol>
+      <ElCol :sm="24" :md="12" :lg="6" class="mb-5"><AnnualSales /></ElCol>
+    </ElRow>
 
-    <!-- 用户分析 -->
-    <div class="card-group">
-      <ElRow :gutter="24">
-        <ElCol :sm="24" :md="12" :lg="12" class="mb-5"><ActiveUser /></ElCol>
-        <ElCol :sm="24" :md="12" :lg="12" class="mb-5"><SalesOverview /></ElCol>
-      </ElRow>
-    </div>
+    <ElRow :gutter="24">
+      <ElCol :sm="24" :md="12" :lg="12" class="mb-5"><ActiveUser /></ElCol>
+      <ElCol :sm="24" :md="12" :lg="12" class="mb-5"><SalesOverview /></ElCol>
+    </ElRow>
   </div>
 </template>
 
@@ -46,41 +40,3 @@ import CartConversionRate from "./modules/cart-conversion-rate.vue";
 
 defineOptions({ name: "DashboardWorkplace" });
 </script>
-
-<style scoped>
-:deep(.el-card) {
-  --el-card-border-radius: calc(var(--custom-radius) + 2px);
-
-  border: 1px solid var(--fa-card-border);
-}
-
-.workplace-container {
-  display: flex;
-  flex-direction: column;
-
-  > * {
-    margin-bottom: 16px;
-  }
-
-  > :last-child {
-    margin-bottom: 0;
-  }
-
-  &::after {
-    display: block;
-    flex-shrink: 0;
-    height: 16px;
-    content: "";
-  }
-}
-
-.card-group {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.card-row {
-  row-gap: 16px;
-}
-</style>

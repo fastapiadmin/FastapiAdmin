@@ -95,10 +95,9 @@ class TableHeightCalculator {
  * @returns 容器高度计算结果
  */
 export function useTableHeight(options: TableHeightOptions) {
-  const containerHeight = computed(() => {
-    const calculator = new TableHeightCalculator(options);
-    return calculator.calculate();
-  });
+  const calculator = new TableHeightCalculator(options);
+
+  const containerHeight = computed(() => calculator.calculate());
 
   return {
     /** 容器高度样式对象 */

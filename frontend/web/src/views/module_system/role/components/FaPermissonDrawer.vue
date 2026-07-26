@@ -12,11 +12,11 @@
         <!-- 数据权限 -->
         <ElAside>
           <div
-            class="border-r border-r-(--el-border-color-lighter) b-r-solid h-full p-[20px] box-border"
+            class="border-r border-r-(--el-border-color-lighter) b-r-solid h-full p-5 box-border"
           >
             <div class="flex items-center">
-              <div class="flex gap-[10px]">
-                <div class="w-[10px] bg-(--el-color-primary)"></div>
+              <div class="flex gap-2.5">
+                <div class="w-2.5 bg-(--el-color-primary)"></div>
                 <div>
                   <span class="text-[16px]">数据授权</span>
                   <ElTooltip placement="right">
@@ -35,43 +35,19 @@
                 <ElFormItem prop="data_scope">
                   <ElSelect v-model="permissionState.data_scope">
                     <ElOption :key="1" label="仅本人数据权限" :value="1" />
-                    <ElOption :key="2" label="本部门数据权限" :value="2" />
-                    <ElOption :key="3" label="本部门及以下数据权限" :value="3" />
-                    <ElOption :key="4" label="全部数据权限" :value="4" />
-                    <ElOption :key="5" label="自定义数据权限" :value="5" />
+                    <ElOption :key="2" label="本部门及以下数据权限" :value="2" />
+                    <ElOption :key="3" label="全部数据权限" :value="3" />
                   </ElSelect>
                 </ElFormItem>
               </ElForm>
-
-              <ElScrollbar
-                v-if="permissionState.data_scope === 5 && deptTreeData.length"
-                class="mt-5 max-h-[72vh] b-1 b-solid b-[var(--el-border-color-lighter)] p-10px box-border"
-              >
-                <ElInput v-model="deptFilterText" placeholder="部门名称" />
-                <ElTree
-                  ref="deptTreeRef"
-                  node-key="value"
-                  show-checkbox
-                  :data="deptTreeData"
-                  :filter-node-method="handleFilter"
-                  default-expand-all
-                  :highlight-current="true"
-                  :style="'height: calc(100% - 60px); margin-top: 10px'"
-                  @check="deptTreeCheck"
-                >
-                  <template #empty>
-                    <ElEmpty :image-size="80" description="暂无数据" />
-                  </template>
-                </ElTree>
-              </ElScrollbar>
             </div>
           </div>
         </ElAside>
 
         <!-- 菜单权限 -->
         <ElMain>
-          <div class="flex gap-[10px]">
-            <div class="w-[10px] bg-(--el-color-primary)"></div>
+          <div class="flex gap-2.5">
+            <div class="w-2.5 bg-(--el-color-primary)"></div>
             <div>
               <span class="text-[16px]">菜单授权</span>
               <ElTooltip placement="right">
@@ -106,18 +82,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { QuestionFilled } from "@element-plus/icons-vue";
-import type { TreeInstance } from "element-plus";
-import FaDrawer from "@/components/modal/fa-drawer/index.vue";
-import FaMenuTreeTable from "@/components/others/fa-menu-tree-drawer/index.vue";
-import { listToTree, formatTree } from "@utils";
-import RoleAPI, { permissionDataType, permissionDeptType } from "@/api/module_system/role";
-import DeptAPI from "@/api/module_system/dept";
-import MenuAPI, { MenuTable } from "@/api/module_platform/menu";
+import RoleAPI, { permissionDataType } from "@/api/module_system/role";
+import MenuAPI, { MenuTable } from "@/api/module_system/menu";
 import { DeviceEnum } from "@/enums/settings/device.enum";
-import { useAppStore, useUserStore } from "@stores";
+import { useUserStore, useAppStore } from "@stores";
 import { ElMessage } from "element-plus";
+import type FaMenuTreeTable from "@/components/others/fa-menu-tree-table/index.vue";
+import FaDrawer from "@/components/modal/fa-drawer/index.vue";
 
 const props = defineProps<{
   roleName: string;
@@ -133,7 +106,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const appStore = useAppStore();
-const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "1200px" : "90%"));
+const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "740px" : "90%"));
 
 const drawerVisible = computed({
   get: () => props.modelValue,
@@ -142,11 +115,7 @@ const drawerVisible = computed({
   },
 });
 
-const deptTreeRef = ref<TreeInstance>();
-const deptFilterText = ref("");
-const dataFormRef = ref();
 const loading = ref(false);
-const deptTreeData = ref<permissionDeptType[]>([]);
 const rawMenuTree = ref<MenuTable[]>([]);
 const menuCheckedIds = ref<number[]>([]);
 const menuTreeTableRef = ref<InstanceType<typeof FaMenuTreeTable>>();
@@ -161,9 +130,6 @@ const permissionState = ref<permissionDataType>({
 const init = async () => {
   loading.value = true;
   try {
-    const deptResponse = await DeptAPI.listDept();
-    deptTreeData.value = formatTree(listToTree(deptResponse.data.data));
-
     const menuResponse = await MenuAPI.listMenu();
     rawMenuTree.value = menuResponse.data.data || [];
 
@@ -174,19 +140,12 @@ const init = async () => {
       role_ids: [props.roleId],
       menu_ids: savedMenuIds,
       data_scope: roleResponse.data.data.data_scope || 1,
-      dept_ids: roleResponse.data.data.depts?.map((dept: any) => dept.id) || [],
+      dept_ids: [],
     };
 
     menuCheckedIds.value = savedMenuIds;
-
-    await nextTick();
-
-    if (permissionState.value.data_scope === 5 && deptTreeRef.value) {
-      await deptTreeRef.value.setCheckedKeys(permissionState.value.dept_ids);
-    }
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
-    ElMessage.error("获取权限数据失败: " + msg);
+  } catch {
+    // 已由全局拦截器提示
   } finally {
     loading.value = false;
   }
@@ -211,7 +170,7 @@ async function handleDrawerSave() {
       role_ids: [props.roleId],
       menu_ids,
       data_scope: permissionState.value.data_scope,
-      dept_ids: (deptTreeRef.value?.getCheckedKeys() || []).map((key) => Number(key)),
+      dept_ids: [],
     };
 
     await RoleAPI.setPermission(submitData);
@@ -226,15 +185,6 @@ async function handleDrawerSave() {
   } finally {
     loading.value = false;
   }
-}
-
-const deptTreeCheck = (checkedIds: number[]) => {
-  permissionState.value.dept_ids = checkedIds;
-};
-
-function handleFilter(value: string, data: { [key: string]: any }) {
-  if (!value) return true;
-  return data.label?.includes(value);
 }
 
 /** 将选中的菜单/按钮 ID 展开为包含所有祖先菜单的完整集合 */
@@ -258,10 +208,6 @@ function expandMenuIdsWithAncestors(checkedIds: number[], roots: MenuTable[]): n
   }
   return [...out];
 }
-
-watch(deptFilterText, (val) => {
-  deptTreeRef.value!.filter(val);
-});
 
 onMounted(async () => {
   await init();

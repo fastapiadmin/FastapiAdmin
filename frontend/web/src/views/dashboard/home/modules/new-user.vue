@@ -73,6 +73,7 @@ import avatar3 from "@imgs/avatar/avatar3.webp";
 import avatar4 from "@imgs/avatar/avatar4.webp";
 import avatar5 from "@imgs/avatar/avatar5.webp";
 import avatar6 from "@imgs/avatar/avatar6.webp";
+import FaTable from "@/components/tables/fa-table/index.vue";
 
 interface UserTableItem {
   username: string;

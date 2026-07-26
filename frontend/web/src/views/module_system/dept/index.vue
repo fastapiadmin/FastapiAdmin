@@ -13,15 +13,12 @@
       :show-search="true"
       :disabled-search="false"
       :default-expanded="false"
+      include-audit
       @search="handleSearchBarSearch"
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -36,7 +33,9 @@
               :perm-delete="['module_system:dept:delete']"
               :perm-patch="['module_system:dept:patch']"
               :delete-loading="batchDeleting"
-              @add="handleOpenDialog('create')"
+              :create-loading="createLoading"
+              :more-loading="moreLoading"
+              @add="handleAdd"
               @delete="handleBatchDelete"
               @more="handleMoreClick"
             />
@@ -66,21 +65,22 @@
       :form-mode="dialogVisible.type"
       :confirm-loading="submitLoading"
       @cancel="handleCloseDialog"
-      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
+      @close="handleCloseDialog"
+      @confirm="handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
         <FaDescriptions
           :column="4"
           :data="detailFormData"
           :items="deptDetailItems"
-          max-height="75vh"
+          max-height="70vh"
         />
       </template>
       <template v-else>
         <FaForm
           :key="deptFormRenderKey"
           scrollbar
-          max-height="75vh"
+          max-height="70vh"
           ref="dataFormRef"
           v-model="formData"
           :items="deptDialogFormItems"
@@ -94,12 +94,6 @@
           :show-submit="false"
           class="crud-dialog-art-form"
         >
-          <template #status>
-            <ElRadioGroup v-model="formData.status">
-              <ElRadio :value="0">启用</ElRadio>
-              <ElRadio :value="1">停用</ElRadio>
-            </ElRadioGroup>
-          </template>
         </FaForm>
       </template>
     </FaDialog>
@@ -108,37 +102,39 @@
 
 <script setup lang="ts">
 import { useTableColumns } from "@/hooks/core/useTableColumns";
-import { useCrudDialog } from "@/hooks/core/useCrudDialog";
-import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
-import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
+import { confirmToggleStatus } from "@/hooks/core/useConfirm";
 import DeptAPI, {
   type DeptForm,
   type DeptPageQuery,
   type DeptTable,
 } from "@/api/module_system/dept";
-import { useAuth } from "@/hooks/core/useAuth";
 import { useUserStore } from "@stores";
-import { formatTree, renderTableOperationCell, type TableOperationAction } from "@utils";
+import {
+  formatTree,
+  renderTableOperationCell,
+  resolveStatusColumns,
+  type TableOperationAction,
+} from "@utils";
+import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
-import { ElTag, ElMessage } from "element-plus";
+import { ElMessage } from "element-plus";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 
 defineOptions({
   name: "Dept",
   inheritAttrs: false,
 });
 
-const { hasAuth } = useAuth();
 const userStore = useUserStore();
 
 type DeptSearchForm = {
   name?: string;
-  status?: string;
-  created_time?: string[];
-};
+  status?: number;
+} & AuditSearchFormParams;
 
 function buildDeptQuery(p: DeptSearchForm): DeptPageQuery {
   return {
@@ -146,6 +142,10 @@ function buildDeptQuery(p: DeptSearchForm): DeptPageQuery {
     status: p.status,
     created_time:
       Array.isArray(p.created_time) && p.created_time.length === 2 ? p.created_time : undefined,
+    created_id: p.created_id ?? undefined,
+    updated_id: p.updated_id ?? undefined,
+    updated_time:
+      Array.isArray(p.updated_time) && p.updated_time.length === 2 ? p.updated_time : undefined,
   };
 }
 
@@ -155,7 +155,7 @@ function buildDeptRowActions(
     onAddChild: (parentId: number) => void;
     onDetail: (id: number) => void;
     onEdit: (id: number) => void;
-    onDelete: (id: number) => void;
+    onDelete: (id: number, name: string) => void;
   }
 ): TableOperationAction[] {
   const all: TableOperationAction[] = [
@@ -185,10 +185,10 @@ function buildDeptRowActions(
       label: "删除",
       artType: "delete",
       perm: "module_system:dept:delete",
-      run: () => ctx.onDelete(row.id!),
+      run: () => ctx.onDelete(row.id!, row.name ?? ""),
     },
   ];
-  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+  return all;
 }
 
 function formatDeptOperationCell(row: DeptTable, ctx: Parameters<typeof buildDeptRowActions>[1]) {
@@ -202,16 +202,19 @@ const searchForm = ref<DeptSearchForm>({
   name: undefined,
   status: undefined,
   created_time: undefined,
+  created_id: undefined,
+  updated_id: undefined,
+  updated_time: undefined,
 });
 
 const showSearchBar = ref(true);
 const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
-const statusOptions = ref([
+const STATUS_OPTIONS = [
   { label: "启用", value: 0 },
   { label: "停用", value: 1 },
-]);
+] as const;
 
 const deptSearchItems = computed<SearchFormItem[]>(() => [
   {
@@ -228,30 +231,18 @@ const deptSearchItems = computed<SearchFormItem[]>(() => [
     type: "select",
     props: {
       placeholder: "请选择状态",
-      options: statusOptions.value,
+      options: STATUS_OPTIONS,
       clearable: true,
     },
     span: 6,
   },
-  {
-    label: "创建时间",
-    key: "created_time",
-    type: "datetimerange",
-    span: 6,
-    props: {
-      type: "datetimerange",
-      rangeSeparator: "至",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "100%" },
-    },
-  },
 ]);
 
 const tableRef = ref<{
-  elTableRef?: { toggleRowExpansion: (row: DeptTable, expanded?: boolean) => void };
+  elTableRef?: {
+    toggleRowExpansion: (row: DeptTable, expanded?: boolean) => void;
+    clearSelection: () => void;
+  };
 } | null>(null);
 const tableData = ref<DeptTable[]>([]);
 const loading = ref(false);
@@ -262,6 +253,9 @@ const deptOptions = ref<OptionType[]>([]);
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<DeptTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 async function loadDeptData() {
   loading.value = true;
   try {
@@ -270,18 +264,18 @@ async function loadDeptData() {
     tableData.value = tree;
     deptOptions.value = formatTree(tree);
   } catch (e: unknown) {
-    console.error(e);
+    if (import.meta.env.DEV) console.error(e);
   } finally {
     loading.value = false;
   }
 }
 
-async function deleteDeptRow(id: number) {
+async function deleteDeptRow(id: number, name: string) {
   try {
-    await confirmDelete();
+    await confirmDelete(`确定删除「${name}」吗？`);
     await DeptAPI.deleteDept([id]);
     await userStore.getUserInfo();
-    selectedRows.value = [];
+    tableRef.value?.elTableRef?.clearSelection();
     await loadDeptData();
   } catch {
     // 用户取消
@@ -308,6 +302,8 @@ const deptDetailItems: import("@/components/others/fa-descriptions/index.vue").D
     { label: "排序", prop: "order" },
     { label: "创建时间", prop: "created_time" },
     { label: "更新时间", prop: "updated_time" },
+    { label: "创建人", prop: "created_by.name" },
+    { label: "更新人", prop: "updated_by.name" },
     { label: "描述", prop: "description", span: 4 },
   ];
 
@@ -337,15 +333,19 @@ const rules = reactive({
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
-const initialFormData: DeptForm = {
-  id: undefined,
-  name: undefined,
-  code: "",
-  order: 1,
-  parent_id: undefined,
-  status: 0,
-  description: undefined,
-};
+function createInitialFormData(): DeptForm {
+  return {
+    id: undefined,
+    name: undefined,
+    code: "",
+    order: 1,
+    parent_id: undefined,
+    status: 0,
+    description: undefined,
+  };
+}
+
+const initialFormData = createInitialFormData();
 
 const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const deptFormRenderKey = ref(0);
@@ -373,55 +373,84 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = use
   },
 });
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
+async function handleOpenDeptDetail(id: number) {
+  dialogVisible.title = "部门详情";
+  dialogVisible.type = "detail";
+  const response = await DeptAPI.detailDept(id);
+  Object.assign(detailFormData.value, response.data.data ?? {});
+  dialogVisible.visible = true;
+}
+
 const opCtx = {
   onAddChild: (parentId: number) =>
     void handleOpenDialog("create", undefined, { parent_id: parentId }),
-  onDetail: (id: number) => void handleOpenDialog("detail", id),
+  onDetail: (id: number) => void handleOpenDeptDetail(id),
   onEdit: (id: number) => void handleOpenDialog("update", id),
   onDelete: deleteDeptRow,
 };
 
-const { columnChecks, columns } = useTableColumns<DeptTable>(() => [
-  { type: "selection", width: 48, fixed: "left" },
-  { type: "globalIndex", width: 56, label: "序号" },
-  { prop: "name", label: "部门名称", minWidth: 120, showOverflowTooltip: true },
-  { prop: "code", label: "部门编码", minWidth: 120, showOverflowTooltip: true },
-  {
-    prop: "status",
-    label: "状态",
-    width: 88,
-    formatter: (row: DeptTable) =>
-      h(ElTag, { type: row.status === 0 ? "success" : "danger" }, () =>
-        row.status === 0 ? "启用" : "停用"
-      ),
-  },
-  { prop: "order", label: "排序", width: 88, showOverflowTooltip: true },
-  { prop: "description", label: "描述", minWidth: 100, showOverflowTooltip: true },
-  { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
-  { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
-  {
-    prop: "operation",
-    label: "操作",
-    width: 220,
-    fixed: "right",
-    align: "right",
-    formatter: (row: DeptTable) => formatDeptOperationCell(row, opCtx),
-  },
-]);
+const { columnChecks, columns } = useTableColumns<DeptTable>(
+  resolveStatusColumns(() => [
+    { type: "selection", width: 48, fixed: "left" },
+    { type: "globalIndex", width: 56, label: "序号" },
+    { prop: "name", label: "部门名称", minWidth: 120, showOverflowTooltip: true },
+    { prop: "code", label: "部门编码", minWidth: 120, showOverflowTooltip: true },
+    {
+      prop: "status",
+      label: "状态",
+      width: 88,
+      status: {
+        0: { type: "success", text: "启用" },
+        1: { type: "danger", text: "停用" },
+      },
+    },
+    { prop: "order", label: "排序", width: 88, showOverflowTooltip: true },
+    { prop: "description", label: "描述", minWidth: 100, showOverflowTooltip: true },
+    {
+      prop: "created_time",
+      label: "创建时间",
+      width: 168,
+      sortable: true,
+      showOverflowTooltip: true,
+    },
+    {
+      prop: "updated_time",
+      label: "更新时间",
+      width: 168,
+      sortable: true,
+      showOverflowTooltip: true,
+    },
+    {
+      prop: "operation",
+      label: "操作",
+      width: 220,
+      fixed: "right",
+      align: "center",
+      formatter: (row: DeptTable) => formatDeptOperationCell(row, opCtx),
+    },
+  ])
+);
 
 const deptDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "部门名称",
     key: "name",
     type: "input",
-    span: 24,
     props: { placeholder: "请输入部门名称", maxlength: 50 },
   },
   {
     label: "部门编码",
     key: "code",
     type: "input",
-    span: 24,
     props: {
       placeholder: "字母开头，2-16位字母/数字/下划线",
       maxlength: 16,
@@ -432,7 +461,6 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
     label: "上级部门",
     key: "parent_id",
     type: "treeselect",
-    span: 24,
     props: {
       placeholder: "请选择上级部门",
       data: deptOptions.value,
@@ -445,7 +473,6 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
     label: "排序",
     key: "order",
     type: "number",
-    span: 24,
     props: {
       controlsPosition: "right",
       min: 1,
@@ -455,15 +482,18 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "状态",
     key: "status",
-    type: "input",
-    span: 24,
-    placeholder: "",
+    type: "radiogroup",
+    props: {
+      options: [
+        { label: "启用", value: 0 },
+        { label: "停用", value: 1 },
+      ],
+    },
   },
   {
     label: "描述",
     key: "description",
     type: "input",
-    span: 24,
     props: {
       type: "textarea",
       rows: 4,
@@ -480,24 +510,30 @@ async function handleSearchBarSearch(params: DeptSearchForm) {
   await loadDeptData();
 }
 
-function onResetSearch() {
+async function onResetSearch() {
   searchForm.value = {
     name: undefined,
     status: undefined,
     created_time: undefined,
+    created_id: undefined,
+    updated_id: undefined,
+    updated_time: undefined,
   };
-  void loadDeptData();
+  await loadDeptData();
 }
 
 async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await confirmBatchDelete(ids.length);
+    await confirmBatchDelete(
+      ids.length,
+      selectedRows.value.map((r) => String(r.name ?? r.id))
+    );
     batchDeleting.value = true;
     await DeptAPI.deleteDept(ids);
     await userStore.getUserInfo();
-    selectedRows.value = [];
+    tableRef.value?.elTableRef?.clearSelection();
     await loadDeptData();
   } catch {
     // 用户取消
@@ -506,19 +542,23 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(value: "enable" | "disable") {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
   try {
-    await confirmToggleStatus(status);
+    await confirmToggleStatus(value);
+    moreLoading.value = true;
+    const status = value === "enable" ? 0 : 1;
     await DeptAPI.batchDept({ ids, status });
     await loadDeptData();
     await userStore.getUserInfo();
   } catch {
     // 用户取消或操作失败
+  } finally {
+    moreLoading.value = false;
   }
 }
 

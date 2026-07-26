@@ -1,0 +1,8 @@
+# 见 docs/PLUGIN_ARCHITECTURE.md
+
+name = "system"
+title = "系统"
+version = "1.0.0"
+description = "系统核心功能（用户/角色/权限/部门/字典/参数/通知/日志等）"
+optional = true
+tags = ["system", "auth", "rbac"]

@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.common.constant import RET
+from app.common.enums import RET
 from app.core.base_schema import PageResultSchema
 from app.core.exceptions import CustomException
 
@@ -13,9 +13,8 @@ class PaginationService:
         data_list: list[Any],
         page_no: int | None = None,
         page_size: int | None = None,
-    ) -> PageResultSchema[Any]:
-        """
-        对已在内存中的列表做切片分页。
+    ) -> Any:
+        """对已在内存中的列表做切片分页。
         关系型表列表请使用 CRUDBase.page（数据库分页）。
 
         参数:

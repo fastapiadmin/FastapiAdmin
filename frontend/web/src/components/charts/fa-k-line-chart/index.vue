@@ -12,7 +12,6 @@
 import type { EChartsOption } from "@/plugins/echarts";
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 import type { KLineChartProps } from "@/types/component/chart";
-
 defineOptions({ name: "FaKLineChart" });
 
 const props = withDefaults(defineProps<KLineChartProps>(), {
@@ -81,7 +80,7 @@ const {
           type: "cross",
         },
         formatter: (params: Array<{ name: string; data: number[] }>) => {
-          const param = params[0];
+          const param = params[0]!;
           const data = param.data;
           return `
               <div :style="'padding: 5px;'">

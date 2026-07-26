@@ -12,6 +12,11 @@
  * @module utils/common
  */
 
+import { reactive, toRefs } from "vue";
+import { tryOnMounted, tryOnUnmounted } from "@vueuse/core";
+import dayjs from "dayjs";
+import { ElMessage } from "element-plus";
+
 /**
  * 根据当前时间生成问候语
  *
@@ -48,11 +53,11 @@ export function greetings(): string {
  * 获取日期范围内的所有日期
  *
  * 根据起始日期和结束日期，生成期间所有日期的字符串数组
- * 支持跨月份和跨年度的日期范围
+ * 使用 dayjs 简化日期计算逻辑
  *
- * @param {string | number | Date} startDate - 起始日期
- * @param {string | number | Date} endDate - 结束日期
- * @returns {string[]} 日期字符串数组，格式为 YYYY-MM-DD
+ * @param startDate - 起始日期
+ * @param endDate - 结束日期
+ * @returns 日期字符串数组，格式为 YYYY-MM-DD
  *
  * @example
  * ```typescript
@@ -64,76 +69,47 @@ export function getRangeDate(
   startDate: string | number | Date,
   endDate: string | number | Date
 ): string[] {
-  const targetArr: string[] = [];
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
+  const dates: string[] = [];
 
-  const startDateInfo = {
-    year: start.getFullYear(),
-    month: start.getMonth() + 1,
-    day: start.getDate(),
-  };
-
-  const endDateInfo = {
-    year: end.getFullYear(),
-    month: end.getMonth() + 1,
-    day: end.getDate(),
-  };
-
-  if (startDateInfo.year === endDateInfo.year) {
-    if (startDateInfo.month !== endDateInfo.month) {
-      // 同年不同月
-      const startMax = new Date(startDateInfo.year, startDateInfo.month, 0).getDate();
-      const endNum = startMax - startDateInfo.day + endDateInfo.day;
-
-      for (let i = startDateInfo.day; i <= startDateInfo.day + endNum; i++) {
-        if (i > startMax) {
-          targetArr.push(
-            `${endDateInfo.year}-${
-              endDateInfo.month < 10 ? "0" + endDateInfo.month : endDateInfo.month
-            }-${i - startMax < 10 ? "0" + (i - startMax) : i - startMax}`
-          );
-        } else {
-          targetArr.push(
-            `${startDateInfo.year}-${
-              startDateInfo.month < 10 ? "0" + startDateInfo.month : startDateInfo.month
-            }-${i < 10 ? "0" + i : i}`
-          );
-        }
-      }
-    } else {
-      // 同年同月
-      for (let i = startDateInfo.day; i <= endDateInfo.day; i++) {
-        targetArr.push(
-          `${startDateInfo.year}-${
-            startDateInfo.month < 10 ? "0" + startDateInfo.month : startDateInfo.month
-          }-${i < 10 ? "0" + i : i}`
-        );
-      }
-    }
-  } else {
-    // 不同年
-    const startMax = new Date(startDateInfo.year, startDateInfo.month, 0).getDate();
-    const endNum = startMax - startDateInfo.day + endDateInfo.day;
-
-    for (let i = startDateInfo.day; i <= startDateInfo.day + endNum; i++) {
-      if (i > startMax) {
-        targetArr.push(
-          `${endDateInfo.year}-${
-            endDateInfo.month < 10 ? "0" + endDateInfo.month : endDateInfo.month
-          }-${i - startMax < 10 ? "0" + (i - startMax) : i - startMax}`
-        );
-      } else {
-        targetArr.push(
-          `${startDateInfo.year}-${
-            startDateInfo.month < 10 ? "0" + startDateInfo.month : startDateInfo.month
-          }-${i < 10 ? "0" + i : i}`
-        );
-      }
-    }
+  // 验证日期有效性
+  if (!start.isValid() || !end.isValid()) {
+    return dates;
   }
 
-  return targetArr;
+  // 确保 start <= end
+  const [actualStart, actualEnd] = start.isAfter(end) ? [end, start] : [start, end];
+
+  let current = actualStart;
+  while (current.isBefore(actualEnd) || current.isSame(actualEnd, "day")) {
+    dates.push(current.format("YYYY-MM-DD"));
+    current = current.add(1, "day");
+  }
+
+  return dates;
+}
+
+/**
+ * 树形节点基础接口
+ * 用于 listToTree 和 formatTree 函数
+ */
+export interface TreeNode {
+  id?: string | number;
+  parent_id?: string | number | null;
+  name?: string;
+  status?: boolean | string | number;
+  children?: TreeNode[];
+}
+
+/**
+ * 级联选择器节点接口
+ */
+export interface CascaderNode {
+  value: string | number;
+  label: string;
+  disabled: boolean;
+  children?: CascaderNode[];
 }
 
 /**
@@ -142,8 +118,8 @@ export function getRangeDate(
  * 通过 parent_id 字段将扁平数组转换为嵌套的树形结构
  * 保留原始数据的所有字段
  *
- * @param {any[]} list - 扁平列表数据，每个项必须包含 id 和 parent_id 字段
- * @returns {any[]} 树形结构数组
+ * @param list - 扁平列表数据，每个项必须包含 id 和 parent_id 字段
+ * @returns 树形结构数组
  *
  * @example
  * ```typescript
@@ -155,30 +131,36 @@ export function getRangeDate(
  * // 输出：[{ id: 1, name: '节点1', parent_id: null, children: [{ id: 2, name: '节点2', parent_id: 1 }] }]
  * ```
  */
-export function listToTree(list: any[]): any[] {
-  const map: { [key: string | number]: any } = {};
+export function listToTree<
+  T extends { id?: string | number; parent_id?: string | number | null; children?: T[] },
+>(list: T[]): T[] {
+  const map = new Map<string | number, T>();
+  const tree: T[] = [];
 
-  // 创建映射表，保留每个节点的 parent_id 等原始字段
-  list.forEach((item) => {
-    map[item.id] = { ...item };
-  });
+  // 创建映射表（过滤掉 id 为空的项）
+  for (const item of list) {
+    if (item.id != null) {
+      map.set(item.id, { ...item });
+    }
+  }
 
-  const tree: any[] = [];
+  // 构建树形结构
+  for (const item of list) {
+    if (item.id == null) continue;
 
-  list.forEach((item) => {
+    const node = map.get(item.id);
+    if (!node) continue;
+
     const parentId = item.parent_id;
 
-    if (parentId && map[parentId]) {
-      // 将当前节点加入其父节点的 children 数组中
-      if (!map[parentId].children) {
-        map[parentId].children = [];
-      }
-      map[parentId].children.push(map[item.id]);
-    } else if (parentId === null || parentId === undefined) {
-      // 根节点
-      tree.push(map[item.id]);
+    if (parentId != null && map.has(parentId)) {
+      const parent = map.get(parentId)!;
+      if (!parent.children) parent.children = [];
+      parent.children.push(node);
+    } else if (parentId == null) {
+      tree.push(node);
     }
-  });
+  }
 
   return tree;
 }
@@ -189,8 +171,8 @@ export function listToTree(list: any[]): any[] {
  * 将树形数据转换为适合 Element Plus Cascader 组件使用的格式
  * 包含 value、label、disabled 和 children 字段
  *
- * @param {any[]} nodes - 树形结构数据
- * @returns {any[]} 格式化后的树形结构
+ * @param nodes - 树形结构数据
+ * @returns 格式化后的级联选择器节点数组
  *
  * @example
  * ```typescript
@@ -199,111 +181,45 @@ export function listToTree(list: any[]): any[] {
  * // 输出：[{ value: 1, label: '部门1', disabled: false, children: [...] }]
  * ```
  */
-export function formatTree(nodes: any[]): any[] {
+export function formatTree(nodes: TreeNode[]): CascaderNode[] {
   return nodes.map((node) => {
-    const formattedNode: any = {
-      value: node.id,
-      label: node.name,
+    const formatted: CascaderNode = {
+      value: node.id ?? "",
+      label: node.name ?? "",
       disabled: node.status === false || String(node.status) === "false",
     };
 
     if (node.children && node.children.length > 0) {
-      formattedNode.children = formatTree(node.children);
+      formatted.children = formatTree(node.children);
     }
 
-    return formattedNode;
+    return formatted;
   });
 }
 
+/**
+ * 检查元素是否包含指定 CSS 类
+ */
 export function hasClass(ele: HTMLElement, cls: string): boolean {
-  return !!ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
+  return ele.classList.contains(cls);
 }
 
+/**
+ * 为元素添加 CSS 类
+ */
 export function addClass(ele: HTMLElement, cls: string): void {
-  if (!hasClass(ele, cls)) {
-    ele.className += " " + cls;
-  }
+  ele.classList.add(cls);
 }
 
+/**
+ * 从元素移除 CSS 类
+ */
 export function removeClass(ele: HTMLElement, cls: string): void {
-  if (hasClass(ele, cls)) {
-    const reg = new RegExp("(\\s|^)" + cls + "(\\s|$)");
-    ele.className = ele.className.replace(reg, " ");
-  }
+  ele.classList.remove(cls);
 }
 
 export function isExternal(path: string): boolean {
   return /^(https?:|http?:|mailto:|tel:)/.test(path);
-}
-
-export function formatGrowthRate(growthRate: number): string {
-  if (growthRate === 0) return "-";
-  return (
-    Math.abs(growthRate * 100)
-      .toFixed(2)
-      .replace(/\.?0+$/, "") + "%"
-  );
-}
-
-export const beautifierConf = {
-  html: {
-    indent_size: "2",
-    indent_char: " ",
-    max_preserve_newlines: "-1",
-    preserve_newlines: false,
-    keep_array_indentation: false,
-    break_chained_methods: false,
-    indent_scripts: "separate",
-    brace_style: "end-expand",
-    space_before_conditional: true,
-    unescape_strings: false,
-    jslint_happy: false,
-    end_with_newline: true,
-    wrap_line_length: "110",
-    indent_inner_html: true,
-    comma_first: false,
-    e4x: true,
-    indent_empty_lines: true,
-  },
-  js: {
-    indent_size: "2",
-    indent_char: " ",
-    max_preserve_newlines: "-1",
-    preserve_newlines: false,
-    keep_array_indentation: false,
-    break_chained_methods: false,
-    indent_scripts: "normal",
-    brace_style: "end-expand",
-    space_before_conditional: true,
-    unescape_strings: false,
-    jslint_happy: true,
-    end_with_newline: true,
-    wrap_line_length: "110",
-    indent_inner_html: true,
-    comma_first: false,
-    e4x: true,
-    indent_empty_lines: true,
-  },
-};
-
-/**
- * 深拷贝对象
- *
- * 使用 JSON 序列化和反序列化实现对象的深拷贝
- * 注意：此方法不支持函数、Symbol、循环引用等特殊类型
- *
- * @param {any} obj - 需要拷贝的对象
- * @returns {any} 拷贝后的新对象
- *
- * @example
- * ```typescript
- * const original = { a: 1, b: { c: 2 } };
- * const copy = cloneDeep(original);
- * copy.b.c = 3; // 不影响原对象
- * ```
- */
-export function cloneDeep(obj: any): any {
-  return JSON.parse(JSON.stringify(obj));
 }
 
 /**
@@ -345,10 +261,6 @@ export function blobValidate(data: Blob): boolean {
 }
 
 /** Date helpers (dayjs). */
-
-import { reactive, toRefs } from "vue";
-import { tryOnMounted, tryOnUnmounted } from "@vueuse/core";
-import dayjs from "dayjs";
 
 const DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
@@ -523,7 +435,6 @@ export async function fetchAllPages<T>(options: FetchAllPagesOptions<T>): Promis
  * @module utils/quickStartManager
  */
 
-import { ElMessage } from "element-plus";
 /**
  * 快速链接数据类型
  */

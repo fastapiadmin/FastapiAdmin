@@ -50,33 +50,42 @@ const PositionAPI = {
     });
   },
 
-  exportPosition(body: PositionPageQuery) {
+  exportPosition(query: PositionPageQuery) {
     return request<Blob>({
       url: `${API_PATH}/export`,
       method: "post",
-      data: body,
+      data: query,
       responseType: "blob",
+    });
+  },
+
+  getPositionOptions() {
+    return request<ApiResponse<OptionType[]>>({
+      url: `${API_PATH}/options`,
+      method: "get",
     });
   },
 };
 
 export default PositionAPI;
 
-export interface PositionPageQuery extends PageQuery {
+export interface PositionPageQuery extends PageQuery, UserByQueryParams {
   name?: string;
+  status?: number;
 }
 
 export interface PositionTable extends BaseType {
   name?: string;
   code?: string;
   order?: number;
-  created_by?: CommonType;
-  updated_by?: CommonType;
-  deleted_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
 export interface PositionForm extends BaseFormType {
   name?: string;
   code?: string;
   order?: number;
+  status?: number;
+  description?: string;
 }

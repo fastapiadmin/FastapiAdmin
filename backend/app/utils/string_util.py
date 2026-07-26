@@ -2,14 +2,12 @@ from app.common.constant import CommonConstant
 
 
 class StringUtil:
-    """
-    字符串工具类
+    """字符串工具类
     """
 
     @classmethod
     def is_blank(cls, string: str) -> bool:
-        """
-        校验字符串是否为''或全空格
+        """校验字符串是否为''或全空格
 
         参数:
         - string (str): 需要校验的字符串。
@@ -24,8 +22,7 @@ class StringUtil:
 
     @classmethod
     def is_empty(cls, string: str | None) -> bool:
-        """
-        校验字符串是否为''或None
+        """校验字符串是否为''或None
 
         参数:
         - string (str | None): 需要校验的字符串。
@@ -37,8 +34,7 @@ class StringUtil:
 
     @classmethod
     def is_not_empty(cls, string: str) -> bool:
-        """
-        校验字符串是否不是''和None
+        """校验字符串是否不是''和None
 
         参数:
         - string (str): 需要校验的字符串。
@@ -50,8 +46,7 @@ class StringUtil:
 
     @classmethod
     def is_http(cls, link: str):
-        """
-        判断是否为 http(s):// 开头
+        """判断是否为 http(s):// 开头
 
         参数:
         - link (str): 链接。
@@ -63,8 +58,7 @@ class StringUtil:
 
     @classmethod
     def contains_ignore_case(cls, search_str: str, compare_str: str):
-        """
-        查找指定字符串是否包含指定字符串同时忽略大小写
+        """查找指定字符串是否包含指定字符串同时忽略大小写
 
         参数:
         - search_str (str): 查找的字符串。
@@ -79,8 +73,7 @@ class StringUtil:
 
     @classmethod
     def contains_any_ignore_case(cls, search_str: str, compare_str_list: list[str]):
-        """
-        查找指定字符串是否包含列表中的任意一个字符串（忽略大小写）
+        """查找指定字符串是否包含列表中的任意一个字符串（忽略大小写）
 
         参数:
         - search_str (str): 查找的字符串。
@@ -90,16 +83,12 @@ class StringUtil:
         - bool: 查找结果。
         """
         if search_str and compare_str_list:
-            return any(
-                cls.contains_ignore_case(search_str, compare_str)
-                for compare_str in compare_str_list
-            )
+            return any(cls.contains_ignore_case(search_str, compare_str) for compare_str in compare_str_list)
         return False
 
     @classmethod
     def equals_ignore_case(cls, search_str: str, compare_str: str):
-        """
-        比较两个字符串是否相等（忽略大小写）
+        """比较两个字符串是否相等（忽略大小写）
 
         参数:
         - search_str (str): 查找的字符串。
@@ -114,8 +103,7 @@ class StringUtil:
 
     @classmethod
     def equals_any_ignore_case(cls, search_str: str, compare_str_list: list[str]):
-        """
-        判断指定字符串是否与列表中任意一个字符串相等（忽略大小写）
+        """判断指定字符串是否与列表中任意一个字符串相等（忽略大小写）
 
         参数:
         - search_str (str): 查找的字符串。
@@ -125,15 +113,12 @@ class StringUtil:
         - bool: 比较结果。
         """
         if search_str and compare_str_list:
-            return any(
-                cls.equals_ignore_case(search_str, compare_str) for compare_str in compare_str_list
-            )
+            return any(cls.equals_ignore_case(search_str, compare_str) for compare_str in compare_str_list)
         return False
 
     @classmethod
     def startswith_case(cls, search_str: str, compare_str: str):
-        """
-        查找指定字符串是否以指定字符串开头
+        """查找指定字符串是否以指定字符串开头
 
         参数:
         - search_str (str): 查找的字符串。
@@ -148,8 +133,7 @@ class StringUtil:
 
     @classmethod
     def startswith_any_case(cls, search_str: str, compare_str_list: list[str]):
-        """
-        查找指定字符串是否以列表中任意一个字符串开头
+        """查找指定字符串是否以列表中任意一个字符串开头
 
         参数:
         - search_str (str): 查找的字符串。
@@ -159,21 +143,18 @@ class StringUtil:
         - bool: 查找结果。
         """
         if search_str and compare_str_list:
-            return any(
-                cls.startswith_case(search_str, compare_str) for compare_str in compare_str_list
-            )
+            return any(cls.startswith_case(search_str, compare_str) for compare_str in compare_str_list)
         return False
 
     @classmethod
     def convert_to_camel_case(cls, name: str) -> str:
-        """
-        将下划线大写方式命名的字符串转换为驼峰式；若输入为空则返回空字符串。
+        """将下划线命名的字符串转换为大驼峰（PascalCase）；若输入为空则返回空字符串。
 
         参数:
-        - name (str): 下划线大写方式命名的字符串。
+        - name (str): 下划线命名的字符串。
 
         返回:
-        - str: 转换后的驼峰式命名的字符串。
+        - str: 转换后的大驼峰字符串。
         """
         if not name:
             return ""
@@ -188,9 +169,23 @@ class StringUtil:
         return "".join(result)
 
     @classmethod
-    def get_mapping_value_by_key_ignore_case(cls, mapping: dict[str, str], key: str) -> str:
+    def to_lower_camel_case(cls, text: str) -> str:
+        """将下划线命名的字符串转换为小驼峰（lower camelCase）；若输入为空则返回空字符串。
+
+        参数:
+        - text (str): 下划线命名的字符串。
+
+        返回:
+        - str: 转换后的小驼峰字符串。
         """
-        根据忽略大小写的键获取字典中的对应的值
+        if not text:
+            return ""
+        parts = text.split("_")
+        return parts[0] + "".join(word.capitalize() for word in parts[1:])
+
+    @classmethod
+    def get_mapping_value_by_key_ignore_case(cls, mapping: dict[str, str], key: str) -> str:
+        """根据忽略大小写的键获取字典中的对应的值
 
         参数:
         - mapping (dict[str, str]): 字典。

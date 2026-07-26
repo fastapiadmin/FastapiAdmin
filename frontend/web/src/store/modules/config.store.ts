@@ -29,7 +29,7 @@
  */
 import { store } from "@stores";
 import ParamsAPI, { ConfigTable } from "@/api/module_system/params";
-import TenantAPI from "@/api/module_platform/tenant";
+
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
@@ -47,11 +47,10 @@ export const useConfigStore = defineStore(
     const MIN_FETCH_INTERVAL_MS = 5000;
 
     /**
-     * 获取系统配置 + 租户配置
+     * 获取系统配置
      * @param force 是否强制刷新配置
-     * @param tenantId 租户ID（默认 1），登录页等公开场景使用
      */
-    async function getConfig(force = false, tenantId = 1) {
+    async function getConfig(force = false) {
       if (configLoading.value) {
         return;
       }
@@ -64,39 +63,34 @@ export const useConfigStore = defineStore(
       }
       configLoading.value = true;
       try {
-        // 1. 获取系统级配置（演示模式、IP黑白名单等）
+        // 强制刷新时先清空
+        if (force) {
+          configData.value = {};
+        }
+
+        // 获取系统级配置（演示模式、IP黑白名单等）
         const response = await ParamsAPI.getInitConfig();
         const list = response?.data?.data;
         if (!Array.isArray(list)) {
           console.warn("[configStore] getInitConfig: 响应 data 非数组", response?.data);
           return;
         }
-        list.forEach((item: ConfigTable) => {
-          if (item.config_value !== undefined && item.config_key) {
-            configData.value[item.config_key] = item;
-          }
-        });
-
-        // 2. 获取租户个性化配置（品牌标识、版权信息等）
-        try {
-          const tenantResp = await TenantAPI.getTenantConfigInfo(tenantId);
-          const tenantList = tenantResp?.data?.data;
-          if (Array.isArray(tenantList)) {
-            tenantList.forEach((item: any) => {
-              if (item.config_value !== undefined && item.config_key) {
-                configData.value[item.config_key] = item;
-              }
-            });
-          }
-        } catch (e) {
-          console.warn("[configStore] 获取租户配置失败（非关键错误）", e);
-        }
-
-        isConfigLoaded.value = true;
-        _lastFetchedAt = Date.now();
+        applyConfigList(list);
+      } catch (error) {
+        console.warn("[configStore] 获取配置失败:", error);
       } finally {
         configLoading.value = false;
       }
+    }
+
+    function applyConfigList(list: ConfigTable[]) {
+      list.forEach((item: ConfigTable) => {
+        if (item.config_value !== undefined && item.config_key) {
+          configData.value[item.config_key] = item;
+        }
+      });
+      isConfigLoaded.value = true;
+      _lastFetchedAt = Date.now();
     }
 
     return {
@@ -107,7 +101,11 @@ export const useConfigStore = defineStore(
     };
   },
   {
-    persist: true,
+    persist: {
+      key: "config",
+      storage: localStorage,
+      pick: ["configData", "isConfigLoaded"],
+    },
   }
 );
 

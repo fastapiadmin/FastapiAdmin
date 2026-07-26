@@ -1,12 +1,12 @@
 <!-- 表格头部，包含表格大小、刷新、全屏、列设置、其他设置 -->
 <template>
-  <div class="flex-cb max-md:block!" id="fa-table-header">
+  <div class="flex items-center justify-between max-md:block!" :id="instanceId">
     <div class="flex-wrap">
       <slot name="left"></slot>
     </div>
 
-    <div class="flex-c md:justify-end max-md:mt-3 max-sm:hidden!">
-      <!-- 搜索区域显示/隐藏：默认展示搜索（未高亮）；点按收起后高亮表示当前为隐藏状态 -->
+    <div class="flex items-center md:justify-end max-md:mt-3 max-sm:hidden!">
+      <!-- 搜索区域显示/隐藏：搜索栏展开时高亮 -->
       <ElTooltip
         v-if="showSearchBar != null"
         placement="bottom"
@@ -14,10 +14,10 @@
       >
         <div
           class="button"
-          @click="search"
-          :class="!showSearchBar ? 'active bg-theme! hover:bg-theme/80!' : ''"
+          v-bind="searchBtnAttrs"
+          :class="showSearchBar ? 'active bg-theme! hover:bg-theme/80!' : ''"
         >
-          <FaSvgIcon icon="ri:search-line" :class="!showSearchBar ? 'text-white' : 'text-g-700'" />
+          <FaSvgIcon icon="ri:search-line" :class="showSearchBar ? 'text-white' : 'text-g-700'" />
         </div>
       </ElTooltip>
 
@@ -25,7 +25,7 @@
       <div
         v-if="shouldShow('refresh')"
         class="button"
-        @click="refresh"
+        v-bind="refreshBtnAttrs"
         :class="{ loading: loading && isManualRefresh }"
       >
         <FaSvgIcon
@@ -41,40 +41,27 @@
         </div>
         <template #dropdown>
           <ElDropdownMenu>
-            <div
+            <ElDropdownItem
               v-for="item in tableSizeOptions"
               :key="item.value"
-              class="table-size-btn-item [&_.el-dropdown-menu__item]:mb-[3px]! last:[&_.el-dropdown-menu__item]:mb-0!"
+              :command="item.value"
+              class="mb-0.75! last:mb-0!"
+              :class="tableSize === item.value ? 'bg-g-300/55!' : ''"
             >
-              <ElDropdownItem
-                :key="item.value"
-                :command="item.value"
-                :class="tableSize === item.value ? 'bg-g-300/55!' : ''"
-              >
-                {{ item.label }}
-              </ElDropdownItem>
-            </div>
+              {{ item.label }}
+            </ElDropdownItem>
           </ElDropdownMenu>
         </template>
       </ElDropdown>
 
       <!-- 全屏 -->
-      <div v-if="shouldShow('fullscreen')" class="button" @click="toggleFullScreen">
-        <FaSvgIcon :icon="isFullScreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'" />
-      </div>
-
-      <!-- 行拖拽排序 -->
       <ElTooltip
-        v-if="shouldShow('rowDrag')"
+        v-if="shouldShow('fullscreen')"
         placement="bottom"
-        :content="isRowDrag ? t('table.toolbar.disableRowDrag') : t('table.toolbar.enableRowDrag')"
+        :content="isFullScreen ? t('table.toolbar.exitFullscreen') : t('table.toolbar.fullscreen')"
       >
-        <div
-          class="button"
-          @click="toggleRowDrag"
-          :class="isRowDrag ? 'active bg-theme! hover:bg-theme/80!' : ''"
-        >
-          <FaSvgIcon icon="ri:drag-move-line" :class="isRowDrag ? 'text-white' : 'text-g-700'" />
+        <div class="button" v-bind="fullscreenBtnAttrs">
+          <FaSvgIcon :icon="isFullScreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'" />
         </div>
       </ElTooltip>
 
@@ -97,11 +84,11 @@
               <div
                 v-for="item in columns"
                 :key="item.prop || item.type"
-                class="column-option flex-c"
+                class="column-option flex items-center"
                 :class="{ 'fixed-column': item.fixed }"
               >
                 <div
-                  class="drag-icon mr-2 h-4.5 flex-cc text-g-500"
+                  class="drag-icon mr-2 h-4.5 flex items-center justify-center text-g-500"
                   :class="item.fixed ? 'cursor-default text-g-300' : 'cursor-move'"
                 >
                   <FaSvgIcon
@@ -122,14 +109,15 @@
           </ElScrollbar>
         </div>
       </ElPopover>
-      <!-- 其他设置 -->
+
+      <!-- 表格设置 -->
       <ElPopover v-if="shouldShow('settings')" placement="bottom" trigger="click">
         <template #reference>
           <div class="button">
             <FaSvgIcon icon="ri:settings-line" />
           </div>
         </template>
-        <div class="flex min-w-[200px] flex-col gap-2">
+        <div class="flex min-w-50 flex-col gap-2">
           <ElCheckbox v-model="isZebra" :value="true">
             {{ t("table.zebra") }}
           </ElCheckbox>
@@ -157,8 +145,6 @@ import { useTableStore } from "@stores";
 import { VueDraggable } from "vue-draggable-plus";
 import { useI18n } from "vue-i18n";
 import type { ColumnOption } from "@/types/component";
-import { ElScrollbar } from "element-plus";
-
 defineOptions({ name: "FaTableHeader" });
 
 // 显式声明插槽类型
@@ -169,6 +155,8 @@ defineSlots<{
 }>();
 
 const { t } = useI18n();
+
+const instanceId = ref(`fa-table-header-${Math.random().toString(36).slice(2, 9)}`);
 
 interface Props {
   /** 全屏 class */
@@ -183,7 +171,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   fullClass: "fa-full-height",
-  layout: "search,refresh,size,fullscreen,columns,rowDrag,settings",
+  layout: "search,refresh,size,fullscreen,columns,settings",
   showSearchBar: undefined,
 });
 
@@ -194,11 +182,21 @@ const columns = defineModel<ColumnOption[]>("columns", {
 
 interface Emits {
   refresh: [];
-  search: [];
   "update:showSearchBar": [value: boolean];
 }
 
 const emit = defineEmits<Emits>();
+
+/** 工具按钮通用属性，消除重复的 role / tabindex / 键盘事件 */
+function useToolButtonAttrs(onClick: () => void) {
+  return computed(() => ({
+    role: "button" as const,
+    tabindex: 0,
+    onClick,
+    onKeydownEnter: onClick,
+    onKeydownSpace: onClick,
+  }));
+}
 
 /**
  * 获取列的显示状态
@@ -222,19 +220,15 @@ const updateColumnVisibility = (col: ColumnOption, value: boolean | string | num
 };
 
 /** 表格大小选项配置 */
-const tableSizeOptions = [
+const tableSizeOptions = computed(() => [
   { value: TableSizeEnum.SMALL, label: t("table.sizeOptions.small") },
   { value: TableSizeEnum.DEFAULT, label: t("table.sizeOptions.default") },
   { value: TableSizeEnum.LARGE, label: t("table.sizeOptions.large") },
-];
+]);
 
 const tableStore = useTableStore();
-const { tableSize, isZebra, isBorder, isHeaderBackground, isRowDrag, highlightCurrentRow } =
+const { tableSize, isZebra, isBorder, isHeaderBackground, highlightCurrentRow } =
   storeToRefs(tableStore);
-
-const toggleRowDrag = () => {
-  tableStore.setIsRowDrag(!isRowDrag.value);
-};
 
 /** 解析 layout 属性，转换为数组 */
 const layoutItems = computed(() => {
@@ -255,7 +249,7 @@ const shouldShow = (componentName: string) => {
  * @param evt move事件对象
  * @returns 是否允许移动
  */
-const checkColumnMove = (event: any) => {
+const checkColumnMove = (event: { related: HTMLElement }) => {
   // 拖拽进入的目标 DOM 元素
   const toElement = event.related as HTMLElement;
   // 如果目标位置是 fixed 列，则不允许移动
@@ -269,7 +263,6 @@ const checkColumnMove = (event: any) => {
 const search = () => {
   // 切换搜索栏显示状态
   emit("update:showSearchBar", !props.showSearchBar);
-  emit("search");
 };
 
 /** 刷新事件处理 */
@@ -283,7 +276,7 @@ const refresh = () => {
  * @param command 表格大小枚举值
  */
 const handleTableSizeChange = (command: TableSizeEnum) => {
-  useTableStore().setTableSize(command);
+  tableStore.setTableSize(command);
 };
 
 /** 是否手动点击刷新 */
@@ -330,6 +323,11 @@ const handleEscapeKey = (e: KeyboardEvent) => {
 };
 
 /** 组件挂载时注册全局事件监听器 */
+
+const searchBtnAttrs = useToolButtonAttrs(search);
+const refreshBtnAttrs = useToolButtonAttrs(refresh);
+const fullscreenBtnAttrs = useToolButtonAttrs(toggleFullScreen);
+
 onMounted(() => {
   document.addEventListener("keydown", handleEscapeKey);
 });
@@ -351,7 +349,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@reference '@styles/core/tailwind.css';
+@reference '@styles/tailwind.css';
 
 .button {
   @apply ml-2 

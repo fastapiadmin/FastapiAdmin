@@ -1,0 +1,90 @@
+# -*- coding: utf-8 -*-
+
+{% if table.sub %}
+from typing import List
+{% endif %}
+
+from pydantic import BaseModel, ConfigDict, Field
+{% for import_stmt in schema_import_list %}
+{{ import_stmt }}
+{% endfor %}
+from app.core.base_schema import BaseSchema, UserBySchema, BaseQueryParam, UserByQueryParam
+{% set has_date_validator = false %}
+{% set has_time_validator = false %}
+{% set has_datetime_validator = false %}
+{% for column in columns %}
+{% if column.python_type == 'date' %}
+{% set has_date_validator = true %}
+{% elif column.python_type == 'time' %}
+{% set has_time_validator = true %}
+{% elif column.python_type == 'datetime' %}
+{% set has_datetime_validator = true %}
+{% endif %}
+{% endfor %}
+{% if has_date_validator or has_time_validator or has_datetime_validator %}
+from app.core.validator import {% if has_date_validator %}DateStr{% endif %}{% if has_time_validator %}{% if has_date_validator %}, {% endif %}TimeStr{% endif %}{% if has_datetime_validator %}{% if has_date_validator or has_time_validator %}, {% endif %}DateTimeStr{% endif %}
+{% endif %}
+
+class {{ class_name }}CreateSchema(BaseModel):
+    """
+    {{ function_name }}新增模型
+    """
+    {% for column in columns %}
+    {% if column.column_name not in ['uuid', 'tenant_id', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+    {% if column.column_name == 'status' %}
+    {{ column.column_name }}: {{ column.python_type }} = Field(default={% if column.python_type == "str" %}"0"{% else %}0{% endif %}{% if column.python_type == "int" %}, ge=0, le=1{% endif %}, description='{{ column.column_comment }}')
+    {% elif column.column_name == 'description' %}
+    {{ column.column_name }}: str | None = Field(default=None, description='{{ column.column_comment }}')
+    {% elif column.python_type == "bool" or column.html_type == "switch" %}
+    {{ column.column_name }}: bool = Field(default=True, description='{{ column.column_comment }}')
+    {% elif column.python_type == "date" %}
+    {{ column.column_name }}: DateStr | None = Field(default=None, description='{{ column.column_comment }}')
+    {% elif column.python_type == "time" %}
+    {{ column.column_name }}: TimeStr | None = Field(default=None, description='{{ column.column_comment }}')
+    {% elif column.python_type == "datetime" %}
+    {{ column.column_name }}: DateTimeStr | None = Field(default=None, description='{{ column.column_comment }}')
+    {% elif column.is_nullable %}
+    {{ column.column_name }}: {{ column.python_type }} | None = Field(default=None, description='{{ column.column_comment }}')
+    {% else %}
+    {{ column.column_name }}: {{ column.python_type }} = Field(default=..., description='{{ column.column_comment }}')
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+
+
+class {{ class_name }}UpdateSchema(BaseModel):
+    """
+    {{ function_name }}更新模型
+    """
+    {% for column in columns %}
+    {% if column.column_name not in ['uuid', 'tenant_id', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+    {% if column.column_name == 'status' %}
+    {{ column.column_name }}: {{ column.python_type }} | None = Field(default=None{% if column.python_type == "int" %}, ge=0, le=1{% endif %}, description='{{ column.column_comment }}')
+    {% elif column.python_type == "date" %}
+    {{ column.column_name }}: DateStr | None = Field(default=None, description='{{ column.column_comment }}')
+    {% elif column.python_type == "time" %}
+    {{ column.column_name }}: TimeStr | None = Field(default=None, description='{{ column.column_comment }}')
+    {% elif column.python_type == "datetime" %}
+    {{ column.column_name }}: DateTimeStr | None = Field(default=None, description='{{ column.column_comment }}')
+    {% else %}
+    {{ column.column_name }}: {{ column.python_type }} | None = Field(default=None, description='{{ column.column_comment }}')
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+
+
+class {{ class_name }}OutSchema({{ class_name }}CreateSchema, BaseSchema, UserBySchema):
+    """
+    {{ function_name }}响应模型
+    """
+    model_config = ConfigDict(from_attributes=True)
+
+
+class {{ class_name }}QueryParam(BaseQueryParam, UserByQueryParam):
+    """{{ function_name }}查询参数"""
+
+    {% for column in columns %}
+    {% if column.is_query and column.column_name not in ['created_time', 'updated_time', 'created_id', 'updated_id', 'tenant_id', 'is_deleted', 'deleted_time', 'deleted_id'] %}
+    {{ column.column_name }}: {{ column.python_type }} | None = Field(None, description="{{ column.column_comment }}"{% if column.query_type == 'LIKE' %}, json_schema_extra={"q": "like"}{% else %}, json_schema_extra={"q": "eq"}{% endif %})
+    {% endif %}
+    {% endfor %}

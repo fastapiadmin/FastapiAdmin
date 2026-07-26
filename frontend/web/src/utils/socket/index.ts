@@ -141,7 +141,7 @@ export default class WebSocketClient {
   private reconnectAttempts: number = 0; // 当前重连次数
 
   // 消息队列 - 缓存连接建立前的消息
-  private messageQueue: Array<string | ArrayBufferLike | Blob | ArrayBufferView> = [];
+  private messageQueue: Array<string | Blob | BufferSource> = [];
 
   // 定时器
   private detectionTimer: NodeJS.Timeout | null = null;
@@ -258,7 +258,7 @@ export default class WebSocketClient {
   }
 
   // 发送消息 - 增加消息队列
-  send(data: string | ArrayBufferLike | Blob | ArrayBufferView, immediate: boolean = false): void {
+  send(data: string | Blob | BufferSource, immediate: boolean = false): void {
     // 如果要求立即发送且未连接，则直接报错
     if (immediate && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
       console.error("WebSocket未连接，无法立即发送消息");
@@ -277,7 +277,7 @@ export default class WebSocketClient {
     }
 
     try {
-      this.ws.send(data as any);
+      this.ws.send(data);
     } catch (error) {
       console.error("WebSocket发送消息失败:", error);
       // 发送失败时将消息加入队列，等待重连后重试
@@ -294,7 +294,7 @@ export default class WebSocketClient {
         const data = this.messageQueue.shift();
         if (data) {
           try {
-            this.ws?.send(data as any);
+            this.ws?.send(data);
           } catch (error) {
             console.error("发送队列消息失败:", error);
             // 如果发送失败，将消息放回队列头部

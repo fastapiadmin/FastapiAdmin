@@ -1,9 +1,12 @@
 <template>
-  <ElCollapse class="gencode-help-collapse mb-4" accordion>
+  <ElCollapse
+    class="gencode-help-collapse overflow-hidden border border-(--el-border-color-lighter) rounded mb-4"
+    accordion
+  >
     <ElCollapseItem name="rules">
       <template #title>
-        <span class="gencode-help-collapse__title">
-          <ElIcon class="gencode-help-collapse__icon"><InfoFilled /></ElIcon>
+        <span class="inline-flex gap-1.5 items-center">
+          <ElIcon class="shrink-0"><InfoFilled /></ElIcon>
           菜单、页面路由与接口路径对照（写入本地时）
         </span>
       </template>
@@ -13,7 +16,9 @@
         <ElTableColumn prop="page" label="浏览器地址（页面路由）" min-width="160" />
         <ElTableColumn prop="api" label="前端请求的 HTTP 路径" min-width="160" />
       </ElTable>
-      <p class="gencode-help-footnote">
+      <p
+        class="gencode-help-footnote mt-2.5 text-xs leading-relaxed text-(--el-text-color-secondary)"
+      >
         包名、模块名、业务名见下方表单（业务名对应 plugin 下功能目录，可与
         <code>module_example</code>
         中
@@ -60,12 +65,6 @@ const rows = [
 </script>
 
 <style scoped lang="scss">
-.gencode-help-collapse {
-  overflow: hidden;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: var(--el-border-radius-base);
-}
-
 .gencode-help-collapse :deep(.el-collapse-item__header) {
   padding: 8px 12px;
   font-size: 13px;
@@ -81,25 +80,8 @@ const rows = [
   padding: 10px 12px 12px;
 }
 
-.gencode-help-collapse__title {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.gencode-help-collapse__icon {
-  flex-shrink: 0;
-}
-
 .gencode-rules-table :deep(.el-table__cell) {
   font-size: 12px;
-}
-
-.gencode-help-footnote {
-  margin: 10px 0 0;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--el-text-color-secondary);
 }
 
 .gencode-help-footnote code {

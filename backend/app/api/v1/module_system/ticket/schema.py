@@ -1,9 +1,13 @@
-from dataclasses import dataclass
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema, CommonSchema
+from app.common.enums import TicketTypeEnum
+from app.core.base_schema import (
+    BaseQueryParam,
+    BaseSchema,
+    CommonSchema,
+    UserByQueryParam,
+    UserBySchema,
+)
 
 
 class TicketCreateSchema(BaseModel):
@@ -12,19 +16,9 @@ class TicketCreateSchema(BaseModel):
     title: str = Field(..., min_length=1, max_length=200, description="工单标题")
     ticket_content: str = Field(default="", description="工单内容（富文本）")
     summary: str | None = Field(default=None, description="工单内容（纯文本摘要）")
-    ticket_type: str = Field(
-        default="suggestion", max_length=20, description="工单类型(suggestion/bug/optimize/other)"
-    )
+    ticket_type: TicketTypeEnum = Field(default=TicketTypeEnum.SUGGESTION, description="工单类型(suggestion/bug/optimize/other)")
     images: str | None = Field(default=None, description="图片URL列表(JSON数组)")
     description: str | None = Field(default=None, max_length=255, description="工单描述")
-
-    @field_validator("ticket_type")
-    @classmethod
-    def _validate_ticket_type(cls, v: str) -> str:
-        allowed = {"suggestion", "bug", "optimize", "other"}
-        if v not in allowed:
-            raise ValueError(f"工单类型仅支持 suggestion、bug、optimize、other，当前值: {v}")
-        return v
 
     @field_validator("title")
     @classmethod
@@ -41,23 +35,11 @@ class TicketUpdateSchema(BaseModel):
     title: str | None = Field(default=None, max_length=200, description="工单标题")
     ticket_content: str | None = Field(default=None, description="工单内容（富文本）")
     summary: str | None = Field(default=None, description="工单内容（纯文本摘要）")
-    ticket_type: str | None = Field(default=None, max_length=20, description="工单类型")
-    status: int | None = Field(
-        default=None, ge=0, le=3, description="状态(0:待处理 1:处理中 2:已完成 3:已关闭)"
-    )
+    ticket_type: TicketTypeEnum | None = Field(default=None, description="工单类型")
+    status: int | None = Field(default=None, ge=0, le=3, description="状态(0:待处理 1:处理中 2:已完成 3:已关闭)")
     reply: str | None = Field(default=None, description="回复内容")
     assigned_id: int | None = Field(default=None, gt=0, description="处理人ID")
     description: str | None = Field(default=None, max_length=255, description="工单描述")
-
-    @field_validator("ticket_type")
-    @classmethod
-    def _validate_ticket_type(cls, v: str | None) -> str | None:
-        if v is None:
-            return v
-        allowed = {"suggestion", "bug", "optimize", "other"}
-        if v not in allowed:
-            raise ValueError(f"工单类型仅支持 suggestion、bug、optimize、other，当前值: {v}")
-        return v
 
     @field_validator("status")
     @classmethod
@@ -69,23 +51,20 @@ class TicketUpdateSchema(BaseModel):
         return v
 
 
-class TicketOutSchema(BaseSchema):
+class TicketOutSchema(BaseSchema, UserBySchema):
     """工单响应"""
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
-    title: str
-    ticket_content: str | None = None
-    summary: str | None = None
-    ticket_type: str
-    status: int
-    images: str | None = None
-    reply: str | None = None
-    assigned_id: int | None = None
-    created_by: CommonSchema | None = None
-    updated_by: CommonSchema | None = None
-    assigned_by: CommonSchema | None = None
+    title: str = Field(..., description="工单标题")
+    ticket_content: str | None = Field(default=None, description="工单内容")
+    summary: str | None = Field(default=None, description="摘要")
+    ticket_type: TicketTypeEnum = Field(..., description="工单类型")
+    status: int = Field(..., description="状态(0:待处理 1:处理中 2:已完成 3:已关闭)")
+    images: str | None = Field(default=None, description="图片")
+    reply: str | None = Field(default=None, description="回复内容")
+    assigned_id: int | None = Field(default=None, description="指派人ID")
+    assigned_by: CommonSchema | None = Field(default=None, description="指派人")
 
 
 class TicketBatchSchema(BaseModel):
@@ -102,25 +81,23 @@ class TicketBatchSchema(BaseModel):
         return v
 
 
-@dataclass
-class TicketQueryParam:
+class TicketQueryParam(BaseQueryParam, UserByQueryParam):
     """工单查询参数"""
 
-    def __init__(
-        self,
-        title: str | None = None,
-        ticket_type: str | None = None,
-        status: str | None = None,
-        created_id: int | None = None,
-        assigned_id: int | None = None,
-    ) -> None:
-        if title:
-            self.title = (QueueEnum.like.value, title)
-        if ticket_type:
-            self.ticket_type = (QueueEnum.eq.value, ticket_type)
-        if status:
-            self.status = (QueueEnum.eq.value, status)
-        if created_id:
-            self.created_id = (QueueEnum.eq.value, created_id)
-        if assigned_id:
-            self.assigned_id = (QueueEnum.eq.value, assigned_id)
+    title: str | None = Field(None, description="工单标题", json_schema_extra={"q": "like"})
+    ticket_type: str | None = Field(None, description="工单类型", json_schema_extra={"q": "eq"})
+    assigned_id: int | None = Field(None, description="处理人ID", json_schema_extra={"q": "eq"})
+    status: int | None = Field(None, ge=0, le=3, description="状态(0:待处理 1:处理中 2:已完成 3:已关闭)", json_schema_extra={"q": "eq"})
+
+
+class TicketCommentCreateSchema(BaseModel):
+    """创建评论"""
+    content: str = Field(..., min_length=1, description="评论内容")
+
+
+class TicketCommentOutSchema(BaseSchema, UserBySchema):
+    """评论响应"""
+    model_config = ConfigDict(from_attributes=True)
+    ticket_id: int
+    content: str
+    created_by_name: str | None = None

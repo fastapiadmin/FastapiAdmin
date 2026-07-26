@@ -1,95 +1,68 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Query, Security
 from fastapi.responses import JSONResponse
 from redis.asyncio.client import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.request import PaginationService
 from app.common.response import ResponseSchema, SuccessResponse
-from app.core.base_params import PaginationQueryParam
-from app.core.dependencies import AuthPermission, redis_getter
+from app.core.base_schema import AuthSchema, PaginationQueryParam
+from app.core.dependencies import AuthPermission, db_getter, get_current_user, redis_getter
 from app.core.router_class import OperationLogRoute
 
-from .schema import OnlineOutSchema, OnlineQueryParam
+from .schema import DashboardStatsSchema, OnlineOutSchema, OnlineQueryParam
 from .service import OnlineService
 
-OnlineRouter = APIRouter(route_class=OperationLogRoute, prefix="/online", tags=["系统监控/在线用户"])
+OnlineRouter = APIRouter(route_class=OperationLogRoute, prefix="/online", tags=["在线用户"])
 
 
-@OnlineRouter.get(
-    "/list",
-    dependencies=[Depends(AuthPermission(["module_monitor:online:query"]))],
-    summary="获取在线用户列表",
-    response_model=ResponseSchema[list[OnlineOutSchema]],
-)
+@OnlineRouter.get("/list", summary="获取在线用户列表", response_model=ResponseSchema[list[OnlineOutSchema]], dependencies=[Security(AuthPermission(["module_monitor:online:query"]))])
 async def get_online_list_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
-    paging_query: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[OnlineQueryParam, Depends()],
+    page: Annotated[PaginationQueryParam, Depends()],
+    search: Annotated[OnlineQueryParam, Query()],
 ) -> JSONResponse:
-    """
-    获取在线用户列表
-
-    参数:
-    - redis (Redis): Redis异步客户端实例。
-    - paging_query (PaginationQueryParam): 分页查询参数模型。
-    - search (OnlineQueryParam): 查询参数模型。
-
-    返回:
-    - JSONResponse: 包含在线用户列表的JSON响应。
-    """
-    result_dict_list = await OnlineService.get_online_list_service(redis=redis, search=search)
-    # 在线用户来自 Redis，无法在数据库层 OFFSET/LIMIT
+    result_dict_list = await OnlineService.get_online_list(redis=redis, search=search)
     result_dict = await PaginationService.paginate(
         data_list=result_dict_list,
-        page_no=paging_query.page_no,
-        page_size=paging_query.page_size,
+        page_no=page.page_no,
+        page_size=page.page_size,
     )
-
     return SuccessResponse(data=result_dict, msg="获取成功")
 
 
-@OnlineRouter.delete(
-    "/delete",
-    dependencies=[Depends(AuthPermission(["module_monitor:online:delete"]))],
-    summary="强制下线",
-    response_model=ResponseSchema[None],
-)
+@OnlineRouter.get("/current", summary="获取当前用户的在线会话", response_model=ResponseSchema[list[OnlineOutSchema]], dependencies=[Depends(get_current_user)])
+async def get_current_online_controller(
+    redis: Annotated[Redis, Depends(redis_getter)],
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
+) -> JSONResponse:
+    sessions = await OnlineService.get_current_user_sessions(redis=redis, user_id=auth.user.id)
+    return SuccessResponse(data=sessions, msg="获取当前用户在线会话成功")
+
+
+@OnlineRouter.delete("/delete", summary="强制下线", response_model=ResponseSchema[None], dependencies=[Security(AuthPermission(["module_monitor:online:delete"]))])
 async def delete_online_controller(
     session_id: Annotated[str, Body(description="会话编号")],
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
-    """
-    强制下线指定在线用户
-
-    参数:
-    - session_id (str): 在线用户会话ID。
-    - redis (Redis): Redis异步客户端实例。
-
-    返回:
-    - JSONResponse: 包含操作结果的JSON响应。
-    """
-    await OnlineService.delete_online_service(redis=redis, session_id=session_id)
+    await OnlineService.delete_online(redis=redis, session_id=session_id)
     return SuccessResponse(msg="强制下线成功")
 
 
-@OnlineRouter.delete(
-    "/clear",
-    dependencies=[Depends(AuthPermission(["module_monitor:online:delete"]))],
-    summary="清除所有在线用户",
-    response_model=ResponseSchema[None],
-)
+@OnlineRouter.delete("/clear", summary="清除所有在线用户", response_model=ResponseSchema[None], dependencies=[Security(AuthPermission(["module_monitor:online:delete"]))])
 async def clear_online_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
-    """
-    清除所有在线用户
-
-    参数:
-    - redis (Redis): Redis异步客户端实例。
-
-    返回:
-    - JSONResponse: 包含操作结果的JSON响应。
-    """
-    await OnlineService.clear_online_service(redis=redis)
+    await OnlineService.clear_online(redis=redis)
     return SuccessResponse(msg="清除所有在线用户成功")
+
+
+@OnlineRouter.get("/stats", summary="获取仪表盘统计数据", response_model=ResponseSchema[DashboardStatsSchema])
+async def get_dashboard_stats_controller(
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    redis: Annotated[Redis, Depends(redis_getter)],
+    _auth: Annotated[AuthSchema, Security(AuthPermission(["module_monitor:dashboard:query"]))],
+) -> JSONResponse:
+    data = await OnlineService.get_dashboard_stats(db=db, redis=redis)
+    return SuccessResponse(data=data, msg="获取仪表盘统计成功")

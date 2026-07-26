@@ -79,14 +79,12 @@ MIME_TYPE_MAPPING = {
 
 
 class UploadUtil:
-    """
-    上传工具类
+    """上传工具类
     """
 
     @staticmethod
     def generate_random_number() -> str:
-        """
-        生成3位随机数字字符串。
+        """生成3位随机数字字符串。
 
         返回:
         - str: 三位随机数字字符串。
@@ -95,8 +93,7 @@ class UploadUtil:
 
     @staticmethod
     def check_file_exists(filepath: str) -> bool:
-        """
-        检查文件是否存在。
+        """检查文件是否存在。
 
         参数:
         - filepath (str): 文件路径。
@@ -108,8 +105,7 @@ class UploadUtil:
 
     @staticmethod
     def sanitize_filename(filename: str) -> str:
-        """
-        清理文件名，移除危险字符和路径穿越。
+        """清理文件名，移除危险字符和路径穿越。
 
         参数:
         - filename (str): 原始文件名。
@@ -129,8 +125,7 @@ class UploadUtil:
 
     @staticmethod
     def check_path_traversal(filename: str) -> bool:
-        """
-        检查文件名是否包含路径穿越。
+        """检查文件名是否包含路径穿越。
 
         参数:
         - filename (str): 文件名。
@@ -146,8 +141,7 @@ class UploadUtil:
 
     @staticmethod
     def get_extension_from_filename(filename: str) -> str:
-        """
-        从文件名获取扩展名。
+        """从文件名获取扩展名。
 
         参数:
         - filename (str): 文件名。
@@ -162,8 +156,7 @@ class UploadUtil:
 
     @staticmethod
     def is_dangerous_extension(extension: str) -> bool:
-        """
-        检查扩展名是否为危险类型。
+        """检查扩展名是否为危险类型。
 
         参数:
         - extension (str): 文件扩展名。
@@ -175,8 +168,7 @@ class UploadUtil:
 
     @staticmethod
     def detect_file_type(content: bytes) -> str | None:
-        """
-        通过文件内容检测真实文件类型。
+        """通过文件内容检测真实文件类型。
 
         参数:
         - content (bytes): 文件内容（前几字节即可）。
@@ -202,8 +194,7 @@ class UploadUtil:
 
     @classmethod
     def validate_file_extension(cls, extension: str) -> bool:
-        """
-        验证文件扩展名是否在允许列表中。
+        """验证文件扩展名是否在允许列表中。
 
         参数:
         - extension (str): 文件扩展名。
@@ -218,15 +209,12 @@ class UploadUtil:
         if cls.is_dangerous_extension(ext_lower):
             raise CustomException(msg=f"不允许上传此类型的文件: {extension}")
         if ext_lower not in settings.ALLOWED_EXTENSIONS:
-            raise CustomException(
-                msg=f"文件类型不支持，允许的类型: {', '.join(settings.ALLOWED_EXTENSIONS)}"
-            )
+            raise CustomException(msg=f"文件类型不支持，允许的类型: {', '.join(settings.ALLOWED_EXTENSIONS)}")
         return True
 
     @classmethod
     def validate_file_content_type(cls, content: bytes, claimed_extension: str) -> bool:
-        """
-        验证文件内容类型与声明的扩展名是否匹配。
+        """验证文件内容类型与声明的扩展名是否匹配。
 
         参数:
         - content (bytes): 文件内容。
@@ -242,15 +230,12 @@ class UploadUtil:
         if detected_type:
             expected_ext = MIME_TYPE_MAPPING.get(detected_type, "")
             if expected_ext and expected_ext != claimed_extension.lower():
-                logger.warning(
-                    f"文件类型不匹配: 声明扩展名={claimed_extension}, 检测类型={detected_type}"
-                )
+                logger.warning(f"文件类型不匹配: 声明扩展名={claimed_extension}, 检测类型={detected_type}")
         return True
 
     @staticmethod
     def check_file_size(file: UploadFile) -> bool:
-        """
-        校验文件大小是否合法。
+        """校验文件大小是否合法。
 
         参数:
         - file (UploadFile): 上传的文件对象。
@@ -262,15 +247,12 @@ class UploadUtil:
         - CustomException: 文件过大时抛出。
         """
         if file.size and file.size > settings.MAX_FILE_SIZE:
-            raise CustomException(
-                msg=f"文件大小超过限制，最大允许 {settings.MAX_FILE_SIZE // (1024 * 1024)}MB"
-            )
+            raise CustomException(msg=f"文件大小超过限制，最大允许 {settings.MAX_FILE_SIZE // (1024 * 1024)}MB")
         return True
 
     @classmethod
     def generate_safe_filename(cls, original_filename: str, extension: str) -> str:
-        """
-        生成安全的文件名。
+        """生成安全的文件名。
 
         参数:
         - original_filename (str): 原始文件名。
@@ -293,8 +275,7 @@ class UploadUtil:
 
     @staticmethod
     def check_file_timestamp(filename: str) -> bool:
-        """
-        校验文件时间戳是否合法。
+        """校验文件时间戳是否合法。
 
         参数:
         - filename (str): 文件名（包含时间戳片段）。
@@ -312,8 +293,7 @@ class UploadUtil:
 
     @staticmethod
     def check_file_machine(filename: str) -> bool:
-        """
-        校验文件机器码是否合法。
+        """校验文件机器码是否合法。
 
         参数:
         - filename (str): 文件名。
@@ -329,8 +309,7 @@ class UploadUtil:
 
     @staticmethod
     def check_file_random_code(filename: str) -> bool:
-        """
-        校验文件随机码是否合法。
+        """校验文件随机码是否合法。
 
         参数:
         - filename (str): 文件名。
@@ -346,8 +325,7 @@ class UploadUtil:
 
     @staticmethod
     def generate_file(filepath: Path, chunk_size: int = 8192):
-        """
-        根据文件生成二进制数据迭代器。
+        """根据文件生成二进制数据迭代器。
 
         参数:
         - filepath (Path): 文件路径。
@@ -362,8 +340,7 @@ class UploadUtil:
 
     @staticmethod
     def _sanitize_target_path(target_path: str) -> str:
-        """
-        清理目标路径，移除危险字符和路径穿越。
+        """清理目标路径，移除危险字符和路径穿越。
 
         参数:
         - target_path (str): 原始目标路径。
@@ -399,8 +376,7 @@ class UploadUtil:
 
     @staticmethod
     def delete_file(filepath: Path) -> bool:
-        """
-        删除文件。
+        """删除文件。
 
         参数:
         - filepath (Path): 文件路径。
@@ -422,8 +398,7 @@ class UploadUtil:
         upload_type: str = "file",
         target_path: str | None = None,
     ) -> tuple[str, Path, str]:
-        """
-        安全文件上传。
+        """安全文件上传。
 
         参数:
         - file (UploadFile): 上传的文件对象。
@@ -485,9 +460,7 @@ class UploadUtil:
                 dir_path = settings.UPLOAD_FILE_PATH.joinpath(type_subdir)
             else:
                 # 其他类型：按日期子目录组织
-                dir_path = settings.UPLOAD_FILE_PATH.joinpath(
-                    type_subdir, datetime.now().strftime("%Y/%m/%d")
-                )
+                dir_path = settings.UPLOAD_FILE_PATH.joinpath(type_subdir, datetime.now().strftime("%Y/%m/%d"))
 
             dir_path.mkdir(parents=True, exist_ok=True)
 
@@ -514,8 +487,7 @@ class UploadUtil:
 
     @staticmethod
     def get_file_tree(file_path: str) -> list[dict]:
-        """
-        获取文件树结构。
+        """获取文件树结构。
 
         参数:
         - file_path (str): 文件路径。
@@ -527,8 +499,7 @@ class UploadUtil:
 
     @classmethod
     async def download_file(cls, file_path: str) -> str:
-        """
-        下载文件，生成新的文件名。
+        """下载文件，生成新的文件名。
 
         参数:
         - file_path (str): 文件路径。

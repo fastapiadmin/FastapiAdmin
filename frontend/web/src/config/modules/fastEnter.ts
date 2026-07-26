@@ -11,22 +11,22 @@ const fastEnterConfig: FastEnterConfig = {
   // 应用列表
   applications: [
     {
-      name: "功能引导",
-      description: "产品操作指南",
-      icon: "ri:compass-3-line",
-      iconColor: "#009688",
-      enabled: true,
-      order: 1,
-      routeName: "FastlinkTutorial",
-    },
-    {
-      name: "使用文档",
-      description: "使用指南与开发文档",
-      icon: "ri:book-2-line",
+      name: "用户管理",
+      description: "系统用户管理与维护",
+      icon: "ri:user-settings-line",
       iconColor: "#377dff",
       enabled: true,
+      order: 1,
+      routeName: "User",
+    },
+    {
+      name: "角色管理",
+      description: "角色权限配置与分配",
+      icon: "ri:shield-user-line",
+      iconColor: "#FF6B35",
+      enabled: true,
       order: 2,
-      link: WEB_LINKS.DOCS,
+      routeName: "Role",
     },
     {
       name: "定价",
@@ -49,7 +49,7 @@ const fastEnterConfig: FastEnterConfig = {
     {
       name: "官方文档",
       description: "使用指南与开发文档",
-      icon: "ri:bill-line",
+      icon: "ri:book-open-line",
       iconColor: "#ffb100",
       enabled: true,
       order: 5,
@@ -110,17 +110,16 @@ const fastEnterConfig: FastEnterConfig = {
       isDialog: true,
     },
     {
-      name: "个人中心",
+      name: "操作日志",
       enabled: true,
       order: 5,
-      routeName: "FastlinkProfile",
+      routeName: "Log",
     },
     {
-      name: "留言管理",
+      name: "个人中心",
       enabled: true,
       order: 6,
-      routeName: "FastlinkArticleList",
-      routeQuery: { commentWall: "1" },
+      routeName: "FastlinkProfile",
     },
   ],
 };

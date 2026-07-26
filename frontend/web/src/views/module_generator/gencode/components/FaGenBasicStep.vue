@@ -1,39 +1,71 @@
 <template>
-  <ElForm ref="formRef" class="gen-basic-step" :model="info" :rules="rules" label-width="120px">
+  <ElForm
+    ref="formRef"
+    class="gen-basic-step w-full min-w-0"
+    :model="info"
+    :rules="rules"
+    label-width="120px"
+  >
     <!-- 顶部：生成回显 -->
     <ElRow :gutter="12" class="mb-3">
       <ElCol :span="24">
-        <ElCard shadow="never" class="gen-echo-card">
-          <div class="gen-echo-card__title">生成回显 / 生成文件路径</div>
-          <div class="gen-echo-grid">
-            <div class="gen-echo-item">
-              <div class="gen-echo-item__k">后端路径</div>
-              <code class="gen-echo-item__v">{{ backendModuleDirPreview }}</code>
+        <ElCard shadow="never" class="gen-echo-card border-(--el-border-color-lighter)">
+          <div
+            class="px-2 py-1.5 font-semibold bg-(--el-fill-color-light) border-b border-(--el-border-color-lighter)"
+          >
+            生成回显 / 生成文件路径
+          </div>
+          <div class="grid grid-cols-2 gap-x-3s-2 -ygap-x-3 gap-y-2 px-2 py-1.5">
+            <div class="flex text-[14px] items-center gap-2.5 min-w-0">
+              <div class="flex-none text-(--el-text-color-secondary) whitespace-nowrap">
+                后端路径
+              </div>
+              <code
+                class="block flex-1 min-w-0 truncate bg-(--el-fill-color) rounded-[3px] px-1.5 py-px"
+                >{{ backendModuleDirPreview }}</code
+              >
             </div>
-            <div class="gen-echo-item">
-              <div class="gen-echo-item__k">前端视图路径</div>
-              <code class="gen-echo-item__v">{{ frontendViewDirPreview }}</code>
+            <div class="flex text-[14px] items-center gap-2.5 min-w-0">
+              <div class="flex-none text-(--el-text-color-secondary) whitespace-nowrap">
+                前端视图路径
+              </div>
+              <code
+                class="block flex-1 min-w-0 truncate bg-(--el-fill-color) rounded-[3px] px-1.5 py-px"
+                >{{ frontendViewDirPreview }}</code
+              >
             </div>
-            <div class="gen-echo-item">
-              <div class="gen-echo-item__k">前端 API 文件</div>
-              <code class="gen-echo-item__v">{{ frontendApiFilePreview }}</code>
+            <div class="flex text-[14px] items-center gap-2.5 min-w-0">
+              <div class="flex-none text-(--el-text-color-secondary) whitespace-nowrap">
+                前端 API 文件
+              </div>
+              <code
+                class="block flex-1 min-w-0 truncate bg-(--el-fill-color) rounded-[3px] px-1.5 py-px"
+                >{{ frontendApiFilePreview }}</code
+              >
             </div>
-            <div class="gen-echo-item">
-              <div class="gen-echo-item__k gen-echo-item__k--with-tip">
+            <div class="flex text-[14px] items-center gap-2.5 min-w-0">
+              <div
+                class="flex-none text-(--el-text-color-secondary) whitespace-nowrap inline-flex items-center gap-1"
+              >
                 权限
                 <ElTooltip
                   content="前两段为包名、模块名；第三段为操作类型（与接口/按钮一致）：query、detail、create、update、delete、patch、export、import、download。"
                   placement="top"
                 >
-                  <ElIcon class="gen-echo-item__tip"><QuestionFilled /></ElIcon>
+                  <ElIcon class="text-(--el-text-color-placeholder) cursor-help"
+                    ><QuestionFilled
+                  /></ElIcon>
                 </ElTooltip>
               </div>
-              <code class="gen-echo-item__v">{{ permissionPreview }}</code>
+              <code
+                class="block flex-1 min-w-0 truncate bg-(--el-fill-color) rounded-[3px] px-1.5 py-px"
+                >{{ permissionPreview }}</code
+              >
             </div>
           </div>
           <div
             v-if="info.sub_table_name && info.sub_table_fk_name && !info.master_sub_hint"
-            class="gen-echo-warn"
+            class="text-[14px] text-(--el-color-warning) px-2 pb-1.5"
           >
             将额外生成子表代码（不创建子表菜单）
           </div>
@@ -43,11 +75,16 @@
 
     <ElRow :gutter="16" class="gen-layout-row">
       <ElCol :span="24" class="gen-layout-left">
-        <ElCard shadow="never" class="gen-form-card">
+        <ElCard
+          shadow="never"
+          class="gen-form-card overflow-x-hidden border-(--el-border-color-lighter)"
+        >
           <template #header>
-            <div class="gen-form-card__header">
+            <div class="flex items-baseline justify-between gap-3">
               <span class="font-medium">基础信息</span>
-              <span class="gen-form-card__hint">切换步骤会先保存当前页</span>
+              <span class="text-[12px] text-(--el-text-color-secondary) whitespace-nowrap"
+                >切换步骤会先保存当前页</span
+              >
             </div>
           </template>
           <ElRow :gutter="16">
@@ -77,10 +114,10 @@
                     <ElIcon><QuestionFilled /></ElIcon>
                   </ElTooltip>
                 </template>
-                <div class="gen-package-row">
+                <div class="flex items-center gap-2 w-full min-w-0">
                   <ElInput
                     v-model="info.package_name"
-                    class="gen-package-row__input"
+                    class="flex-1 min-w-0"
                     placeholder="例如 module_example"
                     clearable
                   />
@@ -154,7 +191,10 @@
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
-              <ElCard shadow="never" class="master-sub-card mb-4">
+              <ElCard
+                shadow="never"
+                class="master-sub-card mb-4 border-(--el-border-color-lighter)"
+              >
                 <ElRow :gutter="16">
                   <ElCol :span="12">
                     <ElFormItem prop="sub_table_name">
@@ -280,15 +320,15 @@ const backendModuleDirPreview = computed(() => {
 const frontendViewDirPreview = computed(() => {
   const pkg = effectivePackageName.value;
   const mod = (info.value.module_name || "").trim();
-  if (!pkg || !mod) return "frontend/src/views/<module_xxx>/<module>/";
-  return `frontend/src/views/${pkg}/${mod}/`;
+  if (!pkg || !mod) return "frontend/web/src/views/<module_xxx>/<module>/";
+  return `frontend/web/src/views/${pkg}/${mod}/`;
 });
 
 const frontendApiFilePreview = computed(() => {
   const pkg = effectivePackageName.value;
   const mod = (info.value.module_name || "").trim();
-  if (!pkg || !mod) return "frontend/src/api/<module_xxx>/<module>.ts";
-  return `frontend/src/api/${pkg}/${mod}.ts`;
+  if (!pkg || !mod) return "frontend/web/src/api/<module_xxx>/<module>.ts";
+  return `frontend/web/src/api/${pkg}/${mod}.ts`;
 });
 
 interface Emits {
@@ -349,12 +389,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-.gen-basic-step {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-}
-
 .gen-basic-step :deep(.el-col) {
   min-width: 0;
 }
@@ -369,23 +403,6 @@ onUnmounted(() => {
   max-width: 100%;
 }
 
-.gen-package-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-}
-
-.gen-package-row__input {
-  flex: 1;
-  min-width: 0;
-}
-
-.master-sub-card {
-  border: 1px solid var(--el-border-color-lighter);
-}
-
 .master-sub-card :deep(.el-card__header) {
   padding: 8px 10px;
 }
@@ -394,94 +411,11 @@ onUnmounted(() => {
   padding: 10px;
 }
 
-.gen-form-card {
-  overflow-x: hidden;
-  border: 1px solid var(--el-border-color-lighter);
-}
-
 .gen-form-card :deep(.el-card__body) {
   overflow-x: hidden;
 }
 
-.gen-form-card__header {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.gen-form-card__hint {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  white-space: nowrap;
-}
-
-.gen-echo-card {
-  border: 1px solid var(--el-border-color-lighter);
-}
-
-.gen-echo-card__title {
-  padding: 6px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  background: var(--el-fill-color-light);
-  border-bottom: 1px solid var(--el-border-color-lighter);
-}
-
 .gen-echo-card :deep(.el-card__body) {
   padding: 6px 8px;
-}
-
-.gen-echo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 12px;
-  padding: 6px 8px;
-}
-
-.gen-echo-item {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-}
-
-.gen-echo-item__k {
-  flex: 0 0 auto;
-  margin-bottom: 0;
-  font-size: 11px;
-  color: var(--el-text-color-secondary);
-  white-space: nowrap;
-}
-
-.gen-echo-item__k--with-tip {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-}
-
-.gen-echo-item__tip {
-  font-size: 12px;
-  color: var(--el-text-color-placeholder);
-  cursor: help;
-}
-
-.gen-echo-item__v {
-  display: block;
-  flex: 1;
-  min-width: 0;
-  padding: 1px 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 11px;
-  white-space: nowrap;
-  background: var(--el-fill-color);
-  border-radius: 3px;
-}
-
-.gen-echo-warn {
-  padding: 0 8px 6px;
-  font-size: 11px;
-  color: var(--el-color-warning);
 }
 </style>

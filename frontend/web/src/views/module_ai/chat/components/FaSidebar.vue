@@ -7,10 +7,15 @@
       </div>
     </div>
 
-    <div class="sidebar-content">
+    <ElScrollbar class="sidebar-content" view-class="p-4">
       <template v-if="!isCollapsed">
         <div class="new-session-section">
-          <ElButton type="primary" class="new-session-btn" @click="handleNewSession">
+          <ElButton
+            v-hasPerm="['module_ai:chat:create']"
+            type="primary"
+            class="new-session-btn"
+            @click="handleNewSession"
+          >
             <ElIcon class="btn-icon"><Plus /></ElIcon>
             <span>开启新对话</span>
           </ElButton>
@@ -56,8 +61,12 @@
                     <ElIcon class="more-icon" @click.stop><MoreFilled /></ElIcon>
                     <template #dropdown>
                       <ElDropdownMenu>
-                        <ElDropdownItem command="rename">重命名</ElDropdownItem>
-                        <ElDropdownItem command="delete" divided>删除</ElDropdownItem>
+                        <div v-hasPerm="['module_ai:chat:update']" style="display: contents">
+                          <ElDropdownItem command="rename">重命名</ElDropdownItem>
+                        </div>
+                        <div v-hasPerm="['module_ai:chat:delete']" style="display: contents">
+                          <ElDropdownItem command="delete" divided>删除</ElDropdownItem>
+                        </div>
                       </ElDropdownMenu>
                     </template>
                   </ElDropdown>
@@ -70,7 +79,7 @@
           </div>
         </div>
       </template>
-    </div>
+    </ElScrollbar>
 
     <div class="sidebar-footer">
       <div v-if="!isCollapsed" class="user-info">
@@ -115,6 +124,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import {
+  ChatDotRound,
   ChatLineRound,
   User,
   Setting,
@@ -135,6 +145,7 @@ interface Props {
 interface Emits {
   (e: "select-session", session: ChatSession): void;
   (e: "new-session"): void;
+  (e: "open-config"): void;
 }
 
 const { currentSessionId, isCollapsed = false } = defineProps<Props>();
@@ -246,39 +257,33 @@ const handleSessionCommand = async (command: string, session: ChatSession) => {
       await AiChatAPI.updateSession(session.id, { title: value });
       session.title = value;
     } catch (error) {
-      if (error !== "cancel") {
-        ElMessage.error("重命名失败");
-      } else {
+      if (error === "cancel") {
         ElMessage.info("已取消重命名");
       }
+      // 非 cancel 的接口错误已由拦截器提示
     }
   } else if (command === "delete") {
     try {
-      await ElMessageBox.confirm("确定要删除此会话吗？", "确认删除", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      });
+      await confirmDelete(`确定删除「${session.title}」吗？`);
       await AiChatAPI.deleteSession([session.id]);
       const index = sessions.value.findIndex((s: ChatSession) => s.id === session.id);
       if (index > -1) {
         sessions.value.splice(index, 1);
       }
     } catch (error) {
-      if (error !== "cancel") {
-        ElMessage.error("删除失败");
-      } else {
+      if (error === "cancel") {
         ElMessage.info("已取消删除");
       }
+      // 非 cancel 的接口错误已由拦截器提示
     }
   }
 };
 
 const handleUserCommand = (command: string) => {
   if (command === "profile") {
-    router.push("/profile");
+    router.push("/fastlink/profile");
   } else if (command === "settings") {
-    ElMessage.info("设置功能开发中");
+    emit("open-config");
   } else if (command === "logout") {
     userStore.logout();
   }
@@ -365,8 +370,6 @@ defineExpose({
 
   .sidebar-content {
     flex: 1;
-    padding: 16px;
-    overflow-y: auto;
 
     .new-session-section {
       margin-bottom: 16px;

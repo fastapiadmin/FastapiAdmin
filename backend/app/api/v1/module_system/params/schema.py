@@ -1,26 +1,26 @@
-from fastapi import Query
+import re
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.common.enums import QueueEnum
 from app.core.base_schema import BaseSchema
-from app.core.validator import DateTimeStr
 
 
-class ParamsCreateSchema(BaseModel):
-    """配置创建模型"""
+class ParamsBaseSchema(BaseModel):
+    """参数基础字段
+    """
 
     config_name: str = Field(..., min_length=1, max_length=64, description="参数名称")
-    config_key: str = Field(..., min_length=1, max_length=500, description="参数键名")
-    config_value: str | None = Field(default=None, max_length=500, description="参数键值")
-    config_type: bool = Field(default=False, description="是否系统内置")
+    config_key: str = Field(..., min_length=1, max_length=500, description="参数键名（小写字母开头，仅允许字母数字_.-）")
+    config_value: str | None = Field(default=None, description="参数键值")
+    config_type: bool = Field(default=False, description="是否系统内置(True:是 False:否)")
     status: int = Field(default=0, ge=0, le=1, description="状态(0:正常 1:停用)")
-    description: str | None = Field(default=None, max_length=500, description="描述")
+    description: str | None = Field(default=None, max_length=500, description="参数描述")
 
     @field_validator("config_key")
     @classmethod
     def _validate_config_key(cls, v: str) -> str:
+        """校验参数键名：小写字母开头，仅含字母/数字/_ . -"""
         v = v.strip().lower()
-        import re
         if not re.match(r"^[a-z][a-z0-9_.-]*$", v):
             raise ValueError("参数键名必须以小写字母开头，仅允许小写字母、数字、_ . -")
         return v
@@ -28,56 +28,19 @@ class ParamsCreateSchema(BaseModel):
     @field_validator("status")
     @classmethod
     def _validate_status(cls, v: int) -> int:
+        """校验状态：仅支持 0(正常) 或 1(停用)"""
         if v not in {0, 1}:
             raise ValueError("状态仅支持 0(正常) 或 1(停用)")
         return v
 
 
-class ParamsUpdateSchema(ParamsCreateSchema):
-    """配置更新模型"""
+class ParamsUpdateSchema(ParamsBaseSchema):
+    """参数更新模型
+    """
 
 
-class ParamsOutSchema(ParamsCreateSchema, BaseSchema):
-    """配置响应模型"""
+class ParamsOutSchema(ParamsBaseSchema, BaseSchema):
+    """参数响应模型
+    """
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class ParamsQueryParam:
-    """配置管理查询参数"""
-
-    def __init__(
-        self,
-        config_name: str | None = Query(None, description="配置名称"),
-        config_key: str | None = Query(None, description="配置键名"),
-        config_type: bool | None = Query(None, description="系统内置((True:是 False:否))"),
-        description: str | None = Query(None, description="描述"),
-        status: str | None = Query(None, description="是否启用"),
-        created_time: list[DateTimeStr] | None = Query(
-            None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-    ) -> None:
-        # 模糊查询字段
-        self.config_name = (QueueEnum.like.value, config_name)
-        self.config_key = (QueueEnum.like.value, config_key)
-        # 精确查询字段
-        self.config_type = (QueueEnum.eq.value, config_type)
-        if description:
-            self.description = (QueueEnum.like.value, description)
-
-        # 精确查询字段
-        if status:
-            self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))

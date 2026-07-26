@@ -12,13 +12,14 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import * as echarts from "echarts";
+import { echarts } from "@/plugins/echarts";
 
 defineOptions({ name: "SystemGauges" });
 
 const gaugeRefs: Record<string, HTMLDivElement> = {};
 const charts: echarts.ECharts[] = [];
 let timer = 0;
+let isMounted = true;
 
 const gauges = [
   { label: "CPU", value: 42 },
@@ -32,11 +33,16 @@ function setGaugeRef(label: string, el: unknown) {
 
 function waitForSize(el: HTMLDivElement): Promise<void> {
   return new Promise((resolve) => {
+    if (!isMounted) {
+      resolve();
+      return;
+    }
     if (el.clientWidth > 0 && el.clientHeight > 0) {
       resolve();
       return;
     }
     const check = () => {
+      if (!isMounted) return;
       if (el.clientWidth > 0 && el.clientHeight > 0) {
         resolve();
       } else {
@@ -99,15 +105,15 @@ function handleResize() {
 
 function tick() {
   const v = [
-    clamp(gauges[0].value + (Math.random() - 0.5) * 8, 10, 90),
-    clamp(gauges[1].value + (Math.random() - 0.5) * 6, 20, 95),
-    clamp(gauges[2].value + (Math.random() - 0.5) * 3, 15, 85),
+    clamp(gauges[0]!.value + (Math.random() - 0.5) * 8, 10, 90),
+    clamp(gauges[1]!.value + (Math.random() - 0.5) * 6, 20, 95),
+    clamp(gauges[2]!.value + (Math.random() - 0.5) * 3, 15, 85),
   ];
-  gauges[0].value = Math.round(v[0]);
-  gauges[1].value = Math.round(v[1]);
-  gauges[2].value = Math.round(v[2]);
+  gauges[0]!.value = Math.round(v[0]!);
+  gauges[1]!.value = Math.round(v[1]!);
+  gauges[2]!.value = Math.round(v[2]!);
   charts.forEach((c, i) => {
-    if (!c.isDisposed()) c.setOption({ series: [{ data: [{ value: gauges[i].value }] }] });
+    if (!c.isDisposed()) c.setOption({ series: [{ data: [{ value: gauges[i]!.value }] }] });
   });
 }
 
@@ -123,6 +129,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  isMounted = false;
   clearInterval(timer);
   window.removeEventListener("resize", handleResize);
   charts.forEach((c) => c.dispose());

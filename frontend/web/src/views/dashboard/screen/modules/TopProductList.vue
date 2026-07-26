@@ -3,7 +3,7 @@
     <div class="panel-hd"><span class="dot purple" />热销产品 TOP5</div>
     <div class="product-list">
       <div v-for="(p, i) in topProducts" :key="p.name" class="product-row">
-        <span class="product-rank" :class="'rank-' + (i + 1)">{{ i + 1 }}</span>
+        <span class="product-rank flex-cc" :class="'rank-' + (i + 1)">{{ i + 1 }}</span>
         <div class="product-info">
           <span class="product-name">{{ p.name }}</span>
           <span class="product-category">{{ p.category }}</span>

@@ -3,27 +3,19 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { LanguageEnum } from "@/enums/appEnum";
 import { router } from "@/router";
-import { useSettingsStore } from "./setting.store";
 import { useWorktabStore } from "./worktab.store";
 import { useMenuStore } from "./menu.store";
 import { useConfigStore } from "./config.store";
-import { AppRouteRecord } from "@/types/router";
 import { Auth, setPageTitle, StorageConfig } from "@utils";
-import AuthAPI from "@/api/module_system/auth";
+import AuthAPI, { type LoginFormData } from "@/api/module_system/auth";
 import UserAPI from "@/api/module_system/user";
-import type { TenantOption } from "@/api/module_system/auth";
-import type { MenuTable } from "@/api/module_platform/menu";
-import { ResultEnum } from "@/enums/api/result.enum";
+import type { MenuTable } from "@/api/module_system/menu";
+import type { AppRouteRecord } from "@/types/router";
 import { ElNotification } from "element-plus";
 import { store, useDictStore } from "@stores";
 import type { UserInfo } from "@/api/module_system/user";
-
-/** 延迟加载 beforeEach 工具函数，避免 user.store 与 beforeEach 的循环依赖 */
-let _routerUtilsPromise: Promise<typeof import("@/router/beforeEach")> | null = null;
-const getRouterUtils = () => {
-  if (!_routerUtilsPromise) _routerUtilsPromise = import("@/router/beforeEach");
-  return _routerUtilsPromise;
-};
+import { ResultEnum } from "@/enums/api/result.enum";
+import { resetRouteInitState, resetRouterState } from "@/router/refresh";
 
 /** {@link useUserStore} 的 `logout` 可选参数 */
 export interface LogoutOptions {
@@ -65,33 +57,16 @@ export const useUserStore = defineStore(
     const hasGetRoute = ref(false);
     // 记住我状态
     const rememberMe = ref(Auth.getRememberMe());
-    // 租户列表
-    const tenantList = ref<TenantOption[]>([]);
-    // 当前选中租户
-    const currentTenant = ref<TenantOption | null>(null);
     /** info 扩展类型：兼容 API 返回 `user_id`（非标准 UserInfo 字段） */
-    type UserInfoLike = Partial<UserInfo> & Record<string, any>;
+    type UserInfoLike = Partial<UserInfo> & { user_id?: number; [key: string]: unknown };
 
     // 计算属性：基础用户信息
     const basicInfo = computed(() => info.value as UserInfoLike);
-    // 计算属性：获取设置状态
-    const getSettingState = computed(() => useSettingsStore().$state);
-    // 计算属性：获取工作台状态
-    const getWorktabState = computed(() => useWorktabStore().$state);
-    // 计算属性：获取基础信息
-    const getBasicInfo = computed(() => info.value as UserInfoLike);
-    // 计算属性：获取路由列表
-    const getRouteList = computed(() => routeList.value);
-    // 计算属性：获取权限列表
-    const getPerms = computed(() => prems.value);
-    // 计算属性：是否已获取路由
-    const getHasGetRoute = computed(() => hasGetRoute.value);
-
     /**
      * 设置用户信息
      * @param newInfo 新的用户信息
      */
-    const setUserInfo = (newInfo: UserInfo | UserInfo) => {
+    const setUserInfo = (newInfo: UserInfo) => {
       info.value = newInfo;
       // 设置用户信息后自动更新权限
       setPermissions([]);
@@ -178,59 +153,6 @@ export const useUserStore = defineStore(
     };
 
     /**
-     * 获取用户租户列表
-     */
-    async function fetchTenants() {
-      try {
-        const response = await AuthAPI.getTenants();
-        const data = response.data.data || [];
-        tenantList.value = data;
-        // 恢复上次选择的租户
-        const savedId = localStorage.getItem(StorageConfig.LAST_TENANT_ID_KEY);
-        if (savedId) {
-          const found = data.find((t: TenantOption) => String(t.id) === savedId);
-          if (found) {
-            currentTenant.value = found;
-          }
-        }
-        return data;
-      } catch (error) {
-        console.error("获取租户列表失败:", error);
-        return [];
-      }
-    }
-
-    /**
-     * 选择租户
-     */
-    async function selectTenant(tenantId: number) {
-      const response = await AuthAPI.selectTenant(tenantId);
-      const data = response.data.data;
-      if (response.data.code === ResultEnum.SUCCESS && data?.access_token) {
-        const currentRefreshToken = Auth.getRefreshToken() || "";
-        Auth.setTokens(data.access_token, currentRefreshToken, rememberMe.value);
-        setToken(data.access_token);
-        const found = tenantList.value.find((t) => String(t.id) === String(tenantId));
-        if (found) {
-          currentTenant.value = found;
-          localStorage.setItem(StorageConfig.LAST_TENANT_ID_KEY, String(found.id));
-        }
-      }
-    }
-
-    /**
-     * 设置当前租户
-     */
-    function setCurrentTenant(tenant: TenantOption | null) {
-      currentTenant.value = tenant;
-      if (tenant) {
-        localStorage.setItem(StorageConfig.LAST_TENANT_ID_KEY, String(tenant.id));
-      } else {
-        localStorage.removeItem(StorageConfig.LAST_TENANT_ID_KEY);
-      }
-    }
-
-    /**
      * 获取用户信息
      */
     async function getUserInfo() {
@@ -244,6 +166,21 @@ export const useUserStore = defineStore(
       } catch (error) {
         console.error("获取用户信息失败:", error);
         throw error;
+      }
+    }
+
+    /**
+     * 仅刷新权限/菜单（轻量模式，不加载用户嵌套数据）
+     * 在菜单/角色 CRUD 操作后调用，替代 getUserInfo
+     */
+    async function refreshPermissions() {
+      try {
+        const response = await UserAPI.getCurrentUserInfo(false);
+        const data = response.data.data;
+        const menus: MenuTable[] = data?.menus || [];
+        setRoute(menus);
+      } catch (error) {
+        console.error("刷新权限失败:", error);
       }
     }
 
@@ -296,7 +233,7 @@ export const useUserStore = defineStore(
     /**
      * 登录
      */
-    async function login(loginForm: any) {
+    async function login(loginForm: LoginFormData) {
       const response = await AuthAPI.login(loginForm);
       const data = response.data.data;
       if (response.data.code === ResultEnum.SUCCESS) {
@@ -306,7 +243,7 @@ export const useUserStore = defineStore(
           type: "success",
         });
       }
-      rememberMe.value = loginForm.remember;
+      rememberMe.value = loginForm.remember ?? false;
 
       const accessToken = data?.access_token || "";
       const refreshToken = data?.refresh_token || "";
@@ -315,15 +252,9 @@ export const useUserStore = defineStore(
       }
 
       // 清除上次会话里「动态路由初始化失败」标记，避免重新登录后侧栏/菜单不注册
-      (await getRouterUtils()).resetRouteInitState();
+      resetRouteInitState();
       Auth.setTokens(accessToken, refreshToken, rememberMe.value);
       setToken(accessToken, refreshToken);
-
-      // 检查登录响应中的租户列表
-      const tenants = data?.tenants || [];
-      if (tenants.length > 0) {
-        tenantList.value = tenants;
-      }
 
       await getUserInfo();
       await useConfigStore().getConfig(true);
@@ -346,7 +277,7 @@ export const useUserStore = defineStore(
       const token = Auth.getAccessToken();
       if (token) {
         try {
-          const response = await AuthAPI.logout({ token });
+          const response = await AuthAPI.logout(token);
           if (response.data.code === ResultEnum.SUCCESS) {
             ElNotification({
               title: "通知",
@@ -362,7 +293,7 @@ export const useUserStore = defineStore(
       resetAllState();
       sessionStorage.removeItem("iframeRoutes");
       useMenuStore().setHomePath("");
-      (await getRouterUtils()).resetRouterState(500);
+      resetRouterState(500);
 
       if (shouldNavigate) {
         const currentRoute = router.currentRoute.value;
@@ -392,8 +323,6 @@ export const useUserStore = defineStore(
       accessToken.value = "";
       refreshToken.value = "";
       prems.value = [];
-      tenantList.value = [];
-      currentTenant.value = null;
       /** 登出 / 认证失效：会话结束，工作栏与 KeepAlive exclude 一并清空（pinia 持久化随之写入） */
       useWorktabStore().clearAll();
     }
@@ -417,7 +346,7 @@ export const useUserStore = defineStore(
         throw new Error("没有有效的刷新令牌");
       }
 
-      const response = await AuthAPI.refreshToken({ refresh_token: currentRefreshToken });
+      const response = await AuthAPI.refreshToken(currentRefreshToken);
       const data = response.data.data;
       // 更新令牌，保持当前记住我状态
       Auth.setTokens(data.access_token, data.refresh_token, Auth.getRememberMe());
@@ -452,13 +381,8 @@ export const useUserStore = defineStore(
       hasGetRoute,
       rememberMe,
       getUserInfo,
-      getSettingState,
-      getWorktabState,
+      refreshPermissions,
       basicInfo,
-      getBasicInfo,
-      getRouteList,
-      getPerms,
-      getHasGetRoute,
       setUserInfo,
       setLoginStatus,
       setLanguage,
@@ -476,17 +400,13 @@ export const useUserStore = defineStore(
       refreshTokenFn,
       resetAllState,
       fullResetAllState,
-      tenantList,
-      currentTenant,
-      fetchTenants,
-      selectTenant,
-      setCurrentTenant,
     };
   },
   {
     persist: {
       key: "user",
       storage: localStorage,
+      pick: ["language", "isLogin", "searchHistory", "rememberMe"],
     },
   }
 );

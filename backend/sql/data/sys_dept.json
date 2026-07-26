@@ -1,0 +1,11 @@
+[
+    {
+        "name": "系统部门",
+        "code": "DEFAULT",
+        "order": 1,
+        "status": 0,
+        "description": "系统默认部门",
+        "parent_id": null,
+        "children": []
+    }
+]

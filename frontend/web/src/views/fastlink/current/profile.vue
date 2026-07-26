@@ -1,7 +1,7 @@
 <!-- 个人中心（Art 模版布局 + 当前用户接口） -->
 <template>
   <div class="w-full h-full p-0 bg-transparent border-none shadow-none">
-    <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
+    <div class="relative flex justify-between mt-2.5 max-md:block max-md:mt-1">
       <!-- 左侧卡片 -->
       <div class="w-md mr-5 max-md:w-full max-md:mr-0">
         <div class="fa-card-sm relative p-9 pb-6 overflow-hidden text-center">
@@ -58,12 +58,18 @@
 
           <div class="relative z-10 w-75 mx-auto mt-7.5 text-left">
             <div class="mt-2.5 flex items-start">
-              <FaSvgIcon icon="ri:mail-line" class="text-g-700 shrink-0 mt-0.5" />
-              <span class="ml-2 text-sm break-all">{{ infoFormState.email || "—" }}</span>
-            </div>
-            <div class="mt-2.5 flex items-start">
               <FaSvgIcon icon="ri:user-3-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm">{{ infoFormState.username || "—" }}</span>
+            </div>
+            <div class="mt-2.5 flex items-start">
+              <FaSvgIcon icon="ri:checkbox-circle-line" class="text-g-700 shrink-0 mt-0.5" />
+              <ElTag :type="infoFormState.status === 0 ? 'success' : 'danger'" size="small">
+                {{ infoFormState.status === 0 ? "启用" : "停用" }}
+              </ElTag>
+            </div>
+            <div class="mt-2.5 flex items-start">
+              <FaSvgIcon icon="ri:mail-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm break-all">{{ infoFormState.email || "—" }}</span>
             </div>
             <div class="mt-2.5 flex items-start">
               <FaSvgIcon icon="ri:map-pin-line" class="text-g-700 shrink-0 mt-0.5" />
@@ -75,8 +81,21 @@
                 {{ infoFormState.positions?.map((p) => p.name).join("、") || "—" }}
               </span>
             </div>
+            <div class="mt-2.5 flex items-start">
+              <FaSvgIcon icon="ri:calendar-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm">
+                注册:
+                {{ infoFormState.created_time ? formatDate(infoFormState.created_time) : "—" }}
+              </span>
+            </div>
+            <div class="mt-2.5 flex items-start">
+              <FaSvgIcon icon="ri:time-line" class="text-g-700 shrink-0 mt-0.5" />
+              <span class="ml-2 text-sm">
+                更新:
+                {{ infoFormState.updated_time ? formatDate(infoFormState.updated_time) : "—" }}
+              </span>
+            </div>
           </div>
-
           <div v-if="roleTagList.length" class="relative z-10 mt-10">
             <h3 class="text-sm font-medium">角色</h3>
             <div class="flex flex-wrap justify-center mt-3.5">
@@ -89,36 +108,56 @@
               </div>
             </div>
           </div>
+
+          <div v-if="hasThirdPartyBindings" class="relative z-10 mt-10">
+            <h3 class="text-sm font-medium">第三方账号</h3>
+            <div class="flex flex-wrap justify-center mt-3.5 gap-3">
+              <div v-if="infoFormState.github_login" class="flex items-center text-xs text-g-600">
+                <FaSvgIcon icon="ri:github-fill" class="mr-1" />
+                {{ infoFormState.github_login }}
+              </div>
+              <div v-if="infoFormState.gitee_login" class="flex items-center text-xs text-g-600">
+                <FaSvgIcon icon="ri:gitee-fill" class="mr-1" />
+                {{ infoFormState.gitee_login }}
+              </div>
+              <div v-if="infoFormState.wx_login" class="flex items-center text-xs text-g-600">
+                <FaSvgIcon icon="ri:wechat-fill" class="mr-1" />
+                {{ infoFormState.wx_login }}
+              </div>
+              <div v-if="infoFormState.qq_login" class="flex items-center text-xs text-g-600">
+                <FaSvgIcon icon="ri:qq-fill" class="mr-1" />
+                {{ infoFormState.qq_login }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <ElDialog
+      <FaDialog
         v-model="avatarCropVisible"
         title="裁剪头像"
-        width="640px"
-        append-to-body
-        destroy-on-close
+        width="960px"
+        :draggable="false"
         @closed="onAvatarCropDialogClosed"
       >
         <FaCutterImg
           v-if="avatarCropVisible && avatarCropSrc"
           :key="avatarCropSrc"
-          :img-url="avatarCropSrc"
-          :box-width="420"
-          :box-height="340"
-          :cut-width="240"
-          :cut-height="240"
-          :quality="0.92"
+          v-model:imgUrl="avatarCropSrc"
+          :boxWidth="530"
+          :boxHeight="300"
+          :cutWidth="360"
+          :cutHeight="200"
+          :quality="1"
           :tool="true"
-          :show-preview="true"
-          :original-graph="false"
-          file-type="jpeg"
+          :showPreview="true"
+          :originalGraph="false"
           title="调整头像"
-          preview-title="预览"
+          previewTitle="预览"
           @update:img-url="onAvatarCropConfirm"
           @error="onAvatarCropImgError"
         />
-      </ElDialog>
+      </FaDialog>
 
       <!-- 右侧表单 -->
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
@@ -159,32 +198,35 @@
             </ElRow>
 
             <ElRow>
-              <ElFormItem label="账号" prop="username">
-                <ElInput v-model="infoFormState.username" disabled placeholder="登录账号" />
-              </ElFormItem>
-              <ElFormItem label="邮箱" prop="email" class="ml-5">
+              <ElFormItem label="邮箱" prop="email">
                 <ElInput
                   v-model="infoFormState.email"
                   :disabled="!isEdit"
                   placeholder="请输入邮箱"
                 />
               </ElFormItem>
-            </ElRow>
-
-            <ElRow>
-              <ElFormItem label="手机" prop="mobile">
+              <ElFormItem label="手机" prop="mobile" class="ml-5">
                 <ElInput
                   v-model="infoFormState.mobile"
                   :disabled="!isEdit"
                   placeholder="请输入手机号码"
                 />
               </ElFormItem>
-              <ElFormItem label="部门" class="ml-5">
-                <ElInput :model-value="infoFormState.dept?.name || '—'" disabled />
+            </ElRow>
+
+            <ElRow class="mb-4">
+              <ElFormItem label="描述" prop="description" class="w-full!">
+                <ElInput
+                  v-model="infoFormState.description"
+                  :disabled="!isEdit"
+                  type="textarea"
+                  :rows="4"
+                  placeholder="请输入描述"
+                />
               </ElFormItem>
             </ElRow>
 
-            <div class="flex-c justify-end [&_.el-button]:w-27.5!">
+            <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
               <ElButton
                 type="primary"
                 class="w-22.5"
@@ -196,6 +238,43 @@
               </ElButton>
             </div>
           </ElForm>
+        </div>
+
+        <div class="fa-card-sm my-5">
+          <h1 class="p-4 text-xl font-normal border-b border-g-300">登录会话</h1>
+
+          <div v-if="loadingSessions" class="flex justify-center py-6">
+            <ElIcon class="is-loading" :size="20">
+              <Loading />
+            </ElIcon>
+          </div>
+
+          <div v-else-if="currentSessions.length === 0" class="p-5 text-sm text-g-400 text-center">
+            暂无活跃会话
+          </div>
+
+          <ElTable v-else :data="currentSessions" stripe class="p-4" size="small">
+            <ElTableColumn type="index" label="#" width="50" />
+            <ElTableColumn label="浏览器" min-width="110">
+              <template #default="{ row }">
+                <FaSvgIcon :icon="getBrowserIcon(row.browser)" class="mr-1" />{{
+                  row.browser || "—"
+                }}
+              </template>
+            </ElTableColumn>
+            <ElTableColumn label="操作系统" min-width="110">
+              <template #default="{ row }">
+                <FaSvgIcon :icon="getOsIcon(row.os)" class="mr-1" />{{ row.os || "—" }}
+              </template>
+            </ElTableColumn>
+            <ElTableColumn prop="ipaddr" label="IP 地址" min-width="130" />
+            <ElTableColumn prop="login_location" label="登录位置" min-width="120" />
+            <ElTableColumn label="登录时间" min-width="160">
+              <template #default="{ row }">
+                {{ row.login_time ? formatDate(row.login_time) : "—" }}
+              </template>
+            </ElTableColumn>
+          </ElTable>
         </div>
 
         <div class="fa-card-sm my-5">
@@ -236,7 +315,7 @@
               />
             </ElFormItem>
 
-            <div class="flex-c justify-end [&_.el-button]:w-27.5!">
+            <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
               <ElButton
                 type="primary"
                 class="w-22.5"
@@ -258,8 +337,10 @@
 import type { FormInstance, UploadRequestOptions, UploadFile } from "element-plus";
 import type { ElUpload } from "element-plus";
 import UserAPI, { type InfoFormState, type PasswordFormState } from "@/api/module_system/user";
+import OnlineAPI from "@/api/module_monitor/online";
+import type { OnlineUserTable } from "@/api/module_monitor/online";
 import { useUserStore, useDictStore } from "@stores";
-import { Camera } from "@element-plus/icons-vue";
+import { Camera, Loading } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import { redirectToLogin, dataURLToFile } from "@utils";
@@ -288,9 +369,71 @@ const roleTagList = computed(() =>
     .filter((n): n is string => !!n && n.trim().length > 0)
 );
 
+const currentSessions = ref<OnlineUserTable[]>([]);
+const loadingSessions = ref(false);
+
+function getBrowserIcon(browser?: string): string {
+  if (!browser) return "ri:question-line";
+  const lower = browser.toLowerCase();
+  if (lower.includes("chrome")) return "ri:chrome-fill";
+  if (lower.includes("firefox") || lower.includes("mozilla")) return "ri:firefox-fill";
+  if (lower.includes("safari")) return "ri:safari-fill";
+  if (lower.includes("edge")) return "ri:edge-fill";
+  if (lower.includes("opera")) return "ri:opera-fill";
+  return "ri:earth-line";
+}
+
+function getOsIcon(os?: string): string {
+  if (!os) return "ri:question-line";
+  const lower = os.toLowerCase();
+  if (lower.includes("windows")) return "ri:windows-fill";
+  if (lower.includes("mac") || lower.includes("darwin")) return "ri:apple-fill";
+  if (lower.includes("linux")) return "ri:linux-fill";
+  if (lower.includes("android")) return "ri:android-fill";
+  if (lower.includes("ios")) return "ri:apple-fill";
+  return "ri:computer-line";
+}
+
+async function fetchCurrentSessions() {
+  loadingSessions.value = true;
+  try {
+    const response = await OnlineAPI.listCurrentOnline();
+    if (response.data.code === 0) {
+      currentSessions.value = response.data.data ?? [];
+    }
+  } catch {
+    // ignore
+  } finally {
+    loadingSessions.value = false;
+  }
+}
+
+const hasThirdPartyBindings = computed(
+  () =>
+    !!(
+      infoFormState.github_login ||
+      infoFormState.gitee_login ||
+      infoFormState.wx_login ||
+      infoFormState.qq_login
+    )
+);
+
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 const infoFormState = reactive<InfoFormState>({
   name: undefined,
-  gender: 1,
+  gender: undefined,
   mobile: undefined,
   email: undefined,
   username: undefined,
@@ -300,6 +443,13 @@ const infoFormState = reactive<InfoFormState>({
   roles: [],
   avatar: undefined,
   created_time: undefined,
+  updated_time: undefined,
+  description: undefined,
+  status: undefined,
+  github_login: undefined,
+  gitee_login: undefined,
+  wx_login: undefined,
+  qq_login: undefined,
 });
 
 const passwordFormState = reactive<PasswordFormState>({
@@ -353,9 +503,18 @@ async function onAvatarCropConfirm(dataURL: string) {
 
 function normalizeGenderValue(v: string | number | undefined): number {
   if (v === undefined || v === null || v === "") return 1;
-  const n = Number(v);
+  const n = typeof v === "string" ? Number(v) : v;
   return Number.isFinite(n) ? n : 1;
 }
+
+const initInfoForm = () => {
+  const basicInfo = userStore.basicInfo;
+  Object.assign(infoFormState, {
+    ...basicInfo,
+    gender: normalizeGenderValue(basicInfo.gender),
+    avatar: basicInfo.avatar?.trim(),
+  });
+};
 
 const getOptions = async () => {
   await dictStore.getDict(["sys_user_sex"]);
@@ -514,15 +673,10 @@ const handleAvatarFileChange = (file: UploadFile) => {
 
 const updateAvatar = (fileUrl: string) => {
   if (fileUrl) {
-    infoFormState.avatar = fileUrl;
+    infoFormState.avatar = fileUrl.trim();
   } else {
     ElMessage.error("无效的头像URL");
   }
-};
-
-const initInfoForm = () => {
-  const basicInfo = userStore.basicInfo;
-  Object.assign(infoFormState, { ...basicInfo });
 };
 
 const initPasswordForm = () => {
@@ -596,6 +750,7 @@ onMounted(async () => {
   refreshGreeting();
   await getOptions();
   initInfoForm();
+  await fetchCurrentSessions();
 });
 </script>
 

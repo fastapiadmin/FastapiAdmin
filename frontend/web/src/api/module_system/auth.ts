@@ -22,11 +22,11 @@ const AuthAPI = {
     });
   },
 
-  refreshToken(body: RefreshToekenBody) {
-    return request<ApiResponse<LoginResult>>({
+  refreshToken(refreshToken: string) {
+    return request<ApiResponse<JWTOut>>({
       url: `${API_PATH}/token/refresh`,
       method: "post",
-      data: body,
+      data: { refresh_token: refreshToken },
     });
   },
 
@@ -37,7 +37,7 @@ const AuthAPI = {
     });
   },
 
-  logout(body: LogoutBody) {
+  logout(body: string) {
     return request<ApiResponse>({
       url: `${API_PATH}/logout`,
       method: "post",
@@ -45,77 +45,17 @@ const AuthAPI = {
     });
   },
 
-  /** 获取免登录用户列表 */
-  getAutoLoginUsers() {
-    return request<ApiResponse<AutoLoginUser[]>>({
-      url: `${API_PATH}/auto-login/users`,
-      method: "get",
-    });
-  },
-
-  /** 获取免登录Token */
-  getAutoLoginToken(userId: number) {
-    return request<ApiResponse<AutoLoginToken>>({
-      url: `${API_PATH}/auto-login/token`,
+  /** 滑块验证完成后端标记 */
+  sliderComplete(captchaKey: string) {
+    return request<ApiResponse<{ captcha_key: string; verified: boolean }>>({
+      url: `${API_PATH}/captcha/slider/complete`,
       method: "post",
-      params: { user_id: userId },
-    });
-  },
-
-  /** 免登录 */
-  autoLogin(token: string) {
-    return request<ApiResponse<LoginResult>>({
-      url: `${API_PATH}/auto-login`,
-      method: "post",
-      params: { token },
-    });
-  },
-
-  /** 获取当前用户的可选租户列表 */
-  getTenants() {
-    return request<ApiResponse<TenantOption[]>>({
-      url: `${API_PATH}/tenants`,
-      method: "get",
-    });
-  },
-
-  /** 选择租户，返回含 tenant_id 的新 JWT */
-  selectTenant(tenantId: number) {
-    return request<ApiResponse<SelectTenantResult>>({
-      url: `${API_PATH}/select-tenant`,
-      method: "post",
-      data: { tenant_id: tenantId },
-    });
-  },
-  /** 租户自助注册（PRD §4.5） */
-  tenantRegister(body: TenantRegisterForm) {
-    return request<ApiResponse<TenantRegisterResult>>({
-      url: `${API_PATH}/tenant/register`,
-      method: "post",
-      data: body,
+      data: { captcha_key: captchaKey },
     });
   },
 };
 
 export default AuthAPI;
-
-export interface TenantRegisterForm {
-  username: string;
-  password: string;
-  email: string;
-  tenant_name?: string;
-}
-
-export interface TenantRegisterResult {
-  user_id: number;
-  username: string;
-  tenant_id: number;
-  tenant_name: string;
-  tenant_code: string;
-  package: string | null;
-  trial_end: string;
-  message: string;
-}
 
 // ─── Auth 类型定义 ───
 
@@ -123,58 +63,22 @@ export interface TenantRegisterResult {
 export interface LoginFormData {
   username: string;
   password: string;
-  captcha?: string;
   captcha_key?: string;
+  captcha?: string;
   remember?: boolean;
   login_type?: string;
 }
 
-/** 登录成功返回 (JWTOutSchema) */
-export interface LoginResult {
+/** JWT 响应 (JWTOutSchema) */
+export interface JWTOut {
   access_token: string;
   refresh_token: string;
   token_type: string;
   expires_in: number;
-  tenants?: TenantOption[];
 }
 
-/** 刷新 Token 请求体 */
-export interface RefreshToekenBody {
-  refresh_token: string;
-}
-
-/** 退出登录请求体 */
-export interface LogoutBody {
-  token: string;
-}
-
-/** 免登录用户 (AutoLoginUserSchema) */
-export interface AutoLoginUser {
-  id: number;
-  username: string;
-  name: string;
-  avatar?: string | null;
-}
-
-/** 免登录 Token (AutoLoginTokenSchema) */
-export interface AutoLoginToken {
-  token: string;
-  user: AutoLoginUser;
-}
-
-/** 租户选项 */
-export interface TenantOption {
-  id: number;
-  name: string;
-  code: string;
-}
-
-/** 选择租户返回 (SelectTenantOutSchema) */
-export interface SelectTenantResult {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-}
+/** 登录成功返回 */
+export type LoginResult = JWTOut;
 
 /** 验证码信息 */
 export interface CaptchaInfo {

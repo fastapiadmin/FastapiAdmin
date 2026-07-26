@@ -13,6 +13,7 @@
       :show-search="true"
       :disabled-search="false"
       :default-expanded="false"
+      include-audit
       @search="handleSearchBarSearch"
       @reset="onResetSearch"
     >
@@ -26,11 +27,7 @@
       </template>
     </FaSearchBar>
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -41,12 +38,12 @@
           <FaTableHeaderLeft
             :remove-ids="selectedIds"
             :perm-create="['module_system:notice:create']"
-            :perm-export="['module_system:notice:export']"
             :perm-delete="['module_system:notice:delete']"
             :perm-patch="['module_system:notice:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
-            @export="openExport"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -68,13 +65,14 @@
     <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
-      width="920px"
+      width="820px"
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
       :form-mode="dialogVisible.type"
       :confirm-loading="submitLoading"
       @cancel="handleCloseDialog"
-      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
+      @close="handleCloseDialog"
+      @confirm="handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
         <FaDescriptions
@@ -82,20 +80,16 @@
           :data="detailFormData"
           :items="noticeDetailItems"
           label-width="120px"
-          max-height="75vh"
+          max-height="70vh"
         >
           <template #notice_type="{ row }">
-            <ElTag :type="row?.notice_type === '1' ? 'primary' : 'warning'">
-              {{ noticeTypeLabel(row?.notice_type as string) }}
-            </ElTag>
+            <FaStatusTag
+              :type="row?.notice_type === '1' ? 'primary' : 'warning'"
+              :label="noticeTypeLabel(row?.notice_type as string)"
+            />
           </template>
           <template #notice_content>
-            <div class="notice-html-preview">
-              <template v-if="detailHasRenderableContent">
-                <div v-html="detailContentHtml" />
-              </template>
-              <p v-else class="notice-html-empty">暂无内容</p>
-            </div>
+            <FaMarkdownRenderer :content="detailFormData.notice_content ?? ''" />
           </template>
         </FaDescriptions>
       </template>
@@ -103,7 +97,7 @@
         <FaForm
           :key="noticeFormRenderKey"
           scrollbar
-          max-height="75vh"
+          max-height="70vh"
           ref="dataFormRef"
           v-model="formData"
           :items="noticeDialogFormItems"
@@ -126,7 +120,7 @@
           <template #notice_content>
             <FaWangEditor
               :model-value="formData.notice_content ?? ''"
-              height="min(38vh, 280px)"
+              height="min(18vh, 280px)"
               placeholder="请输入公告内容，支持完整排版与插入..."
               :exclude-keys="[]"
               @update:model-value="(v: string) => (formData.notice_content = v)"
@@ -135,42 +129,22 @@
         </FaForm>
       </template>
     </FaDialog>
-
-    <FaExportDialog
-      v-model="exportVisible"
-      :content-config="noticeExportContentConfig"
-      :query-params="exportQueryParams"
-      :page-data="data"
-      :selection-data="selectedRows"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useTable } from "@/hooks/core/useTable";
-import { useImportExport } from "@/hooks/core/useImportExport";
-import { useCrudDialog } from "@/hooks/core/useCrudDialog";
-import { useTableSelection } from "@/hooks/core/useTableSelection";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
-import { confirmDelete, confirmBatchDelete, confirmToggleStatus } from "@/hooks/core/useConfirm";
-import { cleanEmptyArrayParams, stripPaginationParams } from "@/utils/query";
-import type { ColumnOption } from "@/types/component";
-import NoticeAPI, {
-  type NoticeForm,
-  type NoticePageQuery,
-  type NoticeTable,
-} from "@/api/module_system/notice";
-import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import { confirmToggleStatus } from "@/hooks/core/useConfirm";
+import NoticeAPI, { type NoticeForm, type NoticeTable } from "@/api/module_system/notice";
+import { renderTableOperationCell, resolveStatusColumns, type TableOperationAction } from "@utils";
 import { useDictStore, useNoticeStore } from "@stores";
-import type { IObject } from "@/components/modal/types";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaUserTableSelect from "@/components/forms/fa-search-bar/FaUserTableSelect.vue";
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
-import { ElTag, ElMessage } from "element-plus";
-import DOMPurify from "dompurify";
+import { ElMessage } from "element-plus";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
 
 defineOptions({
   name: "Notice",
@@ -179,19 +153,16 @@ defineOptions({
 
 const dictStore = useDictStore();
 const noticeStore = useNoticeStore();
-const { hasAuth } = useAuth();
 
 type NoticeSearchForm = {
   notice_title?: string;
   notice_type?: string;
-  status?: string;
-  created_time?: string[];
+  status?: number;
   created_id?: number;
+  updated_id?: number;
+  created_time?: string[];
+  updated_time?: string[];
 };
-
-function normalizeNoticeQuery(params: Record<string, unknown>): NoticePageQuery {
-  return cleanEmptyArrayParams({ ...params }) as unknown as NoticePageQuery;
-}
 
 function noticeTypeLabel(val?: string) {
   if (!val) return "";
@@ -204,18 +175,20 @@ const searchForm = ref<NoticeSearchForm>({
   notice_title: undefined,
   notice_type: undefined,
   status: undefined,
-  created_time: undefined,
   created_id: undefined,
+  updated_id: undefined,
+  created_time: undefined,
+  updated_time: undefined,
 });
 
 const showSearchBar = ref(true);
 const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
-const statusOptions = ref([
+const STATUS_OPTIONS = [
   { label: "启用", value: 0 },
   { label: "停用", value: 1 },
-]);
+] as const;
 
 const noticeTypeSearchOptions = computed(() =>
   dictStore.getDictArray("sys_notice_type").map((item) => ({
@@ -250,30 +223,9 @@ const noticeSearchItems = computed<SearchFormItem[]>(() => [
     type: "select",
     props: {
       placeholder: "请选择状态",
-      options: statusOptions.value,
+      options: STATUS_OPTIONS,
       clearable: true,
     },
-    span: 6,
-  },
-  {
-    label: "创建时间",
-    key: "created_time",
-    type: "datetimerange",
-    span: 6,
-    props: {
-      type: "datetimerange",
-      rangeSeparator: "至",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "100%" },
-    },
-  },
-  {
-    label: "创建人",
-    key: "created_id",
-    type: "input",
     span: 6,
   },
 ]);
@@ -281,8 +233,10 @@ const noticeSearchItems = computed<SearchFormItem[]>(() => [
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 
 // ─── 表格多选 ───
-const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
-  useTableSelection<NoticeTable>();
+const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<NoticeTable>();
+
+const createLoading = ref(false);
+const moreLoading = ref(false);
 
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
@@ -297,7 +251,7 @@ const noticeDetailItems: import("@/components/others/fa-descriptions/index.vue")
       label: "状态",
       prop: "status",
       tag: {
-        map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
+        map: { 0: { type: "success", text: "启用" }, 1: { type: "danger", text: "停用" } },
       },
     },
     { label: "描述", prop: "description" },
@@ -307,28 +261,6 @@ const noticeDetailItems: import("@/components/others/fa-descriptions/index.vue")
     { label: "创建时间", prop: "created_time" },
     { label: "更新时间", prop: "updated_time" },
   ];
-
-/** 详情富文本 HTML（用于预览，已做 XSS 净化） */
-const detailContentHtml = computed({
-  get: () => {
-    const raw = detailFormData.value.notice_content ?? "";
-    return DOMPurify.sanitize(raw);
-  },
-  set: (v: string) => {
-    detailFormData.value.notice_content = v;
-  },
-});
-
-/** 详情是否有可视文本 */
-const detailHasRenderableContent = computed(() => {
-  const raw = detailFormData.value.notice_content ?? "";
-  if (!raw.trim()) return false;
-  const plain = raw
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return plain.length > 0;
-});
 
 const formData = ref<NoticeForm>({
   id: undefined,
@@ -378,9 +310,18 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
       await refreshUpdate();
     },
     onSubmitSuccess: async () => {
-      await noticeStore.getNotice();
+      await noticeStore.getNotice(true);
     },
   });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const noticeDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -418,13 +359,7 @@ const noticeDialogFormItems = computed<FormItem[]>(() => [
       })),
     },
   },
-  {
-    label: "状态",
-    key: "status",
-    type: "input",
-    span: 24,
-    placeholder: "",
-  },
+  { key: "status", label: "状态", type: "radiogroup", span: 24 },
   {
     label: "内容",
     key: "notice_content",
@@ -440,7 +375,6 @@ const {
   data,
   loading,
   pagination,
-  searchParams,
   getData,
   replaceSearchParams,
   resetSearchParams,
@@ -457,7 +391,7 @@ const {
       page_no: 1,
       page_size: 10,
     },
-    columnsFactory: (): ColumnOption<NoticeTable>[] => [
+    columnsFactory: resolveStatusColumns<NoticeTable>(() => [
       { type: "selection", width: 48, fixed: "left" },
       { type: "globalIndex", width: 56, label: "序号" },
       { prop: "notice_title", label: "通知标题", minWidth: 140, showOverflowTooltip: true },
@@ -465,27 +399,35 @@ const {
         prop: "status",
         label: "状态",
         width: 88,
-        formatter: (row: NoticeTable) => {
-          const ok = row.status === 0;
-          const cfg = ok
-            ? { type: "success" as const, text: "启用" }
-            : { type: "danger" as const, text: "停用" };
-          return h(ElTag, { type: cfg.type }, () => cfg.text);
+        status: {
+          0: { type: "success", text: "启用" },
+          1: { type: "danger", text: "停用" },
         },
       },
       {
         prop: "notice_type",
         label: "类型",
         minWidth: 100,
-        formatter: (row: NoticeTable) =>
-          h(ElTag, { type: row.notice_type === "1" ? "primary" : "warning" }, () =>
-            noticeTypeLabel(row.notice_type)
-          ),
+        status: {
+          "1": { type: "primary", text: "通知" },
+          "2": { type: "warning", text: "公告" },
+        },
       },
-      { prop: "notice_content", label: "内容", minWidth: 200, showOverflowTooltip: true },
       { prop: "description", label: "描述", minWidth: 140, showOverflowTooltip: true },
-      { prop: "created_time", label: "创建时间", width: 168, showOverflowTooltip: true },
-      { prop: "updated_time", label: "更新时间", width: 168, showOverflowTooltip: true },
+      {
+        prop: "created_time",
+        label: "创建时间",
+        width: 168,
+        sortable: true,
+        showOverflowTooltip: true,
+      },
+      {
+        prop: "updated_time",
+        label: "更新时间",
+        width: 168,
+        sortable: true,
+        showOverflowTooltip: true,
+      },
       {
         prop: "created_id",
         label: "创建人",
@@ -503,44 +445,12 @@ const {
         label: "操作",
         width: 220,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: NoticeTable) => formatNoticeOperationCell(row),
       },
-    ],
+    ]),
   },
 });
-
-const noticeCrudCols = computed(() =>
-  columns.value.map((c: ColumnOption<NoticeTable>) => {
-    const t = (c as { type?: string }).type;
-    return {
-      prop: c.prop,
-      label: c.label,
-      type: t === "selection" ? ("selection" as const) : ("default" as const),
-      show: true,
-    };
-  })
-);
-
-const exportQueryParams = computed(() => {
-  const sp = stripPaginationParams(searchParams as Record<string, unknown>);
-  return normalizeNoticeQuery(sp);
-});
-
-const noticeExportContentConfig = computed(() => ({
-  permPrefix: "module_system:notice",
-  cols: noticeCrudCols.value,
-  exportsBlobAction: async (params: IObject) => {
-    const merged = normalizeNoticeQuery({
-      ...(exportQueryParams.value as unknown as Record<string, unknown>),
-      ...params,
-    } as Record<string, unknown>);
-    const res = await NoticeAPI.exportNotice(merged as NoticePageQuery);
-    return res.data as Blob;
-  },
-}));
-
-const { exportVisible, openExport } = useImportExport();
 
 function buildNoticeReplaceParams(p: NoticeSearchForm): Record<string, unknown> {
   return {
@@ -548,21 +458,24 @@ function buildNoticeReplaceParams(p: NoticeSearchForm): Record<string, unknown> 
     notice_type: p.notice_type,
     status: p.status,
     created_id: p.created_id,
+    updated_id: p.updated_id,
     created_time:
       Array.isArray(p.created_time) && p.created_time.length === 2 ? p.created_time : undefined,
+    updated_time:
+      Array.isArray(p.updated_time) && p.updated_time.length === 2 ? p.updated_time : undefined,
   };
 }
 
 async function handleSearchBarSearch(params: NoticeSearchForm) {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildNoticeReplaceParams(params));
-  getData();
+  await getData();
 }
 
 async function applyNoticeSearchFromForm() {
   await searchBarRef.value?.validate?.();
   replaceSearchParams(buildNoticeReplaceParams(searchForm.value));
-  getData();
+  await getData();
 }
 
 async function afterUserSelectSearch() {
@@ -570,26 +483,28 @@ async function afterUserSelectSearch() {
   await applyNoticeSearchFromForm();
 }
 
-function onResetSearch() {
+async function onResetSearch() {
   searchForm.value = {
     notice_title: undefined,
     notice_type: undefined,
     status: undefined,
-    created_time: undefined,
     created_id: undefined,
+    updated_id: undefined,
+    created_time: undefined,
+    updated_time: undefined,
   };
-  void resetSearchParams();
+  await resetSearchParams();
 }
 
-async function deleteNoticeRow(id: number) {
+async function deleteNoticeRow(id: number, name: string) {
   try {
-    await confirmDelete();
+    await confirmDelete(`确定删除「${name}」吗？`);
     await NoticeAPI.deleteNotice([id]);
-    await noticeStore.getNotice();
+    await noticeStore.getNotice(true);
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("删除取消");
+    // 用户取消
   }
 }
 
@@ -621,11 +536,11 @@ function buildNoticeRowActions(row: NoticeTable): TableOperationAction[] {
       icon: "ri:delete-bin-4-line",
       perm: "module_system:notice:delete",
       run: () => {
-        if (row.id != null) deleteNoticeRow(row.id);
+        if (row.id != null) deleteNoticeRow(row.id, row.notice_title ?? "");
       },
     },
   ];
-  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+  return all;
 }
 
 function formatNoticeOperationCell(row: NoticeTable) {
@@ -638,32 +553,41 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await confirmBatchDelete(ids.length);
+    await confirmBatchDelete(
+      ids.length,
+      (data.value as NoticeTable[])
+        .filter((r) => ids.includes(r.id!))
+        .map((r) => String(r.notice_title ?? r.id))
+    );
     batchDeleting.value = true;
     await NoticeAPI.deleteNotice(ids);
-    await noticeStore.getNotice();
+    await noticeStore.getNotice(true);
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
   } catch {
-    ElMessage.info("删除取消");
+    // 用户取消
   } finally {
     batchDeleting.value = false;
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(value: "enable" | "disable") {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
   try {
-    await confirmToggleStatus(status);
+    await confirmToggleStatus(value);
+    moreLoading.value = true;
+    const status = value === "enable" ? 0 : 1;
     await NoticeAPI.batchNotice({ ids, status });
     await refreshData();
-    await noticeStore.getNotice();
+    await noticeStore.getNotice(true);
   } catch {
-    ElMessage.info("操作取消");
+    // 用户取消或操作失败
+  } finally {
+    moreLoading.value = false;
   }
 }
 
@@ -671,63 +595,3 @@ onMounted(async () => {
   await dictStore.getDict(["sys_notice_type"]);
 });
 </script>
-
-<style scoped lang="scss">
-/* 富文本预览区域阅读样式（与 FaWangEditor 输出 HTML 展示一致） */
-.notice-html-preview {
-  box-sizing: border-box;
-  min-height: 120px;
-  max-height: min(360px, 45vh);
-  padding: 12px 16px;
-  overflow-y: auto;
-  background-color: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: calc(var(--custom-radius) / 3 + 2px);
-}
-
-.notice-html-empty {
-  margin: 0;
-  font-size: 14px;
-  color: var(--el-text-color-placeholder);
-}
-
-.notice-html-preview :deep(h1),
-.notice-html-preview :deep(h2),
-.notice-html-preview :deep(h3) {
-  margin: 12px 0 8px;
-}
-
-.notice-html-preview :deep(p) {
-  margin: 8px 0;
-  line-height: 1.6;
-}
-
-.notice-html-preview :deep(table) {
-  margin: 12px 0;
-}
-
-.notice-html-preview :deep(table th),
-.notice-html-preview :deep(table td) {
-  padding: 8px 12px;
-}
-
-.notice-html-preview :deep(pre) {
-  padding: 12px;
-  margin: 12px 0;
-  overflow-x: auto;
-  background-color: var(--el-fill-color-light);
-  border-radius: 4px;
-}
-
-.notice-html-preview :deep(blockquote) {
-  padding-left: 16px;
-  margin: 12px 0;
-  color: var(--el-text-color-regular);
-  border-left: 4px solid var(--el-color-primary);
-}
-
-.notice-html-preview :deep(img) {
-  max-width: 100%;
-  height: auto;
-}
-</style>

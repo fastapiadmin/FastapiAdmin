@@ -1,12 +1,14 @@
 /**
  * 表格列配置：显隐、拖拽排序、增删改；与 `useTable` 的 `columnsFactory` 配合。
  * 导出 `getColumnVisibility` / `getColumnChecks` 供表头等处复用同一套 visible/checked 规则。
+ *
+ * 列设置（显示/隐藏/拖拽排序）自动持久化到 localStorage，以 `table-${route.path}` 为 key。
  */
 
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, type ComputedRef, type Ref } from "vue";
+import { useRoute } from "vue-router";
 import { $t } from "@/locales";
 import type { ColumnOption } from "@/types/component";
-
 /** selection / expand / index 等占位 prop，避免与业务列冲突 */
 const SPECIAL_COLUMNS: Record<string, { prop: string; label: string }> = {
   selection: { prop: "__selection__", label: $t("table.column.selection") },
@@ -99,32 +101,103 @@ export interface DynamicColumnConfig<T = any> {
 export function useTableColumns<T = any>(
   columnsFactory: () => ColumnOption<T>[]
 ): {
-  columns: any;
-  columnChecks: any;
+  columns: ComputedRef<ColumnOption<T>[]>;
+  columnChecks: Ref<ColumnOption<T>[]>;
 } & DynamicColumnConfig<T> {
+  const route = useRoute();
+
+  /** localStorage 存储 key */
+  const storageKey = computed(() => `table-${route.path}`);
+
+  /** 保存列设置到 localStorage */
+  function saveColumnSettings() {
+    try {
+      const settings = {
+        order: dynamicColumns.value.map((c) => getColumnKey(c)),
+        visibility: Object.fromEntries(
+          columnChecks.value.map((c) => [getColumnKey(c), getColumnVisibility(c)])
+        ),
+      };
+      localStorage.setItem(storageKey.value, JSON.stringify(settings));
+    } catch {
+      // localStorage 可能不可用，静默忽略
+    }
+  }
+
+  /** 从 localStorage 恢复列设置 */
+  function restoreColumnSettings() {
+    try {
+      const raw = localStorage.getItem(storageKey.value);
+      if (!raw) return;
+      const settings = JSON.parse(raw) as { order: string[]; visibility: Record<string, boolean> };
+      if (!settings?.order?.length) return;
+
+      const defaultCols = columnsFactory();
+      const defaultKeys = defaultCols.map((c) => getColumnKey(c));
+
+      // 按保存的顺序重排默认列，仅保留仍然存在的列
+      const reordered: ColumnOption<T>[] = [];
+      const added = new Set<string>();
+
+      // 按保存的顺序排列
+      settings.order.forEach((key) => {
+        const idx = defaultKeys.indexOf(key);
+        if (idx >= 0) {
+          reordered.push({ ...defaultCols[idx]! });
+          added.add(key);
+        }
+      });
+      // 追加新列（保存后新增的）
+      defaultCols.forEach((col, idx) => {
+        if (!added.has(defaultKeys[idx]!)) {
+          reordered.push({ ...col });
+        }
+      });
+
+      dynamicColumns.value = reordered;
+
+      // 恢复可见性
+      const visibilityMap = settings.visibility ?? {};
+      const newChecks = getColumnChecks(reordered).map((c) => {
+        const key = getColumnKey(c);
+        const savedVis = visibilityMap[key];
+        const finalVis = savedVis !== undefined ? savedVis : getColumnVisibility(c);
+        return { ...c, checked: finalVis, visible: finalVis };
+      });
+      columnChecks.value = newChecks;
+    } catch {
+      // 解析失败时忽略，使用默认设置
+    }
+  }
+
   const dynamicColumns = ref<ColumnOption<T>[]>(columnsFactory());
   const columnChecks = ref<ColumnOption<T>[]>(getColumnChecks(dynamicColumns.value));
 
+  // 挂载时恢复列设置
+  restoreColumnSettings();
+
   // 当 dynamicColumns 变动时，重新生成 columnChecks 且保留已存在的显示状态
-  watch(
-    dynamicColumns,
-    (newCols) => {
-      const visibilityMap = new Map(
-        columnChecks.value.map((c) => [getColumnKey(c), getColumnVisibility(c)])
-      );
-      const newChecks = getColumnChecks(newCols).map((c) => {
-        const key = getColumnKey(c);
-        const visibility = visibilityMap.has(key) ? visibilityMap.get(key) : getColumnVisibility(c);
-        return {
-          ...c,
-          checked: visibility,
-          visible: visibility,
-        };
-      });
-      columnChecks.value = newChecks;
-    },
-    { deep: true }
-  );
+  // 无需 deep: dynamicColumns 为 ref，所有变更均替换整个数组，Vue 自动检测引用变化
+  watch(dynamicColumns, (newCols) => {
+    const visibilityMap = new Map(
+      columnChecks.value.map((c) => [getColumnKey(c), getColumnVisibility(c)])
+    );
+    const newChecks = getColumnChecks(newCols).map((c) => {
+      const key = getColumnKey(c);
+      const visibility = visibilityMap.has(key) ? visibilityMap.get(key) : getColumnVisibility(c);
+      return {
+        ...c,
+        checked: visibility,
+        visible: visibility,
+      };
+    });
+    columnChecks.value = newChecks;
+  });
+
+  // 列设置变化时自动持久化（所有变更均替换整个数组引用，无需 deep）
+  watch([dynamicColumns, columnChecks], () => {
+    saveColumnSettings();
+  });
 
   // 当前显示列（基于 columnChecks 的 checked 或 visible）
   const columns = computed(() => {
@@ -206,10 +279,10 @@ export function useTableColumns<T = any>(
       propsToToggle.forEach((p) => {
         const i = next.findIndex((c) => getColumnKey(c) === p);
         if (i > -1) {
-          const currentVisibility = getColumnVisibility(next[i]);
+          const currentVisibility = getColumnVisibility(next[i]!);
           const newVisibility = visible ?? !currentVisibility;
           // 同时更新 checked 和 visible 以保持兼容性
-          next[i] = { ...next[i], checked: newVisibility, visible: newVisibility };
+          next[i] = { ...next[i]!, checked: newVisibility, visible: newVisibility };
         }
       });
 
@@ -220,6 +293,11 @@ export function useTableColumns<T = any>(
      * 重置所有列
      */
     resetColumns: () => {
+      try {
+        localStorage.removeItem(storageKey.value);
+      } catch {
+        // 静默忽略
+      }
       dynamicColumns.value = columnsFactory();
     },
 
@@ -253,7 +331,7 @@ export function useTableColumns<T = any>(
         }
         const next = [...cols];
         const [moved] = next.splice(fromIndex, 1);
-        next.splice(toIndex, 0, moved);
+        if (moved) next.splice(toIndex, 0, moved);
         return next;
       }),
 

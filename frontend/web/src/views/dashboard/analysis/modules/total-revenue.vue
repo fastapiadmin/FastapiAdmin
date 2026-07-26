@@ -1,12 +1,12 @@
 <template>
-  <div class="fa-card h-100 p-5 mb-5 max-sm:mb-4">
+  <div class="fa-card h-100 p-5 mb-5 max-sm:mb-4 flex flex-col">
     <div class="fa-card-header">
       <div class="title">
         <h4>总收入</h4>
       </div>
     </div>
     <FaBarChart
-      height="calc(100% - 30px)"
+      class="flex-1 min-h-0"
       :data="revenueData"
       :xAxisData="weekDays"
       :showLegend="true"

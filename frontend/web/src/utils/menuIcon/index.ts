@@ -1,5 +1,4 @@
 import type { Component } from "vue";
-import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 /**
  * 菜单 / IconSelect 共用的图标存值约定（与 `components/IconSelect` 一致）：
@@ -13,48 +12,16 @@ export function isElementPlusStoredIcon(icon?: string | null): boolean {
   return !!s && s.startsWith("el-icon");
 }
 
-/** `el-icon-*` 主体转 PascalCase，与侧栏 / 搜索里 Element Plus 图标解析一致：`pie-chart` → `PieChart` */
-function kebabSnakeBodyToPascalKey(body: string): string {
-  return body
-    .split(/[-_]/)
-    .filter(Boolean)
-    .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1).toLowerCase())
-    .join("");
-}
-
 /**
  * 解析为 Element Plus 图标组件；否则 null（再走 Iconify / Remix 映射）。
+ * 优化：不再全量导入 Element Plus 图标，改为使用 Iconify ep: 前缀映射
  * 对齐旧版 `layouts/old/components/Menu/components/MenuItemContent.vue`（el-icon / 自定义文件名）
  * 及对 `el-icon-*` 主体的 Pascal 推导。
  */
-export function resolveElementPlusIconComponent(icon?: string | null): Component | null {
-  const ic = icon?.trim();
-  if (!ic) return null;
-
-  const body = isElementPlusStoredIcon(ic) ? ic.replace(/^el-icon-?/i, "").trim() : ic;
-
-  if (!body) return null;
-
-  const mod = ElementPlusIconsVue as Record<string, Component | undefined>;
-
-  // 1. 精确匹配（如 PieChart）
-  let comp = mod[body];
-  if (comp) return comp;
-
-  // 2. kebab/snake → Pascal（如 pie-chart → PieChart）
-  if (/[-_]/.test(body)) {
-    const pascal = kebabSnakeBodyToPascalKey(body);
-    comp = mod[pascal];
-    if (comp) return comp;
-  }
-
-  // 3. 首字母大写（旧版存值全小写如 delete → Delete）
-  const capitalized = body.charAt(0).toUpperCase() + body.slice(1);
-  if (capitalized !== body) {
-    comp = mod[capitalized];
-    if (comp) return comp;
-  }
-
+export function resolveElementPlusIconComponent(icon?: string): Component | null {
+  // 参数保留以兼容旧调用，但不再解析 Element Plus 图标组件
+  // 统一通过 Iconify ep: 前缀映射，避免全量导入 Element Plus 图标
+  void icon; // 避免未使用参数警告
   return null;
 }
 
@@ -262,10 +229,6 @@ export function resolveIconForFaSvgIcon(stored?: string | null): string {
   if (!s) return "ri:file-3-line";
 
   if (isIconifyStoredIcon(s)) return s;
-
-  if (resolveElementPlusIconComponent(s)) {
-    return elementMenuIconToEpIconify(isElementPlusStoredIcon(s) ? s : s);
-  }
 
   if (isElementPlusStoredIcon(s)) {
     return elementMenuIconToEpIconify(s);

@@ -8,6 +8,7 @@
           :is-collapsed="isSidebarCollapsed"
           @select-session="handleSelectSession"
           @new-session="handleNewSession"
+          @open-config="configDrawerVisible = true"
         />
       </ElAside>
       <ElContainer class="chat-container">
@@ -37,10 +38,13 @@
             :sending="sending"
             :is-connected="isConnected"
             @send="handleSendMessage"
+            @stop="handleStopMessage"
           />
         </ElFooter>
       </ElContainer>
     </ElContainer>
+
+    <FaAiModelConfigPanel v-model="configDrawerVisible" />
   </div>
 </template>
 
@@ -59,6 +63,7 @@ import FaSidebar from "./components/FaSidebar.vue";
 import FaChatNavbar from "./components/FaChatNavbar.vue";
 import FaChatMessages from "./components/FaChatMessages.vue";
 import FaChatInput from "./components/FaChatInput.vue";
+import FaAiModelConfigPanel from "./components/FaAiModelConfigPanel.vue";
 
 // 状态
 const messages = ref<ChatMessage[]>([]);
@@ -68,6 +73,7 @@ const connectionStatus = ref<"connected" | "connecting" | "disconnected">("disco
 const error = ref("");
 const currentSessionId = ref<string | null>(null);
 const isSidebarCollapsed = ref(false);
+const configDrawerVisible = ref(false);
 
 // Refs
 const chatMessagesRef = ref<{ scrollToBottom: () => void }>();
@@ -138,13 +144,29 @@ const toggleConnection = () => {
 
 // ============ 消息处理 ============
 const handleWebSocketMessage = (data: string) => {
+  const text = data || "";
+
+  // 服务端结束标记
+  if (text === "[DONE]") {
+    finishLoadingMessages();
+    sending.value = false;
+    return;
+  }
+
+  // 服务端停止确认标记
+  if (text === "[STOPPED]") {
+    finishLoadingMessages();
+    sending.value = false;
+    ElMessage.info("已停止生成");
+    return;
+  }
+
   const lastMessage = messages.value[messages.value.length - 1];
-  const content = data || "";
 
   if (lastMessage?.type === "assistant" && lastMessage.loading) {
-    lastMessage.content += content;
+    lastMessage.content += text;
   } else {
-    addMessage("assistant", content);
+    addMessage("assistant", text);
   }
 
   chatMessagesRef.value?.scrollToBottom();
@@ -158,6 +180,7 @@ const addMessage = (type: "user" | "assistant", content: string, files?: Uploade
     timestamp: Date.now(),
     collapsed: content.length > 200,
     files,
+    loading: type === "assistant" ? true : false,
   });
 };
 
@@ -211,14 +234,29 @@ const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
           files: files?.map((f) => ({ name: f.name, type: f.type, size: f.size })),
         })
       );
+      // 注意：sending 状态保持为 true，等待 [DONE] / [STOPPED] 标记清除
     } else {
       throw new Error("WebSocket 连接未建立");
     }
   } catch {
     messages.value.pop();
     error.value = "发送消息失败，请检查连接状态";
-  } finally {
     sending.value = false;
+  }
+};
+
+// 停止当前生成
+const handleStopMessage = () => {
+  if (ws?.readyState !== WebSocket.OPEN) return;
+  try {
+    ws.send(
+      JSON.stringify({
+        action: "stop",
+        session_id: currentSessionId.value,
+      })
+    );
+  } catch {
+    ElMessage.error("停止指令发送失败");
   }
 };
 

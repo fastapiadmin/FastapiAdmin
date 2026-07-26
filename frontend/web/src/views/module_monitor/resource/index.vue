@@ -32,7 +32,7 @@
           <ElBreadcrumb separator="/">
             <ElBreadcrumbItem
               v-for="(item, index) in breadcrumbList"
-              :key="index"
+              :key="item.name"
               :class="{ 'is-link': index < breadcrumbList.length - 1 }"
               @click="handleBreadcrumbClick(item)"
             >
@@ -61,7 +61,7 @@
               上传文件
             </ElButton>
             <ElButton
-              v-hasPerm="['module_monitor:resource:create_dir']"
+              v-hasPerm="['module_monitor:resource:mkdir']"
               type="primary"
               plain
               :icon="FolderAdd"
@@ -158,7 +158,7 @@
       <template #footer>
         <ElButton @click="createDirDialogVisible = false">取消</ElButton>
         <ElButton
-          v-hasPerm="['module_monitor:resource:create_dir']"
+          v-hasPerm="['module_monitor:resource:mkdir']"
           type="primary"
           @click="handleCreateDirConfirm"
         >
@@ -217,18 +217,14 @@ import {
   QuestionFilled,
   UploadFilled,
 } from "@element-plus/icons-vue";
-import { useTable } from "@/hooks/core/useTable";
 import { ResourceAPI, type ResourceItem } from "@/api/module_monitor/resource";
-import type { ColumnOption } from "@/types/component";
-import { useAuth } from "@/hooks/core/useAuth";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type { TableOperationAction } from "@/utils/table";
+import { renderTableOperationCell } from "@utils";
+import type { ColumnOption } from "@/types/component";
 import FaDialog from "@/components/modal/fa-dialog/index.vue";
-import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
-
-const { hasAuth } = useAuth();
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 
 type ResourceSearchForm = {
   name?: string;
@@ -244,6 +240,7 @@ function fetchResourceTableList(params: Record<string, unknown>) {
   return ResourceAPI.listResource({
     page_no: 1,
     page_size: 10,
+    include_hidden: showHiddenFiles.value,
     ...params,
   });
 }
@@ -284,7 +281,6 @@ const renameDialogVisible = ref(false);
 const uploading = ref(false);
 const batchDeleting = ref(false);
 
-const uploadRef = ref();
 const uploadFileList = ref<UploadUserFile[]>([]);
 
 const createDirForm = reactive({
@@ -394,52 +390,49 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 220,
+        width: 180,
         fixed: "right",
         align: "center",
-        formatter: (row: ResourceItem) =>
-          h(
-            ElSpace,
-            { wrap: true, size: 4 },
-            () =>
-              [
-                !row.is_dir && hasAuth("module_monitor:resource:download")
-                  ? h(ElTooltip, { content: "下载", placement: "top" }, () =>
-                      h("span", { class: "inline-flex" }, [
-                        h(FaButtonTable, {
-                          type: "view",
-                          icon: "ri:download-line",
-                          onClick: () => void handleDownload(row),
-                        }),
-                      ])
-                    )
-                  : null,
-                hasAuth("module_monitor:resource:rename")
-                  ? h(ElTooltip, { content: "重命名", placement: "top" }, () =>
-                      h("span", { class: "inline-flex" }, [
-                        h(FaButtonTable, {
-                          type: "edit",
-                          onClick: () => void handleRenameOpen(row),
-                        }),
-                      ])
-                    )
-                  : null,
-                hasAuth("module_monitor:resource:delete")
-                  ? h(ElTooltip, { content: "删除", placement: "top" }, () =>
-                      h("span", { class: "inline-flex" }, [
-                        h(FaButtonTable, {
-                          type: "delete",
-                          onClick: () => void handleDelete(row),
-                        }),
-                      ])
-                    )
-                  : null,
-              ].filter(Boolean) as ReturnType<typeof h>[]
-          ),
+        formatter: (row: ResourceItem) => formatResourceOperationCell(row),
       },
     ],
   },
 });
+
+function buildResourceRowActions(row: ResourceItem): TableOperationAction[] {
+  const actions: TableOperationAction[] = [];
+  if (!row.is_dir) {
+    actions.push({
+      key: "download",
+      label: "下载",
+      artType: "view",
+      icon: "ri:download-line",
+      perm: "module_monitor:resource:download",
+      run: () => void handleDownload(row),
+    });
+  }
+  actions.push({
+    key: "rename",
+    label: "重命名",
+    artType: "edit",
+    perm: "module_monitor:resource:rename",
+    run: () => void handleRenameOpen(row),
+  });
+  actions.push({
+    key: "delete",
+    label: "删除",
+    artType: "delete",
+    perm: "module_monitor:resource:delete",
+    run: () => void handleDelete(row),
+  });
+  return actions;
+}
+
+function formatResourceOperationCell(row: ResourceItem) {
+  return renderTableOperationCell(buildResourceRowActions(row), {
+    wrapperClass: "inline-flex items-center justify-center gap-1",
+  });
+}
 
 function handleBreadcrumbClick(item: { path: string }) {
   currentPath.value = item.path;
@@ -506,7 +499,8 @@ async function handleUploadConfirm() {
     uploadDialogVisible.value = false;
     await refreshData();
   } catch (error) {
-    console.error("Upload error:", error);
+    if (import.meta.env.DEV) console.error("Upload error:", error);
+    ElMessage.error("上传文件失败，请稍后重试");
   } finally {
     uploading.value = false;
   }
@@ -537,7 +531,8 @@ async function handleCreateDirConfirm() {
     createDirDialogVisible.value = false;
     await refreshData();
   } catch (error) {
-    console.error("Create directory error:", error);
+    if (import.meta.env.DEV) console.error("Create directory error:", error);
+    ElMessage.error("创建文件夹失败，请稍后重试");
   }
 }
 
@@ -561,7 +556,8 @@ async function handleRenameConfirm() {
     renameDialogVisible.value = false;
     await refreshData();
   } catch (error) {
-    console.error("Rename error:", error);
+    if (import.meta.env.DEV) console.error("Rename error:", error);
+    ElMessage.error("重命名失败，请稍后重试");
   }
 }
 
@@ -578,7 +574,8 @@ async function handleDownload(item: ResourceItem) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Download error:", error);
+    if (import.meta.env.DEV) console.error("Download error:", error);
+    ElMessage.error("下载文件失败，请稍后重试");
   }
 }
 
@@ -595,7 +592,8 @@ async function handleDelete(item: ResourceItem) {
     await refreshData();
   } catch (error) {
     if (error !== "cancel") {
-      console.error("Delete error:", error);
+      if (import.meta.env.DEV) console.error("Delete error:", error);
+      ElMessage.error("删除文件失败，请稍后重试");
     }
   }
 }
@@ -624,7 +622,8 @@ async function handleBatchDelete() {
     await refreshData();
   } catch (error) {
     if (error !== "cancel") {
-      console.error("Batch delete error:", error);
+      if (import.meta.env.DEV) console.error("Batch delete error:", error);
+      ElMessage.error("批量删除失败，请稍后重试");
     }
   } finally {
     batchDeleting.value = false;

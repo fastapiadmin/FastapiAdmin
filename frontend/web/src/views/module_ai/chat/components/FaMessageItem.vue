@@ -40,11 +40,12 @@
         >
           {{ message.collapsed ? "展开" : "收起" }}
         </ElButton>
-        <div
-          class="message-text"
-          :class="{ collapsed: message.collapsed }"
-          v-html="formattedContent"
-        ></div>
+        <div class="message-text" :class="{ collapsed: message.collapsed }">
+          <FaMarkdownRenderer
+            :content="message.content"
+            :max-length="message.collapsed ? 200 : undefined"
+          />
+        </div>
         <div
           v-if="message.type === 'assistant' && message.loading && !message.content"
           class="typing-indicator"
@@ -71,12 +72,6 @@ import {
   ArrowUp,
   Document,
 } from "@element-plus/icons-vue";
-import MarkdownIt from "markdown-it";
-import markdownItHighlightjs from "markdown-it-highlightjs";
-import hljs from "highlight.js";
-import DOMPurify from "dompurify";
-/* 亮色用 atom-one；暗色由文末全局块覆盖 .hljs 底与字色，避免整段代码发亮底 */
-import "highlight.js/styles/atom-one-light.css";
 import { useUserStoreHook } from "@stores";
 import type { ChatMessage } from "../types";
 
@@ -94,114 +89,6 @@ const emit = defineEmits<Emits>();
 const userStore = useUserStoreHook();
 
 const userName = computed(() => userStore.basicInfo.name || "用户");
-
-const md: MarkdownIt = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  breaks: true,
-  highlight(str: string, lang: string): string {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return `<pre class="hljs"><code>${hljs.highlight(str, { language: lang, ignoreIllegals: true }).value}</code></pre>`;
-      } catch {
-        return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
-      }
-    }
-    return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
-  },
-}).use(markdownItHighlightjs);
-
-const defaultRender =
-  md.renderer.rules.link_open ||
-  function (tokens: any[], idx: number, options: any, env: any, self: any) {
-    return self.renderToken(tokens, idx, options, env, self);
-  };
-
-md.renderer.rules.link_open = function (
-  tokens: any[],
-  idx: number,
-  options: any,
-  env: any,
-  self: any
-) {
-  tokens[idx].attrPush(["target", "_blank"]);
-  tokens[idx].attrPush(["rel", "noopener noreferrer"]);
-  return defaultRender(tokens, idx, options, env, self);
-};
-
-const formattedContent = computed(() => {
-  if (!props.message.content) return "";
-  const rawHtml = md.render(props.message.content);
-  return DOMPurify.sanitize(rawHtml, {
-    ALLOWED_TAGS: [
-      "a",
-      "abbr",
-      "acronym",
-      "b",
-      "blockquote",
-      "br",
-      "code",
-      "col",
-      "colgroup",
-      "dd",
-      "del",
-      "dl",
-      "dt",
-      "em",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "hr",
-      "i",
-      "img",
-      "li",
-      "ol",
-      "p",
-      "pre",
-      "s",
-      "span",
-      "strike",
-      "strong",
-      "sub",
-      "sup",
-      "table",
-      "tbody",
-      "td",
-      "tfoot",
-      "th",
-      "thead",
-      "tr",
-      "tt",
-      "u",
-      "ul",
-      "video",
-      "source",
-      "div",
-    ],
-    ALLOWED_ATTR: [
-      "href",
-      "title",
-      "target",
-      "rel",
-      "src",
-      "alt",
-      "width",
-      "height",
-      "class",
-      "id",
-      "controls",
-      "poster",
-      "type",
-      "colspan",
-      "rowspan",
-      "span",
-    ],
-  });
-});
 
 const handleToggleFold = () => {
   emit("toggle-fold");
@@ -347,7 +234,6 @@ const formatFileSize = (bytes: number): string => {
         font-size: 15px;
         line-height: 1.6;
         color: var(--el-text-color-primary);
-        overflow-wrap: break-word;
         transition:
           max-height 0.25s ease,
           opacity 0.2s ease;
@@ -368,74 +254,6 @@ const formatFileSize = (bytes: number): string => {
               transparent,
               var(--chat-area-bg, var(--el-bg-color-overlay))
             );
-          }
-        }
-
-        :deep(pre) {
-          padding: 12px;
-          margin: 12px 0;
-          overflow-x: auto;
-          background: var(--el-fill-color-light);
-          border-radius: 6px;
-
-          code {
-            font-family: "Courier New", Courier, monospace;
-            font-size: 13px;
-          }
-        }
-
-        :deep(code) {
-          padding: 2px 6px;
-          font-family: "Courier New", Courier, monospace;
-          font-size: 13px;
-          background: var(--el-fill-color-light);
-          border-radius: 3px;
-        }
-
-        :deep(p) {
-          margin: 8px 0;
-        }
-
-        :deep(ul),
-        :deep(ol) {
-          padding-left: 24px;
-          margin: 8px 0;
-        }
-
-        :deep(li) {
-          margin: 4px 0;
-        }
-
-        :deep(a) {
-          color: var(--el-color-primary);
-          text-decoration: none;
-
-          &:hover {
-            text-decoration: underline;
-          }
-        }
-
-        :deep(blockquote) {
-          padding: 8px 16px;
-          margin: 12px 0;
-          background: var(--el-fill-color-light);
-          border-left: 4px solid var(--el-color-primary);
-        }
-
-        :deep(table) {
-          width: 100%;
-          margin: 12px 0;
-          border-collapse: collapse;
-
-          th,
-          td {
-            padding: 8px 12px;
-            border: 1px solid var(--el-border-color-light);
-          }
-
-          th {
-            font-weight: 600;
-            background: var(--el-fill-color-light);
           }
         }
       }
@@ -500,14 +318,6 @@ const formatFileSize = (bytes: number): string => {
         &.collapsed::after {
           background: linear-gradient(transparent, var(--el-color-primary-light-9));
         }
-
-        :deep(pre) {
-          border: 1px solid var(--el-border-color-lighter);
-        }
-
-        :deep(code:not(pre code)) {
-          border: 1px solid var(--el-border-color-lighter);
-        }
       }
     }
   }
@@ -536,7 +346,7 @@ const formatFileSize = (bytes: number): string => {
 
 <!-- 暗色下覆盖 highlight.js 亮色主题，避免代码块发白底 -->
 <style lang="scss">
-html.dark .chat-messages .message-text {
+html.dark .chat-messages .message-text .markdown-content {
   pre.hljs,
   code.hljs {
     color: var(--el-text-color-regular) !important;

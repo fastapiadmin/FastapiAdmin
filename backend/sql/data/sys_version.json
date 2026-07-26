@@ -1,0 +1,94 @@
+[
+  {
+    "version": "v3.0.0",
+    "title": "问题修复、表单与路由体验优化",
+    "date": "2026-03-15",
+    "content": "- 修复：富文本编辑器样式异常问题\n- 修复：菜单区域无法滚动的问题\n- 修复：特殊路由打开后显示空白页面的问题\n- 修复：WebSocket 重连异常问题\n- 修复：特殊动态路由参数处理异常问题\n- 优化：FaForm、FaSearchBar 表单提交前增加数据清洗，避免无效字段提交到后端\n- 修复：FaTable 与 ElForm 组合使用时动态表单校验错误的问题\n- 修复：隐藏子菜单时父级菜单被一并隐藏的问题\n- 修复：静态路由刷新后跳回首页的问题\n- 修复：fa-table 属性继承异常问题\n- 修复：PC 端切换到移动端后再切回 PC 端，菜单无法恢复原桌面布局的问题",
+    "description": null,
+    "status": 1,
+    "sort": 1
+  },
+  {
+    "version": "v2.6.3",
+    "title": "bug修复、新增功能",
+    "date": "2025-11-15",
+    "content": "- 修复：路由注册时不存在接口的重复请求问题\n- 修复：一键精简脚本打包失败的问题\n- 优化：完善路由配置验证机制，自动检测并提示非一级菜单的路径配置错误\n- 优化：顶部进度条残影\n- 优化：vite 预构建优化\n- 优化：圆角、边框统一\n- 优化：锁屏页面重新设计\n- 优化：退出登录菜单提前消失造成的视觉体验不好问题\n- 新增：FaForm 和 FaSearchBar 组件的 label 支持自定义渲染函数\n- 新增：菜单管理表单关键字段新增 Tooltip 提示\n- 新增：iconify 新增离线图标加载模式\n- 新增：退出登录新增 redirect 属性\n- 新增：退出登录重新进入系统保留用户标签页\n- 新增：双列菜单新增折叠按钮\n- 新增：菜单图标完善\n- 新增：多标签页增加图标\n- 新增：WebSocket 连接",
+    "description": null,
+    "status": 1,
+    "sort": 2
+  },
+  {
+    "version": "v2.6.2",
+    "title": "Sass 重构为 Tailwind CSS，Iconfont 替换为 Iconify",
+    "date": "2025-11-09",
+    "content": "- 样式系统重构：Sass 全面迁移至 Tailwind CSS\n- 图标方案升级：Iconfont 替换为 Iconify\n- 构建优化：完整包体积减少 1.3 MB\n- 路由注册重构：全面重构路由注册系统\n- 架构优化：优化目录结构，职责划分更清晰\n- 注释优化：统一模块注释规范\n- 性能提升：优化核心代码逻辑\n- 设计系统：重构颜色体系\n- 菜单优化：细化菜单样式\n- 组件重构：重构 ArtTextScroll 组件\n- 问题修复：修复 FaForm、FaSearchBar 自定义组件渲染异常\n- 功能增强：FaForm、FaSearchBar 新增 render 属性\n- 功能增强：useTable hooks 新增 visible 属性\n- 响应式优化：优化 FaForm、FaSearchBar 栅格布局\n- 节日功能增强：礼花配置支持跨日期范围设置\n- 依赖更新：升级核心依赖至最新稳定版本",
+    "description": "重要提示：本次升级涉及样式系统（Sass → Tailwind CSS）与图标库（Iconfont → Iconify）的底层重构，属于破坏性更新。建议新项目直接使用 v3.0，旧版本项目不建议升级。",
+    "require_re_login": true,
+    "status": 1,
+    "sort": 3
+  },
+  {
+    "version": "v2.6.1",
+    "title": "bug修复、授权页增加主题色切换功能",
+    "date": "2025-10-19",
+    "content": "- 修复获取用户信息、获取菜单接口访问无效地址重复调用问题\n- 升级部分依赖兼容 tailwindcss\n- 修复 ElButton circle 模式样式\n- 修复 ElSelect 无法通过键盘选择问题\n- 修复带参数静态路由跳转登录页面问题\n- 优化外部链接菜单点击选中状态\n- 授权页增加主题色切换功能",
+    "description": null,
+    "status": 1,
+    "sort": 4
+  },
+  {
+    "version": "v2.6.0",
+    "title": "代码优化、bug修复",
+    "date": "2025-10-16",
+    "content": "- 优化精简版本菜单数据结构\n- 优化本地开发环境网络请求代理配置\n- 优化 ElTree 组件默认样式\n- 新增 VsCode 推荐插件相关配置\n- 优化 ElDropdown 组件点击触发模式下的交互样式\n- 扩展注册、密码重置页面顶部组件支持\n- 优化菜单过滤逻辑\n- 优化页面切换动画\n- 优化暗黑模式文字颜色\n- 修复静态路由自定义首页路径首次访问跳转登录页问题\n- 修复退出登录时短暂跳转至 500 页的问题\n- 修复 v2.5.9 版本首页路由跳转配置失效问题\n- 修复 v2.5.9 自动导包机制导致的构建异常",
+    "description": null,
+    "require_re_login": true,
+    "status": 1,
+    "sort": 5
+  },
+  {
+    "version": "v2.5.9",
+    "title": "代码优化",
+    "date": "2025-10-12",
+    "content": "- views 文件目录、文件名、代码优化\n- useTable 分页请求字段增加全局配置 tableConfig.ts\n- 优化路由配置为模块化结构\n- 获取菜单接口使用 apifox mock 数据",
+    "description": null,
+    "status": 1,
+    "sort": 6
+  },
+  {
+    "version": "v2.5.8",
+    "title": "依赖升级、bug修复",
+    "date": "2025-09-29",
+    "content": "- vue、vite、element-plus 等核心库升级\n- 修复富文本编辑器全屏顶栏层级问题\n- 修复表格列排序组件文字溢出问题\n- 修复统计卡片条件判断\n- 优化 el-tag 样式\n- 优化顶部进度条颜色\n- 优化自定义主题配置\n- 优化 ElementPlus 自定义主题问题\n- 修复根路径 / 与 HOME_PAGE_PATH 同为 / 时出现的无限重定向",
+    "description": "由于项目依赖升级，node 版本需要升级到 v20.19.0 或以上",
+    "status": 1,
+    "sort": 7
+  },
+  {
+    "version": "v2.5.7",
+    "title": "新增表单组件",
+    "date": "2025-09-14",
+    "content": "- 新增 FaForm 组件\n- 修复新版本谷歌浏览器切换主题闪烁问题\n- 优化表单 label 高度没有对齐问题\n- 首屏启动性能优化",
+    "description": null,
+    "status": 1,
+    "sort": 8
+  },
+  {
+    "version": "v2.5.6",
+    "title": "优化用户体验、bug修复",
+    "date": "2025-08-17",
+    "content": "- useTable 类型推导优化\n- useTable removeColumn 支持多数据删除\n- useTable 自动识别响应体支持自定义配置\n- useTable 空数据浏览器警告优化\n- api 接口请求代码优化\n- FaTable 分页组件选中样式优化\n- FaTable 空状态高度默认撑满\n- ArtButtonMore 组件新增图标、颜色配置\n- FaTableHeader 新增搜索按钮\n- FaSearchBar label 为空时不占空间\n- 表格操作栏拖拽禁止固定列拖拽\n- 角色管理页面接口对接\n- 菜单管理页面优化\n- 优化设置中心滚动页面跟随滚动问题\n- 一级路由是外链时component校验逻辑优化\n- 优化地图右下角拖动问题\n- 优化暗黑模式刷新页面白色背景问题\n- 移动端显示左侧菜单logo\n- 网络请求新增 showSuccessMessage\n- 添加全局错误处理基础框架\n- 修复批量删除整页数据没有返回上一页的bug\n- 修复动态路由参数导致的问题\n- 新增权限演示示例\n- 全局组件采用异步加载策略",
+    "description": null,
+    "status": 1,
+    "sort": 9
+  },
+  {
+    "version": "v2.5.5",
+    "title": "bug修复、优化用户体验",
+    "date": "2025-07-27",
+    "content": "- 重构 FaSearchBar 组件，支持更多组件、表单校验等能力\n- useTable 列配置：支持动态更新能力\n- 修复多个富文本编辑器图标不统一问题\n- 优化颜色选择器圆角\n- el-radio、el-checkbox 统一大小\n- art-stats-card 新增小数位、分隔符配置\n- 路由配置示例优化\n- 高级表格新增自定义获取数据示例\n- useTable 新增 excludeParams\n- 优化路径别名类型问题\n- 本地开发跨域配置优化\n- 修复 useTable 删除最后一整页数据没有返回上一页的问题\n- 修复 echarts 图表数据初始化、更新数据浏览器报错\n- 删除 art-chart-empty 组件\n- 新增 FaSearchBar 组件示例\n- 网络请求支持 http 状态码为 401 时退出登录\n- 优化网络请求退出登录多次提示问题\n- useTable 属性、方法命名优化\n- 登录页UI升级\n- 403、404、500 页面UI升级",
+    "description": null,
+    "status": 1,
+    "sort": 10
+  }
+]

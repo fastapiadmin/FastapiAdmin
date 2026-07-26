@@ -21,10 +21,10 @@
  * @author FastapiAdmin Team
  */
 
+import { LanguageEnum } from "@/enums/appEnum";
 import { createI18n } from "vue-i18n";
 import type { I18n, I18nOptions } from "vue-i18n";
 import type { App } from "vue";
-import { LanguageEnum } from "@/enums/appEnum";
 import { getSystemStorage, StorageKeyManager } from "@utils/storage";
 
 // 同步导入语言文件

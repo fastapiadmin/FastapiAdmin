@@ -7,15 +7,22 @@
     @clear-click="handleClearSelection"
   >
     <template #status="scope">
-      <ElTag :type="scope.row[scope.prop] === '0' ? 'success' : 'danger'">
-        {{ scope.row[scope.prop] === "0" ? "启用" : "停用" }}
-      </ElTag>
+      <template v-if="scope.row[scope.prop] === 0">
+        <ElTag type="success">启用</ElTag>
+      </template>
+      <template v-else-if="scope.row[scope.prop] === 1">
+        <ElTag type="danger">停用</ElTag>
+      </template>
+      <template v-else>
+        <ElTag type="info">未知</ElTag>
+      </template>
     </template>
   </FaTableSelect>
 </template>
 
 <script setup lang="ts">
 import type { ISelectConfig } from "@/components/others/fa-table-select/index.vue";
+import FaTableSelect from "@/components/others/fa-table-select/index.vue";
 import UserAPI, { UserPageQuery } from "@/api/module_system/user";
 
 defineOptions({ name: "FaUserTableSelect" });
@@ -46,7 +53,7 @@ const selectConfig: ISelectConfig = {
       type: "select",
       label: "状态",
       prop: "status",
-      initialValue: "0",
+      initialValue: 0,
       attrs: {
         placeholder: "全部",
         clearable: true,
@@ -55,8 +62,8 @@ const selectConfig: ISelectConfig = {
         },
       },
       options: [
-        { label: "启用", value: "0" },
-        { label: "停用", value: "1" },
+        { label: "启用", value: 0 },
+        { label: "停用", value: 1 },
       ],
     },
   ],
@@ -70,11 +77,6 @@ const selectConfig: ISelectConfig = {
         delete query[k];
       }
     });
-    // 规范化状态为布尔值
-    if (typeof query.status === "string") {
-      if (query.status === "true") query.status = true;
-      else if (query.status === "false") query.status = false;
-    }
     // 请求用户分页列表并适配 TableSelect 需要的结构
     const res = await UserAPI.listUser(query);
     return {
@@ -105,7 +107,7 @@ interface IUser {
   gender?: string;
   avatar?: string;
   email?: string | null;
-  status?: string;
+  status?: number;
   dept_name?: string;
   role_names?: string[];
   created_time?: string;

@@ -1,6 +1,5 @@
 import re
 
-from fastapi import Query
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -9,14 +8,11 @@ from pydantic import (
     model_validator,
 )
 
-from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema
-from app.core.validator import DateTimeStr
+from app.core.base_schema import BaseQueryParam, BaseSchema
 
 
 class DictTypeCreateSchema(BaseModel):
-    """
-    字典类型表对应pydantic模型
+    """字典类型表对应pydantic模型
     """
 
     dict_name: str = Field(..., min_length=1, max_length=64, description="字典名称")
@@ -34,8 +30,7 @@ class DictTypeCreateSchema(BaseModel):
     @field_validator("dict_name")
     @classmethod
     def validate_dict_name(cls, value: str):
-        """
-        校验字典名称为非空字符串。
+        """校验字典名称为非空字符串。
 
         参数:
         - value (str): 字典名称。
@@ -53,8 +48,7 @@ class DictTypeCreateSchema(BaseModel):
     @field_validator("dict_type")
     @classmethod
     def validate_dict_type(cls, value: str):
-        """
-        校验字典类型：小写字母开头，仅包含小写字母/数字/下划线。
+        """校验字典类型：小写字母开头，仅包含小写字母/数字/下划线。
 
         参数:
         - value (str): 字典类型。
@@ -83,43 +77,16 @@ class DictTypeOutSchema(DictTypeCreateSchema, BaseSchema):
     model_config = ConfigDict(from_attributes=True)
 
 
-class DictTypeQueryParam:
+class DictTypeQueryParam(BaseQueryParam):
     """字典类型查询参数"""
 
-    def __init__(
-        self,
-        dict_name: str | None = Query(default=None, description="字典名称", max_length=100),
-        dict_type: str | None = Query(default=None, description="字典类型", max_length=100),
-        status: str | None = Query(default=None, description="状态（0正常 1停用）"),
-        created_time: list[DateTimeStr] | None = Query(
-            None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-    ) -> None:
-
-        # 模糊查询字段
-        self.dict_name = (QueueEnum.like.value, dict_name)
-
-        # 精确查询字段
-        self.dict_type = (QueueEnum.eq.value, dict_type)
-        self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))
+    dict_name: str | None = Field(default=None, description="字典名称", max_length=100, json_schema_extra={"q": "like"})
+    dict_type: str | None = Field(default=None, description="字典类型", max_length=100, json_schema_extra={"q": "eq"})
+    status: int | None = Field(default=None, ge=0, le=1, description="状态(0:启动 1:停用)", json_schema_extra={"q": "eq"})
 
 
 class DictDataCreateSchema(BaseModel):
-    """
-    字典数据表对应pydantic模型
+    """字典数据表对应pydantic模型
     """
 
     dict_sort: int = Field(..., ge=1, le=999, description="排序")
@@ -127,9 +94,7 @@ class DictDataCreateSchema(BaseModel):
     dict_value: str = Field(..., min_length=1, max_length=255, description="字典键值")
     dict_type: str = Field(..., max_length=255, description="字典类型")
     dict_type_id: int = Field(..., gt=0, description="字典类型ID")
-    css_class: str | None = Field(
-        default=None, max_length=255, description="样式属性"
-    )
+    css_class: str | None = Field(default=None, max_length=255, description="样式属性")
     list_class: str | None = Field(default=None, max_length=255, description="表格回显样式")
     is_default: bool = Field(default=False, description="是否默认")
     status: int = Field(default=0, ge=0, le=1, description="状态(0:正常 1:停用)")
@@ -144,8 +109,7 @@ class DictDataCreateSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_after(self):
-        """
-        校验并规范化字典数据字段（标签/键值/类型/类型ID）。
+        """校验并规范化字典数据字段（标签/键值/类型/类型ID）。
 
         返回:
         - DictDataCreateSchema: 校验与去空格后的同一实例。
@@ -180,37 +144,10 @@ class DictDataOutSchema(DictDataCreateSchema, BaseSchema):
     model_config = ConfigDict(from_attributes=True)
 
 
-class DictDataQueryParam:
+class DictDataQueryParam(BaseQueryParam):
     """字典数据查询参数"""
 
-    def __init__(
-        self,
-        dict_label: str | None = Query(default=None, description="字典标签", max_length=100),
-        dict_type: str | None = Query(default=None, description="字典类型", max_length=100),
-        dict_type_id: int | None = Query(default=None, description="字典类型ID"),
-        status: str | None = Query(default=None, description="状态（0正常 1停用）"),
-        created_time: list[DateTimeStr] | None = Query(
-            default=None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            default=None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-    ) -> None:
-
-        # 模糊查询字段
-        self.dict_label = (QueueEnum.like.value, dict_label)
-
-        # 精确查询字段
-        self.dict_type = (QueueEnum.eq.value, dict_type)
-        self.dict_type_id = (QueueEnum.eq.value, dict_type_id)
-        self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))
+    dict_label: str | None = Field(default=None, description="字典标签", max_length=255, json_schema_extra={"q": "like"})
+    dict_type: str | None = Field(default=None, description="字典类型", max_length=255, json_schema_extra={"q": "eq"})
+    dict_type_id: int | None = Field(default=None, description="字典类型ID", json_schema_extra={"q": "eq"})
+    status: int | None = Field(default=None, ge=0, le=1, description="状态(0:启动 1:停用)", json_schema_extra={"q": "eq"})

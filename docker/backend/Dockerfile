@@ -1,5 +1,5 @@
-# 使用python:3.10-slim 镜像作为基础镜像
-FROM python:3.10-slim
+# 使用python:3.12-slim 镜像作为基础镜像
+FROM python:3.12-slim
 
 # 使用 LABEL 替代 MAINTAINER
 LABEL maintainer="948080782@qq.com"

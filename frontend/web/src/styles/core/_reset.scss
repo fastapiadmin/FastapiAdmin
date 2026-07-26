@@ -1,0 +1,61 @@
+@charset "UTF-8";
+
+/* 滚动条优化 */
+
+/* 滚动条整体部分,必须要设置 */
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 4px !important;
+}
+
+/* 滚动条的轨道 */
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* 滚动条的滑块按钮 */
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-color) !important;
+  background-clip: content-box;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--theme-color) 80%, black) !important;
+}
+
+/* 滚动条的上下两端的按钮 */
+::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+}
+
+/* Element Plus 自定义滚动条（ElScrollbar 组件）主题色
+ * 使用 !important 是因为 Element Plus 的 CSS 在 main.ts 中晚于本文件加载，
+ * 同特异性下后加载胜出，会把无 !important 的变量覆盖回默认值。
+ * 亮色/暗色两套都用 !important 保持一致。 */
+.el-scrollbar {
+  --el-scrollbar-bg-color: var(--theme-color) !important;
+  --el-scrollbar-hover-bg-color: color-mix(in srgb, var(--theme-color) 80%, black) !important;
+}
+
+.dark {
+  ::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--theme-color) 55%, transparent) !important;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--theme-color) 75%, transparent) !important;
+    }
+  }
+
+  .el-scrollbar {
+    --el-scrollbar-bg-color: color-mix(in srgb, var(--theme-color) 55%, transparent) !important;
+    --el-scrollbar-hover-bg-color: color-mix(
+      in srgb,
+      var(--theme-color) 75%,
+      transparent
+    ) !important;
+  }
+}

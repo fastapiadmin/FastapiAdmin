@@ -15,13 +15,16 @@
  * @see TableCache 实现
  */
 
-import { h } from "vue";
-import type { VNode } from "vue";
-import { ElTooltip } from "element-plus";
+import { computed, h } from "vue";
+import type { Ref, VNode } from "vue";
+
 import { hash } from "ohash";
+import { MOBILE_BREAKPOINT } from "@/utils/constants/definitions";
+import { checkPerm } from "@/utils/checkPerm";
 import FaButtonMore from "@/components/forms/fa-button-more/index.vue";
-import type { ButtonMoreItem } from "@/components/forms/fa-button-more/types";
 import FaButtonTable from "@/components/forms/fa-button-table/index.vue";
+import type { ColumnOption } from "@/types/component";
+import { ButtonMoreItem } from "@/components/forms/fa-button-more/types";
 
 // --- 全局分页字段名（与 PageQuery 对齐） ---
 
@@ -33,7 +36,7 @@ export const tableConfig = {
   },
 } as const;
 
-/** 与 `global.d.ts` 中 `PageResult` 字段一致；分页列表接口必须返回该结构（或包在 ApiResponse.data 内） */
+/** 与 `global.d.ts` 中 `PageResult` 字段一致；分页列表接口必须返回该结构（或包在 TableResponse.data 内） */
 function isPageResultPayload(o: unknown): o is PageResult<unknown> {
   if (!o || typeof o !== "object" || Array.isArray(o)) return false;
   const r = o as Record<string, unknown>;
@@ -104,7 +107,7 @@ export enum CacheInvalidationStrategy {
 }
 
 /** useTable 内部使用的规范化分页响应（由 PageResult 映射而来） */
-export interface ApiResponse<T = unknown> {
+export interface TableResponse<T = unknown> {
   records: T[];
   total: number;
   current?: number;
@@ -115,7 +118,7 @@ export interface ApiResponse<T = unknown> {
 
 export interface CacheItem<T> {
   data: T[];
-  response: ApiResponse<T>;
+  response: TableResponse<T>;
   timestamp: number;
   params: string;
   tags: Set<string>;
@@ -135,7 +138,7 @@ export class TableCache<T> {
     this.enableLog = enableLog;
   }
 
-  private log(message: string, ...args: any[]) {
+  private log(message: string, ...args: unknown[]) {
     if (this.enableLog) console.log(`[TableCache] ${message}`, ...args);
   }
 
@@ -192,7 +195,7 @@ export class TableCache<T> {
     }
   }
 
-  set(params: unknown, data: T[], response: ApiResponse<T>): void {
+  set(params: unknown, data: T[], response: TableResponse<T>): void {
     const key = this.generateKey(params);
     const tags = this.generateTags(params as Record<string, unknown>);
     const now = Date.now();
@@ -308,7 +311,7 @@ function unwrapAxiosResponseBody(response: unknown): unknown {
 
 /**
  * 从 axios 原始响应或已解包 body 中取出唯一合法的 `PageResult`。
- * 支持：① 严格 `PageResult`；② `ApiResponse.data` 嵌套；③ `records/current/size` 等常见变体。
+ * 支持：① 严格 `PageResult`；② `TableResponse.data` 嵌套；③ `records/current/size` 等常见变体。
  */
 function extractPageResultPayload(response: unknown): PageResult<unknown> | null {
   const candidates: unknown[] = [];
@@ -351,11 +354,11 @@ export interface TableError {
   details?: unknown;
 }
 
-export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => {
+export const defaultResponseAdapter = <T>(response: unknown): TableResponse<T> => {
   const pr = extractPageResultPayload(response);
   if (!pr) {
     console.error(
-      "[tableUtils] 分页列表响应必须符合全局 PageResult<T>（items、total、page_no、page_size、has_next）；或为 ApiResponse 且 data 为该结构。收到:",
+      "[tableUtils] 分页列表响应必须符合全局 PageResult<T>（items、total、page_no、page_size、has_next）；或为 TableResponse 且 data 为该结构。收到:",
       response
     );
     return { records: [], total: 0, current: 1, size: 10 };
@@ -370,14 +373,14 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
   };
 };
 
-export const extractTableData = <T>(response: ApiResponse<T>): T[] => {
+export const extractTableData = <T>(response: TableResponse<T>): T[] => {
   const rows = response.records;
   return Array.isArray(rows) ? rows : [];
 };
 
 export const updatePaginationFromResponse = <T>(
   pagination: { total: number },
-  response: ApiResponse<T>
+  response: TableResponse<T>
 ): void => {
   const total = response.total;
   if (typeof total === "number") (pagination as Record<string, unknown>).total = total;
@@ -387,7 +390,7 @@ export const createSmartDebounce = <T extends (...args: any[]) => Promise<any>>(
   fn: T,
   delay: number
 ): T & { cancel: () => void; flush: () => Promise<any> } => {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: Parameters<T> | null = null;
   let lastResolve: ((value: any) => void) | null = null;
   let lastReject: ((reason: any) => void) | null = null;
@@ -523,21 +526,29 @@ export function renderTableOperationCell(
   actions: TableOperationAction[],
   options?: RenderTableOperationCellOptions
 ): VNode {
-  const maxInline = options?.maxInline ?? DEFAULT_MAX_INLINE_TABLE_OPERATIONS;
+  // 按权限过滤操作按钮
+  const permittedActions = actions.filter((a) => checkPerm(a.perm));
+
+  // H5（< 768px）全部收进「更多」下拉菜单
+  const isMobile = typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
+  const maxInline = isMobile ? 0 : (options?.maxInline ?? DEFAULT_MAX_INLINE_TABLE_OPERATIONS);
   const wrapperClass =
     options?.wrapperClass ?? "inline-flex flex-wrap items-center justify-end gap-1";
   const emptyText = options?.emptyText ?? "—";
 
-  if (actions.length === 0) return h("span", { class: "text-g-400" }, emptyText);
+  if (permittedActions.length === 0) return h("span", { class: "text-g-400" }, emptyText);
 
-  const inline = actions.slice(0, maxInline);
-  const overflow = actions.slice(maxInline);
+  const inline = permittedActions.slice(0, maxInline);
+  const overflow = permittedActions.slice(maxInline);
 
   const inlineNodes = inline.map((a) =>
     h(ElTooltip, { content: a.label, placement: "top" }, () =>
       h(
         "span",
-        { class: a.disabled ? "inline-flex opacity-40 pointer-events-none" : "inline-flex" },
+        {
+          class: a.disabled ? "inline-flex opacity-40 pointer-events-none" : "inline-flex",
+          onClick: (e: MouseEvent) => e.stopPropagation(),
+        },
         [
           h(FaButtonTable, {
             type: a.artType,
@@ -570,3 +581,26 @@ export function renderTableOperationCell(
 
   return h("div", { class: wrapperClass }, [...inlineNodes, moreDropdown]);
 }
+
+/* ============ 表格列 → 导入/导出列转换 ============ */
+
+/** 将表格列配置转为导入/导出弹窗的列格式（IContentConfig['cols']） */
+export function toCrudCols<T>(
+  columns: Ref<ColumnOption<T>[] | null | undefined> | undefined | null
+) {
+  return computed(() =>
+    (columns?.value ?? []).map((c) => ({
+      prop: c.prop,
+      label: c.label,
+      type:
+        (c as { type?: string }).type === "selection"
+          ? ("selection" as const)
+          : ("default" as const),
+      show: true as const,
+    }))
+  );
+}
+
+/* ============ 状态 Tag 工具 ============ */
+// 表格 status formatter：消除 50+ 处 h(ElTag, { type }, () => text) 重复
+export * from "./statusFormatter";

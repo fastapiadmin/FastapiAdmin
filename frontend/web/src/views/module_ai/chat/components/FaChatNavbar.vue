@@ -13,11 +13,10 @@
           class="size-6"
         />
       </button>
+      <span class="navbar-title">FA 助手</span>
     </div>
+
     <div class="navbar-right">
-      <ElButton text :icon="Setting" @click="handleToggleConnection">
-        {{ isConnected ? "断开连接" : "重新连接" }}
-      </ElButton>
       <ElTag
         class="connection-status"
         effect="plain"
@@ -30,15 +29,20 @@
         </ElIcon>
         <span class="status-text">{{ connectionStatusText }}</span>
       </ElTag>
-      <ElButton v-if="hasMessages" text :icon="Delete" @click="handleClearChat">清空对话</ElButton>
+      <ElButton text :icon="Setting" @click="handleToggleConnection">
+        {{ isConnected ? "断开连接" : "重新连接" }}
+      </ElButton>
+      <ElButton v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
+        清空对话
+      </ElButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { resolveIconForFaSvgIcon } from "@utils";
 import { computed } from "vue";
 import { Connection, Loading, Warning, Delete, Setting } from "@element-plus/icons-vue";
+import { resolveIconForFaSvgIcon } from "@utils";
 
 interface Props {
   connectionStatus: "connected" | "connecting" | "disconnected";
@@ -73,17 +77,9 @@ const connectionStatusText = computed(() => {
 
 const hasMessages = computed(() => props.messageCount > 0);
 
-const handleClearChat = () => {
-  emit("clear-chat");
-};
-
-const handleToggleConnection = () => {
-  emit("toggle-connection");
-};
-
-const toggleSidebar = () => {
-  emit("toggle-sidebar");
-};
+const handleClearChat = () => emit("clear-chat");
+const handleToggleConnection = () => emit("toggle-connection");
+const toggleSidebar = () => emit("toggle-sidebar");
 </script>
 
 <style lang="scss" scoped>
@@ -91,50 +87,18 @@ const toggleSidebar = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
+  padding: 10px 16px;
 
   .navbar-left {
     display: flex;
     gap: 12px;
     align-items: center;
+  }
 
-    .collapse-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      color: var(--el-text-color-regular);
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      border-radius: 4px;
-      transition:
-        background-color 0.2s,
-        color 0.2s;
-
-      &:hover {
-        color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--el-color-primary);
-        outline-offset: 2px;
-      }
-
-      /* UnoCSS 图标 SVG 多随 currentColor */
-      & > div {
-        color: inherit;
-      }
-
-      .collapse-icon {
-        width: 20px;
-        height: 20px;
-        color: inherit;
-      }
-    }
+  .navbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
   }
 
   .navbar-right {
@@ -143,45 +107,72 @@ const toggleSidebar = () => {
     gap: 12px;
     align-items: center;
 
-    /* EP 相邻按钮自带 margin-left，叠在 flex gap 上会导致间距忽大忽小 */
     :deep(.el-button) {
       margin: 0;
     }
+  }
+}
 
-    .connection-status {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 32px;
-      padding: 0 12px;
-      margin: 0;
-      font-size: 14px;
-      line-height: 1;
+.collapse-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 
-      :deep(.el-tag__content) {
-        display: inline-flex;
-        gap: 6px;
-        align-items: center;
-      }
+  &:hover {
+    color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
+  }
 
-      .status-icon {
-        &.connected {
-          color: var(--el-color-success);
-        }
+  &:focus-visible {
+    outline: 2px solid var(--el-color-primary);
+    outline-offset: 2px;
+  }
 
-        &.connecting {
-          color: var(--el-color-warning);
-        }
+  & > div {
+    color: inherit;
+  }
+}
 
-        &.disconnected {
-          color: var(--el-color-danger);
-        }
-      }
+.connection-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1;
 
-      .status-text {
-        color: var(--el-text-color-secondary);
-      }
+  :deep(.el-tag__content) {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .status-icon {
+    &.connected {
+      color: var(--el-color-success);
     }
+
+    &.connecting {
+      color: var(--el-color-warning);
+    }
+
+    &.disconnected {
+      color: var(--el-color-danger);
+    }
+  }
+
+  .status-text {
+    color: var(--el-text-color-secondary);
   }
 }
 </style>

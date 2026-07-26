@@ -12,16 +12,12 @@
       :show-search="true"
       :disabled-search="false"
       :default-expanded="false"
-      :button-left-limit="0"
+      include-audit
       @search="handleSearchBarSearch"
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -88,7 +84,6 @@
     <FaCreateTableDialog
       v-model="createTableVisible"
       :loading="loading"
-      :link-from-gen="createTableLinkFromGen"
       @submit="handleCreateTableSubmit"
     />
 
@@ -126,7 +121,6 @@
       @close="handleClose"
       @prev-step="prevStep"
       @next-step="nextStep"
-      @save="handleSave"
       @gen-download="handleGenTable('0', info)"
       @gen-write="handleGenTable('1', info)"
       @clear-master-sub="clearMasterSub"
@@ -149,31 +143,29 @@ import { useClipboard } from "@vueuse/core";
 import { useRoute } from "vue-router";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
-import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
+import type { FormInstance } from "element-plus";
 import { Plus, Upload, Delete, Download } from "@element-plus/icons-vue";
 import GencodeAPI, {
   type GenTableSchema,
   type DBTableSchema,
   type GenTablePageQuery,
 } from "@/api/module_generator/gencode";
-import MenuAPI, { MenuTable } from "@/api/module_platform/menu";
+import MenuAPI, { MenuTable } from "@/api/module_system/menu";
 import DictAPI, { DictTable } from "@/api/module_system/dict";
 import { MenuTypeEnum } from "@/enums";
 import { useSettingsStore } from "@stores";
-import { useTable } from "@/hooks/core/useTable";
-import FaTable from "@/components/tables/fa-table/index.vue";
-import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import FaGenCodeDrawer from "./components/FaGenCodeDrawer.vue";
 import FaImportDbTableDialog from "./components/FaImportDbTableDialog.vue";
-import { CreateTableSubmitMeta } from "./components/FaCreateTableDialog.vue";
 import FaCreateTableDialog from "./components/FaCreateTableDialog.vue";
 import { GENCODE_BASIC_FORM_KEY, GENCODE_CM_KEY } from "./gencodeInjectionKeys";
-import type { ColumnOption } from "@/types/component";
-import { useAuth } from "@/hooks/core/useAuth";
-import { renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { TableOperationAction } from "@utils";
+import { renderTableOperationCell } from "@utils";
 import type { TreeNode } from "./types";
+import type { ColumnOption } from "@/types/component";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 
 // 文件数据接口
 interface FileData {
@@ -198,7 +190,6 @@ const listRefresh = {
 };
 
 const route = useRoute();
-const { hasAuth } = useAuth();
 
 provide(GENCODE_BASIC_FORM_KEY, basicInfo);
 provide(GENCODE_CM_KEY, cmRef);
@@ -478,8 +469,8 @@ async function handlePreview(row: GenTableSchema): Promise<void> {
 
     preview.open = true;
     preview.active_name = "model.py";
-  } catch (error) {
-    console.error("预览代码失败:", error);
+  } catch (error: unknown) {
+    if (import.meta.env.DEV) console.error("预览代码失败:", error);
   } finally {
     previewLoading.value = false;
   }
@@ -507,9 +498,7 @@ async function handleGenTable(targetGenType: string, row?: GenTableSchema): Prom
         loading.value = false;
         return;
       }
-      if (row?.id) await confirmWritePaths(row.id);
       await GencodeAPI.genCodeToPath(tbNames[0]);
-      ElMessage.success("已写入项目目录并创建菜单（若尚未存在）");
     } else {
       // ZIP压缩包下载
       const tableNamesArray = Array.isArray(tbNames) ? tbNames : [tbNames];
@@ -532,63 +521,12 @@ async function handleGenTable(targetGenType: string, row?: GenTableSchema): Prom
       link.download = "code.zip";
       link.click();
       URL.revokeObjectURL(url);
-      ElMessage.success("已开始下载 code.zip");
     }
-  } catch (error) {
-    console.error("生成代码失败:", error);
+  } catch (error: unknown) {
+    if (import.meta.env.DEV) console.error("生成代码失败:", error);
   } finally {
     loading.value = false;
   }
-}
-
-function escapeHtml(s: string) {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-async function confirmWritePaths(tableId: number) {
-  // 先保存当前抽屉配置，否则 preview 仍基于旧配置，回显会不准确
-  await GencodeAPI.updateTable(info as GenTableSchema, tableId);
-  const previewRes = await GencodeAPI.previewTable(tableId);
-  const raw = previewRes.data?.data as Record<string, unknown> | undefined;
-  const keys = raw && typeof raw === "object" ? Object.keys(raw) : [];
-  const shown = keys.slice(0, 80);
-  const more =
-    keys.length > shown.length
-      ? `<div :style="'margin-top:10px;padding:8px 12px;border-radius:6px;background:var(--el-fill-color-light);font-size:12px;color:var(--el-text-color-secondary);text-align:center'">还有 <b :style="'color:var(--el-text-color-primary)'">${keys.length - shown.length}</b> 个文件未列出</div>`
-      : "";
-  const listRows = shown
-    .map((p, i) => {
-      const bg = i % 2 === 0 ? "var(--el-fill-color-blank)" : "var(--el-fill-color-light)";
-      return `<div class="gencode-write-path-row" :style="'padding:9px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.45;white-space:nowrap;color:var(--el-text-color-primary);background:${bg};border-bottom:1px solid var(--el-border-color-lighter)'">${escapeHtml(p)}</div>`;
-    })
-    .join("");
-  const listHtml = shown.length
-    ? `<div class="gencode-write-path-list-wrap">${listRows}</div>${more}`
-    : `<div :style="'padding:16px;border-radius:8px;background:var(--el-fill-color-light);color:var(--el-text-color-secondary);font-size:13px;text-align:center'">未获取到预览路径，仍将继续写入。</div>`;
-  const tipHtml = `<div :style="'margin-top:12px;padding-top:10px;border-top:1px solid var(--el-border-color-lighter);font-size:12px;line-height:1.5;color:var(--el-text-color-secondary)'">与「代码预览」同源；路径为相对项目根的落盘位置。</div>`;
-  await ElMessageBox.confirm(
-    `<div class="gencode-write-confirm-body" :style="'font-family:var(--el-font-family);line-height:1.5;color:var(--el-text-color-primary)'">
-      <div :style="'margin-bottom:12px'">
-        <div :style="'font-size:15px;font-weight:600;letter-spacing:0.02em'">将写入以下文件</div>
-        <div :style="'margin-top:4px;font-size:12px;color:var(--el-text-color-secondary)'">共 ${keys.length} 项 · 相对项目根目录</div>
-      </div>
-      ${listHtml}
-      ${shown.length ? tipHtml : ""}
-    </div>`,
-    "写入本地确认",
-    {
-      confirmButtonText: "确认写入",
-      cancelButtonText: "取消",
-      type: "warning",
-      dangerouslyUseHTMLString: true,
-      customClass: "gencode-write-confirm-box",
-    }
-  );
 }
 
 /** 同步数据库操作 */
@@ -641,7 +579,6 @@ async function handleSynchDb(row: GenTableSchema): Promise<void> {
     });
 
     await GencodeAPI.syncDb(tableName);
-    ElMessage.success("表结构已同步到代码生成配置");
     await listRefresh.refreshData();
   } catch (error) {
     if (error !== "cancel") console.error("同步表结构失败:", error);
@@ -736,7 +673,6 @@ async function handlePreviewTable(row?: GenTableSchema): Promise<void> {
     dictOptions.value = dict_response.data.data.items;
   } catch (e) {
     console.error("菜单或字典加载失败:", e);
-    ElMessage.warning("菜单或字典选项加载失败，部分下拉可能为空");
   }
 }
 
@@ -769,6 +705,10 @@ async function handleDelete(row?: GenTableSchema): Promise<void> {
 type GencodeSearchForm = {
   table_name?: string;
   table_comment?: string;
+  created_id?: number;
+  updated_id?: number;
+  created_time?: string[];
+  updated_time?: string[];
 };
 
 function buildGencodeRowActions(row: GenTableSchema): TableOperationAction[] {
@@ -800,7 +740,7 @@ function buildGencodeRowActions(row: GenTableSchema): TableOperationAction[] {
       run: () => void handleSynchDb(row),
     },
   ];
-  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+  return all;
 }
 
 function formatGencodeOperationCell(row: GenTableSchema) {
@@ -812,6 +752,10 @@ function formatGencodeOperationCell(row: GenTableSchema) {
 const searchForm = ref<GencodeSearchForm>({
   table_name: undefined,
   table_comment: undefined,
+  created_id: undefined,
+  updated_id: undefined,
+  created_time: undefined,
+  updated_time: undefined,
 });
 
 const showSearchBar = ref(true);
@@ -835,23 +779,23 @@ const gencodeSearchItems = computed<SearchFormItem[]>(() => [
     clearable: true,
     span: 6,
   },
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: [
+        { label: "未生成", value: 0 },
+        { label: "已生成", value: 1 },
+      ],
+      clearable: true,
+    },
+    span: 6,
+  },
 ]);
 
-const {
-  columns,
-  columnChecks,
-  data: tableListData,
-  loading: tableLoading,
-  pagination,
-  getData,
-  replaceSearchParams,
-  resetSearchParams,
-  handleSizeChange,
-  handleCurrentChange,
-  refreshData,
-  refreshCreate,
-  refreshRemove,
-} = useTable({
+const useTableResult = useTable({
   core: {
     apiFn: GencodeAPI.listTable,
     apiParams: {
@@ -883,12 +827,14 @@ const {
         prop: "created_time",
         label: "创建时间",
         width: 168,
+        sortable: true,
         showOverflowTooltip: true,
       },
       {
         prop: "updated_time",
         label: "更新时间",
         width: 168,
+        sortable: true,
         showOverflowTooltip: true,
       },
       {
@@ -896,12 +842,29 @@ const {
         label: "操作",
         width: 220,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: GenTableSchema) => formatGencodeOperationCell(row),
       },
     ],
   },
 });
+
+// 列配置类型收窄：运行时结构一致，显式断言兼容 FaTableHeader/FaTable 的 ColumnOption[] 期望
+const columns = useTableResult.columns as ComputedRef<ColumnOption[]>;
+const columnChecks = useTableResult.columnChecks as Ref<ColumnOption[]>;
+const {
+  data: tableListData,
+  loading: tableLoading,
+  pagination,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshRemove,
+} = useTableResult;
 
 listRefresh.refreshData = refreshData;
 listRefresh.refreshCreate = refreshCreate;
@@ -912,6 +875,16 @@ async function handleSearchBarSearch(params: GencodeSearchForm) {
   replaceSearchParams({
     table_name: params.table_name,
     table_comment: params.table_comment,
+    created_id: params.created_id,
+    updated_id: params.updated_id,
+    created_time:
+      Array.isArray(params.created_time) && params.created_time.length === 2
+        ? params.created_time
+        : undefined,
+    updated_time:
+      Array.isArray(params.updated_time) && params.updated_time.length === 2
+        ? params.updated_time
+        : undefined,
   });
   getData();
 }
@@ -920,6 +893,10 @@ async function onResetSearch() {
   searchForm.value = {
     table_name: undefined,
     table_comment: undefined,
+    created_id: undefined,
+    updated_id: undefined,
+    created_time: undefined,
+    updated_time: undefined,
   };
   await resetSearchParams();
 }
@@ -939,8 +916,8 @@ onActivated(async () => {
   }
 });
 
-/** 创建表（由 CreateTableDialog 提交 SQL；表结构模式成功后可回写第三步主子表配置） */
-async function handleCreateTableSubmit(sql: string, meta?: CreateTableSubmitMeta): Promise<void> {
+/** 创建表 */
+async function handleCreateTableSubmit(sql: string): Promise<void> {
   if (!sql || sql.trim() === "") {
     ElMessage.error("请输入创建表SQL语句");
     return;
@@ -950,26 +927,7 @@ async function handleCreateTableSubmit(sql: string, meta?: CreateTableSubmitMeta
   try {
     await GencodeAPI.createTable(sql);
     createTableVisible.value = false;
-    if (editVisible.value && activeStep.value === 2 && meta?.fromVisual && meta.visualSnapshot) {
-      const v = meta.visualSnapshot;
-      info.table_name = (v.mainTableName || "").trim();
-      const mc = (v.mainComment || "").trim();
-      if (mc) info.table_comment = mc;
-      if (v.subEnabled) {
-        info.sub_table_name = (v.subTableName || "").trim();
-        info.sub_table_fk_name = (v.fkColumn || "").trim();
-      } else {
-        info.sub_table_name = "";
-        info.sub_table_fk_name = "";
-      }
-      info.master_sub_hint = undefined;
-      void nextTick(() => {
-        basicInfo.value?.clearValidate?.(["table_name", "sub_table_name", "sub_table_fk_name"]);
-      });
-    }
     await listRefresh.refreshCreate();
-    importVisible.value = true;
-    await getDbList();
   } catch (error) {
     console.error("创建表数据失败:", error);
   } finally {
@@ -991,20 +949,6 @@ async function handleImportTable(): Promise<void> {
     await GencodeAPI.importTable(tableNames);
     importVisible.value = false;
     await listRefresh.refreshData();
-    // 导入成功后自动打开代码生成抽屉
-    if (tables.value.length === 1) {
-      await nextTick();
-      const list = tableListData.value as unknown as GenTableSchema[];
-      const importedTable = list.find(
-        (t: GenTableSchema) => t.table_name === tables.value[0].table_name
-      );
-      if (importedTable) {
-        await handlePreviewTable(importedTable);
-      }
-    } else {
-      // 导入了多个表，刷新列表
-      ElMessage.success(`成功导入 ${tables.value.length} 个表`);
-    }
   } catch (error) {
     console.error("导入表失败:", error);
   } finally {
@@ -1064,17 +1008,6 @@ let info = reactive<
   columns: [],
   sub: false,
   master_sub_hint: undefined,
-});
-
-/** 代码生成抽屉第三步打开时，创建表弹窗从当前表单预填主/子表名（表结构模式） */
-const createTableLinkFromGen = computed(() => {
-  if (!editVisible.value || activeStep.value !== 2) return null;
-  return {
-    table_name: info.table_name,
-    table_comment: info.table_comment,
-    sub_table_name: info.sub_table_name ?? undefined,
-    sub_table_fk_name: info.sub_table_fk_name ?? undefined,
-  };
 });
 
 /** 主子表两项同填或同空，且子表名不得与主表相同 */
@@ -1190,13 +1123,16 @@ async function nextStep(): Promise<void> {
   if (activeStep.value < 3) {
     nextStepLoading.value = true;
     try {
-      // 验证当前步骤数据
+      // 下一步前先保存当前步骤数据
+      if (activeStep.value < 2) {
+        await submitForm({ requireColumns: activeStep.value !== 0 });
+      }
+
+      // 验证并进入下一步
       if (activeStep.value === 0) {
-        // 第一步：基础配置
         const basicInfoValid = await basicInfo.value?.validate().catch(() => false);
         if (!basicInfoValid) return;
       } else if (activeStep.value === 1) {
-        // 第二步：字段配置
         if (!info.columns || info.columns.length === 0) {
           ElMessage.error("请配置字段信息");
           return;
@@ -1205,7 +1141,6 @@ async function nextStep(): Promise<void> {
 
       activeStep.value++;
 
-      // 当从字段配置进入预览步骤时，自动加载预览数据
       if (activeStep.value === 2 && info.id) {
         await handlePreview({ id: info.id, table_name: info.table_name } as GenTableSchema);
       }
@@ -1222,29 +1157,6 @@ function prevStep(): void {
   }
 }
 
-// 保存配置
-async function handleSave(): Promise<void> {
-  try {
-    // 验证当前步骤数据
-    if (activeStep.value === 0) {
-      // 第一步：基础配置
-      const basicInfoValid = await basicInfo.value?.validate().catch(() => false);
-      if (!basicInfoValid) return;
-    } else if (activeStep.value === 1) {
-      // 第二步：字段配置
-      if (!info.columns || info.columns.length === 0) {
-        ElMessage.error("请配置字段信息");
-        return;
-      }
-    }
-
-    // 保存配置
-    await submitForm({ requireColumns: activeStep.value !== 0 });
-  } catch (error) {
-    console.error("保存失败:", error);
-  }
-}
-
 // 批量设置字段属性
 function bulkSet(field: string | string[], value: any): void {
   if (!info.columns || !Array.isArray(info.columns)) return;
@@ -1254,7 +1166,7 @@ function bulkSet(field: string | string[], value: any): void {
   info.columns.forEach((column) => {
     if (column && typeof column === "object") {
       fieldsToUpdate.forEach((f) => {
-        (column as any)[f] = value;
+        (column as Record<string, unknown>)[f] = value;
       });
     }
   });

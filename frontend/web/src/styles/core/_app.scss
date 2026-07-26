@@ -1,0 +1,381 @@
+// 处理移动端组件兼容性
+@media screen and (width <= 640px) {
+  * {
+    cursor: default !important;
+  }
+}
+
+// 背景滤镜
+*,
+::before,
+::after {
+  --tw-backdrop-blur: ;
+  --tw-backdrop-brightness: ;
+  --tw-backdrop-contrast: ;
+  --tw-backdrop-grayscale: ;
+  --tw-backdrop-hue-rotate: ;
+  --tw-backdrop-invert: ;
+  --tw-backdrop-opacity: ;
+  --tw-backdrop-saturate: ;
+  --tw-backdrop-sepia: ;
+}
+
+// 色弱模式（用户偏好开关，通过 useSettingsHandlers.ts 动态加到 <html> 上）
+.color-weak {
+  -webkit-filter: invert(80%);
+  filter: invert(80%);
+}
+
+#noop {
+  display: none;
+}
+
+// 语言切换选中样式
+.langDropDownStyle {
+  // 选中项背景颜色
+  .is-selected {
+    background-color: var(--fa-el-active-color) !important;
+  }
+
+  // 语言切换按钮菜单样式优化
+  .lang-btn-item {
+    .el-dropdown-menu__item {
+      padding-right: 6px !important;
+      padding-left: 13px !important;
+      margin-bottom: 3px !important;
+    }
+
+    &:last-child {
+      .el-dropdown-menu__item {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    .menu-txt {
+      display: block;
+      min-width: 60px;
+    }
+
+    i {
+      margin-left: 10px;
+      font-size: 10px;
+    }
+  }
+}
+
+// 元素全屏
+.el-full-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2300;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100vw !important;
+  height: 100% !important;
+  padding: 15px;
+  margin-top: 0;
+  background-color: var(--default-box-color);
+}
+
+// 表格卡片：表格区独立滚动模式（flex 链路撑满父级视口，内部 overflow）
+.fa-table-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  margin-top: 12px;
+  border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
+
+  .el-card__body {
+    display: flex;
+    // flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+
+    /** 工具栏区不参与压缩，表格区 FaTable 使用 flex:1 占满剩余高度 */
+    #fa-table-header {
+      flex-shrink: 0;
+    }
+  }
+}
+
+// 使 ElTabs 在 flex 容器中撑满高度（配合 fa-full-height 使用）
+// 用法：<ElTabs class="fa-tabs-fill">
+.fa-tabs-fill {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+
+  > .el-tabs__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  > .el-tabs__content > .el-tab-pane {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+// 容器全高：沿布局 flex 链填满 `#app-content` 内剩余高度。
+// H5 端 #app-main 已用 100dvh 有明确高度，flex 链路同样能撑满，无需单独兼容
+.fa-full-height {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  @media (width <= 640px) {
+    height: auto;
+  }
+}
+
+// 徽章样式
+.fa-badge {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  bottom: 0;
+  width: 6px;
+  height: 6px;
+  margin: auto;
+  background: #ff3860;
+  border-radius: 50%;
+  animation: breathe 1.5s ease-in-out infinite;
+
+  &.fa-badge-horizontal {
+    right: 0;
+  }
+
+  &.fa-badge-mixed {
+    right: 0;
+  }
+
+  &.fa-badge-dual {
+    top: 5px;
+    right: 5px;
+    bottom: auto;
+  }
+}
+
+// 文字徽章样式
+.fa-text-badge {
+  position: absolute;
+  top: 0;
+  right: 12px;
+  bottom: 0;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  margin: auto;
+  font-size: 10px;
+  line-height: 17px;
+  color: #fff;
+  text-align: center;
+  background: #fd4e4e;
+  border-radius: 4px;
+}
+
+@keyframes breathe {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+// 修复老机型 loading 定位问题
+.fa-loading-fix {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.fa-loading-fix .el-loading-spinner {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+// 表格按钮悬浮效果
+.hover-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+    filter: brightness(1.1);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  &:active {
+    box-shadow: 0 2px 6px rgb(0 0 0 / 12%);
+    transform: translateY(-1px) scale(1.02);
+  }
+}
+
+// 去除移动端点击背景色
+@media screen and (width <= 1180px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+// ── 全局空状态样式 ──
+.fa-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: 40px 20px;
+  color: var(--fa-gray-500);
+
+  .fa-empty-state__icon {
+    margin-bottom: 16px;
+    font-size: 48px;
+    opacity: 0.5;
+  }
+
+  .fa-empty-state__title {
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fa-gray-600);
+  }
+
+  .fa-empty-state__desc {
+    font-size: 13px;
+    color: var(--fa-gray-500);
+  }
+}
+
+// ── 全局加载骨架基础样式 ──
+.fa-skeleton-pulse {
+  animation: fa-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fa-skeleton-pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+// ── 错误重试样式 ──
+.fa-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: 40px 20px;
+  text-align: center;
+
+  .fa-error-state__icon {
+    margin-bottom: 16px;
+    font-size: 48px;
+    opacity: 0.4;
+  }
+
+  .fa-error-state__title {
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fa-gray-700);
+  }
+
+  .fa-error-state__desc {
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--fa-gray-500);
+  }
+
+  .fa-error-state__action {
+    .el-button {
+      min-width: 100px;
+    }
+  }
+}
+
+// ── 通用页面内容间距 ──
+.page-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  @media (width <= 640px) {
+    gap: 12px;
+  }
+}
+
+// ── 表单内间距一致性 ──
+.form-section {
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-section__title {
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fa-gray-800);
+  border-bottom: 1px solid var(--fa-gray-200);
+}
+
+// ── 统计卡片悬浮效果 ──
+.stat-card-hover {
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    box-shadow:
+      0 8px 24px rgb(0 0 0 / 6%),
+      0 2px 8px rgb(0 0 0 / 3%);
+    transform: translateY(-2px);
+  }
+}

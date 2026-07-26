@@ -2,10 +2,10 @@
 
 import type { App } from "vue";
 import mitt, { type Emitter } from "mitt";
-import { upgradeLogList } from "@/mock/upgrade/changeLog";
+import VersionAPI from "@/api/module_system/version";
 import { ElNotification } from "element-plus";
 import { useUserStore } from "@stores";
-import { StorageConfig } from "@utils";
+import { Auth, StorageConfig } from "@utils";
 import { BANNER } from "../../../build/banner";
 
 // -----------------------------
@@ -150,7 +150,7 @@ class VersionManager {
   constructor() {
     // 提取当前页面第一个 <script type="module" src="..."> 的 src
     const scripts = document.querySelectorAll<HTMLScriptElement>("script[type=module]");
-    this.currentScriptSrc = scripts.length > 0 ? scripts[0].src : "";
+    this.currentScriptSrc = scripts.length > 0 ? scripts[0]!.src : "";
   }
 
   private normalizeVersion(version: string): string {
@@ -197,11 +197,29 @@ class VersionManager {
     return { oldSysKey, oldVersionKeys };
   }
 
-  private shouldRequireReLogin(storedVersion: string): boolean {
+  private async fetchUpgradeVersions(): Promise<
+    { version: string; title: string; requireReLogin: boolean }[]
+  > {
+    try {
+      const response = await VersionAPI.getPublishedVersions();
+      return (response.data.data ?? []).map((v) => ({
+        version: v.version ?? "",
+        title: v.title ?? "",
+        requireReLogin: v.require_re_login ?? false,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  private shouldRequireReLogin(
+    storedVersion: string,
+    versions: { version: string; requireReLogin: boolean }[]
+  ): boolean {
     const normalizedCurrent = this.normalizeVersion(StorageConfig.CURRENT_VERSION);
     const normalizedStored = this.normalizeVersion(storedVersion);
 
-    return upgradeLogList.value.some((item) => {
+    return versions.some((item) => {
       const itemVersion = this.normalizeVersion(item.version);
       return (
         item.requireReLogin && itemVersion > normalizedStored && itemVersion <= normalizedCurrent
@@ -209,13 +227,12 @@ class VersionManager {
     });
   }
 
-  private buildUpgradeMessage(requireReLogin: boolean): string {
-    const { title: content } = upgradeLogList.value[0];
+  private buildUpgradeMessage(requireReLogin: boolean, latestTitle: string): string {
     const messageParts = [
       `<p style="color: var(--fa-gray-800) !important; padding-bottom: 5px;">`,
       `系统已升级到 ${StorageConfig.CURRENT_VERSION} 版本，此次更新带来了以下改进：`,
       `</p>`,
-      content,
+      latestTitle,
     ];
 
     if (requireReLogin) {
@@ -263,13 +280,14 @@ class VersionManager {
     legacyStorage: ReturnType<typeof this.findLegacyStorage>
   ): Promise<void> {
     try {
-      if (!upgradeLogList.value.length) {
+      const versions = await this.fetchUpgradeVersions();
+      if (!versions.length) {
         console.warn("[Upgrade] 升级日志列表为空");
         return;
       }
 
-      const requireReLogin = this.shouldRequireReLogin(storedVersion);
-      const message = this.buildUpgradeMessage(requireReLogin);
+      const requireReLogin = this.shouldRequireReLogin(storedVersion, versions);
+      const message = this.buildUpgradeMessage(requireReLogin, versions[0]!.title);
 
       this.showUpgradeNotification(message);
       this.setStoredVersion(StorageConfig.CURRENT_VERSION);
@@ -326,7 +344,7 @@ class VersionManager {
         const match = html.match(/<script[^>]+type="module"[^>]+src="([^"]+)"/);
         if (!match) return;
 
-        const remoteSrc = match[1];
+        const remoteSrc = match[1]!;
         if (remoteSrc === this.currentScriptSrc) return;
 
         // 去重：同一 hash 不重复提示
@@ -370,6 +388,7 @@ let _versionManager: VersionManager | null = null;
 
 /** 启动版本轮询（检测已打开页面是否收到新部署） */
 export function startVersionPolling(): void {
+  if (!Auth.isLoggedIn()) return;
   if (!_versionManager) {
     _versionManager = new VersionManager();
   }

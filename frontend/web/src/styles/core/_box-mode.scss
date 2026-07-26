@@ -1,0 +1,98 @@
+// 盒子边框/阴影模式
+// 通过 `data-box-mode` 属性切换
+// border-mode: 边框模式（默认）
+// shadow-mode: 阴影模式
+
+// 盒子默认边框
+.page-content {
+  border: 1px solid var(--fa-card-border) !important;
+}
+
+@mixin fa-card-base($border-color, $shadow: none, $radius-diff: 4px) {
+  background: var(--default-box-color);
+  border: 1px solid #{$border-color} !important;
+  border-radius: calc(var(--custom-radius) + #{$radius-diff}) !important;
+  box-shadow: #{$shadow} !important;
+
+  --el-card-border-color: var(--default-border) !important;
+}
+
+// 全局统一 ElCard 卡片圆角，与 dashboard 首页一致
+.el-card {
+  --el-card-border-radius: calc(var(--custom-radius) + 2px);
+}
+
+.fa-card,
+.fa-card-sm,
+.fa-card-xs {
+  border: 1px solid var(--fa-card-border);
+}
+
+.fa-card {
+  border-radius: calc(var(--custom-radius) + 4px);
+}
+
+.fa-card-sm {
+  border-radius: calc(var(--custom-radius) + 2px);
+}
+
+.fa-card-xs {
+  border-radius: calc(var(--custom-radius) - 4px);
+}
+
+// 盒子边框
+[data-box-mode="border-mode"] {
+  .page-content,
+  .fa-table-card {
+    border: 1px solid var(--fa-card-border) !important;
+  }
+
+  .fa-card {
+    @include fa-card-base(var(--fa-card-border), none, 4px);
+  }
+
+  .fa-card-sm {
+    @include fa-card-base(var(--fa-card-border), none, 2px);
+  }
+
+  .fa-card-xs {
+    @include fa-card-base(var(--fa-card-border), none, -4px);
+  }
+}
+
+// 盒子阴影
+[data-box-mode="shadow-mode"] {
+  .page-content,
+  .fa-table-card {
+    border: 1px solid var(--fa-gray-200) !important;
+    box-shadow: 0 0 4px 0 rgb(0 0 0 / 4%) !important;
+  }
+
+  .layout-sidebar {
+    border-right: 1px solid var(--fa-card-border) !important;
+  }
+
+  .fa-card {
+    @include fa-card-base(
+      var(--fa-gray-200),
+      (0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.08)),
+      4px
+    );
+  }
+
+  .fa-card-sm {
+    @include fa-card-base(
+      var(--fa-gray-200),
+      (0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.08)),
+      2px
+    );
+  }
+
+  .fa-card-xs {
+    @include fa-card-base(
+      var(--fa-gray-200),
+      (0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 1px -1px rgba(0, 0, 0, 0.08)),
+      -4px
+    );
+  }
+}

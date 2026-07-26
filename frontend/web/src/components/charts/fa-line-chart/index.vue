@@ -13,7 +13,6 @@ import { graphic, type EChartsOption } from "@/plugins/echarts";
 import { getCssVar, hexToRgba } from "@utils";
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 import type { LineChartProps, LineDataItem } from "@/types/component/chart";
-
 defineOptions({ name: "FaLineChart" });
 
 const props = withDefaults(defineProps<LineChartProps>(), {
@@ -108,7 +107,7 @@ const primaryColor = computed(() => getCssVar("--el-color-primary"));
 
 const getColor = (customColor?: string, index?: number): string => {
   if (customColor) return customColor;
-  if (index !== undefined) return props.colors![index % props.colors!.length];
+  if (index !== undefined) return props.colors![index % props.colors!.length]!;
   return primaryColor.value;
 };
 
@@ -357,7 +356,7 @@ const renderChart = () => {
 };
 
 // 使用 VueUse 的 watchDebounced 优化数据监听（避免频繁更新）
-watch([() => props.data, () => props.xAxisData, () => props.colors], renderChart, { deep: true });
+watch([() => props.data, () => props.xAxisData, () => props.colors], renderChart);
 
 // 生命周期
 onMounted(() => {

@@ -1,4 +1,4 @@
-import type { Ref } from "vue";
+import { onMounted, onUnmounted, ref, type Ref } from "vue";
 import type { CrudDialogState, DialogType } from "./useCrudDialog";
 
 /**
@@ -100,15 +100,24 @@ export function useCrudForm<T extends object>(options: {
     };
 
     if (id && detailApi) {
+      // 先打开弹窗再加载数据，避免点击后无响应
+      if (type === "detail") {
+        dialogVisible.title = titleMap.detail ?? defaultTitles.detail;
+      } else if (type === "update") {
+        dialogVisible.title = titleMap.update ?? defaultTitles.update;
+        // update 时先重置表单，避免闪烁旧数据
+        Object.assign(formData.value, initialFormData);
+      }
+      formRenderKey.value += 1;
+      dialogVisible.visible = true;
+
       const response = await detailApi(id);
       const data = response.data.data;
       if (type === "detail") {
-        dialogVisible.title = titleMap.detail ?? defaultTitles.detail;
         if (detailFormData) {
           Object.assign(detailFormData.value, data ?? {});
         }
       } else if (type === "update") {
-        dialogVisible.title = titleMap.update ?? defaultTitles.update;
         Object.assign(formData.value, data);
       }
     } else {
@@ -118,12 +127,12 @@ export function useCrudForm<T extends object>(options: {
       if (extra) {
         Object.assign(formData.value, extra);
       }
+      formRenderKey.value += 1;
+      dialogVisible.visible = true;
     }
-    formRenderKey.value += 1;
-    dialogVisible.visible = true;
   }
 
-  /** 提交表单 */
+  /** 提交表单（提交后关闭弹窗） */
   async function handleSubmit() {
     const form = dataFormRef.value;
     if (!form) return;
@@ -136,11 +145,35 @@ export function useCrudForm<T extends object>(options: {
       if (id && updateApi) {
         await updateApi(id, { id, ...formData.value });
         await onUpdateSuccess?.();
+        dialogVisible.visible = false;
+        await resetForm();
       } else if (createApi) {
+        await createApi(formData.value);
+        dialogVisible.visible = false;
+        await resetForm();
+        await onCreateSuccess?.();
+      }
+      await onSubmitSuccess?.(formData.value);
+    } catch (error: unknown) {
+      console.error(error);
+    } finally {
+      submitLoading.value = false;
+    }
+  }
+
+  /** 提交表单并继续添加（提交后重置表单但不关闭弹窗，用于底部按钮方式） */
+  async function handleSubmitAndContinue() {
+    const form = dataFormRef.value;
+    if (!form) return;
+    const valid = await (form.validate as () => Promise<boolean>)().catch(() => false);
+    if (!valid) return;
+
+    submitLoading.value = true;
+    try {
+      if (createApi) {
         await createApi(formData.value);
         await onCreateSuccess?.();
       }
-      dialogVisible.visible = false;
       await resetForm();
       await onSubmitSuccess?.(formData.value);
     } catch (error: unknown) {
@@ -156,5 +189,24 @@ export function useCrudForm<T extends object>(options: {
     handleCloseDialog,
     handleOpenDialog,
     handleSubmit,
+    handleSubmitAndContinue,
   };
+}
+
+// ── 全局快捷键（Ctrl+S / Cmd+S 保存表单） ──
+export function useFormKeyboardSubmit(options: {
+  dialogVisible: CrudDialogState;
+  submitFn: () => Promise<void>;
+}) {
+  function onKeydown(e: KeyboardEvent) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if (options.dialogVisible.visible && options.dialogVisible.type !== "detail") {
+        e.preventDefault();
+        options.submitFn();
+      }
+    }
+  }
+
+  onMounted(() => window.addEventListener("keydown", onKeydown));
+  onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 }

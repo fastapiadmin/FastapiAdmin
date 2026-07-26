@@ -43,6 +43,12 @@
               />
             </ElSelect>
           </ElFormItem>
+          <ElFormItem label="导出格式" prop="format">
+            <ElRadioGroup v-model="exportsFormData.format">
+              <ElRadio value="xlsx">Excel (.xlsx)</ElRadio>
+              <ElRadio value="csv">CSV (.csv)</ElRadio>
+            </ElRadioGroup>
+          </ElFormItem>
           <ElFormItem label="字段" prop="fields">
             <ElCheckboxGroup v-model="exportsFormData.fields">
               <template v-for="col in cols" :key="col.prop">
@@ -55,7 +61,9 @@
       <!-- 弹窗底部操作按钮 -->
       <template #footer>
         <div :style="'padding-right: var(--el-dialog-padding-primary)'">
-          <ElButton type="primary" @click="handleExportsSubmit">确 定</ElButton>
+          <ElButton type="primary" :loading="loadingRef" @click="handleExportsSubmit"
+            >确 定</ElButton
+          >
           <ElButton @click="handleCloseExportsModal">取 消</ElButton>
         </div>
       </template>
@@ -63,17 +71,22 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import ExcelJS from "exceljs";
 import type { IContentConfig, IObject } from "@/components/modal/types";
 import { useThrottleFn } from "@vueuse/core";
-import { type FormInstance, type FormRules, ElMessage } from "element-plus";
-import { nextTick, ref, reactive, computed } from "vue";
+import { ElMessage } from "element-plus";
+import type { FormInstance, FormRules } from "element-plus";
+import FaDialog from "@/components/modal/fa-dialog/index.vue";
+import { nextTick, reactive, computed } from "vue";
 
 defineOptions({ name: "FaExportDialog", inheritAttrs: false });
 
-function saveBlobDownload(blob: Blob, rawName: string) {
-  const name = /\.xlsx?$/i.test(rawName) ? rawName : `${rawName}.xlsx`;
+function saveBlobDownload(blob: Blob, rawName: string, format: string = "xlsx") {
+  const ext = format === "csv" ? ".csv" : ".xlsx";
+  const name = new RegExp(`\\.${ext.replace(".", "")}$`, "i").test(rawName)
+    ? rawName
+    : `${rawName}${ext}`;
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -130,33 +143,39 @@ const exportsFormData = reactive({
   sheetname: "",
   fields: [] as string[],
   origin: ExportsOriginEnum.CURRENT,
+  format: "xlsx" as "xlsx" | "csv",
 });
 const exportsFormRules: FormRules = {
   fields: [{ required: true, message: "请选择字段" }],
   origin: [{ required: true, message: "请选择数据源" }],
 };
 
-// 表格列
+// 表格列（浅克隆避免在 computed 中修改原始 props 对象）
 const cols = computed(() =>
   props.contentConfig.cols.map((col) => {
-    if (col.initFn) {
-      col.initFn(col);
+    const cloned = { ...col };
+    if (cloned.initFn) {
+      cloned.initFn(cloned);
     }
-    if (col.show === undefined) {
-      col.show = true;
-    }
-    if (col.prop !== undefined && col.columnKey === undefined && col["column-key"] === undefined) {
-      col.columnKey = col.prop;
+    if (cloned.show === undefined) {
+      cloned.show = true;
     }
     if (
-      col.type === "selection" &&
-      col.reserveSelection === undefined &&
-      col["reserve-selection"] === undefined
+      cloned.prop !== undefined &&
+      cloned.columnKey === undefined &&
+      cloned["column-key"] === undefined
+    ) {
+      cloned.columnKey = cloned.prop;
+    }
+    if (
+      cloned.type === "selection" &&
+      cloned.reserveSelection === undefined &&
+      cloned["reserve-selection"] === undefined
     ) {
       // 配合表格row-key实现跨页多选
-      col.reserveSelection = true;
+      cloned.reserveSelection = true;
     }
-    return col;
+    return cloned;
   })
 );
 
@@ -183,68 +202,123 @@ function handleCloseExportsModal() {
   });
 }
 
-// 导出
-async function handleExports() {
-  try {
-    const filename = exportsFormData.filename
-      ? exportsFormData.filename
-      : props.contentConfig.permPrefix || "export";
-    const sheetname = exportsFormData.sheetname ? exportsFormData.sheetname : "sheet";
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet(sheetname);
-    const columns: Partial<ExcelJS.Column>[] = [];
-    cols.value.forEach((col) => {
-      if (col.label && col.prop && exportsFormData.fields.includes(col.prop)) {
-        columns.push({ header: col.label, key: col.prop });
-      }
-    });
-    worksheet.columns = columns;
+/**
+ * 将工作表数据导出为 CSV 格式
+ */
+async function workbookToCsv(
+  worksheet: ExcelJS.Worksheet,
+  columns: Partial<ExcelJS.Column>[]
+): Promise<Blob> {
+  const headerRow = columns.map((col) => col.header ?? "").join(",");
+  const rows: string[] = [headerRow];
 
-    if (exportsFormData.origin === ExportsOriginEnum.REMOTE) {
-      const lastFormData = props.queryParams ?? {};
-      if (props.contentConfig.exportsBlobAction) {
-        const blob = await props.contentConfig.exportsBlobAction(lastFormData);
-        saveBlobDownload(blob, filename as string);
-        ElMessage.success("导出成功");
-        return;
-      }
-      if (props.contentConfig.exportsAction) {
-        const res = await props.contentConfig.exportsAction(lastFormData);
-        worksheet.addRows(res);
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return;
+    const values = columns.map((col) => {
+      const cellValue = row.getCell(col.key as string).value;
+      if (cellValue === null || cellValue === undefined) return "";
+      const str = String(cellValue);
+      return /[,"\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    });
+    rows.push(values.join(","));
+  });
+
+  const bom = "\uFEFF";
+  const content = bom + rows.join("\n");
+  return new Blob([content], { type: "text/csv;charset=utf-8" });
+}
+
+// 导出
+async function handleExports(): Promise<{ count: number }> {
+  ElMessage.info("正在导出数据，请稍候...");
+  const filename = exportsFormData.filename
+    ? exportsFormData.filename
+    : props.contentConfig.permPrefix || "export";
+  const sheetname = exportsFormData.sheetname ? exportsFormData.sheetname : "sheet";
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(sheetname);
+  const columns: Partial<ExcelJS.Column>[] = [];
+  cols.value.forEach((col) => {
+    if (col.label && col.prop && exportsFormData.fields.includes(col.prop)) {
+      columns.push({ header: col.label, key: col.prop });
+    }
+  });
+  worksheet.columns = columns;
+
+  const isCsv = exportsFormData.format === "csv";
+  let exportCount: number;
+
+  if (exportsFormData.origin === ExportsOriginEnum.REMOTE) {
+    const lastFormData = props.queryParams ?? {};
+    if (props.contentConfig.exportsBlobAction) {
+      const blob = await props.contentConfig.exportsBlobAction(lastFormData);
+      saveBlobDownload(blob, filename as string, exportsFormData.format);
+      ElMessage.success("导出成功！");
+      return { count: 0 };
+    }
+    if (props.contentConfig.exportsAction) {
+      const res = await props.contentConfig.exportsAction(lastFormData);
+      const rows = Array.isArray(res) ? res : [];
+      exportCount = rows.length;
+      worksheet.addRows(rows);
+      if (isCsv) {
+        const blob = await workbookToCsv(worksheet, columns);
+        saveBlobDownload(blob, filename as string, "csv");
+      } else {
         const buffer = await workbook.xlsx.writeBuffer();
         saveXlsx(buffer, filename as string);
-      } else {
-        ElMessage.error("未配置 exportsAction 或 exportsBlobAction");
       }
-    } else if (exportsFormData.origin === ExportsOriginEnum.SELECTED) {
-      const rows = props.selectionData ?? [];
-      worksheet.addRows(rows);
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveXlsx(buffer, filename as string);
     } else {
-      const rows = props.pageData ?? [];
-      worksheet.addRows(rows);
+      throw new Error("未配置导出接口操作");
+    }
+  } else if (exportsFormData.origin === ExportsOriginEnum.SELECTED) {
+    const rows = props.selectionData ?? [];
+    exportCount = rows.length;
+    worksheet.addRows(rows);
+    if (isCsv) {
+      const blob = await workbookToCsv(worksheet, columns);
+      saveBlobDownload(blob, filename as string, "csv");
+    } else {
       const buffer = await workbook.xlsx.writeBuffer();
       saveXlsx(buffer, filename as string);
     }
-  } catch (error) {
-    console.error("导出失败:", error);
-    ElMessage.error("导出失败");
+  } else {
+    const rows = props.pageData ?? [];
+    exportCount = rows.length;
+    worksheet.addRows(rows);
+    if (isCsv) {
+      const blob = await workbookToCsv(worksheet, columns);
+      saveBlobDownload(blob, filename as string, "csv");
+    } else {
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveXlsx(buffer, filename as string);
+    }
   }
+
+  ElMessage.success(`导出成功！共导出 ${exportCount} 条数据`);
+  return { count: exportCount };
 }
 
 // 导出确认
-const handleExportsSubmit = useThrottleFn(() => {
-  exportsFormRef.value?.validate((valid: boolean) => {
-    if (valid) {
-      handleExports();
-      handleCloseExportsModal();
+const loadingRef = ref(false);
+const handleExportsSubmit = useThrottleFn(async () => {
+  try {
+    await exportsFormRef.value?.validate();
+    loadingRef.value = true;
+    await handleExports();
+    handleCloseExportsModal();
+  } catch (error: unknown) {
+    // 校验失败或导出过程异常
+    if (error instanceof Error) {
+      ElMessage.error(error.message || "导出失败，请稍后重试");
     }
-  });
+  } finally {
+    loadingRef.value = false;
+  }
 }, 3000);
 
 // 浏览器保存文件
-function saveXlsx(fileData: any, fileName: string) {
+function saveXlsx(fileData: ArrayBuffer, fileName: string) {
   try {
     const fileType =
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
@@ -263,12 +337,10 @@ function saveXlsx(fileData: any, fileName: string) {
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error("保存文件失败:", error);
-    ElMessage.error("保存文件失败");
+    ElMessage.error("导出文件保存失败，请重试");
   }
 }
 
 // 提供给父组件的方法
-defineExpose({
-  handleCloseExportsModal,
-});
+// 经审查 handleCloseExportsModal 仅在组件内部使用，defineExpose 已清理
 </script>

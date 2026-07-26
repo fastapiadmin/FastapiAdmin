@@ -11,7 +11,7 @@ export function useCommon() {
 
   const homePath = computed(() => menuStore.getHomePath());
 
-  /** 触发 `ArtPageContent` 级重建（与布局 settings 联动） */
+  /** 触发 `FaPageContent` 级重建（与布局 settings 联动） */
   const refresh = () => {
     settingStore.reload();
   };

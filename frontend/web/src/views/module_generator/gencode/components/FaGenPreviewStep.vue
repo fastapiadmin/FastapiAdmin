@@ -4,7 +4,7 @@
       <ElEmpty>
         <template #description>
           <p class="mb-1 font-medium">暂无预览文件</p>
-          <p class="gencode-preview-empty-tip">
+          <p class="m-0 mb-2 text-xs leading-normal text-(--el-text-color-secondary)">
             若刚保存过仍为空，可将「预览范围」改为「全部」；或返回上一步检查字段与主子表后重新进入。
           </p>
         </template>
@@ -91,7 +91,6 @@ import { computed, inject, onUnmounted, ref, watch } from "vue";
 import Codemirror from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import type { CmComponentRef } from "codemirror-editor-vue3";
-import FaSvgIcon from "@/components/base/fa-svg-icon/index.vue";
 import { resolveLocalIconUrl, resolveIconForFaSvgIcon } from "@utils";
 import { CopyDocument } from "@element-plus/icons-vue";
 import { GENCODE_CM_KEY } from "../gencodeInjectionKeys";
@@ -180,20 +179,3 @@ function previewIconAssetUrl(label: string): string | undefined {
   return resolveLocalIconUrl(getFileTreeNodeIcon(label));
 }
 </script>
-
-<style scoped lang="scss">
-.gencode-preview-meta-tip {
-  margin: 0 0 8px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--el-text-color-secondary);
-}
-
-.gencode-preview-empty-tip {
-  max-width: 420px;
-  margin: 0 auto;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--el-text-color-secondary);
-}
-</style>

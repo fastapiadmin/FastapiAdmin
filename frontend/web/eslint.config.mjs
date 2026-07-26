@@ -13,9 +13,9 @@ import tseslint from "typescript-eslint";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 读取 .auto-import.json 文件的内容，并将其解析为 JSON 对象
+// 读取 unplugin-auto-import 生成的 ESLint 全局配置（运行时由 vite 生成）
 const autoImportConfig = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, ".auto-import.json"), "utf-8")
+  fs.readFileSync(path.resolve(__dirname, ".eslintrc-auto-import.json"), "utf-8")
 );
 
 export default [
@@ -28,7 +28,7 @@ export default [
       ".vscode/**",
       "src/assets/**",
       "src/utils/console.ts",
-      ".auto-import.json",
+      ".eslintrc-auto-import.json",
     ],
   },
   // 全局语言环境

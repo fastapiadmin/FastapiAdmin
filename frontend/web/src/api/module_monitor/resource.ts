@@ -95,7 +95,7 @@ export const ResourceAPI = {
    */
   createDirectory(body: ResourceCreateDirQuery) {
     return request<ApiResponse>({
-      url: `${API_PATH}/create-dir`,
+      url: `${API_PATH}/mkdir`,
       method: "post",
       data: body,
     });
@@ -109,7 +109,7 @@ export const ResourceAPI = {
     return request<Blob>({
       url: `${API_PATH}/export`,
       method: "post",
-      data: body,
+      params: body,
       responseType: "blob",
     });
   },
@@ -169,14 +169,14 @@ export interface ResourcePageQuery extends PageQuery {
  * 资源上传响应模型
  */
 export interface ResourceUploadSchema {
+  /** 文件路径 */
+  file_path?: string;
   /** 文件名 */
-  filename: string;
-  /** 访问URL */
-  file_url: string;
-  /** 文件大小 */
-  file_size: number;
-  /** 上传时间 */
-  upload_time: string;
+  file_name?: string;
+  /** 原始文件名 */
+  origin_name?: string;
+  /** 文件URL */
+  file_url?: string;
 }
 
 /**
@@ -188,11 +188,11 @@ export interface ResourceItem {
   /** 文件URL路径 */
   file_url: string;
   /** 相对路径 */
-  relative_path?: string;
+  relative_path: string;
   /** 是否为文件 */
-  is_file?: boolean;
+  is_file: boolean;
   /** 是否为目录 */
-  is_dir?: boolean;
+  is_dir: boolean;
   /** 文件大小（字节） */
   size?: number | null;
   /** 创建时间 */

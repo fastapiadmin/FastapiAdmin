@@ -46,7 +46,7 @@
  * @author FastapiAdmin Team
  */
 
-import { FestivalConfig } from "@/types/config";
+import type { FestivalConfig } from "@/types/config";
 
 export const festivalConfigList: FestivalConfig[] = [
   /**

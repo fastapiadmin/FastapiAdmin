@@ -12,14 +12,12 @@ from app.core.exceptions import CustomException
 
 
 class ImportUtil:
-    """
-    扫描工程中的 ORM 模型文件并做有效性校验的辅助类。
+    """扫描工程中的 ORM 模型文件并做有效性校验的辅助类。
     """
 
     @classmethod
     def find_project_root(cls) -> Path:
-        """
-        返回项目根目录（与配置中的 `BASE_DIR` 一致）。
+        """返回项目根目录（与配置中的 `BASE_DIR` 一致）。
 
         返回:
         - Path: 项目根路径。
@@ -28,8 +26,7 @@ class ImportUtil:
 
     @classmethod
     def is_valid_model(cls, obj: Any, base_class: type) -> bool:
-        """
-        判断是否为可映射的 SQLAlchemy 模型类（含表名与非空列）。
+        """判断是否为可映射的 SQLAlchemy 模型类（含表名与非空列）。
 
         参数:
         - obj (Any): 待验证对象（一般为类）。
@@ -43,20 +40,20 @@ class ImportUtil:
             return False
 
         # 必须有表名定义（排除抽象基类）
-        if not hasattr(obj, "__tablename__") or obj.__tablename__ is None:
+        if not hasattr(obj, "__tablename__") or getattr(obj, "__tablename__", None) is None:
             return False
 
         # 必须有至少一个列定义
         try:
-            return len(sa_inspect(obj).columns) > 0
+            inspected = sa_inspect(obj)
+            return inspected is not None and len(inspected.columns) > 0
         except Exception:
             return False
 
     @classmethod
     @lru_cache(maxsize=256)
     def find_models(cls, base_class: type) -> list[Any]:
-        """
-        遍历工程内 `model.py` / `models.py`，收集去重后的有效模型类。
+        """遍历工程内 `model.py` / `models.py`，收集去重后的有效模型类。
 
         参数:
         - base_class (type): SQLAlchemy 声明基类。
@@ -143,7 +140,9 @@ class ImportUtil:
                         continue
 
                     # 检查表名重复
-                    table_name = obj.__tablename__
+                    table_name = getattr(obj, "__tablename__", None)
+                    if table_name is None:
+                        continue
                     if table_name in seen_tables:
                         continue
 
@@ -170,8 +169,7 @@ class ImportUtil:
         seen_models: set[Any],
         seen_tables: set[str],
     ) -> None:
-        """
-        尝试从调度相关模块补充 `apscheduler_jobs` 表对应模型。
+        """尝试从调度相关模块补充 `apscheduler_jobs` 表对应模型。
 
         参数:
         - base_class (type): ORM 声明基类。
@@ -195,17 +193,15 @@ class ImportUtil:
                 try:
                     module = importlib.import_module(module_name)
                     for _name, obj in inspect.getmembers(module, inspect.isclass):
-                        if (
-                            cls.is_valid_model(obj, base_class)
-                            and hasattr(obj, "__tablename__")
-                            and obj.__tablename__ == "apscheduler_jobs"
-                        ) and (obj not in seen_models and "apscheduler_jobs" not in seen_tables):
+                        if (cls.is_valid_model(obj, base_class)
+                            and getattr(obj, "__tablename__", None) == "apscheduler_jobs"
+                            and obj not in seen_models
+                            and "apscheduler_jobs" not in seen_tables
+                        ):
                             seen_models.add(obj)
                             seen_tables.add("apscheduler_jobs")
                             models.append(obj)
-                            print(
-                                f"✅️ 找到有效模型: {obj.__module__}.{obj.__name__} (表: apscheduler_jobs)"
-                            )
+                            print(f"✅️ 找到有效模型: {obj.__module__}.{obj.__name__} (表: apscheduler_jobs)")
                 except ImportError:
                     pass
         except Exception as e:

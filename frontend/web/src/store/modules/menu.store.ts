@@ -29,11 +29,11 @@
  * @author FastapiAdmin Team
  */
 import { defineStore } from "pinia";
-import { ref } from "vue";
-import { AppRouteRecord } from "@/types/router";
+import { ref, computed } from "vue";
+import type { AppRouteRecord } from "@/types/router";
 import { getFirstMenuPath } from "@utils";
 import { HOME_PAGE_PATH } from "@/router";
-import { mergeShellRoutesIntoMenu } from "@/router/staticRoutes";
+import { mergeShellRoutesIntoMenu } from "@/router/MenuProcessor";
 
 /**
  * 菜单状态管理
@@ -50,6 +50,12 @@ export const useMenuStore = defineStore(
     const menuWidth = ref("");
     /** 存储路由移除函数的数组 */
     const removeRouteFns = ref<(() => void)[]>([]);
+
+    /**
+     * 可见菜单列表，当前直接返回所有菜单（保留 computed 以供未来 scope 过滤扩展）
+     * TODO: 移除本别名，消费者直接使用 menuList
+     */
+    const visibleMenus = computed(() => menuList.value);
 
     /**
      * 设置菜单列表
@@ -101,6 +107,7 @@ export const useMenuStore = defineStore(
 
     return {
       menuList,
+      visibleMenus,
       menuWidth,
       removeRouteFns,
       setMenuList,

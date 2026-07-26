@@ -1,3 +1,7 @@
+from typing import Any
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.base_crud import CRUDBase
 from app.core.base_schema import AuthSchema
 
@@ -8,14 +12,10 @@ from .schema import PositionCreateSchema, PositionUpdateSchema
 class PositionCRUD(CRUDBase[PositionModel, PositionCreateSchema, PositionUpdateSchema]):
     """岗位模块数据层"""
 
-    def __init__(self, auth: AuthSchema) -> None:
-        """
-        初始化岗位数据层。
+    def __init__(self, auth: AuthSchema, db: AsyncSession) -> None:
+        super().__init__(model=PositionModel, auth=auth, db=db)
 
-        参数:
-        - auth (AuthSchema): 认证信息模型（含 DB 会话等上下文）。
-
-        返回:
-        - None
-        """
-        super().__init__(model=PositionModel, auth=auth)
+    async def get_options(self) -> list[dict[str, Any]]:
+        """获取岗位下拉选项，返回 [{value, label}]"""
+        items = await self.get_list(search={"status": 0})
+        return [{"value": item.id, "label": item.name} for item in items]

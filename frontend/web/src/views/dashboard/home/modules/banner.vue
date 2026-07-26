@@ -1,6 +1,6 @@
 <template>
   <FaBasicBanner
-    class="justify-center h-53! max-sm:pt-8! max-sm:h-48!"
+    class="justify-center h-54! max-sm:pt-5! max-sm:h-auto!"
     :title="bannerTitle"
     :subtitle="bannerSubtitle"
     boxStyle="bg-theme/10!"
@@ -46,7 +46,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import bannerCover from "@imgs/login/lf_icon2.webp";
-import FaBasicBanner from "@/components/banners/fa-basic-banner/index.vue";
 import { useUserStore } from "@stores";
 import { greetings } from "@utils";
 import { UserFilled } from "@element-plus/icons-vue";
@@ -56,7 +55,7 @@ const userStore = useUserStore();
 const userInfo = computed(() => userStore.basicInfo);
 
 const handleBannerClick = (): void => {
-  console.log("banner clicked");
+  // TODO: 接入真实跳转或路由
 };
 
 const timefix = greetings();
@@ -74,5 +73,3 @@ const bannerTitle = `欢迎回来 ～ ${currentUser.name}（${currentUser.userna
 
 const bannerSubtitle = `基于 FastAPI + Vue3 + TypeScript 构建的企业级中后台解决方案，支持多端开发。`;
 </script>
-
-<style scoped lang="scss"></style>

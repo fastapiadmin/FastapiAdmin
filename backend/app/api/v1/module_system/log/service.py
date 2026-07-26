@@ -1,172 +1,149 @@
-from app.core.base_schema import AuthSchema
+from datetime import datetime, timedelta
+from typing import Any
+
+from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.config.setting import settings
+from app.core.base_schema import AuthSchema, PageResultSchema
+from app.core.database import async_db_session
 from app.core.exceptions import CustomException
 from app.core.logger import logger
+from app.utils.common_util import search_to_dict
+from app.utils.excel_util import ExcelUtil
 
 from .crud import LoginLogCRUD, OperationLogCRUD
+from .model import OperationLogModel
 from .schema import (
-    LoginLogCreateSchema,
     LoginLogDetailOutSchema,
     LoginLogOutSchema,
     LoginLogQueryParam,
-    OperationLogCreateSchema,
     OperationLogDetailOutSchema,
     OperationLogOutSchema,
+    OperationLogQueryParam,
 )
 
 
 class LoginLogService:
-    """登录日志管理模块服务层"""
+    """登录日志管理服务"""
 
-    @classmethod
-    async def detail_service(cls, auth: AuthSchema, id: int) -> LoginLogDetailOutSchema:
-        obj = await LoginLogCRUD(auth).get(id=id)
-        if not obj:
-            raise CustomException(msg="该数据不存在")
+    def __init__(self, auth: AuthSchema, db: AsyncSession) -> None:
+        self.auth = auth
+        self.db = db
+
+    async def detail(self, id: int) -> LoginLogDetailOutSchema:
+        obj = await LoginLogCRUD(self.auth, self.db).get_or_404(id=id)
         return LoginLogDetailOutSchema.model_validate(obj)
 
-    @classmethod
-    async def page_service(
-        cls,
-        auth: AuthSchema,
+    async def page(
+        self,
         page_no: int,
         page_size: int,
         search: LoginLogQueryParam | None = None,
         order_by: list[dict[str, str]] | None = None,
-    ) -> dict:
-        search_dict = search.__dict__ if search else {}
-        order_by_list = order_by or [{"updated_time": "desc"}]
-        offset = (page_no - 1) * page_size
-
-        result = await LoginLogCRUD(auth).page(
-            offset=offset,
+    ) -> PageResultSchema[LoginLogOutSchema]:
+        return await LoginLogCRUD(self.auth, self.db).page(
+            offset=(page_no - 1) * page_size,
             limit=page_size,
-            order_by=order_by_list,
-            search=search_dict,
+            order_by=order_by or [{"updated_time": "desc"}],
+            search=search_to_dict(search),
             out_schema=LoginLogOutSchema,
         )
-        return result
 
-    @classmethod
-    async def create_service(cls, auth: AuthSchema, data: LoginLogCreateSchema) -> LoginLogDetailOutSchema:
-        obj = await LoginLogCRUD(auth).create(data=data)
-        if not obj:
-            raise CustomException(msg="创建登录日志失败")
-        return LoginLogDetailOutSchema.model_validate(obj)
-
-    @classmethod
-    async def delete_service(cls, auth: AuthSchema, ids: list[int]) -> None:
-        if len(ids) < 1:
+    async def delete(self, ids: list[int]) -> None:
+        if not ids:
             raise CustomException(msg="删除失败，删除对象不能为空")
 
-        existing = await LoginLogCRUD(auth).list(search={"id": ("in", ids)})
+        existing = await LoginLogCRUD(self.auth, self.db).get_list(search={"id": ("in", ids)})
         existing_map = {obj.id for obj in existing}
         for nid in ids:
             if nid not in existing_map:
                 raise CustomException(msg=f"删除失败，ID为{nid}的数据不存在")
 
-        await LoginLogCRUD(auth).delete(ids=ids)
+        await LoginLogCRUD(self.auth, self.db).delete(ids=ids)
 
 
 class OperationLogService:
+    """操作日志管理服务"""
+
+    def __init__(self, auth: AuthSchema, db: AsyncSession) -> None:
+        self.auth = auth
+        self.db = db
 
     @staticmethod
-    async def cleanup_operation_log() -> None:
-        """定时任务：清理超过保留期的操作日志和登录日志（PRD §14.5）
+    async def cleanup_operation_log() -> bool:
+        from .model import LoginLogModel
 
-        清理 create_time < now - retention_days 的记录。
-        保留期从全局参数 `operation_log_retention_days` 读取，默认 90 天。
-        """
-        from datetime import datetime, timedelta
-
-        from sqlalchemy import delete
-
-        from app.core.database import async_db_session
-
-        from .model import LoginLogModel, OperationLogModel
-
-        retention_days = 90  # 默认 90 天，可通过系统参数覆盖
-        # 尝试从系统参数读取自定义保留期
-        try:
-            from app.api.v1.module_system.params.model import ParamsModel
-            async with async_db_session() as _s:
-                from sqlalchemy import select
-                result = await _s.execute(
-                    select(ParamsModel.config_value).where(
-                        ParamsModel.config_key == "operation_log_retention_days"
-                    ).limit(1)
-                )
-                row = result.scalar()
-                if row is not None:
-                    retention_days = int(row)
-        except Exception:
-            pass  # 读取失败使用默认值
+        retention_days = settings.OPERATION_LOG_RETENTION_DAYS
 
         cutoff = datetime.now() - timedelta(days=retention_days)
         async with async_db_session() as session:
             op_stmt = delete(OperationLogModel).where(OperationLogModel.created_time < cutoff)
-            op_result = await session.execute(op_stmt)
+            op_result: Any = await session.execute(op_stmt)
 
             login_stmt = delete(LoginLogModel).where(LoginLogModel.created_time < cutoff)
-            login_result = await session.execute(login_stmt)
+            login_result: Any = await session.execute(login_stmt)
 
             await session.commit()
-            logger.info(
-                f"操作日志清理完成: "
-                f"操作日志 {op_result.rowcount} 条, "
-                f"登录日志 {login_result.rowcount} 条"
-            )
+            logger.info(f"操作日志清理完成: 操作日志 {op_result.rowcount} 条, 登录日志 {login_result.rowcount} 条")
             return True
 
-    @staticmethod
-    async def create_service(auth: AuthSchema, data: OperationLogCreateSchema) -> OperationLogDetailOutSchema:
-        crud = OperationLogCRUD(auth)
-        obj = await crud.create(data)
-        if not obj:
-            raise CustomException(msg="创建操作日志失败")
-        return OperationLogDetailOutSchema.model_validate(obj)
-
-    @staticmethod
-    async def page_service(
-        auth: AuthSchema,
-        page: int,
+    async def page(
+        self,
+        page_no: int,
         page_size: int,
-        search: dict | None = None,
+        search: OperationLogQueryParam | None = None,
         order_by: list[dict[str, str]] | None = None,
-    ) -> dict:
-        from app.common.enums import QueueEnum
-        
-        crud = OperationLogCRUD(auth)
-
-        # 构建过滤条件
-        filters = {}
-        if search:
-            if search.get("request_path"):
-                filters["request_path"] = (QueueEnum.like.value, search["request_path"])
-            if search.get("request_method"):
-                filters["request_method"] = (QueueEnum.eq.value, search["request_method"])
-            if search.get("username"):
-                filters["username"] = (QueueEnum.like.value, search["username"])
-
-        result = await crud.page(
-            offset=(page - 1) * page_size,
+    ) -> PageResultSchema[OperationLogOutSchema]:
+        crud = OperationLogCRUD(self.auth, self.db)
+        return await crud.page(
+            offset=(page_no - 1) * page_size,
             limit=page_size,
             order_by=order_by or [{"id": "desc"}],
-            search=filters,
+            search=search_to_dict(search),
             out_schema=OperationLogOutSchema,
         )
-        return result
 
-    @staticmethod
-    async def detail_service(auth: AuthSchema, id: int) -> OperationLogDetailOutSchema:
-        crud = OperationLogCRUD(auth)
-        obj = await crud.get(id=id)
-        if not obj:
-            raise CustomException(msg="该操作日志不存在")
+    async def detail(self, id: int) -> OperationLogDetailOutSchema:
+        crud = OperationLogCRUD(self.auth, self.db)
+        obj = await crud.get_or_404(id=id)
         return OperationLogDetailOutSchema.model_validate(obj)
 
-    @staticmethod
-    async def delete_service(auth: AuthSchema, ids: list[int]) -> None:
-        if len(ids) < 1:
+    async def delete(self, ids: list[int]) -> None:
+        if not ids:
             raise CustomException(msg="删除失败，删除对象不能为空")
-        crud = OperationLogCRUD(auth)
-        await crud.delete(ids)
+        existing = await OperationLogCRUD(self.auth, self.db).get_list(search={"id": ("in", ids)})
+        existing_map = {obj.id for obj in existing}
+        for nid in ids:
+            if nid not in existing_map:
+                raise CustomException(msg="删除失败，该数据不存在")
+        crud = OperationLogCRUD(self.auth, self.db)
+        await crud.delete(ids=ids)
+
+    async def get_list(
+        self,
+        search: OperationLogQueryParam | None = None,
+        order_by: list[dict[str, str]] | None = None,
+    ) -> list[OperationLogOutSchema]:
+        crud = OperationLogCRUD(self.auth, self.db)
+        obj_list = await crud.get_list(
+            search=search_to_dict(search),
+            order_by=order_by or [{"id": "desc"}],
+        )
+        return [OperationLogOutSchema.model_validate(obj) for obj in obj_list]
+
+    @staticmethod
+    def export_list(operation_log_list: list[dict[str, Any]]) -> bytes:
+        """导出操作日志列表"""
+        mapping_dict = {
+            "id": "日志编号",
+            "request_path": "请求路径",
+            "request_method": "请求方法",
+            "request_ip": "请求IP",
+            "request_payload": "请求参数",
+            "response_code": "响应状态码",
+            "process_time": "耗时(ms)",
+            "created_time": "操作时间",
+            "created_id": "操作用户ID",
+        }
+        return ExcelUtil.export_list2excel(list_data=operation_log_list, mapping_dict=mapping_dict)

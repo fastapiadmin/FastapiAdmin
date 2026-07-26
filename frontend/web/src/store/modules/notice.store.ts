@@ -46,11 +46,16 @@ export const useNoticeStore = defineStore(
 
     /**
      * 获取通知列表
+     * @param force 是否强制刷新
      */
-    async function getNotice() {
+    async function getNotice(force = false) {
+      if (!force && isNoticeLoaded.value) return;
       const response = await NoticeAPI.listNoticeAvailable();
-      const items = response.data.data.items || [];
-      // 过滤掉已读的通知
+      const items = Array.isArray(response.data?.data) ? response.data.data : [];
+      applyNoticeItems(items);
+    }
+
+    function applyNoticeItems(items: NoticeTable[]) {
       const readSet = new Set(readIds.value);
       const filtered = items.filter(
         (item: NoticeTable) => item.id !== undefined && !readSet.has(item.id as number)
@@ -115,7 +120,11 @@ export const useNoticeStore = defineStore(
     };
   },
   {
-    persist: true,
+    persist: {
+      key: "notice",
+      storage: localStorage,
+      pick: ["readIds"],
+    },
   }
 );
 

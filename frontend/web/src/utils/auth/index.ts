@@ -66,6 +66,7 @@ export { AUTH_KEYS };
 import { router } from "@/router";
 import { useUserStore } from "@stores";
 import { ElMessage, ElNotification } from "element-plus";
+import type { OAuthProvider } from "@/api/module_system/auth";
 
 /** 登录页跳转进行中，合并并发调用，避免重复通知与重复路由 */
 let redirectToLoginInFlight: Promise<void> | null = null;
@@ -98,4 +99,17 @@ export async function redirectToLogin(message: string = "请重新登录"): Prom
   })();
 
   return redirectToLoginInFlight;
+}
+
+// ── OAuth 第三方登录 ──
+
+/**
+ * 跳转浏览器至后端 OAuth 入口，授权完成后回到 `redirect_uri`（通常为当前站点 /login）。
+ */
+export function startOAuthLogin(provider: OAuthProvider): void {
+  const base = (import.meta.env.VITE_APP_BASE_API || "/api/v1").replace(/\/$/, "");
+  const basePath = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+  const redirectUri = `${window.location.origin}${basePath}/login`;
+  const url = `${base}/system/auth/oauth/${provider}/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+  window.location.href = url;
 }

@@ -1,6 +1,6 @@
 <!-- 登录页：顶栏固定；仅插画列与表单区随布局切换 -->
 <template>
-  <div class="login-page-root flex h-screen w-full flex-col overflow-hidden">
+  <div class="login-page-root flex h-screen w-full flex-col overflow-hidden" :style="loginBgStyle">
     <FaLoginCenterBackdrop v-if="panelAlign === 'center'" viewport-fixed />
     <FaAuthTopBar v-model:panel-align="panelAlign" />
 
@@ -24,7 +24,7 @@
         >
           <ElScrollbar>
             <div
-              class="login-page-panel__scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-6 [-webkit-overflow-scrolling:touch]"
+              class="login-page-panel__scroll pb-6"
               :class="panelAlign === 'center' && 'login-page-panel__scroll--centered'"
             >
               <div
@@ -90,7 +90,6 @@
                       :register-rules="registerRules"
                       :form-key="formKey"
                       :register-loading="registerLoading"
-                      :show-email="true"
                       :user-agreement-href="userAgreementHref"
                       @submit="submitRegister"
                       @to-login="setAuthPanel('login')"
@@ -176,26 +175,23 @@
 </template>
 
 <script setup lang="ts">
-import { ElScrollbar } from "element-plus";
 import type { LocationQuery, RouteLocationRaw } from "vue-router";
 import AuthAPI, {
   type CaptchaInfo,
   type LoginFormData,
   type OAuthProvider,
 } from "@/api/module_system/auth";
-import type { TenantRegisterForm } from "@/api/module_system/auth";
+
 import UserAPI, { type ForgetPasswordForm, type RegisterForm } from "@/api/module_system/user";
 import { useConfigStore, useAppStore, useSettingsStore, useUserStore } from "@stores";
 import { Auth, HttpError, startOAuthLogin } from "@utils";
-import { ElMessage, ElNotification, type FormRules } from "element-plus";
+import { ElMessage, ElNotification } from "element-plus";
+import type { FormRules } from "element-plus";
 import type { Account, AccountKey } from "./types";
-import FaLoginAccountForm from "@/components/views/fa-login/FaLoginAccountForm.vue";
-import FaLoginForgetPanel from "@/components/views/fa-login/FaLoginForgetPanel.vue";
-import FaLoginMobilePanel from "@/components/views/fa-login/FaLoginMobilePanel.vue";
-import FaLoginQrPanel from "@/components/views/fa-login/FaLoginQrPanel.vue";
-import FaLoginRegisterPanel from "@/components/views/fa-login/FaLoginRegisterPanel.vue";
-import FaAuthTopBar from "@/components/views/fa-login/FaAuthTopBar.vue";
-import { useLoginPanelAlign } from "@/components/views/fa-login/useLoginPanelAlign";
+import { useLoginPanelAlign } from "./components/composables/useLoginPanelAlign";
+import type FaLoginAccountForm from "./components/forms/FaLoginAccountForm.vue";
+import type FaLoginRegisterPanel from "./components/panels/FaLoginRegisterPanel.vue";
+import type FaLoginForgetPanel from "./components/panels/FaLoginForgetPanel.vue";
 
 defineOptions({ name: "Login" });
 
@@ -216,7 +212,6 @@ const authPanel = ref<AuthPanel>("login");
 const loginFlowMode = ref<LoginFlowMode>("account");
 
 const panelTitle = computed(() => {
-  if (authPanel.value === "register") return t("login.reg");
   if (authPanel.value === "forget") return t("login.resetPassword");
   if (
     authPanel.value === "login" &&
@@ -239,7 +234,7 @@ const panelSubTitle = computed(() => {
   return t("login.subTitle");
 });
 
-const userAgreementHref = computed(() => configStore.configData?.clause?.config_value || "#");
+const userAgreementHref = computed(() => configStore.configData?.clause?.config_value || "");
 
 function setAuthPanel(panel: AuthPanel) {
   authPanel.value = panel;
@@ -265,7 +260,6 @@ function backToAccountLogin() {
   loginFlowMode.value = "account";
   nextTick(() => {
     getCaptcha();
-    loginForm.captcha = "";
     accountFormRef.value?.resetDragVerify?.();
     isPassing.value = false;
     isClickPass.value = false;
@@ -331,7 +325,6 @@ watch(authPanel, (panel) => {
   if (panel !== "login") return;
   if (loginFlowMode.value !== "account") return;
   getCaptcha();
-  loginForm.captcha = "";
   accountFormRef.value?.resetDragVerify?.();
   isPassing.value = false;
   isClickPass.value = false;
@@ -379,11 +372,11 @@ const codeLoading = ref(false);
 
 const registerAgreementRead = ref(false);
 
-const registerForm = reactive<RegisterForm & { email: string }>({
+const registerForm = reactive<RegisterForm>({
   username: "",
+  name: "",
   password: "",
   confirmPassword: "",
-  email: "",
 });
 
 const forgetForm = reactive<ForgetPasswordForm>({
@@ -417,6 +410,7 @@ const validateRegisterConfirm = (_rule: unknown, value: string, callback: (e?: E
 
 const registerRules = computed<FormRules<RegisterForm>>(() => ({
   username: [{ required: true, message: t("login.message.username.required"), trigger: "blur" }],
+  name: [{ required: true, message: "请输入昵称", trigger: "blur" }],
   password: [
     { required: true, validator: validateRegisterPassword, trigger: "blur" },
     { min: 6, message: t("login.message.password.min"), trigger: "blur" },
@@ -456,10 +450,17 @@ const forgetRules = computed<FormRules<ForgetPasswordForm>>(() => ({
 const loginForm = reactive<LoginFormData>({
   username: "",
   password: "",
-  captcha: "",
   captcha_key: "",
   remember: true,
   login_type: "PC端",
+});
+
+// —— 登录页背景 ——
+const loginBgStyle = computed(() => {
+  const bg = configStore.configData?.login_bg?.config_value?.trim();
+  return bg
+    ? { backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : {};
 });
 
 const captchaState = reactive<CaptchaInfo>({
@@ -490,15 +491,6 @@ const rules = computed<FormRules>(() => {
       },
     ],
   };
-  if (captchaState.enable) {
-    base.captcha = [
-      {
-        required: true,
-        trigger: "blur",
-        message: t("login.message.captchaCode.required"),
-      },
-    ];
-  }
   return base;
 });
 
@@ -517,14 +509,32 @@ async function getCaptcha() {
     loginForm.captcha_key = data.key;
     captchaState.img_base = data.img_base;
     captchaState.enable = data.enable;
+    // 重置滑块状态
+    isPassing.value = false;
+    isClickPass.value = false;
   } catch {
     captchaState.enable = false;
-    loginForm.captcha = "";
     loginForm.captcha_key = "";
   } finally {
     codeLoading.value = false;
   }
 }
+
+/** 滑块验证完成后通知后端标记 */
+async function handleSliderPass(passed: boolean) {
+  if (!passed || !loginForm.captcha_key) return;
+  try {
+    await AuthAPI.sliderComplete(loginForm.captcha_key);
+  } catch {
+    isPassing.value = false;
+    await getCaptcha();
+  }
+}
+
+/** 监听滑块通过状态 */
+watch(isPassing, (val) => {
+  handleSliderPass(val);
+});
 
 function resolveRedirectTarget(query: LocationQuery): RouteLocationRaw {
   const defaultPath = "/";
@@ -575,7 +585,6 @@ onMounted(async () => {
 onActivated(() => {
   if (authPanel.value !== "login" || loginFlowMode.value !== "account") return;
   getCaptcha();
-  loginForm.captcha = "";
 });
 
 onBeforeUnmount(() => {
@@ -589,7 +598,6 @@ watch(
   () => {
     if (authPanel.value !== "login" || loginFlowMode.value !== "account") return;
     getCaptcha();
-    loginForm.captcha = "";
   }
 );
 
@@ -614,6 +622,8 @@ const handleSubmit = async () => {
       appStore.showGuide(true);
     }
   } catch (error) {
+    // 自增 formKey 强制重新挂载表单（滑块自动重置为初始状态）
+    formKey.value++;
     await getCaptcha();
     if (!(error instanceof HttpError)) {
       console.error("[Login] Unexpected error:", error);
@@ -625,7 +635,6 @@ const handleSubmit = async () => {
     }
   } finally {
     loading.value = false;
-    accountFormRef.value?.resetDragVerify?.();
   }
 };
 
@@ -638,21 +647,17 @@ async function submitRegister() {
   try {
     await registerPanelRef.value.validate?.();
     registerLoading.value = true;
-    // 租户自助注册（PRD §4.5）
-    const regData: TenantRegisterForm = {
-      username: registerForm.username,
-      password: registerForm.password,
-      email: registerForm.email || `${registerForm.username}@temp.com`,
-    };
-    await AuthAPI.tenantRegister(regData);
+    await UserAPI.register(registerForm);
+    // 注册成功后自动填充登录表单并提交
     loginForm.username = registerForm.username;
     loginForm.password = registerForm.password;
     registerForm.username = "";
     registerForm.password = "";
     registerForm.confirmPassword = "";
-    registerForm.email = "";
+    registerForm.name = "";
     registerAgreementRead.value = false;
     setAuthPanel("login");
+    await handleSubmit();
   } catch (error) {
     console.error("[Login] register:", error);
   } finally {
@@ -679,7 +684,3 @@ async function submitForget() {
   }
 }
 </script>
-
-<style scoped lang="scss">
-@use "@styles/custom/fa-login";
-</style>

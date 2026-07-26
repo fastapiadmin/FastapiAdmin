@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from .file.controller import FileRouter
-from .monitoring import HealthRouter
+from .health import HealthRouter
 
 common_router = APIRouter(prefix="/common")
 

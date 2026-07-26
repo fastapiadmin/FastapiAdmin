@@ -58,20 +58,29 @@ const RoleAPI = {
     });
   },
 
-  exportRole(body: TablePageQuery) {
+  exportRole(query: TablePageQuery) {
     return request<Blob>({
       url: `${API_PATH}/export`,
       method: "post",
-      data: body,
+      data: query,
       responseType: "blob",
+    });
+  },
+
+  getRoleOptions() {
+    return request<ApiResponse<OptionType[]>>({
+      url: `${API_PATH}/options`,
+      method: "get",
     });
   },
 };
 
 export default RoleAPI;
 
-export interface TablePageQuery extends PageQuery {
+export interface TablePageQuery extends PageQuery, UserByQueryParams {
   name?: string;
+  code?: string;
+  status?: number;
 }
 
 export interface RoleTable extends BaseType {
@@ -81,6 +90,8 @@ export interface RoleTable extends BaseType {
   data_scope?: number;
   menus?: permissionMenuType[];
   depts?: permissionDeptType[];
+  status?: number;
+  description?: string;
 }
 
 export interface RoleForm extends BaseFormType {
@@ -88,6 +99,8 @@ export interface RoleForm extends BaseFormType {
   order?: number;
   code: string;
   data_scope?: number;
+  status?: number;
+  description?: string;
 }
 
 export interface permissionDataType {
@@ -110,7 +123,7 @@ export interface permissionMenuType {
   type: number;
   permission: string;
   parent_id?: number;
-  status: string;
+  status: number;
   description?: string;
   children?: permissionMenuType[];
 }

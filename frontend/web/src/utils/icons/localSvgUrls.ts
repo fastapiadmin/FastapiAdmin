@@ -19,7 +19,7 @@ const urlByExactName = new Map<string, string>();
 for (const [fullPath, url] of Object.entries(raw)) {
   const m = fullPath.match(/\/([^/]+)\.svg$/);
   if (m) {
-    urlByExactName.set(m[1], url);
+    urlByExactName.set(m[1]!, url);
   }
 }
 

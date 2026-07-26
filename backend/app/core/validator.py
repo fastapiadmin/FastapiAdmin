@@ -4,7 +4,8 @@ from typing import Annotated, Any
 
 from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
 
-from app.common.constant import DATE_DISPLAY_FMT, DATETIME_DISPLAY_FMT, RET, TIME_DISPLAY_FMT
+from app.common.constant import DATE_DISPLAY_FMT, DATETIME_DISPLAY_FMT, TIME_DISPLAY_FMT
+from app.common.enums import RET
 from app.core.exceptions import CustomException
 
 # 自定义日期时间字符串类型
@@ -61,8 +62,7 @@ Email = Annotated[
 
 
 def datetime_validator(value: str | datetime) -> datetime:
-    """
-    日期格式验证器。
+    """日期格式验证器。
 
     参数:
     - value (str | datetime): 日期值。
@@ -83,8 +83,7 @@ def datetime_validator(value: str | datetime) -> datetime:
 
 
 def date_validator(value: str | date) -> date:
-    """
-    日期格式验证器。
+    """日期格式验证器。
 
     参数:
     - value (str | date): 日期值。
@@ -105,8 +104,7 @@ def date_validator(value: str | date) -> date:
 
 
 def time_validator(value: str | time) -> time:
-    """
-    时间格式验证器。
+    """时间格式验证器。
 
     参数:
     - value (str | time): 时间值。
@@ -127,8 +125,7 @@ def time_validator(value: str | time) -> time:
 
 
 def email_validator(value: str) -> str:
-    """
-    邮箱地址验证器。
+    """邮箱地址验证器。
 
     参数:
     - value (str): 邮箱地址。
@@ -151,8 +148,7 @@ def email_validator(value: str) -> str:
 
 
 def mobile_validator(value: str | None) -> str | None:
-    """
-    手机号验证器。
+    """手机号验证器。
 
     参数:
     - value (str | None): 手机号。
@@ -178,8 +174,7 @@ def mobile_validator(value: str | None) -> str | None:
 
 
 def validate_required_code(value: str | None) -> str:
-    """
-    必填编码校验：字母开头，总长 2–64，仅含字母/数字/下划线。
+    """必填编码校验：字母开头，总长 2–64，仅含字母/数字/下划线。
 
     参数:
     - value (str | None): 编码。
@@ -201,8 +196,7 @@ def validate_required_code(value: str | None) -> str:
 
 
 def code_validator(value: str | None) -> str | None:
-    """
-    可选编码验证器（为空则跳过）。
+    """可选编码验证器（为空则跳过）。
 
     参数:
     - value (str | None): 编码。
@@ -227,8 +221,7 @@ def code_validator(value: str | None) -> str | None:
 
 
 def menu_request_validator(data: Any) -> Any:
-    """
-    菜单请求数据验证器。
+    """菜单请求数据验证器。
 
     参数:
     - data (Any): 请求数据。
@@ -270,8 +263,7 @@ def menu_request_validator(data: Any) -> Any:
 
 
 def role_permission_request_validator(data: Any) -> Any:
-    """
-    角色权限设置数据验证器。
+    """角色权限设置数据验证器。
 
     参数:
     - data (Any): 请求数据。

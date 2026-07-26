@@ -10,9 +10,6 @@ __pycache__
 *.log
 *.local
 
-.env
-!.env.example
-
 *.egg
 *.egg-info
 dist
@@ -40,9 +37,7 @@ cython_debug
 
 venv
 .venv
-ENV
-env.bak
-venv.bak
+# ENV
 
 node_modules
 .npm
@@ -59,16 +54,21 @@ docker/nginx/docs/dist
 docker/nginx/web/dist
 docker/nginx/ssl/*
 !docker/nginx/ssl/.gitkeep
+# 环境变量文件（真实配置，不提交）
 docker/.env
-docker/docker-compose.yaml
+backend/env/.env.dev
+backend/env/.env.prod
+backend/env/.env.test
+frontend/.env.development
+frontend/.env.production
+frontend/web/.env
+frontend/web/.env.development
+frontend/web/.env.production
 
 frontend/node_modules
 frontend/dist
 frontend/src/types/auto-imports.d.ts
 frontend/src/types/components.d.ts
-frontend/.env.development
-frontend/.env.production
-frontend/web/.env
 
 frontend/docs/*
 !frontend/docs/.gitkeep
@@ -76,7 +76,7 @@ frontend/docs/*
 frontend/app/*
 !frontend/app/.gitkeep
 
-.plan/*
+.plan
 CLAUDE.md
 AGENTS.md
 .codebuddy

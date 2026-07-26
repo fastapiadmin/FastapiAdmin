@@ -11,12 +11,7 @@
     @touchend="dragFinish"
   >
     <!-- 进度条 -->
-    <div
-      class="dv_progress_bar"
-      :class="{ goFirst2: isOk }"
-      ref="progressBar"
-      :style="progressBarStyle"
-    ></div>
+    <div class="dv_progress_bar" ref="progressBar" :style="progressBarStyle"></div>
 
     <!-- 提示文本 -->
     <div class="dv_text" :style="textStyle" ref="messageRef">
@@ -28,27 +23,26 @@
     <!-- 滑块处理器 -->
     <div
       class="dv_handler dv_handler_bg"
-      :class="{ goFirst: isOk }"
       @mousedown="dragStart"
       @touchstart="dragStart"
       ref="handler"
       :style="handlerStyle"
     >
-      <FaSvgIcon :icon="value ? successIcon : handlerIcon" class="text-g-600"></FaSvgIcon>
+      <FaSvgIcon :icon="modelValue ? successIcon : handlerIcon" class="text-g-600"></FaSvgIcon>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useWindowSize } from "@vueuse/core";
+
 defineOptions({ name: "FaDragVerify" });
 
 // 事件定义
-const emit = defineEmits(["handlerMove", "update:value", "passCallback"]);
+const emit = defineEmits(["handlerMove", "passCallback"]);
 
 // 组件属性接口定义
 interface Props {
-  /** 是否通过验证 */
-  value: boolean;
   /** 组件宽度 */
   width?: number | string;
   /** 组件高度 */
@@ -81,7 +75,6 @@ interface Props {
 
 // 属性默认值设置
 const props = withDefaults(defineProps<Props>(), {
-  value: false,
   width: "100%",
   height: 40,
   text: "按住滑块拖动",
@@ -98,51 +91,47 @@ const props = withDefaults(defineProps<Props>(), {
   textColor: "#333",
 });
 
-// 组件状态接口定义
-interface StateType {
-  isMoving: boolean; // 是否正在拖拽
-  x: number; // 拖拽起始位置
-  isOk: boolean; // 是否验证成功
-}
+const { width: winWidth } = useWindowSize();
+const effectiveHeight = computed(() =>
+  props.height === 40 && winWidth.value < 768 ? 24 : props.height
+);
 
-// 响应式状态定义
-const state = reactive(<StateType>{
-  isMoving: false,
-  x: 0,
-  isOk: false,
-});
-
-// 解构响应式状态
-const { isOk } = toRefs(state);
+// ----- 响应式状态（替换原来的 state 对象） -----
+const modelValue = defineModel<boolean>("value", { default: false });
+const sliderPosition = ref(0);
+const isDragging = ref(false);
+const startX = ref(0);
+const currentX = ref(0);
 
 // DOM 元素引用
-const dragVerify = ref();
-const messageRef = ref();
-const handler = ref();
-const progressBar = ref();
+const dragVerify = ref<HTMLElement>();
+const messageRef = ref<HTMLElement>();
+const handler = ref<HTMLElement>();
+const progressBar = ref<HTMLElement>();
 
 // 触摸事件变量 - 用于禁止页面滑动
-let startX: number, startY: number, moveX: number, moveY: number;
+let touchStartX = 0;
+let touchStartY = 0;
 
 /**
  * 触摸开始事件处理
- * @param e 触摸事件对象
  */
-const onTouchStart = (e: any) => {
-  startX = e.targetTouches[0].pageX;
-  startY = e.targetTouches[0].pageY;
+const onTouchStart = (e: TouchEvent) => {
+  const touch = e.targetTouches[0];
+  if (!touch) return;
+  touchStartX = touch.pageX;
+  touchStartY = touch.pageY;
 };
 
 /**
  * 触摸移动事件处理 - 判断是否为横向滑动，如果是则阻止默认行为
- * @param e 触摸事件对象
  */
-const onTouchMove = (e: any) => {
-  moveX = e.targetTouches[0].pageX;
-  moveY = e.targetTouches[0].pageY;
-
-  // 如果横向移动距离大于纵向移动距离，阻止默认行为（防止页面滑动）
-  if (Math.abs(moveX - startX) > Math.abs(moveY - startY)) {
+const onTouchMove = (e: TouchEvent) => {
+  const touch = e.targetTouches[0];
+  if (!touch) return;
+  const moveX = touch.pageX;
+  const moveY = touch.pageY;
+  if (Math.abs(moveX - touchStartX) > Math.abs(moveY - touchStartY)) {
     e.preventDefault();
   }
 };
@@ -150,7 +139,6 @@ const onTouchMove = (e: any) => {
 // 获取数值形式的宽度
 const getNumericWidth = (): number => {
   if (typeof props.width === "string") {
-    // 如果是字符串，尝试从DOM元素获取实际宽度
     return dragVerify.value?.offsetWidth || 260;
   }
   return props.width;
@@ -166,17 +154,12 @@ const getStyleWidth = (): string => {
 
 // 组件挂载后的初始化
 onMounted(() => {
-  // 设置 CSS 自定义属性
   dragVerify.value?.style.setProperty("--textColor", props.textColor);
-
-  // 等待DOM更新后设置宽度相关属性
   nextTick(() => {
     const numericWidth = getNumericWidth();
     dragVerify.value?.style.setProperty("--width", Math.floor(numericWidth / 2) + "px");
     dragVerify.value?.style.setProperty("--pwidth", -Math.floor(numericWidth / 2) + "px");
   });
-
-  // 注册 touch 事件监听器，由 onBeforeUnmount 统一清理
   document.addEventListener("touchstart", onTouchStart);
   document.addEventListener("touchmove", onTouchMove, { passive: false });
 });
@@ -187,31 +170,32 @@ onBeforeUnmount(() => {
   document.removeEventListener("touchmove", onTouchMove);
 });
 
-// 滑块样式计算
-const handlerStyle = {
-  left: "0",
-  width: props.height + "px",
-  height: props.height + "px",
+// ----- 样式计算 -----
+const handlerStyle = computed(() => ({
+  left: sliderPosition.value + "px",
+  width: effectiveHeight.value + "px",
+  height: effectiveHeight.value + "px",
   background: props.handlerBg,
-};
-
-// 主容器样式计算
-const dragVerifyStyle = computed(() => ({
-  width: getStyleWidth(),
-  height: props.height + "px",
-  lineHeight: props.height + "px",
-  background: props.background,
-  borderRadius: props.circle ? props.height / 2 + "px" : props.radius,
+  transition: isDragging.value ? "none" : "left 0.3s",
 }));
 
-// 进度条样式计算
-const progressBarStyle = {
-  background: props.progressBarBg,
-  height: props.height + "px",
+const dragVerifyStyle = computed(() => ({
+  width: getStyleWidth(),
+  height: effectiveHeight.value + "px",
+  lineHeight: effectiveHeight.value + "px",
+  background: props.background,
+  borderRadius: props.circle ? effectiveHeight.value / 2 + "px" : props.radius,
+}));
+
+const progressBarStyle = computed(() => ({
+  width: sliderPosition.value + effectiveHeight.value / 2 + "px",
+  background: modelValue.value ? props.completedBg : props.progressBarBg,
+  height: effectiveHeight.value + "px",
   borderRadius: props.circle
-    ? props.height / 2 + "px 0 0 " + props.height / 2 + "px"
+    ? effectiveHeight.value / 2 + "px 0 0 " + effectiveHeight.value / 2 + "px"
     : props.radius,
-};
+  transition: isDragging.value ? "none" : "width 0.3s",
+}));
 
 // 文本样式计算
 const textStyle = computed(() => ({
@@ -220,107 +204,74 @@ const textStyle = computed(() => ({
 
 // 显示消息计算属性
 const message = computed(() => {
-  return props.value ? props.successText : props.text;
+  return modelValue.value ? props.successText : props.text;
 });
 
-/**
- * 拖拽开始处理函数
- * @param e 鼠标或触摸事件对象
- */
-const dragStart = (e: any) => {
-  if (!props.value) {
-    state.isMoving = true;
-    handler.value.style.transition = "none";
-    // 计算拖拽起始位置
-    state.x =
-      (e.pageX || e.touches[0].pageX) - parseInt(handler.value.style.left.replace("px", ""), 10);
-  }
+// ----- 拖拽逻辑 -----
+const dragStart = (e: MouseEvent | TouchEvent) => {
+  if (modelValue.value) return;
+  isDragging.value = true;
+
+  const pageX = "touches" in e ? (e.touches[0]?.pageX ?? 0) : (e as MouseEvent).pageX;
+  if (typeof pageX !== "number") return;
+  startX.value = pageX;
+  currentX.value = sliderPosition.value;
+
   emit("handlerMove");
 };
 
-/**
- * 拖拽移动处理函数
- * @param e 鼠标或触摸事件对象
- */
-const dragMoving = (e: any) => {
-  if (state.isMoving && !props.value) {
-    const numericWidth = getNumericWidth();
-    // 计算当前位置
-    const _x = (e.pageX || e.touches[0].pageX) - state.x;
+const dragMoving = (e: MouseEvent | TouchEvent) => {
+  if (!isDragging.value || modelValue.value) return;
 
-    // 在有效范围内移动
-    if (_x > 0 && _x <= numericWidth - props.height) {
-      handler.value.style.left = _x + "px";
-      progressBar.value.style.width = _x + props.height / 2 + "px";
-    } else if (_x > numericWidth - props.height) {
-      // 拖拽到末端，触发验证成功
-      handler.value.style.left = numericWidth - props.height + "px";
-      progressBar.value.style.width = numericWidth - props.height / 2 + "px";
-      passVerify();
-    }
+  const pageX = "touches" in e ? (e.touches[0]?.pageX ?? 0) : (e as MouseEvent).pageX;
+  const numericWidth = getNumericWidth();
+  const maxPosition = numericWidth - effectiveHeight.value;
+
+  const newPosition = Math.max(0, Math.min(maxPosition, currentX.value + (pageX - startX.value)));
+
+  if (newPosition >= maxPosition) {
+    // 拖拽到末端，验证成功
+    sliderPosition.value = maxPosition;
+    modelValue.value = true;
+    isDragging.value = false;
+    emit("passCallback");
+  } else {
+    sliderPosition.value = newPosition;
+  }
+};
+
+const dragFinish = () => {
+  if (!isDragging.value) return;
+  isDragging.value = false;
+
+  const numericWidth = getNumericWidth();
+  const maxPosition = numericWidth - effectiveHeight.value;
+
+  if (sliderPosition.value < maxPosition) {
+    // 未到末端，复位
+    sliderPosition.value = 0;
+  } else {
+    // 到末端，验证成功
+    sliderPosition.value = maxPosition;
+    modelValue.value = true;
+    emit("passCallback");
   }
 };
 
 /**
- * 拖拽结束处理函数
- * @param e 鼠标或触摸事件对象
- */
-const dragFinish = (e: any) => {
-  if (state.isMoving && !props.value) {
-    const numericWidth = getNumericWidth();
-    // 计算最终位置
-    const _x = (e.pageX || e.changedTouches[0].pageX) - state.x;
-
-    if (_x < numericWidth - props.height) {
-      // 未拖拽到末端，重置位置
-      state.isOk = true;
-      handler.value.style.left = "0";
-      handler.value.style.transition = "all 0.2s";
-      progressBar.value.style.width = "0";
-      state.isOk = false;
-    } else {
-      // 拖拽到末端，保持验证成功状态
-      handler.value.style.transition = "none";
-      handler.value.style.left = numericWidth - props.height + "px";
-      progressBar.value.style.width = numericWidth - props.height / 2 + "px";
-      passVerify();
-    }
-    state.isMoving = false;
-  }
-};
-
-/**
- * 验证通过处理函数
- */
-const passVerify = () => {
-  emit("update:value", true);
-  state.isMoving = false;
-  // 更新样式为成功状态
-  progressBar.value.style.background = props.completedBg;
-  messageRef.value.style["-webkit-text-fill-color"] = "unset";
-  messageRef.value.style.animation = "slidetounlock2 2s cubic-bezier(0, 0.2, 1, 1) infinite";
-  messageRef.value.style.color = "#fff";
-  emit("passCallback");
-};
-
-/**
- * 重置验证状态函数
+ * 重置验证状态
  */
 const reset = () => {
-  // 重置滑块位置
-  handler.value.style.left = "0";
-  progressBar.value.style.width = "0";
-  progressBar.value.style.background = props.progressBarBg;
-  // 重置文本样式
-  messageRef.value.style["-webkit-text-fill-color"] = "transparent";
-  messageRef.value.style.animation = "slidetounlock 2s cubic-bezier(0, 0.2, 1, 1) infinite";
-  messageRef.value.style.color = props.background;
-  // 重置状态
-  emit("update:value", false);
-  state.isOk = false;
-  state.isMoving = false;
-  state.x = 0;
+  sliderPosition.value = 0;
+  modelValue.value = false;
 };
+
+// 当外部将 modelValue 设为 false 时（如 getCaptcha 重置），同步复位滑块位置
+watch(modelValue, (val) => {
+  if (!val && sliderPosition.value > 0) {
+    sliderPosition.value = 0;
+  }
+});
 
 // 暴露重置方法给父组件
 defineExpose({
@@ -340,6 +291,7 @@ defineExpose({
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 9;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -359,7 +311,6 @@ defineExpose({
 
   .dv_progress_bar {
     position: absolute;
-    width: 0;
     height: 34px;
   }
 
@@ -389,16 +340,6 @@ defineExpose({
       -webkit-text-fill-color: var(--textColor);
     }
   }
-}
-
-.goFirst {
-  left: 0 !important;
-  transition: left 0.5s;
-}
-
-.goFirst2 {
-  width: 0 !important;
-  transition: width 0.5s;
 }
 </style>
 

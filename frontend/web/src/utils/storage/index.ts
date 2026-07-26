@@ -33,10 +33,10 @@ export function resetStorageInvalidated(): void {
 /** Storage config + versioned key helpers. */
 export class StorageConfig {
   /** 当前应用版本 */
-  static readonly CURRENT_VERSION = __APP_VERSION__;
+  static readonly CURRENT_VERSION = __APP_INFO__.pkg.version;
 
   /** 应用名称 */
-  static readonly appName = __APP_NAME__;
+  static readonly appName = __APP_INFO__.pkg.name;
 
   /** 存储键前缀 */
   static readonly STORAGE_PREFIX = "sys-v";
@@ -49,9 +49,6 @@ export class StorageConfig {
 
   /** 上次登录用户ID键名（用于判断是否为同一用户登录） */
   static readonly LAST_USER_ID_KEY = "sys-last-user-id";
-
-  /** 上次选择租户ID键名 */
-  static readonly LAST_TENANT_ID_KEY = "sys-last-tenant-id";
 
   /** 响应式布局切换时暂存桌面端菜单类型 */
   static readonly RESPONSIVE_MENU_TYPE_KEY = "sys-responsive-menu-type";
@@ -123,7 +120,7 @@ export class StorageConfig {
    */
   static extractVersionFromKey(key: string): string | null {
     const match = key.match(new RegExp(`^${this.STORAGE_PREFIX}([^-]+)`));
-    return match ? match[1] : null;
+    return match ? (match[1] ?? null) : null;
   }
 
   /**
@@ -131,7 +128,7 @@ export class StorageConfig {
    */
   static extractStoreIdFromKey(key: string): string | null {
     const match = key.match(new RegExp(`^${this.STORAGE_PREFIX}[^-]+-(.+)$`));
-    return match ? match[1] : null;
+    return match ? (match[1] ?? null) : null;
   }
 }
 

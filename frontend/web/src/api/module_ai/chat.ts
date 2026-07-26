@@ -56,7 +56,63 @@ export const AiChatAPI = {
       method: "get",
     });
   },
+
+  // ============ AI 模型配置 ============ //
+  getModelConfig() {
+    return request<ApiResponse<AiModelConfigList>>({
+      url: `${API_PATH}/model`,
+      method: "get",
+    });
+  },
+
+  createModelConfig(body: AiModelConfigInput) {
+    return request<ApiResponse<AiModelConfigItem>>({
+      url: `${API_PATH}/model`,
+      method: "post",
+      data: body,
+    });
+  },
+
+  updateModelConfig(id: string, body: AiModelConfigInput) {
+    return request<ApiResponse<AiModelConfigItem>>({
+      url: `${API_PATH}/model/${id}`,
+      method: "put",
+      data: body,
+    });
+  },
+
+  deleteModelConfig(id: string) {
+    return request<ApiResponse<null>>({
+      url: `${API_PATH}/model/${id}`,
+      method: "delete",
+    });
+  },
+
+  activateModelConfig(id: string) {
+    return request<ApiResponse<null>>({
+      url: `${API_PATH}/model/${id || "__default__"}/activate`,
+      method: "post",
+    });
+  },
 };
+
+export interface AiModelConfigInput {
+  name: string;
+  base_url: string;
+  api_key: string;
+  model_id: string;
+  temperature: number;
+}
+
+export interface AiModelConfigItem extends AiModelConfigInput {
+  id: string;
+  created_time: string | null;
+}
+
+export interface AiModelConfigList {
+  items: AiModelConfigItem[];
+  active_id: string | null;
+}
 
 export default AiChatAPI;
 

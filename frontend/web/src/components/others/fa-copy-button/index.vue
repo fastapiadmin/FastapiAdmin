@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { DocumentCopy } from "@element-plus/icons-vue";
 
 defineOptions({
   name: "FaCopyButton",

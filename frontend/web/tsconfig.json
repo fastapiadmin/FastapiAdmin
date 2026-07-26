@@ -4,6 +4,9 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
@@ -33,7 +36,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
-    "src/types/import/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "build/vitePluginStart.ts"

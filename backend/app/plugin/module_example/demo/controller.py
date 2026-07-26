@@ -1,69 +1,42 @@
 import urllib.parse
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Path, Query, UploadFile, status
 from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
-from app.core.base_params import PaginationQueryParam
-from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
-from app.core.dependencies import AuthPermission
+from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema, PaginationQueryParam
+from app.core.dependencies import AuthPermission, db_getter
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
 from .schema import DemoCreateSchema, DemoOutSchema, DemoQueryParam, DemoUpdateSchema
 from .service import DemoService
 
-DemoRouter = APIRouter(route_class=OperationLogRoute, prefix="/demo", tags=["开发工具/示例"])
+DemoRouter = APIRouter(route_class=OperationLogRoute, prefix="/demo", tags=["示例管理"])
 
 
-@DemoRouter.get(
-    "/detail/{id}",
-    summary="获取示例详情",
-    response_model=ResponseSchema[DemoOutSchema],
-)
+@DemoRouter.get("/detail/{id}", summary="获取示例详情", response_model=ResponseSchema[DemoOutSchema])
 async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="示例ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:detail"]))],
+    id: Annotated[int, Path(description="示例ID")],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    获取示例详情
-
-    参数:
-    - id (int): 示例ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含示例详情的JSON响应
-    """
-    result_dict = await DemoService.detail_service(id=id, auth=auth)
+    service = DemoService(auth, db)
+    result_dict = await service.detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取示例详情成功")
 
 
-@DemoRouter.get(
-    "/list",
-    summary="分页查询示例",
-    response_model=ResponseSchema[PageResultSchema[DemoOutSchema]],
-)
+@DemoRouter.get("/list", summary="分页查询示例", response_model=ResponseSchema[PageResultSchema[DemoOutSchema]])
 async def get_obj_list_controller(
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[DemoQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:query"]))],
+    page: Annotated[PaginationQueryParam, Depends()],
+    search: Annotated[DemoQueryParam, Query()],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    查询示例列表
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数
-    - search (DemoQueryParam): 查询参数
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含示例列表分页信息的JSON响应
-    """
-    # 使用数据库分页而不是应用层分页
-    result_dict = await DemoService.page_service(
-        auth=auth,
+    service = DemoService(auth, db)
+    result_dict = await service.page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
@@ -72,120 +45,60 @@ async def get_obj_list_controller(
     return SuccessResponse(data=result_dict, msg="查询示例列表成功")
 
 
-@DemoRouter.post(
-    "/create",
-    summary="创建示例",
-    response_model=ResponseSchema[DemoOutSchema],
-)
+@DemoRouter.post("/create", status_code=status.HTTP_201_CREATED, summary="创建示例", response_model=ResponseSchema[DemoOutSchema])
 async def create_obj_controller(
-    data: DemoCreateSchema,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:create"]))],
+    data: Annotated[DemoCreateSchema, Body(description="创建参数")],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    创建示例
-
-    参数:
-    - data (DemoCreateSchema): 示例创建模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含创建示例详情的JSON响应
-    """
-    result_dict = await DemoService.create_service(auth=auth, data=data)
+    service = DemoService(auth, db)
+    result_dict = await service.create(data=data)
     return SuccessResponse(data=result_dict, msg="创建示例成功")
 
 
-@DemoRouter.put(
-    "/update/{id}",
-    summary="修改示例",
-    response_model=ResponseSchema[DemoOutSchema],
-)
+@DemoRouter.put("/update/{id}", summary="修改示例", response_model=ResponseSchema[DemoOutSchema])
 async def update_obj_controller(
-    data: DemoUpdateSchema,
-    id: Annotated[int, Path(description="示例ID")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:update"]))],
+    id: Annotated[int, Path(description="示例ID")],
+    data: Annotated[DemoUpdateSchema, Body(description="修改参数")],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    修改示例
-
-    参数:
-    - data (DemoUpdateSchema): 示例更新模型
-    - id (int): 示例ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含修改示例详情的JSON响应
-    """
-    result_dict = await DemoService.update_service(auth=auth, id=id, data=data)
+    service = DemoService(auth, db)
+    result_dict = await service.update(id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改示例成功")
 
 
-@DemoRouter.delete(
-    "/delete",
-    summary="删除示例",
-    response_model=ResponseSchema[None],
-)
+@DemoRouter.delete("/delete", summary="删除示例", response_model=ResponseSchema[None])
 async def delete_obj_controller(
-    ids: Annotated[list[int], Body(description="ID列表")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:delete"]))],
+    ids: Annotated[list[int], Body(description="ID列表")],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    删除示例
-
-    参数:
-    - ids (list[int]): 示例ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含删除示例详情的JSON响应
-    """
-    await DemoService.delete_service(auth=auth, ids=ids)
+    service = DemoService(auth, db)
+    await service.delete(ids=ids)
     return SuccessResponse(msg="删除示例成功")
 
 
-@DemoRouter.patch(
-    "/status/batch",
-    summary="批量修改示例状态",
-    response_model=ResponseSchema[None],
-)
+@DemoRouter.patch("/status/batch", summary="批量修改示例状态", response_model=ResponseSchema[None])
 async def batch_set_available_obj_controller(
-    data: BatchSetAvailable,
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:patch"]))],
+    data: Annotated[BatchSetAvailable, Body(description="状态设置")],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    批量修改示例状态
-
-    参数:
-    - data (BatchSetAvailable): 批量修改示例状态模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含批量修改示例状态详情的JSON响应
-    """
-    await DemoService.set_available_service(auth=auth, data=data)
+    service = DemoService(auth, db)
+    await service.set_available(data=data)
     return SuccessResponse(msg="批量修改示例状态成功")
 
 
-@DemoRouter.post(
-    "/export",
-    summary="导出示例",
-)
+@DemoRouter.post("/export", summary="导出示例")
 async def export_obj_list_controller(
-    search: Annotated[DemoQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:export"]))],
+    search: Annotated[DemoQueryParam, Query()],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> StreamingResponse:
-    """
-    导出示例
-
-    参数:
-    - search (DemoQueryParam): 查询参数
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - StreamingResponse: 包含示例列表的Excel文件流响应
-    """
-    result_dict_list = await DemoService.list_service(search=search, auth=auth)
-    export_result = await DemoService.batch_export_service(obj_list=result_dict_list)
+    service = DemoService(auth, db)
+    result_dict_list = await service.get_list(search=search)
+    export_result = DemoService.batch_export(obj_list=[item.model_dump() for item in result_dict_list])
 
     return StreamResponse(
         data=bytes2file_response(export_result),
@@ -194,44 +107,20 @@ async def export_obj_list_controller(
     )
 
 
-@DemoRouter.post(
-    "/import",
-    summary="导入示例",
-    response_model=ResponseSchema[str],
-)
+@DemoRouter.post("/import", summary="导入示例", response_model=ResponseSchema[str])
 async def import_obj_list_controller(
-    file: UploadFile,
+    file: Annotated[UploadFile, File(description="导入文件")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:import"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
 ) -> JSONResponse:
-    """
-    导入示例
-
-    参数:
-    - file (UploadFile): 导入的Excel文件
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 包含导入示例详情的JSON响应
-    """
-    batch_import_result = await DemoService.batch_import_service(
-        file=file, auth=auth, update_support=True
-    )
+    service = DemoService(auth, db)
+    batch_import_result = await service.batch_import(file=file, update_support=True)
     return SuccessResponse(data=batch_import_result, msg="导入示例成功")
 
 
-@DemoRouter.post(
-    "/download/template",
-    summary="获取示例导入模板",
-    dependencies=[Depends(AuthPermission(["module_example:demo:download"]))],
-)
+@DemoRouter.post("/download/template", summary="获取示例导入模板", dependencies=[Depends(AuthPermission(["module_example:demo:download"]))])
 async def export_obj_template_controller() -> StreamingResponse:
-    """
-    获取示例导入模板
-
-    返回:
-    - StreamingResponse: 包含示例导入模板的Excel文件流响应
-    """
-    import_template_result = await DemoService.import_template_download_service()
+    import_template_result = DemoService.import_template_download()
 
     return StreamResponse(
         data=bytes2file_response(import_template_result),

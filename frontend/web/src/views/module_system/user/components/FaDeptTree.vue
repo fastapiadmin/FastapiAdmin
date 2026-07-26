@@ -1,16 +1,16 @@
 <!-- 部门树（无外层卡片，由用户页左侧 ElCard 统一包裹） -->
 <template>
-  <div class="dept-tree-root">
-    <div class="dept-tree-toolbar">
+  <div class="box-border px-1.5 pt-4 pb-3 pl-2.5">
+    <div class="flex items-stretch">
       <ElInput
         v-model="deptName"
-        class="dept-tree-search"
+        class="flex-1 min-w-0"
         placeholder="部门名称"
         size="small"
         clearable
       >
         <template #prefix>
-          <ElIcon class="dept-tree-search__prefix-icon">
+          <ElIcon class="text-(--el-text-color-placeholder)">
             <Search />
           </ElIcon>
         </template>
@@ -34,7 +34,7 @@
 
     <ElTree
       ref="deptTreeRef"
-      class="dept-tree-body"
+      class="mt-2.5"
       node-key="value"
       :data="deptOptions"
       :props="{ children: 'children', label: 'label', disabled: 'disabled' }"
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { Search, Switch } from "@element-plus/icons-vue";
-import DeptAPI, { DeptPageQuery } from "@/api/module_system/dept";
+import DeptAPI from "@/api/module_system/dept";
 import { formatTree } from "@utils";
 import type { FilterNodeMethodFunction, TreeInstance } from "element-plus";
 
@@ -145,71 +145,35 @@ function handleNodeClick(data: { [key: string]: any }) {
   emits("node-click");
 }
 
-const queryFormData = reactive<DeptPageQuery>({
-  name: undefined,
-  status: undefined,
-  created_time: undefined,
-});
-
-const loading = ref(true);
-
 onBeforeMount(async () => {
-  loading.value = true;
-  try {
-    const response = await DeptAPI.listDept(queryFormData);
-    deptOptions.value = formatTree(response.data.data);
-  } finally {
-    loading.value = false;
-  }
+  const response = await DeptAPI.listDept({});
+  deptOptions.value = formatTree(response.data.data);
 });
 </script>
 
 <style scoped lang="scss">
-.dept-tree-root {
-  box-sizing: border-box;
-  padding: 16px 6px 12px 10px;
-}
+.dept-tree-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  margin-right: -2px;
+  vertical-align: middle;
+  color: var(--el-text-color-secondary);
+  cursor: pointer;
+  border-radius: var(--el-border-radius-small);
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 
-.dept-tree-toolbar {
-  display: flex;
-  align-items: stretch;
-
-  .dept-tree-search {
-    flex: 1;
-    min-width: 0;
+  &:hover {
+    color: var(--el-color-primary);
+    background-color: var(--el-fill-color-light);
   }
 
-  .dept-tree-search__prefix-icon {
-    color: var(--el-text-color-placeholder);
+  &:focus-visible {
+    outline: 2px solid var(--el-color-primary-light-5);
+    outline-offset: 1px;
   }
-
-  .dept-tree-expand-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px;
-    margin-right: -2px;
-    vertical-align: middle;
-    color: var(--el-text-color-secondary);
-    cursor: pointer;
-    border-radius: var(--el-border-radius-small);
-    transition:
-      color 0.15s ease,
-      background-color 0.15s ease;
-
-    &:hover {
-      color: var(--el-color-primary);
-      background-color: var(--el-fill-color-light);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--el-color-primary-light-5);
-      outline-offset: 1px;
-    }
-  }
-}
-
-.dept-tree-body {
-  margin-top: 10px;
 }
 </style>

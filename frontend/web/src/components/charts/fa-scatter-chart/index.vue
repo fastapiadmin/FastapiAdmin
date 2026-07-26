@@ -13,7 +13,6 @@ import type { EChartsOption } from "@/plugins/echarts";
 import { getCssVar } from "@utils";
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 import type { ScatterChartProps } from "@/types/component/chart";
-
 defineOptions({ name: "FaScatterChart" });
 
 const props = withDefaults(defineProps<ScatterChartProps>(), {

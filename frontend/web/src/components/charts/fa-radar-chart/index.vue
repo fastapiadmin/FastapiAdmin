@@ -12,7 +12,6 @@
 import type { EChartsOption } from "@/plugins/echarts";
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 import type { RadarChartProps } from "@/types/component/chart";
-
 defineOptions({ name: "FaRadarChart" });
 
 const props = withDefaults(defineProps<RadarChartProps>(), {

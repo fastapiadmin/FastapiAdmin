@@ -92,7 +92,57 @@ function handleCurrentChange(val: number) {
 <style lang="scss" scoped>
 .pagination {
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   // padding: 12px 0;
+
+  /* 自定义分页按钮样式（透明背景 + 主题色边框） */
+  :deep(.el-pagination) {
+    .btn-prev,
+    .btn-next {
+      background-color: transparent;
+      border: 1px solid var(--fa-gray-300);
+      transition: border-color 0.15s;
+
+      &:hover:not(.is-disabled) {
+        color: var(--theme-color);
+        border-color: var(--theme-color);
+      }
+    }
+
+    li {
+      box-sizing: border-box;
+      font-weight: 400 !important;
+      background-color: transparent;
+      border: 1px solid var(--fa-gray-300);
+      transition: border-color 0.15s;
+
+      &.is-active {
+        font-weight: 400;
+        color: #fff;
+        background-color: var(--theme-color);
+        border: 1px solid var(--theme-color);
+      }
+
+      &:hover:not(.is-disabled) {
+        border-color: var(--theme-color);
+      }
+    }
+  }
+
+  :deep(.el-select) {
+    width: 102px !important;
+  }
+}
+
+/* H5 端：ElPagination 内容较多一行展示不下，改为可换行展示 */
+@media (width <= 640px) {
+  .pagination :deep(.el-pagination) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px 0;
+    align-items: center;
+    justify-content: center;
+  }
 }
 </style>

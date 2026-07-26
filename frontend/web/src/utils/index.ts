@@ -6,9 +6,8 @@
  * @module utils/index
  */
 
-// 认证 & OAuth
+// 认证
 export * from "./auth";
-export * from "./oauth";
 
 // 通用
 export * from "./common";
@@ -35,6 +34,9 @@ export * from "./table";
 
 // 菜单与图标
 export * from "./menuIcon";
+
+// 查询参数
+export * from "./query";
 
 // 文件
 export * from "./file/dataUrl";

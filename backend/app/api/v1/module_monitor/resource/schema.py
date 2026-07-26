@@ -1,7 +1,6 @@
 from datetime import datetime
 from urllib.parse import urlparse
 
-from fastapi import Query
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -9,8 +8,6 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-
-from app.common.enums import QueueEnum
 
 
 class ResourceItemSchema(BaseModel):
@@ -93,8 +90,7 @@ class ResourceMoveSchema(BaseModel):
     @field_validator("source_path", "target_path")
     @classmethod
     def validate_paths(cls, value: str):
-        """
-        校验移动/复制涉及的源路径与目标路径非空并去首尾空格。
+        """校验移动/复制涉及的源路径与目标路径非空并去首尾空格。
 
         参数:
         - value (str): 路径字段当前值。
@@ -125,8 +121,7 @@ class ResourceRenameSchema(BaseModel):
     @field_validator("old_path", "new_name")
     @classmethod
     def validate_inputs(cls, value: str):
-        """
-        校验重命名所需的原路径与新名称非空并去首尾空格。
+        """校验重命名所需的原路径与新名称非空并去首尾空格。
 
         参数:
         - value (str): 字段当前值。
@@ -161,8 +156,7 @@ class ResourceCreateDirSchema(BaseModel):
     @field_validator("parent_path", "dir_name")
     @classmethod
     def validate_inputs(cls, value: str, info):
-        """
-        校验创建目录的父路径与目录名，防止路径遍历等不安全输入。
+        """校验创建目录的父路径与目录名，防止路径遍历等不安全输入。
 
         参数:
         - value (str): 当前字段值。
@@ -187,17 +181,11 @@ class ResourceCreateDirSchema(BaseModel):
         return value.strip()
 
 
-class ResourceSearchQueryParam:
+class ResourceSearchQueryParam(BaseModel):
     """资源搜索查询参数"""
 
-    def __init__(
-        self,
-        name: str | None = Query(None, description="搜索关键词"),
-        path: str | None = Query(None, description="目录路径"),
-    ) -> None:
+    name: str | None = Field(None, description="搜索关键词")
+    path: str | None = Field(None, description="目录路径")
+    include_hidden: bool = Field(False, description="是否包含隐藏文件")
 
-        # 模糊查询字段
-        self.name = (QueueEnum.like.value, name) if name else None
 
-        # 精确查询字段
-        self.path = path

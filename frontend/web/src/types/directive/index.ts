@@ -1,14 +1,9 @@
-import type {
-  AuthDirective,
-  RolesDirective,
-  RippleDirective,
-  HighlightDirective,
-} from "@/directives";
+import type { Directive } from "vue";
+import type { HighlightDirective, RippleDirective } from "@/directives";
 
 declare module "vue" {
   export interface GlobalDirectives {
-    vAuth: AuthDirective;
-    vRoles: RolesDirective;
+    vHasPerm: Directive;
     vRipple: RippleDirective;
     vHighlight: HighlightDirective;
   }

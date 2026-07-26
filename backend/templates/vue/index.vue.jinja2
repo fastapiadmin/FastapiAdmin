@@ -1,0 +1,747 @@
+{# =============================================================================
+# {{ function_name }} 页面
+# 架构：FaSearchBar(include-audit) + FaTableHeader + FaTable + FaDialog
+# 与 module_example/demo 完全对齐
+# 页面路由：/{{ menu_route_first_segment }}/{{ module_name }}
+# ============================================================================= #}
+<template>
+  <div class="fa-full-height">
+    <FaSearchBar
+      v-show="showSearchBar"
+      ref="searchBarRef"
+      v-model="searchForm"
+      :items="businessSearchItems"
+      :rules="searchBarRules"
+      :is-expand="false"
+      :show-expand="true"
+      :show-reset="true"
+      :show-search="true"
+      :disabled-search="false"
+      :default-expanded="false"
+      include-audit
+      @search="handleSearch"
+      @reset="onResetSearch"
+    />
+
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <FaTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <FaTableHeaderLeft
+            :remove-ids="selectedIds"
+            :perm-create="['{{ permission_prefix }}:create']"
+            :perm-import="['{{ permission_prefix }}:import']"
+            :perm-export="['{{ permission_prefix }}:export']"
+            :perm-delete="['{{ permission_prefix }}:delete']"
+            :perm-patch="['{{ permission_prefix }}:patch']"
+            :delete-loading="batchDeleting"
+            :create-loading="createLoading"
+            @add="handleAdd"
+            @import="openImport"
+            @export="openExport"
+            @delete="handleBatchDelete"
+            @more="runBatchStatus"
+          />
+        </template>
+      </FaTableHeader>
+
+      <FaTable
+        ref="faTableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="pagination"
+        @selection-change="onTableSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
+
+    <FaDialog
+      v-model="dialogVisible.visible"
+      :title="dialogVisible.title"
+      width="920px"
+      dialog-class="crud-embed-dialog"
+      modal-class="crud-embed-dialog"
+      :form-mode="dialogVisible.type"
+      :confirm-loading="submitLoading"
+      @cancel="handleCloseDialog"
+      @close="handleCloseDialog"
+      @confirm="handleSubmit()"
+    >
+      <template v-if="dialogVisible.type === 'detail'">
+        <FaDescriptions
+          :column="4"
+          :data="detailFormData"
+          :items="detailItems"
+          max-height="70vh"
+        />
+      </template>
+      <template v-else>
+        <FaForm
+          :key="formRenderKey"
+          scrollbar
+          max-height="70vh"
+          ref="dataFormRef"
+          v-model="formData"
+          :items="dialogFormItems"
+          :rules="rules"
+          label-suffix=":"
+          :label-width="100"
+          label-position="right"
+          :span="12"
+          :gutter="16"
+          :show-reset="false"
+          :show-submit="false"
+          class="crud-dialog-art-form"
+        />
+          {% if table.sub %}
+          <ElDivider>{{ table.sub_table.function_name }}列表</ElDivider>
+          <div class="sub-table-section">
+            <div class="flex justify-between items-center mb-2">
+              <ElButton size="small" type="primary" @click="addSubRow">
+                新增{{ table.sub_table.function_name }}
+              </ElButton>
+            </div>
+            <ElTable :data="subTableData" size="small" border>
+              {% for col in table.sub_table.columns %}
+              {% if col.is_list and col.column_name != table.sub_table.pk_column.column_name %}
+              {% set col_comment = col.column_comment if col.column_comment else col.column_name %}
+              <ElTableColumn prop="{{ col.column_name }}" label="{{ col_comment }}" />
+              {% endif %}
+              {% endfor %}
+              <ElTableColumn label="操作" width="80" fixed="right">
+                <template #default="{ $index }">
+                  <ElButton type="danger" size="small" link @click="removeSubRow($index)">
+                    删除
+                  </ElButton>
+                </template>
+              </ElTableColumn>
+            </ElTable>
+          </div>
+          {% endif %}
+      </template>
+    </FaDialog>
+
+    <FaImportDialog
+      v-model="importVisible"
+      :content-config="importContentConfig"
+      default-template-file-name="{{ module_name }}_import_template.xlsx"
+      @upload="handleCrudImportUpload"
+    />
+
+    <FaExportDialog
+      v-model="exportVisible"
+      :content-config="exportContentConfig"
+      :query-params="exportQueryParams"
+      :page-data="data"
+      :selection-data="selectedRows"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { TableOperationAction } from "@/utils/table";
+import { renderTableOperationCell, stripPaginationParams, toCrudCols } from "@utils";
+import { useCrudForm } from "@/hooks/core/useCrudForm";
+import { confirmDelete, confirmBatchDelete, confirmAction } from "@/hooks/core/useConfirm";
+import { ResultEnum } from "@/enums/api/result.enum";
+import type { IContentConfig, IObject } from "@/components/modal/types";
+import type { AuditSearchFormParams } from "@/components/forms/fa-search-bar/auditSearchFormItems";
+import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import type { ColumnOption } from "@/types/component";
+import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
+import FaForm from "@/components/forms/fa-form/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
+import {{ class_name }}API, {
+  type {{ class_name }}Form,
+  type {{ class_name }}PageQuery,
+  type {{ class_name }}Table,
+} from "@/api/{{ package_name }}/{{ module_name }}";
+{% if has_dict_column %}
+import { useDictStore } from "@/stores/modules/dict";
+{% endif %}
+{% if has_image_column %}
+import { h } from "vue";
+{% endif %}
+
+defineOptions({
+  name: "{{ class_name }}",
+  inheritAttrs: false,
+});
+
+{% if has_dict_column %}
+const dictStore = useDictStore();
+{% endif %}
+
+// 常量定义
+const STATUS_OPTIONS = [
+  { label: "启用", value: 0 },
+  { label: "停用", value: 1 },
+] as const;
+
+const createInitialFormData = (): {{ class_name }}Form => ({
+  {% for column in columns %}
+  {% if column.is_insert or column.is_edit %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id', 'tenant_id'] and column.column_name != pk_column_name %}
+  {% if column.column_name == "status" %}
+  {{ column.column_name }}: {% if column.python_type == "str" %}"0"{% else %}0{% endif %},
+  {% elif column.python_type == "bool" or column.html_type == "switch" %}
+  {{ column.column_name }}: false,
+  {% else %}
+  {{ column.column_name }}: undefined,
+  {% endif %}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+});
+
+type {{ class_name }}SearchFormParams = {
+  {% for column in columns %}
+  {% if column.is_query and column.column_name not in ['created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+  {{ column.column_name }}?: string;
+  {% endif %}
+  {% endfor %}
+} & AuditSearchFormParams;
+
+const searchForm = ref<{{ class_name }}SearchFormParams>({
+  {% for column in columns %}
+  {% if column.is_query and column.column_name not in ['created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+  {{ column.column_name }}: undefined,
+  {% endif %}
+  {% endfor %}
+  created_id: undefined,
+  updated_id: undefined,
+  created_time: [],
+  updated_time: [],
+});
+
+/** 搜索区域默认展开展示 */
+const showSearchBar = ref(true);
+
+const searchBarRef = ref<{ validate: () => Promise<boolean> } | null>(null);
+const searchBarRules: Record<string, unknown> = {};
+
+{% if has_dict_column %}
+/** 业务搜索项（审计四字段由 FaSearchBar 的 includeAudit 属性追加） */
+const businessSearchItemsRaw = computed(() => [
+{% else %}
+/** 业务搜索项（审计四字段由 FaSearchBar 的 includeAudit 属性追加） */
+const businessSearchItems = computed(() => [
+{% endif %}
+  {% for column in columns %}
+  {% if column.is_query and column.column_name not in ['created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+  {% set dict_type = column.dict_type %}
+  {% set column_comment = column.column_comment if column.column_comment else '' %}
+  {% set parentheseIndex = column_comment.find("（") %}
+  {% set comment = column_comment[:parentheseIndex] if parentheseIndex != -1 else column_comment %}
+  {% if column.column_name == "status" %}
+  {
+    label: "状态",
+    key: "status",
+    type: "select",
+    props: {
+      placeholder: "请选择状态",
+      options: STATUS_OPTIONS,
+      clearable: true,
+    },
+    span: 6,
+  },
+  {% elif column.html_type == "input" %}
+  {
+    label: "{{ comment }}",
+    key: "{{ column.column_name }}",
+    type: "input",
+    placeholder: "请输入{{ comment }}",
+    clearable: true,
+    span: 6,
+  },
+  {% elif (column.html_type == "select" or column.html_type == "radio") and dict_type != "" %}
+  {
+    label: "{{ comment }}",
+    key: "{{ column.column_name }}",
+    type: "select",
+    props: {
+      placeholder: "请选择{{ comment }}",
+      options: [],
+      clearable: true,
+    },
+    span: 6,
+  },
+  {% elif column.html_type == "datetime" %}
+  {
+    label: "{{ comment }}",
+    key: "{{ column.column_name }}",
+    type: "date-picker",
+    props: {
+      type: "date",
+      valueFormat: "YYYY-MM-DD",
+      clearable: true,
+      placeholder: "请选择{{ comment }}",
+    },
+    span: 6,
+  },
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+]);
+
+{% if has_dict_column %}
+const businessSearchItems = computed(() => {
+  const items = businessSearchItemsRaw.value.map(item => ({ ...item }));
+  {% for column in columns %}
+  {% if column.is_query and column.dict_type and (column.html_type == "select" or column.html_type == "radio") %}
+  const item_{{ column.column_name }} = items.find((i: any) => i.key === "{{ column.column_name }}");
+  if (item_{{ column.column_name }} && item_{{ column.column_name }}.props) {
+    item_{{ column.column_name }}.props.options = dictStore.getDictArray("{{ column.dict_type }}").map(
+      (d: { dict_label: string; dict_value: string }) => ({
+        label: d.dict_label,
+        value: d.dict_value,
+      })
+    );
+  }
+  {% endif %}
+  {% endfor %}
+  return items;
+});
+{% endif %}
+
+const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<{{ class_name }}Table>();
+
+const createLoading = ref(false);
+
+const PK = "{{ pk_column_name }}" as const;
+
+const {
+  columns,
+  columnChecks,
+  data,
+  loading,
+  pagination,
+  searchParams,
+  getData,
+  replaceSearchParams,
+  resetSearchParams,
+  handleSizeChange,
+  handleCurrentChange,
+  refreshData,
+  refreshCreate,
+  refreshUpdate,
+  refreshRemove,
+} = useTable({
+  core: {
+    apiFn: {{ class_name }}API.get{{ class_name }}List,
+    apiParams: {
+      page_no: 1,
+      page_size: 10,
+    },
+    columnsFactory: (): ColumnOption<{{ class_name }}Table>[] => [
+      { type: "globalIndex", width: 56, label: "序号" },
+      { type: "selection", width: 48, fixed: "left" },
+      {% for column in columns %}
+      {% if column.is_list and column.column_name not in ['is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+      {% set column_comment = column.column_comment if column.column_comment else '' %}
+      {% set parentheseIndex = column_comment.find("（") %}
+      {% set comment = column_comment[:parentheseIndex] if parentheseIndex != -1 else column_comment %}
+      {% if column.column_name == "status" %}
+      {
+        prop: "status",
+        label: "状态",
+        width: 88,
+        status: {
+          0: { type: "success", text: "启用" },
+          1: { type: "info", text: "停用" },
+        },
+      },
+      {% elif column.column_name == "created_id" %}
+      {
+        prop: "created_by",
+        label: "创建人",
+        minWidth: 100,
+        formatter: (row: {{ class_name }}Table) => row.created_by?.name ?? "—",
+      },
+      {% elif column.column_name == "updated_id" %}
+      {
+        prop: "updated_by",
+        label: "更新人",
+        minWidth: 100,
+        formatter: (row: {{ class_name }}Table) => row.updated_by?.name ?? "—",
+      },
+      {% elif column.column_name == "created_time" %}
+      { prop: "created_time", label: "创建时间", width: 168, sortable: true, showOverflowTooltip: true },
+      {% elif column.column_name == "updated_time" %}
+      { prop: "updated_time", label: "更新时间", width: 168, sortable: true, showOverflowTooltip: true },
+      {% elif column.python_type == "bool" or column.html_type == "checkbox" %}
+      {
+        prop: "{{ column.column_name }}",
+        label: "{{ comment }}",
+        width: 80,
+        status: {
+          true: { type: "success", text: "是" },
+          false: { type: "danger", text: "否" },
+        },
+      },
+      {% elif column.html_type == "imageUpload" %}
+      {
+        prop: "{{ column.column_name }}",
+        label: "{{ comment }}",
+        minWidth: 120,
+        formatter: (row: {{ class_name }}Table) => {
+          if (!row.{{ column.column_name }}) return h("span", { class: "text-g-400" }, "—");
+          return h("el-image", {
+            src: row.{{ column.column_name }},
+            style: "width: 48px; height: 48px; border-radius: 4px; object-fit: cover;",
+            fit: "cover",
+            previewSrcList: [row.{{ column.column_name }}],
+            hideOnClickModal: true,
+          });
+        },
+      },
+      {% elif (column.html_type == "select" or column.html_type == "radio") and column.dict_type %}
+      { prop: "{{ column.column_name }}", label: "{{ comment }}", minWidth: 120, showOverflowTooltip: true },
+      {% else %}
+      { prop: "{{ column.column_name }}", label: "{{ comment }}", minWidth: 120, showOverflowTooltip: true },
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {
+        prop: "operation",
+        label: "操作",
+        width: 180,
+        fixed: "right",
+        align: "center",
+        formatter: (row: {{ class_name }}Table) => formatOperationCell(row),
+      },
+    ],
+  },
+});
+
+const crudCols = toCrudCols(columns);
+
+const exportQueryParams = computed(() => {
+  return stripPaginationParams(searchParams as Record<string, unknown>);
+});
+
+const importContentConfig = computed<IContentConfig>(() => ({
+  permPrefix: "{{ permission_prefix }}",
+  cols: crudCols.value,
+  indexAction: async () => ({}),
+  importTemplate: () => {{ class_name }}API.downloadTemplate{{ class_name }}(),
+}));
+
+const exportContentConfig = computed(() => ({
+  permPrefix: "{{ permission_prefix }}",
+  cols: crudCols.value,
+  exportsBlobAction: async (params: IObject) => {
+    const merged = {
+      ...(exportQueryParams.value as unknown as Record<string, unknown>),
+      ...params,
+    } as unknown as {{ class_name }}PageQuery;
+    const res = await {{ class_name }}API.export{{ class_name }}(merged);
+    return res.data as Blob;
+  },
+}));
+
+const { dialogVisible } = useCrudDialog();
+
+const detailFormData = ref<{{ class_name }}Table>({});
+
+const detailItems: import("@/components/others/fa-descriptions/index.vue").DescriptionsItem[] = [
+  {% for column in columns %}
+  {% if column.is_list and column.column_name not in ['is_deleted', 'deleted_time', 'deleted_id'] %}
+  {% set column_comment = column.column_comment if column.column_comment else '' %}
+  {% set parentheseIndex = column_comment.find("（") %}
+  {% set comment = column_comment[:parentheseIndex] if parentheseIndex != -1 else column_comment %}
+  {% if column.column_name == 'status' %}
+  { label: "状态", prop: "status", tag: { map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } } } },
+  {% elif column.column_name == 'created_id' %}
+  { label: "创建人", prop: "created_by.name" },
+  {% elif column.column_name == 'updated_id' %}
+  { label: "更新人", prop: "updated_by.name" },
+  {% elif column.column_name == 'created_time' %}
+  { label: "创建时间", prop: "created_time" },
+  {% elif column.column_name == 'updated_time' %}
+  { label: "更新时间", prop: "updated_time" },
+  {% else %}
+  { label: "{{ comment }}", prop: "{{ column.column_name }}" },
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+];
+
+const formData = ref<{{ class_name }}Form>(createInitialFormData());
+
+const rules = reactive({
+  {% for column in columns %}
+  {% if column.is_insert or column.is_edit %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id', 'tenant_id'] and column.column_name != pk_column_name %}
+  {{ column.column_name }}: [{ required: {% if not column.is_nullable %}true{% else %}false{% endif %}, message: "请填写{{ column.column_comment or column.column_name }}", trigger: "blur" }],
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+});
+
+const dialogFormItems: FormItem[] = [
+  {% for column in columns %}
+  {% if column.is_insert or column.is_edit %}
+  {% set dict_type = column.dict_type %}
+  {% set column_comment = column.column_comment if column.column_comment else '' %}
+  {% set parentheseIndex = column_comment.find("（") %}
+  {% set comment = column_comment[:parentheseIndex] if parentheseIndex != -1 else column_comment %}
+  {% if column.column_name not in ['uuid', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id', 'tenant_id'] and column.column_name != pk_column_name %}
+  {% if column.column_name == "status" %}
+  {
+    key: "status",
+    label: "状态",
+    type: "radiogroup",
+    props: {
+      options: [
+        { label: "启用", value: 0 },
+        { label: "停用", value: 1 },
+      ],
+    },
+  },
+  {% elif column.column_name == "description" %}
+  {
+    key: "description",
+    label: "描述",
+    type: "input",
+    props: {
+      type: "textarea",
+      rows: 4,
+      maxlength: 100,
+      showWordLimit: true,
+      placeholder: "请输入描述",
+    },
+  },
+  {% elif column.python_type == "int" or column.python_type == "float" or column.python_type == "Decimal" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "number", props: { placeholder: "请输入{{ comment }}"{% if column.python_type == "float" or column.python_type == "Decimal" %}, step: 0.01, precision: 2{% endif %} } },
+  {% elif column.html_type == "input" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "input", props: { placeholder: "请输入{{ comment }}" } },
+  {% elif column.html_type == "textarea" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "input", props: { type: "textarea", rows: 4, placeholder: "请输入{{ comment }}" } },
+  {% elif dict_type != "" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "select", placeholder: "请选择{{ comment }}", options: dictStore.getDictArray("{{ dict_type }}").map(d => ({ label: d.dict_label, value: d.dict_value })) },
+  {% elif column.html_type == "select" or column.html_type == "radio" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "select", placeholder: "请选择{{ comment }}" },
+  {% elif column.html_type == "date" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "date", props: { placeholder: "请选择{{ comment }}", valueFormat: "YYYY-MM-DD", style: "width: 100%" } },
+  {% elif column.html_type == "datetime" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "datetime", props: { placeholder: "请选择{{ comment }}", valueFormat: "YYYY-MM-DD HH:mm:ss", style: "width: 100%" } },
+  {% elif column.html_type == "switch" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "switch" },
+  {% elif column.html_type == "checkbox" %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "checkbox" },
+  {% else %}
+  { key: "{{ column.column_name }}", label: "{{ comment }}", type: "input", props: { placeholder: "请输入{{ comment }}" } },
+  {% endif %}
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+];
+
+const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
+const formRenderKey = ref(0);
+
+const crud = useCrudForm<{{ class_name }}Form>({
+  formData,
+  initialFormData: createInitialFormData(),
+  dialogVisible,
+  dataFormRef,
+  formRenderKey,
+  detailApi: (id: number) => {{ class_name }}API.get{{ class_name }}Detail(id),
+  createApi: (data: {{ class_name }}Form) => {{ class_name }}API.create{{ class_name }}(data),
+  updateApi: (id: number, data: {{ class_name }}Form) => {{ class_name }}API.update{{ class_name }}(id, data),
+  titles: { create: "新增", update: "修改", detail: "详情" },
+  detailFormData,
+  onCreateSuccess: async () => {
+    await refreshCreate();
+  },
+  onUpdateSuccess: async () => {
+    await refreshUpdate();
+  },
+});
+
+const { submitLoading } = crud;
+
+const { importVisible, exportVisible, openImport, openExport } = useImportExport();
+
+const handleSearch = async (params: {{ class_name }}SearchFormParams) => {
+  await searchBarRef.value?.validate();
+  replaceSearchParams({
+    {% for column in columns %}
+    {% if column.is_query and column.column_name not in ['created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+    {{ column.column_name }}: params.{{ column.column_name }},
+    {% endif %}
+    {% endfor %}
+    created_id: params.created_id ?? undefined,
+    updated_id: params.updated_id ?? undefined,
+    created_time:
+      Array.isArray(params.created_time) && params.created_time.length === 2
+        ? params.created_time
+        : undefined,
+    updated_time:
+      Array.isArray(params.updated_time) && params.updated_time.length === 2
+        ? params.updated_time
+        : undefined,
+  } as Record<string, unknown>);
+  await getData();
+};
+
+const onResetSearch = async () => {
+  searchForm.value = {
+    {% for column in columns %}
+    {% if column.is_query and column.column_name not in ['created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and column.column_name != pk_column_name %}
+    {{ column.column_name }}: undefined,
+    {% endif %}
+    {% endfor %}
+    created_id: undefined,
+    updated_id: undefined,
+    created_time: [],
+    updated_time: [],
+  };
+  await resetSearchParams();
+};
+
+function buildRowActions(row: {{ class_name }}Table): TableOperationAction[] {
+  const all: TableOperationAction[] = [
+    {
+      key: "detail",
+      label: "详情",
+      artType: "view",
+      perm: "{{ permission_prefix }}:detail",
+      run: () => void crud.handleOpenDialog("detail", row[PK] as number),
+    },
+    {
+      key: "edit",
+      label: "编辑",
+      artType: "edit",
+      icon: "ri:edit-2-line",
+      perm: "{{ permission_prefix }}:update",
+      run: () => void crud.handleOpenDialog("update", row[PK] as number),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      icon: "ri:delete-bin-4-line",
+      perm: "{{ permission_prefix }}:delete",
+      run: () => deleteRow(row),
+    },
+  ];
+  return all;
+}
+
+function formatOperationCell(row: {{ class_name }}Table) {
+  return renderTableOperationCell(buildRowActions(row), {
+    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1",
+  });
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await crud.handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
+async function handleCloseDialog() {
+  await crud.handleCloseDialog();
+}
+
+async function handleSubmit() {
+  await crud.handleSubmit();
+}
+{% if table.sub %}
+const subTableData = ref<any[]>([]);
+
+function addSubRow() {
+  subTableData.value.push({
+    {% for col in table.sub_table.columns %}
+    {% if col.column_name not in ['id', 'uuid', 'status', 'description', 'created_time', 'updated_time', 'created_id', 'updated_id', 'is_deleted', 'deleted_time', 'deleted_id'] and col.column_name != table.sub_table.pk_column.column_name %}
+    {{ col.column_name }}: undefined,
+    {% endif %}
+    {% endfor %}
+  });
+}
+
+function removeSubRow(index: number) {
+  subTableData.value.splice(index, 1);
+}
+{% endif %}
+
+const deleteRow = async (row: {{ class_name }}Table) => {
+  if (!row[PK]) return;
+  try {
+    await confirmDelete(`确定删除该{{ function_name }}吗？此操作不可恢复！`);
+    await {{ class_name }}API.delete{{ class_name }}([row[PK] as number]);
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  }
+};
+
+async function handleBatchDelete() {
+  const ids = selectedIds.value;
+  if (ids.length === 0) return;
+  try {
+    await confirmBatchDelete(ids.length);
+    batchDeleting.value = true;
+    await {{ class_name }}API.delete{{ class_name }}(ids);
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshRemove();
+  } catch {
+    // 用户取消
+  } finally {
+    batchDeleting.value = false;
+  }
+}
+
+async function runBatchStatus(value: "enable" | "disable") {
+  const ids = selectedIds.value;
+  if (ids.length === 0) {
+    ElMessage.warning("请先在列表中勾选数据");
+    return;
+  }
+  try {
+    await confirmAction(
+      `确认对选中的 ${ids.length} 条数据${value === "enable" ? "启用" : "停用"}？`,
+      "批量设置"
+    );
+    const status = value === "enable" ? 0 : 1;
+    await {{ class_name }}API.batch{{ class_name }}({ ids, status });
+    // 成功 / 失败提示由 axios 拦截器统一处理
+    faTableRef.value?.elTableRef?.clearSelection();
+    await refreshData();
+  } catch {
+    // 用户取消
+  }
+}
+
+async function handleCrudImportUpload(formData: FormData) {
+  try {
+    const res = await {{ class_name }}API.import{{ class_name }}(formData);
+    if (res.data.code === ResultEnum.SUCCESS) {
+      ElMessage.success(res.data.msg || "导入成功");
+      importVisible.value = false;
+      await refreshData();
+    }
+    // 非 SUCCESS 分支提示由 axios 拦截器统一处理
+  } catch (error: unknown) {
+    if (import.meta.env.DEV) console.error("[Import]", error);
+    /* 接口错误已由拦截器提示 */
+  }
+}
+
+</script>
+
+<style lang="scss" scoped></style>

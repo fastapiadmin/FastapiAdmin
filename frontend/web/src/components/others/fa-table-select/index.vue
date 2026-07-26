@@ -131,7 +131,7 @@
           v-model:limit="queryParams.page_size"
           @pagination="handlePagination"
         />
-        <div class="feedback">
+        <div class="flex justify-end mt-1.5">
           <ElButton type="primary" size="small" @click="handleConfirm">
             {{ confirmText }}
           </ElButton>
@@ -151,6 +151,7 @@ defineSlots<{
   [slotName: string]: (props: Record<string, any>) => void;
 }>();
 
+import { ArrowDown } from "@element-plus/icons-vue";
 import { ref, reactive, computed } from "vue";
 import { useResizeObserver } from "@vueuse/core";
 import type { FormInstance, PopoverProps, TableInstance } from "element-plus";
@@ -247,7 +248,7 @@ const queryParams = reactive<{
 const tableSelectRef = ref();
 const popoverWidth = ref(width);
 useResizeObserver(tableSelectRef, (entries) => {
-  popoverWidth.value = `${entries[0].contentRect.width}px`;
+  popoverWidth.value = `${entries[0]!.contentRect.width}px`;
 });
 
 // 表单操作
@@ -302,10 +303,14 @@ function handleSelect(selection: any[]) {
     selectedItems.value = selection;
   } else {
     // 单选
-    selectedItems.value = [selection[selection.length - 1]];
+    const lastItem = selection[selection.length - 1];
+    selectedItems.value = [lastItem];
     tableRef.value?.clearSelection();
-    tableRef.value?.toggleRowSelection(selectedItems.value[0], true);
-    tableRef.value?.setCurrentRow(selectedItems.value[0]);
+    tableRef.value?.toggleRowSelection(
+      lastItem as Parameters<TableInstance["toggleRowSelection"]>[0],
+      true
+    );
+    tableRef.value?.setCurrentRow(lastItem as Parameters<TableInstance["setCurrentRow"]>[0]);
   }
 }
 function handleSelectAll(selection: any[]) {
@@ -353,17 +358,6 @@ const popoverContentRef = ref();
 </script>
 
 <style scoped lang="scss">
-.reference :deep(.el-input__wrapper),
-.reference :deep(.el-input__inner) {
-  cursor: pointer;
-}
-
-.feedback {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 6px;
-}
-
 .radio :deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
   visibility: hidden;
 }

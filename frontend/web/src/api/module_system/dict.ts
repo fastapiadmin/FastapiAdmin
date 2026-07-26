@@ -12,7 +12,7 @@ const DictAPI = {
   },
 
   optionDictType() {
-    return request<ApiResponse>({
+    return request<ApiResponse<DictTable[]>>({
       url: `${API_PATH}/type/optionselect`,
       method: "get",
     });
@@ -113,11 +113,11 @@ const DictAPI = {
     });
   },
 
-  exportDictData(body: DictDataPageQuery) {
+  exportDictData(query: DictDataPageQuery) {
     return request<Blob>({
       url: `${API_PATH}/data/export`,
       method: "post",
-      data: body,
+      data: query,
       responseType: "blob",
     });
   },
@@ -135,22 +135,28 @@ export default DictAPI;
 export interface DictPageQuery extends PageQuery {
   dict_name?: string;
   dict_type?: string;
+  status?: number;
 }
 
 export interface DictDataPageQuery extends PageQuery {
   dict_label?: string;
   dict_type?: string;
   dict_type_id?: number;
+  status?: number;
 }
 
 export interface DictTable extends BaseType {
   dict_name?: string;
   dict_type?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface DictForm extends BaseFormType {
   dict_name?: string;
   dict_type?: string;
+  status?: number;
+  description?: string;
 }
 
 export interface DictDataTable extends BaseType {
@@ -162,6 +168,8 @@ export interface DictDataTable extends BaseType {
   css_class?: string;
   list_class?: string;
   is_default?: boolean;
+  status?: number;
+  description?: string;
 }
 
 export interface DictDataForm extends BaseFormType {
@@ -173,4 +181,6 @@ export interface DictDataForm extends BaseFormType {
   css_class?: string;
   list_class?: string;
   is_default?: boolean;
+  status?: number;
+  description?: string;
 }

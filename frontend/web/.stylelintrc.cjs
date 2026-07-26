@@ -45,6 +45,8 @@ module.exports = {
     ],
     // 允许 SCSS + Tailwind CSS v4 专属 at-rules
     "at-rule-no-unknown": null,
+    // 允许注释前无空行（section 分隔注释紧凑排版更清晰）
+    "comment-empty-line-before": null,
     "scss/at-rule-no-unknown": [
       true,
       {
@@ -63,6 +65,7 @@ module.exports = {
           "tailwind",
           "theme",
           "utility",
+          "source",
           "custom-variant",
           "layer",
           "config",

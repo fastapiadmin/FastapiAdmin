@@ -60,9 +60,9 @@
 
 <script setup lang="ts">
 defineOptions({ name: "FaGuide" });
+import { MenuTypeEnum } from "@/enums/appEnum";
 import { computed } from "vue";
 import { useSettingsStore } from "@stores";
-import { MenuTypeEnum } from "@/enums/appEnum";
 
 const settingStore = useSettingsStore();
 const { t } = useI18n();

@@ -7,6 +7,7 @@
       ref="formRef"
       :model="modelValue"
       :label-position="labelPosition"
+      @keyup.enter="emit('search', modelValue)"
       v-bind="{ ...$attrs }"
     >
       <ElRow :gutter="gutter">
@@ -27,70 +28,117 @@
               <component v-if="typeof item.label !== 'string'" :is="item.label" />
               <span v-else>{{ item.label }}</span>
             </template>
-            <slot :name="item.key" :item="item" :modelValue="modelValue">
-              <component
-                :is="getComponent(item)"
-                :model-value="getFieldValue(item.key)"
-                @update:model-value="setFieldValue(item.key, $event)"
-                v-bind="getProps(item)"
-              >
-                <!-- 下拉选择 -->
-                <template v-if="item.type === 'select' && getProps(item)?.options">
-                  <ElOption
-                    v-for="option in getProps(item).options"
-                    v-bind="option"
-                    :key="option.value"
-                  />
-                </template>
+            <!-- 创建人插槽 -->
+            <template v-if="item.key === 'created_id' && !$slots.created_id">
+              <div class="w-full min-w-0">
+                <FaUserTableSelect
+                  :model-value="modelValue?.created_id == null ? undefined : modelValue.created_id"
+                  @update:model-value="
+                    (v: number | undefined) => {
+                      modelValue['created_id'] = v;
+                    }
+                  "
+                  @confirm-click="emitImmediateSearch"
+                  @clear-click="emitImmediateSearch"
+                />
+              </div>
+            </template>
+            <!-- 更新人插槽 -->
+            <template v-else-if="item.key === 'updated_id' && !$slots.updated_id">
+              <div class="w-full min-w-0">
+                <FaUserTableSelect
+                  :model-value="modelValue?.updated_id == null ? undefined : modelValue.updated_id"
+                  @update:model-value="
+                    (v: number | undefined) => {
+                      modelValue['updated_id'] = v;
+                    }
+                  "
+                  @confirm-click="emitImmediateSearch"
+                  @clear-click="emitImmediateSearch"
+                />
+              </div>
+            </template>
+            <template v-else>
+              <slot :name="item.key" :item="item" :modelValue="modelValue">
+                <component
+                  :is="getComponent(item)"
+                  :model-value="getFieldValue(item.key)"
+                  @update:model-value="setFieldValue(item.key, $event)"
+                  v-bind="getProps(item)"
+                >
+                  <!-- 下拉选择 -->
+                  <template v-if="item.type === 'select' && getProps(item)?.options">
+                    <ElOption
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
 
-                <!-- 复选框组 -->
-                <template v-if="item.type === 'checkboxgroup' && getProps(item)?.options">
-                  <ElCheckbox
-                    v-for="option in getProps(item).options"
-                    v-bind="option"
-                    :key="option.value"
-                  />
-                </template>
+                  <!-- 复选框组 -->
+                  <template v-if="item.type === 'checkboxgroup' && getProps(item)?.options">
+                    <ElCheckbox
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
 
-                <!-- 单选框组 -->
-                <template v-if="item.type === 'radiogroup' && getProps(item)?.options">
-                  <ElRadio
-                    v-for="option in getProps(item).options"
-                    v-bind="option"
-                    :key="option.value"
-                  />
-                </template>
+                  <!-- 单选框组 -->
+                  <template v-if="item.type === 'radiogroup' && getProps(item)?.options">
+                    <ElRadio
+                      v-for="option in getProps(item).options"
+                      v-bind="option"
+                      :key="option.value"
+                    />
+                  </template>
 
-                <!-- 动态插槽支持 -->
-                <template v-for="(slotFn, slotName) in getSlots(item)" :key="slotName" #[slotName]>
-                  <component :is="slotFn" />
-                </template>
-              </component>
-            </slot>
+                  <!-- 动态插槽支持 -->
+                  <template
+                    v-for="(slotFn, slotName) in getSlots(item)"
+                    :key="slotName"
+                    #[slotName]
+                  >
+                    <component :is="slotFn" />
+                  </template>
+                </component>
+              </slot>
+            </template>
           </ElFormItem>
         </ElCol>
         <ElCol :xs="24" :sm="24" :md="span" :lg="span" :xl="span" class="action-column">
           <div class="action-buttons-wrapper" :style="actionButtonsStyle">
             <div class="form-buttons">
-              <ElButton v-if="showReset" class="reset-button" @click="handleReset" v-ripple>
-                <template #icon>
-                  <Refresh />
-                </template>
-                {{ t("table.searchBar.reset") }}
-              </ElButton>
-              <ElButton
-                v-if="showSearch"
-                type="primary"
-                class="search-button"
-                @click="handleSearch"
-                v-ripple
-                :disabled="disabledSearch"
+              <ElTooltip
+                v-if="showReset"
+                :content="t('table.searchBar.resetTooltip')"
+                placement="top"
               >
-                <template #icon>
-                  <Search />
-                </template>
-                {{ t("table.searchBar.search") }}
-              </ElButton>
+                <ElButton class="reset-button" @click="handleReset" v-ripple>
+                  <template #icon>
+                    <Refresh />
+                  </template>
+                  {{ t("table.searchBar.reset") }}
+                </ElButton>
+              </ElTooltip>
+              <ElTooltip
+                v-if="showSearch"
+                :content="t('table.searchBar.searchTooltip')"
+                placement="top"
+              >
+                <ElButton
+                  type="primary"
+                  class="search-button"
+                  @click="handleSearch"
+                  v-ripple
+                  :disabled="disabledSearch"
+                >
+                  <template #icon>
+                    <Search />
+                  </template>
+                  {{ t("table.searchBar.search") }}
+                </ElButton>
+              </ElTooltip>
             </div>
             <div v-if="shouldShowExpandToggle" class="filter-toggle" @click="toggleExpand">
               <span>{{ expandToggleText }}</span>
@@ -110,10 +158,15 @@
 
 <script setup lang="ts">
 import { ArrowUpBold, ArrowDownBold, Refresh, Search } from "@element-plus/icons-vue";
-import { useWindowSize } from "@vueuse/core";
+import { useWindowSize, onKeyStroke } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
-import { toRaw, type Component } from "vue";
+import { type Component } from "vue";
 import FaDatePicker from "@/components/forms/fa-search-bar/FaDatePicker.vue";
+import FaUserTableSelect from "./FaUserTableSelect.vue";
+import {
+  getAuditSearchFormItems,
+  type GetAuditSearchFormItemsOptions,
+} from "./auditSearchFormItems";
 import {
   ElCascader,
   ElCheckbox,
@@ -131,9 +184,25 @@ import {
   ElTreeSelect,
   type FormInstance,
 } from "element-plus";
-import { calculateResponsiveSpan, type ResponsiveBreakpoint } from "@utils/form";
+import {
+  cloneModelValue as cloneModelValueShared,
+  sanitizeOutputValue as sanitizeOutputValueShared,
+  getProps as getPropsShared,
+  getSlots as getSlotsShared,
+  getColSpan as getColSpanShared,
+  useSanitizeOutputOptions,
+  type SanitizeOutputOptions,
+} from "../composables/useFormBase";
 
 defineOptions({ name: "FaSearchBar" });
+
+// Ctrl+Enter 快捷键触发搜索
+onKeyStroke("Enter", (e: KeyboardEvent) => {
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault();
+    handleSearch();
+  }
+});
 
 const componentMap = {
   input: ElInput, // 输入框
@@ -158,7 +227,10 @@ const componentMap = {
 
 const { width } = useWindowSize();
 const { t } = useI18n();
-const isMobile = computed(() => width.value < 500);
+const isMobile = computed(() => width.value < 500); // 表单窄布局阈值
+/** H5 压缩模式：收起时只显示 1 个搜索项 */
+const h5Compact = computed(() => width.value < 768);
+const maxItemsPerRow = computed(() => (h5Compact.value ? 1 : Math.floor(24 / props.span) - 1));
 
 const formInstance = useTemplateRef<FormInstance>("formRef");
 
@@ -176,6 +248,8 @@ export interface SearchFormItem {
   render?: (() => VNode) | Component;
   /** 是否隐藏该表单项 */
   hidden?: boolean;
+  /** 是否仅在展开状态下显示（用于审计字段等次要字段） */
+  expandOnly?: boolean;
   /** 表单项占据的列宽，基于24格栅格系统 */
   span?: number;
   /** 选项数据，用于 select、checkbox-group、radio-group 等 */
@@ -217,21 +291,11 @@ interface Props {
   disabledSearch?: boolean;
   /** 搜索时是否清洗空值 */
   sanitizeOutput?: Partial<SanitizeOutputOptions>;
-}
-
-interface SanitizeOutputOptions {
-  /** 移除空字符串 */
-  removeEmptyString: boolean;
-  /** 移除空数组 */
-  removeEmptyArray: boolean;
-  /** 移除清洗后为空的对象 */
-  removeEmptyObject: boolean;
-  /** 移除空富文本占位内容，如 <p><br></p> */
-  removeEmptyRichText: boolean;
-  /** 保留数字 0 这类有效筛选值 */
-  keepZero: boolean;
-  /** 保留 false 这类有效筛选值 */
-  keepFalse: boolean;
+  /** 是否自动追加审计四字段（创建人/更新人/创建时间/更新时间） */
+  includeAudit?: boolean;
+  /** 传给 getAuditSearchFormItems 的选项 */
+  auditItemOptions?: GetAuditSearchFormItemsOptions;
+  /** 表单校验规则（通过 $attrs 透传至 ElForm） */
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -243,11 +307,12 @@ const props = withDefaults(defineProps<Props>(), {
   labelWidth: "70px",
   showExpand: true,
   defaultExpanded: false,
-  buttonLeftLimit: 2,
+  buttonLeftLimit: 0,
   showReset: true,
   showSearch: true,
   disabledSearch: false,
   sanitizeOutput: () => ({}),
+  includeAudit: false,
 });
 
 interface Emits {
@@ -260,74 +325,40 @@ const emit = defineEmits<Emits>();
 const modelValue = defineModel<Record<string, any>>({ default: {} });
 const initialModelValue = ref<Record<string, any>>({});
 
+// 审计字段配置
+const auditItems = computed(() => getAuditSearchFormItems(props.auditItemOptions));
+
+// 合并业务字段和审计字段
+const mergedItems = computed(() => {
+  if (!props.includeAudit) return props.items;
+  return [...props.items, ...auditItems.value];
+});
+
 // 保存组件初始化时的表单快照，用于 reset 时恢复默认筛选条件。
-const cloneModelValue = (value: Record<string, any> | undefined) => {
-  if (!value) return {};
+initialModelValue.value = cloneModelValueShared(modelValue.value);
 
-  const deepClone = (source: unknown): unknown => {
-    if (Array.isArray(source)) {
-      return source.map((item) => deepClone(item));
-    }
+const sanitizeOutputOptions = useSanitizeOutputOptions(props.sanitizeOutput);
 
-    if (source && typeof source === "object") {
-      const rawSource = toRaw(source);
-      return Object.keys(rawSource).reduce<Record<string, unknown>>((accumulator, key) => {
-        accumulator[key] = deepClone((rawSource as Record<string, unknown>)[key]);
-        return accumulator;
-      }, {});
-    }
-
-    return source;
-  };
-
-  return deepClone(toRaw(value)) as Record<string, any>;
-};
-
-initialModelValue.value = cloneModelValue(modelValue.value);
+// 模板引用的函数（从公共 composable 重新导出，使模板可访问）
+const getColSpan = (itemSpan: number | undefined, breakpoint: any) =>
+  getColSpanShared(itemSpan, span.value, breakpoint);
+const getProps = getPropsShared;
+const getSlots = getSlotsShared;
 
 /**
  * 是否展开状态
  */
 const isExpanded = ref(props.defaultExpanded);
 
-const rootProps = ["label", "labelWidth", "key", "type", "hidden", "span", "slots"];
-// 搜索参数默认更激进地去掉空值，减少无效 query 参数。
-const sanitizeOutputOptions = computed<SanitizeOutputOptions>(() => ({
-  removeEmptyString: true,
-  removeEmptyArray: true,
-  removeEmptyObject: true,
-  removeEmptyRichText: true,
-  keepZero: true,
-  keepFalse: true,
-  ...props.sanitizeOutput,
-}));
-
-const getProps = (item: SearchFormItem) => {
-  if (item.props) return item.props;
-  const props = { ...item };
-  rootProps.forEach((key) => delete (props as Record<string, any>)[key]);
-  return props;
-};
-
-// 获取插槽
-const getSlots = (item: SearchFormItem) => {
-  if (!item.slots) return {};
-  const validSlots: Record<string, () => any> = {};
-  Object.entries(item.slots).forEach(([key, slotFn]) => {
-    if (slotFn) {
-      validSlots[key] = slotFn;
+// 当外部控制 isExpand 为 true 时，同步内部展开状态
+watch(
+  () => props.isExpand,
+  (val) => {
+    if (val === true) {
+      isExpanded.value = true;
     }
-  });
-  return validSlots;
-};
-
-/**
- * 获取列宽 span 值
- * 根据屏幕尺寸智能降级，避免小屏幕上表单项被压缩过小
- */
-const getColSpan = (itemSpan: number | undefined, breakpoint: ResponsiveBreakpoint): number => {
-  return calculateResponsiveSpan(itemSpan, span.value, breakpoint);
-};
+  }
+);
 
 // 搜索表单清空输入时不保留空字符串，避免后续请求携带空字段。
 const normalizeFieldValue = (value: unknown) => {
@@ -347,72 +378,11 @@ const setFieldValue = (key: string, value: unknown) => {
   modelValue.value[key] = normalizedValue;
 };
 
-const isRichTextEmpty = (value: string) => {
-  if (/<(img|video|audio|iframe|embed|object)\b/i.test(value)) {
-    return false;
-  }
-
-  // 去掉编辑器常见占位标签后再判断是否还有实际内容。
-  return (
-    value
-      .replace(/&nbsp;/gi, "")
-      .replace(/<br\s*\/?>/gi, "")
-      .replace(/<[^>]*>/g, "")
-      .trim() === ""
-  );
-};
-
-// 搜索时按配置清洗空值，但保留 0 和 false 这类有效筛选条件。
-const sanitizeOutputValue = (value: unknown): unknown => {
-  const options = sanitizeOutputOptions.value;
-
-  if (Array.isArray(value)) {
-    const sanitizedArray = value
-      .map((item) => sanitizeOutputValue(item))
-      .filter((item) => item !== undefined);
-    return sanitizedArray.length === 0 && options.removeEmptyArray ? undefined : sanitizedArray;
-  }
-
-  if (value && typeof value === "object") {
-    const rawValue = toRaw(value);
-    const sanitizedObject = Object.entries(rawValue).reduce<Record<string, unknown>>(
-      (accumulator, [key, item]) => {
-        const sanitizedItem = sanitizeOutputValue(item);
-        if (sanitizedItem !== undefined) {
-          accumulator[key] = sanitizedItem;
-        }
-        return accumulator;
-      },
-      {}
-    );
-    return Object.keys(sanitizedObject).length === 0 && options.removeEmptyObject
-      ? undefined
-      : sanitizedObject;
-  }
-
-  if (typeof value === "string") {
-    if (options.removeEmptyString && value.trim() === "") {
-      return undefined;
-    }
-    if (options.removeEmptyRichText && isRichTextEmpty(value)) {
-      return undefined;
-    }
-    return value;
-  }
-
-  if (value === 0) {
-    return options.keepZero ? value : undefined;
-  }
-
-  if (value === false) {
-    return options.keepFalse ? value : undefined;
-  }
-
-  return value ?? undefined;
-};
-
 const getSanitizedOutput = () => {
-  return (sanitizeOutputValue(cloneModelValue(modelValue.value)) || {}) as Record<string, any>;
+  return (sanitizeOutputValueShared(
+    cloneModelValueShared(modelValue.value),
+    sanitizeOutputOptions.value
+  ) || {}) as Record<string, any>;
 };
 
 // 组件
@@ -426,27 +396,38 @@ const getComponent = (item: SearchFormItem) => {
   return componentMap[type as keyof typeof componentMap] || componentMap["input"];
 };
 
+const emitImmediateSearch = async () => {
+  const valid = (await formInstance.value?.validate?.().catch(() => false)) ?? true;
+  if (!valid) return;
+  emit("search", getSanitizedOutput());
+};
+
 /**
  * 可见的表单项
  */
 const visibleFormItems = computed(() => {
-  const filteredItems = props.items.filter((item) => !item.hidden);
+  const filteredItems = mergedItems.value.filter((item) => !item.hidden);
   const shouldShowLess = !props.isExpand && !isExpanded.value;
   if (shouldShowLess) {
-    const maxItemsPerRow = Math.floor(24 / props.span) - 1;
-    return filteredItems.slice(0, maxItemsPerRow);
+    // 收起时：只显示非 expandOnly 的字段，且不超过最大数量
+    const nonExpandOnlyItems = filteredItems.filter((item) => !item.expandOnly);
+    return nonExpandOnlyItems.slice(0, maxItemsPerRow.value);
   }
+  // 展开时：显示所有字段
   return filteredItems;
 });
 
 /**
+ * 非隐藏表单项总数（包含审计字段）
+ */
+const visibleItemCount = computed(() => mergedItems.value.filter((item) => !item.hidden).length);
+
+/**
  * 是否应该显示展开/收起按钮
+ * 当合并后的总字段数超过一行可展示数量时显示展开按钮
  */
 const shouldShowExpandToggle = computed(() => {
-  const filteredItems = props.items.filter((item) => !item.hidden);
-  return (
-    !props.isExpand && props.showExpand && filteredItems.length > Math.floor(24 / props.span) - 1
-  );
+  return !props.isExpand && props.showExpand && visibleItemCount.value > maxItemsPerRow.value;
 });
 
 /**
@@ -485,7 +466,7 @@ const handleReset = () => {
   Object.keys(modelValue.value).forEach((key) => {
     delete modelValue.value[key];
   });
-  Object.assign(modelValue.value, cloneModelValue(initialModelValue.value));
+  Object.assign(modelValue.value, cloneModelValueShared(initialModelValue.value));
 
   // 触发 reset 事件
   emit("reset");
@@ -494,7 +475,9 @@ const handleReset = () => {
 /**
  * 处理搜索事件
  */
-const handleSearch = () => {
+const handleSearch = async () => {
+  const valid = (await formInstance.value?.validate?.().catch(() => false)) ?? true;
+  if (!valid) return;
   // 对外只抛出清洗后的查询参数，避免接口收到空数组/空字符串。
   emit("search", getSanitizedOutput());
 };
@@ -568,9 +551,10 @@ const { span, gutter, labelPosition, labelWidth } = toRefs(props);
 
     .action-column {
       .action-buttons-wrapper {
-        flex-direction: column;
+        flex-direction: row;
         gap: 8px;
-        align-items: stretch;
+        align-items: center;
+        justify-content: center;
 
         .form-buttons {
           justify-content: center;

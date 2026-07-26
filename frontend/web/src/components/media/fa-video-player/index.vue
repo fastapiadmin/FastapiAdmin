@@ -29,6 +29,11 @@ interface Props {
   commonStyle?: VideoPlayerStyle;
 }
 
+const emit = defineEmits<{
+  play: [];
+  pause: [];
+}>();
+
 const props = withDefaults(defineProps<Props>(), {
   playerId: "",
   videoUrl: "",
@@ -88,12 +93,12 @@ onMounted(() => {
 
   // 播放事件监听器
   playerInstance.value.on("play", () => {
-    console.log("Video is playing");
+    emit("play");
   });
 
   // 暂停事件监听器
   playerInstance.value.on("pause", () => {
-    console.log("Video is paused");
+    emit("pause");
   });
 
   // 错误事件监听器

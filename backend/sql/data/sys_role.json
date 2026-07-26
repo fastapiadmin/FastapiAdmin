@@ -1,0 +1,26 @@
+[
+    {
+        "name": "超级管理员",
+        "code": "SUPER_ADMIN",
+        "status": 0,
+        "order": 1,
+        "data_scope": 3,
+        "description": "拥有系统最高权限"
+    },
+    {
+        "name": "管理员",
+        "code": "ADMIN",
+        "status": 0,
+        "order": 2,
+        "data_scope": 3,
+        "description": "管理系统内所有资源"
+    },
+    {
+        "name": "普通用户",
+        "code": "USER",
+        "status": 0,
+        "order": 3,
+        "data_scope": 1,
+        "description": "仅能查看和操作自己的数据"
+    }
+]

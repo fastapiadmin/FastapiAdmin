@@ -9,7 +9,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 
 const chartRef = ref<HTMLDivElement>();
-import * as echarts from "echarts";
+import { echarts } from "@/plugins/echarts";
 
 defineOptions({ name: "OrderStatusChart" });
 

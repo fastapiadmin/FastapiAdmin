@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import * as echarts from "echarts";
+import { echarts } from "@/plugins/echarts";
 
 defineOptions({ name: "MiniTraffic" });
 
@@ -47,8 +47,8 @@ function tick() {
   if (!chart || chart.isDisposed()) return;
   const n = Math.round(4000 + Math.random() * 2500);
   val.value = n;
-  const d = chart.getOption() as any;
-  const arr = d.series[0].data as number[];
+  const d = chart.getOption() as { series: [{ data: number[] }] };
+  const arr = d.series[0].data;
   arr.push(n);
   arr.shift();
   chart.setOption({ series: [{ data: arr }] });

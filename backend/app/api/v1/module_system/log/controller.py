@@ -1,75 +1,46 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Body, Depends, Path, Query, Security
+from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.response import ResponseSchema, SuccessResponse
-from app.core.base_params import PaginationQueryParam
-from app.core.base_schema import AuthSchema, BatchDelete, PageResultSchema
-from app.core.dependencies import AuthPermission, get_current_user
+from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
+from app.core.base_schema import AuthSchema, PageResultSchema, PaginationQueryParam
+from app.core.dependencies import AuthPermission, db_getter, get_current_user
 from app.core.router_class import OperationLogRoute
+from app.utils.common_util import bytes2file_response
 
 from .schema import (
-    LoginLogCreateSchema,
     LoginLogDetailOutSchema,
     LoginLogOutSchema,
     LoginLogQueryParam,
-    OperationLogCreateSchema,
     OperationLogDetailOutSchema,
     OperationLogOutSchema,
     OperationLogQueryParam,
 )
 from .service import LoginLogService, OperationLogService
 
-LogRouter = APIRouter(route_class=OperationLogRoute, prefix="/log", tags=["系统管理/日志管理"])
+LogRouter = APIRouter(route_class=OperationLogRoute, prefix="/log", tags=["日志管理"])
 
 
-@LogRouter.get(
-    "/login/detail/{id}",
-    summary="获取登录日志详情",
-    response_model=ResponseSchema[LoginLogDetailOutSchema],
-)
-async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="登录日志ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:login_log:query']))],
+@LogRouter.get("/login/detail/{id}", summary="获取登录日志详情", response_model=ResponseSchema[LoginLogDetailOutSchema])
+async def get_log_detail_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:login_log:query"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    id: Annotated[int, Path(description="登录日志ID", ge=1)],
 ) -> JSONResponse:
-    """
-    获取登录日志详情
-
-    参数:
-    - id (int): 登录日志 ID。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 包含登录日志详情的 JSON 响应。
-    """
-    result_dict = await LoginLogService.detail_service(id=id, auth=auth)
+    result_dict = await LoginLogService(auth, db).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取登录日志详情成功")
 
 
-@LogRouter.get(
-    "/login/list",
-    summary="查询登录日志列表",
-    response_model=ResponseSchema[PageResultSchema[LoginLogOutSchema]],
-)
-async def get_obj_list_controller(
+@LogRouter.get("/login/list", summary="查询登录日志列表", response_model=ResponseSchema[PageResultSchema[LoginLogOutSchema]])
+async def get_log_list_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:login_log:query"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
     page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[LoginLogQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:login_log:query']))],
+    search: Annotated[LoginLogQueryParam, Query()],
 ) -> JSONResponse:
-    """
-    查询登录日志列表
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数。
-    - search (LoginLogQueryParam): 查询筛选参数。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 包含分页登录日志列表的 JSON 响应。
-    """
-    result_dict = await LoginLogService.page_service(
-        auth=auth,
+    result_dict = await LoginLogService(auth, db).page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
@@ -78,154 +49,65 @@ async def get_obj_list_controller(
     return SuccessResponse(data=result_dict, msg="查询登录日志列表成功")
 
 
-@LogRouter.post(
-    "/login/create",
-    summary="创建登录日志",
-    response_model=ResponseSchema[LoginLogDetailOutSchema],
-)
-async def create_obj_controller(
-    data: LoginLogCreateSchema,
-    auth: Annotated[AuthSchema, Depends(get_current_user)],
-) -> JSONResponse:
-    """
-    创建登录日志
-
-    参数:
-    - data (LoginLogCreateSchema): 登录日志创建参数。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 包含创建后的登录日志详情的 JSON 响应。
-    """
-    result_dict = await LoginLogService.create_service(auth=auth, data=data)
-    return SuccessResponse(data=result_dict, msg="创建登录日志成功")
-
-
-@LogRouter.delete(
-    "/login/delete",
-    summary="删除登录日志",
-    response_model=ResponseSchema,
-)
-async def delete_obj_controller(
+@LogRouter.delete("/login/delete", summary="删除登录日志", response_model=ResponseSchema)
+async def delete_log_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:login_log:delete"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:login_log:delete']))],
 ) -> JSONResponse:
-    """
-    删除登录日志
-
-    参数:
-    - ids (list[int]): 日志 ID 列表。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 删除结果。
-    """
-    await LoginLogService.delete_service(auth=auth, ids=ids)
+    await LoginLogService(auth, db).delete(ids=ids)
     return SuccessResponse(msg="删除登录日志成功")
 
 
-@LogRouter.get(
-    "/operation/detail/{id}",
-    summary="获取操作日志详情",
-    response_model=ResponseSchema[OperationLogDetailOutSchema],
-    dependencies=[Depends(AuthPermission(['module_system:log:query']))],
-)
-async def detail(
-    *,
-    id: Annotated[int, Path(gt=0)],
+@LogRouter.get("/operation/detail/{id}", summary="获取操作日志详情", response_model=ResponseSchema[OperationLogDetailOutSchema], dependencies=[Security(AuthPermission(["module_system:log:query"]))])
+async def get_operation_log_detail_controller(
     auth: Annotated[AuthSchema, Depends(get_current_user)],
-):
-    """
-    获取操作日志详情
-
-    参数:
-    - id (int): 操作日志 ID。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 包含操作日志详情的 JSON 响应。
-    """
-    result_dict = await OperationLogService.detail_service(auth, id)
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    id: Annotated[int, Path(description="操作日志ID", gt=0)],
+) -> JSONResponse:
+    result_dict = await OperationLogService(auth, db).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取操作日志详情成功")
 
 
 @LogRouter.get(
-    "/operation/list",
-    summary="获取操作日志列表",
-    response_model=ResponseSchema[PageResultSchema[OperationLogOutSchema]],
-    dependencies=[Depends(AuthPermission(['module_system:log:query']))],
+    "/operation/list", summary="获取操作日志列表", response_model=ResponseSchema[PageResultSchema[OperationLogOutSchema]], dependencies=[Security(AuthPermission(["module_system:log:query"]))],
 )
-async def list(
-    *,
-    page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[OperationLogQueryParam, Depends()],
+async def get_operation_log_list_controller(
     auth: Annotated[AuthSchema, Depends(get_current_user)],
-):
-    """
-    获取操作日志列表
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数。
-    - search (OperationLogQueryParam): 查询筛选参数。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 包含分页操作日志列表的 JSON 响应。
-    """
-    result_dict = await OperationLogService.page_service(
-        auth,
-        page.page_no,
-        page.page_size,
-        search.model_dump(exclude_none=True),
-        page.order_by,
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    page: Annotated[PaginationQueryParam, Depends()],
+    search: Annotated[OperationLogQueryParam, Query()],
+) -> JSONResponse:
+    result_dict = await OperationLogService(auth, db).page(
+        page_no=page.page_no,
+        page_size=page.page_size,
+        search=search,
+        order_by=page.order_by,
     )
     return SuccessResponse(data=result_dict, msg="查询操作日志列表成功")
 
 
-@LogRouter.post(
-    "/operation/create",
-    summary="创建操作日志",
-    response_model=ResponseSchema[OperationLogDetailOutSchema],
-)
-async def create(
-    *,
-    data: OperationLogCreateSchema,
+@LogRouter.delete("/operation/delete", summary="删除操作日志", response_model=ResponseSchema, dependencies=[Security(AuthPermission(["module_system:log:delete"]))])
+async def delete_operation_log_controller(
     auth: Annotated[AuthSchema, Depends(get_current_user)],
-):
-    """
-    创建操作日志
-
-    参数:
-    - data (OperationLogCreateSchema): 操作日志创建参数。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 包含创建后的操作日志详情的 JSON 响应。
-    """
-    result_dict = await OperationLogService.create_service(auth, data)
-    return SuccessResponse(data=result_dict, msg="创建操作日志成功")
-
-
-@LogRouter.delete(
-    "/operation/delete",
-    summary="删除操作日志",
-    response_model=ResponseSchema,
-    dependencies=[Depends(AuthPermission(['module_system:log:delete']))],
-)
-async def delete(
-    *,
-    data: BatchDelete,
-    auth: Annotated[AuthSchema, Depends(get_current_user)],
-):
-    """
-    删除操作日志
-
-    参数:
-    - data (BatchDelete): 批量删除参数（ID 列表）。
-    - auth (AuthSchema): 认证信息模型。
-
-    返回:
-    - JSONResponse: 删除结果。
-    """
-    await OperationLogService.delete_service(auth, data.ids)
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    ids: Annotated[list[int], Body(description="ID列表")],
+) -> JSONResponse:
+    await OperationLogService(auth, db).delete(ids=ids)
     return SuccessResponse(msg="删除操作日志成功")
+
+
+@LogRouter.post("/operation/export", summary="导出操作日志", dependencies=[Security(AuthPermission(["module_system:log:export"]))])
+async def export_operation_log_list_controller(
+    auth: Annotated[AuthSchema, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    search: Annotated[OperationLogQueryParam, Body()],
+) -> StreamingResponse:
+    operation_log_query_result = await OperationLogService(auth, db).get_list(search=search)
+    operation_log_export_result = OperationLogService.export_list(operation_log_list=[item.model_dump() for item in operation_log_query_result])
+
+    return StreamResponse(
+        data=bytes2file_response(operation_log_export_result),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=operation_log.xlsx"},
+    )

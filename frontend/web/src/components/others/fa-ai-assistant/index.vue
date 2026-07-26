@@ -1,10 +1,10 @@
 <template>
   <!-- 悬浮按钮 -->
-  <div class="ai-assistant">
+  <div>
     <!-- AI 助手图标按钮 -->
     <ElButton
       v-if="!dialogVisible && !fabCollapsed"
-      class="ai-fab-button"
+      class="fixed z-9999 w-15 h-15 shadow-(--el-box-shadow) transition-all duration-300 hover:shadow-(--el-box-shadow-dark)r:scale-110"
       type="primary"
       circle
       size="large"
@@ -12,13 +12,13 @@
       @contextmenu.prevent="fabCollapsed = true"
       @click="handleOpen"
     >
-      <FaSvgIcon :icon="resolveIconForFaSvgIcon('ai')" class="ai-icon" />
+      <FaSvgIcon :icon="resolveIconForFaSvgIcon('ai')" class="w-8 h-8" />
     </ElButton>
 
     <!-- 收缩态：贴边小标签，避免遮挡表单控件 -->
     <div
       v-if="!dialogVisible && fabCollapsed"
-      class="ai-fab-tab"
+      class="fixed z-9999 inline-flex items-center justify-center w-10.5 h-10.5 text-sm font-semibold text-(--el-color-white) cursor-pointer select-none bg-(--el-color-primary) rounded-full shadow-(--el-box-shadow)"
       :style="fabStyle"
       @click="fabCollapsed = false"
     >
@@ -32,17 +32,16 @@
       width="600px"
       :close-on-click-modal="false"
       draggable
-      class="ai-assistant-dialog"
     >
       <template #header>
-        <div class="dialog-header">
-          <FaSvgIcon :icon="resolveIconForFaSvgIcon('ai')" class="header-icon" />
-          <span class="title">AI 智能助手</span>
+        <div class="flex gap-3 items-center">
+          <FaSvgIcon :icon="resolveIconForFaSvgIcon('ai')" class="w-7 h-7" />
+          <span class="text-lg font-semibold text-(--el-text-color-primary)">AI 智能助手</span>
         </div>
       </template>
 
       <!-- 命令输入 -->
-      <div class="command-input">
+      <div class="mb-4">
         <ElInput
           v-model="command"
           type="textarea"
@@ -54,12 +53,12 @@
       </div>
 
       <!-- 快捷命令示例 -->
-      <div class="quick-commands">
-        <div class="section-title">💡 试试这些命令：</div>
+      <div class="mb-5">
+        <div class="mb-2 text-sm text-(--el-text-color-secondary)">💡 试试这些命令：</div>
         <ElTag
           v-for="example in examples"
           :key="example"
-          class="command-tag"
+          class="mr-2 mb-2 cursor-pointer transition-all duration-300 hover:shadow-(--el-box-shadow-light) hover:-translate-y-0.5"
           @click="command = example"
         >
           {{ example }}
@@ -67,37 +66,37 @@
       </div>
 
       <!-- AI 响应结果 -->
-      <div v-if="response" class="ai-response">
+      <div v-if="response" class="mt-4">
         <ElAlert :title="response.explanation" type="success" :closable="false" show-icon />
 
         <!-- 将要执行的操作 -->
-        <div v-if="response.action" class="action-preview">
-          <div class="action-title">🎯 将要执行：</div>
-          <div class="action-content">
+        <div v-if="response.action" class="p-3 mt-3 bg-(--el-fill-color-light) rounded-lg">
+          <div class="mb-2 text-sm font-semibold text-(--el-text-color-primary)">🎯 将要执行：</div>
+          <div class="flex gap-2 items-center text-(--el-text-color-regular)">
             <div v-if="response.action.type === 'navigate'">
-              <ElIcon><Position /></ElIcon>
+              <ElIcon class="text-(--el-color-primary)"><Position /></ElIcon>
               跳转到：
               <strong>{{ response.action.pageName }}</strong>
-              <span v-if="response.action.query" class="query-info">
+              <span v-if="response.action.query" class="ml-2">
                 并搜索：
                 <ElTag type="warning" size="small">{{ response.action.query }}</ElTag>
               </span>
             </div>
             <div v-if="response.action.type === 'navigate-and-execute'">
-              <ElIcon><Position /></ElIcon>
+              <ElIcon class="text-(--el-color-primary)"><Position /></ElIcon>
               跳转至：
               <strong>{{ response.action.pageName }}</strong>
-              <span v-if="response.action.query" class="query-info">
+              <span v-if="response.action.query" class="ml-2">
                 并搜索：
                 <ElTag type="warning" size="small">{{ response.action.query }}</ElTag>
               </span>
               <ElDivider direction="vertical" />
-              <ElIcon><Tools /></ElIcon>
+              <ElIcon class="text-(--el-color-primary)"><Tools /></ElIcon>
               执行：
               <strong>{{ response.action.functionCall.name }}</strong>
             </div>
             <div v-if="response.action.type === 'execute'">
-              <ElIcon><Tools /></ElIcon>
+              <ElIcon class="text-(--el-color-primary)"><Tools /></ElIcon>
               执行：
               <strong>{{ response.action.functionName }}</strong>
             </div>
@@ -106,7 +105,7 @@
       </div>
 
       <template #footer>
-        <div class="dialog-footer">
+        <div class="flex gap-3 justify-end">
           <ElButton @click="handleClose">取消</ElButton>
           <ElButton type="primary" :loading="loading" @click="handleExecute">
             <ElIcon><MagicStick /></ElIcon>
@@ -125,6 +124,7 @@ import { resolveIconForFaSvgIcon } from "@utils";
 import { nextTick, onBeforeUnmount, onMounted, watch, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
+import { MagicStick, Position, Tools } from "@element-plus/icons-vue";
 import { useSettingsStore } from "@stores";
 import { AiChatAPI, ChatSession, ChatSessionDetail } from "@/api/module_ai/chat";
 
@@ -777,128 +777,3 @@ onBeforeUnmount(() => {
   }
 });
 </script>
-
-<style scoped lang="scss">
-.ai-assistant {
-  .ai-fab-button {
-    position: fixed;
-    z-index: 9999;
-    width: 60px;
-    height: 60px;
-    box-shadow: var(--el-box-shadow);
-    transition: all 0.3s ease;
-
-    &:hover {
-      box-shadow: var(--el-box-shadow-dark);
-      transform: scale(1.1);
-    }
-
-    .ai-icon {
-      width: 32px;
-      height: 32px;
-    }
-  }
-
-  .ai-fab-tab {
-    position: fixed;
-    z-index: 9999;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--el-color-white);
-    cursor: pointer;
-    user-select: none;
-    background: var(--el-color-primary);
-    border-radius: 999px;
-    box-shadow: var(--el-box-shadow);
-  }
-}
-
-.ai-assistant-dialog {
-  .dialog-header {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-
-    .header-icon {
-      width: 28px;
-      height: 28px;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-    }
-  }
-
-  .command-input {
-    margin-bottom: 16px;
-  }
-
-  .quick-commands {
-    margin-bottom: 20px;
-
-    .section-title {
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: var(--el-text-color-secondary);
-    }
-
-    .command-tag {
-      margin-right: 8px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
-
-      &:hover {
-        box-shadow: var(--el-box-shadow-light);
-        transform: translateY(-2px);
-      }
-    }
-  }
-
-  .ai-response {
-    margin-top: 16px;
-
-    .action-preview {
-      padding: 12px;
-      margin-top: 12px;
-      background-color: var(--el-fill-color-light);
-      border-radius: 8px;
-
-      .action-title {
-        margin-bottom: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-      }
-
-      .action-content {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        color: var(--el-text-color-regular);
-
-        .el-icon {
-          color: var(--el-color-primary);
-        }
-
-        .query-info {
-          margin-left: 8px;
-        }
-      }
-    }
-  }
-
-  .dialog-footer {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-  }
-}
-</style>

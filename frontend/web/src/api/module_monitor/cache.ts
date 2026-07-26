@@ -47,7 +47,7 @@ const CacheAPI = {
 
   deleteCacheAll() {
     return request<ApiResponse>({
-      url: `${API_PATH}/delete/all`,
+      url: `${API_PATH}/clear`,
       method: "delete",
     });
   },

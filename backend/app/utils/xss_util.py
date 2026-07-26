@@ -97,8 +97,7 @@ ALLOWED_STYLES = [
 
 
 def sanitize_html(content: str) -> str:
-    """
-    清理 HTML 内容，移除潜在的 XSS 攻击代码。
+    """清理 HTML 内容，移除潜在的 XSS 攻击代码。
 
     参数:
     - content (str): 需要清理的 HTML 内容

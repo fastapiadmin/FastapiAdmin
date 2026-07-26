@@ -1,8 +1,8 @@
 <!-- 返回顶部按钮 -->
 <template>
   <Transition
-    enter-active-class="tad-300 ease-out"
-    leave-active-class="tad-200 ease-in"
+    enter-active-class="transition duration-300 ease-out"
+    leave-active-class="transition duration-200 ease-in"
     enter-from-class="opacity-0 translate-y-2"
     enter-to-class="opacity-100 translate-y-0"
     leave-from-class="opacity-100 translate-y-0"
@@ -10,7 +10,7 @@
   >
     <div
       v-show="showButton"
-      class="fixed right-10 bottom-15 size-9.5 flex-cc c-p border border-g-300 rounded-md tad-300 hover:bg-g-200"
+      class="fixed right-10 bottom-15 size-9.5 flex items-center justify-center cursor-pointer border border-g-300 rounded-md transition duration-300 hover:bg-g-200"
       @click="scrollToTop"
     >
       <FaSvgIcon icon="ri:arrow-up-wide-line" class="text-g-500 text-lg" />

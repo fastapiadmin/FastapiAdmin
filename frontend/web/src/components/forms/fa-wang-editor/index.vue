@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import "@wangeditor-next/editor/dist/css/style.css";
-import { onBeforeUnmount, onMounted, shallowRef, computed } from "vue";
+import { onBeforeUnmount, onMounted, onUnmounted, shallowRef, computed } from "vue";
 import { Editor, Toolbar } from "@wangeditor-next/editor-for-vue";
 import { useUserStore } from "@stores";
 import { request, EmojiText } from "@utils";
@@ -184,7 +184,13 @@ const onCreateEditor = (editor: IDomEditor) => {
   applyCustomIcons();
 };
 
+// 图标重试定时器（提升到顶层以便 onUnmounted 访问）
+let _iconTimerId: ReturnType<typeof setTimeout> | null = null;
+
 // 应用自定义图标（带重试机制）
+//
+// 注意：递归 setTimeout 用于等待 wangEditor 工具栏 DOM 渲染完成。
+// 组件卸载时必须清理，避免定时器在编辑器实例已销毁后继续执行。
 const applyCustomIcons = () => {
   let retryCount = 0;
   const maxRetries = 10;
@@ -195,7 +201,7 @@ const applyCustomIcons = () => {
     if (!editor) {
       if (retryCount < maxRetries) {
         retryCount++;
-        setTimeout(tryApplyIcons, retryDelay);
+        _iconTimerId = setTimeout(tryApplyIcons, retryDelay);
       }
       return;
     }
@@ -205,7 +211,7 @@ const applyCustomIcons = () => {
     if (!editorContainer) {
       if (retryCount < maxRetries) {
         retryCount++;
-        setTimeout(tryApplyIcons, retryDelay);
+        _iconTimerId = setTimeout(tryApplyIcons, retryDelay);
       }
       return;
     }
@@ -220,7 +226,7 @@ const applyCustomIcons = () => {
     // 如果工具栏还没渲染完成，继续重试
     if (retryCount < maxRetries) {
       retryCount++;
-      setTimeout(tryApplyIcons, retryDelay);
+      _iconTimerId = setTimeout(tryApplyIcons, retryDelay);
     } else {
       console.warn("工具栏渲染超时，无法应用自定义图标 - 编辑器实例:", editor.id);
     }
@@ -229,6 +235,14 @@ const applyCustomIcons = () => {
   // 使用 requestAnimationFrame 确保在下一帧执行
   requestAnimationFrame(tryApplyIcons);
 };
+
+// 组件卸载时清理挂起的重试定时器（需在 setup 顶层注册）
+onUnmounted(() => {
+  if (_iconTimerId !== null) {
+    clearTimeout(_iconTimerId);
+    _iconTimerId = null;
+  }
+});
 
 // 暴露编辑器实例和方法
 defineExpose({
@@ -349,7 +363,7 @@ $box-radius: calc(var(--custom-radius) / 3 + 2px);
   .w-e-bar-divider {
     height: 20px;
     margin-top: 10px;
-    background-color: #ccc;
+    background-color: var(--fa-gray-400);
   }
 
   /* 工具栏菜单 */
@@ -498,14 +512,14 @@ $box-radius: calc(var(--custom-radius) / 3 + 2px);
       transition: border 0.3s;
 
       &:hover {
-        border: 1px solid #318ef4 !important;
+        border: 1px solid var(--el-color-primary) !important;
       }
     }
 
     .w-e-image-dragger {
       width: 12px;
       height: 12px;
-      background-color: #318ef4;
+      background-color: var(--el-color-primary);
       border: 2px solid #fff;
       border-radius: $box-radius;
     }

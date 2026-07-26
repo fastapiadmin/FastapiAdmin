@@ -1,26 +1,36 @@
-// 重置默认样式
-@use "./core/reset";
+// ============================================================
+// 全局样式入口（src/styles/index.scss）
+// ============================================================
+// 目录结构：
+//   core/           全局基础（重置、mixin、Tailwind、tokens、NProgress）
+//   layouts/        全局布局（app-layout 框架结构）
+//   element-plus/   EP 主题与样式覆写（theme / overrides / dark）
+//   animations/     全局动画（路由切换、主题切换、列表入场）
+//   pages/          页面级全局样式（登录页等）
+// ============================================================
 
-// 应用全局样式
+// ---------- core/ ----------
+@use "./core/reset";
+@use "./core/nprogress";
+@use "./core/box-mode";
 @use "./core/app";
 
-// Element Plus 样式优化
-@use "./core/el-ui";
+// ---------- layouts/ ----------
+@use "./layouts/layouts";
 
-// Element Plus 功能性颜色覆写 CSS 变量
-@use "./core/variables";
+// ---------- element-plus/ ----------
+// Element Plus 主题 SCSS 变量覆写（影响 EP 组件编译时的 $colors 等）
+@use "./element-plus/theme";
+// Element Plus 组件样式覆写（按钮、弹窗、表格等）
+@use "./element-plus/overrides";
+// 暗黑主题
+@use "./element-plus/dark";
 
-// Element Plus 暗黑主题
-@use "./core/el-dark";
+// ---------- animations/ ----------
+@use "./animations/router-transition";
+@use "./animations/theme-change";
+@use "./animations/theme-animation";
+@use "./animations/list-animation";
 
-// 暗黑主题样式优化
-@use "./core/dark";
-
-// 路由切换动画
-@use "./core/router-transition";
-
-// 主题切换过渡优化
-@use "./core/theme-change";
-
-// 主题切换圆形扩散动画
-@use "./core/theme-animation";
+// ---------- pages/ ----------
+@use "./pages/login";

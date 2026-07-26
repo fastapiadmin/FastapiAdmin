@@ -12,7 +12,6 @@
 import type { EChartsOption } from "@/plugins/echarts";
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 import type { RingChartProps } from "@/types/component/chart";
-
 defineOptions({ name: "FaRingChart" });
 
 const props = withDefaults(defineProps<RingChartProps>(), {

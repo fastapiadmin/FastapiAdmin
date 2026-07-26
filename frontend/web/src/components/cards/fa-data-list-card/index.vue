@@ -6,8 +6,12 @@
       <p class="text-sm text-g-600">{{ subtitle }}</p>
     </div>
     <ElScrollbar :style="{ height: maxHeight }">
-      <div v-for="(item, index) in list" :key="index" class="flex-c py-2">
-        <div v-if="item.icon" class="flex-cc mr-3 size-10 rounded-lg" :class="item.class">
+      <div v-for="item in list" :key="item.title" class="flex items-center py-2">
+        <div
+          v-if="item.icon"
+          class="flex items-center justify-center mr-3 size-10 rounded-lg"
+          :class="item.class"
+        >
           <FaSvgIcon :icon="item.icon" class="text-xl" />
         </div>
         <div class="flex-1">
@@ -17,12 +21,7 @@
         <div class="ml-3 text-xs text-g-500">{{ item.time }}</div>
       </div>
     </ElScrollbar>
-    <ElButton
-      class="mt-[25px] w-full text-center"
-      v-if="showMoreButton"
-      v-ripple
-      @click="handleMore"
-    >
+    <ElButton class="mt-6.25 w-full text-center" v-if="showMoreButton" v-ripple @click="handleMore">
       查看更多
     </ElButton>
   </div>

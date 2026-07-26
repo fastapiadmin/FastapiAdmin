@@ -30,8 +30,7 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
         )
 
     async def __call__(self, request: Request) -> str | None:
-        """
-        重写认证方法,校验token
+        """重写认证方法,校验token
 
         参数:
         - request (Request): FastAPI请求对象。
@@ -45,7 +44,7 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
         authorization = request.headers.get("Authorization")
         scheme, token = get_authorization_scheme_param(authorization)
 
-        if not authorization or scheme.lower() != settings.TOKEN_TYPE:
+        if not authorization or scheme.lower() != settings.TOKEN_TYPE.lower():
             if self.auto_error:
                 raise CustomException(msg="认证失败,请登录后再试", code=10401, status_code=401)
             return None
@@ -53,8 +52,7 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
 
 
 class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
-    """
-    自定义登录表单,扩展验证码等字段
+    """自定义登录表单,扩展验证码等字段
 
     参数:
     - grant_type (str | None): 授权类型,默认值为None,正则表达式为'password'。
@@ -98,8 +96,7 @@ OAuth2Schema = CustomOAuth2PasswordBearer(token_url="system/auth/login", descrip
 
 
 def create_access_token(payload: JWTPayloadSchema) -> str:
-    """
-    生成JWT访问令牌
+    """生成JWT访问令牌
 
     参数:
     - payload (JWTPayloadSchema): JWT有效载荷,包含用户信息等。
@@ -118,12 +115,12 @@ def create_access_token(payload: JWTPayloadSchema) -> str:
     )
 
 
-def decode_access_token(token: str) -> JWTPayloadSchema:
-    """
-    解析JWT访问令牌
+def decode_access_token(token: str, verify_exp: bool = True) -> JWTPayloadSchema:
+    """解析JWT访问令牌
 
     参数:
     - token (str): JWT访问令牌字符串。
+    - verify_exp (bool): 是否校验 exp 声明。滑动续期场景设为 False，由 Redis session 决定有效期。
 
     返回:
     - JWTPayloadSchema: 解析后的JWT有效载荷,包含用户信息等。
@@ -135,7 +132,10 @@ def decode_access_token(token: str) -> JWTPayloadSchema:
         raise CustomException(msg="认证不存在,请重新登录", code=10401, status_code=401)
 
     try:
-        payload = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        options: dict = {}
+        if not verify_exp:
+            options["verify_exp"] = False
+        payload = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=[settings.ALGORITHM], options=options)  # type: ignore[arg-type]
 
         online_user_info = payload.get("sub")
         if not online_user_info:

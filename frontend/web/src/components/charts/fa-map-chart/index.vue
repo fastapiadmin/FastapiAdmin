@@ -4,7 +4,7 @@
     class="relative w-full h-100 p-5 mb-5 max-sm:mb-4"
     :style="{ height: 'calc(100vh - 180px)' }"
   >
-    <div v-if="isEmpty" class="h-full flex-cc">
+    <div v-if="isEmpty" class="h-full flex items-center justify-center">
       <ElEmpty description="暂无地图数据" />
     </div>
 
@@ -17,7 +17,6 @@ import { echarts } from "@/plugins/echarts";
 import { useSettingsStore } from "@stores";
 import chinaMapJson from "@/mock/json/chinaMap.json";
 import type { MapChartProps } from "@/types/component/chart";
-
 defineOptions({ name: "FaMapChart" });
 
 const chinaMapRef = ref<HTMLElement | null>(null);
@@ -206,7 +205,10 @@ const initMap = async (): Promise<void> => {
 
   chartInstance.value = echarts.init(chinaMapRef.value);
 
-  echarts.registerMap("china", chinaMapJson as any);
+  echarts.registerMap(
+    "china",
+    chinaMapJson as unknown as Parameters<typeof echarts.registerMap>[1]
+  );
   const mapData = props.mapData.length > 0 ? props.mapData : prepareMapData(chinaMapJson);
   const option = createChartOption(mapData);
 

@@ -21,6 +21,14 @@ const OnlineAPI = {
     });
   },
 
+  // 获取当前用户自己的在线会话
+  listCurrentOnline() {
+    return request<ApiResponse<OnlineUserTable[]>>({
+      url: `${API_PATH}/current`,
+      method: "get",
+    });
+  },
+
   // 强退用户
   clearOnline() {
     return request<ApiResponse>({
@@ -32,7 +40,7 @@ const OnlineAPI = {
 
 export default OnlineAPI;
 
-export interface OnlineUserPageQuery extends PageQuery {
+export interface OnlineUserPageQuery extends PageQuery, UserByQueryParams {
   ipaddr?: string;
   name?: string;
   login_location?: string;
@@ -41,8 +49,7 @@ export interface OnlineUserPageQuery extends PageQuery {
 export interface OnlineUserTable {
   session_id: string;
   user_id: number;
-  tenant_id?: number;
-  is_super_admin?: boolean;
+  is_superuser?: boolean;
   name: string;
   user_name: string;
   ipaddr?: string;

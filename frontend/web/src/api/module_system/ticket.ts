@@ -25,22 +25,39 @@ const TicketAPI = {
   exportTicket(query?: TicketPageQuery) {
     return request<ApiResponse<Blob>>({
       url: `${API_PATH}/export`,
-      method: "get",
-      params: query,
+      method: "post",
+      data: query,
       responseType: "blob",
     });
   },
-  batchTicket(body: { ids: number[]; status: string }) {
+  batchTicket(body: { ids: number[]; status: number }) {
     return request<ApiResponse>({ url: `${API_PATH}/batch`, method: "put", data: body });
   },
 };
 
+export function getTicketComments(ticketId: number, params?: PageQuery) {
+  return request<ApiResponse<PageResult<TicketCommentTable>>>({
+    url: `${API_PATH}/${ticketId}/comments`,
+    method: "get",
+    params,
+  });
+}
+
+export function createTicketComment(ticketId: number, data: TicketCommentCreateForm) {
+  return request<ApiResponse<TicketCommentTable>>({
+    url: `${API_PATH}/${ticketId}/comments`,
+    method: "post",
+    data,
+  });
+}
+
 export default TicketAPI;
 
-export interface TicketPageQuery extends PageQuery {
+export interface TicketPageQuery extends PageQuery, UserByQueryParams {
   title?: string;
   ticket_type?: string;
   assigned_id?: number;
+  status?: number;
 }
 
 export interface TicketTable extends BaseType {
@@ -51,9 +68,9 @@ export interface TicketTable extends BaseType {
   images?: string;
   reply?: string;
   assigned_id?: number;
-  assigned_by?: { id: number; name: string; avatar?: string };
-  created_by?: { id: number; name: string; avatar?: string };
-  updated_by?: { id: number; name: string; avatar?: string };
+  assigned_by?: CommonType;
+  status?: number;
+  description?: string;
 }
 
 export interface TicketCreateForm {
@@ -77,7 +94,6 @@ export interface TicketUpdateForm {
 }
 
 export interface TicketForm extends BaseFormType {
-  id?: number;
   title: string;
   ticket_content?: string;
   summary?: string;
@@ -85,4 +101,21 @@ export interface TicketForm extends BaseFormType {
   images?: string;
   reply?: string;
   assigned_id?: number;
+  status?: number;
+  description?: string;
+}
+
+// ─── 评论 ───
+export interface TicketCommentTable extends BaseType {
+  ticket_id: number;
+  content: string;
+  created_by_name?: string;
+}
+
+export interface TicketCommentPageQuery extends PageQuery {
+  ticket_id: number;
+}
+
+export interface TicketCommentCreateForm {
+  content: string;
 }

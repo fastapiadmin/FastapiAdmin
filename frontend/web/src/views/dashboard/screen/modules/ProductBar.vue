@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import * as echarts from "echarts";
+import { echarts } from "@/plugins/echarts";
 
 defineOptions({ name: "ProductBar" });
 
@@ -21,7 +21,7 @@ const textStyle = { color: "#94a3b8", fontSize: 10 };
 function initChart(dom: HTMLDivElement) {
   chart = echarts.init(dom);
   chart.setOption({
-    grid: { top: 5, right: 40, bottom: 10, left: 10, containLabel: true },
+    grid: { top: 5, right: 40, bottom: 10, left: 10, outerBounds: true },
     xAxis: { type: "value", splitLine: { lineStyle: { color: "#1a2050" } }, axisLabel: textStyle },
     yAxis: {
       type: "category",

@@ -27,7 +27,7 @@ pnpm dev
 
 ### 与后端联调
 
-1. 先启动 **FastAPI Admin 后端**，监听地址与 **`.env.development`** 里 **`VITE_API_BASE_URL`** 一致（模板默认为 **`http://127.0.0.1:8001`**）。
+1. 先启动 **FastAPI Admin 后端**，监听地址与 **`.env.dev`** 里 **`VITE_API_BASE_URL`** 一致（模板默认为 **`http://127.0.0.1:8001`**）。
 2. 前端开发时，浏览器请求发往当前页面同源路径，由 **Vite `server.proxy`** 把 **`VITE_APP_BASE_API`**（如 `/api/v1`）转发到上述后端。
 3. 若页面提示「连接被拒绝」，检查后端是否启动、端口是否一致，或把 **`VITE_API_BASE_URL`** 改成你的实际后端地址。
 
@@ -67,7 +67,7 @@ main.ts 启动
 
 | 命令                                          | 说明                                                          |
 | --------------------------------------------- | ------------------------------------------------------------- |
-| `pnpm dev`                                    | 本地开发（读取 `.env` + `.env.development`）                  |
+| `pnpm dev`                                    | 本地开发（读取 `.env` + `.env.dev`）                          |
 | `pnpm dev:force`                              | 强制预打包依赖后启动（缓存异常时）                            |
 | `pnpm build`                                  | `vue-tsc` 类型检查 + 生产构建，产物在 **`dist/`**             |
 | `pnpm build:dev` / `build:test` / `build:pro` | 按 mode 构建（需对应 env 文件）                               |
@@ -127,7 +127,7 @@ src/
 | `VITE_APP_WS_ENDPOINT` | WebSocket（如 AI 对话）                          |
 | `VITE_APP_TITLE`       | 页面标题（可被后端参数配置覆盖）                 |
 
-完整列表以仓库内 **`.env`**、**`.env.development`** 为准；模板说明见 **`.env.example`**。修改任一 env 后需 **重启** `pnpm dev`。
+完整列表以仓库内 **`.env`**、**`.env.dev`** 为准；模板说明见 **`.env.example`**。修改任一 env 后需 **重启** `pnpm dev`。
 
 ## 路由与菜单
 
@@ -160,119 +160,3 @@ src/
 
 - **格式化与校验**：`pnpm lint`
 - **提交**：husky、lint-staged、commitlint；可使用 **`pnpm commit`**（Commitizen / cz-git）
-
-/\*\*
-
-- 浅蓝色系主题 — #1975FC
--
-- 来源：花瓣网 B端淡蓝色配色参考
-- 主色 #1975FC — 明快透亮、B端专业感
--
-- 【启用方式】在本文件中取消注释对应主题模式的变量块，
-- 并在 src/styles/index.scss 中 @use "./core/theme-blue";
-- 同时在 src/config/setting.ts 中将 themeColor 改为 "#1975FC"。
--
-- 【色阶 palette】
-- #f8fcff 最浅底色（页面背景）
-- #f0f5ff 浅蓝悬停态
-- #e5f2ff 选中态 / tag 背景
-- #c5ddff 浅蓝边框 / 分割线点缀
-- #82b8ff 中浅蓝（图标辅助色）
-- #1975FC ★ 主色
-- #115ac8 深蓝（hover 按下态）
--
-- 【功能色】
-- success: #16a34a
-- warning: #d97706
-- danger: #dc2626
-- error: #fa896b
-- info: #8b92a0
--
-- ================================================================
-  \*/
-
-// ================================================================
-// 亮色主题 — 浅蓝色系
-// ================================================================
-
-// :root {
-// /_ ---- 侧边栏 ---- _/
-// --sidebar-bg-color: #ffffff;
-// --sidebar-border-color: #edf0f2;
-// --sidebar-text-color: #485260;
-// --sidebar-text-hover-color: #1975fc;
-// --sidebar-text-active-color: #1975fc;
-// --sidebar-bg-hover-color: #f0f5ff;
-// --sidebar-bg-active-color: #e5f2ff;
-// --sidebar-logo-color: #121926;
-// --sidebar-section-title-color: #8b92a0;
-//
-// /_ ---- 页面 ---- _/
-// --main-bg-color: #f4f6f9;
-// --header-bg-color: #ffffff;
-// --header-border-color: #edf0f2;
-//
-// /_ ---- 卡片 ---- _/
-// --card-bg-color: #ffffff;
-// --card-border-color: #edf0f2;
-//
-// /_ ---- 表格 ---- _/
-// --table-header-bg: #f8fafc;
-// --table-header-color: #8b92a0;
-// --table-row-hover-bg: #f8fafc;
-// --table-border-color: #edf0f2;
-//
-// /_ ---- 文字 ---- _/
-// --text-primary: #121926;
-// --text-regular: #334155;
-// --text-secondary: #8b92a0;
-//
-// /_ ---- 标签 ---- _/
-// --tag-bg-color: #e5f2ff;
-// --tag-text-color: #1975fc;
-//
-// /_ ---- 按钮 —— 由 Element Plus 通过 primary 色阶自动生成 ---- _/
-// /_ ---- 进度条 ---- _/
-// --nprogress-color: #1975fc;
-//
-// /_ ---- 边框模式 ---- _/
-// --fa-card-border: #edf0f2;
-// --default-box-color: #ffffff;
-// --default-border: #edf0f2;
-// --custom-radius: 0.75rem;
-// }
-
-// ================================================================
-// 暗色主题 — 浅蓝色系（可选）
-// ================================================================
-
-// html.dark {
-// --sidebar-bg-color: #0c1031;
-// --sidebar-border-color: #1a1e3d;
-// --sidebar-text-color: #a8adcc;
-// --sidebar-text-hover-color: #5c9fff;
-// --sidebar-text-active-color: #1975fc;
-// --sidebar-bg-hover-color: rgba(25, 117, 252, 0.15);
-// --sidebar-bg-active-color: rgba(25, 117, 252, 0.25);
-// --sidebar-logo-color: #ffffff;
-// --sidebar-section-title-color: #6b7094;
-//
-// --main-bg-color: #0f1420;
-// --header-bg-color: #151a2d;
-// --header-border-color: #1a1e3d;
-//
-// --card-bg-color: #151a2d;
-// --card-border-color: #1a1e3d;
-//
-// --table-header-bg: #1a1e3d;
-// --table-header-color: #6b7094;
-// --table-row-hover-bg: #1a1e3d;
-// --table-border-color: #1a1e3d;
-//
-// --text-primary: #e5e7eb;
-// --text-regular: #a8adcc;
-// --text-secondary: #6b7094;
-//
-// --tag-bg-color: rgba(25, 117, 252, 0.2);
-// --tag-text-color: #5c9fff;
-// }

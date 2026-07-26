@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-
-from fastapi import Query
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -9,8 +6,7 @@ from pydantic import (
     model_validator,
 )
 
-from app.common.enums import QueueEnum
-from app.core.base_schema import BaseSchema, TenantBySchema, UserBySchema
+from app.core.base_schema import BaseQueryParam, BaseSchema, UserByQueryParam, UserBySchema
 from app.core.validator import DateStr, DateTimeStr, TimeStr
 
 
@@ -33,8 +29,7 @@ class DemoCreateSchema(BaseModel):
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
-        """
-        验证名称字段的格式和内容。
+        """验证名称字段的格式和内容。
 
         参数:
         - v (str): 原始名称。
@@ -53,14 +48,13 @@ class DemoCreateSchema(BaseModel):
 
     @model_validator(mode="after")
     def _after_validation(self):
-        """
-        核心业务规则校验
+        """核心业务规则校验
         """
         # 长度校验：名称最小长度
         if len(self.name) < 2 or len(self.name) > 50:
             raise ValueError("名称长度必须在2-50个字符之间")
         # 格式校验：名称只能包含字母、数字、下划线和中划线
-        if not self.name.isalnum() and not all(c in "-_" for c in self.name):
+        if not all(c.isalnum() or c in "-_" for c in self.name):
             raise ValueError("名称只能包含字母、数字、下划线和中划线")
         if self.status not in [0, 1]:
             raise ValueError("是否启用必须为0或1")
@@ -70,55 +64,32 @@ class DemoCreateSchema(BaseModel):
         return self
 
 
-class DemoUpdateSchema(DemoCreateSchema):
+class DemoUpdateSchema(BaseModel):
     """更新模型"""
 
+    name: str | None = Field(default=None, description="名称")
+    status: int | None = Field(default=None, ge=0, le=1, description="是否启用(0:启用 1:禁用)")
+    description: str | None = Field(default=None, description="描述")
+    int_val: int | None = Field(default=None, description="整数")
+    bigint_val: int | None = Field(default=None, description="大整数")
+    float_val: float | None = Field(default=None, description="浮点数")
+    bool_val: bool | None = Field(default=None, description="布尔型")
+    date_val: DateStr | None = Field(default=None, description="日期")
+    time_val: TimeStr | None = Field(default=None, description="时间")
+    datetime_val: DateTimeStr | None = Field(default=None, description="日期时间")
+    text_val: str | None = Field(default=None, description="长文本")
+    json_val: dict | None = Field(default=None, description="元数据(JSON格式)")
 
-class DemoOutSchema(DemoCreateSchema, BaseSchema, UserBySchema, TenantBySchema):
+
+class DemoOutSchema(DemoCreateSchema, BaseSchema, UserBySchema):
     """响应模型"""
 
     model_config = ConfigDict(from_attributes=True)
 
 
-@dataclass
-class DemoQueryParam:
-    """示例查询参数"""
+class DemoQueryParam(BaseQueryParam, UserByQueryParam):
+    """示例查询参数（演示 Mixin 继承用法）"""
 
-    def __init__(
-        self,
-        name: str | None = Query(None, description="名称"),
-        description: str | None = Query(None, description="描述"),
-        status: str | None = Query(None, description="是否启用"),
-        created_time: list[DateTimeStr] | None = Query(
-            None,
-            description="创建时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        updated_time: list[DateTimeStr] | None = Query(
-            None,
-            description="更新时间范围",
-            examples=["2025-01-01 00:00:00", "2025-12-31 23:59:59"],
-        ),
-        created_id: int | None = Query(None, description="创建人"),
-        updated_id: int | None = Query(None, description="更新人"),
-    ) -> None:
-        # 模糊查询字段
-        self.name = (QueueEnum.like.value, name)
-        if description:
-            self.description = (QueueEnum.like.value, description)
-
-        # 精确查询字段
-        if status:
-            self.status = (QueueEnum.eq.value, status)
-
-        # 时间范围查询
-        if created_time and len(created_time) == 2:
-            self.created_time = (QueueEnum.between.value, (created_time[0], created_time[1]))
-        if updated_time and len(updated_time) == 2:
-            self.updated_time = (QueueEnum.between.value, (updated_time[0], updated_time[1]))
-
-        # 关联查询字段
-        if created_id:
-            self.created_id = (QueueEnum.eq.value, created_id)
-        if updated_id:
-            self.updated_id = (QueueEnum.eq.value, updated_id)
+    name: str | None = Field(None, description="名称", json_schema_extra={"q": "like"})
+    description: str | None = Field(None, description="描述", json_schema_extra={"q": "like"})
+    status: int | None = Field(None, description="是否启用", json_schema_extra={"q": "eq"})

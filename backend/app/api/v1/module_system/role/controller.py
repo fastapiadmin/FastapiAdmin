@@ -1,232 +1,115 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Query, Security, status
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
-from app.core.base_params import PaginationQueryParam
-from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
-from app.core.dependencies import AuthPermission
+from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema, PaginationQueryParam
+from app.core.dependencies import AuthPermission, db_getter
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
-from .schema import (
-    RoleCreateSchema,
-    RoleOutSchema,
-    RolePermissionSettingSchema,
-    RoleQueryParam,
-    RoleUpdateSchema,
-)
+from .schema import RoleCreateSchema, RoleOutSchema, RolePermissionSettingSchema, RoleQueryParam, RoleUpdateSchema
 from .service import RoleService
 
-RoleRouter = APIRouter(route_class=OperationLogRoute, prefix="/role", tags=["系统管理/角色管理"])
-
-_ROLE_NS = "role"
+RoleRouter = APIRouter(route_class=OperationLogRoute, prefix="/role", tags=["角色管理"])
 
 
-@RoleRouter.get(
-    "/list",
-    summary="查询角色",
-    response_model=ResponseSchema[PageResultSchema[RoleOutSchema]],
-)
-@cache(expire=300, namespace=_ROLE_NS)
-async def get_obj_list_controller(
+@RoleRouter.get("/list", summary="查询角色", response_model=ResponseSchema[PageResultSchema[RoleOutSchema]])
+async def get_role_list_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:query"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
     page: Annotated[PaginationQueryParam, Depends()],
-    search: Annotated[RoleQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:query']))],
+    search: Annotated[RoleQueryParam, Query()],
 ) -> JSONResponse:
-    """
-    查询角色
-
-    参数:
-    - page (PaginationQueryParam): 分页查询参数模型
-    - search (RoleQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 分页查询结果JSON响应
-    """
-    order_by = [{"order": "asc"}]
-    if page.order_by:
-        order_by = page.order_by
-    result_dict = await RoleService.get_role_page_service(
-        auth=auth,
+    result_dict = await RoleService(auth, db).page(
         page_no=page.page_no,
         page_size=page.page_size,
         search=search,
-        order_by=order_by,
+        order_by=page.order_by,
     )
     return SuccessResponse(data=result_dict, msg="查询角色成功")
 
 
-@RoleRouter.get(
-    "/detail/{id}",
-    summary="查询角色详情",
-    response_model=ResponseSchema[RoleOutSchema],
-)
-async def get_obj_detail_controller(
-    id: Annotated[int, Path(description="角色ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:detail']))],
+@RoleRouter.get("/detail/{id}", summary="查询角色详情", response_model=ResponseSchema[RoleOutSchema])
+async def get_role_detail_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:detail"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    id: Annotated[int, Path(description="角色ID", ge=1)],
 ) -> JSONResponse:
-    """
-    查询角色详情
-
-    参数:
-    - id (int): 角色ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 角色详情JSON响应
-    """
-    result_dict = await RoleService.get_role_detail_service(id=id, auth=auth)
+    result_dict = await RoleService(auth, db).detail(id=id)
     return SuccessResponse(data=result_dict, msg="获取角色详情成功")
 
 
-@RoleRouter.post(
-    "/create",
-    summary="创建角色",
-    response_model=ResponseSchema[RoleOutSchema],
-)
-async def create_obj_controller(
-    data: RoleCreateSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:create']))],
+@RoleRouter.post("/create", status_code=status.HTTP_201_CREATED, summary="创建角色", response_model=ResponseSchema[RoleOutSchema])
+async def create_role_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:create"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[RoleCreateSchema, Body(description="角色创建参数")],
 ) -> JSONResponse:
-    """
-    创建角色
-
-    参数:
-    - data (RoleCreateSchema): 创建角色模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 创建角色JSON响应
-    """
-    result_dict = await RoleService.create_role_service(data=data, auth=auth)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    result_dict = await RoleService(auth, db).create(data=data)
     return SuccessResponse(data=result_dict, msg="创建角色成功")
 
 
-@RoleRouter.put(
-    "/update/{id}",
-    summary="修改角色",
-    response_model=ResponseSchema[RoleOutSchema],
-)
-async def update_obj_controller(
-    data: RoleUpdateSchema,
-    id: Annotated[int, Path(description="角色ID")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:update']))],
+@RoleRouter.put("/update/{id}", summary="修改角色", response_model=ResponseSchema[RoleOutSchema])
+async def update_role_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:update"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    id: Annotated[int, Path(description="角色ID", ge=1)],
+    data: Annotated[RoleUpdateSchema, Body(description="角色修改参数")],
 ) -> JSONResponse:
-    """
-    修改角色
-
-    参数:
-    - data (RoleUpdateSchema): 修改角色模型
-    - id (int): 角色ID
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 修改角色JSON响应
-    """
-    result_dict = await RoleService.update_role_service(id=id, data=data, auth=auth)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    result_dict = await RoleService(auth, db).update(id=id, data=data)
     return SuccessResponse(data=result_dict, msg="修改角色成功")
 
 
-@RoleRouter.delete(
-    "/delete",
-    summary="删除角色",
-    response_model=ResponseSchema[None],
-)
-async def delete_obj_controller(
+@RoleRouter.delete("/delete", summary="删除角色", response_model=ResponseSchema[None])
+async def delete_role_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:delete"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
     ids: Annotated[list[int], Body(description="ID列表")],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:delete']))],
 ) -> JSONResponse:
-    """
-    删除角色
-
-    参数:
-    - ids (list[int]): ID列表
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 删除角色JSON响应
-    """
-    await RoleService.delete_role_service(ids=ids, auth=auth)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await RoleService(auth, db).delete(ids=ids)
     return SuccessResponse(msg="删除角色成功")
 
 
-@RoleRouter.patch(
-    "/status/batch",
-    summary="批量修改角色状态",
-    response_model=ResponseSchema[None],
-)
-async def batch_set_available_obj_controller(
-    data: BatchSetAvailable,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:patch']))],
+@RoleRouter.patch("/status/batch", summary="批量修改角色状态", response_model=ResponseSchema[None])
+async def batch_set_available_role_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:patch"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[BatchSetAvailable, Body(description="状态设置")],
 ) -> JSONResponse:
-    """
-    批量修改角色状态
-
-    参数:
-    - data (BatchSetAvailable): 批量修改角色状态模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 批量修改角色状态JSON响应
-    """
-    await RoleService.set_role_available_service(data=data, auth=auth)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await RoleService(auth, db).set_available(data=data)
     return SuccessResponse(msg="批量修改角色状态成功")
 
 
-@RoleRouter.put(
-    "/permission",
-    summary="角色授权",
-    response_model=ResponseSchema[None],
-)
+@RoleRouter.put("/permission", summary="角色授权", response_model=ResponseSchema[None])
 async def set_role_permission_controller(
-    data: RolePermissionSettingSchema,
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:permission']))],
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:permission"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    data: Annotated[RolePermissionSettingSchema, Body(description="角色授权参数")],
 ) -> JSONResponse:
-    """
-    角色授权
-
-    参数:
-    - data (RolePermissionSettingSchema): 角色授权模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - JSONResponse: 角色授权JSON响应
-    """
-    await RoleService.set_role_permission_service(data=data, auth=auth)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await RoleService(auth, db).set_permission(data=data)
     return SuccessResponse(msg="授权角色成功")
 
 
-@RoleRouter.get(
-    "/export",
-    summary="导出角色",
-    response_model=ResponseSchema[None],
-)
-async def export_obj_list_controller(
-    search: Annotated[RoleQueryParam, Depends()],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(['module_system:role:export']))],
+@RoleRouter.get("/options", summary="获取角色下拉选项", response_model=ResponseSchema[list[dict[str, int | str]]])
+async def get_role_options_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:query"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+) -> JSONResponse:
+    options = await RoleService(auth, db).get_options()
+    return SuccessResponse(data=options, msg="获取角色选项成功")
+
+
+@RoleRouter.post("/export", summary="导出角色")
+async def export_role_list_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:role:export"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+    search: Annotated[RoleQueryParam, Body()],
 ) -> StreamingResponse:
-    """
-    导出角色
-
-    参数:
-    - search (RoleQueryParam): 查询参数模型
-    - auth (AuthSchema): 认证信息模型
-
-    返回:
-    - StreamingResponse: 导出角色流响应
-    """
-    role_query_result = await RoleService.get_role_list_service(search=search, auth=auth)
-    role_export_result = await RoleService.export_role_list_service(role_list=role_query_result)
+    role_query_result = await RoleService(auth, db).get_list(search=search)
+    role_export_result = RoleService.export_list(role_list=[item.model_dump() for item in role_query_result])
 
     return StreamResponse(
         data=bytes2file_response(role_export_result),

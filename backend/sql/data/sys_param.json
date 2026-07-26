@@ -1,0 +1,138 @@
+[
+    {
+        "config_name": "演示模式启用",
+        "config_key": "demo_enable",
+        "config_value": "off",
+        "config_type": true,
+        "status": 0,
+        "description": "是否启用演示模式（启用后非白名单IP只允许GET请求）"
+    },
+    {
+        "config_name": "演示访问IP白名单",
+        "config_key": "ip_white_list",
+        "config_value": "[\"127.0.0.1\"]",
+        "config_type": true,
+        "status": 0,
+        "description": "演示模式下允许访问的IP列表"
+    },
+    {
+        "config_name": "访问IP黑名单",
+        "config_key": "ip_black_list",
+        "config_value": "[]",
+        "config_type": true,
+        "status": 0,
+        "description": "禁止访问的IP列表（任意请求均拒绝）"
+    },
+    {
+        "config_name": "Logo URL",
+        "config_key": "logo_url",
+        "config_value": "https://service.fastapiadmin.com/api/v1/static/image/logo.svg",
+        "config_type": true,
+        "status": 0,
+        "description": "平台Logo地址"
+    },
+    {
+        "config_name": "Favicon 地址",
+        "config_key": "favicon",
+        "config_value": "https://service.fastapiadmin.com/api/v1/static/image/favicon.ico",
+        "config_type": true,
+        "status": 0,
+        "description": "浏览器标签栏图标地址"
+    },
+    {
+        "config_name": "登录背景图",
+        "config_key": "login_bg",
+        "config_value": "https://service.fastapiadmin.com/api/v1/static/image/background.svg",
+        "config_type": true,
+        "status": 0,
+        "description": "登录页面背景图地址"
+    },
+    {
+        "config_name": "版权信息",
+        "config_key": "copyright",
+        "config_value": "Copyright © 2025-2027 service.fastapiadmin.com 版权所有",
+        "config_type": true,
+        "status": 0,
+        "description": "页面底部版权信息"
+    },
+    {
+        "config_name": "备案号",
+        "config_key": "keep_record",
+        "config_value": "陕ICP备2025069493号-1",
+        "config_type": true,
+        "status": 0,
+        "description": "ICP备案号"
+    },
+    {
+        "config_name": "帮助文档地址",
+        "config_key": "help_doc",
+        "config_value": "https://docs.fastapiadmin.com",
+        "config_type": true,
+        "status": 0,
+        "description": "帮助文档链接地址"
+    },
+    {
+        "config_name": "隐私政策地址",
+        "config_key": "privacy",
+        "config_value": "https://fastapiadmin.com/privacy",
+        "config_type": true,
+        "status": 0,
+        "description": "隐私政策链接地址"
+    },
+    {
+        "config_name": "用户协议地址",
+        "config_key": "clause",
+        "config_value": "https://fastapiadmin.com/clause",
+        "config_type": true,
+        "status": 0,
+        "description": "用户协议链接地址"
+    },
+    {
+        "config_name": "源码地址",
+        "config_key": "git_code",
+        "config_value": "https://github.com/fastapi-admin/fastapi-admin",
+        "config_type": true,
+        "status": 0,
+        "description": "项目源码仓库地址"
+    },
+    {
+        "config_name": "系统版本",
+        "config_key": "version",
+        "config_value": "3.0.0",
+        "config_type": true,
+        "status": 0,
+        "description": "系统版本号"
+    },
+    {
+        "config_name": "系统名称",
+        "config_key": "sys_name",
+        "config_value": "FastapiAdmin系统",
+        "config_type": true,
+        "status": 0,
+        "description": "平台系统名称，用于登录页等界面展示"
+    },
+    {
+        "config_name": "登录页标题",
+        "config_key": "login_title",
+        "config_value": "一款兼具设计美学与高效开发的后台系统",
+        "config_type": true,
+        "status": 0,
+        "description": "登录页左侧面板主标题文案"
+    },
+    {
+        "config_name": "登录页副标题",
+        "config_key": "login_subtitle",
+        "config_value": "提供安全、高效、可扩展的管理解决方案，助力企业数字化转型与业务增长。",
+        "config_type": true,
+        "status": 0,
+        "description": "登录页左侧面板副标题文案"
+    },
+    {
+        "config_name": "IP归属地查询",
+        "config_key": "ip_location_enable",
+        "config_value": "on",
+        "config_type": true,
+        "status": 0,
+        "description": "是否启用IP归属地查询（登录时对外发起HTTP请求，关闭后只记录内网/未知）"
+    }
+]

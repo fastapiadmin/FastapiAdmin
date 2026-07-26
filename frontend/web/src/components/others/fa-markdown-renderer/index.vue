@@ -5,19 +5,50 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import MarkdownIt from "markdown-it";
-import markdownItHighlightjs from "markdown-it-highlightjs";
-import hljs from "highlight.js";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import json from "highlight.js/lib/languages/json";
+import html from "highlight.js/lib/languages/xml";
+import css from "highlight.js/lib/languages/css";
+import scss from "highlight.js/lib/languages/scss";
+import sql from "highlight.js/lib/languages/sql";
+import bash from "highlight.js/lib/languages/bash";
+import yaml from "highlight.js/lib/languages/yaml";
+import markdown from "highlight.js/lib/languages/markdown";
+import DOMPurify from "dompurify";
 import "highlight.js/styles/atom-one-light.css";
+
+// 注册语言（按需导入，减少打包体积）
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("python", python);
+hljs.registerLanguage("json", json);
+hljs.registerLanguage("html", html);
+hljs.registerLanguage("xml", html);
+hljs.registerLanguage("vue", html);
+hljs.registerLanguage("css", css);
+hljs.registerLanguage("scss", scss);
+hljs.registerLanguage("sql", sql);
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("yaml", yaml);
+hljs.registerLanguage("markdown", markdown);
 
 defineOptions({ name: "FaMarkdownRenderer" });
 
 interface Props {
+  /** Markdown 源文本 */
   content: string;
+  /** 超过此长度则截断并追加 "..."（按字符数，不按渲染后长度） */
   maxLength?: number;
+  /** 是否对渲染后的 HTML 做 XSS 消毒，默认 true（AI 场景默认开；可信后端 HTML 渲染时可关闭） */
+  sanitize?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   maxLength: undefined,
+  sanitize: true,
 });
 
 const md: MarkdownIt = new MarkdownIt({
@@ -35,7 +66,7 @@ const md: MarkdownIt = new MarkdownIt({
     }
     return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
   },
-}).use(markdownItHighlightjs);
+});
 
 const defaultRender =
   md.renderer.rules.link_open ||
@@ -57,11 +88,12 @@ md.renderer.rules.link_open = function (
 
 const renderedContent = computed(() => {
   if (!props.content) return "";
-  const content =
+  const source =
     props.maxLength && props.content.length > props.maxLength
       ? props.content.substring(0, props.maxLength) + "..."
       : props.content;
-  return md.render(content);
+  const html = md.render(source);
+  return props.sanitize ? DOMPurify.sanitize(html) : html;
 });
 </script>
 

@@ -3,7 +3,7 @@
           <img src="frontend/web/public/logo.svg" width="150" height="150" alt="logo" />
      </p>
      <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v3.0.0</sup></h1>
-     <h3>🚀 Production-Ready Admin Dashboard in 5 Minutes</h3>
+     <h3>🚀 Exceptional Code Quality, Production-Ready Admin Dashboard in 5 Minutes</h3>
      <p>Full-stack rapid development platform powered by <b>FastAPI + Vue3 + TypeScript</b>. Web, H5, and Mini Program — all in one project.</p>
      <p align="center">
           <a href="https://gitee.com/fastapiadmin/FastapiAdmin.git" target="_blank">
@@ -19,7 +19,7 @@
           <a href="https://gitee.com/fastapiadmin/FastapiAdmin/blob/master/LICENSE" target="_blank">
                <img src="https://img.shields.io/badge/License-MIT-orange" alt="License">
           </a>
-          <img src="https://img.shields.io/badge/Python-≥3.10-blue">
+          <img src="https://img.shields.io/badge/Python-≥3.12-blue">
           <img src="https://img.shields.io/badge/NodeJS-≥20.0-blue">
           <img src="https://img.shields.io/badge/MySQL-≥8.0-blue">
           <img src="https://img.shields.io/badge/Redis-≥7.0-blue">
@@ -71,7 +71,7 @@ cd ../frontend/web && pnpm install && pnpm run dev
 
 | Requirements | |
 |-------------|------|
-| Python ≥ 3.10 (3.12 recommended) | Node.js ≥ 20 + pnpm |
+| Python ≥ 3.12 | Node.js ≥ 20 + pnpm |
 | MySQL 8.0+ / PostgreSQL 14+ | Redis 6.x / 7.x |
 
 ## 📦 Structure
@@ -122,10 +122,6 @@ Issues and PRs are welcome! See [Contributing Guide](https://service.fastapiadmi
 | ------------ | ------- |
 | ![Group QR](frontend/web/public/group.jpg) | ![WeChat Pay](frontend/web/public/wechatPay.jpg) |
 
-> If you find this project useful, please give it a ⭐️ Star!
-
-[![Stargazers over time](https://starchart.cc/fastapiadmin/FastapiAdmin.svg?variant=adaptive)](https://starchart.cc/fastapiadmin/FastapiAdmin)
-
 ## 👥 Contributors
 
 <a href="https://github.com/fastapiadmin/FastapiAdmin/graphs/contributors">
@@ -133,6 +129,8 @@ Issues and PRs are welcome! See [Contributing Guide](https://service.fastapiadmi
 </a>
 
 ## 🙏 Acknowledgments
+
+> If you find this project useful, please give it a ⭐️ Star!
 
 - Backend: [FastAPI](https://fastapi.tiangolo.com/) · [Pydantic](https://docs.pydantic.dev/) · [SQLAlchemy](https://www.sqlalchemy.org/) · [APScheduler](https://github.com/agronholm/apscheduler)
 - Frontend: [Vue3](https://vuejs.org/) · [TypeScript](https://www.typescriptlang.org/) · [Vite](https://vitejs.dev/) · [Element Plus](https://element-plus.org/)

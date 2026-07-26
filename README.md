@@ -1,9 +1,9 @@
 <div align="center">
      <p align="center">
-          <img src="frontend/web/public/logo.svg" width="150" height="150" alt="logo" />
+          <img src="./frontend/web/public/logo.svg" width="150" height="150" alt="logo" />
      </p>
      <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v3.0.0</sup></h1>
-     <h3>🚀 开箱即用，5 分钟搭建企业级中后台</h3>
+     <h3>🚀 追求极致代码质量，五分钟搭建企业级中后台，开箱即用</h3>
      <p>基于 <b>FastAPI + Vue3 + TypeScript</b> 的全栈快速开发平台，Web / H5 / 小程序一站式交付</p>
      <p align="center">
           <a href="https://gitee.com/fastapiadmin/FastapiAdmin.git" target="_blank">
@@ -19,7 +19,7 @@
           <a href="https://gitee.com/fastapiadmin/FastapiAdmin/blob/master/LICENSE" target="_blank">
                <img src="https://img.shields.io/badge/License-MIT-orange" alt="License">
           </a>
-          <img src="https://img.shields.io/badge/Python-≥3.10-blue">
+          <img src="https://img.shields.io/badge/Python-≥3.12-blue">
           <img src="https://img.shields.io/badge/NodeJS-≥20.0-blue">
           <img src="https://img.shields.io/badge/MySQL-≥8.0-blue">
           <img src="https://img.shields.io/badge/Redis-≥7.0-blue">
@@ -36,7 +36,6 @@
 | 🎯 **开箱即用**的后台系统 | ✅ | ⚠️ 功能有限 | ❌ 只有 UI |
 | ⚡ **FastAPI 异步**高性能后端 | ✅ | ❌ 同步为主 | ❌ 无后端 |
 | 🔐 **RBAC** 菜单/按钮/数据三级权限 | ✅ | ❌ 基础 | ❌ |
-| 🏢 **多租户 SaaS** 数据隔离 + 配额 + 个性化 | ✅ | ❌ | ❌ |
 | 🤖 **代码生成器**（选表 → 出前后端代码） | ✅ | ❌ | ❌ |
 | 📱 **移动端**（H5 + 小程序）一体 | ✅ | ❌ | ❌ |
 | 🐳 **Docker 一键部署**（含 Nginx + SSL） | ✅ | ❌ | ❌ |
@@ -72,7 +71,7 @@ cd ../frontend/web && pnpm install && pnpm run dev
 
 | 环境要求 | |
 |---------|------|
-| Python ≥ 3.10（推荐 3.12） | Node.js ≥ 20.0 + pnpm |
+| Python ≥ 3.12 | Node.js ≥ 20.0 + pnpm |
 | MySQL 8.0+ / PostgreSQL 14+ | Redis 6.x / 7.x |
 
 ## 📦 工程结构
@@ -95,7 +94,6 @@ FastapiAdmin/            # Monorepo 全栈工程
 |------|---------|
 | 📊 仪表盘 | 工作台、数据分析 |
 | ⚙️ 系统管理 | 用户 / 角色 / 菜单 / 部门 / 岗位 / 字典 / 配置 / 公告 |
-| 🏢 多租户 | 租户管理 / 数据隔离 / 配额控制 / 个性化配置 / 菜单权限 |
 | 👀 监控管理 | 在线用户 / 服务器监控 / 缓存监控 |
 | 📋 任务管理 | 定时任务调度 |
 | 📝 日志管理 | 操作日志审计 |
@@ -124,10 +122,6 @@ FastapiAdmin/            # Monorepo 全栈工程
 | ------ | -------- |
 | ![群组二维码](frontend/web/public/group.jpg) | ![微信支付](frontend/web/public/wechatPay.jpg) |
 
-> 如果你觉得项目有用，请给一个 ⭐️ Star 支持！
-
-[![Stargazers over time](https://starchart.cc/fastapiadmin/FastapiAdmin.svg?variant=adaptive)](https://starchart.cc/fastapiadmin/FastapiAdmin)
-
 ## 👥 贡献者
 
 <a href="https://github.com/fastapiadmin/FastapiAdmin/graphs/contributors">
@@ -135,6 +129,8 @@ FastapiAdmin/            # Monorepo 全栈工程
 </a>
 
 ## 🙏 鸣谢
+
+> 如果你觉得项目有用，请给一个 ⭐️ Star 支持！
 
 - 后端：[FastAPI](https://fastapi.tiangolo.com/) · [Pydantic](https://docs.pydantic.dev/) · [SQLAlchemy](https://www.sqlalchemy.org/) · [APScheduler](https://github.com/agronholm/apscheduler)
 - 前端：[Vue3](https://cn.vuejs.org/) · [TypeScript](https://www.typescriptlang.org/) · [Vite](https://vitejs.dev/) · [Element Plus](https://element-plus.org/)

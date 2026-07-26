@@ -23,6 +23,56 @@
           />
         </ElForm>
         <div class="input-footer">
+          <div class="input-footer-left">
+            <ElDropdown
+              trigger="click"
+              placement="top-start"
+              @command="handleSelectModel"
+              @visible-change="handleDropdownVisible"
+            >
+              <div class="model-switcher" :class="{ 'is-active': dropdownVisible }">
+                <ElIcon class="model-icon"><Cpu /></ElIcon>
+                <span class="model-name" :title="activeModelName">
+                  {{ activeModelName }}
+                </span>
+                <ElIcon class="model-arrow" :class="{ expanded: dropdownVisible }">
+                  <ArrowDown />
+                </ElIcon>
+              </div>
+              <template #dropdown>
+                <ElDropdownMenu>
+                  <ElDropdownItem command="__default__" :class="{ 'is-active': !activeId }">
+                    <ElIcon class="dropdown-icon"><MagicStick /></ElIcon>
+                    <span class="dropdown-label">系统默认</span>
+                    <ElTag v-if="!activeId" type="success" size="small" effect="plain">
+                      使用中
+                    </ElTag>
+                  </ElDropdownItem>
+                  <template v-if="items.length > 0">
+                    <ElDropdownItem
+                      v-for="item in items"
+                      :key="item.id"
+                      :command="item.id"
+                      :class="{ 'is-active': item.id === activeId }"
+                      :disabled="switching"
+                    >
+                      <ElIcon class="dropdown-icon"><ChatLineSquare /></ElIcon>
+                      <div class="dropdown-content">
+                        <div class="dropdown-label">{{ item.name }}</div>
+                        <div class="dropdown-meta">{{ item.model_id }}</div>
+                      </div>
+                      <ElTag v-if="item.id === activeId" type="success" size="small" effect="plain">
+                        使用中
+                      </ElTag>
+                    </ElDropdownItem>
+                  </template>
+                  <ElDropdownItem v-if="items.length === 0" disabled>
+                    <span class="dropdown-empty">暂未配置模型，请到"设置 → 配置中心"添加</span>
+                  </ElDropdownItem>
+                </ElDropdownMenu>
+              </template>
+            </ElDropdown>
+          </div>
           <div class="input-actions">
             <ElUpload
               ref="uploadRef"
@@ -35,10 +85,18 @@
               <ElButton :icon="Paperclip" class="upload-btn" circle />
             </ElUpload>
             <ElButton
-              :disabled="
-                (!inputMessage.trim() && uploadedFiles.length === 0) || disabled || sending
-              "
-              :loading="sending"
+              v-if="sending"
+              class="send-button"
+              type="danger"
+              circle
+              title="停止生成"
+              @click="handleStop"
+            >
+              <ElIcon><VideoPause /></ElIcon>
+            </ElButton>
+            <ElButton
+              v-else
+              :disabled="(!inputMessage.trim() && uploadedFiles.length === 0) || disabled"
               class="send-button"
               type="primary"
               circle
@@ -57,10 +115,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { Promotion, Paperclip, Document, Close } from "@element-plus/icons-vue";
+import { ref, computed, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import {
+  Promotion,
+  Paperclip,
+  Document,
+  Close,
+  VideoPause,
+  Cpu,
+  ArrowDown,
+  ChatLineSquare,
+  MagicStick,
+} from "@element-plus/icons-vue";
 import type { UploadFile } from "element-plus";
 import type { UploadedFile } from "../types";
+import AiChatAPI, { type AiModelConfigItem, type AiModelConfigList } from "@/api/module_ai/chat";
 
 interface Props {
   disabled?: boolean;
@@ -70,6 +140,8 @@ interface Props {
 
 interface Emits {
   (e: "send", message: string, files?: UploadedFile[]): void;
+  (e: "stop"): void;
+  (e: "model-changed"): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -79,6 +151,60 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+
+// ============ 模型选择器 ============ //
+const dropdownVisible = ref(false);
+const items = ref<AiModelConfigItem[]>([]);
+const activeId = ref<string | null>(null);
+const switching = ref(false);
+
+const activeModelName = computed(() => {
+  if (!activeId.value) return "系统默认";
+  const item = items.value.find((i) => i.id === activeId.value);
+  return item?.name || "系统默认";
+});
+
+const loadModels = async () => {
+  try {
+    const res = await AiChatAPI.getModelConfig();
+    if (res.data?.code === 0 && res.data.data) {
+      const data: AiModelConfigList = res.data.data;
+      items.value = data.items || [];
+      activeId.value = data.active_id;
+    }
+  } catch {
+    /* 静默失败 */
+  }
+};
+
+const handleDropdownVisible = (visible: boolean) => {
+  dropdownVisible.value = visible;
+  if (visible) loadModels();
+};
+
+const handleSelectModel = async (command: string) => {
+  dropdownVisible.value = false;
+  if (command === activeId.value) return;
+  switching.value = true;
+  try {
+    const res = await AiChatAPI.activateModelConfig(command === "__default__" ? "" : command);
+    if (res.data?.code === 0) {
+      activeId.value = command === "__default__" ? null : command;
+      const newName =
+        command === "__default__" ? "系统默认" : items.value.find((i) => i.id === command)?.name;
+      ElMessage.success(`已切换到：${newName}`);
+      emit("model-changed");
+    } else {
+      ElMessage.error(res.data?.msg || "切换失败");
+    }
+  } catch {
+    ElMessage.error("切换模型失败");
+  } finally {
+    switching.value = false;
+  }
+};
+
+onMounted(loadModels);
 
 const inputMessage = ref("");
 const uploadedFiles = ref<UploadedFile[]>([]);
@@ -129,11 +255,17 @@ const handleSend = () => {
   uploadedFiles.value = [];
 };
 
+const handleStop = () => {
+  if (!props.sending) return;
+  emit("stop");
+};
+
 const handleShiftEnter = () => {
   inputMessage.value += "\n";
 };
 
 defineExpose({
+  refresh: loadModels,
   focus: () => {
     const input = document.querySelector(".message-input textarea") as HTMLTextAreaElement;
     input?.focus();
@@ -147,6 +279,10 @@ defineExpose({
     max-width: 800px;
     padding: 20px;
     margin: 0 auto;
+
+    @media (width <= 640px) {
+      padding: 12px 16px;
+    }
 
     .uploaded-files {
       display: flex;
@@ -181,6 +317,11 @@ defineExpose({
           text-overflow: ellipsis;
           font-size: 13px;
           white-space: nowrap;
+
+          @media (width <= 640px) {
+            max-width: 120px;
+            font-size: 12px;
+          }
         }
 
         .file-remove {
@@ -243,8 +384,66 @@ defineExpose({
       .input-footer {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: space-between;
         padding-top: 8px;
+
+        .input-footer-left {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .model-switcher {
+          display: flex;
+          gap: 6px;
+          align-items: center;
+          height: 30px;
+          padding: 0 10px;
+          font-size: 13px;
+          color: var(--el-text-color-regular);
+          cursor: pointer;
+          background: var(--el-fill-color-blank);
+          border: 1px solid var(--el-border-color-light);
+          border-radius: 6px;
+          transition: all 0.2s;
+
+          &:hover {
+            color: var(--el-color-primary);
+            background: var(--el-color-primary-light-9);
+            border-color: var(--el-color-primary-light-5);
+          }
+
+          &.is-active {
+            color: var(--el-color-primary);
+            background: var(--el-color-primary-light-9);
+            border-color: var(--el-color-primary);
+          }
+
+          .model-icon {
+            font-size: 14px;
+          }
+
+          .model-name {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+            white-space: nowrap;
+
+            @media (width <= 640px) {
+              max-width: 80px;
+            }
+          }
+
+          .model-arrow {
+            font-size: 12px;
+            transition: transform 0.2s;
+
+            &.expanded {
+              transform: rotate(180deg);
+            }
+          }
+        }
 
         .input-actions {
           display: flex;
@@ -304,6 +503,65 @@ defineExpose({
     &:focus-within {
       border-color: var(--el-border-color-light);
       box-shadow: var(--el-box-shadow-light);
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+/* 下拉菜单项样式 - 因为 scoped 限制无法直接覆盖命令项 */
+.el-dropdown-menu {
+  min-width: 240px;
+  max-width: calc(100vw - 20px);
+
+  @media (width <= 640px) {
+    width: 90vw;
+    min-width: 200px;
+  }
+
+  .el-dropdown-menu__item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+
+    &.is-active {
+      color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+    }
+
+    .dropdown-icon {
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .dropdown-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dropdown-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .dropdown-meta {
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      white-space: nowrap;
+    }
+
+    .dropdown-empty {
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .el-tag {
+      flex-shrink: 0;
+      margin-left: auto;
     }
   }
 }

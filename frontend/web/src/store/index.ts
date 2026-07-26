@@ -1,6 +1,8 @@
 import type { App } from "vue";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+import { router } from "@/router";
+import { refreshMenuAndRoutes } from "@/router/refresh";
 import { useUserStore } from "./modules/user.store";
 import { useDictStore } from "./modules/dict.store";
 import { useNoticeStore } from "./modules/notice.store";
@@ -62,7 +64,7 @@ export async function refreshAppCaches(opts: RefreshCacheOptions = {}) {
     tasks.push(configStore.getConfig(true));
   }
   if (refreshNotice) {
-    tasks.push(noticeStore.getNotice());
+    tasks.push(noticeStore.getNotice(true));
   }
   if (dictTypes && dictTypes.length > 0) {
     if (clearDictBefore) dictStore.clearDictData();
@@ -72,8 +74,7 @@ export async function refreshAppCaches(opts: RefreshCacheOptions = {}) {
   await Promise.allSettled(tasks);
 
   if (refreshRoutes) {
-    const { refreshMenuAndRoutes } = await import("@/router/beforeEach");
-    await refreshMenuAndRoutes();
+    await refreshMenuAndRoutes(router);
   }
 
   if (clearTags) {

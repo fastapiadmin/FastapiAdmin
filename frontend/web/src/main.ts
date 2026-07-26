@@ -1,9 +1,10 @@
 // ---------------------------------------------------------------------------
-// 样式（顺序：tailwind 基础 → 项目全局 → Element Plus 暗色 → 动画库）
+// 样式（顺序：EP 基础 → tailwind → 项目全局覆写）
+// 必须将 EP 预编译 CSS 放在 index.scss 之前，确保 :root 声明被后加载的覆盖。
 // ---------------------------------------------------------------------------
-import "@styles/core/tailwind.css";
+import "element-plus/theme-chalk/base.css";
+import "@styles/tailwind.css";
 import "@styles/index.scss";
-import "animate.css";
 
 // ---------------------------------------------------------------------------
 // 应用初始化

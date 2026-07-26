@@ -11,9 +11,9 @@ const DeptAPI = {
     });
   },
 
-  detailDept(query: number) {
+  detailDept(id: number) {
     return request<ApiResponse<DeptTable>>({
-      url: `${API_PATH}/detail/${query}`,
+      url: `${API_PATH}/detail/${id}`,
       method: "get",
     });
   },
@@ -53,29 +53,27 @@ const DeptAPI = {
 
 export default DeptAPI;
 
-export interface DeptPageQuery {
+export interface DeptPageQuery extends UserByQueryParams {
   name?: string;
-  status?: string;
-  created_time?: string[];
+  status?: number;
 }
 
 export interface DeptTable extends BaseType {
   name?: string;
   order?: number;
   code: string;
-  leader?: string;
-  phone?: string;
-  email?: string;
   parent_id?: number;
   parent_name?: string;
   children?: DeptTable[];
+  status?: number;
+  description?: string;
 }
 
 export interface DeptForm extends BaseFormType {
   name?: string;
   code: string;
-  leader?: string;
-  phone?: string;
-  email?: string;
   parent_id?: number;
+  order?: number;
+  status?: number;
+  description?: string;
 }

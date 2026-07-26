@@ -7,7 +7,6 @@
 import { useChartOps, useChartComponent } from "@/hooks/core/useChart";
 import type { EChartsOption, BarSeriesOption } from "@/plugins/echarts";
 import type { BidirectionalBarChartProps } from "@/types/component/chart";
-
 defineOptions({ name: "FaDualBarCompareChart" });
 
 const props = withDefaults(defineProps<BidirectionalBarChartProps>(), {

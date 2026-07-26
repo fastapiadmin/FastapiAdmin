@@ -22,11 +22,20 @@ export interface GetAuditSearchFormItemsOptions {
   rangeSeparator?: string;
   startPlaceholder?: string;
   endPlaceholder?: string;
+  /** 是否显示创建人字段，默认 true */
+  showCreatedBy?: boolean;
+  /** 是否显示更新人字段，默认 true */
+  showUpdatedBy?: boolean;
+  /** 是否显示创建时间字段，默认 true */
+  showCreatedTime?: boolean;
+  /** 是否显示更新时间字段，默认 true */
+  showUpdatedTime?: boolean;
 }
 
 /**
  * 常见「创建人 / 更新人 / 创建时间 / 更新时间」搜索项，供 FaSearchBar `items` 使用。
- * 创建人、更新人需配合 `#created_id`、`#updated_id` 插槽（如 FaSearchBarWithAudit）。
+ * 当 FaSearchBar 设置 `includeAudit` 为 true 时，会自动追加这些字段。
+ * 创建人、更新人插槽由 FaSearchBar 内置提供，也可通过 `#created_id`、`#updated_id` 覆盖。
  */
 export function getAuditSearchFormItems(
   options?: GetAuditSearchFormItemsOptions
@@ -36,9 +45,13 @@ export function getAuditSearchFormItems(
   const rangeSep = options?.rangeSeparator ?? "至";
   const sp = options?.startPlaceholder ?? "开始";
   const ep = options?.endPlaceholder ?? "结束";
+  const showCreatedBy = options?.showCreatedBy ?? true;
+  const showUpdatedBy = options?.showUpdatedBy ?? true;
+  const showCreatedTime = options?.showCreatedTime ?? true;
+  const showUpdatedTime = options?.showUpdatedTime ?? true;
 
-  return [
-    {
+  const fieldMap: Record<string, SearchFormItem> = {
+    created_id: {
       label: options?.createdByLabel ?? "创建人",
       key: "created_id",
       type: "input",
@@ -47,8 +60,9 @@ export function getAuditSearchFormItems(
         style: { width: "100%" },
       },
       span,
+      expandOnly: true, // 标记为展开专属字段
     },
-    {
+    updated_id: {
       label: options?.updatedByLabel ?? "更新人",
       key: "updated_id",
       type: "input",
@@ -57,8 +71,9 @@ export function getAuditSearchFormItems(
         style: { width: "100%" },
       },
       span,
+      expandOnly: true, // 标记为展开专属字段
     },
-    {
+    created_time: {
       label: options?.createdTimeLabel ?? "创建时间",
       key: "created_time",
       type: "datetimerange",
@@ -71,8 +86,9 @@ export function getAuditSearchFormItems(
         valueFormat,
       },
       span,
+      expandOnly: true, // 标记为展开专属字段
     },
-    {
+    updated_time: {
       label: options?.updatedTimeLabel ?? "更新时间",
       key: "updated_time",
       type: "datetimerange",
@@ -85,6 +101,17 @@ export function getAuditSearchFormItems(
         valueFormat,
       },
       span,
+      expandOnly: true, // 标记为展开专属字段
     },
-  ];
+  };
+
+  const fieldOrder: string[] = [];
+  if (showCreatedBy) fieldOrder.push("created_id");
+  if (showUpdatedBy) fieldOrder.push("updated_id");
+  if (showCreatedTime) fieldOrder.push("created_time");
+  if (showUpdatedTime) fieldOrder.push("updated_time");
+
+  return fieldOrder
+    .map((key) => fieldMap[key])
+    .filter((item): item is SearchFormItem => Boolean(item));
 }

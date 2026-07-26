@@ -250,7 +250,6 @@
 </template>
 
 <script setup lang="ts">
-import type { LineDataItem } from "@/types/component/chart";
 import { ref } from "vue";
 
 import TodaySales from "./modules/today-sales.vue";
@@ -261,6 +260,7 @@ import TargetVsReality from "./modules/target-vs-reality.vue";
 import TopProducts from "./modules/top-products.vue";
 import SalesMappingByCountry from "./modules/sales-mapping-by-country.vue";
 import VolumeServiceLevel from "./modules/volume-service-level.vue";
+import type { LineDataItem } from "@/types/component/chart";
 
 defineOptions({ name: "DashboardAnalysis" });
 
@@ -306,10 +306,6 @@ const stackXAxisData = ref(["产品A", "产品B", "产品C", "产品D", "产品E
 
 .page-title:first-child {
   margin-top: 0;
-}
-
-.fa-card {
-  padding: 1.25rem;
 }
 
 .console-cards-showcase {

@@ -16,8 +16,10 @@
       height="calc(100% - 155px)"
     />
     <div class="flex justify-around mt-10">
-      <div class="flex-c">
-        <div class="flex-cc size-10.5 mr-2.5 text-theme bg-theme/10 rounded-lg">
+      <div class="flex items-center">
+        <div
+          class="flex items-center justify-center size-10.5 mr-2.5 text-theme bg-theme/10 rounded-lg"
+        >
           <FaSvgIcon icon="ri:money-cny-circle-line" class="text-xl" />
         </div>
         <div>
@@ -25,8 +27,10 @@
           <span class="text-sm">线上销售</span>
         </div>
       </div>
-      <div class="flex-c">
-        <div class="flex-cc size-10.5 mr-2.5 text-theme bg-theme/10 rounded-lg">
+      <div class="flex items-center">
+        <div
+          class="flex items-center justify-center size-10.5 mr-2.5 text-theme bg-theme/10 rounded-lg"
+        >
           <FaSvgIcon icon="ri:heart-3-line" class="text-xl" />
         </div>
         <div>

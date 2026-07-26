@@ -1,7 +1,8 @@
 import json
-import time
+from collections.abc import Sequence
 
 from redis.asyncio.client import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.enums import RedisInitKeyConfig
 from app.core.base_schema import AuthSchema
@@ -9,206 +10,44 @@ from app.core.database import async_db_session
 from app.core.exceptions import CustomException
 from app.core.logger import logger
 from app.core.redis_crud import RedisCURD
-from app.utils.excel_util import ExcelUtil
 
 from .crud import ParamsCRUD
-from .schema import (
-    ParamsCreateSchema,
-    ParamsOutSchema,
-    ParamsQueryParam,
-    ParamsUpdateSchema,
-)
-
-# 中间件系统配置内存缓存（避免每请求查 Redis）
-_MID_CONFIG_TTL: float = 60.0  # 缓存 60 秒
-_mid_config_cache: dict = {"ts": 0.0, "data": None}
+from .schema import ParamsOutSchema, ParamsUpdateSchema
 
 
 class ParamsService:
-    """
-    配置管理模块服务层
-    """
+    """参数管理服务"""
 
-    @classmethod
-    async def get_obj_detail_service(cls, auth: AuthSchema, id: int) -> ParamsOutSchema:
-        """
-        获取配置详情
+    def __init__(self, auth: AuthSchema, db: AsyncSession) -> None:
+        self.auth = auth
+        self.db = db
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - id (int): 配置管理型ID
-
-        返回:
-        - dict: 配置管理型模型实例字典表示
-        """
-        obj = await ParamsCRUD(auth).get(id=id)
-        if not obj:
-            raise CustomException(msg="参数不存在")
-        return ParamsOutSchema.model_validate(obj)
-
-    @classmethod
-    async def get_obj_by_key_service(cls, auth: AuthSchema, config_key: str) -> ParamsOutSchema:
-        """
-        根据配置键获取配置详情
+    async def update(self, redis: Redis, id: int, data: ParamsUpdateSchema) -> ParamsOutSchema:
+        """更新参数
 
         参数:
-        - auth (AuthSchema): 认证信息模型
-        - config_key (str): 配置管理型key
-
-        返回:
-        - Dict: 配置管理型模型实例字典表示
-        """
-        obj = await ParamsCRUD(auth).get(config_key=config_key)
-        if not obj:
-            raise CustomException(msg=f"配置键 {config_key} 不存在")
-        return ParamsOutSchema.model_validate(obj)
-
-    @classmethod
-    async def get_config_value_by_key_service(cls, auth: AuthSchema, config_key: str) -> str | None:
-        """
-        根据配置键获取配置值
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - config_key (str): 配置管理型key
-
-        返回:
-        - str | None: 配置值字符串或None
-        """
-        obj = await ParamsCRUD(auth).get(config_key=config_key)
-        if not obj:
-            raise CustomException(msg=f"配置键 {config_key} 不存在")
-        return obj.config_value
-
-    @classmethod
-    async def get_obj_list_service(
-        cls,
-        auth: AuthSchema,
-        search: ParamsQueryParam | None = None,
-        order_by: list[dict] | None = None,
-    ) -> list[ParamsOutSchema]:
-        """
-        获取配置管理型列表
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - search (ParamsQueryParam | None): 查询参数对象
-        - order_by (list[dict] | None): 排序参数列表
-
-        返回:
-        - list[ParamsOutSchema]: 配置管理型模型实例
-        """
-        obj_list = await ParamsCRUD(auth).list(
-            search=search.__dict__ if search else {}, order_by=order_by
-        )
-        return [ParamsOutSchema.model_validate(obj) for obj in obj_list]
-
-    @classmethod
-    async def get_obj_page_service(
-        cls,
-        auth: AuthSchema,
-        page_no: int,
-        page_size: int,
-        search: ParamsQueryParam | None = None,
-        order_by: list[dict[str, str]] | None = None,
-    ) -> dict:
-        """
-        分页查询系统参数（数据库 OFFSET/LIMIT）。
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - page_no (int): 页码（从 1 开始）
-        - page_size (int): 每页条数
-        - search (ParamsQueryParam | None): 查询条件
-        - order_by (list[dict[str, str]] | None): 排序字段列表
-
-        返回:
-        - dict: 分页结果（结构由 `CRUD.page` 返回约定）
-        """
-        offset = (page_no - 1) * page_size
-        return await ParamsCRUD(auth).page(
-            offset=offset,
-            limit=page_size,
-            order_by=order_by or [{"id": "asc"}],
-            search=search.__dict__ if search else {},
-            out_schema=ParamsOutSchema,
-        )
-
-    @classmethod
-    async def create_obj_service(
-        cls, auth: AuthSchema, redis: Redis, data: ParamsCreateSchema
-    ) -> ParamsOutSchema:
-        """
-        创建配置管理型
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
         - redis (Redis): Redis 客户端实例
-        - data (ParamsCreateSchema): 配置管理型创建模型
+        - id (int): 参数ID
+        - data (ParamsUpdateSchema): 参数更新模型
 
         返回:
-        - dict: 新创建的配置管理型模型实例字典表示
+        - ParamsOutSchema: 更新后的参数响应模型
         """
-        exist_obj = await ParamsCRUD(auth).get(config_key=data.config_key)
-        if exist_obj:
-            raise CustomException(msg="创建失败，该配置key已存在")
-        obj = await ParamsCRUD(auth).create(data=data)
-
-        out = ParamsOutSchema.model_validate(obj)
-
-        # 同步redis
-        redis_key = (
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{auth.user.tenant_id}:{data.config_key}"
-        )
-        try:
-            redis_payload = out.model_dump(mode="json")
-            value = json.dumps(redis_payload, ensure_ascii=False)
-            result = await RedisCURD(redis).set(
-                key=redis_key,
-                value=value,
-                expire=None,
-            )
-            if not result:
-                logger.error(f"同步配置到缓存失败: {out}")
-                raise CustomException(msg="同步配置到缓存失败")
-        except Exception as e:
-            logger.error(f"创建字典类型失败: {e}")
-            raise CustomException(msg=f"创建字典类型失败 {e}")
-
-        return out
-
-    @classmethod
-    async def update_obj_service(
-        cls, auth: AuthSchema, redis: Redis, id: int, data: ParamsUpdateSchema
-    ) -> ParamsOutSchema:
-        """
-        更新配置管理型
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - redis (Redis): Redis 客户端实例
-        - id (int): 配置管理型ID
-        - data (ParamsUpdateSchema): 配置管理型更新模型
-
-        返回:
-        - Dict: 更新后的配置管理型模型实例字典表示
-        """
-        exist_obj = await ParamsCRUD(auth).get(id=id)
-        if not exist_obj:
-            raise CustomException(msg="更新失败，该数系统配置不存在")
+        exist_obj = await ParamsCRUD(self.auth, self.db).get_or_404(id=id, msg="更新失败，该数据不存在")
         if exist_obj.config_key != data.config_key:
             raise CustomException(msg="更新失败，系统配置key不允许修改")
 
-        new_obj = await ParamsCRUD(auth).update(id=id, data=data)
+        new_obj = await ParamsCRUD(self.auth, self.db).update(id=id, data=data)
         if not new_obj:
             raise CustomException(msg="更新失败，系统配置不存在")
         out = ParamsOutSchema.model_validate(new_obj)
         redis_payload = out.model_dump(mode="json")
 
         # 同步redis
-        redis_key = (
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{auth.user.tenant_id}:{new_obj.config_key}"
-        )
+        user = self.auth.user
+        if not user:
+            raise CustomException(msg="未登录")
+        redis_key = f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{new_obj.config_key}"
         try:
             value = json.dumps(redis_payload, ensure_ascii=False)
             result = await RedisCURD(redis).set(
@@ -221,269 +60,59 @@ class ParamsService:
                 raise CustomException(msg="同步配置到缓存失败")
         except Exception as e:
             logger.error(f"更新系统配置失败: {e}")
-            raise CustomException(msg="更新系统配置失败")
+            raise CustomException(msg="同步配置到缓存失败") from e
 
         return out
 
-    @classmethod
-    async def delete_obj_service(cls, auth: AuthSchema, redis: Redis, ids: list[int]) -> None:
-        """
-        删除配置管理型
+    @staticmethod
+    async def _load_all_configs_from_db() -> Sequence[object]:
+        async with async_db_session() as session, session.begin():
+            init_auth = AuthSchema()
+            return await ParamsCRUD(init_auth, session).get_list()
 
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - redis (Redis): Redis 客户端实例
-        - ids (list[int]): 配置管理型ID列表
-
-        返回:
-        - None
-        """
-        if len(ids) < 1:
-            raise CustomException(msg="删除失败，删除对象不能为空")
-        # 批量校验参数存在性
-        objs = await ParamsCRUD(auth).list(search={"id": ("in", ids)})
-        obj_map = {o.id: o for o in objs}
-        for pid in ids:
-            obj = obj_map.get(pid)
-            if not obj:
-                raise CustomException(msg="删除失败，该数据字典类型不存在")
-            if obj.config_type:
-                raise CustomException(
-                    msg=f"{obj.config_name} 删除失败，系统初始化配置不可以删除"
-                )
-
-        await ParamsCRUD(auth).delete(ids=ids)
-
-        # 同步删除Redis缓存（使用删除前已获取的对象信息）
-        for obj in objs:
-            redis_key = f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{auth.user.tenant_id}:{obj.config_key}"
+    @staticmethod
+    async def _sync_configs_to_redis(redis: Redis, config_obj: Sequence) -> list[dict]:
+        """将 DB 配置写入 Redis，返回对应的 dict 列表。"""
+        configs: list[dict] = []
+        for config in config_obj:
+            redis_key = f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{config.config_key}"
+            out = ParamsOutSchema.model_validate(config)
+            payload = out.model_dump(mode="json")
             try:
-                await RedisCURD(redis).delete(redis_key)
+                await RedisCURD(redis).set(redis_key, json.dumps(payload, ensure_ascii=False))
+                configs.append(out.model_dump())
             except Exception as e:
-                logger.error(f"删除系统配置失败: {e}")
-                raise CustomException(msg="删除字典类型失败")
-
-    @classmethod
-    async def batch_set_status_service(cls, auth: AuthSchema, ids: list[int], status: str) -> None:
-        """
-        批量设置系统参数状态
-
-        参数:
-        - auth (AuthSchema): 认证信息模型
-        - ids (list[int]): 系统参数ID列表
-        - status (str): 状态值
-
-        返回:
-        - None
-        """
-        if not ids:
-            raise CustomException(msg="请选择要操作的数据")
-
-        await ParamsCRUD(auth).set(ids=ids, status=status)
-
-    @classmethod
-    async def export_obj_service(cls, data_list: list[dict]) -> bytes:
-        """
-        导出系统配置列表
-
-        参数:
-        - data_list (list[dict]): 系统配置模型实例字典列表表示
-
-        返回:
-        - bytes: Excel文件二进制数据
-        """
-        mapping_dict = {
-            "id": "编号",
-            "config_name": "参数名称",
-            "config_key": "参数键名",
-            "config_value": "参数键值",
-            "config_type": "系统内置((True:是 False:否))",
-            "description": "备注",
-            "created_time": "创建时间",
-            "updated_time": "更新时间",
-            "created_id": "创建者ID",
-            "updated_id": "更新者ID",
-        }
-
-        # 复制数据并转换状态
-        data = data_list.copy()
-        for item in data:
-            # 处理状态
-            item["config_type"] = "是" if item.get("config_type") else "否"
-
-        return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
-
-    @classmethod
-    async def init_config_service(cls, redis: Redis) -> None:
-        """
-        初始化系统配置并按租户缓存。
-
-        参数:
-        - redis (Redis): Redis 客户端实例
-
-        返回:
-        - None
-        """
-        async with async_db_session() as session:
-            async with session.begin():
-                auth = AuthSchema(db=session, check_data_scope=False)
-                config_obj = await ParamsCRUD(auth).list()
-                if not config_obj:
-                    raise CustomException(msg="系统配置不存在")
-                try:
-                    for config in config_obj:
-                        tenant_id = config.tenant_id
-                        redis_key = f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{tenant_id}:{config.config_key}"
-                        out = ParamsOutSchema.model_validate(config)
-                        redis_payload = out.model_dump(mode="json")
-                        value = json.dumps(redis_payload, ensure_ascii=False)
-                        result = await RedisCURD(redis).set(
-                            key=redis_key,
-                            value=value,
-                            expire=None,
-                        )
-                        if not result:
-                            logger.error(f"❌️ 初始化系统配置失败: {redis_key}")
-                            raise CustomException(msg="初始化系统配置失败")
-                except Exception as e:
-                    logger.error(f"❌️ 初始化系统配置失败: {e}")
-                    raise CustomException(msg="初始化系统配置失败")
-
-    @classmethod
-    async def get_init_config_service(cls, redis: Redis, tenant_id: int = 1) -> list[dict]:
-        """
-        获取系统配置
-
-        参数:
-        - redis (Redis): Redis 客户端实例
-        - tenant_id (int): 租户ID
-
-        返回:
-        - list[dict]: 系统配置模型实例字典列表表示
-        """
-        redis_keys = await RedisCURD(redis).get_keys(
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{tenant_id}:*"
-        )
-        redis_configs = await RedisCURD(redis).mget(redis_keys)
-        configs = []
-        for config in redis_configs:
-            if not config:
-                continue
-            try:
-                new_config = json.loads(config)
-                configs.append(new_config)
-            except Exception as e:
-                logger.error(f"解析系统配置数据失败: {e}")
-                continue
-
-        # 如果 Redis 中没有数据，从数据库中加载并缓存
-        if not configs:
-            async with async_db_session() as session:
-                async with session.begin():
-                    from app.core.base_schema import AuthSchema
-
-                    auth = AuthSchema(db=session, check_data_scope=False)
-                    config_obj = await ParamsCRUD(auth).list()
-                    if config_obj:
-                        try:
-                            for config in config_obj:
-                                redis_key = f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:{tenant_id}:{config.config_key}"
-                                out = ParamsOutSchema.model_validate(config)
-                                config_obj_dict = out.model_dump()
-                                redis_payload = out.model_dump(mode="json")
-                                value = json.dumps(redis_payload, ensure_ascii=False)
-                                result = await RedisCURD(redis).set(
-                                    key=redis_key,
-                                    value=value,
-                                    expire=None,
-                                )
-                                if not result:
-                                    logger.error(f"❌️ 缓存系统配置失败: {config_obj_dict}")
-                                configs.append(config_obj_dict)
-                        except Exception as e:
-                            logger.error(f"❌️ 加载系统配置失败: {e}")
-
+                logger.error(f"❌️ 缓存系统配置失败: {redis_key}: {e}")
         return configs
 
-    @classmethod
-    async def get_system_config_for_middleware(cls, redis: Redis) -> dict:
-        """
-        获取中间件所需的系统配置（带 60 秒内存缓存，避免每请求查 Redis）。
+    @staticmethod
+    async def init_cache(redis: Redis) -> None:
+        """启动时初始化系统参数到 Redis。"""
+        try:
+            config_obj = await ParamsService._load_all_configs_from_db()
+            if not config_obj:
+                raise CustomException(msg="该数据不存在")
+            await ParamsService._sync_configs_to_redis(redis, config_obj)
+        except Exception as e:
+            logger.error(f"❌️ 初始化系统参数到 Redis 失败: {e}")
+            raise CustomException(msg="初始化系统参数到 Redis 失败") from e
 
-        参数:
-        - redis (Redis): Redis 客户端实例
-
-        返回:
-        - dict: 包含演示模式、IP白名单、API白名单和IP黑名单的配置字典
-        """
-        now = time.monotonic()
-        if _mid_config_cache["data"] and now - _mid_config_cache["ts"] < _MID_CONFIG_TTL:
-            return _mid_config_cache["data"]
-
-        config_result = await cls._fetch_system_config_for_middleware(redis)
-        _mid_config_cache["data"] = config_result
-        _mid_config_cache["ts"] = now
-        return config_result
-
-    @classmethod
-    async def _fetch_system_config_for_middleware(cls, redis: Redis) -> dict:
-        # 定义需要获取的配置键
-        config_keys = [
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:1:demo_enable",
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:1:ip_white_list",
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:1:white_api_list_path",
-            f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:1:ip_black_list",
-        ]
-
-        # 批量获取配置
-        config_values = await RedisCURD(redis).mget(config_keys)
-
-        # 初始化默认配置
-        config_result = {
-            "demo_enable": False,
-            "ip_white_list": [],
-            "white_api_list_path": [],
-            "ip_black_list": [],
-        }
-
-        # 解析演示模式配置
-        if config_values[0]:
+    @staticmethod
+    async def get_init_cache(redis: Redis) -> list[dict]:
+        """从 Redis 读取系统配置；为空时自动回源 DB。"""
+        redis_keys = await RedisCURD(redis).get_keys(f"{RedisInitKeyConfig.SYSTEM_CONFIG.key}:*")
+        redis_configs = await RedisCURD(redis).mget(redis_keys)
+        configs = []
+        for raw in redis_configs:
+            if not raw:
+                continue
             try:
-                demo_config = json.loads(config_values[0])
-                config_result["demo_enable"] = (
-                    demo_config.get("config_value", False)
-                    if isinstance(demo_config, dict)
-                    else False
-                )
-            except json.JSONDecodeError:
-                logger.error("解析演示模式配置失败")
+                configs.append(json.loads(raw))
+            except Exception as e:
+                logger.error(f"解析系统配置数据失败: {e}")
 
-        # 解析IP白名单配置
-        if config_values[1]:
-            try:
-                ip_white_config = json.loads(config_values[1])
-                # 确保是列表类型
-                config_result["ip_white_list"] = json.loads(ip_white_config.get("config_value", []))
-            except json.JSONDecodeError:
-                logger.error("解析IP白名单配置失败")
-        # 解析IP黑名单
-        # 解析API路径白名单
-        if config_values[2]:
-            try:
-                white_api_config = json.loads(config_values[2])
-                # 确保是列表类型
-                config_result["white_api_list_path"] = json.loads(
-                    white_api_config.get("config_value", [])
-                )
-            except json.JSONDecodeError:
-                logger.error("解析API白名单配置失败")
-
-        # 解析IP黑名单
-        if config_values[3]:
-            try:
-                black_ip_config = json.loads(config_values[3])
-                # 确保是列表类型
-                config_result["ip_black_list"] = json.loads(black_ip_config.get("config_value", []))
-            except json.JSONDecodeError:
-                logger.error("解析IP黑名单配置失败")
-        return config_result
+        if not configs:
+            config_obj = await ParamsService._load_all_configs_from_db()
+            if config_obj:
+                configs = await ParamsService._sync_configs_to_redis(redis, config_obj)
+        return configs

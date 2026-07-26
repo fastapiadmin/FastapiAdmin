@@ -2,11 +2,14 @@
 <template>
   <div
     ref="containerRef"
-    class="relative overflow-hidden rounded-custom-sm border flex-c box-border text-sm"
+    class="relative overflow-hidden rounded-custom-sm border flex items-center box-border text-sm"
     :class="themeClasses"
     :style="containerStyle"
   >
-    <div class="flex-cc absolute left-0 h-full w-9 z-10" :style="{ backgroundColor: bgColor }">
+    <div
+      class="flex items-center justify-center absolute left-0 h-full w-9 z-10"
+      :style="{ backgroundColor: bgColor }"
+    >
       <FaSvgIcon icon="ri:volume-down-line" class="text-lg" />
     </div>
 
@@ -20,20 +23,20 @@
       <!-- 原始内容 -->
       <span ref="textRef" class="inline-block">
         <slot>
-          <span v-html="text"></span>
+          <span v-html="sanitizedText"></span>
         </slot>
       </span>
       <!-- 克隆内容用于无缝循环 -->
       <span v-if="shouldClone" class="inline-block" :style="cloneSpacing">
         <slot>
-          <span v-html="text"></span>
+          <span v-html="sanitizedText"></span>
         </slot>
       </span>
     </div>
 
     <div
       v-if="showClose"
-      class="flex-cc absolute right-0 h-full w-9 c-p"
+      class="flex items-center justify-center absolute right-0 h-full w-9 cursor-pointer"
       :style="{ backgroundColor: bgColor }"
       @click="handleClose"
     >
@@ -45,6 +48,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
+import DOMPurify from "dompurify";
 import {
   useElementSize,
   useRafFn,
@@ -114,7 +118,6 @@ const settingStore = useSettingsStore();
 const { isDark } = storeToRefs(settingStore);
 
 const containerRef = ref<HTMLElement>();
-const contentRef = ref<HTMLElement>();
 const textRef = ref<HTMLElement>();
 const isReady = ref(false);
 
@@ -125,6 +128,8 @@ const shouldClone = ref(false);
 
 const isHorizontal = computed(() => props.direction === "left" || props.direction === "right");
 const isReverse = computed(() => props.direction === "right" || props.direction === "down");
+
+const sanitizedText = computed(() => DOMPurify.sanitize(props.text));
 
 // 使用 VueUse 的 useElementSize 监听容器尺寸变化
 const { width: containerWidth, height: containerHeight } = useElementSize(containerRef);
@@ -328,7 +333,6 @@ onBeforeUnmount(() => {
 defineOptions({ name: "FaTextScroll" });
 
 const handleClose = () => {
-  console.log("文本滚动组件已关闭");
   ElMessage.info("已关闭");
 };
 </script> -->

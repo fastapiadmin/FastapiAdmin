@@ -1,9 +1,10 @@
 import type { RouteLocationNormalized, RouteRecordRaw } from "vue-router";
+import type { AppRouteRecord } from "@/types/router";
 import { router } from "@/router";
-import type { AppRouteRecord, AppRouteRecord as AppRouteRecordFromTypes } from "@/types";
+
 import i18n, { $t } from "@/locales";
 import AppConfig from "@/config";
-import { useSettingsStore, useWorktabStore } from "@stores";
+import { useConfigStore, useSettingsStore, useWorktabStore } from "@stores";
 import { IframeRouteManager } from "@/router";
 import { useCommon } from "@/hooks/core/useCommon";
 
@@ -18,14 +19,16 @@ import { useCommon } from "@/hooks/core/useCommon";
  */
 export type AppRouteRecordRaw = RouteRecordRaw & { hidden?: boolean };
 
-/** 浏览器标题：meta.title 经 i18n 键或原文 + 站点名 */
+/** 浏览器标题：meta.title 经 i18n 键或原文 + 站点名（优先从参数获取） */
 export const setPageTitle = (to: RouteLocationNormalized): void => {
   const { title } = to.meta;
   if (!title) return;
 
-  setTimeout(() => {
-    document.title = `${formatMenuTitle(String(title))} - ${AppConfig.systemInfo.name}`;
-  }, 150);
+  const configStore = useConfigStore();
+  const siteName =
+    configStore.configData.sys_name?.config_value?.trim() || AppConfig.systemInfo.name;
+
+  document.title = `${formatMenuTitle(String(title))} - ${siteName}`;
 };
 
 export const formatMenuTitle = (title: string): string => {
@@ -43,14 +46,14 @@ export function isIframe(url: string): boolean {
   return url.startsWith("/outside/iframe/");
 }
 
-export const isNavigableMenuItem = (menuItem: AppRouteRecordFromTypes): boolean => {
+export const isNavigableMenuItem = (menuItem: AppRouteRecord): boolean => {
   if (!menuItem.path || !menuItem.path.trim()) return false;
   return !menuItem.meta?.isHide;
 };
 
 const normalizePath = (path: string): string => (path.startsWith("/") ? path : `/${path}`);
 
-export const getFirstMenuPath = (menuList: AppRouteRecordFromTypes[]): string => {
+export const getFirstMenuPath = (menuList: AppRouteRecord[]): string => {
   if (!Array.isArray(menuList) || menuList.length === 0) return "";
 
   for (const menuItem of menuList) {

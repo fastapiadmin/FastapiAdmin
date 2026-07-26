@@ -105,6 +105,12 @@ const containerRef = ref<HTMLDivElement>();
 const canvasRef = ref<HTMLCanvasElement>();
 const isFullscreen = ref(false);
 const updateTime = ref("");
+/** 窗口 resize 处理器，保存引用以便在 onUnmounted 中移除 */
+function onResize() {
+  resizeCanvas();
+  spawnParticles();
+}
+
 const tickerItems = ref([
   "交易引擎: 23%",
   "消息队列: 58%",
@@ -115,6 +121,7 @@ const tickerItems = ref([
 ]);
 const animFrame = shallowRef(0);
 let statsTimer = 0;
+let timeTickInterval = 0;
 
 const stats = reactive([
   { label: "总交易额", value: "¥128.6万", change: "12.5%", up: true, color: "cyan" as const },
@@ -151,24 +158,24 @@ function updateStats() {
   const o = randFloat(8350, 0.04);
   const m = randFloat(1286, 0.03);
   const w = randFloat(356, 0.08);
-  stats[0].value = "¥" + fmt(Math.round(t));
-  stats[1].value = fmt(Math.round(o));
-  stats[2].value = fmt(Math.round(m));
-  stats[3].value = fmt(Math.round(w));
-  stats[4].value = "¥" + Math.round(randFloat(468, 0.03));
-  stats[5].value = randFloat(38.2, 0.06).toFixed(1) + "%";
-  stats[0].change = randPct();
-  stats[0].up = Math.random() > 0.3;
-  stats[1].change = randPct();
-  stats[1].up = Math.random() > 0.4;
-  stats[2].change = randPct();
-  stats[2].up = Math.random() > 0.5;
-  stats[3].change = randPct();
-  stats[3].up = Math.random() > 0.6;
-  stats[4].change = randPct();
-  stats[4].up = Math.random() > 0.3;
-  stats[5].change = randPct();
-  stats[5].up = Math.random() > 0.4;
+  stats[0]!.value = "¥" + fmt(Math.round(t));
+  stats[1]!.value = fmt(Math.round(o));
+  stats[2]!.value = fmt(Math.round(m));
+  stats[3]!.value = fmt(Math.round(w));
+  stats[4]!.value = "¥" + Math.round(randFloat(468, 0.03));
+  stats[5]!.value = randFloat(38.2, 0.06).toFixed(1) + "%";
+  stats[0]!.change = randPct();
+  stats[0]!.up = Math.random() > 0.3;
+  stats[1]!.change = randPct();
+  stats[1]!.up = Math.random() > 0.4;
+  stats[2]!.change = randPct();
+  stats[2]!.up = Math.random() > 0.5;
+  stats[3]!.change = randPct();
+  stats[3]!.up = Math.random() > 0.6;
+  stats[4]!.change = randPct();
+  stats[4]!.up = Math.random() > 0.3;
+  stats[5]!.change = randPct();
+  stats[5]!.up = Math.random() > 0.4;
 }
 
 async function toggleFullscreen() {
@@ -187,7 +194,15 @@ function onFullscreenChange() {
   isFullscreen.value = !!document.fullscreenElement;
 }
 
-document.addEventListener("fullscreenchange", onFullscreenChange);
+// fullscreenchange 是 document 级别事件，必须在 onUnmounted 中清理，
+// 否则 keep-alive / 重复进入会累积监听器
+onMounted(() => {
+  document.addEventListener("fullscreenchange", onFullscreenChange);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("fullscreenchange", onFullscreenChange);
+});
 
 provide("toggleFullscreen", toggleFullscreen);
 provide("isFullscreen", isFullscreen);
@@ -249,14 +264,14 @@ function tick() {
   }
 
   for (let i = 0; i < particles.length; i++) {
-    const a = particles[i];
+    const a = particles[i]!;
     ctx.beginPath();
     ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(0,212,255,0.25)";
     ctx.fill();
 
     for (let j = i + 1; j < particles.length; j++) {
-      const b = particles[j];
+      const b = particles[j]!;
       const dx = a.x - b.x;
       const dy = a.y - b.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -279,19 +294,18 @@ onMounted(() => {
     updateTime.value = new Date().toLocaleTimeString("zh-CN", { hour12: false });
   };
   timeTick();
-  window.setInterval(timeTick, 1000);
+  timeTickInterval = window.setInterval(timeTick, 1000);
   initParticles();
   statsTimer = window.setInterval(updateStats, 3000);
   updateStats();
-  window.addEventListener("resize", () => {
-    resizeCanvas();
-    spawnParticles();
-  });
+  window.addEventListener("resize", onResize);
 });
 
 onUnmounted(() => {
   cancelAnimationFrame(animFrame.value);
   clearInterval(statsTimer);
+  clearInterval(timeTickInterval);
+  window.removeEventListener("resize", onResize);
   document.removeEventListener("fullscreenchange", onFullscreenChange);
   if (document.fullscreenElement) {
     document.exitFullscreen().catch(() => {});

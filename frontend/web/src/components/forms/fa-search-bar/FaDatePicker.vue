@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { ElDatePicker } from "element-plus";
 
 type DatePickerType =
   | "year"

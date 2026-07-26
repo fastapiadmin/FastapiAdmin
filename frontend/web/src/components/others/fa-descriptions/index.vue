@@ -1,97 +1,21 @@
 <template>
   <ElScrollbar v-if="scrollbar" :max-height="maxHeight" :view-style="{ overflowX: 'hidden' }">
-    <ElDescriptions v-bind="bindings" :class="ns.b()">
-      <template v-if="$slots.title" #title>
-        <slot name="title" />
+    <FaDescriptionsContent v-bind="contentProps">
+      <template v-for="(_, name) in $slots" :key="name" #[name]="slotProps">
+        <slot :name="name" v-bind="slotProps" />
       </template>
-      <template v-if="!$slots.default">
-        <ElDescriptionsItem
-          v-for="item in items"
-          :key="item.prop"
-          :label="item.label"
-          :span="item.span || span"
-          :label-class-name="item.labelClassName"
-          :class-name="item.className"
-        >
-          <slot
-            v-if="item.slot"
-            :name="item.slot"
-            :item="item"
-            :value="data ? getNestedValue(data, item.prop) : undefined"
-            :row="data"
-          />
-          <ElTag
-            v-else-if="item.tag != null"
-            :type="resolveTagType(getNestedValue(data, item.prop), item.tag)"
-          >
-            {{ resolveTagText(getNestedValue(data, item.prop), item.tag) }}
-          </ElTag>
-          <template v-else>
-            <slot
-              :name="item.prop"
-              :item="item"
-              :value="data ? getNestedValue(data, item.prop) : undefined"
-              :row="data"
-            >
-              {{ data ? getNestedValue(data, item.prop) : "" }}
-            </slot>
-          </template>
-        </ElDescriptionsItem>
-      </template>
-      <template v-else>
-        <slot />
-      </template>
-    </ElDescriptions>
+    </FaDescriptionsContent>
   </ElScrollbar>
-  <ElDescriptions v-else v-bind="bindings" :class="ns.b()">
-    <template v-if="$slots.title" #title>
-      <slot name="title" />
+  <FaDescriptionsContent v-else v-bind="contentProps">
+    <template v-for="(_, name) in $slots" :key="name" #[name]="slotProps">
+      <slot :name="name" v-bind="slotProps" />
     </template>
-    <template v-if="!$slots.default">
-      <ElDescriptionsItem
-        v-for="item in items"
-        :key="item.prop"
-        :label="item.label"
-        :span="item.span || span"
-        :label-class-name="item.labelClassName"
-        :class-name="item.className"
-      >
-        <slot
-          v-if="item.slot"
-          :name="item.slot"
-          :item="item"
-          :value="data ? getNestedValue(data, item.prop) : undefined"
-          :row="data"
-        />
-        <ElTag
-          v-else-if="item.tag != null"
-          :type="resolveTagType(getNestedValue(data, item.prop), item.tag)"
-        >
-          {{ resolveTagText(getNestedValue(data, item.prop), item.tag) }}
-        </ElTag>
-        <template v-else>
-          <slot
-            :name="item.prop"
-            :item="item"
-            :value="data ? getNestedValue(data, item.prop) : undefined"
-            :row="data"
-          >
-            {{ data ? getNestedValue(data, item.prop) : "" }}
-          </slot>
-        </template>
-      </ElDescriptionsItem>
-    </template>
-    <template v-else>
-      <slot />
-    </template>
-  </ElDescriptions>
+  </FaDescriptionsContent>
 </template>
 
-<script setup lang="ts">
-defineOptions({ name: "FaDescriptions" });
-
-import { computed, useAttrs } from "vue";
-import { useNamespace } from "element-plus";
+<script lang="ts">
+import { h, defineComponent, type PropType, type VNode } from "vue";
+import { ElDescriptions, ElDescriptionsItem, ElTag } from "element-plus";
 
 export type TagType = "primary" | "success" | "warning" | "danger" | "info";
 
@@ -109,6 +33,142 @@ export interface DescriptionsItem {
   labelClassName?: string;
   className?: string;
 }
+
+const TAG_TYPES: Set<string> = new Set(["primary", "success", "warning", "danger", "info"]);
+
+function getNestedValue(obj: Record<string, unknown> | null, path: string): unknown {
+  if (!obj) return undefined;
+  return path.split(".").reduce((acc, key) => {
+    if (acc && typeof acc === "object" && key in acc) {
+      return (acc as Record<string, unknown>)[key];
+    }
+    return undefined;
+  }, obj as unknown);
+}
+
+function resolveTagType(value: unknown, tag: boolean | TagConfig): TagType {
+  if (typeof tag === "boolean") {
+    return tag ? "success" : "danger";
+  }
+  if (tag.map) {
+    const raw = value == null ? "" : String(value);
+    if (raw in tag.map) {
+      const t = tag.map[raw]!.type;
+      if (t && TAG_TYPES.has(t)) return t;
+    }
+  }
+  if (tag.type && TAG_TYPES.has(tag.type)) return tag.type;
+  return "info";
+}
+
+function resolveTagText(value: unknown, tag: boolean | TagConfig): string {
+  const raw = value == null ? "" : String(value);
+  if (typeof tag === "boolean") {
+    return raw;
+  }
+  if (tag.map && raw in tag.map) {
+    return tag.map[raw]!.text ?? raw;
+  }
+  return raw;
+}
+
+const FaDescriptionsContent = defineComponent({
+  name: "FaDescriptionsContent",
+  props: {
+    bindings: {
+      type: Object as PropType<Record<string, unknown>>,
+      required: true,
+    },
+    nsClass: { type: String, default: "" },
+    items: {
+      type: Array as PropType<DescriptionsItem[]>,
+      default: () => [],
+    },
+    data: {
+      type: Object as PropType<Record<string, unknown> | null>,
+      default: null,
+    },
+    span: { type: Number, default: 2 },
+  },
+  setup(props, { slots }) {
+    return () => {
+      const slotObj: Record<string, () => VNode[]> = {};
+
+      // Title slot
+      const titleSlot = slots.title;
+      if (titleSlot) {
+        slotObj.title = () => titleSlot();
+      }
+
+      // default slot 存在时具名 slot 不会生效（因为父组件完全接管了渲染内容）
+      const defaultSlot = slots.default;
+      if (defaultSlot) {
+        slotObj.default = () => defaultSlot();
+      } else {
+        const itemNodes: VNode[] = (props.items || []).map((item) => {
+          const value = props.data ? getNestedValue(props.data, item.prop) : undefined;
+
+          const itemChildren: (VNode | string)[] = [];
+
+          if (item.slot) {
+            const dynamicSlot = slots[item.slot];
+            if (dynamicSlot) {
+              itemChildren.push(...dynamicSlot({ item, value, row: props.data }));
+            }
+          } else if (item.tag != null) {
+            const tag: boolean | TagConfig = item.tag;
+            itemChildren.push(
+              h(
+                ElTag,
+                { type: resolveTagType(value, tag) },
+                { default: () => resolveTagText(value, tag) }
+              )
+            );
+          } else {
+            const propSlot = slots[item.prop];
+            if (propSlot) {
+              itemChildren.push(...propSlot({ item, value, row: props.data }));
+            } else {
+              itemChildren.push(String(value ?? ""));
+            }
+          }
+
+          return h(
+            ElDescriptionsItem,
+            {
+              label: item.label,
+              span: item.span || props.span,
+              "label-class-name": item.labelClassName,
+              class: item.className,
+            },
+            { default: () => itemChildren }
+          );
+        });
+
+        slotObj.default = () => itemNodes;
+      }
+
+      return h(ElDescriptions, { ...props.bindings, class: props.nsClass }, slotObj);
+    };
+  },
+});
+</script>
+
+<script setup lang="ts">
+import { computed, useAttrs } from "vue";
+import { useNamespace } from "element-plus/es/hooks/use-namespace/index";
+
+defineOptions({ name: "FaDescriptions" });
+
+defineSlots<{
+  default(props: object): any;
+  title(props: object): any;
+  [slotName: string]: (props: {
+    item: DescriptionsItem;
+    value: unknown;
+    row: Record<string, unknown> | null;
+  }) => any;
+}>();
 
 const attrs = useAttrs();
 const ns = useNamespace("descriptions");
@@ -128,7 +188,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   column: 4,
   border: true,
-  size: "default",
+  size: undefined,
   labelWidth: undefined,
   items: () => [],
   data: null,
@@ -143,48 +203,18 @@ const bindings = computed(() => {
     border: props.border,
     ...attrs,
   };
-  if (props.size !== "default") bind.size = props.size;
+  if (props.size !== undefined) bind.size = props.size;
   if (props.labelWidth !== undefined) bind.labelWidth = props.labelWidth;
   return bind;
 });
 
-function getNestedValue(obj: Record<string, unknown> | null, path: string): unknown {
-  if (!obj) return undefined;
-  return path.split(".").reduce((acc, key) => {
-    if (acc && typeof acc === "object" && key in acc) {
-      return (acc as Record<string, unknown>)[key];
-    }
-    return undefined;
-  }, obj as unknown);
-}
-
-function resolveTagType(value: unknown, tag: boolean | TagConfig): TagType {
-  if (typeof tag === "boolean") {
-    return tag ? "success" : "danger";
-  }
-  if (tag.map) {
-    const raw = value == null ? "" : String(value);
-    if (raw in tag.map) {
-      const t = tag.map[raw].type;
-      if (t && TAG_TYPES.has(t)) return t;
-    }
-  }
-  if (tag.type && TAG_TYPES.has(tag.type)) return tag.type;
-  return "info";
-}
-
-const TAG_TYPES: Set<string> = new Set(["primary", "success", "warning", "danger", "info"]);
-
-function resolveTagText(value: unknown, tag: boolean | TagConfig): string {
-  const raw = value == null ? "" : String(value);
-  if (typeof tag === "boolean") {
-    return raw;
-  }
-  if (tag.map && raw in tag.map) {
-    return tag.map[raw].text ?? raw;
-  }
-  return raw;
-}
+const contentProps = computed(() => ({
+  bindings: bindings.value,
+  nsClass: ns.b(),
+  items: props.items,
+  data: props.data,
+  span: props.span,
+}));
 </script>
 
 <style scoped>

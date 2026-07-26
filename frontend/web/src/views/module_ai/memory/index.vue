@@ -13,15 +13,12 @@
       :show-search="true"
       :disabled-search="false"
       :default-expanded="false"
+      include-audit
       @search="handleSearchBarSearch"
       @reset="onResetSearch"
     />
 
-    <ElCard
-      shadow="hover"
-      class="fa-table-card"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="fa-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <FaTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
@@ -34,7 +31,8 @@
             :perm-create="['module_ai:chat:create']"
             :perm-delete="['module_ai:chat:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -77,12 +75,13 @@
       :form-mode="dialogVisible.type"
       :confirm-loading="submitLoading"
       @cancel="handleCloseDialog"
-      @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
+      @close="handleCloseDialog"
+      @confirm="handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
         <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
           <FaDescriptions
-            :column="2"
+            :column="4"
             :data="detailFormData"
             :items="memoryDetailItems"
             :scrollbar="false"
@@ -96,8 +95,8 @@
           <ElDivider content-position="left">消息记录</ElDivider>
           <ElTimeline v-if="detailFormData.messages && detailFormData.messages.length > 0">
             <ElTimelineItem
-              v-for="(msg, index) in detailFormData.messages"
-              :key="index"
+              v-for="msg in detailFormData.messages"
+              :key="msg.id"
               :type="msg.role === 'user' ? 'primary' : 'success'"
               :icon="msg.role === 'user' ? 'User' : 'ChatDotRound'"
             >
@@ -148,17 +147,15 @@ import { ref, reactive, computed, nextTick } from "vue";
 import { Edit } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import AiChatAPI, { type ChatSession, type ChatSessionDetail } from "@/api/module_ai/chat";
-import { useTable } from "@/hooks/core/useTable";
-import { useCrudDialog } from "@/hooks/core/useCrudDialog";
-import { useTableSelection } from "@/hooks/core/useTableSelection";
-import { confirmDelete, confirmBatchDelete } from "@/hooks/core/useConfirm";
 import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue";
-import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
+import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
-import FaForm from "@/components/forms/fa-form/index.vue";
-import type { ColumnOption } from "@/types/component";
-import { useAuth } from "@/hooks/core/useAuth";
+import type FaForm from "@/components/forms/fa-form/index.vue";
 import { formatToDateTime, renderTableOperationCell, type TableOperationAction } from "@utils";
+import type { ColumnOption } from "@/types/component";
+import FaDescriptions from "@/components/others/fa-descriptions/index.vue";
+import FaTable from "@/components/tables/fa-table/index.vue";
+import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 
 type MemorySearchForm = {
   title?: string;
@@ -184,46 +181,14 @@ const showSearchBar = ref(true);
 const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
-const { hasAuth } = useAuth();
-
 const memorySearchItems = computed<SearchFormItem[]>(() => [
   {
-    label: "标题",
+    label: "会话标题",
     key: "title",
     type: "input",
     placeholder: "请输入标题",
     clearable: true,
     span: 6,
-  },
-  {
-    label: "创建时间",
-    key: "created_at",
-    type: "datetimerange",
-    span: 6,
-    props: {
-      type: "datetimerange",
-      rangeSeparator: "至",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "100%" },
-    },
-  },
-  {
-    label: "更新时间",
-    key: "updated_at",
-    type: "datetimerange",
-    span: 6,
-    props: {
-      type: "datetimerange",
-      rangeSeparator: "至",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      style: { width: "100%" },
-    },
   },
 ]);
 
@@ -245,11 +210,14 @@ const editingRowId = ref<string | null>(null);
 const editingTitle = ref("");
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
-const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<ChatSession>();
+const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
+  useTableSelection<ChatSession>();
 
-async function deleteSessionRow(id: string) {
+const createLoading = ref(false);
+
+async function deleteSessionRow(id: string, name: string) {
   try {
-    await confirmDelete();
+    await confirmDelete(`确定删除「${name}」吗？`);
     await AiChatAPI.deleteSession([id]);
     faTableRef.value?.elTableRef?.clearSelection();
     await refreshRemove();
@@ -262,7 +230,10 @@ async function handleBatchDelete() {
   const ids = selectedIds.value;
   if (ids.length === 0) return;
   try {
-    await confirmBatchDelete(ids.length);
+    await confirmBatchDelete(
+      ids.length,
+      selectedRows.value.map((r) => (r as any)?.name ?? r?.title ?? r?.id)
+    );
     batchDeleting.value = true;
     await AiChatAPI.deleteSession(ids as unknown as string[]);
     faTableRef.value?.elTableRef?.clearSelection();
@@ -353,12 +324,14 @@ const {
         prop: "created_time",
         label: "创建时间",
         width: 168,
+        sortable: true,
         showOverflowTooltip: true,
       },
       {
         prop: "updated_time",
         label: "更新时间",
         width: 168,
+        sortable: true,
         showOverflowTooltip: true,
       },
       {
@@ -366,7 +339,7 @@ const {
         label: "操作",
         width: 160,
         fixed: "right",
-        align: "right",
+        align: "center",
         formatter: (row: ChatSession) => formatMemoryOperationCell(row),
       },
     ],
@@ -437,14 +410,40 @@ async function handleCloseDialog() {
   await resetForm();
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
+async function handleOpenMemoryDetail(id: string) {
+  dialogVisible.title = "详情";
+  dialogVisible.type = "detail";
+  try {
+    const response = await AiChatAPI.getSessionDetail(id);
+    detailFormData.value = response.data.data ?? {};
+    dialogVisible.visible = true;
+  } catch {
+    /* 已由全局拦截器提示 */
+  }
+}
+
 async function handleOpenDialog(type: "create" | "detail", id?: string) {
   await resetForm();
   dialogVisible.type = type;
   if (id) {
-    const response = await AiChatAPI.getSessionDetail(id);
-    if (type === "detail") {
-      dialogVisible.title = "详情";
-      detailFormData.value = response.data.data ?? {};
+    try {
+      const response = await AiChatAPI.getSessionDetail(id);
+      if (type === "detail") {
+        dialogVisible.title = "详情";
+        detailFormData.value = response.data.data ?? {};
+      }
+    } catch {
+      /* 已由全局拦截器提示 */
+      return;
     }
   } else {
     dialogVisible.title = "新增会话";
@@ -462,7 +461,7 @@ function buildMemoryRowActions(row: ChatSession): TableOperationAction[] {
       artType: "view",
       perm: "module_ai:chat:detail",
       run: () => {
-        void handleOpenDialog("detail", row.id);
+        void handleOpenMemoryDetail(row.id);
       },
     },
     {
@@ -472,11 +471,11 @@ function buildMemoryRowActions(row: ChatSession): TableOperationAction[] {
       icon: "ri:delete-bin-4-line",
       perm: "module_ai:chat:delete",
       run: () => {
-        deleteSessionRow(row.id);
+        deleteSessionRow(row.id, (row as any)?.name ?? row?.title ?? row?.id);
       },
     },
   ];
-  return all.filter((a) => a.perm != null && hasAuth(a.perm));
+  return all;
 }
 
 function formatMemoryOperationCell(row: ChatSession) {
@@ -512,23 +511,23 @@ async function handleSaveTitle(row: ChatSession) {
     row.title = newTitle;
     editingRowId.value = null;
   } catch (error: unknown) {
-    console.error(error);
-    ElMessage.error("更新失败");
+    if (import.meta.env.DEV) console.error(error);
   }
 }
 
 async function handleSubmit() {
-  dataFormRef.value?.validate(async (valid: boolean) => {
-    if (!valid) return;
-    try {
-      await AiChatAPI.createSession({ title: formData.value.title });
-      dialogVisible.visible = false;
-      await resetForm();
-      await refreshCreate();
-    } catch (error: unknown) {
-      console.error(error);
-    }
-  });
+  const form = dataFormRef.value;
+  if (!form) return;
+  const valid = await (form.validate as () => Promise<boolean>)().catch(() => false);
+  if (!valid) return;
+  try {
+    await AiChatAPI.createSession({ title: formData.value.title });
+    dialogVisible.visible = false;
+    await resetForm();
+    await refreshCreate();
+  } catch (error: unknown) {
+    if (import.meta.env.DEV) console.error(error);
+  }
 }
 </script>
 

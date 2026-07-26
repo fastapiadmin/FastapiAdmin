@@ -118,8 +118,8 @@ export function useAutoLayoutHeight(
     if (typeof document !== "undefined") {
       // 使用 nextTick 确保 DOM 完全渲染
       requestAnimationFrame(() => {
-        const header = headerIds.length > 0 ? document.getElementById(headerIds[0]) : null;
-        const contentHeader = headerIds.length > 1 ? document.getElementById(headerIds[1]) : null;
+        const header = headerIds.length > 0 ? document.getElementById(headerIds[0]!) : null;
+        const contentHeader = headerIds.length > 1 ? document.getElementById(headerIds[1]!) : null;
 
         if (header) {
           headerRef.value = header;

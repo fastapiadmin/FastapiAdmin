@@ -59,13 +59,6 @@ const JobAPI = {
     });
   },
 
-  syncJobsToDb() {
-    return request<ApiResponse<number>>({
-      url: `${API_PATH}/scheduler/sync`,
-      method: "post",
-    });
-  },
-
   pauseJob(jobId: string) {
     return request<ApiResponse>({
       url: `${API_PATH}/task/pause/${jobId}`,
@@ -91,6 +84,14 @@ const JobAPI = {
     return request<ApiResponse>({
       url: `${API_PATH}/task/remove/${jobId}`,
       method: "delete",
+    });
+  },
+
+  modifyJob(jobId: string, body: Record<string, any>) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/task/modify/${jobId}`,
+      method: "put",
+      data: body,
     });
   },
 
@@ -131,13 +132,14 @@ export interface SchedulerJob {
   name: string;
   trigger: string;
   next_run_time?: string;
-  status: string;
+  status: number;
 }
 
-export interface JobLogPageQuery extends PageQuery {
+export interface JobLogPageQuery extends PageQuery, UserByQueryParams {
   job_id?: string;
   job_name?: string;
   trigger_type?: string;
+  status?: number;
 }
 
 export interface JobLogTable extends BaseType {
@@ -148,4 +150,6 @@ export interface JobLogTable extends BaseType {
   job_state?: string;
   result?: string;
   error?: string;
+  status?: number;
+  description?: string;
 }

@@ -6,8 +6,8 @@ export enum MenuTypeEnum {
   EXTLINK = 4, // 外链
 }
 
-/** 菜单终端（与后端 platform_menu.client 一致） */
+/** 菜单可见范围（与后端 menu.scope 一致） */
 export enum MenuClientEnum {
-  PC = "pc",
+  PC = "web",
   APP = "app",
 }

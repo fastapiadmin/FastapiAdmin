@@ -1,12 +1,11 @@
 /**
  * 全局界面设置：布局、主题、页签、水印、工具栏显隐等；部分字段持久化（useStorage / persist）。
- * `reload` 翻转 `refresh` 布尔值，触发 `ArtPageContent` 重建 RouterView（与 useCommon.refresh 一致）。
+ * `reload` 翻转 `refresh` 布尔值，触发 `FaPageContent` 重建 RouterView（与 useCommon.refresh 一致）。
  */
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import { MenuThemeType } from "@/types/store";
+import { SystemThemeEnum, MenuTypeEnum, MenuThemeEnum, ContainerWidthEnum } from "@/enums/appEnum";
 import AppConfig from "@/config";
-import { SystemThemeEnum, MenuThemeEnum, MenuTypeEnum, ContainerWidthEnum } from "@/enums/appEnum";
 import { SETTING_DEFAULT_CONFIG } from "@/config/setting";
 import {
   setElementThemeColor,
@@ -17,12 +16,10 @@ import {
   toggleDarkMode,
   toggleSidebarColor,
 } from "@utils";
-import { SETTINGS_KEYS } from "@/constants";
-import { useStorage } from "@vueuse/core";
 import { defaultSettings } from "@/config/setting";
 import { SidebarColor, ThemeMode } from "@/enums/settings/theme.enum";
 import type { LayoutMode } from "@/enums/settings/layout.enum";
-import type { Ref } from "vue";
+import type { MenuThemeType } from "@/types/store";
 
 export const useSettingsStore = defineStore(
   "settingStore",
@@ -72,73 +69,37 @@ export const useSettingsStore = defineStore(
     // 面板开关（非持久化）
     const settingsVisible = ref<boolean>(false);
 
-    // 持久化（web-style：useStorage）
-    const showTagsView = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_TAGS_VIEW,
-      defaultSettings.showTagsView
-    );
-    const showAppLogo = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_APP_LOGO,
-      defaultSettings.showAppLogo
-    );
-    const showWatermark = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_WATERMARK,
-      defaultSettings.showWatermark
-    );
-    const showSettings = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_SETTINGS,
-      defaultSettings.showSettings
-    );
-    const showGuide = useStorage<boolean>(SETTINGS_KEYS.SHOW_GUIDE, defaultSettings.showGuide);
+    // 持久化（由 persist plugin 统一管理）
+    const showTagsView = ref(defaultSettings.showTagsView);
+    const showAppLogo = ref(defaultSettings.showAppLogo);
+    const showWatermark = ref(defaultSettings.showWatermark);
+    const showSettings = ref(defaultSettings.showSettings);
+    const showGuide = ref(defaultSettings.showGuide);
 
     // 桌面端工具设置 - 持久化
-    const showMenuSearch = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_MENU_SEARCH,
-      defaultSettings.showMenuSearch
-    );
-    const showFullscreen = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_FULLSCREEN,
-      defaultSettings.showFullscreen
-    );
-    const showSizeSelect = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_SIZE_SELECT,
-      defaultSettings.showSizeSelect
-    );
-    const showLangSelect = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_LANG_SELECT,
-      defaultSettings.showLangSelect
-    );
-    const showNotification = useStorage<boolean>(
-      SETTINGS_KEYS.SHOW_NOTIFICATION,
-      defaultSettings.showNotification
-    );
+    const showMenuSearch = ref(defaultSettings.showMenuSearch);
+    const showFullscreen = ref(defaultSettings.showFullscreen);
+    const showSizeSelect = ref(defaultSettings.showSizeSelect);
+    const showLangSelect = ref(defaultSettings.showLangSelect);
+    const showNotification = ref(defaultSettings.showNotification);
 
     // 布局和主题设置 - 持久化
-    const sidebarColorScheme = useStorage<string>(
-      SETTINGS_KEYS.SIDEBAR_COLOR_SCHEME,
-      defaultSettings.sidebarColorScheme
-    );
-    const layout = useStorage<LayoutMode>(
-      SETTINGS_KEYS.LAYOUT,
-      defaultSettings.layout as LayoutMode
-    );
-    const themeColor = useStorage<string>(SETTINGS_KEYS.THEME_COLOR, defaultSettings.themeColor);
-    const theme = useStorage<ThemeMode>(SETTINGS_KEYS.THEME, defaultSettings.theme);
+    const sidebarColorScheme = ref<string>(defaultSettings.sidebarColorScheme);
+    const layout = ref(defaultSettings.layout as LayoutMode);
+    const themeColor = ref(defaultSettings.themeColor);
+    const theme = ref(defaultSettings.theme);
 
     // 系统设置 - 持久化
-    const grayMode = useStorage<boolean>(SETTINGS_KEYS.GRAY_MODE, defaultSettings.grayMode);
-    const userEnableAi = useStorage<boolean>(SETTINGS_KEYS.AI_ENABLED, defaultSettings.aiEnabled);
-    const pageSwitchingAnimation = useStorage<string>(
-      SETTINGS_KEYS.PAGE_SWITCHING_ANIMATION,
-      defaultSettings.pageSwitchingAnimation
-    );
+    const grayMode = ref(defaultSettings.grayMode);
+    const userEnableAi = ref(defaultSettings.aiEnabled);
+    const pageSwitchingAnimation = ref(defaultSettings.pageSwitchingAnimation);
 
     const getMenuTheme = computed((): MenuThemeType => {
       const list = AppConfig.themeList.filter((item) => item.theme === menuThemeType.value);
       if (isDark.value) {
-        return AppConfig.darkMenuStyles[0];
+        return AppConfig.darkMenuStyles[0]!;
       } else {
-        return list[0];
+        return list[0]!;
       }
     });
 
@@ -298,7 +259,7 @@ export const useSettingsStore = defineStore(
       menuOpen.value = open;
     };
 
-    /** 切换 `refresh`，驱动 `layouts/art-page-content` 内 `v-if="isRefresh"` 重建视图 */
+    /** 切换 `refresh`，驱动 `layouts/fa-page-content` 内 `v-if="isRefresh"` 重建视图 */
     const reload = () => {
       refresh.value = !refresh.value;
     };

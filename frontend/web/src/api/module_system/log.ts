@@ -27,24 +27,40 @@ const OperationLogAPI = {
       data: body,
     });
   },
+
+  export(query?: OperationLogPageQuery) {
+    return request<Blob>({
+      url: `${OP_API}/export`,
+      method: "post",
+      data: query,
+      responseType: "blob",
+    });
+  },
 };
 
 export default OperationLogAPI;
 
-export interface OperationLogPageQuery extends PageQuery {
+export interface OperationLogPageQuery extends PageQuery, UserByQueryParams {
   request_path?: string;
-  creator_name?: string;
-  created_time?: string[];
+  request_method?: string;
+  username?: string;
+  status?: number;
+  request_ip?: string;
 }
 
 export interface OperationLogTable {
   id: number;
-  tenant_id: number;
-  request_path?: string;
-  request_method?: string;
-  response_code?: number;
+  username: string;
+  status?: number;
+  description?: string;
+  request_path: string;
+  request_method: string;
+  request_payload?: Record<string, unknown> | string;
+  response_code: number;
+  response_json?: Record<string, unknown> | string;
   process_time?: string;
   created_time?: string;
+  request_ip?: string;
 }
 
 // ==================== 登录日志 ====================
@@ -76,9 +92,9 @@ export const LoginLogAPI = {
   },
 };
 
-export interface LoginLogPageQuery extends PageQuery {
-  status?: number;
+export interface LoginLogPageQuery extends PageQuery, UserByQueryParams {
   username?: string;
+  status?: number;
 }
 
 export interface LoginLogTable {

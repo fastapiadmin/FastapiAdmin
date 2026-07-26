@@ -1,11 +1,11 @@
 import type { App } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
-import { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME, staticRoutes } from "./staticRoutes";
-import { setupAfterEachGuard } from "./afterEach";
+import { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME, staticRoutes } from "./routes";
+import { setupAfterEachGuard, setupBeforeEachGuard } from "./guards";
 import "@utils/ui";
 
 /**
- * 路由入口：`staticRoutes` 首屏注册；业务路由由 `beforeEach` 内 `RouteRegistry` 动态挂载。
+ * 路由入口：`staticRoutes` 首屏注册；业务路由由守卫内 `RouteRegistry` 动态挂载。
  * `initRouter` 注册前置/后置守卫并 `app.use(router)`。
  *
  * 选择 Hash 模式（createWebHashHistory）而非 History 模式的原因：
@@ -19,20 +19,19 @@ export const router = createRouter({
   scrollBehavior: () => ({ left: 0, top: 0 }),
 });
 
+/** 注册守卫 + 挂载 router 到 Vue app（在 main.ts 调用） */
 export async function initRouter(app: App<Element>): Promise<void> {
-  const { setupBeforeEachGuard } = await import("./beforeEach");
   setupBeforeEachGuard(router);
   setupAfterEachGuard(router);
   app.use(router);
 }
 
-/** 须与 `staticRoutes` 首页子路由 path 一致 */
+/** 首页 path，供外部获取（须与静态路由首页子路由 path 一致） */
 export const HOME_PAGE_PATH = "/home";
 
 export { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME };
 
-/** 动态路由注册与菜单转换（一般从 `@/router` 按需导入） */
-export { RouteRegistry, ComponentLoader, RouteTransformer, RouteValidator } from "./core";
-export type { ValidationResult } from "./core";
-export { IframeRouteManager } from "./staticRoutes";
+/** iframe 路由管理器 */
+export { IframeRouteManager } from "./routes";
+/** 菜单处理（获取、过滤、壳层补全） */
 export { MenuProcessor, builtinFrontendRoutes } from "./MenuProcessor";

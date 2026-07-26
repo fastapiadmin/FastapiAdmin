@@ -1,5 +1,5 @@
 <template>
-  <div class="elTableCustom">
+  <div>
     <ElAlert
       v-if="info.sub && !info.master_sub_hint && info.sub_table_name"
       class="mb-3"
@@ -16,9 +16,6 @@
       show-icon
       :title="info.master_sub_hint"
     />
-    <p class="gencode-columns-tip">
-      菜单与路由、接口路径的对应见「基础配置」第一步中的折叠「对照」表。
-    </p>
     <ElAlert
       v-if="columnKeyword.trim() && displayColumns.length === 0 && (info.columns?.length ?? 0) > 0"
       class="mb-2"
@@ -27,15 +24,15 @@
       show-icon
       title="无匹配列，请调整筛选词或清空筛选框"
     />
-    <div class="mb-2 flex flex-wrap items-center gap-2">
+    <div class="mt-3 mb-2.5 flex flex-wrap items-center gap-2">
       <ElInput
         v-model="columnKeyword"
         clearable
         placeholder="筛选列名或注释"
-        class="gencode-column-filter"
+        style="width: 240px"
         :prefix-icon="Search"
       />
-      <span class="gencode-bulk-hint">批量设置：</span>
+      <span class="text-xs text-(--el-text-color-secondary) select-none">批量设置：</span>
       <ElSpace size="small">
         <ElDropdown>
           <ElButton size="small" type="primary" plain>查询</ElButton>
@@ -92,8 +89,11 @@
         <ElTableColumn label="拖拽" width="56" fixed align="center">
           <template #default>
             <span
-              class="gencode-drag-handle"
-              :class="{ disabled: !!columnKeyword.trim() }"
+              class="gencode-drag-handle inline-flex items-center justify-center w-7 h-5.5 text-sm leading-none text-(--el-text-color-secondary) cursor-grab select-none"
+              :class="{
+                disabled: !!columnKeyword.trim(),
+                'cursor-not-allowed opacity-35': !!columnKeyword.trim(),
+              }"
               title="拖拽排序（筛选时禁用）"
             >
               <ElIcon><Rank /></ElIcon>
@@ -247,7 +247,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from "vue";
-import { Search } from "@element-plus/icons-vue";
+import { Rank, Search } from "@element-plus/icons-vue";
 import { useDraggable } from "vue-draggable-plus";
 import type { GenTableSchema, GenTableColumnSchema } from "@/api/module_generator/gencode";
 import type { DictTable } from "@/api/module_system/dict";
@@ -270,7 +270,7 @@ let draggableApi: { destroy?: () => void; pause?: () => void; start?: () => void
 // 计算表格高度：视口高度 - 顶部导航栏 - 步骤条 - 提示文字 - 筛选栏 - 底部按钮 - 边距
 // 大约：60(顶部) + 60(步骤) + 30(提示) + 50(筛选) + 80(底部按钮) + 100(边距) = 380px
 const tableHeight = computed(() => {
-  return "calc(100vh - 300px)"; // -80 底部按钮
+  return "calc(100vh - 270px)"; // -80 底部按钮
 });
 
 const columnsModel = computed({
@@ -341,41 +341,3 @@ onBeforeUnmount(() => {
   draggableApi = null;
 });
 </script>
-
-<style scoped lang="scss">
-.gencode-columns-tip {
-  margin: 0 0 10px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--el-text-color-secondary);
-}
-
-.gencode-column-filter {
-  width: 200px;
-  max-width: 100%;
-}
-
-.gencode-bulk-hint {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  user-select: none;
-}
-
-.gencode-drag-handle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 22px;
-  font-size: 14px;
-  line-height: 1;
-  color: var(--el-text-color-secondary);
-  cursor: grab;
-  user-select: none;
-}
-
-.gencode-drag-handle.disabled {
-  cursor: not-allowed;
-  opacity: 0.35;
-}
-</style>
