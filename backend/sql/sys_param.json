@@ -133,6 +133,6 @@
         "config_value": "on",
         "config_type": true,
         "status": 0,
-        "description": "是否启用IP归属地查询（登录时对外发起HTTP请求，关闭后只记录内网/未知）"
+        "description": "是否启用IP归属地查询（基于内置ip2region离线库本地解析，不发起外网请求；关闭后只记录内网/未解析）"
     }
 ]

@@ -340,7 +340,6 @@ onMounted(() => {
   }
 
   &.is-current {
-    background: linear-gradient(180deg, #fffaf0 0%, #fff 60%);
     border: 2px solid #e6a23c;
   }
 
@@ -372,7 +371,6 @@ onMounted(() => {
   padding: 5px 0;
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
   text-align: center;
   letter-spacing: 1px;
   background: linear-gradient(135deg, var(--el-color-primary, #409eff), #79bbff);
@@ -382,7 +380,7 @@ onMounted(() => {
 
 /* Primary gradient button */
 .btn-primary-gradient {
-  color: #fff !important;
+
   background: linear-gradient(135deg, var(--el-color-primary, #409eff), #79bbff) !important;
   border: none !important;
   transition:

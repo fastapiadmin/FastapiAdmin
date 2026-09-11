@@ -5,16 +5,6 @@ from fastapi import Response
 
 
 @dataclasses.dataclass
-class IpInfo:
-    """IP 归属地解析结果。"""
-
-    ip: str
-    country: str | None
-    region: str | None
-    city: str | None
-
-
-@dataclasses.dataclass
 class UserAgentInfo:
     """User-Agent 解析结果（操作系统、浏览器、设备）。"""
 

@@ -18,6 +18,7 @@ import { NProgress } from "@utils/ui";
 import { Auth } from "@utils/auth";
 import { isHttpError, ApiStatus } from "@utils/http";
 import { refreshState } from "./refresh";
+import { getMainScrollEl } from "@/hooks/core/useCommon";
 
 /** 全局 loading 状态（用于路由切换时显示加载遮罩） */
 const globalLoading = ref(false);
@@ -319,7 +320,9 @@ export function setupAfterEachGuard(router: Router): void {
   router.afterEach((to) => {
     setWorktab(to);
     setPageTitle(to);
-    document.querySelector(".el-scrollbar__wrap")?.scrollTo(0, 0);
+    // 只重置主内容区（#app-content）：不能用 .el-scrollbar__wrap 这类第三方类名定位，
+    // 文档里第一个命中的是左侧菜单的滚动条（#app-sidebar 在 #app-main 之前）。
+    getMainScrollEl()?.scrollTo(0, 0);
     window.scrollTo(0, 0);
     NProgress.done();
     if (globalLoading.value) globalLoading.value = false;

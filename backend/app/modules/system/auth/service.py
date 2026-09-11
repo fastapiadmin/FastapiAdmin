@@ -6,9 +6,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, NewType
 
 import ua_parser
-from fastapi import BackgroundTasks, Request
+from fastapi import Request
 from redis.asyncio.client import Redis
-from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.enums import EnvironmentEnum, RedisInitKeyConfig
@@ -24,7 +23,6 @@ from app.core.security import (
     decode_access_token,
 )
 from app.modules.system.log.crud import LoginLogCRUD
-from app.modules.system.log.model import LoginLogModel
 from app.modules.system.log.schema import LoginLogCreateSchema
 from app.modules.system.user.crud import UserCRUD
 from app.modules.system.user.model import UserModel
@@ -99,7 +97,7 @@ async def _write_login_log(
     request_browser: str | None = None,
     msg: str | None = None,
 ) -> int | None:
-    """写入登录日志；返回日志 ID（用于后台补全归属地）。"""
+    """写入登录日志；失败不影响登录主流程，返回 None。"""
     try:
         async with async_db_session() as session, session.begin():
             _auth = AuthSchema()
@@ -119,53 +117,6 @@ async def _write_login_log(
         # 登录日志失败不影响主流程，但静默吞会丢失审计线索——至少留应用日志
         logger.warning(f"登录审计日志写入失败: username={username}, msg={msg}", exc_info=True)
         return None
-
-
-async def _async_fill_login_location(redis, login_log_id: int, ip: str | None) -> None:
-    """后台异步补全登录日志的归属地。"""
-    if not ip:
-        return
-    try:
-        location = await IpLocalUtil.resolve_location_async(redis, ip)
-        logger.info(f"异步解析IP归属地结果: ip={ip}, log_id={login_log_id}, location={location}")
-        if location == "归属地查询中" or not location:
-            return
-        async with async_db_session() as session, session.begin():
-            await session.execute(sa_update(LoginLogModel).where(LoginLogModel.id == login_log_id).values(login_location=location))
-            logger.info(f"登录日志归属地已更新: log_id={login_log_id}, location={location}")
-    except Exception as e:
-        logger.warning(f"异步补全登录归属地失败: {e}")
-
-
-async def _async_fill_session_location(redis, session_id: str, ip: str | None) -> None:
-    """后台异步补全会话缓存中的归属地（微信/OAuth 登录不写登录日志，需单独更新 Redis 会话）。"""
-    if not ip:
-        return
-    try:
-        location = await IpLocalUtil.resolve_location_async(redis, ip)
-        logger.info(f"异步解析IP归属地结果: ip={ip}, session_id={session_id}, location={location}")
-        if location == "归属地查询中" or not location:
-            return
-        key = f"{RedisInitKeyConfig.USER_SESSION.key}:{session_id}"
-        raw = await RedisCURD(redis).get(key)
-        if not raw:
-            return
-        if isinstance(raw, bytes):
-            raw = raw.decode("utf-8")
-        session_dict = json.loads(raw)
-        session_dict["login_location"] = location
-        ttl = await RedisCURD(redis).ttl(key)
-        # 原子替换：会话在此期间被删除(登出)或改写时不落盘，避免复活已登出的会话
-        updated = await RedisCURD(redis).compare_and_set(
-            key=key,
-            expected=raw,
-            value=json.dumps(session_dict, default=str),
-            expire=max(int(ttl), 1),
-        )
-        if updated:
-            logger.info(f"会话归属地已更新: session_id={session_id}, location={location}")
-    except Exception as e:
-        logger.warning(f"异步补全会话归属地失败: {e}")
 
 
 class LoginService:
@@ -225,7 +176,6 @@ class LoginService:
     async def authenticate_user(
         cls,
         request: Request,
-        background_tasks: BackgroundTasks,
         redis: Redis,
         login_form: CustomOAuth2PasswordRequestForm,
         db: AsyncSession,
@@ -234,7 +184,7 @@ class LoginService:
         ua_result = ua_parser.parse(request.headers.get("user-agent") or "")
         request_ip = get_client_ip(request)
         await cls._check_login_rate_limit(redis=redis, request_ip=request_ip)
-        login_location = await IpLocalUtil.resolve_location_for_log(redis, request_ip)
+        login_location = await IpLocalUtil.resolve_location(redis, request_ip)
         _login_os = ua_result.os.family if ua_result.os else "Unknown"
         _login_browser = ua_result.user_agent.family if ua_result.user_agent else "Unknown"
         _login_username = login_form.username
@@ -302,9 +252,10 @@ class LoginService:
             redis=redis,
             user=user,
             login_type=login_form.login_type,
+            login_location=login_location,
         )
 
-        log_id = await _write_login_log(
+        await _write_login_log(
             username=user.username,
             status=1,
             login_ip=request_ip,
@@ -313,9 +264,6 @@ class LoginService:
             request_browser=_login_browser,
             msg="登录成功",
         )
-        # 登录成功后异步补全归属地，不阻塞返回
-        if log_id and login_location == "归属地查询中":
-            background_tasks.add_task(_async_fill_login_location, redis, log_id, request_ip)
 
         return cls.build_login_out(token=token, user=user)
 
@@ -404,14 +352,19 @@ class LoginService:
         redis: Redis,
         user: UserModel,
         login_type: str,
-        background_tasks: BackgroundTasks | None = None,
+        login_location: str | None = None,
     ) -> JWTOutSchema:
-        """创建访问令牌和刷新令牌"""
+        """创建访问令牌和刷新令牌。
+
+        login_location 由调用方在登录前置流程中已解析时直接透传（账号密码登录），
+        避免同一 IP 重复解析；为 None 时（OAuth/微信直连路径）在此解析。
+        """
         session_id = str(uuid.uuid4())
         ua_result = ua_parser.parse(request.headers.get("user-agent") or "")
         request_ip = get_client_ip(request)
 
-        login_location = await IpLocalUtil.resolve_location_for_log(redis, request_ip)
+        if login_location is None:
+            login_location = await IpLocalUtil.resolve_location(redis, request_ip)
 
         access_expires = timedelta(seconds=settings.ACCESS_TOKEN_EXPIRE_SECONDS)
         refresh_expires = timedelta(seconds=settings.REFRESH_TOKEN_EXPIRE_SECONDS)
@@ -467,10 +420,6 @@ class LoginService:
             value=refresh_token,
             expire=int(refresh_expires.total_seconds()),
         )
-
-        # 归属地为待解析时后台补全会话中的 login_location（微信/OAuth 登录路径）
-        if background_tasks and login_location == "归属地查询中":
-            background_tasks.add_task(_async_fill_session_location, redis, session_id, request_ip)
 
         return JWTOutSchema(
             access_token=access_token,

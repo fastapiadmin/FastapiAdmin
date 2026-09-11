@@ -81,6 +81,7 @@ class InitializeData:
         else:
             # 先把数据库带到最新版本，否则 autogenerate 会因
             # "Target database is not up to date" 无法对比模型与库结构
+            await InitializeData.__clear_unresolvable_alembic_version(alembic_cfg)
             await asyncio.to_thread(command.upgrade, alembic_cfg, "head")
             logger.info("✅ 数据库迁移已应用（alembic upgrade head）")
 
@@ -94,6 +95,32 @@ class InitializeData:
             elif autogen is False:
                 # 仅"无模型变更"才打此日志；失败/拦截（None）已由 warning/error 说明，不再输出易误导的 info
                 logger.info("✅ dev 环境自动迁移检查完成（模型无变更）")
+
+    @staticmethod
+    async def __clear_unresolvable_alembic_version(alembic_cfg) -> None:
+        """清掉数据库里无法被仓库迁移脚本解析的版本号（僵尸 revision）。
+
+        本仓库不提交迁移历史（versions/ 仅保留 __init__.py），库里却可能残留早前
+        dev 自动生成、随后被当作未跟踪文件清理掉的迁移版本号。此时 upgrade 会抛
+        "Can't locate revision identified by 'xxx'"，让整个后端启动失败。
+        这里只删除解析不了的版本号，保留可解析的，交由后续自动迁移按当前模型重新对齐。
+        """
+        from alembic.script import ScriptDirectory
+        from sqlalchemy import text
+
+        known = {script.revision for script in ScriptDirectory.from_config(alembic_cfg).walk_revisions()}
+        async with async_engine.begin() as conn:
+            has_version_table = await conn.run_sync(lambda sync_conn: inspect(sync_conn).has_table("alembic_version"))
+            if not has_version_table:
+                return
+            current = {row[0] for row in await conn.execute(text("select version_num from alembic_version"))}
+            stale = current - known
+            if not stale:
+                return
+            for rev in stale:
+                await conn.execute(text("delete from alembic_version where version_num = :rev"), {"rev": rev})
+            hint = "；仓库存在迁移历史时请手动核对是否需要 alembic stamp" if known else ""
+            logger.warning(f"⚠️ 已清理无法解析的迁移版本记录 {sorted(stale)}（对应脚本已不存在）{hint}")
 
     @staticmethod
     def __autogen_migration(alembic_cfg) -> bool | None:
