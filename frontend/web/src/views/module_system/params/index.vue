@@ -100,8 +100,8 @@
                   <span class="text-xs text-(--el-text-color-secondary)">
                     {{
                       fieldsMap.access[0]!.localValue === "on"
-                        ? "登录时将查询客户端 IP 归属地，用于日志记录"
-                        : "IP 归属地查询已关闭，登录日志不记录地理位置"
+                        ? "登录时基于内置离线库本地解析客户端 IP 归属地，用于日志记录"
+                        : "IP 归属地查询已关闭，登录位置只记录内网 / 未解析"
                     }}
                   </span>
                 </div>

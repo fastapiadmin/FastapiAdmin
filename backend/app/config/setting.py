@@ -30,7 +30,8 @@ class Settings(BaseSettings):
     # ================================================= #
     SERVER_HOST: str = "0.0.0.0"  # 允许访问的IP地址
     SERVER_PORT: int = 8001  # 服务端口
-    WORKERS: int = 1  # uvicorn worker 进程数（prod 环境可调大；>1 时需确保 Redis 共享 jobstore 不重复调度）
+    WORKERS: int = 1  # uvicorn worker 进程数（prod 环境可调大；>1 时确保 Redis 共享 jobstore 不重复调度）
+    TRUSTED_PROXY_HOPS: int = 1  # 前置可信反向代理跳数（docker 部署默认单层 nginx；直连公网部署填 0）
 
     # ================================================= #
     # ******************* API文档配置 ****************** #
@@ -159,9 +160,6 @@ class Settings(BaseSettings):
     # ******************* 外部 HTTP（httpx）******************* #
     # ================================================= #
     HTTPX_DEFAULT_TIMEOUT: float = 10.0  # 对外 HTTP 请求默认超时（秒）
-    IP_LOCATION_ENABLE: bool = True  # 是否启用 IP 归属地查询（登录时对外发起 HTTP 请求）
-    IP_LOCATION_CACHE_TTL: int = 2592000  # IP 归属地缓存时间（秒，默认 30 天）
-    IP_LOCATION_QUERY_TIMEOUT: float = 3.0  # IP 归属地查询单次 HTTP 超时（秒）
 
     # ================================================= #
     # ********************* 日志配置 ******************* #

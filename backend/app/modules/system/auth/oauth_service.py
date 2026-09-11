@@ -13,7 +13,7 @@ from typing import Any, Literal
 from urllib.parse import quote, urlencode
 
 import httpx
-from fastapi import BackgroundTasks, Request
+from fastapi import Request
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -327,7 +327,6 @@ async def complete_oauth_login(
     provider: OAuthProvider,
     code: str,
     state: str,
-    background_tasks: BackgroundTasks | None = None,
 ) -> tuple[JWTOutSchema, str]:
     rc = RedisCURD(redis)
     raw = await rc.get(f"{STATE_PREFIX}{state}")
@@ -369,7 +368,7 @@ async def complete_oauth_login(
     try:
         user = await LoginService.prepare_user_for_login(db=db, user=user)
         login_type = f"oauth_{provider}"
-        token = await LoginService.create_token(request=request, redis=redis, user=user, login_type=login_type, background_tasks=background_tasks)
+        token = await LoginService.create_token(request=request, redis=redis, user=user, login_type=login_type)
         return token, frontend
     finally:
         await rc.delete(f"{STATE_PREFIX}{state}")
@@ -448,7 +447,6 @@ async def finish_oauth_login(
     provider: OAuthProvider,
     code: str | None,
     state: str | None,
-    background_tasks: BackgroundTasks | None = None,
 ) -> str:
     """OAuth 回调编排：校验参数与 state → 换取令牌 → 查找/自动注册用户 → 签发登录态。
 
@@ -470,7 +468,6 @@ async def finish_oauth_login(
             provider=provider,
             code=code,
             state=state,
-            background_tasks=background_tasks,
         )
     except CustomException as e:
         return _frontend_error_redirect(await _frontend(), e.msg)

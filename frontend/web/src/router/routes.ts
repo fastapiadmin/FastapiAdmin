@@ -17,7 +17,6 @@ import { useWorktabStore } from "@stores";
 import LayoutComponent from "@/layouts/index.vue";
 import DashboardWorkplace from "@views/dashboard/workplace/index.vue";
 import DashboardAnalysis from "@views/dashboard/analysis/index.vue";
-import DashboardScreen from "@views/dashboard/screen/index.vue";
 import RedirectView from "@views/redirect/index.vue";
 import LoginView from "@views/module_system/auth/login/index.vue";
 import Exception401 from "@views/exception/401/index.vue";
@@ -131,12 +130,6 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
       keepAlive: false,
     },
   },
-  {
-    path: "screen",
-    name: "DashboardScreen",
-    component: DashboardScreen,
-    meta: { title: "数据大屏", icon: "ri:tv-line", keepAlive: false, hidden: false },
-  },
 ];
 
 // ──────── 路由常量 ────────
@@ -224,10 +217,10 @@ export const IframeView = defineComponent({
  * 2、静态路由不管是否登录都可以访问
  */
 export const staticRoutes: AppRouteRecordRaw[] = [
-  // 重定向中转页
+  // 重定向中转页：仅用于强制重新进入目标路由，本身不应出现在菜单和工作标签栏
   {
     path: "/redirect",
-    meta: { hidden: true },
+    meta: { hidden: true, isHideTab: true },
     component: LayoutComponent,
     children: [
       {
@@ -243,29 +236,29 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     meta: { hidden: true, isHideTab: true, title: "menus.login.title" },
     component: LoginView,
   },
-  // 异常页
+  // 异常页：不在侧栏菜单显示（hidden），也不进入工作标签栏（isHideTab）
   {
     path: "/401",
     name: "401",
-    meta: { hidden: true, title: "401" },
+    meta: { hidden: true, isHideTab: true, title: "401" },
     component: Exception401,
   },
   {
     path: "/403",
     name: "403",
     component: Exception403,
-    meta: { hidden: true, title: "403" },
+    meta: { hidden: true, isHideTab: true, title: "403" },
   },
   {
     path: "/404",
     name: "404",
-    meta: { hidden: true, title: "404" },
+    meta: { hidden: true, isHideTab: true, title: "404" },
     component: Exception404,
   },
   {
     path: "/500",
     name: "500",
-    meta: { hidden: true, title: "500" },
+    meta: { hidden: true, isHideTab: true, title: "500" },
     component: Exception500,
   },
   // 根 Layout：存放壳层路由（home/dashboard/fastlink）
@@ -374,6 +367,6 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     path: "/:pathMatch(.*)*",
     name: "CatchAll404",
     component: Exception404,
-    meta: { hidden: true, title: "404" },
+    meta: { hidden: true, isHideTab: true, title: "404" },
   },
 ];

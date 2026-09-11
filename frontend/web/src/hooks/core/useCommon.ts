@@ -5,6 +5,19 @@
 import { computed } from "vue";
 import { useMenuStore, useSettingsStore } from "@stores";
 
+/**
+ * 主内容区滚动容器。
+ *
+ * 真正的滚动元素是 `#app-content`（`_layouts.scss` 里带 `overflow: auto`，
+ * 靠 `flex: 1` + `min-height: 0` 被限制在视口剩余高度内）。
+ * 注意 `#app-scroll-main`（`.layout-content`）只是限宽居中的包装层，
+ * 自身没有 `overflow`，对它设 `scrollTop` 是空操作；
+ * 这里不能改用 `.el-scrollbar__wrap` 之类的第三方类名定位——
+ * 文档里第一个命中的是左侧菜单的滚动条。
+ */
+export const getMainScrollEl = (): HTMLElement | null =>
+  document.getElementById("app-content") ?? document.getElementById("app-main");
+
 export function useCommon() {
   const menuStore = useMenuStore();
   const settingStore = useSettingsStore();
@@ -15,10 +28,6 @@ export function useCommon() {
   const refresh = () => {
     settingStore.reload();
   };
-
-  /** 主内容区滚动容器（顶栏、标签页固定，仅此处纵向滚动） */
-  const getMainScrollEl = (): HTMLElement | null =>
-    document.getElementById("app-scroll-main") ?? document.getElementById("app-main");
 
   const scrollToTop = () => {
     const scrollContainer = getMainScrollEl();

@@ -40,7 +40,7 @@
       </Transition>
     </RouterView>
 
-    <!-- 返回顶部：宽屏 #app-scroll-main；窄屏文档滚动 target 置空 -->
+    <!-- 返回顶部：宽屏滚动容器是 #app-content；窄屏改为文档滚动，target 置空 -->
     <ElBacktop
       :key="backtopTargetKey"
       :target="backtopScrollTarget"
@@ -147,7 +147,7 @@ const containerStyle = computed(
   })
 );
 
-/** 常规布局下由 `.layout-content` 承担纵向滚动，路由视图填满剩余高度 */
+/** 纵向滚动由外层 `#app-content` 承担，`.layout-content` 仅做限宽居中，路由视图填满剩余高度 */
 const contentStyle = computed(
   (): CSSProperties => ({ flex: "1", minHeight: "0", minWidth: 0, width: "100%" })
 );

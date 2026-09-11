@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { useCommon } from "@/hooks/core/useCommon";
+import { getMainScrollEl, useCommon } from "@/hooks/core/useCommon";
 
 defineOptions({ name: "FaBackToTop" });
 
@@ -29,8 +29,7 @@ const showButton = ref(false);
 const scrollThreshold = 300;
 
 onMounted(() => {
-  const scrollContainer =
-    document.getElementById("app-scroll-main") ?? document.getElementById("app-main");
+  const scrollContainer = getMainScrollEl();
   if (scrollContainer) {
     const { y } = useScroll(scrollContainer);
     watch(y, (newY: number) => {

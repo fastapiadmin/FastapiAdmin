@@ -16,7 +16,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import BackgroundTasks, Request
+from fastapi import Request
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -326,11 +326,10 @@ async def wx_mini_login(
     code: str,
     nickname: str | None = None,
     avatar: str | None = None,
-    background_tasks: BackgroundTasks,
 ) -> LoginOutSchema:
     """小程序登录编排：code → openid → 查找/自动注册用户 → 签发 JWT。
 
-    登录类型记为 wx_mini；归属地为待解析时由后台任务补全会话登录地点。
+    登录类型记为 wx_mini。
     """
     session_data = await code2session(code=code)
     openid = session_data["openid"]
@@ -340,7 +339,6 @@ async def wx_mini_login(
         redis=redis,
         user=user,
         login_type="wx_mini",
-        background_tasks=background_tasks,
     )
     logger.info(f"微信小程序用户登录成功: {user.username}")
     return LoginService.build_login_out(token=token, user=user)
@@ -352,7 +350,6 @@ async def wx_mini_phone_login(
     redis: Redis,
     db: AsyncSession,
     code: str,
-    background_tasks: BackgroundTasks,
 ) -> LoginOutSchema:
     """小程序手机号登录编排：code → 手机号 → 查找/自动注册用户 → 签发 JWT。
 
@@ -365,7 +362,6 @@ async def wx_mini_phone_login(
         redis=redis,
         user=user,
         login_type="wx_mini_phone",
-        background_tasks=background_tasks,
     )
     logger.info(f"微信手机号用户登录成功: {user.username}")
     return LoginService.build_login_out(token=token, user=user, with_mobile=True)

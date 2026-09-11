@@ -1,7 +1,7 @@
 import base64
 from typing import Annotated, Any
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, Path, Query, Request
+from fastapi import APIRouter, Body, Depends, Path, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,12 +37,11 @@ AuthRouter = APIRouter(route_class=OperationLogRoute, prefix="/auth", tags=["认
 @AuthRouter.post("/login", summary="登录", response_model=LoginOutSchema)
 async def login_for_access_token_controller(
     request: Request,
-    background_tasks: BackgroundTasks,
     redis: Annotated[Redis, Depends(redis_getter)],
     db: Annotated[AsyncSession, Depends(db_getter)],
     login_form: Annotated[CustomOAuth2PasswordRequestForm, Depends()],
 ) -> JSONResponse | LoginOutSchema:
-    login_result: LoginOutSchema = await LoginService.authenticate_user(request=request, redis=redis, login_form=login_form, db=db, background_tasks=background_tasks)
+    login_result: LoginOutSchema = await LoginService.authenticate_user(request=request, redis=redis, login_form=login_form, db=db)
 
     logger.info(f"用户{login_form.username}登录成功")
 
@@ -111,7 +110,6 @@ async def oauth_login_redirect_controller(
 @AuthRouter.get("/oauth/{provider}/callback", summary="第三方OAuth回调", include_in_schema=False)
 async def oauth_callback_controller(
     request: Request,
-    background_tasks: BackgroundTasks,
     redis: Annotated[Redis, Depends(redis_getter)],
     db: Annotated[AsyncSession, Depends(db_getter)],
     provider: Annotated[OAuthProvider, Path(description="wechat | qq | github | gitee")],
@@ -126,7 +124,6 @@ async def oauth_callback_controller(
         provider=provider,
         code=code,
         state=state,
-        background_tasks=background_tasks,
     )
     return RedirectContentResponse(url=url, status_code=302)
 
@@ -142,7 +139,6 @@ async def wx_mini_login_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     db: Annotated[AsyncSession, Depends(db_getter)],
     body: Annotated[WxLoginSchema, Body(description="微信小程序登录参数")],
-    background_tasks: BackgroundTasks,
 ) -> JSONResponse:
     """微信小程序登录：前端 uni.login 的 code 换取 openid 后签发 JWT。"""
     result: LoginOutSchema = await wx_mini_login(
@@ -152,7 +148,6 @@ async def wx_mini_login_controller(
         code=body.code,
         nickname=body.nickname,
         avatar=body.avatar,
-        background_tasks=background_tasks,
     )
     return SuccessResponse(data=result, msg="登录成功")
 
@@ -163,7 +158,6 @@ async def wx_mini_phone_login_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
     db: Annotated[AsyncSession, Depends(db_getter)],
     body: Annotated[WxPhoneLoginSchema, Body(description="微信小程序手机号登录参数")],
-    background_tasks: BackgroundTasks,
 ) -> JSONResponse:
     """微信小程序手机号登录：getPhoneNumber 回调的 code 换取手机号后签发 JWT。"""
     result: LoginOutSchema = await wx_mini_phone_login(
@@ -171,7 +165,6 @@ async def wx_mini_phone_login_controller(
         redis=redis,
         db=db,
         code=body.code,
-        background_tasks=background_tasks,
     )
     return SuccessResponse(data=result, msg="登录成功")
 
