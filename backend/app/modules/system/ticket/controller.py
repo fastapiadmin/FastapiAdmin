@@ -10,10 +10,19 @@ from app.core.dependencies import AuthPermission, db_getter
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
 
-from .schema import TicketBatchSchema, TicketCommentCreateSchema, TicketCommentOutSchema, TicketCreateSchema, TicketOutSchema, TicketQueryParam, TicketUpdateSchema
+from .schema import TicketBatchSchema, TicketCommentCreateSchema, TicketCommentOutSchema, TicketCreateSchema, TicketOutSchema, TicketQueryParam, TicketStatsSchema, TicketUpdateSchema
 from .service import TicketCommentService, TicketService
 
 TicketRouter = APIRouter(route_class=OperationLogRoute, prefix="/ticket", tags=["工单管理"])
+
+
+@TicketRouter.get("/stats", summary="工单状态统计", response_model=ResponseSchema[TicketStatsSchema])
+async def ticket_stats_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_system:ticket:query"]))],
+    db: Annotated[AsyncSession, Depends(db_getter)],
+) -> JSONResponse:
+    result: TicketStatsSchema = await TicketService(auth, db).stats()
+    return SuccessResponse(data=result, msg="查询成功")
 
 
 @TicketRouter.get("/list", summary="工单列表", response_model=ResponseSchema[PageResultSchema[TicketOutSchema]])

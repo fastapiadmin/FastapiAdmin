@@ -61,10 +61,30 @@ class ServerService:
         )
 
     @staticmethod
+    def _get_local_ip() -> str:
+        """获取本机对外通信 IP，逐级降级，任何环境都不抛异常。
+
+        1. UDP「连接」路由探测：connect 只让内核查路由表选出站源地址，
+           不实际发包、不依赖 DNS，容器内能拿到容器网段 IP，macOS 上能拿到
+           真实局域网 IP（gethostbyname(主机名) 在 macOS 常返回 127.0.0.1）；
+        2. 主机名解析（无默认路由等场景的兜底）；
+        3. 回环地址。
+        """
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.connect(("8.8.8.8", 80))
+                return sock.getsockname()[0]
+        except OSError:
+            pass
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except OSError:
+            return "127.0.0.1"
+
+    @staticmethod
     def _get_system_info() -> SysInfoSchema:
-        hostname = socket.gethostname()
         return SysInfoSchema(
-            computer_ip=socket.gethostbyname(hostname),
+            computer_ip=ServerService._get_local_ip(),
             computer_name=platform.node(),
             os_arch=platform.machine(),
             os_name=platform.platform(),
