@@ -16,6 +16,7 @@ from .schema import (
     TicketCreateSchema,
     TicketOutSchema,
     TicketQueryParam,
+    TicketStatsSchema,
     TicketUpdateSchema,
 )
 
@@ -148,6 +149,19 @@ class TicketService:
             preload=_TICKET_PRELOAD,
         )
         return [TicketOutSchema.model_validate(obj) for obj in obj_list]
+
+    async def stats(self) -> TicketStatsSchema:
+        """按状态聚合工单数量（待处理/处理中/已完成，已关闭不计入）。
+
+        走 CRUDBase.count 以统一继承软删过滤与数据权限；同一 AsyncSession
+        不能并发执行，三次 COUNT 顺序发起。
+        """
+        crud = TicketCRUD(self.auth, self.db)
+        return TicketStatsSchema(
+            pending=await crud.count(status=("eq", 0)),
+            processing=await crud.count(status=("eq", 1)),
+            done=await crud.count(status=("eq", 2)),
+        )
 
     @staticmethod
     async def export_list(ticket_list: list[dict[str, Any]]) -> bytes:

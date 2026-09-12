@@ -65,6 +65,14 @@ class TicketBatchSchema(BaseModel):
     status: int = Field(..., ge=0, le=3, description="状态(0:待处理 1:处理中 2:已完成 3:已关闭)")
 
 
+class TicketStatsSchema(BaseModel):
+    """工单状态聚合统计（已关闭不计入）"""
+
+    pending: int = Field(default=0, description="待处理数量")
+    processing: int = Field(default=0, description="处理中数量")
+    done: int = Field(default=0, description="已完成数量")
+
+
 class TicketQueryParam(BaseQueryParam, UserByQueryParam):
     """工单查询参数"""
 
