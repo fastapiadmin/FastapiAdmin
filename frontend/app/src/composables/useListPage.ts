@@ -30,9 +30,16 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
     loading,
     error,
     send,
+    refresh,
+    reload: reloadPagination,
     onError: onPageError,
   } = usePagination<AG, T[], any[]>(
-    (pageNo: number, pageSizeNo: number) => fetcher({ page_no: pageNo, page_size: pageSizeNo }),
+    (pageNo: number, pageSizeNo: number) => {
+      const method = fetcher({ page_no: pageNo, page_size: pageSizeNo })
+      // 列表页要求实时数据，禁用 alova GET 默认 5 分钟请求缓存
+      method.config.cacheFor = 0
+      return method
+    },
     {
       initialPage: 1,
       initialPageSize: pageSize,
@@ -41,8 +48,6 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
       watchingStates: [],
       preloadNextPage: false,
       preloadPreviousPage: false,
-      // 列表页总是请求最新数据，禁用 alova 响应缓存
-      force: true,
       // 响应已由 http 层 responded 解包为业务结构 { list, total }
       data: res => (res as PageResult<T>).list ?? [],
       total: res => (res as PageResult<T>).total ?? 0,
@@ -53,7 +58,7 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
     onError?.(e)
   })
 
-  /** 加载当前页数据 */
+  /** 加载当前页数据（翻页用，命中 usePagination 分页缓存时不重复请求） */
   async function loadData() {
     try {
       await send(pageParams.value.page_no, pageParams.value.page_size)
@@ -63,6 +68,29 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
     }
     finally {
       // 收起下拉刷新指示器（onPullDownRefresh → loadData 场景；非刷新场景调用无害）
+      uni.stopPullDownRefresh()
+    }
+  }
+
+  /** 强制刷新当前页（忽略缓存重新请求，下拉刷新场景） */
+  async function refreshData() {
+    try {
+      await refresh(pageParams.value.page_no)
+    }
+    catch {}
+    finally {
+      uni.stopPullDownRefresh()
+    }
+  }
+
+  /** 从第 1 页重新加载并清除分页缓存（创建/更新/删除后调用，确保看到最新数据） */
+  async function reload() {
+    pageParams.value.page_no = 1
+    try {
+      await reloadPagination()
+    }
+    catch {}
+    finally {
       uni.stopPullDownRefresh()
     }
   }
@@ -94,6 +122,8 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
     error,
     pageParams,
     loadData,
+    refreshData,
+    reload,
     loadPrev,
     loadNext,
     toFirst,

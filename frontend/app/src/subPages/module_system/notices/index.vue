@@ -30,7 +30,7 @@ const STATUS_OPTIONS = [
 /** 公告状态：数字 → StatusBadge 内置 key，由 StatusBadge 的 map prop 一次性映射 */
 const NOTICE_STATUS_MAP: Record<string, string> = { 0: 'draft', 1: 'published', 2: 'archived' }
 
-const { list, total, loading, loadData, toFirst, loadNext } = useListPage<NoticeItem>({
+const { list, total, loading, loadData, reload, refreshData, toFirst, loadNext } = useListPage<NoticeItem>({
   fetcher: p => NoticeAPI.getPage({ ...p, notice_title: searchTitle.value || undefined }),
   onError: () => toast.error(t('common.loadFailed')),
 })
@@ -73,13 +73,15 @@ async function handleSubmit() {
     if (currentId.value) {
       await NoticeAPI.update(currentId.value, formData)
       toast.success(t('common.updateSuccess'))
+      showForm.value = false
+      refreshData()
     }
     else {
       await NoticeAPI.create(formData)
       toast.success(t('common.createSuccess'))
+      showForm.value = false
+      reload()
     }
-    showForm.value = false
-    loadData()
   }
   catch { toast.error(t('common.operationFailed')) }
   finally { loading.value = false }
@@ -94,7 +96,7 @@ function handleDelete(id: number) {
         try {
           await NoticeAPI.remove([id])
           toast.success(t('common.deleteSuccess'))
-          loadData()
+          refreshData()
         }
         catch { toast.error(t('common.deleteFailed')) }
       }
@@ -108,7 +110,7 @@ onReachBottom(() => {
 })
 onPullDownRefresh(async () => {
   try {
-    await loadData()
+    await refreshData()
   }
   finally {
     uni.stopPullDownRefresh()

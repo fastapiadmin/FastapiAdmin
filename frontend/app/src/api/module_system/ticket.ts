@@ -10,8 +10,10 @@ export const TicketAPI = {
   getPage(params?: Record<string, any>) {
     return http.Get<PageResult<TicketItem>>(`${SYSTEM_BASE}/ticket/list`, params)
   },
-  getDetail(id: number): Promise<TicketItem> {
-    return http.Get(`${SYSTEM_BASE}/ticket/detail/${id}`)
+  getDetail(id: number) {
+    const method = http.Get<TicketItem>(`${SYSTEM_BASE}/ticket/detail/${id}`)
+    method.config.cacheFor = 0
+    return method
   },
   create(data: TicketForm): Promise<TicketItem> {
     return http.Post(`${SYSTEM_BASE}/ticket/create`, data)
@@ -28,8 +30,10 @@ export const TicketAPI = {
   exportTickets(params?: Record<string, any>): Promise<unknown> {
     return http.Post(`${SYSTEM_BASE}/ticket/export`, params)
   },
-  getComments(ticketId: number, params?: Record<string, any>): Promise<PageResult<TicketComment>> {
-    return http.Get(`${SYSTEM_BASE}/ticket/${ticketId}/comments`, params)
+  getComments(ticketId: number, params?: Record<string, any>) {
+    const method = http.Get<PageResult<TicketComment>>(`${SYSTEM_BASE}/ticket/${ticketId}/comments`, params)
+    method.config.cacheFor = 0
+    return method
   },
   createComment(ticketId: number, data: { content: string }): Promise<TicketComment> {
     return http.Post(`${SYSTEM_BASE}/ticket/${ticketId}/comments`, data)

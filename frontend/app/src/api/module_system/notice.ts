@@ -11,8 +11,10 @@ export const NoticeAPI = {
   getPage(params?: Record<string, any>) {
     return http.Get<PageResult<NoticeItem>>(`${SYSTEM_BASE}/notice/list`, params)
   },
-  getDetail(id: number): Promise<NoticeItem> {
-    return http.Get(`${SYSTEM_BASE}/notice/detail/${id}`)
+  getDetail(id: number) {
+    const method = http.Get<NoticeItem>(`${SYSTEM_BASE}/notice/detail/${id}`)
+    method.config.cacheFor = 0
+    return method
   },
   create(data: NoticeForm): Promise<NoticeItem> {
     return http.Post(`${SYSTEM_BASE}/notice/create`, data)
