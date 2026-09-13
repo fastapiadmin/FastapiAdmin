@@ -79,7 +79,7 @@ function statusLabel(status: number | string | undefined) {
 const typePickerColumns = computed(() => [TYPE_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))])
 const statusPickerColumns = computed(() => [STATUS_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))])
 
-const { list, total, loading, loadData, toFirst, loadNext } = useListPage<TicketItem>({
+const { list, total, loading, loadData, reload, refreshData, toFirst, loadNext } = useListPage<TicketItem>({
   fetcher: p => TicketAPI.getPage({
     ...p,
     title: searchTitle.value || undefined,
@@ -137,13 +137,15 @@ async function handleSubmit() {
     if (currentId.value) {
       await TicketAPI.update(currentId.value, { ...formData })
       toast.success(t('common.updateSuccess'))
+      showForm.value = false
+      refreshData()
     }
     else {
       await TicketAPI.create({ ...formData })
       toast.success(t('common.createSuccess'))
+      showForm.value = false
+      reload()
     }
-    showForm.value = false
-    loadData()
   }
   catch { toast.error(t('common.operationFailed')) }
   finally { loading.value = false }
@@ -157,7 +159,7 @@ function handleDelete(id: number) {
         try {
           await TicketAPI.remove([id])
           toast.success(t('common.deleteSuccess'))
-          loadData()
+          refreshData()
         }
         catch { toast.error(t('common.deleteFailed')) }
       }
@@ -171,7 +173,7 @@ onReachBottom(() => {
 })
 onPullDownRefresh(async () => {
   try {
-    await loadData()
+    await refreshData()
   }
   finally {
     uni.stopPullDownRefresh()
