@@ -53,7 +53,6 @@
 # 后端
 cd backend && UV_CACHE_DIR=/tmp/uv-cache-test uv run --no-sync pytest -q
 cd backend && UV_CACHE_DIR=/tmp/uv-cache-test uv run --no-sync ruff check
-cd backend && uv run --with basedpyright basedpyright      # 配置：backend/pyrightconfig.json
 # 前端
 cd frontend/web && pnpm run type-check && pnpm run test
 cd frontend/app && pnpm run type-check
