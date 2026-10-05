@@ -76,7 +76,36 @@ cd frontend/app && pnpm run type-check
 3. 交付物落入仓库并提交（走 dev → master PR）
 4. 归档团队，并向用户说明覆盖缺口与残余项
 
-## 7. 参考：官方文档在本地
+## 7. 审计波模板（可直接复制）
+
+插件不提供预置队形，因此把审计波的 roster 与任务写成模板，省掉每次手工列角色：
+
+```text
+create({ approval: "required", description: "<本次目标>", plan: {
+  members: [
+    { name: "后端架构师",   role: "backend architect" },
+    { name: "前端工程师",   role: "frontend engineer" },
+    { name: "测试工程师",   role: "QA engineer" },
+    { name: "安全审计员",   role: "security auditor" },
+    { name: "运维工程师",   role: "devops / deployment" },
+    { name: "产品经理",     role: "requirements coverage" },
+    { name: "UX/UI 工程师", role: "UX + UI reviewer" }
+  ],
+  tasks: [ // 七个 kind=work 只读任务，各自写一份报告文件；均不可改代码/启服务/提交
+    { id: "a1", subject: "后端架构与代码质量审计", assignee: "后端架构师",   description: "只读；产出 backend/audit-backend.md（文件:行号 + 证据 + 优先级）" },
+    { id: "a2", subject: "前端与移动端审计",       assignee: "前端工程师",   description: "只读；产出 frontend/audit-frontend.md" },
+    { id: "a3", subject: "测试与可验证性审计",     assignee: "测试工程师",   description: "只读；产出 backend/audit-testing.md（含实跑结果）" },
+    { id: "a4", subject: "安全审计",               assignee: "安全审计员",   description: "只读；产出 backend/audit-security.md" },
+    { id: "a5", subject: "Docker 与部署审计",      assignee: "运维工程师",   description: "只读；产出 docker/audit-deploy.md" },
+    { id: "a6", subject: "需求覆盖审计",           assignee: "产品经理",     description: "只读；产出 backend/audit-requirements.md" },
+    { id: "a7", subject: "UX/UI 审计",             assignee: "UX/UI 工程师", description: "只读；产出 frontend/audit-uxui.md" }
+  ]
+}})
+```
+要点：7 名成员 = 插件的 `maxMembers: 8` 上限内留 1 个余量；报告文件名先约定好，避免成员互相覆盖同一文件。
+若要更多角色（如移动端、性能单列），需先把 profile 的 `cordis.patch.yml` 里 `maxMembers` 调大（改后需重载 GUI）。
+
+## 8. 参考：官方文档在本地
 
 ```
 …/app.asar.unpacked/node_modules/@deepseek-ai/
