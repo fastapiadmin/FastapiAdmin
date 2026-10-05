@@ -76,3 +76,9 @@ AGENTS.md
 .workbuddy
 # AgentTeams 协作运行期状态（本地，不入库）
 .agent-teams/
+
+# 数据库导出/备份：历史里多次被误提交，且导出内含用户会话令牌与第三方凭据。
+# 种子数据用 backend/sql/*.json；导出文件请勿入库（CI 的 secrets 工作流同时拦真实凭据）。
+backend/*.sql
+backend/sql/**/*.sql
+*.dump

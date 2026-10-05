@@ -195,6 +195,8 @@
 | 对外口径（异常统一后的取舍） | 存储「测试连接」密钥环损坏、上传/下载失败、OAuth 渠道未配置、Redis 同步失败等已由具体原因变为通用 5xx 文案（细节只在日志）。若希望管理员在界面看到可操作原因，正确做法是为这些场景定义**业务码**，而不是回到「包装意外异常」 |
 | 仍可能外泄的出口 | `ValueError` 全局处理器返回 `msg=str(exc)`；建议改为通用文案 + 日志，或让我们的校验统一抛 `CustomException` |
 | 静默吞异常（既有） | 48 处「记录日志但不 raise」的 best-effort 处理器（redis_crud、ap_scheduler、middlewares、discover 等），属审计「静默吞异常」主线，建议单独排一轮 |
+| 仓库密钥防回归（已落地） | 新增 `.github/workflows/secrets.yml`：gitleaks **8.30.1**（固定版本 + sha256 校验）只扫描**本次变更范围**（push 用 `before..sha`，PR 用 base..head，新分支退化为 `-1`），拦住**新增**密钥；`.gitignore` 增加数据库导出规则 `backend/*.sql`、`backend/sql/**/*.sql`、`*.dump` | 本地红绿验证：干净提交 `no leaks found`（exit 0）；临时插入 `ghp_` 令牌 → 命中 `github-pat`（exit 1）；`before` 全 0 的退化分支同样正常；YAML 解析通过 |
+| 历史密钥清单（gitleaks 全历史扫描） | 命中 **138 处 / 15 个提交**：`jwt` 97、`generic-api-key` 38、`private-key` 2、`curl-auth-header` 1；集中在本轮之前就已从 HEAD 删除的 `backend/sql/**/*.sql`(76+7+36) 与 `fastapi_vue3_admin.json`、旧 `backend/env/.env.dev/.env.prod`、旧 `docker/nginx/ssl/server.key` | **当前 HEAD 无真实密钥**：这些文件均已不在 HEAD（仅存在于历史）。`backend/audit-security.md:242` 的命中经核实为**误报**（长标识符，非密钥）。因历史未清洗，CI 不做全历史扫描（否则必然红） |
 
 ### 9.3 本轮产生的回滚资产
 
@@ -229,10 +231,12 @@
 **团队**
 
 审计团队（7 名成员，t1–t19）已归档；本报告与 7 份分报告为全部交付物，残余项见 §9.2。
+多智能体协作的**项目专属纪律**（先探测工具再选档位、审计波/交付波两种队形、审计波可复制模板、本项目踩过的版本坑、验证命令、不可逆动作规则）见 [TEAM-PLAYBOOK.md](TEAM-PLAYBOOK.md)——通用协作策略由 DSH 运行时注入，不在此重复。
 
 **收尾后仍需人工处理（不阻塞上线）**
 
 1. **吊销旧 OpenAI API Key**：仓库是 public，`sk-…`（35 字符）确实出现在 `backend/env/.env.prod` 的历史提交中。线上环境从未使用它（容器 env 与该键均为空、新镜像已不含任何密钥），所以风险只在于该 Key 在 OpenAI 侧可能仍有效。请到 <https://platform.openai.com/api-keys> 吊销；如需 AI 功能再签发新 Key 并只写入服务器 `.env`。
-2. **是否清洗 git 历史**：`git-filter-repo` 可把历史中的 `.env*` 与旧证书整体抹除，但会重写所有 SHA（需 force-push `dev` 与 `master`，影响既有克隆与 PR 引用，且 gitee 镜像需同步）。由于相关口令已轮换、Key 将吊销，**建议以「吊销 + 轮换」为准，清洗作为可选项**；若仓库要转为对外开源，则建议执行清洗。
-3. §9.2 中的产品/架构决策项（会话失效、数据权限注入、多租户规格、i18n、移动端 `ContentType`）。
+2. **曾存入存储源/接口密钥配置的第三方凭据**：历史里的数据库导出文件含 38 处 `generic-api-key` 形态命中，而旧主密钥（`DATA_ENCRYPTION_OLD_KEYS`）同样在历史的 `.env.prod` 中——若这些导出里含加密态的第三方凭据，持有历史的第三方可解密。建议按「已暴露」处理并轮换真实凭据；同时可在数据库层面清空 `DATA_ENCRYPTION_OLD_KEYS`（确认无历史密文依赖后）。
+3. **是否清洗 git 历史**：`git-filter-repo` 可把历史中的 `.env*`、`.sql` 导出与旧证书整体抹除，但会重写所有 SHA（需 force-push `dev` 与 `master`，影响既有克隆与 PR 引用，且 gitee 镜像需同步）。由于相关口令已轮换、Key 将吊销，**建议以「吊销 + 轮换」为准，清洗作为可选项**；若仓库要转为对外开源，则建议执行清洗（清洗后还可把 `secrets` 工作流从「仅扫描变更范围」升级为全历史扫描）。
+4. §9.2 中的产品/架构决策项（会话失效、数据权限注入、多租户规格、i18n、移动端 `ContentType`）。
 
