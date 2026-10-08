@@ -1,14 +1,40 @@
 # 多智能体协作 Playbook（FastapiAdmin）
 
-> 本文件只记录**官方插件给不了**的部分。通用协作策略由 DSH 实验性 Agent Teams 运行时自动注入
+> 本文件只记录**团队插件本身不提供**的部分。通用协作策略由运行时自动注入
 > （显式委派才建团队、共享 cwd、文件陈旧版本恢复、Bash/formatter/codegen 风险、task/write-scope 协调、
 > steer 投递、mailbox 不重发、Lead 必须先等待），此处不重复。
 
+## 0. 本机实际生效的团队栈（勿与官方实验包混淆）
+
+| 组件 | 说明 |
+| --- | --- |
+| 插件 | **`@nanmicoder/dsh-agent-teams`**（第三方，当前 0.1.22），行 id 为 `agent-teams` |
+| 它提供 | `agent_teams_*` 工具族（create/approve/edit_plan/amend_task/update_task/reassign/claim/resume/status/delete…）+ Team 作用域的 `send_message` + `/agent-teams` 斜杠命令 |
+| 状态位置 | 工作区 `<workspace>/.agent-teams/`（`team.json` + `inbox/*.jsonl`，已 gitignore） |
+| 配置键 | `stateDir` / `memberProvider`(spawn\|fork) / `memberModel` / `memberMaxDepth` / `maxMembers`(默认 8) / `slashCommand` |
+| 配置位置 | profile 的 patch 层：`…/harness/profiles/<profile>/cordis.patch.yml` |
+| 文档 | 插件自带 `README_ZH.md`（在其 `.generations/live/nanmicoder+dsh-agent-teams+<ver>+<hash>/` 目录内） |
+| UI | 对话区卡片 + **右侧边栏**（teamHead/teamStats/teamStopButton），不是独立的「智能体团队」面板 |
+
+**官方实验包 `@deepseek-ai/dsh-experimental-agent-team-profile` 已于 2026-10-05 从本机 profile 移除**：
+它提供的是那个独立的「智能体团队」成员/任务面板与另一套 9 个工具（`spawn_teammate` / `team_task_*` /
+`wait_agent` / `list_agents` / `interrupt_agent` 等）。移除原因：两套实现并存导致「工具用 A、面板看 B」的
+认知错位，且它的面板长期显示「Team 暂不可用」。
+
+```yaml
+# 需要恢复官方面板时（两套可共存，但注意 id 差一个 s）
+- id: agent-team           # 官方实验包
+  # （该包需先回到 profile 的 dsh.profile.bundles）
+- id: agent-teams          # 第三方 nanmicoder —— 本机当前使用
+  config:
+    maxMembers: 12         # 默认 8；本机已调为 12
+```
+
 ## 1. 前置：先确认工具，再选档位
 
-「智能体团队」组合包（插件页开关）开启时，团队工具会**取代同名的旧 subagent 控件**；关闭后恢复
-`subagent` / `subagent_fork`。两者互斥，同一个开关同时控制工具与 Web 成员/任务板 UI。
-因此开工第一步是**看当前会话实际有哪些委派工具**，再决定档位：
+不同组合下可用的委派工具不同（例如团队插件与同名旧 subagent 控件可能互斥；本机曾出现「官方包在
+`bundles` 里但它的 disable 列表并未生效」的情况）。所以开工第一步是**看当前会话实际有哪些委派工具**，
+再决定档位：
 
 | 档位 | 适用 | 反例 |
 | --- | --- | --- |
@@ -102,15 +128,22 @@ create({ approval: "required", description: "<本次目标>", plan: {
   ]
 }})
 ```
-要点：7 名成员 = 插件的 `maxMembers: 8` 上限内留 1 个余量；报告文件名先约定好，避免成员互相覆盖同一文件。
-若要更多角色（如移动端、性能单列），需先把 profile 的 `cordis.patch.yml` 里 `maxMembers` 调大（改后需重载 GUI）。
+要点：7 名成员 = 上限内留余量；报告文件名先约定好，避免成员互相覆盖同一文件。
+本机 `maxMembers` 已调为 **12**（见 §0 的配置片段），需要更多角色时按同样方式改 profile 的
+`cordis.patch.yml` 并重载 GUI。
 
-## 8. 参考：官方文档在本地
+## 8. 参考：本地文档
 
 ```
+# 当前使用的第三方插件（推荐先读）
+…/profiles/.generations/live/nanmicoder+dsh-agent-teams+<ver>+<hash>/node_modules/@nanmicoder/dsh-agent-teams/
+  README_ZH.md        # 工具族、配置键、使用边界（一名队长同时只能带一个活动团队等）
+  compatibility.json  # 支持的宿主版本
+
+# 官方实验包（已于 2026-10-05 从本机移除；若要恢复需先加回 bundles）
 …/app.asar.unpacked/node_modules/@deepseek-ai/
   dsh-experimental-agent-team/README.zh.md          # 领域服务：roster / mailbox / 任务板 / 持久性
-  dsh-experimental-agent-team-profile/README.zh.md  # 组合包：插件页开关、限额（maxMembers=8 等）
+  dsh-experimental-agent-team-profile/README.zh.md  # 组合包：插件页开关、限额（maxMembers 等）
   dsh-experimental-tool-agent-team/README.zh.md     # 9 个工具与内建共享策略
   dsh-experimental-client-ui-agent-team/README.zh.md# Web 成员列表 / 任务看板
 ```
