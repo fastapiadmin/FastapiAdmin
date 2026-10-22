@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, MetaData, String
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, MetaData, String
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
 
@@ -17,6 +18,12 @@ NAMING_CONVENTION: dict[str, str] = {
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     "pk": "pk_%(table_name)s",
 }
+
+# 跨方言 JSON 类型：PostgreSQL（生产）使用 JSONB，SQLite/MySQL（测试环境）降级为
+# 通用 JSON，保证 create_all 与 autogenerate 在三种方言下均可渲染、零漂移。
+# 各模块定义 JSON 列时统一使用 JSONType，而非直接硬编码 JSONB，避免破坏基类
+# 「兼容 SQLite、MySQL 和 PostgreSQL」的承诺。
+JSONType = JSONB().with_variant(JSON(), "sqlite", "mysql")
 
 
 class MappedBase(AsyncAttrs, DeclarativeBase):
