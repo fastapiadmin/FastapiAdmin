@@ -1,4 +1,5 @@
 import { onMounted, onUnmounted, ref, type Ref } from "vue";
+import { clearFormDraft, loadFormDraft, saveFormDraft } from "@/utils/form-draft";
 import type { CrudDialogState, DialogType } from "./useCrudDialog";
 
 /**
@@ -41,6 +42,8 @@ export function useCrudForm<T extends object>(options: {
   > | null>;
   /** 表单渲染 key（用于 :key 重新渲染） */
   formRenderKey: Ref<number>;
+  /** 创建表单草稿缓存键（提供后启用「新增表单误关恢复」，编辑表单不缓存） */
+  cacheKey?: string;
   /** 详情 API（传入 id，返回 response） */
   detailApi?: (id: number) => Promise<{ data: { data?: T } }>;
   /** 新增 API */
@@ -64,6 +67,7 @@ export function useCrudForm<T extends object>(options: {
     dialogVisible,
     dataFormRef,
     formRenderKey,
+    cacheKey,
     detailApi,
     createApi,
     updateApi,
@@ -75,6 +79,8 @@ export function useCrudForm<T extends object>(options: {
   } = options;
 
   const submitLoading = ref(false);
+  // 提交成功后跳过本次「关闭时保存草稿」（防止提交后残留草稿）
+  let skipDraftOnce = false;
 
   /** 重置表单 */
   async function resetForm() {
@@ -83,8 +89,12 @@ export function useCrudForm<T extends object>(options: {
     Object.assign(formData.value, initialFormData);
   }
 
-  /** 关闭对话框并重置表单 */
+  /** 关闭对话框并重置表单（新增表单关闭时保存草稿） */
   async function handleCloseDialog() {
+    if (cacheKey && dialogVisible.type === "create" && !skipDraftOnce) {
+      saveFormDraft(cacheKey, formData.value as Record<string, unknown>);
+    }
+    skipDraftOnce = false;
     dialogVisible.visible = false;
     await resetForm();
   }
@@ -127,6 +137,13 @@ export function useCrudForm<T extends object>(options: {
       if (extra) {
         Object.assign(formData.value, extra);
       }
+      if (cacheKey) {
+        // 恢复上次未完成的新增草稿
+        const draft = loadFormDraft<Record<string, unknown>>(cacheKey);
+        if (draft) {
+          Object.assign(formData.value, draft);
+        }
+      }
       formRenderKey.value += 1;
       dialogVisible.visible = true;
     }
@@ -149,6 +166,8 @@ export function useCrudForm<T extends object>(options: {
         await resetForm();
       } else if (createApi) {
         await createApi(formData.value);
+        if (cacheKey) clearFormDraft(cacheKey);
+        skipDraftOnce = true; // 阻止随后的 handleCloseDialog 再次保存草稿
         dialogVisible.visible = false;
         await resetForm();
         await onCreateSuccess?.();
@@ -172,6 +191,7 @@ export function useCrudForm<T extends object>(options: {
     try {
       if (createApi) {
         await createApi(formData.value);
+        if (cacheKey) clearFormDraft(cacheKey);
         await onCreateSuccess?.();
       }
       await resetForm();
@@ -182,6 +202,13 @@ export function useCrudForm<T extends object>(options: {
       submitLoading.value = false;
     }
   }
+
+  // 页面卸载兜底：新增表单未关闭时（如直接切换路由）保存草稿
+  onUnmounted(() => {
+    if (cacheKey && dialogVisible.type === "create" && dialogVisible.visible) {
+      saveFormDraft(cacheKey, formData.value as Record<string, unknown>);
+    }
+  });
 
   return {
     submitLoading,
