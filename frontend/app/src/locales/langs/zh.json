@@ -238,7 +238,10 @@
     "contentPlaceholder": "请输入内容",
     "type": "公告类型",
     "notice": "通知",
-    "announce": "公告"
+    "announce": "公告",
+    "unreadCount": "{count} 条未读",
+    "markAllRead": "全部已读",
+    "markAllReadSuccess": "已全部标为已读"
   },
   "chat": {
     "title": "AI 助手",
