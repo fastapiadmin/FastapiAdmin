@@ -40,7 +40,8 @@ def _valid(schema: type, data: dict[str, Any]) -> Any:
     ("case", "username", "ok"),
     [
         ("USER-USERNAME-001", "a", False),
-        ("USER-USERNAME-002", "a1", True),
+        ("USER-USERNAME-002", "a1", False),
+        ("USER-USERNAME-002B", "a12", True),
         ("USER-USERNAME-003", "a" + "b" * 30, True),
         ("USER-USERNAME-004", "a" + "b" * 31, True),
         ("USER-USERNAME-005", "a" + "b" * 32, False),
