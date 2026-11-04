@@ -72,7 +72,7 @@ async def test_delete_clear_online(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_build_login_trend(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.modules.monitor.online.service import OnlineService as S
     from datetime import timedelta
-    today = datetime(2026, 1, 8)
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     week = today - timedelta(days=6)
 
     class DB:
@@ -80,9 +80,42 @@ async def test_build_login_trend(monkeypatch: pytest.MonkeyPatch) -> None:
         async def execute(self, stmt):
             self.i += 1
             if self.i == 1:
-                return SimpleNamespace(all=lambda: [SimpleNamespace(day="2026-01-08", logins=2, unique_users=1)])
-            return SimpleNamespace(all=lambda: [SimpleNamespace(day="2026-01-08", new_users=3)])
+                return SimpleNamespace(all=lambda: [SimpleNamespace(day=__import__("datetime").date.today().isoformat(), logins=2, unique_users=1)])
+            return SimpleNamespace(all=lambda: [SimpleNamespace(day=__import__("datetime").date.today().isoformat(), new_users=3)])
 
     trend = await S._build_login_trend(DB(), today_start=today, week_start=week)
     assert len(trend) == 7
-    assert trend[-1].day == "2026-01-08" and trend[-1].logins == 2 and trend[-1].new_users == 3
+    assert trend[-1].day == __import__("datetime").date.today().isoformat() and trend[-1].logins == 2 and trend[-1].new_users == 3
+
+
+async def test_dashboard_stats(monkeypatch: pytest.MonkeyPatch) -> None:
+    from datetime import datetime
+    from app.modules.monitor.online.service import OnlineService
+    async def online(_redis): return [{"id": 1}, {"id": 2}]
+    monkeypatch.setattr(OnlineService, "get_online_list", staticmethod(online))
+
+    class Result:
+        def __init__(self, value=None, rows=None):
+            self.value = value
+            self.rows = rows or []
+        def scalar(self): return self.value
+        def all(self): return self.rows
+
+    class DB:
+        def __init__(self): self.calls = 0
+        async def execute(self, stmt):
+            self.calls += 1
+            if self.calls == 1: return Result(3)
+            if self.calls == 2: return Result(2)
+            if self.calls == 3: return Result(5)
+            if self.calls == 4: return Result(4)
+            if self.calls == 5:
+                return Result(rows=[SimpleNamespace(username="u", status=1, created_time=datetime(2026, 1, 1), login_ip="1", login_location="x")])
+            if self.calls == 6:
+                return Result(rows=[SimpleNamespace(day=__import__("datetime").date.today().isoformat(), logins=2, unique_users=1)])
+            return Result(rows=[SimpleNamespace(day=__import__("datetime").date.today().isoformat(), new_users=1)])
+
+    result = await OnlineService.get_dashboard_stats(DB(), object())
+    assert result.online_users == 2 and result.total_users == 3
+    assert result.today_login_count == 5 and result.today_unique_users == 4
+    assert len(result.recent_logins) == 1 and result.login_trend[-1].day == __import__("datetime").date.today().isoformat()
