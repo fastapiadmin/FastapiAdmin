@@ -79,3 +79,28 @@ def test_transfer_service_remove_local_temp(tmp_path: Path) -> None:
     assert not f.exists()
     StorageTransferService._remove_local_temp(SimpleNamespace(source_type="remote", source_path=str(f)))
     StorageTransferService._remove_local_temp(SimpleNamespace(source_type="local", source_path=str(f)))
+
+
+async def test_run_step_success_and_missing_source(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    class DB:
+        async def commit(self): return None
+        async def execute(self, stmt): return SimpleNamespace(scalars=lambda: SimpleNamespace(all=lambda: []))
+    class Dst:
+        def __init__(self): self.up = []
+        async def upload(self, local, remote): self.up.append((local, remote))
+        async def close(self): pass
+    dst = Dst()
+    async def config(db, sid): return object()
+    monkeypatch.setattr(engine, "_build_config", config)
+    monkeypatch.setattr(engine, "_broadcast", lambda *a: asyncio.sleep(0))
+    monkeypatch.setattr(engine, "_load_steps", lambda db, tid: asyncio.sleep(0, result=[]))
+    monkeypatch.setattr(engine.StorageAdapterFactory, "create", staticmethod(lambda cfg: dst))
+    task = SimpleNamespace(id=1, transferred_size=0, speed=0, total_size=2, progress=0, status="running", error_msg=None, finished_at=None)
+    step = SimpleNamespace(id=1, step_order=0, source_id=None, target_id=2, source_path=str(tmp_path / "a.txt"), target_path="r.txt", transfer_mode=None, multipart_part_size=None, multipart_concurrency=None, status="pending", progress=0, total_size=0, transferred_size=0, speed=0, error_msg=None, started_at=None, finished_at=None)
+    (tmp_path / "a.txt").write_text("xx")
+    assert await engine._run_step(DB(), task, step) is True
+    assert step.status == "success" and dst.up[0][1] == "r.txt"
+    bad = SimpleNamespace(**{**step.__dict__, "source_path": str(tmp_path / "missing.txt"), "status": "pending", "progress": 0})
+    assert await engine._run_step(DB(), task, bad) is False
