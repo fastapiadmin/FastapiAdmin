@@ -176,3 +176,91 @@ grep -oE '.{0,60}readyState.{0,60}' <chunk> | grep -i websocket       # 核守�
 例：旧包 `if (ws?.readyState === WebSocket.OPEN) return;`（`CLOSED` 命中 0 次）；修复后 `if (ws && ws.readyState !== WebSocket.CLOSED) return;`。
 
 **收到「源码没改好」的线上反馈时，第一步先核 dist 产物特征字符串**，再回源码；docker 部署还要重新打镜像/重传 `docker` 目录才算生效。
+
+## 10. 本地开发与测试环境（当前实操）
+
+- 本地配置：`backend/env/.env.dev`（不要提交真实密码/Key）。
+- 启动后端：`cd backend && uv run main.py run --env=dev`，默认 `http://localhost:8001`。
+- 启动 Web：`cd frontend/web && pnpm dev`，当前 Vite 端口为 **5180**（以启动输出为准），访问 `/web`。
+- 本地 dev 自动执行 Alembic 与种子数据；改动 model 后必须生成/应用迁移。
+- 生产：`https://service.fastapiadmin.com`，健康检查 `/api/v1/monitor/health/check`，Web `/web/`。
+- 生产当前 `DEMO_ENABLE=true` 时会统一拦截写操作并返回“演示环境，禁止操作”；测试写接口前先确认环境，不要把该返回误判为代码故障。
+
+## 11. 测试用例与测试数据规范
+
+### 11.1 用例设计
+
+新增功能至少覆盖：
+
+1. **等价类**：合法/非法/空值/null/格式错误；
+2. **边界值**：`min-1/min/min+1/max-1/max/max+1`；
+3. **输入域**：类型、长度、枚举、关联字段、状态流转；
+4. **正交组合**：角色 × 状态、数据权限 × 状态、协议 × 分片参数等；
+5. **接口**：正常路径、非法输入、越权、重复提交、批量部分失败；
+6. **UI**：空值校验、成功创建、按钮/弹窗/富文本/下拉等真实交互。
+
+### 11.2 已有测试资产
+
+- `backend/tests/test_input_domain_boundaries.py`：输入域/边界值/正交组合，约 120 个参数化用例；
+- `backend/tests/`：服务层、SQL 控制台、SSH、调度器、存储、时区等回归；
+- `frontend/web/src/__tests__/`：路由/HTTP/冒烟测试；
+- `docs/TEST-COVERAGE.md`：覆盖矩阵、执行记录和剩余缺口，改测试状态时同步更新。
+
+### 11.3 测试数据
+
+- 统一使用 `e2e_` 前缀，每次运行生成唯一后缀；
+- 由 AI 创建、使用、清理；不要依赖用户手工准备测试数据；
+- 清理时先 API 删除，再按需硬删除遗留的软删除行，并清理对象存储桶/对象；
+- 不把真实密码、SSH 私钥、第三方 Key 写进测试文件或提交记录。
+
+### 11.4 执行命令
+
+```bash
+cd backend && UV_CACHE_DIR=/tmp/uv-cache-test uv run --no-sync pytest -q
+cd frontend/web && pnpm test && pnpm ts:check && pnpm build
+```
+
+### 11.5 浏览器自动化
+
+- 使用隔离的临时浏览器 profile；
+- 启用 `--password-store=basic --use-mock-keychain --disable-sync`，不要复用用户日常浏览器/钥匙串；
+- 对动态表单按 **字段名** 定位，不要写死输入框索引（菜单类型切换会改变字段顺序）；
+- Element Plus 下拉/富文本优先用真实鼠标坐标点击，而不是只改 DOM value。
+
+## 12. 时间、消息与调度契约（已验证，勿回退）
+
+- 数据库统一存 UTC；接口/页面统一按 `settings.TIMEZONE`（默认 `Asia/Shanghai`）展示。
+- 时间输出统一走 `app/core/validator.py::to_local_datetime` 或响应编码器；裸 `datetime` 在响应层也要做时区转换。
+- 用户导入导出：
+  - Excel 导出前必须把 aware datetime 转成 naive（openpyxl 不支持时区）；
+  - 导入模板中文性别映射：男→0、女→1、未知→2；
+  - 空/损坏 Excel 返回 400，不允许 500。
+- SQL 控制台：多语句、未确认写操作、超 200 行、敏感列都有既有约束；不要为了“显示方便”强行给裸 DATETIME 加 8 小时。
+- 全局消息：`frontend/web/src/utils/message.ts` 对 success/error 做短时合并；新增页面不要再叠加多条同义提示。
+- 调度器：`reconcile_node_jobs` 启动时会刷新已存在 job；改 node.func/trigger 后必须确认旧 job 参数被替换，否则会出现“数据库已改、调度器仍报旧原因”。
+
+## 13. 生产部署与备份
+
+- 部署前必须确认并备份：后端源码、`docker/nginx/web`、数据库 dump；
+- 生产备份目录：`/home/FastapiAdmin/backups/release-<时间戳>/`；
+- 部署后验证：health、web、登录、关键列表、调度器日志；
+- 生产是演示模式时，写操作/导出被拦截是配置行为；
+- 不把生产凭据、dump、密钥写入仓库。
+
+## 14. 当前统一契约
+
+- 用户账号：**3–32 位**，字母开头，仅字母/数字/`_ . -`；
+- 角色编码：**2–64 位**，字母开头，仅字母/数字/下划线；
+- 角色数据权限：1/2/3；状态：0/1；
+- 菜单类型：1 目录、2 菜单、3 按钮、4 外链；
+- 公告类型：1 通知、2 公告；状态 0/1/2；
+- 存储对象 key 不接受 `..`；对象存储绝对路径会被规范化为桶内路径。
+
+## 15. AI 协作流程
+
+1. 先读本 skill 与 `docs/TEST-COVERAGE.md`，确认现有覆盖和已知缺口；
+2. 修改前先查现有组件/套件，避免重复造轮子；
+3. 改完执行对应验证，至少“单元/接口 + 类型/构建”两类；
+4. 涉及生产写操作、部署、master、凭据时先获得当次明确确认；
+5. 不把“页面能打开”当成“功能通过”；写操作要真实提交并清理测试数据；
+6. 交付时说明：改了什么、验证了什么、未覆盖什么。
