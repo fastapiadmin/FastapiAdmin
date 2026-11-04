@@ -104,3 +104,37 @@ async def test_run_step_success_and_missing_source(tmp_path: Path, monkeypatch: 
     assert step.status == "success" and dst.up[0][1] == "r.txt"
     bad = SimpleNamespace(**{**step.__dict__, "source_path": str(tmp_path / "missing.txt"), "status": "pending", "progress": 0})
     assert await engine._run_step(DB(), task, bad) is False
+
+
+async def test_execute_transfer_task_no_steps_and_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    from app.modules.task.storage.transfer.registry import transfer_task_registry
+    class DB:
+        def __init__(self, task): self.task = task; self.commits = 0
+        async def get(self, model, tid): return self.task
+        async def commit(self): self.commits += 1
+        async def refresh(self, obj): return None
+    class Ctx:
+        def __init__(self, db): self.db = db
+        async def __aenter__(self): return self.db
+        async def __aexit__(self, *a): return False
+    async def load(db, tid): return []
+    monkeypatch.setattr(engine, "_load_steps", load)
+    task = SimpleNamespace(id=1, status="pending", is_deleted=False, source_type="local", source_path=None, source_size=0, total_size=0, started_at=None, finished_at=None, error_msg=None, progress=0)
+    db = DB(task); monkeypatch.setattr(engine, "async_db_session", lambda: Ctx(db))
+    await engine._execute_transfer_task(1)
+    assert task.status == "failed" and db.commits == 1
+
+    step = SimpleNamespace(status="pending", finished_at=None)
+    async def load2(db, tid): return [step]
+    monkeypatch.setattr(engine, "_load_steps", load2)
+    async def run_step(db, task, step): return True
+    monkeypatch.setattr(engine, "_run_step", run_step)
+    async def broadcast(*a): return None
+    monkeypatch.setattr(engine, "_broadcast", broadcast)
+    task2 = SimpleNamespace(id=2, status="pending", is_deleted=False, source_type="local", source_path=str(tmp_path / "x"), source_size=0, total_size=0, started_at=None, finished_at=None, error_msg=None, progress=0)
+    (tmp_path / "x").write_text("x")
+    db2 = DB(task2); monkeypatch.setattr(engine, "async_db_session", lambda: Ctx(db2))
+    await engine._execute_transfer_task(2)
+    assert task2.status == "success" and task2.progress == 100
