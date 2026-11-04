@@ -41,6 +41,7 @@ async def test_online_list_and_filters(monkeypatch: pytest.MonkeyPatch) -> None:
     assert [x["name"] for x in await OnlineService.get_online_list(object(), q2)] == ["Bob"]
     q3 = OnlineQueryParam(login_location="bei")
     assert [x["name"] for x in await OnlineService.get_online_list(object(), q3)] == ["Alice"]
+    assert await OnlineService.get_online_list(object(), OnlineQueryParam(name="zzz")) == []
 
 
 async def test_online_invalid_token_cleanup(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -119,3 +120,17 @@ async def test_dashboard_stats(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.online_users == 2 and result.total_users == 3
     assert result.today_login_count == 5 and result.today_unique_users == 4
     assert len(result.recent_logins) == 1 and result.login_trend[-1].day == __import__("datetime").date.today().isoformat()
+
+
+async def test_online_missing_session_is_skipped(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.redis_crud import RedisCURD
+    async def scan(_): return ["access_token:x"]
+    async def mget(_): return ["tok"]
+    async def get(_): return None
+    async def delete(*_): pass
+    monkeypatch.setattr(RedisCURD, "scan_keys", staticmethod(scan))
+    monkeypatch.setattr(RedisCURD, "mget", staticmethod(mget))
+    monkeypatch.setattr(RedisCURD, "get", staticmethod(get))
+    monkeypatch.setattr(RedisCURD, "delete", staticmethod(delete))
+    monkeypatch.setattr("app.modules.monitor.online.service.decode_access_token", lambda token: SimpleNamespace(sub="s"))
+    assert await OnlineService.get_online_list(object()) == []
