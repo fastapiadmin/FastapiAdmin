@@ -55,3 +55,41 @@ async def test_build_graph_from_layout_and_rows(monkeypatch: pytest.MonkeyPatch)
     assert graph["nodes"][0]["data"]["protocol"] == "s3"
     assert graph["edges"][0]["data"]["source_label"] == "minio"
     assert graph["edges"][0]["data"]["enabled"] is True
+
+
+async def test_workflow_execute_builds_tasks(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    s = _svc()
+    async def get_obj(id, msg=None): return SimpleNamespace(name="flow")
+    s._crud = lambda: SimpleNamespace(get_or_404=get_obj)
+    nodes = [SimpleNamespace(node_key="a", source_id=1, source_path="src"), SimpleNamespace(node_key="b", source_id=2, source_path="dst")]
+    edges = [SimpleNamespace(edge_key="e", source_node_key="a", target_node_key="b", enabled=True, transfer_mode=None, multipart_part_size=None, multipart_concurrency=None)]
+    async def load(id): return nodes, edges
+    s._load_flow_graph = load
+    class NodeSvc:
+        def __init__(self, *a): pass
+        async def get_active_sources(self, ids): return [SimpleNamespace(id=1, name="src"), SimpleNamespace(id=2, name="dst")]
+    created = []
+    class TransferSvc:
+        def __init__(self, *a): pass
+        async def create(self, data): created.append(data); return 7
+    monkeypatch.setattr("app.modules.task.storage.workflow.service.StorageNodeService", NodeSvc)
+    monkeypatch.setattr("app.modules.task.storage.workflow.service.StorageTransferService", TransferSvc)
+    assert await s.execute(1) == [7]
+    assert created[0].name == "flow-src→dst" and created[0].targets[0].target_path == "dst"
+
+
+async def test_workflow_execute_rejects_disabled_or_bad_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    s = _svc()
+    async def get_obj(id, msg=None): return SimpleNamespace(name="flow")
+    s._crud = lambda: SimpleNamespace(get_or_404=get_obj)
+    nodes = [SimpleNamespace(node_key="a", source_id=1, source_path=""), SimpleNamespace(node_key="b", source_id=2, source_path="")]
+    async def load(id): return nodes, []
+    s._load_flow_graph = load
+    with pytest.raises(Exception, match="没有启用"):
+        await s.execute(1)
+    async def load2(id): return nodes, [SimpleNamespace(edge_key="e", source_node_key="a", target_node_key="b", enabled=True, transfer_mode=None, multipart_part_size=None, multipart_concurrency=None)]
+    s._load_flow_graph = load2
+    with pytest.raises(Exception, match="未选择源文件"):
+        await s.execute(1)
