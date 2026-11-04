@@ -351,6 +351,8 @@ class UserService:
             await file.close()
             try:
                 rows = await ExcelUtil.aread_excel_to_dicts(contents)
+            except CustomException:
+                raise
             except Exception as exc:
                 raise CustomException(msg="导入文件格式错误，请使用下载的模板") from exc
 
