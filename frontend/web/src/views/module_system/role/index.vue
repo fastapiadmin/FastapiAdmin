@@ -491,7 +491,7 @@ const formData = ref<RoleForm>({
   description: undefined,
 });
 
-const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,15}$/;
+const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,63}$/;
 
 const rules = reactive({
   name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
@@ -499,7 +499,7 @@ const rules = reactive({
     { required: true, message: "请输入角色编码", trigger: "blur" },
     {
       pattern: CODE_PATTERN,
-      message: "字母开头，2-16位字母/数字/下划线",
+      message: "字母开头，2-64位字母/数字/下划线",
       trigger: "blur",
     },
   ],
@@ -618,8 +618,8 @@ const roleDialogFormItems = computed<FormItem[]>(() => [
     type: "input",
     span: 24,
     props: {
-      placeholder: "字母开头，2-16位字母/数字/下划线",
-      maxlength: 16,
+      placeholder: "字母开头，2-64位字母/数字/下划线",
+      maxlength: 64,
       showWordLimit: true,
     },
   },

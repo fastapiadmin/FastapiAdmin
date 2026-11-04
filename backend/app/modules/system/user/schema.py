@@ -129,7 +129,7 @@ class UserCreateSchema(CurrentUserUpdateSchema):
     """新增用户
     """
 
-    username: str | None = Field(default=None, max_length=32, description="用户名")
+    username: str | None = Field(default=None, min_length=3, max_length=32, description="用户名")
     password: str | None = Field(default=None, description=PASSWORD_FIELD_DESC)
     status: int = Field(default=0, ge=0, le=1, description="状态(0:启动 1:停用)")
     description: str | None = Field(default=None, max_length=255, description="备注")
@@ -140,13 +140,13 @@ class UserCreateSchema(CurrentUserUpdateSchema):
     @field_validator("username")
     @classmethod
     def validate_username(cls, value: str | None):
-        """校验账号：字母开头，2-32 位"""
+        """校验账号：字母开头，3-32 位"""
         if not value:
             return value
         v = value.strip()
 
-        if not re.match(r"^[A-Za-z][A-Za-z0-9_.-]{1,31}$", v):
-            raise ValueError("账号需以字母开头，2-32 位，仅允许字母、数字、_ . -")
+        if not re.match(r"^[A-Za-z][A-Za-z0-9_.-]{2,31}$", v):
+            raise ValueError("账号需以字母开头，3-32 位，仅允许字母、数字、_ . -")
         return v
 
     @field_validator("password")
@@ -205,13 +205,13 @@ class UserUpdateSchema(CurrentUserUpdateSchema):
     @field_validator("username")
     @classmethod
     def validate_username(cls, value: str | None):
-        """校验账号：字母开头，2-32 位"""
+        """校验账号：字母开头，3-32 位"""
         if not value:
             return value
         v = value.strip()
 
-        if not re.match(r"^[A-Za-z][A-Za-z0-9_.-]{1,31}$", v):
-            raise ValueError("账号需以字母开头，2-32 位，仅允许字母、数字、_ . -")
+        if not re.match(r"^[A-Za-z][A-Za-z0-9_.-]{2,31}$", v):
+            raise ValueError("账号需以字母开头，3-32 位，仅允许字母、数字、_ . -")
         return v
 
 
