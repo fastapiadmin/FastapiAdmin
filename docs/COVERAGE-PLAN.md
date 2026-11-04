@@ -25,7 +25,8 @@ D 包含四个独立目标：
 - `tests/test_string_util.py`：StringUtil 分支覆盖 100%；
 - `tests/test_utils_coverage.py`：banner 100%、password 99%、excel 95%；
 - `tests/test_common_util_coverage.py`：common_util 68%；
-- 新增后相关测试 19 passed。
+- 新增后相关测试 19 passed；
+- `test_security_utils_coverage.py`：ai_factory 100%、lazy_sdk 100%、crypto 97%。
 
 ## 现实约束
 
