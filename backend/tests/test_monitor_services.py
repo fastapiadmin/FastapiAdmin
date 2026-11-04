@@ -40,10 +40,57 @@ def test_server_run_time() -> None:
     assert ServerService._calculate_run_time(time.time() - 3661) .startswith("0天1小时1分钟")
 
 
+def test_server_local_ip_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import socket
+    class GoodSocket:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def connect(self, addr): return None
+        def getsockname(self): return ("10.0.0.2", 1)
+    monkeypatch.setattr(socket, "socket", lambda *a, **k: GoodSocket())
+    assert ServerService._get_local_ip() == "10.0.0.2"
+
+
+def test_server_local_ip_fallbacks(monkeypatch: pytest.MonkeyPatch) -> None:
+    import socket
+    class BadSocket:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def connect(self, addr): raise OSError("no route")
+    monkeypatch.setattr(socket, "socket", lambda *a, **k: BadSocket())
+    monkeypatch.setattr(socket, "gethostbyname", lambda name: "10.0.0.1")
+    assert ServerService._get_local_ip() == "10.0.0.1"
+    monkeypatch.setattr(socket, "gethostbyname", lambda name: (_ for _ in ()).throw(OSError()))
+    assert ServerService._get_local_ip() == "127.0.0.1"
+
+
+def test_server_python_info(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Proc:
+        def name(self): return "python"
+        def create_time(self): return 1.0
+        def exe(self): return "/usr/bin/python"
+        def memory_info(self): return SimpleNamespace(rss=10)
+    monkeypatch.setattr("app.modules.monitor.server.service.psutil.Process", lambda: Proc())
+    monkeypatch.setattr("app.modules.monitor.server.service.psutil.virtual_memory", lambda: SimpleNamespace(available=100))
+    info = ServerService._get_python_info()
+    assert info.name == "python" and info.memory_used == "10.0B"
+
+
 async def test_server_monitor_delegates(monkeypatch: pytest.MonkeyPatch) -> None:
     sentinel = object()
     monkeypatch.setattr(ServerService, "_collect_monitor_info", staticmethod(lambda: sentinel))
     assert await ServerService.get_server_monitor_info() is sentinel
+
+
+def test_server_collect_info(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.monitor.server.schema import CpuInfoSchema, MemoryInfoSchema, PyInfoSchema, SysInfoSchema
+    monkeypatch.setattr(ServerService, "_get_cpu_info", staticmethod(lambda: CpuInfoSchema(cpu_num=1, used=0, sys=0, free=100)))
+    monkeypatch.setattr(ServerService, "_get_memory_info", staticmethod(lambda: MemoryInfoSchema(total="1", used="0", free="1", usage=0)))
+    monkeypatch.setattr(ServerService, "_get_system_info", staticmethod(lambda: SysInfoSchema(computer_ip="x", computer_name="x", os_arch="x", os_name="x", user_dir="x")))
+    monkeypatch.setattr(ServerService, "_get_python_info", staticmethod(lambda: PyInfoSchema(name="x", version="x", start_time="x", run_time="x", home="x", memory_total="x", memory_used="x", memory_free="x", memory_usage=0)))
+    monkeypatch.setattr(ServerService, "_get_disk_info", staticmethod(lambda: []))
+    result = ServerService._collect_monitor_info()
+    assert result.disks == []
 
 
 async def test_cache_service_branches(monkeypatch: pytest.MonkeyPatch) -> None:
