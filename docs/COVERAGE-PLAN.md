@@ -20,6 +20,13 @@ D 包含四个独立目标：
 3. **代码行/分支 100%**：后端 `pytest-cov`、前端 `vitest --coverage` 全源码；
 4. **外部集成 100%**：FTP/SFTP/OBS/OSS/COS、AI、SSH 使用真实测试环境。
 
+## 本轮新增（2026-11-05）
+
+- `tests/test_string_util.py`：StringUtil 分支覆盖 100%；
+- `tests/test_utils_coverage.py`：banner 100%、password 99%、excel 95%；
+- `tests/test_common_util_coverage.py`：common_util 68%；
+- 新增后相关测试 19 passed。
+
 ## 现实约束
 
 - 后端当前还有约 8,300 行未被测试覆盖，包含存储 FTP/SFTP、传输引擎、工作流、监控、初始化、工具函数等；
