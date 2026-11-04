@@ -275,12 +275,15 @@ class SchedulerUtil:
                     except Exception:
                         pass
 
+            # 已存在的 job 也必须重新注册：node.func/trigger 在数据库中被修正后，
+            # 若只补齐缺失 job，调度器会一直持有旧 args（例如旧的代码块 func），
+            # 造成“数据库已是 builtin，但启动仍报不可调度”的假象。
             for node in nodes:
-                if str(node.id) not in want_ids or str(node.id) in existing:
+                if str(node.id) not in want_ids:
                     continue
                 try:
                     register_node_job(node)
-                    logger.info(f"节点任务自愈: 已恢复节点 {node.id} 的定时任务")
+                    logger.info(f"节点任务自愈: 已恢复/刷新节点 {node.id} 的定时任务")
                 except Exception as e:
                     logger.error(f"节点任务自愈: 恢复节点 {node.id} 失败: {e!s}", exc_info=True)
         except Exception as e:
