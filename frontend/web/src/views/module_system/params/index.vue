@@ -438,11 +438,15 @@ async function saveGroup(fields: ParamField[]) {
   let successCount = 0;
   for (const field of modified) {
     try {
-      await ParamsAPI.updateParams(field.id!, {
-        config_value: field.localValue,
-        config_name: field.configName,
-        config_key: field.configKey,
-      });
+      await ParamsAPI.updateParams(
+        field.id!,
+        {
+          config_value: field.localValue,
+          config_name: field.configName,
+          config_key: field.configKey,
+        },
+        { showSuccessMessage: false }
+      );
       field.modified = false;
       field.displayValue = field.localValue;
       successCount++;
@@ -453,6 +457,7 @@ async function saveGroup(fields: ParamField[]) {
   if (successCount > 0) {
     configStore.isConfigLoaded = false;
     await configStore.getConfig();
+    ElMessage.success(`已保存 ${successCount} 项配置`);
   }
 }
 
@@ -471,11 +476,15 @@ async function saveAll() {
   let successCount = 0;
   for (const field of modified) {
     try {
-      await ParamsAPI.updateParams(field.id!, {
-        config_value: field.localValue,
-        config_name: field.configName,
-        config_key: field.configKey,
-      });
+      await ParamsAPI.updateParams(
+        field.id!,
+        {
+          config_value: field.localValue,
+          config_name: field.configName,
+          config_key: field.configKey,
+        },
+        { showSuccessMessage: false }
+      );
       field.modified = false;
       field.displayValue = field.localValue;
       successCount++;
