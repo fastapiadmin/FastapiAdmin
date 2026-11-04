@@ -326,6 +326,15 @@ class UserService:
         logger.info(f"新用户注册成功: {data.username}")
         return await self.detail(id=new_user.id)
 
+    @staticmethod
+    def _import_gender(value: Any) -> str:
+        """导入模板使用中文性别，落库统一为 0/1/2。"""
+        if value is None:
+            return "1"
+        raw = str(value).strip()
+        return {"男": "0", "女": "1", "未知": "2"}.get(raw, raw)
+
+
     async def batch_import(self, file: UploadFile, update_support: bool = False) -> str:
         header_dict = {
             "部门编号": "dept_id",
@@ -339,8 +348,11 @@ class UserService:
 
         try:
             contents = await file.read()
-            rows = await ExcelUtil.aread_excel_to_dicts(contents)
             await file.close()
+            try:
+                rows = await ExcelUtil.aread_excel_to_dicts(contents)
+            except Exception as exc:
+                raise CustomException(msg="导入文件格式错误，请使用下载的模板") from exc
 
             if not rows:
                 raise CustomException(msg="导入文件为空")
@@ -422,7 +434,7 @@ class UserService:
                 "name": name,
                 "email": str(row["email"]).strip() if row.get("email") is not None else None,
                 "mobile": str(row["mobile"]).strip() if row.get("mobile") is not None else None,
-                "gender": str(row["gender"]).strip() if row.get("gender") is not None else "1",
+                "gender": self._import_gender(row.get("gender")),
                 "status": 0 if str(row["status"]).strip() == "正常" else 1,
                 "dept_id": dept_id,
                 "password": await PwdUtil.ahash_password(password=settings.PASSWORD_IMPORT_DEFAULT),

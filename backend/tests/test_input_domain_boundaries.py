@@ -302,3 +302,29 @@ def test_storage_boundary(case: str, data: dict[str, Any], ok: bool) -> None:
         _valid(StorageNodeConfigSchema, data)
     else:
         _invalid(StorageNodeConfigSchema, data)
+
+
+def test_excel_export_handles_aware_datetime() -> None:
+    from datetime import UTC, datetime
+    from io import BytesIO
+
+    from openpyxl import load_workbook
+
+    from app.utils.excel_util import ExcelUtil
+
+    payload = ExcelUtil.export_list2excel(
+        [{"created_time": datetime(2026, 1, 1, tzinfo=UTC)}],
+        {"created_time": "创建时间"},
+    )
+    ws = load_workbook(BytesIO(payload)).active
+    assert ws is not None
+    assert ws["A2"].value is not None
+
+
+def test_user_import_gender_mapping() -> None:
+    from app.modules.system.user.service import UserService
+
+    assert UserService._import_gender("男") == "0"
+    assert UserService._import_gender("女") == "1"
+    assert UserService._import_gender("未知") == "2"
+    assert UserService._import_gender(None) == "1"
