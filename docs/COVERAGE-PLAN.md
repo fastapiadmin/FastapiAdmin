@@ -35,7 +35,8 @@ D 包含四个独立目标：
 - `test_workflow_graph_service.py`：画布拆分、去重、源目标派生、非法连线，workflow service 39%；
 - `test_online_service.py`：在线列表/搜索/清理/趋势，online service 81%；修复搜索参数把 str 当 tuple、趋势少算今天的问题；
 - 监控服务补充本地 IP 成功/降级、Python 进程信息、汇总调用，server/cache service 均 100%；
-- online service 补充 dashboard 统计、空 token/缺失会话处理，98%。
+- online service 补充 dashboard 统计、空 token/缺失会话处理，98%；
+- transfer service 补充本地临时文件清理。
 
 ## 外部协议范围（2026-11-05 确认）
 
