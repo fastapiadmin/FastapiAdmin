@@ -183,6 +183,7 @@ grep -oE '.{0,60}readyState.{0,60}' <chunk> | grep -i websocket       # 核守�
 - 启动后端：`cd backend && uv run main.py run --env=dev`，默认 `http://localhost:8001`。
 - 启动 Web：`cd frontend/web && pnpm dev`，当前 Vite 端口为 **5180**（以启动输出为准），访问 `/web`。
 - 本地 dev 自动执行 Alembic 与种子数据；改动 model 后必须生成/应用迁移。
+- 当前可用的对象存储测试服务只有 **MinIO S3**；FTP/FTPS、SFTP、OBS、OSS、COS 没有测试环境，不作为本轮集成验收项。
 - 生产：`https://service.fastapiadmin.com`，健康检查 `/api/v1/monitor/health/check`，Web `/web/`。
 - 生产当前 `DEMO_ENABLE=true` 时会统一拦截写操作并返回“演示环境，禁止操作”；测试写接口前先确认环境，不要把该返回误判为代码故障。
 
