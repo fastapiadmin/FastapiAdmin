@@ -13,6 +13,7 @@ import App from "./App.vue";
 import { createApp } from "vue";
 import { printConsoleBanner } from "@utils";
 import { initPlugins } from "@/plugins";
+import { installMessageDedupe } from "@/utils/message";
 import { initIconifyAsync } from "./plugins/iconify";
 import { router } from "@/router";
 
@@ -29,6 +30,7 @@ document.addEventListener("touchstart", function () {}, { passive: false });
  *  挂载后 App.vue 的 onMounted 中初始化站点标题/favicon（需等 Pinia store 就绪）
  */
 (async () => {
+  installMessageDedupe();
   const app = createApp(App);
   printConsoleBanner();
   await initPlugins(app);

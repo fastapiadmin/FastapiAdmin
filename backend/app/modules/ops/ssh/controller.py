@@ -12,6 +12,7 @@ from app.common.response import ResponseSchema, SuccessResponse
 from app.core.base_schema import AuthSchema
 from app.core.dependencies import AuthPermission, db_getter
 from app.core.router_class import OperationLogRoute
+from app.core.validator import to_local_datetime
 
 from .schema import (
     BatchExecResultSchema,
@@ -47,7 +48,7 @@ def _session_schema(session) -> TerminalSessionSchema:
         host_name=session.host_name,
         cols=session.cols,
         rows=session.rows,
-        created_at=datetime.fromtimestamp(session.created_at, tz=UTC).isoformat(timespec="seconds"),
+        created_at=(to_local_datetime(datetime.fromtimestamp(session.created_at, tz=UTC)) or datetime.fromtimestamp(session.created_at, tz=UTC)).isoformat(timespec="seconds"),
     )
 
 

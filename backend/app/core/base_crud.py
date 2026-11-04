@@ -228,9 +228,9 @@ class CRUDBase[ModelType: ModelMixin, CreateSchemaType, UpdateSchemaType]:
             raise
 
     async def update(self, id: int, data: UpdateSchemaType | dict[str, Any]) -> ModelType:
-        """更新记录。用 exclude_unset / exclude_none 准确表达前端意图。"""
+        """更新记录。exclude_unset 只排除未提交字段，显式 null 必须保留以清空字段。"""
         try:
-            obj_dict = data.model_dump(exclude_unset=True, exclude_none=True, exclude={"id"}) if isinstance(data, BaseModel) else cast("dict[str, Any]", data)
+            obj_dict = data.model_dump(exclude_unset=True, exclude={"id"}) if isinstance(data, BaseModel) else cast("dict[str, Any]", data)
             obj = await self.get(id=id)
             if not obj:
                 raise CustomException(msg="更新对象不存在")

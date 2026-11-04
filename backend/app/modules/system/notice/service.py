@@ -1,4 +1,8 @@
+from datetime import UTC, datetime
+
+from sqlalchemy import false, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
 from app.core.exceptions import CustomException
@@ -6,6 +10,7 @@ from app.core.logger import logger
 from app.utils.common_util import search_to_dict
 
 from .crud import NoticeCRUD
+from .model import NoticeModel, NoticeReadModel
 from .schema import NoticeCreateSchema, NoticeOutSchema, NoticeQueryParam, NoticeUpdateSchema
 from .stream import notice_stream_manager
 
@@ -89,14 +94,68 @@ class NoticeService:
         )
 
     async def available_page(self) -> PageResultSchema[NoticeOutSchema]:
-        """获取已启用的公告（首页展示用，最多 10 条）"""
-        return await NoticeCRUD(self.auth, self.db).page(
-            offset=0,
-            limit=10,
-            order_by=[{"id": "asc"}],
-            search={"status": ("eq", 0)},
-            out_schema=NoticeOutSchema,
+        """获取已启用的公告（首页展示用，最多 10 条）
+
+        **公开内容必须绕过 CRUD 的数据权限**：``CRUDBase`` 会给非超管叠加
+        ``created_id = 当前用户`` 的数据范围条件，公告由运营创建，普通用户据此查询会一条都看不到。
+        这里显式直查；``created_by/updated_by`` 需预加载，否则异步序列化触发 MissingGreenlet。
+        """
+        conditions = self._enabled_condition()
+        total = int((await self.db.scalar(select(func.count(NoticeModel.id)).where(*conditions))) or 0)
+        rows = (
+            await self.db.scalars(
+                select(NoticeModel)
+                .where(*conditions)
+                .order_by(NoticeModel.id.asc())
+                .limit(10)
+                .options(selectinload(NoticeModel.created_by), selectinload(NoticeModel.updated_by))
+            )
+        ).all()
+        return PageResultSchema(
+            page_no=1, page_size=10, total=total, has_next=False, items=[NoticeOutSchema.model_validate(r) for r in rows]
         )
+
+    @staticmethod
+    def _enabled_condition() -> tuple:
+        """对外可见的公告：启用(0) 且未删除。
+
+        ``available_page`` 走 ``NoticeCRUD.page``，会被基座的 created_id 数据范围再过滤一层，
+        所以这里做「未读数 / 全部已读」时统一用直查，保证口径与 C 端看到的一致。
+        """
+        return (NoticeModel.status == 0, NoticeModel.is_deleted == false())
+
+    async def unread_count(self, user_id: int) -> int:
+        """未读公告数 = 启用公告总数 − 我读过的（已读集合里若公告已停用则不参与相减）"""
+        read_ids = select(NoticeReadModel.notice_id).where(NoticeReadModel.user_id == user_id)
+        stmt = select(func.count(NoticeModel.id)).where(*self._enabled_condition(), NoticeModel.id.not_in(read_ids))
+        return int((await self.db.scalar(stmt)) or 0)
+
+    async def read_ids(self, user_id: int) -> list[int]:
+        """我已读的公告 ID（供列表页判断哪条未读）"""
+        rows = await self.db.scalars(select(NoticeReadModel.notice_id).where(NoticeReadModel.user_id == user_id))
+        return [int(x) for x in rows.all()]
+
+    async def mark_read(self, user_id: int, notice_ids: list[int] | None = None) -> int:
+        """标记已读（不传 notice_ids 表示全部启用公告），返回剩余未读数。
+
+        只记录仍然存在的启用公告；已存在则跳过，重复调用是幂等的。
+        """
+        stmt = select(NoticeModel.id).where(*self._enabled_condition())
+        if notice_ids is not None:
+            # 显式空数组表示“不标记任何公告”，不能退化成“全部已读”
+            if not notice_ids:
+                return await self.unread_count(user_id)
+            stmt = stmt.where(NoticeModel.id.in_(notice_ids))
+        target_ids = [int(x) for x in (await self.db.scalars(stmt)).all()]
+        if target_ids:
+            existing = set(await self.read_ids(user_id))
+            now = datetime.now(UTC)
+            for notice_id in target_ids:
+                if notice_id in existing:
+                    continue
+                self.db.add(NoticeReadModel(user_id=user_id, notice_id=notice_id, read_at=now))
+            await self.db.flush()
+        return await self.unread_count(user_id)
 
     async def create(self, data: NoticeCreateSchema) -> NoticeOutSchema:
         """创建公告

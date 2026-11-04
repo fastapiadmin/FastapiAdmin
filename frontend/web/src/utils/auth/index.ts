@@ -65,7 +65,7 @@ export { AUTH_KEYS };
 
 import { router } from "@/router";
 import { useUserStore } from "@stores";
-import { ElMessage, ElNotification } from "element-plus";
+import { ElMessage } from "element-plus";
 import type { OAuthProvider } from "@/api/module_system/auth";
 
 /** 登录页跳转进行中，合并并发调用，避免重复通知与重复路由 */
@@ -80,12 +80,8 @@ export async function redirectToLogin(message: string = "请重新登录"): Prom
 
   redirectToLoginInFlight = (async () => {
     try {
-      ElNotification({
-        title: "提示",
-        message,
-        type: "warning",
-        duration: 3000,
-      });
+      // 使用 Message 统一走全局短时合并，避免与 401 错误提示/页面提示叠加
+      ElMessage.warning(message);
 
       await useUserStore().resetAllState();
 

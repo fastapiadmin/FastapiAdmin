@@ -11,9 +11,11 @@
 
 import re
 from datetime import date, datetime, time
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 from typing import Any
 
+from app.config.setting import settings
 from app.core.exceptions import CustomException
 
 # 允许的只读首词
@@ -96,6 +98,12 @@ def to_jsonable(value: Any) -> Any:
     if value is None or isinstance(value, (bool, int, float, str)):
         return value[:2000] if isinstance(value, str) else value
     if isinstance(value, (datetime, date, time)):
+        if isinstance(value, datetime) and value.tzinfo is not None:
+            # 外部库返回 aware datetime（如 PostgreSQL timestamptz）时按服务器展示时区输出
+            try:
+                value = value.astimezone(ZoneInfo(settings.TIMEZONE))
+            except Exception:
+                pass
         return value.isoformat()
     if isinstance(value, Decimal):
         return str(value)

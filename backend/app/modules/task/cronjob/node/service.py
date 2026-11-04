@@ -197,7 +197,7 @@ class NodeService:
             )
             row = (await self.db.execute(stmt)).scalars().first()
             if row:
-                item.last_run_time = row.created_time.isoformat() if row.created_time else None
+                item.last_run_time = to_local_datetime(row.created_time).strftime("%Y-%m-%d %H:%M:%S") if row.created_time and to_local_datetime(row.created_time) else None
                 item.last_run_status = row.status
 
 

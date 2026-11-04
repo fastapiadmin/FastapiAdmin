@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from datetime import date, datetime, time
+from datetime import UTC, date, datetime, time
 from typing import Any
 
 from fastapi import status
@@ -10,10 +10,22 @@ from starlette.background import BackgroundTask
 
 from app.common.constant import DATE_DISPLAY_FMT, DATETIME_DISPLAY_FMT, TIME_DISPLAY_FMT
 from app.common.enums import RET
+from app.config.setting import settings
+from zoneinfo import ZoneInfo
 
 # 裸 datetime/date/time（未走 Pydantic 的 dict 等）JSON 输出与 constant 中展示格式一致
+def _display_datetime(value: datetime) -> str:
+    """把裸 datetime 按服务器展示时区格式化（数据库内部统一 UTC）。"""
+    dt = value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+    try:
+        dt = dt.astimezone(ZoneInfo(settings.TIMEZONE))
+    except Exception:
+        pass
+    return dt.strftime(DATETIME_DISPLAY_FMT)
+
+
 _JSON_DATETIME_CUSTOM_ENCODER: dict[type[Any], Any] = {
-    datetime: lambda d: d.strftime(DATETIME_DISPLAY_FMT),
+    datetime: _display_datetime,
     date: lambda d: d.strftime(DATE_DISPLAY_FMT),
     time: lambda t: t.strftime(TIME_DISPLAY_FMT),
 }

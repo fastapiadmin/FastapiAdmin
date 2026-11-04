@@ -12,11 +12,6 @@ useI18nNavTitle('notices.title')
 const { t } = useI18n()
 const toast = useToast()
 const searchTitle = ref('')
-const showForm = ref(false)
-const formTitle = ref('')
-const currentId = ref<number>()
-const formData = reactive<NoticeForm>({ notice_title: '', notice_content: '', notice_type: '1', status: 0, description: '' })
-
 const NOTICE_TYPE_OPTIONS = [
   { value: '1', labelKey: 'notices.notice' },
   { value: '2', labelKey: 'notices.announce' },
@@ -34,6 +29,57 @@ const { list, total, loading, loadData, reload, refreshData, toFirst, loadNext }
   fetcher: p => NoticeAPI.getPage({ ...p, notice_title: searchTitle.value || undefined }),
   onError: () => toast.error(t('common.loadFailed')),
 })
+
+/** 我已读的公告 id：未读的行标题前带红点 */
+const readIds = ref<Set<number>>(new Set())
+const unreadCount = ref(0)
+
+function isUnread(item: NoticeItem) {
+  return item.id != null && !readIds.value.has(item.id)
+}
+
+/** 拉取已读状态（失败不影响列表浏览） */
+async function loadReadState() {
+  try {
+    const [ids, unread] = await Promise.all([NoticeAPI.getReadIds(), NoticeAPI.getUnreadCount()])
+    readIds.value = new Set(ids ?? [])
+    unreadCount.value = unread?.unread ?? 0
+  }
+  catch {
+    readIds.value = new Set()
+    unreadCount.value = 0
+  }
+}
+
+/** 标记单条已读：本地先变，再落库；失败不回滚（下次进入会重新拉） */
+async function markOneRead(id?: number) {
+  if (id == null || readIds.value.has(id))
+    return
+  readIds.value = new Set([...readIds.value, id])
+  unreadCount.value = Math.max(0, unreadCount.value - 1)
+  try {
+    const res = await NoticeAPI.markRead([id])
+    unreadCount.value = res?.unread ?? unreadCount.value
+  }
+  catch { /* 已读记录失败不打断浏览 */ }
+}
+
+/** 全部已读 */
+async function markAllRead() {
+  if (unreadCount.value === 0)
+    return
+  try {
+    const res = await NoticeAPI.markRead()
+    unreadCount.value = res?.unread ?? 0
+    readIds.value = new Set(list.value.map(item => item.id).filter((id): id is number => id != null))
+    toast.success(t('notices.markAllReadSuccess'))
+  }
+  catch { toast.error(t('common.operationFailed')) }
+}
+const showForm = ref(false)
+const formTitle = ref('')
+const currentId = ref<number>()
+const formData = reactive<NoticeForm>({ notice_title: '', notice_content: '', notice_type: '1', status: 0, description: '' })
 
 function onSearch() {
   toFirst()
@@ -116,7 +162,10 @@ onPullDownRefresh(async () => {
     uni.stopPullDownRefresh()
   }
 })
-onLoad(() => loadData())
+onLoad(() => {
+  loadData()
+  loadReadState()
+})
 </script>
 
 <template>
@@ -133,6 +182,10 @@ onLoad(() => loadData())
     <!-- 列表头部：总数 -->
     <view class="mx-4 mb-2 mt-3 flex items-center justify-between px-1">
       <wd-text class="wot-text-text-secondary text-3" :text="t('notices.count', { count: total })" />
+      <view v-if="unreadCount > 0" class="flex items-center gap-3">
+        <wd-text class="wot-text-danger-main text-3" :text="t('notices.unreadCount', { count: unreadCount })" />
+        <wd-text class="wot-text-primary-6 text-3" :text="t('notices.markAllRead')" @click="markAllRead" />
+      </view>
     </view>
 
     <SkeletonPage v-if="loading && list.length === 0" :rows="5" search />
@@ -140,11 +193,14 @@ onLoad(() => loadData())
       <view class="mx-4">
         <wd-empty v-if="!loading && list.length === 0" :tip="searchTitle ? t('notices.emptyWithFilter') : t('notices.empty')" />
         <wd-cell-group v-else border custom-class="rounded-3! overflow-hidden">
-          <wd-cell v-for="item in list" :key="item.id" center is-link @click="openEdit(item.id!)">
+          <wd-cell v-for="item in list" :key="item.id" center is-link @click="markOneRead(item.id); openEdit(item.id!)">
             <template #title>
               <view class="min-w-0 flex-1">
                 <view class="flex items-center justify-between gap-2">
-                  <wd-text class="wot-text-text-main truncate text-3.5 font-medium" :text="item.notice_title" />
+                  <view class="min-w-0 flex items-center gap-2">
+                    <view v-if="isUnread(item)" class="notice-dot" />
+                    <wd-text class="wot-text-text-main truncate text-3.5 font-medium" :text="item.notice_title" />
+                  </view>
                   <wd-text class="wot-text-text-auxiliary shrink-0 text-2.5" :text="(item.created_time || '').slice(0, 10)" />
                 </view>
                 <view class="mt-1 flex items-center justify-between gap-2">
@@ -210,3 +266,13 @@ onLoad(() => loadData())
     </wd-popup>
   </view>
 </template>
+
+<style lang="scss" scoped>
+.notice-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--wot-danger-main);
+}
+</style>

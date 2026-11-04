@@ -1,4 +1,4 @@
-import { request, NO_AUTH_FLAG } from "@utils";
+import { request, NO_AUTH_FLAG, type ExtendedRequestConfig } from "@utils";
 
 const API_PATH = "/system/param";
 
@@ -23,12 +23,14 @@ const ParamsAPI = {
     });
   },
 
-  updateParams(id: number, body: ConfigForm) {
-    return request<ApiResponse>({
+  updateParams(id: number, body: ConfigForm, options?: { showSuccessMessage?: boolean }) {
+    const config: ExtendedRequestConfig = {
       url: `${API_PATH}/update/${id}`,
       method: "put",
       data: body,
-    });
+      showSuccessMessage: options?.showSuccessMessage,
+    };
+    return request<ApiResponse>(config);
   },
 };
 
