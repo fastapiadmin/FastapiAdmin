@@ -33,7 +33,8 @@ D 包含四个独立目标：
 - `test_transfer_engine_helpers.py`：本地大小/文件树/目录准备/临时清理/目录判断/步骤正交，transfer engine 26%；
 - `test_monitor_services.py`：缓存服务 100%、服务器监控 75%；
 - `test_workflow_graph_service.py`：画布拆分、去重、源目标派生、非法连线，workflow service 39%；
-- `test_online_service.py`：在线列表/搜索/清理/趋势，online service 81%；修复搜索参数把 str 当 tuple、趋势少算今天的问题。
+- `test_online_service.py`：在线列表/搜索/清理/趋势，online service 81%；修复搜索参数把 str 当 tuple、趋势少算今天的问题；
+- 监控服务补充本地 IP 成功/降级、Python 进程信息、汇总调用，server/cache service 均 100%。
 
 ## 外部协议范围（2026-11-05 确认）
 
