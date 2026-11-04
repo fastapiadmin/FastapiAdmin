@@ -69,3 +69,13 @@ def test_transfer_steps_parallel_and_chain() -> None:
     steps2 = StorageTransferService._build_steps(data2)
     assert steps2[0].source_id == 1 and steps2[0].source_path == "a"
     assert steps2[1].source_id == 2 and steps2[1].source_path == "b"
+
+
+def test_transfer_service_remove_local_temp(tmp_path: Path) -> None:
+    from app.modules.task.storage.transfer.service import StorageTransferService
+    f = tmp_path / "tmp.txt"
+    f.write_text("x")
+    StorageTransferService._remove_local_temp(SimpleNamespace(source_type="local", source_path=str(f)))
+    assert not f.exists()
+    StorageTransferService._remove_local_temp(SimpleNamespace(source_type="remote", source_path=str(f)))
+    StorageTransferService._remove_local_temp(SimpleNamespace(source_type="local", source_path=str(f)))
