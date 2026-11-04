@@ -104,7 +104,7 @@ def to_jsonable(value: Any) -> Any:
                 value = value.astimezone(ZoneInfo(settings.TIMEZONE))
             except Exception:
                 pass
-        return value.isoformat(sep=" ") if isinstance(value, datetime) else value.isoformat()
+        return value.isoformat()
     if isinstance(value, Decimal):
         return str(value)
     if isinstance(value, (bytes, bytearray)):
