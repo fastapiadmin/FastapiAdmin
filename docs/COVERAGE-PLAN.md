@@ -28,7 +28,8 @@ D 包含四个独立目标：
 - 新增后相关测试 19 passed；
 - `test_security_utils_coverage.py`：ai_factory 100%、lazy_sdk 100%、crypto 97%；
 - `test_local_storage_adapter.py`：本地存储上传/下载/复制/删除/目录/路径穿越，local_adapter 72%、base 75%；
-- `test_s3_adapter_paths.py`：S3 连接/列表/桶/复制/重命名/URL/关闭，s3_adapter 53%。
+- `test_s3_adapter_paths.py`：S3 连接/列表/桶/复制/重命名/URL/关闭，s3_adapter 53%；
+- `test_storage_browse_service.py`：路径校验/上传/下载/删除/列表/重命名/目录/分享，browse service 58%。
 
 ## 外部协议范围（2026-11-05 确认）
 
