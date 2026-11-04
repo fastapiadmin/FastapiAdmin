@@ -38,7 +38,7 @@ D 包含四个独立目标：
 - online service 补充 dashboard 统计、空 token/缺失会话处理，98%；
 - transfer service 补充本地临时文件清理；
 - transfer engine 补充单文件步骤成功/源缺失失败，49%；
-- workflow service 补充明细保存与画布组装。
+- workflow service 补充明细保存、画布组装、流程执行/禁用/缺失路径，42%。
 
 ## 外部协议范围（2026-11-05 确认）
 
