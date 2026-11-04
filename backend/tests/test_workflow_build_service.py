@@ -93,3 +93,51 @@ async def test_workflow_execute_rejects_disabled_or_bad_path(monkeypatch: pytest
     s._load_flow_graph = load2
     with pytest.raises(Exception, match="未选择源文件"):
         await s.execute(1)
+
+
+async def test_workflow_create_update_delete_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.workflow.schema import WorkflowCreateSchema, WorkflowUpdateSchema
+    s = _svc()
+    obj = SimpleNamespace(id=1, name="f", graph={})
+    class Crud:
+        def __init__(self): self.updated = []; self.deleted = []; self.created = None
+        async def get(self, name): return None
+        async def create(self, data): self.created = data; return obj
+        async def get_or_404(self, id, msg=None): return obj
+        async def update(self, id, data): self.updated.append((id, data))
+        async def delete(self, ids): self.deleted.append(ids)
+    crud = Crud(); s._crud = lambda: crud
+    class ChildCRUD:
+        def __init__(self, *a): pass
+        async def hard_delete_by_flow_ids(self, ids): return None
+    monkeypatch.setattr("app.modules.task.storage.workflow.service.WorkflowNodeCRUD", ChildCRUD)
+    monkeypatch.setattr("app.modules.task.storage.workflow.service.WorkflowEdgeCRUD", ChildCRUD)
+    async def prep(flow_id, data): return ({"name": "f"}, [], [])
+    s._prepare_and_save = prep
+    async def save(*a): return None
+    s._save_graph = save
+    async def to_out(o): return o
+    s._to_out = to_out
+    data = WorkflowCreateSchema(name="f", graph={"nodes": [{"id": "a", "data": {"source_id": 1}}], "edges": [{"id": "e", "source": "a", "target": "a"}]})
+    assert await s.create(data) is obj and crud.created["name"] == "f"
+    assert await s.update(1, WorkflowUpdateSchema(name="f", graph=data.graph)) is obj
+    with pytest.raises(Exception, match="删除对象不能为空"):
+        await s.delete([])
+    await s.delete([1])
+    assert crud.deleted == [[1]]
+
+
+async def test_workflow_page_and_get_list(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    s = _svc()
+    class Crud:
+        async def page(self, **kw): return SimpleNamespace(items=[1], page_no=1, page_size=10, total=1, has_next=False)
+        async def get_list(self, **kw): return [1]
+    s._crud = lambda: Crud()
+    async def to_list(objs): return [SimpleNamespace(id=o) for o in objs]
+    s._to_out_list = to_list
+    page = await s.page(None, 1, 10)
+    assert page.total == 1 and page.items[0].id == 1
+    got = await s.get_list(None)
+    assert got[0].id == 1
