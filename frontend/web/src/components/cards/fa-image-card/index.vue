@@ -37,7 +37,7 @@
         >
           {{ props.category }}
         </div>
-        <p class="m-0 mb-3 text-base font-medium">{{ props.title }}</p>
+        <p class="m-0 mb-3 text-base font-medium truncate" :title="props.title">{{ props.title }}</p>
         <div class="flex items-center gap-4 text-xs text-g-600">
           <span class="flex items-center gap-1" v-if="props.views">
             <ElIcon class="text-base"><FaSvgIcon icon="ri:eye-line" /></ElIcon>

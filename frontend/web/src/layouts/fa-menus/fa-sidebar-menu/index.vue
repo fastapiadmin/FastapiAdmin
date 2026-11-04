@@ -528,8 +528,12 @@ watch(menuOpen, (isMenuOpen: boolean) => {
       bottom: 0;
       left: 58px;
       box-sizing: border-box;
+      max-width: calc(100% - 72px);
       margin-left: 10px;
+      overflow: hidden;
       font-size: 18px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       &.is-dual-menu-name {
         left: 25px;

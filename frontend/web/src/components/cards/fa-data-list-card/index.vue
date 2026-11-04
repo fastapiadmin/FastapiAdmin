@@ -2,8 +2,8 @@
 <template>
   <div class="fa-card p-5 overflow-hidden" :class="autoHeight ? 'h-auto' : 'h-110'">
     <div class="pb-3.5">
-      <p class="text-lg font-medium">{{ title }}</p>
-      <p class="text-sm text-g-600">{{ subtitle }}</p>
+      <p class="text-lg font-medium truncate" :title="title">{{ title }}</p>
+      <p class="text-sm text-g-600 truncate" :title="subtitle">{{ subtitle }}</p>
     </div>
     <ElScrollbar :style="{ height: maxHeight }">
       <div v-for="item in list" :key="item.title" class="flex items-center py-2">
@@ -14,11 +14,11 @@
         >
           <FaSvgIcon :icon="item.icon" class="text-xl" />
         </div>
-        <div class="flex-1">
-          <div class="mb-1 text-sm">{{ item.title }}</div>
-          <div class="text-xs text-g-500">{{ item.status }}</div>
+        <div class="min-w-0 flex-1">
+          <div class="mb-1 text-sm truncate" :title="item.title">{{ item.title }}</div>
+          <div class="text-xs text-g-500 truncate">{{ item.status }}</div>
         </div>
-        <div class="ml-3 text-xs text-g-500">{{ item.time }}</div>
+        <div class="ml-3 shrink-0 text-xs text-g-500">{{ item.time }}</div>
       </div>
     </ElScrollbar>
     <ElButton class="mt-6.25 w-full text-center" v-if="showMoreButton" v-ripple @click="handleMore">

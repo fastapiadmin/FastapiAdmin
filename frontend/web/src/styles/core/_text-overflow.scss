@@ -1,0 +1,50 @@
+// ============================================================
+// 长文本防溢出
+// ============================================================
+// 平台中存在用户/部门/菜单/日志/文件等可变的业务文本；这里做全局兜底，
+// 页面级仍可用 truncate / line-clamp 做更精确的省略。
+
+// 表格：不可断的长 URL、UUID、错误信息在单元格内换行，避免撑破列宽
+.el-table .cell {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+// 消息、通知、弹窗、抽屉、卡片正文不因长单词横向溢出
+.el-message .el-message__content,
+.el-notification__content,
+.el-dialog__body,
+.el-drawer__body,
+.el-card__body,
+.el-descriptions__content,
+.el-descriptions__label,
+.el-form-item__error {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+// 单行文本约束工具类
+.fa-ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 长文本标签不撑破容器；仍由页面决定是否使用 show-overflow-tooltip
+.el-tag {
+  max-width: 100%;
+
+  .el-tag__content {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// 弹层本身在窄屏下不超出视口
+.el-message,
+.el-notification {
+  max-width: calc(100vw - 32px);
+}
