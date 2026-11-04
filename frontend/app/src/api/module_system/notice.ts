@@ -28,6 +28,19 @@ export const NoticeAPI = {
   batchStatus(data: BatchSetStatus): Promise<void> {
     return http.Patch(`${SYSTEM_BASE}/notice/status/batch`, data)
   },
+  /** 我的未读公告数（首页公告条红点） */
+  getUnreadCount(): Promise<{ unread: number }> {
+    return http.Get(`${SYSTEM_BASE}/notice/unread-count`)
+  },
+  /** 我已读的公告 id（列表标未读） */
+  getReadIds(): Promise<number[]> {
+    return http.Get(`${SYSTEM_BASE}/notice/read-ids`)
+  },
+  /** 标记已读（不传 noticeIds 表示全部），返回剩余未读数 */
+  markRead(noticeIds?: number[]): Promise<{ unread: number }> {
+    return http.Post(`${SYSTEM_BASE}/notice/read`, noticeIds ? { notice_ids: noticeIds } : {})
+  },
+
   getAvailable(): Promise<NoticeItem[]> {
     return http.Get(`${SYSTEM_BASE}/notice/available`)
   },

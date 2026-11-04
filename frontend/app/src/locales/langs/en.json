@@ -238,7 +238,10 @@
     "contentPlaceholder": "Please enter content",
     "type": "Notice Type",
     "notice": "Notice",
-    "announce": "Announcement"
+    "announce": "Announcement",
+    "unreadCount": "{count} unread",
+    "markAllRead": "Mark all read",
+    "markAllReadSuccess": "All marked as read"
   },
   "chat": {
     "title": "AI Assistant",
