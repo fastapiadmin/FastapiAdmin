@@ -611,7 +611,7 @@ class CaptchaService:
     async def get_captcha(redis: Redis, request: Request) -> CaptchaOutSchema:
         """获取拼图验证码：服务端出题，缺口横坐标只保存在 Redis。"""
         if not settings.CAPTCHA_ENABLE:
-            raise CustomException(msg="未开启验证码服务")
+            return CaptchaOutSchema(enable=False)
 
         captcha_key = get_random_character()
         puzzle = build_puzzle(captcha_key)
