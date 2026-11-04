@@ -5,7 +5,7 @@
     :width="700"
     :offset="0"
     :show-arrow="false"
-    trigger="hover"
+    trigger="click"
     placement="bottom-start"
     popper-class="fast-enter-popover"
     :popper-style="{

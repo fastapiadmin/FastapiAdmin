@@ -115,7 +115,7 @@ const toolbarConfig = computed((): Partial<IToolbarConfig> => {
     "blockquote",
     "|",
     "insertLink",
-    "group-image",
+    "insertImage",
     "|",
     "undo",
     "redo",

@@ -121,7 +121,11 @@ class TerminalManager:
         while not sess.closed:
             try:
                 data = sess.channel.recv(_READ_CHUNK)
-            except Exception:  # noqa: BLE001 - 通道关闭/超时都视为结束
+            except (TimeoutError, BlockingIOError):
+                # 通道为 setblocking(False)：无数据时抛超时/阻塞异常，不能当作 EOF
+                time.sleep(_POLL_INTERVAL)
+                continue
+            except Exception:  # noqa: BLE001 - 通道关闭视为结束
                 break
             if not data:
                 break

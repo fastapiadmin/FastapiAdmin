@@ -257,16 +257,6 @@ class SchedulerUtil:
                         continue
                 want_ids.add(str(node.id))
 
-            # 可观测性（t15）：把"已启用但当前不会执行"的节点与存量 job 显式打出来，
-            # 否则开关调整后只会表现为"任务不动了"，运维无从定位
-            for node in nodes:
-                if node.status != 0 or not node.trigger:
-                    continue
-                schedulable, reason = cls.describe_schedulability(node.func)
-                if not schedulable:
-                    logger.warning(f"节点任务不可调度（已启用但不会执行）: id={node.id} name={node.name!r} 原因={reason}")
-            cls.log_unschedulable_jobs(context="启动自愈")
-
             for job_id in existing:
                 if job_id.isdigit() and job_id not in want_ids:
                     try:
@@ -275,14 +265,26 @@ class SchedulerUtil:
                     except Exception:
                         pass
 
+            # 已存在的 job 也必须重新注册：node.func/trigger 在数据库中被修正后，
+            # 若只补齐缺失 job，调度器会一直持有旧 args（例如旧的代码块 func），
+            # 造成“数据库已是 builtin，但启动仍报不可调度”的假象。
             for node in nodes:
-                if str(node.id) not in want_ids or str(node.id) in existing:
+                if str(node.id) not in want_ids:
                     continue
                 try:
                     register_node_job(node)
-                    logger.info(f"节点任务自愈: 已恢复节点 {node.id} 的定时任务")
+                    logger.info(f"节点任务自愈: 已恢复/刷新节点 {node.id} 的定时任务")
                 except Exception as e:
                     logger.error(f"节点任务自愈: 恢复节点 {node.id} 失败: {e!s}", exc_info=True)
+
+            # 刷新完成后再做可观测性判定，避免把旧 job 的 args 误报成数据库配置错误。
+            for node in nodes:
+                if node.status != 0 or not node.trigger:
+                    continue
+                schedulable, reason = cls.describe_schedulability(node.func)
+                if not schedulable:
+                    logger.warning(f"节点任务不可调度（已启用但不会执行）: id={node.id} name={node.name!r} 原因={reason}")
+            cls.log_unschedulable_jobs(context="启动自愈")
         except Exception as e:
             logger.error(f"节点任务自愈执行失败: {e!s}", exc_info=True)
 

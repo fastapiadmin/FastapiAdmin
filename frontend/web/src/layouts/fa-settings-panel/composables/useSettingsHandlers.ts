@@ -132,22 +132,32 @@ export function useSettingsHandlers() {
   };
 
   // 盒子样式处理器
+  // 延迟切换避免抽屉动画抖动；连续点击时以最后一次选择为准，避免 toggle 竞态。
+  let boxModeTimer: ReturnType<typeof setTimeout> | null = null;
+  let pendingBoxMode: "border-mode" | "shadow-mode" | null = null;
   const boxStyleHandlers = {
-    // 设置盒子模式
     setBoxMode: (type: "border-mode" | "shadow-mode") => {
       const { boxBorderMode } = storeToRefs(settingStore);
+      const targetBorder = type === "border-mode";
 
-      // 防止重复设置
-      if (
-        (type === "shadow-mode" && boxBorderMode.value === false) ||
-        (type === "border-mode" && boxBorderMode.value === true)
-      ) {
+      if (boxBorderMode.value === targetBorder) {
+        // 用户快速点回当前模式：取消尚未执行的相反模式切换
+        if (pendingBoxMode && pendingBoxMode !== type) {
+          if (boxModeTimer) clearTimeout(boxModeTimer);
+          boxModeTimer = null;
+          pendingBoxMode = null;
+        }
         return;
       }
 
-      setTimeout(() => {
+      if (pendingBoxMode === type) return;
+      if (boxModeTimer) clearTimeout(boxModeTimer);
+      pendingBoxMode = type;
+      boxModeTimer = setTimeout(() => {
+        boxModeTimer = null;
+        pendingBoxMode = null;
         domOperations.setRootAttribute("data-box-mode", type);
-        settingStore.setBorderMode();
+        settingStore.boxBorderMode = targetBorder;
       }, 50);
     },
   };

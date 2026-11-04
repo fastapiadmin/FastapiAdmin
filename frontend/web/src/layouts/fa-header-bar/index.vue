@@ -19,12 +19,18 @@
       <div class="flex items-center flex-1 min-w-0 leading-15" :style="{ display: 'flex' }">
         <!-- 系统信息：Logo + 标题一并受「显示应用 Logo」控制 -->
         <div
-          class="flex items-center cursor-pointer"
+          class="flex min-w-0 items-center cursor-pointer"
           @click="toHome"
           v-if="isTopMenu && showAppLogo"
         >
-          <FaLogo class="pl-4.5" :src="headerLogoSrc" />
-          <p v-if="width >= 1400" class="my-0 mx-2 ml-2 text-lg">{{ headerSystemName }}</p>
+          <FaLogo class="shrink-0 pl-4.5" :src="headerLogoSrc" />
+          <p
+            v-if="width >= 1400"
+            class="my-0 mx-2 ml-2 min-w-0 max-w-[38vw] truncate text-lg"
+            :title="headerSystemName"
+          >
+            {{ headerSystemName }}
+          </p>
         </div>
 
         <FaLogo

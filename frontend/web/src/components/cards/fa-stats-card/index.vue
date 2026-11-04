@@ -12,7 +12,7 @@
       <FaSvgIcon :icon="icon"></FaSvgIcon>
     </div>
     <div class="flex-1">
-      <p class="m-0 text-lg font-medium" :style="{ color: textColor }" v-if="title">
+      <p class="m-0 text-lg font-medium truncate" :style="{ color: textColor }" v-if="title" :title="title">
         {{ title }}
       </p>
       <FaCountTo

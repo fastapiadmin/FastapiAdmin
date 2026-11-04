@@ -1,11 +1,15 @@
 import asyncio
 import io
+from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
+
+from app.config.setting import settings
 
 
 class ExcelUtil:
@@ -132,7 +136,11 @@ class ExcelUtil:
 
         for row_num, row_data in enumerate(mapping_data, 2):
             for col_num, header in enumerate(headers, 1):
-                ws.cell(row=row_num, column=col_num, value=row_data.get(header))
+                value = row_data.get(header)
+                if isinstance(value, datetime) and value.tzinfo is not None:
+                    # openpyxl 不接受带时区的 datetime；按平台展示时区转为 naive 时间
+                    value = value.astimezone(ZoneInfo(settings.TIMEZONE)).replace(tzinfo=None)
+                ws.cell(row=row_num, column=col_num, value=value)
 
         buffer = io.BytesIO()
         wb.save(buffer)

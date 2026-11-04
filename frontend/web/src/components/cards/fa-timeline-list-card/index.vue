@@ -2,8 +2,8 @@
 <template>
   <div class="fa-card p-5 overflow-hidden" :class="autoHeight ? 'h-auto' : 'h-110'">
     <div class="pb-3.5">
-      <p class="text-lg font-medium">{{ title }}</p>
-      <p class="text-sm text-g-600">{{ subtitle }}</p>
+      <p class="text-lg font-medium truncate" :title="title">{{ title }}</p>
+      <p class="text-sm text-g-600 truncate" :title="subtitle">{{ subtitle }}</p>
     </div>
     <ElScrollbar :style="{ height: maxHeight }">
       <ElTimeline class="pl-0.5!">
@@ -17,7 +17,7 @@
         >
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
-              <span class="text-sm">{{ item.content }}</span>
+              <span class="min-w-0 text-sm break-words">{{ item.content }}</span>
               <span v-if="item.code" class="text-sm text-theme">#{{ item.code }}</span>
             </div>
           </div>
