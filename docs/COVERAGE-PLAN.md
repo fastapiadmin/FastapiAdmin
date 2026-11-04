@@ -26,7 +26,8 @@ D 包含四个独立目标：
 - `tests/test_utils_coverage.py`：banner 100%、password 99%、excel 95%；
 - `tests/test_common_util_coverage.py`：common_util 68%；
 - 新增后相关测试 19 passed；
-- `test_security_utils_coverage.py`：ai_factory 100%、lazy_sdk 100%、crypto 97%。
+- `test_security_utils_coverage.py`：ai_factory 100%、lazy_sdk 100%、crypto 97%；
+- `test_local_storage_adapter.py`：本地存储上传/下载/复制/删除/目录/路径穿越，local_adapter 72%、base 75%。
 
 ## 外部协议范围（2026-11-05 确认）
 
