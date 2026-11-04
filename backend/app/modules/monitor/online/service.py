@@ -39,16 +39,22 @@ class OnlineService:
 
                 # 内联搜索匹配逻辑
                 if search:
-                    if search.name and search.name[1]:
-                        kw = search.name[1].strip("%")
+                    # 查询参数在 FastAPI 层是 str；兼容旧调用方传入 ("op", value) 的形式
+                    def _kw(value: object) -> str:
+                        if isinstance(value, tuple) and len(value) > 1:
+                            return str(value[1]).strip("%")
+                        return str(value).strip("%")
+
+                    if search.name:
+                        kw = _kw(search.name)
                         if kw.lower() not in session_info.get("name", "").lower():
                             continue
-                    if search.ipaddr and search.ipaddr[1]:
-                        kw = search.ipaddr[1].strip("%")
+                    if search.ipaddr:
+                        kw = _kw(search.ipaddr)
                         if kw not in session_info.get("ipaddr", ""):
                             continue
-                    if search.login_location and search.login_location[1]:
-                        kw = search.login_location[1].strip("%")
+                    if search.login_location:
+                        kw = _kw(search.login_location)
                         if kw.lower() not in session_info.get("login_location", "").lower():
                             continue
 
@@ -89,7 +95,8 @@ class OnlineService:
     async def get_dashboard_stats(db: AsyncSession, redis: Redis) -> DashboardStatsSchema:
         """获取仪表盘统计数据"""
         today_start = datetime.combine(date.today(), datetime.min.time())
-        week_start = today_start - timedelta(days=7)
+        # trend 要求「含今天共 7 天」，所以起点是 6 天前，不是 7 天前
+        week_start = today_start - timedelta(days=6)
 
         online_count = len(await OnlineService.get_online_list(redis))
 
