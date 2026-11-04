@@ -6,7 +6,7 @@
     "executor": "threadpool",
     "trigger": "cron",
     "trigger_args": "0 0 3 * * ?",
-    "func": "def handler(**kwargs):\n    import asyncio\n    from app.modules.system.log.service import cleanup_expired_logs\n    return asyncio.run(cleanup_expired_logs(days=int(kwargs.get(\"days\", 90))))",
+    "func": "builtin:system_log.cleanup_expired_logs",
     "args": null,
     "kwargs": "{\"days\": 90}",
     "coalesce": true,

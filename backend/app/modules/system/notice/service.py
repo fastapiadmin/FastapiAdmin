@@ -141,7 +141,10 @@ class NoticeService:
         只记录仍然存在的启用公告；已存在则跳过，重复调用是幂等的。
         """
         stmt = select(NoticeModel.id).where(*self._enabled_condition())
-        if notice_ids:
+        if notice_ids is not None:
+            # 显式空数组表示“不标记任何公告”，不能退化成“全部已读”
+            if not notice_ids:
+                return await self.unread_count(user_id)
             stmt = stmt.where(NoticeModel.id.in_(notice_ids))
         target_ids = [int(x) for x in (await self.db.scalars(stmt)).all()]
         if target_ids:

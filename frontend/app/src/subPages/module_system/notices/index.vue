@@ -266,3 +266,13 @@ onLoad(() => {
     </wd-popup>
   </view>
 </template>
+
+<style lang="scss" scoped>
+.notice-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--wot-danger-main);
+}
+</style>
