@@ -31,7 +31,8 @@ D 包含四个独立目标：
 - `test_s3_adapter_paths.py`：S3 连接/列表/桶/复制/重命名/URL/关闭，s3_adapter 53%；
 - `test_storage_browse_service.py`：路径校验/上传/下载/删除/列表/重命名/目录/分享，browse service 58%；
 - `test_transfer_engine_helpers.py`：本地大小/文件树/目录准备/临时清理/目录判断/步骤正交，transfer engine 26%；
-- `test_monitor_services.py`：缓存服务 100%、服务器监控 75%。
+- `test_monitor_services.py`：缓存服务 100%、服务器监控 75%；
+- `test_workflow_graph_service.py`：画布拆分、去重、源目标派生、非法连线，workflow service 39%。
 
 ## 外部协议范围（2026-11-05 确认）
 
