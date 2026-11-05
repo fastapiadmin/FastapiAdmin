@@ -172,3 +172,19 @@ async def test_write_plugin_migration(monkeypatch: pytest.MonkeyPatch) -> None:
     s = GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
     assert calls
+
+
+async def test_write_plugin_migration_multiple_heads(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd, alembic.config as cfg, alembic.script as script
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    class C:
+        def __init__(self,*a): pass
+    class S:
+        def get_heads(self): return ["a","b"]
+    monkeypatch.setattr(cfg,"Config",C)
+    monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
+    monkeypatch.setattr(cmd,"revision",lambda *a,**k: None)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="多个 head"):
+        await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
