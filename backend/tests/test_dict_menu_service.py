@@ -133,3 +133,28 @@ async def test_menu_detail_missing_and_parent(monkeypatch: pytest.MonkeyPatch) -
     s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
     with pytest.raises(CustomException, match="不存在"):
         await s.detail(2)
+
+
+async def test_menu_delete_descendants_and_update_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuOutSchema, MenuUpdateSchema
+    parent = MenuOutSchema(id=1, name="p", type=1, order=1, title="p", status=0, route_name="p", route_path="/p", component_path="p", redirect="/p")
+    child = MenuOutSchema(id=2, name="c", type=2, order=1, title="c", status=0, parent_id=1, route_name="c", route_path="/p/c", component_path="c")
+    class M:
+        def __init__(self, *a): self.deleted = []
+        async def get(self, **kw):
+            if kw.get("id") == 99: return None
+            return parent
+        async def get_or_404(self, **kw): return parent
+        async def get_list(self, **kw): return [parent, child]
+        async def update(self, **kw): return parent
+        async def delete(self, ids): self.deleted = ids
+        async def set(self, **kw): return None
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
+    async def noop(*a, **k): return None
+    s._validate_parent_child_type = noop; s._validate_parent_child_scope = noop
+    async def avail(data): return None
+    s.set_available = avail
+    await s.delete([1])
+    assert await s.update(1, MenuUpdateSchema(name="p", type=1, order=1, title="p", status=1, route_name="p", route_path="/p", component_path="p", redirect="/p")) is not None
