@@ -109,3 +109,17 @@ async def test_role_create_duplicate_code(monkeypatch: pytest.MonkeyPatch) -> No
     s = _svc(monkeypatch, c)
     with pytest.raises(CustomException, match="编码已存在"):
         await s.create(RoleCreateSchema(name="r", code="r1"))
+
+
+async def test_role_set_menus_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    class M:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    monkeypatch.setattr(mod,"RoleCRUD",R); monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="菜单不存在"):
+        await s._set_role_menus([1],[2])
