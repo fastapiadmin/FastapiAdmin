@@ -229,3 +229,17 @@ async def test_dict_init_cache_with_type(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(mod, "DictDataCRUD", D)
     await mod.DictDataService.init_cache(object())
     assert written and written[0].endswith(":1:t")
+
+
+async def test_menu_detail_parent_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuOutSchema
+    child=MenuOutSchema(id=2,name="c",type=2,order=1,parent_id=1,route_name="c",route_path="/c",component_path="c")
+    parent=MenuOutSchema(id=1,name="p",type=1,order=1,route_name="p",route_path="/p",component_path="p",redirect="/p")
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return parent if kw.get("id")==1 else child
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    out=await s.detail(2)
+    assert out.parent_name == "p"
