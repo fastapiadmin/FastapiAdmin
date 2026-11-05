@@ -158,10 +158,10 @@ docker compose up -d --force-recreate backend
 
 ## 8. 已知遗留问题
 
-安全与质量债的完整清单见 `AUDIT-REPORT.md` 与各分报告（`backend/audit-*.md`、`frontend/audit-*.md`、`docker/audit-deploy.md`）。当前仍待处理的高优先级项：
+当前覆盖基线与剩余缺口见 [`docs/COVERAGE-PLAN.md`](docs/COVERAGE-PLAN.md)，接口/页面覆盖矩阵见 [`docs/TEST-COVERAGE.md`](docs/TEST-COVERAGE.md)。仍需关注：
 
-1. 会话失效机制：停用/删除/改密后旧会话仍有效（最长 7 天）——需应用侧改造；
-2. 数据权限注入不完整：`CRUDBase` 的删除/清空/改状态路径未注入数据权限；
-3. Web i18n 与通知状态枚举：`85/101` 个页面未接入 i18n；通知状态枚举与后端语义冲突；
-4. 测试覆盖：后端仅 2 个用例，夹具掩盖缺陷（见 `backend/audit-testing.md`）；
-5. 多租户需求与实现错位（见 `backend/audit-requirements.md`）。
+1. 会话失效机制：停用/删除/改密后旧会话仍有效（最长 7 天），需应用侧继续改造；
+2. 数据权限注入完整性：删除/清空/改状态等路径需继续核验；
+3. 前端 i18n、通知状态枚举与后端语义一致性；
+4. 后端覆盖仍为约 63%，`gencode` 生成写入/同步、OAuth/微信登录、AI 主流程、调度器对账和前端全源码仍未完成；
+5. 外部存储仅验证 MinIO/S3；FTP/SFTP/OBS/OSS/COS 当前无测试服务，未纳入本轮验收。
