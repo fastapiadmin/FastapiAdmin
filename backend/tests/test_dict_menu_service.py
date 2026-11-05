@@ -158,3 +158,20 @@ async def test_menu_delete_descendants_and_update_status(monkeypatch: pytest.Mon
     s.set_available = avail
     await s.delete([1])
     assert await s.update(1, MenuUpdateSchema(name="p", type=1, order=1, title="p", status=1, route_name="p", route_path="/p", component_path="p", redirect="/p")) is not None
+
+
+async def test_dict_init_cache_no_types(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.dict.service as mod
+    class Ctx:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        def begin(self): return self
+    class S:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+    class C:
+        def __init__(self, *a): pass
+        async def get_list(self): return []
+    monkeypatch.setattr(mod, "async_db_session", lambda: Ctx())
+    monkeypatch.setattr(mod, "DictTypeCRUD", C)
+    await DictDataService.init_cache(object())
