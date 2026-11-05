@@ -59,3 +59,15 @@ async def test_access_token_cache_and_fetch(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(wx, "_http_json", bad)
     with pytest.raises(CustomException, match="access_token"):
         await wx._get_access_token(object())
+
+
+async def test_get_phone_number(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def token(_): return "t"
+    monkeypatch.setattr(wx, "_get_access_token", token)
+    async def http(method, url, **kw): return {"phone_info": {"phoneNumber": "138"}}
+    monkeypatch.setattr(wx, "_http_json", http)
+    assert await wx.get_phone_number(object(), "code") == "138"
+    async def empty(method, url, **kw): return {"phone_info": {}}
+    monkeypatch.setattr(wx, "_http_json", empty)
+    with pytest.raises(CustomException, match="为空"):
+        await wx.get_phone_number(object(), "code")
