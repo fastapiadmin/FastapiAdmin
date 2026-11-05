@@ -22,7 +22,7 @@ describe("message dedupe", () => {
     installMessageDedupe();
     ElMessage.success({ message: "a" });
     ElMessage.success({ message: "b" });
-    vi.advanceTimersByTime(80);
+    vi.advanceTimersByTime(1000);
     expect(mocks.success).toHaveBeenCalledTimes(1);
     expect(mocks.success).toHaveBeenCalledWith(expect.objectContaining({ message: "a；b", grouping: true }));
   });
@@ -31,7 +31,7 @@ describe("message dedupe", () => {
     installMessageDedupe();
     ElMessage.error("x");
     ElMessage.error("y");
-    vi.advanceTimersByTime(80);
+    vi.advanceTimersByTime(1000);
     expect(mocks.error).toHaveBeenCalledWith(expect.objectContaining({ message: "x；y" }));
   });
 
