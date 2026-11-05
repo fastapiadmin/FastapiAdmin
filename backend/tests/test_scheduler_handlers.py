@@ -120,3 +120,18 @@ def test_trigger_date_manual(monkeypatch: pytest.MonkeyPatch) -> None:
     from apscheduler.triggers.date import DateTrigger
     monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: SimpleNamespace(trigger=DateTrigger(run_date=datetime.now()))))
     assert SchedulerUtil._get_trigger_type("x") == "manual"
+
+
+def test_finish_job_record_temp_and_date(monkeypatch: pytest.MonkeyPatch) -> None:
+    from datetime import datetime, timedelta
+    from apscheduler.triggers.date import DateTrigger
+    records=[]; removed=[]
+    monkeypatch.setattr(SchedulerUtil, "_record_job_log", staticmethod(lambda r: records.append(r)))
+    monkeypatch.setattr(SchedulerUtil, "remove_job", classmethod(lambda cls, job_id: removed.append(job_id)))
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: None))
+    SchedulerUtil._finish_job_record(job_id="1:manual:2", status=2, detail="ok")
+    assert records[0]["trigger_type"] == "manual" and removed == ["1:manual:2"]
+    job = SimpleNamespace(name="n", next_run_time=None, trigger=DateTrigger(run_date=datetime.now()+timedelta(days=1)))
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: job))
+    SchedulerUtil._finish_job_record(job_id="2", status=2, detail="ok")
+    assert "2" in removed
