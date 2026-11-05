@@ -120,3 +120,16 @@ async def test_menu_crud_branches(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.core.base_schema import BatchSetAvailable
     await s.set_available(BatchSetAvailable(ids=[1], status=0))
     await s.set_available(BatchSetAvailable(ids=[1], status=1))
+
+
+async def test_menu_detail_missing_and_parent(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    class M:
+        def __init__(self, *a): pass
+        async def get(self, **kw):
+            if kw.get("id") == 2: return None
+            return SimpleNamespace(id=1, name="n", type=1, order=1, title="n", status=0, parent_id=2)
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
+    with pytest.raises(CustomException, match="不存在"):
+        await s.detail(2)
