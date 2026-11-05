@@ -81,3 +81,15 @@ async def test_dict_data_set_available(monkeypatch: pytest.MonkeyPatch) -> None:
     s = _svc(monkeypatch, C)
     from app.core.base_schema import BatchSetAvailable
     await s.set_available(BatchSetAvailable(ids=[1], status=1))
+
+
+async def test_dict_data_update_value_duplicate(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self, *a): self.obj = _obj(dict_label="A", dict_value="a")
+        async def get_or_404(self, **kw): return self.obj
+        async def get(self, **kw):
+            return _obj() if "dict_value" in kw else None
+    s = _svc(monkeypatch, C)
+    data = DictDataUpdateSchema(dict_sort=1, dict_label="A", dict_value="b", dict_type="t", dict_type_id=1)
+    with pytest.raises(CustomException, match="键值"):
+        await s.update(object(), 1, data)
