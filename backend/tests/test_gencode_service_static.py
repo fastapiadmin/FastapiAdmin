@@ -254,3 +254,12 @@ async def test_package_directory_validation(monkeypatch: pytest.MonkeyPatch) -> 
         await s._get_or_create_package_directory_menu(M(),None,"","demo","demo")
     with pytest.raises(CustomException, match="模块名不能为空"):
         await s._get_or_create_package_directory_menu(M(),None,"module_demo","","demo")
+
+
+async def test_package_directory_existing_with_parent() -> None:
+    from types import SimpleNamespace
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=7)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    assert await s._get_or_create_package_directory_menu(M(),1,"module_demo","demo","demo") == 7
