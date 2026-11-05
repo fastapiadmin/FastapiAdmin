@@ -244,3 +244,13 @@ async def test_effective_package_name(monkeypatch: pytest.MonkeyPatch) -> None:
     assert await s._effective_package_name(1,"demo") == "module_demo"
     with pytest.raises(CustomException, match="无法从上级"):
         await s._effective_package_name(1,"")
+
+
+async def test_package_directory_validation(monkeypatch: pytest.MonkeyPatch) -> None:
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    class M:
+        def __init__(self,*a): pass
+    with pytest.raises(CustomException, match="包名不能为空"):
+        await s._get_or_create_package_directory_menu(M(),None,"","demo","demo")
+    with pytest.raises(CustomException, match="模块名不能为空"):
+        await s._get_or_create_package_directory_menu(M(),None,"module_demo","","demo")
