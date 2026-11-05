@@ -161,7 +161,8 @@ async def test_write_plugin_migration(monkeypatch: pytest.MonkeyPatch) -> None:
     import app.modules.generator.gencode.service as mod
     from app.modules.generator.gencode.schema import GenTableOutSchema
     calls=[]
-    class C: pass
+    class C:
+        def __init__(self, *a): pass
     class S:
         def __init__(self, *a): pass
         def get_heads(self): return ["h"]
