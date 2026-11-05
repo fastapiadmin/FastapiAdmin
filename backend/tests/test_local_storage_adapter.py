@@ -74,7 +74,8 @@ async def test_local_storage_missing_root(tmp_path: Path) -> None:
 
 async def test_local_missing_operations(tmp_path: Path) -> None:
     root = tmp_path / "root"; root.mkdir(); a = _adapter(root)
-    assert await a.list_files("missing") == []
+    with pytest.raises(Exception):
+        await a.list_files("missing")
     with pytest.raises(Exception):
         await a.rename("missing", "x")
     with pytest.raises(Exception):
