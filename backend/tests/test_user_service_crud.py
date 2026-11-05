@@ -280,3 +280,16 @@ async def test_update_dept_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
     async def noop(*a,**k): return None
     s._set_user_roles=noop; s._set_user_positions=noop
     assert await s.update(1, UserUpdateSchema(dept_id=2)) == "ok"
+
+
+async def test_create_without_password(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def create(self,data): return SimpleNamespace(id=1)
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.create(_data(password=None)) == "ok"
