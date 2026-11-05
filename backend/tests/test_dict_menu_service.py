@@ -243,3 +243,18 @@ async def test_menu_detail_parent_name(monkeypatch: pytest.MonkeyPatch) -> None:
     s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
     out=await s.detail(2)
     assert out.parent_name == "p"
+
+
+async def test_menu_update_duplicate_title(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuUpdateSchema
+    class M:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return SimpleNamespace(id=1)
+        async def get(self,**kw): return SimpleNamespace(id=2)
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    async def noop(*a,**k): return None
+    s._validate_parent_child_type=noop; s._validate_parent_child_scope=noop
+    with pytest.raises(CustomException, match="标题重复"):
+        await s.update(1,MenuUpdateSchema(name="n",type=2,order=1,title="n",route_name="n",route_path="/n",component_path="n"))
