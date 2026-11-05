@@ -217,3 +217,10 @@ async def test_role_update_duplicate_code(monkeypatch: pytest.MonkeyPatch) -> No
     s=_svc(monkeypatch,c)
     with pytest.raises(CustomException, match="编码已存在"):
         await s.update(1, RoleUpdateSchema(name="r", code="r1"))
+
+
+async def test_role_update_duplicate_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    c=C(name=SimpleNamespace(id=2), code=None)
+    s=_svc(monkeypatch,c)
+    with pytest.raises(CustomException, match="名称已存在"):
+        await s.update(1, RoleUpdateSchema(name="r", code="r1"))
