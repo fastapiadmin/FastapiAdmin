@@ -113,3 +113,10 @@ def test_get_job_state_serialization() -> None:
     text = SchedulerUtil._get_job_state(J())
     assert '"a": 1' in text and '"c"' in text
     assert SchedulerUtil._get_job_state(None) is None
+
+
+def test_trigger_date_manual(monkeypatch: pytest.MonkeyPatch) -> None:
+    from datetime import datetime
+    from apscheduler.triggers.date import DateTrigger
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: SimpleNamespace(trigger=DateTrigger(run_date=datetime.now()))))
+    assert SchedulerUtil._get_trigger_type("x") == "manual"
