@@ -137,3 +137,18 @@ async def test_role_set_depts_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
     with pytest.raises(CustomException, match="部门不存在"):
         await s._set_role_depts([1],[2])
+
+
+async def test_role_set_menus_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): self.set_called=False
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_role_menus_crud(self,**kw): self.set_called=True
+    r=R()
+    class M:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2)]
+    monkeypatch.setattr(mod,"RoleCRUD",lambda *a: r); monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    await s._set_role_menus([1],[2])
