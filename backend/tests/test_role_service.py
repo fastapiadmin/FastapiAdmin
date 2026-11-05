@@ -152,3 +152,17 @@ async def test_role_set_menus_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod,"RoleCRUD",lambda *a: r); monkeypatch.setattr(mod,"MenuCRUD",M)
     s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
     await s._set_role_menus([1],[2])
+
+
+async def test_role_set_depts_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_role_depts_crud(self,**kw): self.called=True
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2)]
+    monkeypatch.setattr(mod,"RoleCRUD",R); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    await s._set_role_depts([1],[2])
