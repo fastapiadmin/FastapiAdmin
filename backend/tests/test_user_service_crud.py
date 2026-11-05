@@ -232,3 +232,11 @@ async def test_set_user_roles_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"RoleCRUD",R)
     s=UserService.__new__(UserService); s.auth=object(); s.db=object()
     await s._set_user_roles([1],[2])
+
+
+async def test_load_users_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1),SimpleNamespace(id=2)]
+    s=_svc(monkeypatch,U)
+    assert len(await s._load_users([1,2],[])) == 2
