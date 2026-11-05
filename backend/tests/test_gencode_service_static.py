@@ -133,3 +133,22 @@ async def test_import_gen_table(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod, "GenTableCRUD", C2)
     with pytest.raises(CustomException, match="已存在"):
         await s.import_gen_table([GenTableOutSchema(table_name="demo")])
+
+
+async def test_get_gen_table_by_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    class C:
+        def __init__(self, *a): pass
+        async def get_gen_table_by_id(self, id, preload=None): return None
+    monkeypatch.setattr(mod, "GenTableCRUD", C)
+    s = GenTableService.__new__(GenTableService); s.auth = object(); s.db = object()
+    with pytest.raises(CustomException, match="不存在"):
+        await s.get_gen_table_by_id(1)
+    class C2(C):
+        async def get_gen_table_by_id(self, id, preload=None): return GenTableOutSchema(id=1, table_name="demo")
+    monkeypatch.setattr(mod, "GenTableCRUD", C2)
+    async def pk(t): return None
+    async def sub(t): return None
+    s.set_pk_column = pk; s.hydrate_sub_table = sub
+    assert (await s.get_gen_table_by_id(1)).table_name == "demo"
