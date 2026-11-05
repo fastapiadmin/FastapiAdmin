@@ -85,3 +85,17 @@ async def test_batch_gen_code(monkeypatch: pytest.MonkeyPatch) -> None:
     assert failed == ["bad"]
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         assert "out/a.py" in z.namelist()
+
+
+async def test_batch_gen_code_all_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.exceptions import CustomException
+    s = GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def info(name): raise RuntimeError("bad")
+    s._GenTableService__get_gen_render_info = info
+    import app.modules.generator.gencode.service as mod
+    class J:
+        @staticmethod
+        def get_env(): return object()
+    monkeypatch.setattr(mod, "Jinja2TemplateUtil", J)
+    with pytest.raises(CustomException, match="未能生成"):
+        await s.batch_gen_code(["bad"])
