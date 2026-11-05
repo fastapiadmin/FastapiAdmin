@@ -102,3 +102,10 @@ async def test_role_queries(monkeypatch: pytest.MonkeyPatch) -> None:
     assert (await s.get_options())[0]["value"] == 1
     assert len(await s.get_list()) == 1
     assert await s.page(1, 10) == "page"
+
+
+async def test_role_create_duplicate_code(monkeypatch: pytest.MonkeyPatch) -> None:
+    c = C(name=None, code=object())
+    s = _svc(monkeypatch, c)
+    with pytest.raises(CustomException, match="编码已存在"):
+        await s.create(RoleCreateSchema(name="r", code="r1"))
