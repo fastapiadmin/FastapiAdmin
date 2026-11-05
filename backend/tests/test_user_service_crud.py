@@ -101,3 +101,14 @@ async def test_delete_validation(monkeypatch: pytest.MonkeyPatch) -> None:
     s3.auth.user.id = 99
     with pytest.raises(CustomException, match="当前登陆"):
         await s3.delete([99])
+
+
+async def test_load_users_validation(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self, *a): pass
+        async def get_list(self, **kw): return [SimpleNamespace(id=1)]
+    s = _svc(monkeypatch, U)
+    with pytest.raises(CustomException, match="不能为空"):
+        await s._load_users([], [])
+    with pytest.raises(CustomException, match="不存在"):
+        await s._load_users([1, 2], [])
