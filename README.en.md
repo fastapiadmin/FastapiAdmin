@@ -117,7 +117,7 @@ cd ../frontend/web && pnpm install && pnpm run dev
 
 ```bash
 cp docker/.env.example docker/.env    # Fill in MySQL / Redis passwords
-./deploy.sh                           # Build images and start the full stack (Nginx + SSL included)
+./deploy.sh local                     # Build images and start the full stack locally (Nginx + SSL included)
 ```
 
 > For ports, SSL certificates and frontend builds, see the [Docker deployment guide](docker/README.md).
@@ -198,17 +198,17 @@ ENABLED_MODULES = ["generator", "task", "storage"]
 | mysql | MySQL 8.0, volume `mysql_data` | 127.0.0.1:3306 only |
 | redis | Redis 7 (sessions/cache/rate limit) | 127.0.0.1:6379 only |
 
-Server layout: `/home/FastapiAdmin/docker` (compose, nginx, env), backups in `/home/FastapiAdmin/backups`. The server never receives source or builds; artifacts/images are built locally and delivered via `deploy-artifacts.sh`.
+Server layout: `/home/FastapiAdmin/docker` (compose, nginx, env), backups in `/home/FastapiAdmin/backups`. The server never receives source or builds; artifacts/images are built locally and delivered via `deploy.sh`.
 
 ### Deploy
 
 ```bash
-./deploy-artifacts.sh web        # build + deploy Web admin
-./deploy-artifacts.sh app        # build + deploy mobile H5
-./deploy-artifacts.sh backend    # build MySQL image locally -> transfer -> recreate backend
-./deploy-artifacts.sh all
-./deploy-artifacts.sh verify     # verify public endpoints
-./deploy-artifacts.sh rollback web|app|backend
+./deploy.sh web        # build + deploy Web admin
+./deploy.sh app        # build + deploy mobile H5
+./deploy.sh backend    # build MySQL image locally -> transfer -> recreate backend
+./deploy.sh all
+./deploy.sh verify     # verify public endpoints
+./deploy.sh rollback web|app|backend
 ```
 
 Every deploy backs up to `backups/<tag>-<timestamp>` first; backup failure aborts the deploy. Only changed containers are recreated.

@@ -130,7 +130,7 @@ cd ../frontend/web && pnpm install && pnpm run dev
 
 ```bash
 cp docker/.env.example docker/.env    # 填写 MySQL / Redis 密码
-./deploy.sh                           # 自动构建镜像并启动全栈（含 Nginx + SSL）
+./deploy.sh local                     # 本机构建并启动全栈（含 Nginx + SSL）
 ```
 
 > 端口、SSL 证书、前端构建等细节见 [Docker 部署文档](docker/README.md)。
@@ -232,7 +232,7 @@ docker/                     # 唯一部署目录，不含业务源码
 backups/                    # 部署前自动备份（每类保留 5 份）
 ```
 
-仓库侧：`deploy-artifacts.sh`（本机执行的成品部署脚本）、`backend/requirements/`（依赖分组）、`.github/workflows/`（CI）。
+仓库侧：`deploy.sh`（本机执行的成品部署脚本）、`backend/requirements/`（依赖分组）、`.github/workflows/`（CI）。
 
 ---
 
@@ -241,14 +241,14 @@ backups/                    # 部署前自动备份（每类保留 5 份）
 在本机仓库根目录执行（需要本机可免密 SSH 到服务器、且本机 Docker 可用——`colima start`）：
 
 ```bash
-./deploy-artifacts.sh web        # 构建并部署 Web 管理后台
-./deploy-artifacts.sh app        # 构建并部署移动端 H5
-./deploy-artifacts.sh backend    # 本地构建 MySQL 版镜像 → 传输 → 只重建 backend
-./deploy-artifacts.sh all        # 三样全发
-./deploy-artifacts.sh verify     # 公网四端验证
-./deploy-artifacts.sh backups    # 列出服务器备份
-./deploy-artifacts.sh prune      # 轮转清理旧备份与旧镜像
-./deploy-artifacts.sh rollback web|app|backend
+./deploy.sh web        # 构建并部署 Web 管理后台
+./deploy.sh app        # 构建并部署移动端 H5
+./deploy.sh backend    # 本地构建 MySQL 版镜像 → 传输 → 只重建 backend
+./deploy.sh all        # 三样全发
+./deploy.sh verify     # 公网四端验证
+./deploy.sh backups    # 列出服务器备份
+./deploy.sh prune      # 轮转清理旧备份与旧镜像
+./deploy.sh rollback web|app|backend
 ```
 
 要点：
@@ -256,7 +256,7 @@ backups/                    # 部署前自动备份（每类保留 5 份）
 - **服务器不接收源码、不执行构建**：后端以 `docker save → ssh → docker load` 交付镜像，前端以 tar 管道交付成品。
 - 每次部署前自动备份到 `backups/<标签>-<时间戳>`，备份失败即中止，不会带着假备份上线。
 - 只重建变化的容器；MySQL/Redis/Nginx 不受影响。
-- PostgreSQL 版本镜像：`./deploy-artifacts.sh backend-pg`（**只构建与自检，不切换线上**）。切换需人工把 `BACKEND_IMAGE_TAG` 指到该镜像并确保 compose 的数据库配置已改。
+- PostgreSQL 版本镜像：`./deploy.sh backend-pg`（**只构建与自检，不切换线上**）。切换需人工把 `BACKEND_IMAGE_TAG` 指到该镜像并确保 compose 的数据库配置已改。
 
 ---
 
@@ -325,7 +325,7 @@ ss -tlnp | grep docker-proxy      # 确认对外只有 80/443
 ## 7. 凭据轮换（生产）
 
 轮换对象：MySQL 应用用户 / MySQL root / Redis。三者都通过 `docker/.env` 注入，且
-**镜像内不得包含任何口令**（`deploy-artifacts.sh` 在构建上下文里剔除
+**镜像内不得包含任何口令**（`deploy.sh` 在构建上下文里剔除
 `DATABASE_PASSWORD / REDIS_PASSWORD / SECRET_KEY / DATA_ENCRYPTION_KEY` 等键，
 仅保留主机名、端口等非敏感项——审计 B3 的根治）。
 
