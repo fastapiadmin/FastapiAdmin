@@ -66,7 +66,7 @@ D 包含四个独立目标：
 - RedisCURD 补充基础读写/过期/扫描/清理/哈希，redis_crud 71%；
 - 微信小程序补充凭证/错误映射/登录名/access_token 缓存，wx_mini 45%；
 - 调度器补充任务包装/代码块开关/状态序列化，ap_scheduler 55%；
-- 角色补充权限设置/角色加载/菜单部门关联，role service 83%；
+- 角色补充权限设置/角色加载/菜单部门关联，role service 91%；
 - 菜单补充 CRUD/树/批量启停，menu service 77%；
 - 字典类型补充创建/更新/级联/删除保护，dict service 39%；
 - 字典数据补充创建/更新/删除，dict service 覆盖继续提升；
