@@ -187,3 +187,18 @@ async def test_menu_create_duplicate(monkeypatch: pytest.MonkeyPatch) -> None:
     s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
     with pytest.raises(CustomException, match="已存在"):
         await s.create(MenuCreateSchema(name="n", type=1, order=1, title="n", route_name="n", route_path="/n", component_path="n", redirect="/n"))
+
+
+async def test_menu_update_missing_parent(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuUpdateSchema
+    class M:
+        def __init__(self, *a): pass
+        async def get_or_404(self, **kw): return SimpleNamespace(id=1)
+        async def get(self, **kw): return None
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
+    async def noop(*a, **k): return None
+    s._validate_parent_child_type = noop; s._validate_parent_child_scope = noop
+    with pytest.raises(CustomException, match="父级菜单不存在"):
+        await s.update(1, MenuUpdateSchema(name="n", type=2, order=1, parent_id=99, route_name="n", route_path="/n", component_path="n"))
