@@ -218,3 +218,17 @@ async def test_set_user_positions_success(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"PositionCRUD",P)
     s=UserService.__new__(UserService); s.auth=object(); s.db=object()
     await s._set_user_positions([1],[2])
+
+
+async def test_set_user_roles_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_user_roles(self,**kw): self.called=True
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2,status=0)]
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    await s._set_user_roles([1],[2])
