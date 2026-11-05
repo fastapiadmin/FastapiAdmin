@@ -159,3 +159,14 @@ async def test_load_menus_super_and_empty(monkeypatch: pytest.MonkeyPatch) -> No
     assert await s._load_menus() == []
     s.auth = SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=False), menu_ids=[])
     assert await s._load_menus() == []
+
+
+async def test_current_info_missing_user(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self, *a): pass
+        async def get(self, **kw): return None
+    s = _svc(monkeypatch, U)
+    async def menus(): return []
+    s._load_menus = menus
+    with pytest.raises(CustomException, match="不存在"):
+        await s.current_info()
