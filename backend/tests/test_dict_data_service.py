@@ -72,3 +72,12 @@ async def test_dict_data_delete(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(CustomException, match="不存在"):
         await s.delete(object(), [2])
     await s.delete(object(), [1])
+
+
+async def test_dict_data_set_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self, *a): pass
+        async def set(self, **kw): self.called = kw
+    s = _svc(monkeypatch, C)
+    from app.core.base_schema import BatchSetAvailable
+    await s.set_available(BatchSetAvailable(ids=[1], status=1))
