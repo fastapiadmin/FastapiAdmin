@@ -210,3 +210,10 @@ async def test_role_set_permission_empty_roles(monkeypatch: pytest.MonkeyPatch) 
     s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
     with pytest.raises(CustomException, match="不能为空"):
         await s.set_permission(RolePermissionSettingSchema(role_ids=[], menu_ids=[], data_scope=1))
+
+
+async def test_role_update_duplicate_code(monkeypatch: pytest.MonkeyPatch) -> None:
+    c=C(name=None, code=SimpleNamespace(id=2))
+    s=_svc(monkeypatch,c)
+    with pytest.raises(CustomException, match="编码已存在"):
+        await s.update(1, RoleUpdateSchema(name="r", code="r1"))
