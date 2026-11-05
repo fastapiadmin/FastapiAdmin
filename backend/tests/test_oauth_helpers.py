@@ -60,3 +60,21 @@ def test_build_authorize_urls(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "graph.qq.com" in oauth.build_authorize_url(provider="qq", callback_url=cb, state="s")
     with pytest.raises(CustomException):
         oauth.build_authorize_url(provider="unknown", callback_url=cb, state="s")
+
+
+async def test_http_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    class R:
+        def __init__(self, bad=False): self.bad=bad; self.text="x"
+        def raise_for_status(self): pass
+        def json(self):
+            if self.bad: raise ValueError()
+            return {"ok": 1}
+    class C:
+        def __init__(self, r): self.r=r
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        async def request(self, *a, **k): return self.r
+    class H:
+        AsyncClient = lambda *a, **k: C(R())
+    monkeypatch.setattr(oauth, "httpx", H)
+    assert await oauth._http_json("GET", "http://x") == {"ok": 1}
