@@ -58,7 +58,8 @@ D 包含四个独立目标：
 - 调度器补充 job id/触发类型/状态/事件分发，ap_scheduler 46%；
 - AI 补充动作解析/导航建议/工具开关/模型配置，ai chat service 33%；
 - 认证补充 token 创建/刷新轮换/重放撤销/登出，auth service 48%；
-- 用户补充改密/重置/忘记密码/注册，user service 30%。
+- 用户补充改密/重置/忘记密码/注册，user service 30%；
+- 字典/菜单补充缓存回退、缓存刷新、父子类型/可见范围校验，dict service 28%、menu service 36%。
 
 ## 外部协议范围（2026-11-05 确认）
 
