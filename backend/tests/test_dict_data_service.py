@@ -93,3 +93,13 @@ async def test_dict_data_update_value_duplicate(monkeypatch: pytest.MonkeyPatch)
     data = DictDataUpdateSchema(dict_sort=1, dict_label="A", dict_value="b", dict_type="t", dict_type_id=1)
     with pytest.raises(CustomException, match="键值"):
         await s.update(object(), 1, data)
+
+
+async def test_dict_data_create_duplicate_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return _obj() if "dict_value" in kw else None
+    s=_svc(monkeypatch,C)
+    data=DictDataCreateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)
+    with pytest.raises(CustomException, match="键值"):
+        await s.create(object(),data)
