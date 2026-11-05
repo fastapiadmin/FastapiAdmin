@@ -87,3 +87,12 @@ async def test_delete_dict_type(monkeypatch: pytest.MonkeyPatch) -> None:
             return [SimpleNamespace(id=1, dict_type="t")]
     s3 = _svc(monkeypatch, C3, DEmpty)
     await s3.delete(object(), [1])
+
+
+async def test_dict_type_set_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self, *a): pass
+        async def set(self, **kw): self.called = kw
+    s = _svc(monkeypatch, C)
+    from app.core.base_schema import BatchSetAvailable
+    await s.set_available(BatchSetAvailable(ids=[1], status=1))
