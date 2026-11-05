@@ -152,3 +152,22 @@ async def test_get_gen_table_by_id(monkeypatch: pytest.MonkeyPatch) -> None:
     async def sub(t): return None
     s.set_pk_column = pk; s.hydrate_sub_table = sub
     assert (await s.get_gen_table_by_id(1)).table_name == "demo"
+
+
+async def test_write_plugin_migration(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd
+    import alembic.config as cfg
+    import alembic.script as script
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    calls=[]
+    class C: pass
+    class S:
+        def __init__(self, *a): pass
+        def get_heads(self): return ["h"]
+    monkeypatch.setattr(cfg, "Config", C)
+    monkeypatch.setattr(script, "ScriptDirectory", type("SD", (), {"from_config": staticmethod(lambda c: S())}))
+    monkeypatch.setattr(cmd, "revision", lambda *a, **k: calls.append(k))
+    s = GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+    assert calls
