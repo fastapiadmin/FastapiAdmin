@@ -62,3 +62,39 @@ def test_init_column_inference_and_pk_overrides() -> None:
     assert pk.is_insert is False and pk.is_edit is False and pk.is_list is False and pk.is_query is False
     with pytest.raises(ValueError):
         GenUtils.init_column_field(GenTableColumnSchema(column_name="x"), GenTableOutSchema(table_name="x"))
+
+
+def test_init_table_fallbacks_and_prefixes() -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    a = GenTableSchema(table_name="tb_demo", table_comment="")
+    GenUtils.init_table(a)
+    assert a.module_name == "demo" and a.function_name == "tb_demo"
+    b = GenTableSchema(table_name="demo", table_comment="测试表", module_name="x", package_name="module_x")
+    GenUtils.init_table(b)
+    assert b.module_name == "x" and b.package_name == "module_x"
+
+
+def test_init_column_html_types_and_query() -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableOutSchema
+    table = GenTableOutSchema(table_name="demo", id=1)
+    from app.common.constant import GenConstant
+    cases = [
+        ("status", "tinyint(1)", "radio", GenConstant.QUERY_EQ),
+        ("user_type", "varchar(10)", "select", GenConstant.QUERY_LIKE),
+        ("avatar_image", "varchar(64)", "imageUpload", GenConstant.QUERY_LIKE),
+        ("doc_file", "varchar(64)", "fileUpload", GenConstant.QUERY_LIKE),
+        ("content", "text", "editor", GenConstant.QUERY_LIKE),
+        ("created_time", "datetime", "datetime", "EQ"),
+        ("age", "int", "input", GenConstant.QUERY_EQ),
+        ("description", "varchar(1000)", "textarea", None),
+        ("name", "varchar(10)", "input", GenConstant.QUERY_LIKE),
+    ]
+    for name, typ, html, query in cases:
+        c = GenTableColumnSchema(column_name=name, column_type=typ)
+        GenUtils.init_column_field(c, table)
+        assert c.html_type == html, (name, c.html_type)
+        assert c.query_type == query, (name, c.query_type)
+    # 显式关闭查询时不推断 query_type
+    c = GenTableColumnSchema(column_name="code", column_type="varchar(10)", is_query=False)
+    GenUtils.init_column_field(c, table)
+    assert c.query_type is None
