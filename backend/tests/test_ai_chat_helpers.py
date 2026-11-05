@@ -72,3 +72,20 @@ async def test_chat_session_service_missing_branches(monkeypatch: pytest.MonkeyP
         await svc.delete([])
     with pytest.raises(CustomException, match="会话不存在"):
         await svc.delete(["s"])
+
+
+async def test_chat_non_stream(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    async def ensure(crud, sid): return "s1"
+    monkeypatch.setattr(mod, "_ensure_session", ensure)
+    class Crud:
+        def __init__(self, *a): self.db = object()
+    monkeypatch.setattr(mod, "ChatSessionCRUD", Crud)
+    class Agent:
+        async def arun(self, input): return SimpleNamespace(content="请跳转到用户管理")
+    class Factory:
+        def create_agent(self, **kw): return Agent()
+    monkeypatch.setattr(mod, "AgnoFactory", Factory)
+    svc = ChatService.__new__(ChatService); svc.auth = SimpleNamespace(user=SimpleNamespace(username="u")); svc.redis = None
+    out = await svc.chat_non_stream("hi", None)
+    assert out["session_id"] == "s1" and out["action"]["path"] == "/system/user"
