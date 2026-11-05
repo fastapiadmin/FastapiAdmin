@@ -75,7 +75,7 @@ node scripts/design-tokens/generate.mjs
 
 ## UI 规范（强制）
 
-所有 Web UI 新增与修改必须遵守 [UI-GUIDELINES.md](./UI-GUIDELINES.md)：布局、间距、断点、表格、移动卡片、弹窗、颜色语义、i18n、提交检查清单。
+所有 Web UI 新增与修改必须遵守 [UI-SPEC.md](../docs/UI-SPEC.md)：布局、间距、断点、表格、移动卡片、弹窗、颜色语义、i18n、提交检查清单。
 
 ---
 

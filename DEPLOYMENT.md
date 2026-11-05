@@ -158,7 +158,7 @@ docker compose up -d --force-recreate backend
 
 ## 8. 已知遗留问题
 
-当前覆盖基线与剩余缺口见 [`docs/COVERAGE-PLAN.md`](docs/COVERAGE-PLAN.md)，接口/页面覆盖矩阵见 [`docs/TEST-COVERAGE.md`](docs/TEST-COVERAGE.md)。仍需关注：
+当前覆盖基线与剩余缺口见 [`docs/COVERAGE-PLAN.md`](docs/COVERAGE-PLAN.md)。仍需关注：
 
 1. 会话失效机制：停用/删除/改密后旧会话仍有效（最长 7 天），需应用侧继续改造；
 2. 数据权限注入完整性：删除/清空/改状态等路径需继续核验；
