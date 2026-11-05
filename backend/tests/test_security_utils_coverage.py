@@ -18,6 +18,7 @@ def test_crypto_roundtrip_and_invalid() -> None:
     assert CryptoUtil.decrypt(token) == "secret"
     assert CryptoUtil.is_token(token) is True
     assert CryptoUtil.is_token("plain") is False
+    assert CryptoUtil.is_token("gAAAAA" + "!" * 60) is False
     assert CryptoUtil.decrypt_or_keep("plain") == "plain"
     assert CryptoUtil.decrypt_or_keep(token) == "secret"
     with pytest.raises(RuntimeError):
