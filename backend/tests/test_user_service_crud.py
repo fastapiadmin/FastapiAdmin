@@ -240,3 +240,11 @@ async def test_load_users_success(monkeypatch: pytest.MonkeyPatch) -> None:
         async def get_list(self,**kw): return [SimpleNamespace(id=1),SimpleNamespace(id=2)]
     s=_svc(monkeypatch,U)
     assert len(await s._load_users([1,2],[])) == 2
+
+
+async def test_load_users_duplicate_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    s=_svc(monkeypatch,U)
+    assert len(await s._load_users([1,1],[])) == 1
