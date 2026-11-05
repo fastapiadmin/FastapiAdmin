@@ -223,3 +223,24 @@ async def test_assert_parent_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
         async def get(self,**kw): return SimpleNamespace(type=1)
     monkeypatch.setattr(mod,"MenuCRUD",M3)
     await s._assert_parent_menu_is_catalog(1)
+
+
+async def test_effective_package_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    import app.modules.generator.gencode.service as mod
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    assert await s._effective_package_name(None,"demo") == "module_demo"
+    assert await s._effective_package_name(None,"module_demo") == "module_demo"
+    with pytest.raises(CustomException, match="包名不能为空"):
+        await s._effective_package_name(None,"")
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(route_path="/module_sys/demo")
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    assert await s._effective_package_name(1,"x") == "module_sys"
+    class M2(M):
+        async def get(self,**kw): return SimpleNamespace(route_path="")
+    monkeypatch.setattr(mod,"MenuCRUD",M2)
+    assert await s._effective_package_name(1,"demo") == "module_demo"
+    with pytest.raises(CustomException, match="无法从上级"):
+        await s._effective_package_name(1,"")
