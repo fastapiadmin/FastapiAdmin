@@ -8,7 +8,7 @@
 - 🐛 **反馈 Bug**: [GitHub Issues](https://github.com/fastapiadmin/FastapiAdmin/issues) | [Gitee Issues](https://gitee.com/fastapiadmin/FastapiAdmin/issues)
 - 💡 **功能建议**: 先提 Issue 讨论，再动手写代码
 - 📝 **开发规范**: [代码风格指南](https://service.fastapiadmin.com/guide/guidelines)
-- 🎨 **UI 规范（强制）**: [docs/UI-SPEC.md](./docs/UI-SPEC.md)
+- 🎨 **UI 规范（强制）**: [docs/DESIGN-SPEC.md](./docs/DESIGN-SPEC.md)
 - 💬 **社区交流**: 扫码加入微信群（二维码见 [README](./README.md)）
 
 ## 开始之前

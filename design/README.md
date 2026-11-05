@@ -50,7 +50,7 @@ node scripts/design-tokens/generate.mjs
 2. 页面与组件不写十六进制颜色，不写魔法圆角/间距。
 3. Web 的 `--fa-*` 继续作为全站变量名；官网映射到 `--vp-brand-gradient`；小程序使用 `$fa-*`。
 4. 生成文件顶部有「请勿手改」注释；提交前跑一次生成，保证三端一致。
-5. Brand 专属资产（Logo、单色版）仍以 `docs/brand/` 与 `docs/BRAND-SPEC.md` 为准。
+5. Brand 专属资产（Logo、单色版）仍以 `docs/brand/` 与 `docs/DESIGN-SPEC.md` 为准。
 
 ## 暗色模式现状
 
@@ -68,14 +68,14 @@ node scripts/design-tokens/generate.mjs
 
 ## 与规范的关系
 
-- 界面规范：[`docs/UI-SPEC.md`](../docs/UI-SPEC.md)
-- 品牌规范：[`docs/BRAND-SPEC.md`](../docs/BRAND-SPEC.md)
+- 界面规范：[`docs/DESIGN-SPEC.md`](../docs/DESIGN-SPEC.md)
+- 品牌规范：[`docs/DESIGN-SPEC.md`](../docs/DESIGN-SPEC.md)
 
 ---
 
 ## UI 规范（强制）
 
-所有 Web UI 新增与修改必须遵守 [UI-SPEC.md](../docs/UI-SPEC.md)：布局、间距、断点、表格、移动卡片、弹窗、颜色语义、i18n、提交检查清单。
+所有 Web UI 新增与修改必须遵守 [DESIGN-SPEC.md](../docs/DESIGN-SPEC.md)：布局、间距、断点、表格、移动卡片、弹窗、颜色语义、i18n、提交检查清单。
 
 ---
 
