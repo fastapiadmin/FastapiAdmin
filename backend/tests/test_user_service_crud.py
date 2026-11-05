@@ -248,3 +248,17 @@ async def test_load_users_duplicate_ids(monkeypatch: pytest.MonkeyPatch) -> None
         async def get_list(self,**kw): return [SimpleNamespace(id=1)]
     s=_svc(monkeypatch,U)
     assert len(await s._load_users([1,1],[])) == 1
+
+
+async def test_update_dept_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+    class D:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(status=1)
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="部门已被禁用"):
+        await s.update(1, UserUpdateSchema(dept_id=2))
