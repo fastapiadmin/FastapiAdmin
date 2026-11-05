@@ -201,3 +201,25 @@ async def test_package_directory_menu(monkeypatch: pytest.MonkeyPatch) -> None:
     class M2(M):
         async def get(self,**kw): return SimpleNamespace(id=8)
     assert await s._get_or_create_package_directory_menu(M2(),None,"module_demo","demo","demo") == 8
+
+
+async def test_assert_parent_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    import app.modules.generator.gencode.service as mod
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._assert_parent_menu_is_catalog(None)
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    with pytest.raises(CustomException, match="不存在"):
+        await s._assert_parent_menu_is_catalog(1)
+    class M2(M):
+        async def get(self,**kw): return SimpleNamespace(type=2)
+    monkeypatch.setattr(mod,"MenuCRUD",M2)
+    with pytest.raises(CustomException, match="目录"):
+        await s._assert_parent_menu_is_catalog(1)
+    class M3(M2):
+        async def get(self,**kw): return SimpleNamespace(type=1)
+    monkeypatch.setattr(mod,"MenuCRUD",M3)
+    await s._assert_parent_menu_is_catalog(1)
