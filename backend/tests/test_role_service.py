@@ -59,3 +59,32 @@ async def test_role_set_available_and_export(monkeypatch: pytest.MonkeyPatch) ->
         await s.set_available(__import__("app.core.base_schema", fromlist=["BatchSetAvailable"]).BatchSetAvailable(ids=[1, 2], status=0))
     data = await RoleService.export_list([{"id": 1, "name": "r", "status": 0, "data_scope": 3}])
     assert len(data) > 100
+
+
+async def test_role_load_set_permission(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    roles = [SimpleNamespace(id=1, menus=[], depts=[])]
+    class R:
+        def __init__(self, *a): pass
+        async def get_list(self, **kw): return roles
+        async def set(self, **kw): self.set_data = kw
+        async def set_role_menus_crud(self, **kw): self.menus = kw
+        async def set_role_depts_crud(self, **kw): self.depts = kw
+    class M:
+        def __init__(self, *a): pass
+        async def get_list(self, **kw): return [SimpleNamespace(id=1)]
+    class D:
+        def __init__(self, *a): pass
+        async def get_list(self, **kw): return [SimpleNamespace(id=1)]
+    monkeypatch.setattr(mod, "RoleCRUD", R)
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    monkeypatch.setattr(mod, "DeptCRUD", D)
+    s = RoleService.__new__(RoleService); s.auth = object(); s.db = object()
+    await s.set_permission(type("P", (), {"role_ids": [1], "menu_ids": [1], "data_scope": 2})())
+    with pytest.raises(CustomException, match="不能为空"):
+        await s._load_roles([], [])
+    class R2(R):
+        async def get_list(self, **kw): return []
+    monkeypatch.setattr(mod, "RoleCRUD", R2)
+    with pytest.raises(CustomException, match="不存在"):
+        await s._load_roles([1], [])
