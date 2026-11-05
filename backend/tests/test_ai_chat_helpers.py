@@ -53,3 +53,22 @@ async def test_model_config_service(monkeypatch: pytest.MonkeyPatch) -> None:
         await svc.delete("missing")
     with pytest.raises(CustomException):
         await svc.set_active("missing")
+
+
+async def test_chat_session_service_missing_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    class CRUD:
+        def __init__(self, *a): pass
+        async def get_by_id(self, **kw): return None
+        async def rename(self, **kw): return None
+        async def delete(self, **kw): return None
+    import app.modules.ai.chat.service as mod
+    monkeypatch.setattr(mod, "ChatSessionCRUD", CRUD)
+    svc = ChatService.__new__(ChatService); svc.auth = object(); svc.redis = None
+    with pytest.raises(CustomException, match="会话不存在"):
+        await svc.get_session("s")
+    with pytest.raises(CustomException, match="会话不存在"):
+        await svc.update("s", __import__("app.modules.ai.chat.schema", fromlist=["ChatSessionUpdateSchema"]).ChatSessionUpdateSchema(title="n"))
+    with pytest.raises(CustomException, match="不能为空"):
+        await svc.delete([])
+    with pytest.raises(CustomException, match="会话不存在"):
+        await svc.delete(["s"])
