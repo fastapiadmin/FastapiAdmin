@@ -202,3 +202,28 @@ async def test_menu_update_missing_parent(monkeypatch: pytest.MonkeyPatch) -> No
     s._validate_parent_child_type = noop; s._validate_parent_child_scope = noop
     with pytest.raises(CustomException, match="父级菜单不存在"):
         await s.update(1, MenuUpdateSchema(name="n", type=2, order=1, parent_id=99, route_name="n", route_path="/n", component_path="n"))
+
+
+async def test_dict_init_cache_with_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.dict.service as mod
+    from types import SimpleNamespace
+    class S:
+        async def execute(self, *a, **k): return None
+    class Ctx:
+        async def __aenter__(self): return S()
+        async def __aexit__(self, *a): return False
+        def begin(self): return self
+    class T:
+        def __init__(self, *a): pass
+        async def get_list(self): return [SimpleNamespace(dict_type="t")]
+    class D(T):
+        async def get_list(self, **kw): return [SimpleNamespace(dict_sort=1, dict_label="A", dict_value="a", dict_type="t", dict_type_id=1)]
+    written = []
+    async def set_(key, value, expire=None): written.append(key)
+    from app.core.redis_crud import RedisCURD
+    monkeypatch.setattr(RedisCURD, "set", staticmethod(set_))
+    monkeypatch.setattr(mod, "async_db_session", lambda: Ctx())
+    monkeypatch.setattr(mod, "DictTypeCRUD", T)
+    monkeypatch.setattr(mod, "DictDataCRUD", D)
+    await mod.DictDataService.init_cache(object())
+    assert written and written[0].endswith(":1:t")
