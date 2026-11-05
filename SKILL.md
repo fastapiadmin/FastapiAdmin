@@ -36,7 +36,7 @@ description: "FastapiAdmin full-stack dev guide: repo map, run/verify commands, 
 | `frontend/app/` | 小程序/移动端 | uni-app（有独立约定，见 `frontend/app/.agents/skills/wot-ui-*`） |
 | `frontend/docs/` | 项目文档站（中英双语 `src/guide` 与 `src/en/guide`） | VitePress |
 | `docker/` | 部署（backend/mysql/nginx/redis） | docker-compose |
-| 根目录 | `README.md`、`CONTRIBUTING.md`、`DEPLOYMENT.md` | 项目总览、贡献规范与部署约束，做大功能前先读 |
+| 根目录 | `README.md`、`CONTRIBUTING.md` | 项目总览、贡献规范与部署说明，做大功能前先读 |
 
 ### backend/app 关键位置
 
