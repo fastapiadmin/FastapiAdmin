@@ -63,7 +63,8 @@ D 包含四个独立目标：
 - 角色补充创建/更新/删除/批量状态/导出，role service 65%；
 - AI 会话 CRUD 补充分页/标题搜索/创建/重命名/删除；顺带修复 order_by 解包 bug；
 - OAuth 补充回调域名/前端重定向/凭证校验/四平台授权 URL，oauth service 31%；
-- RedisCURD 补充基础读写/过期/扫描/清理/哈希，redis_crud 71%。
+- RedisCURD 补充基础读写/过期/扫描/清理/哈希，redis_crud 71%；
+- 微信小程序补充凭证/错误映射/登录名/access_token 缓存，wx_mini 45%。
 
 ## 外部协议范围（2026-11-05 确认）
 
