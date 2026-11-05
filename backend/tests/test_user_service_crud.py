@@ -262,3 +262,21 @@ async def test_update_dept_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
     s=UserService.__new__(UserService); s.auth=object(); s.db=object()
     with pytest.raises(CustomException, match="部门已被禁用"):
         await s.update(1, UserUpdateSchema(dept_id=2))
+
+
+async def test_update_dept_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def update(self,**kw): return None
+    class D:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(status=0)
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.update(1, UserUpdateSchema(dept_id=2)) == "ok"
