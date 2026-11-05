@@ -88,3 +88,17 @@ async def test_role_load_set_permission(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(mod, "RoleCRUD", R2)
     with pytest.raises(CustomException, match="不存在"):
         await s._load_roles([1], [])
+
+
+async def test_role_queries(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self, *a): pass
+        async def get_or_404(self, **kw): return SimpleNamespace(id=1, name="r", code="r1", order=1, status=0)
+        async def get_options(self): return [{"label": "r", "value": 1}]
+        async def get_list(self, **kw): return [SimpleNamespace(id=1, name="r", code="r1", order=1, status=0)]
+        async def page(self, **kw): return "page"
+    s = _svc(monkeypatch, C)
+    assert (await s.detail(1)).name == "r"
+    assert (await s.get_options())[0]["value"] == 1
+    assert len(await s.get_list()) == 1
+    assert await s.page(1, 10) == "page"
