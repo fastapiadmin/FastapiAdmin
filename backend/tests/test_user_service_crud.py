@@ -112,3 +112,37 @@ async def test_load_users_validation(monkeypatch: pytest.MonkeyPatch) -> None:
         await s._load_users([], [])
     with pytest.raises(CustomException, match="不存在"):
         await s._load_users([1, 2], [])
+
+
+async def test_current_info_light_and_update(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.user.schema import CurrentUserUpdateSchema
+    class U:
+        def __init__(self, *a): pass
+        async def get(self, **kw): return None
+        async def update(self, **kw): return None
+    s = _svc(monkeypatch, U)
+    async def menus(): return []
+    s._load_menus = menus
+    out = await s.current_info(check_data_scope=False)
+    assert out.menus == []
+
+    class U2(U):
+        async def get(self, **kw): return SimpleNamespace(id=2)
+    s2 = _svc(monkeypatch, U2)
+    with pytest.raises(CustomException, match="已存在"):
+        await s2.update_current_info(CurrentUserUpdateSchema(mobile="13800000000"))
+
+
+async def test_set_available_protection(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import BatchSetAvailable
+    class U:
+        def __init__(self, *a): pass
+        async def get_list(self, **kw): return [SimpleNamespace(id=1, is_superuser=True)]
+        async def set(self, **kw): self.set_data = kw
+    s = _svc(monkeypatch, U)
+    with pytest.raises(CustomException, match="超级管理员"):
+        await s.set_available(BatchSetAvailable(ids=[1], status=0))
+    class U2(U):
+        async def get_list(self, **kw): return [SimpleNamespace(id=1, is_superuser=False)]
+    s2 = _svc(monkeypatch, U2)
+    await s2.set_available(BatchSetAvailable(ids=[1], status=1))
