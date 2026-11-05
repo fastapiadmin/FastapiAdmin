@@ -170,3 +170,20 @@ async def test_current_info_missing_user(monkeypatch: pytest.MonkeyPatch) -> Non
     s._load_menus = menus
     with pytest.raises(CustomException, match="不存在"):
         await s.current_info()
+
+
+async def test_set_user_roles_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2,status=1)]
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    await s._set_user_roles([1],[])
+    with pytest.raises(CustomException, match="角色不存在"):
+        await s._set_user_roles([1],[3])
+    with pytest.raises(CustomException, match="已被禁用"):
+        await s._set_user_roles([1],[2])
