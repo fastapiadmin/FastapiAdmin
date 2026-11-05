@@ -90,3 +90,26 @@ def test_dispatch_event(monkeypatch: pytest.MonkeyPatch) -> None:
     SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id="1", code=mod.EVENT_JOB_ERROR, exception=ValueError("x")))
     SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id="1", code=mod.EVENT_JOB_MISSED))
     assert len(calls) == 2
+
+
+def test_task_wrapper_builtin_disabled_and_exec(monkeypatch: pytest.MonkeyPatch) -> None:
+    def handler(x=1): return x + 1
+    SchedulerUtil.register_builtin_handler("wrap_fn", handler)
+    assert SchedulerUtil._task_wrapper(1, "builtin:wrap_fn", 2) == 3
+    monkeypatch.setattr("app.core.ap_scheduler.settings.SCHEDULER_ALLOW_CODE_EXEC", False)
+    with pytest.raises(RuntimeError):
+        SchedulerUtil._task_wrapper(1, "print(1)")
+    monkeypatch.setattr("app.core.ap_scheduler.settings.SCHEDULER_ALLOW_CODE_EXEC", True)
+    assert SchedulerUtil._task_wrapper(1, "def handler(x=1):\n    return x * 2", 3) == 6
+    with pytest.raises(ValueError):
+        SchedulerUtil._task_wrapper(1, "x=1")
+    assert SchedulerUtil._task_wrapper(1, "") is None
+
+
+def test_get_job_state_serialization() -> None:
+    class J:
+        def __getstate__(self):
+            return {"a": 1, "b": b"bytes", "c": [1, "x"], "d": {"n": None}, "e": object()}
+    text = SchedulerUtil._get_job_state(J())
+    assert '"a": 1' in text and '"c"' in text
+    assert SchedulerUtil._get_job_state(None) is None
