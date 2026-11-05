@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from app.core.exceptions import CustomException
@@ -82,3 +84,28 @@ async def test_preview_code_missing_and_render(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(svc_mod, "Jinja2TemplateUtil", J)
     out = await svc.preview_code(1)
     assert out == {"a.py": "code"}
+
+
+async def test_gen_table_queries(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema, GenTableQueryParam
+    table = GenTableOutSchema(id=1, table_name="demo")
+    class C:
+        def __init__(self, *a): pass
+        async def page(self, **kw): return SimpleNamespace(items=[table], total=1)
+        async def get_db_table_page(self, **kw): return ([{"table_name": "demo"}], 1)
+        async def get_db_table_list_by_names(self, names): return [SimpleNamespace(model_dump=lambda: {"table_name": "demo"})]
+        async def get_gen_db_table_columns_by_name(self, name): return [{"column_name": "id", "column_type": "int"}]
+    monkeypatch.setattr(mod, "GenTableCRUD", C)
+    monkeypatch.setattr(mod, "GenTableColumnCRUD", C)
+    s = GenTableService.__new__(GenTableService); s.auth = object(); s.db = object()
+    async def by_id(i): return table
+    s.get_gen_table_by_id = by_id
+    assert (await s.get_gen_table_detail(1)).table_name == "demo"
+    page = await s.get_gen_table_page(1, 10, GenTableQueryParam())
+    assert page.total == 1 and page.items[0].table_name == "demo"
+    db_page = await s.get_gen_db_table_page(1, 10, GenTableQueryParam())
+    assert db_page["total"] == 1
+    assert (await s.get_gen_db_table_list_by_name(["demo"]))[0].table_name == "demo"
+    cols = await s._get_db_table_columns("demo")
+    assert cols[0].column_name == "id"
