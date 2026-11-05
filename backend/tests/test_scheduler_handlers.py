@@ -43,3 +43,50 @@ def test_job_code_and_unschedulable(monkeypatch: pytest.MonkeyPatch) -> None:
     found = SchedulerUtil.iter_unschedulable_jobs()
     assert len(found) == 2
     assert SchedulerUtil.log_unschedulable_jobs(context="test") == found
+
+
+def test_job_id_helpers_and_trigger_types(monkeypatch: pytest.MonkeyPatch) -> None:
+    from datetime import datetime, timedelta
+    from apscheduler.triggers.cron import CronTrigger
+    from apscheduler.triggers.date import DateTrigger
+    from apscheduler.triggers.interval import IntervalTrigger
+    assert SchedulerUtil._is_temp_job_id("a:manual:1") is True
+    assert SchedulerUtil._is_temp_job_id("a_run_now_1") is True
+    assert SchedulerUtil._is_temp_job_id("a") is False
+    assert SchedulerUtil._normalize_job_id("a:manual:1") == "a"
+    assert SchedulerUtil._normalize_job_id("a_run_now_1") == "a"
+    assert SchedulerUtil._normalize_job_id("a") == "a"
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: None))
+    assert SchedulerUtil._get_trigger_type("x") == "manual"
+    def with_trigger(trigger):
+        return classmethod(lambda cls, job_id: SimpleNamespace(trigger=trigger))
+    monkeypatch.setattr(SchedulerUtil, "get_job", with_trigger(CronTrigger(second="*")))
+    assert SchedulerUtil._get_trigger_type("x") == "cron"
+    monkeypatch.setattr(SchedulerUtil, "get_job", with_trigger(IntervalTrigger(seconds=1)))
+    assert SchedulerUtil._get_trigger_type("x") == "interval"
+    monkeypatch.setattr(SchedulerUtil, "get_job", with_trigger(DateTrigger(run_date=datetime.now() + timedelta(days=1))))
+    assert SchedulerUtil._get_trigger_type("x") == "date"
+
+
+def test_job_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: None))
+    assert SchedulerUtil.get_job_status(1) == 3
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: SimpleNamespace(next_run_time=None)))
+    assert SchedulerUtil.get_job_status(1) == 1
+    monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: SimpleNamespace(next_run_time="x")))
+    import app.core.ap_scheduler as mod
+    monkeypatch.setattr(mod.scheduler, "state", 0)
+    assert SchedulerUtil.get_job_status(1) == 2
+    monkeypatch.setattr(mod.scheduler, "state", 1)
+    assert SchedulerUtil.get_job_status(1) == 0
+
+
+def test_dispatch_event(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.core.ap_scheduler as mod
+    calls = []
+    monkeypatch.setattr(SchedulerUtil, "_finish_job_record", classmethod(lambda cls, **kw: calls.append(kw)))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=None, code=1))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id="1", code=mod.EVENT_JOB_EXECUTED, retval="ok"))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id="1", code=mod.EVENT_JOB_ERROR, exception=ValueError("x")))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id="1", code=mod.EVENT_JOB_MISSED))
+    assert len(calls) == 2
