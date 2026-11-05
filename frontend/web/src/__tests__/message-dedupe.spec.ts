@@ -27,6 +27,14 @@ describe("message dedupe", () => {
     expect(mocks.success).toHaveBeenCalledWith(expect.objectContaining({ message: "a；b", grouping: true }));
   });
 
+  it("error 级别同样合并", () => {
+    installMessageDedupe();
+    ElMessage.error("x");
+    ElMessage.error("y");
+    vi.advanceTimersByTime(80);
+    expect(mocks.error).toHaveBeenCalledWith(expect.objectContaining({ message: "x；y" }));
+  });
+
   it("空文本直接透传原始提示", () => {
     installMessageDedupe();
     ElMessage.success("");
