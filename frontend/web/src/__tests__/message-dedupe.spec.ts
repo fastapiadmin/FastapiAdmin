@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  success: vi.fn(() => ({ close: vi.fn() })),
-  error: vi.fn(() => ({ close: vi.fn() })),
+  success: vi.fn((_options?: unknown) => ({ close: vi.fn() })),
+  error: vi.fn((_options?: unknown) => ({ close: vi.fn() })),
 }));
 vi.mock("element-plus", () => ({
   ElMessage: {
