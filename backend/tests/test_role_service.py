@@ -188,3 +188,13 @@ async def test_role_set_depts_empty_success(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(mod,"RoleCRUD",R)
     s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
     await s._set_role_depts([1],[])
+
+
+async def test_load_roles_duplicate_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    assert len(await s._load_roles([1,1],[])) == 1
