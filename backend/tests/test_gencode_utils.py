@@ -37,3 +37,28 @@ def test_master_sub_validation() -> None:
     # 主表缺子表配置应报错（按实际 schema 字段构造失败时跳过）
     with pytest.raises(Exception):
         GenTableService.normalize_and_validate_master_sub(None)  # type: ignore[arg-type]
+
+
+def test_init_table_defaults() -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    t = GenTableSchema(table_name="gen_demo_user", table_comment="用户测试")
+    GenUtils.init_table(t)
+    assert t.class_name == "GenDemoUser"
+    assert t.module_name == "demo_user"
+    assert t.package_name == "module_demo_user"
+    assert t.business_name == "gen_demo_user"
+    assert t.function_name == "用户"
+
+
+def test_init_column_inference_and_pk_overrides() -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableOutSchema
+    table = GenTableOutSchema(table_name="demo", id=10)
+    c = GenTableColumnSchema(column_name="status", column_type="tinyint(1)")
+    GenUtils.init_column_field(c, table)
+    assert c.table_id == 10 and c.python_field == "status"
+    assert c.html_type == "radio" and c.is_insert is True and c.is_query is True
+    pk = GenTableColumnSchema(column_name="id", column_type="int", is_pk=True)
+    GenUtils.init_column_field(pk, table)
+    assert pk.is_insert is False and pk.is_edit is False and pk.is_list is False and pk.is_query is False
+    with pytest.raises(ValueError):
+        GenUtils.init_column_field(GenTableColumnSchema(column_name="x"), GenTableOutSchema(table_name="x"))
