@@ -109,3 +109,27 @@ async def test_gen_table_queries(monkeypatch: pytest.MonkeyPatch) -> None:
     assert (await s.get_gen_db_table_list_by_name(["demo"]))[0].table_name == "demo"
     cols = await s._get_db_table_columns("demo")
     assert cols[0].column_name == "id"
+
+
+async def test_import_gen_table(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    class C:
+        def __init__(self, *a): pass
+        async def get_gen_table_by_name(self, name): return None
+        async def add_gen_table(self, data): return SimpleNamespace(id=9)
+        async def create_gen_table_column_crud(self, col): return col
+    monkeypatch.setattr(mod, "GenTableCRUD", C)
+    monkeypatch.setattr(mod, "GenTableColumnCRUD", C)
+    s = GenTableService.__new__(GenTableService); s.auth = object(); s.db = object()
+    async def cols(name): return [GenTableColumnOutSchema(column_name="id", column_type="int", column_length="")]
+    s._get_db_table_columns = cols
+    table = GenTableOutSchema(table_name="demo", table_comment="Demo")
+    assert await s.import_gen_table([table]) is True
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.import_gen_table([])
+    class C2(C):
+        async def get_gen_table_by_name(self, name): return object()
+    monkeypatch.setattr(mod, "GenTableCRUD", C2)
+    with pytest.raises(CustomException, match="已存在"):
+        await s.import_gen_table([GenTableOutSchema(table_name="demo")])
