@@ -78,3 +78,20 @@ async def test_http_json(monkeypatch: pytest.MonkeyPatch) -> None:
         AsyncClient = lambda *a, **k: C(R())
     monkeypatch.setattr(oauth, "httpx", H)
     assert await oauth._http_json("GET", "http://x") == {"ok": 1}
+
+
+async def test_http_json_non_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    class R:
+        text='bad'
+        def raise_for_status(self): pass
+        def json(self): raise json.JSONDecodeError('x','x',0)
+    class C:
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+        async def request(self,*a,**k): return R()
+    class H:
+        AsyncClient=lambda *a,**k: C()
+    monkeypatch.setattr(oauth,'httpx',H)
+    with pytest.raises(json.JSONDecodeError):
+        await oauth._http_json('GET','http://x')
