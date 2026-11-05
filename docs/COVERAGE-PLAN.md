@@ -62,7 +62,8 @@ D 包含四个独立目标：
 - 字典/菜单补充缓存回退、缓存刷新、父子类型/可见范围校验，dict service 28%、menu service 36%；
 - 角色补充创建/更新/删除/批量状态/导出，role service 65%；
 - AI 会话 CRUD 补充分页/标题搜索/创建/重命名/删除；顺带修复 order_by 解包 bug；
-- OAuth 补充回调域名/前端重定向/凭证校验/四平台授权 URL，oauth service 31%。
+- OAuth 补充回调域名/前端重定向/凭证校验/四平台授权 URL，oauth service 31%；
+- RedisCURD 补充基础读写/过期/扫描/清理/哈希，redis_crud 71%。
 
 ## 外部协议范围（2026-11-05 确认）
 
