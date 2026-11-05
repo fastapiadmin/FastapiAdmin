@@ -91,3 +91,32 @@ async def test_menu_parent_scope(monkeypatch: pytest.MonkeyPatch) -> None:
     await s._validate_parent_child_scope(1, "web")
     with pytest.raises(CustomException, match="可见范围"):
         await s._validate_parent_child_scope(1, "app")
+
+
+async def test_menu_crud_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.menu.schema import MenuCreateSchema, MenuOutSchema, MenuUpdateSchema
+    import app.modules.system.menu.service as mod
+    menu = MenuOutSchema(id=1, name="n", type=1, order=1, title="t", status=0, parent_id=None, route_name="n", route_path="/n", component_path="n/index", redirect="/n")
+    class M:
+        def __init__(self, *a): pass
+        async def get(self, **kw): return None if kw.get("id") == 9 else menu
+        async def get_or_404(self, **kw): return menu
+        async def create(self, data): return menu
+        async def update(self, **kw): return menu
+        async def get_list(self, **kw): return [menu]
+        async def delete(self, ids): self.deleted = ids
+        async def set(self, **kw): self.set_data = kw
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
+    async def noop(*a, **k): return None
+    s._validate_parent_child_type = noop; s._validate_parent_child_scope = noop
+    assert (await s.detail(1)).name == "n"
+    assert (await s.tree())[0]["name"] == "n"
+    assert (await s.create(MenuCreateSchema(name="n", type=1, order=1, route_name="n", route_path="/n", component_path="n/index", redirect="/n"))).name == "n"
+    assert (await s.update(1, MenuUpdateSchema(name="n", type=1, order=1, route_name="n", route_path="/n", component_path="n/index", redirect="/n"))).name == "n"
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.delete([])
+    await s.delete([1])
+    from app.core.base_schema import BatchSetAvailable
+    await s.set_available(BatchSetAvailable(ids=[1], status=0))
+    await s.set_available(BatchSetAvailable(ids=[1], status=1))
