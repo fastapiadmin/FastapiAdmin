@@ -44,3 +44,41 @@ async def test_set_pk_column() -> None:
     t2 = GenTableOutSchema(table_name="m", columns=[])
     await svc.set_pk_column(t2)
     assert t2.pk_column is None
+
+
+async def test_preview_code_missing_and_render(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode import service as svc_mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    class CRUD:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_id(self, id, preload=None): return None
+    monkeypatch.setattr(svc_mod, "GenTableCRUD", CRUD)
+    svc = GenTableService.__new__(GenTableService); svc.auth = object(); svc.db = object()
+    with pytest.raises(CustomException, match="业务表不存在"):
+        await svc.preview_code(1)
+
+    table = GenTableOutSchema(table_name="demo", package_name="module_demo")
+    class CRUD2:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_id(self, id, preload=None): return table
+    monkeypatch.setattr(svc_mod, "GenTableCRUD", CRUD2)
+    async def set_pk(t): pass
+    async def hydrate(t): pass
+    async def pkg(*a): return "module_demo"
+    svc.set_pk_column = set_pk; svc.hydrate_sub_table = hydrate; svc._effective_package_name = pkg
+    class Tpl:
+        async def render_async(self, **ctx): return "code"
+    class Env:
+        def get_template(self, name): return Tpl()
+    class J:
+        @staticmethod
+        def get_env(): return Env()
+        @staticmethod
+        def prepare_context(t): return {}
+        @staticmethod
+        def get_template_list(): return ["a.py"]
+        @staticmethod
+        def get_file_name(t, g): return "a.py"
+    monkeypatch.setattr(svc_mod, "Jinja2TemplateUtil", J)
+    out = await svc.preview_code(1)
+    assert out == {"a.py": "code"}
