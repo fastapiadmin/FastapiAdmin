@@ -4,8 +4,8 @@
 
 | 口径 | 当前值 | 说明 |
 |---|---:|---|
-| 后端 pytest | 351 passed | 全量 pytest，覆盖 16,661 statements |
-| 后端行覆盖 | **50%**（8,327 missed） | `pytest --cov=app` |
+| 后端 pytest | **546 passed** | 全量 pytest，覆盖 16,685 statements |
+| 后端行覆盖 | **64%**（6,055 missed） | `pytest --cov=app` |
 | 前端 vitest | 41 passed | 现有 3 个测试文件 |
 | 前端行覆盖 | **61.73%**（仅被 import 的文件） | 尚未启用 all-source 统计，不能当全站覆盖率 |
 | 接口 | 250 个 | 还没有做到每个接口成功/校验/权限三路径 |
@@ -40,7 +40,42 @@ D 包含四个独立目标：
 - transfer engine 补充单文件步骤成功/源缺失失败、后台无步骤失败、成功结束，63%；
 - workflow service 补充明细保存、画布组装、流程执行/禁用/缺失路径、CRUD/分页，51%；
 - transfer service 补充取消 pending/running、删除清理，43%；
-- 监控控制器补充服务器信息/健康检查/SSE，health controller 96%、server controller 100%。
+- 监控控制器补充服务器信息/健康检查/SSE，health controller 96%、server controller 100%；
+- base_crud 补充条件操作符/排序/预加载分支；
+- 登录/验证码服务补充权限收集、限流、会话、验证码状态/来源校验，auth service 44%；
+- 用户服务补充性别映射、导入模板、导出、空/损坏/缺列 Excel，user service 25%；
+- 代码生成器补充类型映射/命名/长度拆分/表初始化/列推断/主键约束，gen_util 80%；
+- 生成器静态规则补充路由首段/目录键/主子表校验/主键选择，gencode service 16%；
+- 生成器预览补充不存在/正常模板渲染，gencode service 20%；
+- 生成器同步补充差异计算/错误/正常预览；
+- 生成写入补充表名/模块名/功能名前置校验；
+- 生成器工具补充 HTML/查询类型推断，gen_util 89%；
+- 上传工具补充文件名安全、类型检测、大小/时间戳/随机码、路径安全，upload_util 74%；
+- IP/XSS 工具补充代理链、归属地降级、HTML 清洗，ip_local 87%、xss 100%；
+- 模型扫描工具补充根目录/模型有效性/真实模型扫描，import_util 80%；
+- 调度器补充可调度性/内置处理器注册/不可调度任务日志；
+- 用户服务补充创建/更新重名/重手机/重邮箱、删除保护，user service 30%；
+- 调度器补充 job id/触发类型/状态/事件分发，ap_scheduler 46%；
+- AI 补充动作解析/导航建议/工具开关/模型配置，ai chat service 33%；
+- 认证补充 token 创建/刷新轮换/重放撤销/登出，auth service 48%；
+- 用户补充改密/重置/忘记密码/注册，user service 30%；
+- 字典/菜单补充缓存回退、缓存刷新、父子类型/可见范围校验，dict service 28%、menu service 36%；
+- 角色补充创建/更新/删除/批量状态/导出，role service 65%；
+- AI 会话 CRUD 补充分页/标题搜索/创建/重命名/删除；顺带修复 order_by 解包 bug；
+- OAuth 补充回调域名/前端重定向/凭证校验/四平台授权 URL，oauth service 31%；
+- RedisCURD 补充基础读写/过期/扫描/清理/哈希，redis_crud 71%；
+- 微信小程序补充凭证/错误映射/登录名/access_token 缓存，wx_mini 45%；
+- 调度器补充任务包装/代码块开关/状态序列化，ap_scheduler 55%；
+- 角色补充权限设置/角色加载/菜单部门关联，role service 91%；
+- 菜单补充 CRUD/树/批量启停，menu service 77%；
+- 字典类型补充创建/更新/级联/删除保护，dict service 39%；
+- 字典数据补充创建/更新/删除，dict service 覆盖继续提升；
+- 生成器补充业务表/物理表分页、字段读取、表导入，gencode service 26%；
+- 健康检查补充 DB/Redis 成功/失败/空连接，health service 100%；
+- 用户补充轻量当前信息、资料更新重手机、批量状态保护，user service 37%；
+- 传输补充取消、软删除中止分支，transfer engine 68%。
+- 存储基类补充端点规范化/密码加解密/高级配置/字段元数据；
+- 存储工厂补充非法协议拒绝和本地适配器创建，factory 100%。
 
 ## 外部协议范围（2026-11-05 确认）
 

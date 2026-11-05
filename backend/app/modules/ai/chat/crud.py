@@ -119,7 +119,7 @@ class ChatSessionCRUD:
         # 前端排序字段（created_time/updated_time）映射为 agno 会话表列名
         sort_by, sort_order = "updated_at", "desc"
         if order_by:
-            column, direction = next(iter(order_by[0]))
+            column, direction = next(iter(order_by[0].items()))
             sort_by = {
                 "created_time": "created_at",
                 "updated_time": "updated_at",

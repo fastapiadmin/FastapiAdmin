@@ -117,7 +117,7 @@ cd ../frontend/web && pnpm install && pnpm run dev
 
 ```bash
 cp docker/.env.example docker/.env    # Fill in MySQL / Redis passwords
-./deploy.sh                           # Build images and start the full stack (Nginx + SSL included)
+./deploy.sh local                     # Build images and start the full stack locally (Nginx + SSL included)
 ```
 
 > For ports, SSL certificates and frontend builds, see the [Docker deployment guide](docker/README.md).
@@ -185,6 +185,50 @@ ENABLED_MODULES = ["generator", "task", "storage"]
 - **Single-instance deployment**: Real-time features (internal chat WebSocket, scheduled task scheduler) rely on in-memory connections and local scheduling within a single instance — please deploy as a **single instance**. For horizontal scaling, integrate Redis Pub/Sub or a message queue yourself.
 - **Key security**: Configure all third-party keys (AI, cloud storage, etc.) in the `backend/env/.env.*` environment variables. **Never commit them to the repository or store them in the database**.
 - **Database migrations**: Manage schema changes with Alembic migrations in production (`uv run alembic upgrade head`); `create_all` is only a fallback for first-time initialization.
+
+<details>
+<summary><b>Production deployment & operations (click to expand)</b></summary>
+
+### Architecture
+
+| Component | Role | Public port |
+| --- | --- | --- |
+| nginx | TLS termination, static sites, `/api/v1` reverse proxy | 80 / 443 |
+| backend | FastAPI / uvicorn (1 worker, non-root) | 127.0.0.1:8001 only |
+| mysql | MySQL 8.0, volume `mysql_data` | 127.0.0.1:3306 only |
+| redis | Redis 7 (sessions/cache/rate limit) | 127.0.0.1:6379 only |
+
+Server layout: `/home/FastapiAdmin/docker` (compose, nginx, env), backups in `/home/FastapiAdmin/backups`. The server never receives source or builds; artifacts/images are built locally and delivered via `deploy.sh`.
+
+### Deploy
+
+```bash
+./deploy.sh web        # build + deploy Web admin
+./deploy.sh app        # build + deploy mobile H5
+./deploy.sh backend    # build MySQL image locally -> transfer -> recreate backend
+./deploy.sh all
+./deploy.sh verify     # verify public endpoints
+./deploy.sh rollback web|app|backend
+```
+
+Every deploy backs up to `backups/<tag>-<timestamp>` first; backup failure aborts the deploy. Only changed containers are recreated.
+
+### Secrets and rotation
+
+`SECRET_KEY`, `DATA_ENCRYPTION_KEY`, and `DATA_ENCRYPTION_OLD_KEYS` live in the server-side `docker/.env` (never committed). To rotate: append the old data key to `DATA_ENCRYPTION_OLD_KEYS`, generate new values with `openssl rand -hex 32`, recreate backend, verify old ciphertext still decrypts, then remove obsolete old keys. Changing `SECRET_KEY` invalidates all existing tokens.
+
+### Operations
+
+- Daily health check: `systemctl list-timers fa-health-check.timer`; logs in `/var/log/fa-health.log`.
+- Inspect: `docker compose ps`, `docker logs --tail 100 backend`, `docker inspect backend --format '{{.State.Health.Status}}'`.
+- TLS certificates: `docker/nginx/ssl/server.pem`; replace cert/key then `docker exec nginx nginx -s reload`.
+- Config format: `list[str]` fields must use JSON array literals (e.g. `OAUTH_ALLOWED_HOSTS=["example.com"]`), not comma-separated strings, or backend fails at startup.
+
+### Known gaps
+
+See [`docs/COVERAGE-PLAN.md`](docs/COVERAGE-PLAN.md). Remaining: session invalidation on disable/delete/password change, data-scope coverage on delete/clear/status paths, frontend i18n consistency, about 63% backend coverage, and external storage verification limited to MinIO/S3 (FTP/SFTP/OBS/OSS/COS excluded due to no test service).
+
+</details>
 
 ## 📷 More Screenshots
 

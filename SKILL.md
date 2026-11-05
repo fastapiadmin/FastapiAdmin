@@ -7,6 +7,26 @@ description: "FastapiAdmin full-stack dev guide: repo map, run/verify commands, 
 
 在本仓库做任何开发、调试、构建之前，先按本 skill 对齐工程结构与约定，避免跨端改漏、命名错位。
 
+## 0. 协作红线（优先于后续章节）
+
+### 0.1 凭据与登录方式
+
+- **未经当次明确确认**，不得修改服务器密码、切换/关闭/开启 SSH 认证方式、轮换任何凭据（root 口令、数据库/Redis 口令、`SECRET_KEY`、`DATA_ENCRYPTION_KEY`、第三方 Key）。
+- 如确需变更，必须在同一条消息中写清：改了什么、旧凭据何时失效、新凭据如何获得、用户下次登录步骤、回滚办法与备份位置。
+- 绝不把口令、私钥、可复用的登录信息写进仓库、文档、提交信息或长期文件。
+- 服务器具体登录信息只保留在本地受控位置，**不进入本 skill/仓库**。
+
+### 0.2 不可逆动作
+
+部署/重建镜像、合并 `master`、`git push`、删除服务器数据或团队、重启服务器、清理历史提交，一律先说明影响并取得当次确认。
+
+### 0.3 登录/连接排障顺序
+
+1. 先用可用凭据实测能否连接，区分“服务不可用”和“客户端凭据缺失”；
+2. 再查服务端对应来源 IP 的认证日志；
+3. 再查客户端认证方式、密钥路径、agent 身份；
+4. 不要急着重启服务器，先证明重启能解决什么。
+
 ## 1. 工程地图
 
 | 目录 | 说明 | 技术栈 |
@@ -16,7 +36,7 @@ description: "FastapiAdmin full-stack dev guide: repo map, run/verify commands, 
 | `frontend/app/` | 小程序/移动端 | uni-app（有独立约定，见 `frontend/app/.agents/skills/wot-ui-*`） |
 | `frontend/docs/` | 项目文档站（中英双语 `src/guide` 与 `src/en/guide`） | VitePress |
 | `docker/` | 部署（backend/mysql/nginx/redis） | docker-compose |
-| 根目录 | `README.md`、`REQUIREMENTS.md`、`CONTRIBUTING.md` | 需求与规范，做大功能前先读 |
+| 根目录 | `README.md`、`CONTRIBUTING.md` | 项目总览、贡献规范与部署说明，做大功能前先读 |
 
 ### backend/app 关键位置
 

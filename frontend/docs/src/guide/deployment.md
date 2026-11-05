@@ -48,7 +48,7 @@ cp docker/.env.example docker/.env
 
 # 一键部署
 chmod +x deploy.sh
-./deploy.sh
+./deploy.sh local
 ```
 
 ### 4. 部署后配置
@@ -76,7 +76,7 @@ sudo certbot certonly --standalone -d your-domain.com
 
 | 命令 | 说明 |
 |------|------|
-| `./deploy.sh` | 完整部署 |
+| `./deploy.sh local` | 本机构建并启动全栈 |
 | `./deploy.sh logs` | 查看日志 |
 | `./deploy.sh stop` | 停止服务 |
 | `./deploy.sh restart` | 重启服务 |

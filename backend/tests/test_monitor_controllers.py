@@ -53,4 +53,6 @@ async def test_health_stream_yields(monkeypatch: pytest.MonkeyPatch) -> None:
     gen = health.health_stream_controller(request)
     event = await anext(gen)
     assert "db_status" in event.raw_data
+    event2 = await anext(gen)
+    assert "db_status" in event2.raw_data
     await gen.aclose()

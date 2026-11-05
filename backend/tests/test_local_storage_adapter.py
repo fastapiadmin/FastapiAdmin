@@ -70,3 +70,15 @@ async def test_local_storage_rejects_traversal(tmp_path: Path) -> None:
 async def test_local_storage_missing_root(tmp_path: Path) -> None:
     a = _adapter(tmp_path / "missing")
     assert await a.test_connection() is False
+
+
+async def test_local_missing_operations(tmp_path: Path) -> None:
+    root = tmp_path / "root"; root.mkdir(); a = _adapter(root)
+    with pytest.raises(Exception):
+        await a.list_files("missing")
+    with pytest.raises(Exception):
+        await a.rename("missing", "x")
+    with pytest.raises(Exception):
+        await a.copy("missing", "x")
+    with pytest.raises(Exception):
+        await a.download("missing", str(tmp_path / "x"))

@@ -115,6 +115,7 @@ async def test_execute_transfer_task_no_steps_and_success(tmp_path: Path, monkey
         async def get(self, model, tid): return self.task
         async def commit(self): self.commits += 1
         async def refresh(self, obj): return None
+        async def refresh(self, obj): return None
     class Ctx:
         def __init__(self, db): self.db = db
         async def __aenter__(self): return self.db
@@ -138,3 +139,33 @@ async def test_execute_transfer_task_no_steps_and_success(tmp_path: Path, monkey
     db2 = DB(task2); monkeypatch.setattr(engine, "async_db_session", lambda: Ctx(db2))
     await engine._execute_transfer_task(2)
     assert task2.status == "success" and task2.progress == 100
+
+
+async def test_execute_transfer_task_canceled_and_deleted(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    from app.modules.task.storage.transfer.registry import transfer_task_registry
+    class DB:
+        def __init__(self, task): self.task = task; self.commits = 0
+        async def get(self, model, tid): return self.task
+        async def commit(self): self.commits += 1
+        async def refresh(self, obj): return None
+    class Ctx:
+        def __init__(self, db): self.db = db
+        async def __aenter__(self): return self.db
+        async def __aexit__(self, *a): return False
+    async def broadcast(*a): return None
+    monkeypatch.setattr(engine, "_broadcast", broadcast)
+    step = SimpleNamespace(status="pending", finished_at=None)
+    async def load(db, tid): return [step]
+    monkeypatch.setattr(engine, "_load_steps", load)
+    task = SimpleNamespace(id=1, status="pending", is_deleted=False, source_type="remote", source_id=None, source_path=None, started_at=None, finished_at=None, error_msg=None, progress=0, total_size=0, transferred_size=0, speed=0, source_size=0)
+    transfer_task_registry.mark_cancel(1)
+    db = DB(task); monkeypatch.setattr(engine, "async_db_session", lambda: Ctx(db))
+    await engine._execute_transfer_task(1)
+    assert task.status == "canceled" and step.status == "canceled"
+    deleted = SimpleNamespace(id=2, status="pending", is_deleted=True, source_type="remote", source_id=None, source_path=None, source_size=0)
+    transfer_task_registry.clear(2)
+    db2 = DB(deleted); monkeypatch.setattr(engine, "async_db_session", lambda: Ctx(db2))
+    await engine._execute_transfer_task(2)
+    assert deleted.status == "running"

@@ -5,7 +5,7 @@
 #   docker build --build-arg DB=mysql    -f docker/backend/Dockerfile .   # 默认
 #   docker build --build-arg DB=postgres -f docker/backend/Dockerfile .
 #
-# 注意：正式部署建议用 deploy-artifacts.sh（本地构建镜像 → docker save/load），
+# 注意：正式部署建议用 deploy.sh（本地构建镜像 → docker save/load），
 #      这样服务器上不需要源码，也不需要构建工具链。
 # ============================================================================
 FROM python:3.12-slim

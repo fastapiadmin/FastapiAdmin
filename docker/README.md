@@ -59,7 +59,6 @@ docker/
    | `HTTPS_PORT` | 否 | `443` | HTTPS 宿主机端口 |
    | `DEPLOY_ENV` | 否 | `prod` | 部署环境（dev/prod） |
    | `BACKEND_IMAGE_TAG` | 否 | `3.0.0` | 后端镜像标签 |
-   | `BUILD_WEB` | 否 | `false` | 部署时构建前端 Web |
    | `NGINX_SERVER_NAME` | 否 | `service.fastapiadmin.com` | Nginx 域名 |
 
 2. **SSL 证书配置**（可选，但生产环境必须）
@@ -76,31 +75,41 @@ docker/
 
 ## 部署方式
 
-### 方式一：使用部署脚本（推荐）
+### 方式一：统一部署脚本（推荐）
 
-在项目根目录执行：
+`deploy.sh` 同时支持两种模式：
+
+**本机单机部署**（在仓库根目录，使用本机 Docker）：
 
 ```bash
-./deploy.sh
+cp docker/.env.example docker/.env    # 填写 MySQL / Redis 密码
+./deploy.sh local                     # docker compose up -d --build
 ```
 
-脚本会自动执行：检查依赖 → 创建目录 → 停止旧容器 → 更新代码 → 构建镜像 → 启动容器 → 验证部署 → 清理旧资源。
+**生产成品部署**（本机构建 → SSH 交付服务器，不在服务器构建源码）：
 
-**命令选项**
+```bash
+./deploy.sh web        # Web 管理后台
+./deploy.sh app        # 移动端 H5
+./deploy.sh backend    # MySQL 版后端镜像
+./deploy.sh all        # 三样全发
+./deploy.sh verify     # 公网验证
+./deploy.sh backups    # 查看备份
+./deploy.sh rollback web|app|backend
+./deploy.sh prune      # 清理旧备份/镜像
+```
 
-| 命令 | 说明 |
-|------|------|
-| `./deploy.sh` | 完整部署（跳过前端构建） |
-| `./deploy.sh start` | 启动所有容器 |
-| `./deploy.sh stop` | 停止所有容器 |
-| `./deploy.sh restart` | 重启所有容器 |
-| `./deploy.sh logs` | 查看所有容器日志 |
-| `./deploy.sh verify` | 验证部署状态 |
-| `./deploy.sh clean` | 清理旧镜像和构建缓存 |
-| `./deploy.sh --build-frontend` | 完整部署并构建前端（web / app / docs） |
-| `./deploy.sh --skip-frontend` | 完整部署并跳过前端构建（默认） |
+服务器容器管理：
 
-或在 `.env` 中设置 `BUILD_WEB=true` 使部署脚本自动构建前端。
+```bash
+./deploy.sh start
+./deploy.sh stop
+./deploy.sh restart
+./deploy.sh logs
+./deploy.sh clean
+```
+
+生产模式要求本机可免密 SSH 到服务器，后端构建另需本机 Docker。每次成品部署前自动备份，失败即中止。
 
 ### 方式二：手动操作
 
@@ -174,16 +183,11 @@ docker compose logs -f [服务名]
    cp -r dist ../docker/nginx/web/
    ```
 
-2. **使用部署脚本**
+2. **使用统一部署脚本**
    ```bash
-   ./deploy.sh --build-frontend
-   ```
-
-3. **自动构建**：在 `.env` 中设置
-   ```env
-   BUILD_WEB=true
-   # BUILD_APP=true
-   # BUILD_DOCS=true
+   ./deploy.sh web      # 构建并发布 Web 成品
+   ./deploy.sh app      # 构建并发布移动端 H5
+   ./deploy.sh local    # 本机启动全套容器
    ```
 
 ## 生产部署建议
@@ -217,5 +221,5 @@ docker compose logs -f [服务名]
 ## 版本更新
 
 ```bash
-./deploy.sh    # 自动拉取最新代码 → 构建新镜像 → 重启容器
+git pull && ./deploy.sh local    # 拉取最新代码 → 本机构建并重启容器
 ```

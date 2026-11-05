@@ -49,7 +49,7 @@ cp docker/.env.example docker/.env
 
 # Deploy
 chmod +x deploy.sh
-./deploy.sh
+./deploy.sh local
 ```
 
 ### 4. Post-Deployment
@@ -77,7 +77,7 @@ Add an A record pointing to your server IP.
 
 | Command | Description |
 |---------|-------------|
-| `./deploy.sh` | Full deployment |
+| `./deploy.sh local` | Build and start the full stack locally |
 | `./deploy.sh logs` | View logs |
 | `./deploy.sh stop` | Stop services |
 | `./deploy.sh restart` | Restart services |
