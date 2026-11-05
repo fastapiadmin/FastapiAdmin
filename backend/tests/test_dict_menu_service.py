@@ -175,3 +175,15 @@ async def test_dict_init_cache_no_types(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(mod, "async_db_session", lambda: Ctx())
     monkeypatch.setattr(mod, "DictTypeCRUD", C)
     await DictDataService.init_cache(object())
+
+
+async def test_menu_create_duplicate(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuCreateSchema
+    class M:
+        def __init__(self, *a): pass
+        async def get(self, **kw): return SimpleNamespace(id=1)
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    s = MenuService.__new__(MenuService); s.auth = object(); s.db = object()
+    with pytest.raises(CustomException, match="已存在"):
+        await s.create(MenuCreateSchema(name="n", type=1, order=1, title="n", route_name="n", route_path="/n", component_path="n", redirect="/n"))
