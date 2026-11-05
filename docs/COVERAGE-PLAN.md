@@ -42,7 +42,8 @@ D 包含四个独立目标：
 - transfer service 补充取消 pending/running、删除清理，43%；
 - 监控控制器补充服务器信息/健康检查/SSE，health controller 96%、server controller 100%；
 - base_crud 补充条件操作符/排序/预加载分支；
-- 登录/验证码服务补充权限收集、限流、会话、验证码状态/来源校验，auth service 44%。
+- 登录/验证码服务补充权限收集、限流、会话、验证码状态/来源校验，auth service 44%；
+- 用户服务补充性别映射、导入模板、导出、空/损坏/缺列 Excel，user service 25%。
 
 ## 外部协议范围（2026-11-05 确认）
 
