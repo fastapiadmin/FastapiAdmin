@@ -146,3 +146,16 @@ async def test_set_available_protection(monkeypatch: pytest.MonkeyPatch) -> None
         async def get_list(self, **kw): return [SimpleNamespace(id=1, is_superuser=False)]
     s2 = _svc(monkeypatch, U2)
     await s2.set_available(BatchSetAvailable(ids=[1], status=1))
+
+
+async def test_load_menus_super_and_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class M:
+        def __init__(self, *a): pass
+        async def get_list(self, **kw): return []
+    monkeypatch.setattr(mod, "MenuCRUD", M)
+    s = _svc(monkeypatch, object)
+    s.auth = SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=True), menu_ids=[])
+    assert await s._load_menus() == []
+    s.auth = SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=False), menu_ids=[])
+    assert await s._load_menus() == []
