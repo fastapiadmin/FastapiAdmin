@@ -188,3 +188,16 @@ async def test_write_plugin_migration_multiple_heads(monkeypatch: pytest.MonkeyP
     s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     with pytest.raises(CustomException, match="多个 head"):
         await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+
+
+async def test_package_directory_menu(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    class M:
+        def __init__(self,*a): self.created=[]
+        async def get(self,**kw): return None
+        async def create(self,data): self.created.append(data); return SimpleNamespace(id=9)
+    m=M(); s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    assert await s._get_or_create_package_directory_menu(m,None,"module_demo","demo","demo") == 9
+    class M2(M):
+        async def get(self,**kw): return SimpleNamespace(id=8)
+    assert await s._get_or_create_package_directory_menu(M2(),None,"module_demo","demo","demo") == 8
