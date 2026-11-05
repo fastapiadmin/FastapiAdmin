@@ -40,7 +40,8 @@ D 包含四个独立目标：
 - transfer engine 补充单文件步骤成功/源缺失失败、后台无步骤失败、成功结束，63%；
 - workflow service 补充明细保存、画布组装、流程执行/禁用/缺失路径、CRUD/分页，51%；
 - transfer service 补充取消 pending/running、删除清理，43%；
-- 监控控制器补充服务器信息/健康检查/SSE，health controller 96%、server controller 100%。
+- 监控控制器补充服务器信息/健康检查/SSE，health controller 96%、server controller 100%；
+- base_crud 补充条件操作符/排序/预加载分支。
 
 ## 外部协议范围（2026-11-05 确认）
 
