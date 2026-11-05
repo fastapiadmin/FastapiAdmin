@@ -4,8 +4,8 @@
 
 | 口径 | 当前值 | 说明 |
 |---|---:|---|
-| 后端 pytest | **525 passed** | 全量 pytest，覆盖 16,685 statements |
-| 后端行覆盖 | **63%**（6,180 missed） | `pytest --cov=app` |
+| 后端 pytest | **532 passed** | 全量 pytest，覆盖 16,685 statements |
+| 后端行覆盖 | **63%**（6,155 missed） | `pytest --cov=app` |
 | 前端 vitest | 41 passed | 现有 3 个测试文件 |
 | 前端行覆盖 | **61.73%**（仅被 import 的文件） | 尚未启用 all-source 统计，不能当全站覆盖率 |
 | 接口 | 250 个 | 还没有做到每个接口成功/校验/权限三路径 |
