@@ -208,11 +208,13 @@ async def test_dict_init_cache_with_type(monkeypatch: pytest.MonkeyPatch) -> Non
     import app.modules.system.dict.service as mod
     from types import SimpleNamespace
     class S:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        def begin(self): return self
         async def execute(self, *a, **k): return None
     class Ctx:
         async def __aenter__(self): return S()
         async def __aexit__(self, *a): return False
-        def begin(self): return self
     class T:
         def __init__(self, *a): pass
         async def get_list(self): return [SimpleNamespace(dict_type="t")]
