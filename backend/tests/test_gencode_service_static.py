@@ -378,3 +378,27 @@ async def test_sync_db_branches(monkeypatch: pytest.MonkeyPatch) -> None:
     async def cols(name): return []
     s._get_db_table_columns=cols
     await s.sync_db("d")
+
+
+async def test_sync_db_columns(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    table=GenTableOutSchema(id=1,table_name="d",columns=[GenTableColumnOutSchema(id=1,column_name="a")])
+    db_cols=[GenTableColumnOutSchema(column_name="a"),GenTableColumnOutSchema(column_name="b")]
+    class C:
+        def __init__(self,*a): self.obj=table
+        async def get_gen_table_by_name(self,*a,**k): return self.obj
+    c=C(); monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:c)
+    calls=[]
+    class Col:
+        def __init__(self,*a): pass
+        async def update_gen_table_column_crud(self,i,d): calls.append(("update",i))
+        async def create_gen_table_column_crud(self,d): calls.append(("create",d.column_name))
+        async def delete_gen_table_column_by_column_id_crud(self,ids): calls.append(("delete",ids))
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda col,t:None))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def cols(name): return db_cols
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+    assert any(x[0]=="update" for x in calls) and any(x[0]=="create" and x[1]=="b" for x in calls)
