@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   PasswordStrength, getPasswordStrength, trimSpaces, validateAccount, validateBankCard,
   validateChineseIDCard, validateEmail, validateIPv4Address, validatePassword,
-  validatePhone, validateStrongPassword, validateURL,
+  validatePhone, validateStrongPassword, validateTelPhone, validateURL,
 } from "@/utils/form";
 
 describe("form validators", () => {
