@@ -169,3 +169,27 @@ async def test_execute_transfer_task_canceled_and_deleted(monkeypatch: pytest.Mo
     db2 = DB(deleted); monkeypatch.setattr(engine, "async_db_session", lambda: Ctx(db2))
     await engine._execute_transfer_task(2)
     assert deleted.status == "running"
+
+
+async def test_execute_transfer_task_missing_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    class DB:
+        def __init__(self, task): self.task=task; self.commits=0
+        async def get(self,model,tid): return self.task
+        async def commit(self): self.commits+=1
+        async def refresh(self,obj): return None
+    class Ctx:
+        def __init__(self,db): self.db=db
+        async def __aenter__(self): return self.db
+        async def __aexit__(self,*a): return False
+    async def load(db,tid): return [SimpleNamespace(status="pending",finished_at=None)]
+    monkeypatch.setattr(engine,"_load_steps",load)
+    async def config(db,sid): return None
+    monkeypatch.setattr(engine,"_build_config",config)
+    async def broadcast(*a): return None
+    monkeypatch.setattr(engine,"_broadcast",broadcast)
+    task=SimpleNamespace(id=1,status="pending",is_deleted=False,source_type="remote",source_id=9,source_path="x",source_size=0,total_size=0,started_at=None,finished_at=None,error_msg=None,progress=0,transferred_size=0,speed=0)
+    db=DB(task); monkeypatch.setattr(engine,"async_db_session",lambda:Ctx(db))
+    await engine._execute_transfer_task(1)
+    assert task.status=="failed" and "不存在或已停用" in task.error_msg
