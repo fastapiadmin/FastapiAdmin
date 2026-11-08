@@ -62,7 +62,9 @@ class FakeClient:
 
 def _a(config=None):
     a = S3StorageAdapter.__new__(S3StorageAdapter)
-    a.config = SimpleNamespace(bucket="b", region="eu-west-1", **(config or {}))
+    data = {"bucket": "b", "region": "eu-west-1"}
+    data.update(config or {})
+    a.config = SimpleNamespace(**data)
     a.bucket_name = "b"
     a.client = FakeClient()
     return a
