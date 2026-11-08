@@ -209,3 +209,32 @@ async def test_http_text(monkeypatch: pytest.MonkeyPatch) -> None:
         AsyncClient=lambda *a,**k:C()
     monkeypatch.setattr(o,"httpx",H)
     assert await o._http_text("GET","http://x") == "hi"
+
+
+async def test_oauth_http_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    class R:
+        def __init__(self,data=None,text="t",bad=False): self._d=data; self.text=text; self.bad=bad
+        def raise_for_status(self): return None
+        def json(self):
+            if self.bad: raise json.JSONDecodeError("x","x",0)
+            return self._d
+    class C:
+        def __init__(self,r): self.r=r
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+        async def request(self,*a,**k): return self.r
+    def H(r): return type("H",(),{"AsyncClient":lambda *a,**k:C(r)})
+    monkeypatch.setattr(o,"httpx",H(R({"a":1})))
+    assert await o._http_json("GET","http://x")=={"a":1}
+    assert await o._http_text("GET","http://x")=="t"
+    monkeypatch.setattr(o,"httpx",H(R(bad=True)))
+    with pytest.raises(json.JSONDecodeError):
+        await o._http_json("GET","http://x")
+
+
+def test_oauth_redirects() -> None:
+    err=o._frontend_error_redirect("https://f/login?x=1","bad msg")
+    assert "oauth_error=" in err and "bad" in err
+    ok=o._frontend_success_redirect("https://f", "a b", "r", "bearer")
+    assert "access_token=a%20b" in ok and "refresh_token=r" in ok
