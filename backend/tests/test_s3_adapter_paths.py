@@ -216,5 +216,4 @@ def test_s3_list_errors_and_close_missing() -> None:
     a.client.list_objects_v2=fail
     with pytest.raises(RuntimeError): a._sync_list("d/")
     with pytest.raises(RuntimeError): a._sync_list_page("d/",1,None)
-    del a.client.close
     a._sync_close()
