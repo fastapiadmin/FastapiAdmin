@@ -263,7 +263,7 @@ def test_require_credentials_missing(monkeypatch: pytest.MonkeyPatch) -> None:
         o._require_credentials("bad")
 
 
-async def _complete_for(monkeypatch, provider, exchange, fetch):
+async def _complete_for(monkeypatch, provider, exchange, fetch, fetch_name=None, fetch_fn=None):
     import json
     class R:
         def __init__(self): self.d={o.STATE_PREFIX+"s":json.dumps({"provider":provider,"frontend_redirect":"https://f"})}
@@ -273,6 +273,7 @@ async def _complete_for(monkeypatch, provider, exchange, fetch):
     monkeypatch.setattr(o,"_callback_url",lambda req,p:"https://cb")
     monkeypatch.setattr(o,"_require_credentials",lambda p:("i","s"))
     monkeypatch.setattr(o,exchange,fetch)
+    if fetch_name: monkeypatch.setattr(o,fetch_name,fetch_fn)
     async def ensure(**kw): return "u"
     async def prep(**kw): return "u"
     async def token(**kw): return "tok"
@@ -295,3 +296,12 @@ async def test_complete_gitee(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(o,"exchange_gitee_token",gt); monkeypatch.setattr(o,"fetch_gitee_profile",fp)
         return await _complete_for(monkeypatch,"gitee","exchange_gitee_token",gt)
     assert (await full())[0]=="tok"
+
+
+async def test_complete_wechat_qq(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def wx_ex(*a): return ("a","o")
+    async def wx_fetch(*a): return ("uid","N")
+    assert (await _complete_for(monkeypatch,"wechat","exchange_wechat_token",wx_ex,"fetch_wechat_profile",wx_fetch))[0]=="tok"
+    async def qq_ex(*a): return ("a","o")
+    async def qq_fetch(*a): return ("uid","N")
+    assert (await _complete_for(monkeypatch,"qq","exchange_qq_token",qq_ex,"fetch_qq_profile",qq_fetch))[0]=="tok"
