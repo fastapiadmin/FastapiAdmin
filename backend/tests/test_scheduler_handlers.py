@@ -240,3 +240,19 @@ def test_get_trigger_type(monkeypatch: pytest.MonkeyPatch) -> None:
     assert SchedulerUtil._get_trigger_type("x")=="interval"
     monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=DateTrigger(run_date="2099-01-01"))))
     assert SchedulerUtil._get_trigger_type("x")=="date"
+
+
+def test_describe_schedulability(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.core.ap_scheduler as mod
+    ok,reason=SchedulerUtil.describe_schedulability(None)
+    assert ok is False and "未配置" in reason
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: (_ for _ in ()).throw(ValueError("bad"))))
+    ok,reason=SchedulerUtil.describe_schedulability("builtin:x")
+    assert ok is False and "内置处理器不可用" in reason
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: lambda: None))
+    assert SchedulerUtil.describe_schedulability("builtin:x")==(True,None)
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",False)
+    ok,reason=SchedulerUtil.describe_schedulability("print(1)")
+    assert ok is False and "SCHEDULER_ALLOW_CODE_EXEC" in reason
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",True)
+    assert SchedulerUtil.describe_schedulability("print(1)")==(True,None)
