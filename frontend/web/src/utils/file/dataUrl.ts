@@ -9,7 +9,7 @@ export function dataURLToFile(dataURL: string, filename: string): File {
   const header = dataURL.slice(0, comma);
   const base64 = dataURL.slice(comma + 1);
   const mimeMatch = header.match(/data:(.*?);/);
-  const mime = mimeMatch?.[1] ?? "image/png";
+  const mime = mimeMatch?.[1] || "image/png";
 
   const binary = atob(base64);
   const len = binary.length;
