@@ -205,15 +205,15 @@ def test_resolve_builtin_import_branches(monkeypatch: pytest.MonkeyPatch) -> Non
     def missing(path): raise ModuleNotFoundError()
     monkeypatch.setattr(importlib,"import_module",missing)
     with pytest.raises(ValueError, match="模块不存在"):
-        SchedulerUtil.resolve_builtin_handler("builtin:m.f")
-    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m"))
+        SchedulerUtil.resolve_builtin_handler("builtin:m2.f")
+    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m3"))
     with pytest.raises(ValueError, match="不可用"):
-        SchedulerUtil.resolve_builtin_handler("builtin:m.f")
-    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m", f=1))
+        SchedulerUtil.resolve_builtin_handler("builtin:m3.f")
+    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m4", f=1))
     with pytest.raises(ValueError, match="不可用"):
-        SchedulerUtil.resolve_builtin_handler("builtin:m.f")
+        SchedulerUtil.resolve_builtin_handler("builtin:m4.f")
     def g(): return 1
     g.__module__="other"
-    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m", f=g))
+    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m5", f=g))
     with pytest.raises(ValueError, match="必须在本模块"):
         SchedulerUtil.resolve_builtin_handler("builtin:m.f")
