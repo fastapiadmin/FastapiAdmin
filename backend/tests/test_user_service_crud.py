@@ -353,3 +353,18 @@ async def test_update_current_info_success(monkeypatch: pytest.MonkeyPatch) -> N
     async def detail(id): return "ok"
     s.detail=detail
     assert await s.update_current_info(CurrentUserUpdateSchema(name="N")) == "ok"
+
+
+async def test_user_queries_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import PageResultSchema
+    u=SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(name="D"),roles=[SimpleNamespace(id=2)],positions=[SimpleNamespace(id=3)])
+    class U:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return u
+        async def get_list(self,**kw): return [u]
+        async def page(self,**kw): return PageResultSchema(page_no=1,page_size=10,total=1,has_next=False,items=[u])
+    s=_svc(monkeypatch,U)
+    d=await s.detail(1)
+    assert d.dept_name=="D" and d.role_ids==[2] and d.position_ids==[3]
+    assert (await s.get_list())[0].dept_name=="D"
+    assert (await s.page(1,10)).items[0].role_ids==[2]
