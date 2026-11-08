@@ -36,7 +36,7 @@ async def test_create_duplicate_and_invalid_trigger() -> None:
     s, m = _svc(C())
     try:
         with pytest.raises(CustomException, match="已存在"):
-            await s.create(NodeCreateSchema(name="n"))
+            await s.create(NodeCreateSchema(name="n", func="builtin:x"))
     finally:
         m.undo()
     class C2:
@@ -44,7 +44,7 @@ async def test_create_duplicate_and_invalid_trigger() -> None:
     s, m = _svc(C2())
     try:
         with pytest.raises(Exception):
-            NodeCreateSchema(name="n", trigger="cron", trigger_args="bad")
+            NodeCreateSchema(name="n", func="builtin:x", trigger="cron", trigger_args="bad")
     finally:
         m.undo()
 
