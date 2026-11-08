@@ -431,3 +431,29 @@ async def test_sync_db_delete_and_error(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 async def _async(v): return v
+
+
+async def test_sync_db_preserve_and_sub(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    prev=GenTableColumnOutSchema(id=1,column_name="a",is_pk=True,is_insert=True,is_edit=True,is_list=True,is_query=True,html_type="input",dict_type="d",sort=2)
+    table=GenTableOutSchema(id=1,table_name="d",columns=[prev],sub_table_name="sub",sub_table_fk_name="fk")
+    db=GenTableColumnOutSchema(column_name="a",is_pk=True)
+    class C:
+        def __init__(self,*a): self.n=0
+        async def get_gen_table_by_name(self,name,*a,**k):
+            if name=="sub": return GenTableOutSchema(id=2,table_name="sub")
+            return table
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:C())
+    updated=[]
+    class Col:
+        def __init__(self,*a): pass
+        async def update_gen_table_column_crud(self,i,d): updated.append(d)
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda c,t:None))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def cols(name): return [db] if name=="d" else []
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+    d=updated[0]
+    assert d.is_insert is False and d.dict_type=="d" and d.sort==2
