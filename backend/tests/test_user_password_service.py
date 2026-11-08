@@ -119,3 +119,24 @@ async def test_change_reset_forget_branches(monkeypatch: pytest.MonkeyPatch) -> 
     with pytest.raises(CustomException, match="超级管理员"):
         await s.reset_password(ResetPasswordSchema(id=1,password="Abc123!x"))
     assert await s.forget_password(UserForgetPasswordSchema(username="none")) is None
+
+
+async def test_change_reset_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    from app.modules.system.user.schema import UserChangePasswordSchema, ResetPasswordSchema
+    class U:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return SimpleNamespace(id=1,password="hash",is_superuser=False)
+        async def change_password(self,**kw): return None
+    monkeypatch.setattr(mod,"UserCRUD",lambda *a:U())
+    class P:
+        @staticmethod
+        async def averify_password(**kw): return True
+        @staticmethod
+        async def ahash_password(**kw): return "new"
+    monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=SimpleNamespace(user=SimpleNamespace(id=1)); s.db=object()
+    async def detail(id): return "ok"
+    s.detail=detail
+    assert await s.change_password(UserChangePasswordSchema(old_password="Old123!",new_password="Abc123!x"))=="ok"
+    assert await s.reset_password(ResetPasswordSchema(id=1,password="Abc123!x"))=="ok"
