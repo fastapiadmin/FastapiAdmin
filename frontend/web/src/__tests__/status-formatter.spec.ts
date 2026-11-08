@@ -23,9 +23,9 @@ describe("status formatter", () => {
       { prop: "status", label: "S", status: map },
       { prop: "b", label: "B" },
     ])();
-    expect(cols[0].formatter).toBeDefined();
+    expect(cols[0]!.formatter).toBeDefined();
     expect(cols[1]!.status).toBeUndefined();
     expect((cols[1]!.formatter as any)({ status: 1 }).props?.label).toBe("停用");
-    expect(cols[2].formatter).toBeUndefined();
+    expect(cols[2]!.formatter).toBeUndefined();
   });
 });
