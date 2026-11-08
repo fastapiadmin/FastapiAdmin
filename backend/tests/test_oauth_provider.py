@@ -305,3 +305,19 @@ async def test_complete_wechat_qq(monkeypatch: pytest.MonkeyPatch) -> None:
     async def qq_ex(*a): return ("a","o")
     async def qq_fetch(*a): return ("uid","N")
     assert (await _complete_for(monkeypatch,"qq","exchange_qq_token",qq_ex,"fetch_qq_profile",qq_fetch))[0]=="tok"
+
+
+async def test_oauth_specific_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def gitee(method,url,**kw): return {"error_description":"gitee bad"}
+    monkeypatch.setattr(o,"_http_json",gitee)
+    with pytest.raises(CustomException, match="gitee bad"):
+        await o.exchange_gitee_token("i","s","c","r")
+    async def wx(method,url,**kw): return {"errmsg":"wx bad"}
+    monkeypatch.setattr(o,"_http_json",wx)
+    with pytest.raises(CustomException, match="wx bad"):
+        await o.exchange_wechat_token("i","s","c")
+    async def text(method,url,**kw): return "access_token=q"
+    async def me(method,url,**kw): return {"ret":0}
+    monkeypatch.setattr(o,"_http_text",text); monkeypatch.setattr(o,"_http_json",me)
+    with pytest.raises(CustomException, match="openid"):
+        await o.exchange_qq_token("i","s","c","r")
