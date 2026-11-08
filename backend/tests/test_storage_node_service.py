@@ -1,0 +1,34 @@
+"""存储节点配置构造/默认标记。"""
+
+from __future__ import annotations
+
+from types import SimpleNamespace
+
+import pytest
+
+from app.modules.task.storage.core.base import StorageProtocol
+from app.modules.task.storage.node.service import StorageNodeService
+
+
+def _src(**over):
+    data=dict(protocol="s3",host="h",port=0,username="u",bucket="b",endpoint="e",scheme="https",region="r",path_prefix=None,is_secure=False,implicit_tls=False,encrypt_type=1,connection_mode=0,encoding="UTF-8",multipart_part_size=50,multipart_concurrency=6,multipart_memory_budget=512,advanced_config=None)
+    data.update(over); return SimpleNamespace(**data)
+
+
+def test_build_config_defaults_and_fields() -> None:
+    cfg=StorageNodeService._build_config_from(_src(),"p")
+    assert cfg.protocol is StorageProtocol.S3 and cfg.port == 443 and cfg.password == "p"
+    local=StorageNodeService._build_config_from(_src(protocol="local",port=0,advanced_config={"x":1}),"")
+    assert local.port == 0 and local.advanced_config == {"x":1}
+    ftp=StorageNodeService._build_config_from(_src(protocol="ftp",port=None),"")
+    assert ftp.port == 21
+
+
+async def test_clear_other_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls=[]
+    class DB:
+        async def execute(self, stmt): calls.append(stmt)
+    s=StorageNodeService.__new__(StorageNodeService); s.db=DB(); s.auth=object()
+    await s._clear_other_default()
+    await s._clear_other_default(1)
+    assert len(calls)==2
