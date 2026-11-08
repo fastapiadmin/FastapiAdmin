@@ -213,3 +213,12 @@ async def test_base_unsupported_and_recursive() -> None:
         await d.create_bucket("b")
     keys=[x.key for x in d._sync_list_recursive("")]
     assert "f" in keys and "d" in keys
+
+
+def test_parse_advanced_config_protocols() -> None:
+    from app.modules.task.storage.core.base import parse_advanced_config
+    assert parse_advanced_config(StorageProtocol.LOCAL,{"x":1}) is None
+    assert parse_advanced_config(StorageProtocol.S3,None) is not None
+    assert parse_advanced_config(StorageProtocol.OSS,{}) is not None
+    assert parse_advanced_config(StorageProtocol.OBS,{}) is not None
+    assert parse_advanced_config(StorageProtocol.COS,{}) is not None
