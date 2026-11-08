@@ -168,3 +168,26 @@ async def test_copy_move_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         await s.copy_or_move(1,"d",1,"e")
     with pytest.raises(CustomException, match="相同"):
         await s.rename(1,"a","a")
+
+
+async def test_download_dir_and_buckets(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.storage.core.base import StorageAdapterConfig, StorageProtocol
+    import app.modules.task.storage.browse.service as mod
+    class A(FakeAdapter):
+        async def download_dir(self,remote,local,concurrency=1):
+            Path(local).mkdir(parents=True,exist_ok=True); (Path(local)/"a.txt").write_text("a")
+    a=A(); s=_service(a)
+    path,name=await s.download_dir(None,"d")
+    assert name=="d.zip" and Path(path).exists(); Path(path).unlink()
+    class Bad(A):
+        async def download_dir(self,*a,**k): raise RuntimeError()
+    with pytest.raises(RuntimeError):
+        await _service(Bad()).download_dir(None,"d")
+    async def obj(_sid): return StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="a",password="s")
+    s._get_source=obj
+    class B(A):
+        async def list_buckets(self): return ["x"]
+        async def get_url(self,remote,expire=3600): return None
+    b=B(); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:b))
+    assert await s.list_buckets(None)==["x"]
+    assert await s.share(None,"a") is None
