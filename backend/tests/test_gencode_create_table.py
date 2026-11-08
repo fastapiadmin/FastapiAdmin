@@ -40,3 +40,17 @@ async def test_create_table_exists_and_success(monkeypatch: pytest.MonkeyPatch) 
     c.exists=True
     with pytest.raises(CustomException, match="已存在"):
         await s.create_table("CREATE TABLE demo (id INT);")
+
+
+async def test_create_table_alter_and_execute_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def check_table_exists(self,name): return False
+        async def get_gen_table_by_name(self,name): return None
+        async def execute_sql(self,sql): return False
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a: C())
+    s=_svc()
+    with pytest.raises(CustomException, match="执行SQL"):
+        await s.create_table("CREATE TABLE demo (id INT);")
+    with pytest.raises(CustomException):
+        await s.create_table("CREATE TABLE demo (id INT); ALTER TABLE demo DROP COLUMN id;")
