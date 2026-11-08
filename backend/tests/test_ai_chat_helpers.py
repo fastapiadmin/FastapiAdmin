@@ -217,10 +217,10 @@ async def test_ai_config_service(monkeypatch: pytest.MonkeyPatch) -> None:
     s=mod.AiModelConfigService(auth=SimpleNamespace(user=SimpleNamespace(id=1)),redis=None)
     assert (await s.list_configs())["active_id"]=="a"
     assert (await s.get_active())["id"]=="a"
-    assert (await s.create(AiModelConfigSchema(name="n",provider="openai",model="m",base_url="https://x",api_key="k")))["id"]=="new"
-    assert (await s.update("a",AiModelConfigSchema(name="n",provider="openai",model="m",base_url="https://x",api_key="k")))["id"]=="a"
+    assert (await s.create(AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k")))["id"]=="new"
+    assert (await s.update("a",AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k")))["id"]=="a"
     with pytest.raises(CustomException, match="不存在"):
-        await s.update("b",AiModelConfigSchema(name="n",provider="openai",model="m",base_url="https://x",api_key="k"))
+        await s.update("b",AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k"))
     await s.delete("a")
     with pytest.raises(CustomException, match="不存在"):
         await s.delete("b")
