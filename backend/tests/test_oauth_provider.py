@@ -131,7 +131,7 @@ async def test_oauth_state_and_start(monkeypatch: pytest.MonkeyPatch) -> None:
     r=R(); await o.save_oauth_state(redis=r,state="s",provider="github",frontend_redirect="https://f")
     assert r.sets
     class Bad(R):
-        async def set(self,**kw): return False
+        async def set(self,key,value,expire=None,**kw): return False
     with pytest.raises(CustomException, match="缓存"):
         await o.save_oauth_state(redis=Bad(),state="s",provider="github",frontend_redirect="x")
     assert await o._state_frontend_redirect(R(),None,"fb") == "fb"
