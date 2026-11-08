@@ -114,3 +114,35 @@ async def test_get_list_empty(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod,"NodeCRUD",lambda *a:C())
     s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
     assert await s.get_list()==[]
+
+
+async def test_node_options_detail_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import PageResultSchema
+    from app.modules.task.cronjob.node.schema import NodeOutSchema
+    node=NodeOutSchema(id=1,name="n",func="builtin:x",status=0)
+    class C:
+        async def get_obj_list_crud(self,**kw): return [node]
+        async def get_obj_by_id_crud(self,**kw): return node
+        async def page(self,**kw): return PageResultSchema(page_no=1,page_size=10,total=1,has_next=False,items=[node])
+    monkeypatch.setattr(mod,"NodeCRUD",lambda *a:C())
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    async def enrich(items): return None
+    s._enrich_runtime=enrich
+    assert len(await s.options())==1
+    assert (await s.detail(1)).id==1
+    assert (await s.page(1,10)).total==1
+
+
+async def test_node_delete_success_and_execute_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self): self.deleted=None
+        async def get_obj_by_id_crud(self,**kw): return SimpleNamespace(id=1)
+        async def delete_obj_crud(self,ids): self.deleted=ids
+    c=C(); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    monkeypatch.setattr(mod,"unregister_node_job",lambda node_id:None)
+    await s.delete([1]); assert c.deleted==[1]
+    def bad(**kw): raise ValueError("bad")
+    monkeypatch.setattr(mod,"run_node_once",bad)
+    with pytest.raises(CustomException, match="执行失败"):
+        await s.execute(1)
