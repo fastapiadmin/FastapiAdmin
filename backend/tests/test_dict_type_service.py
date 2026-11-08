@@ -65,7 +65,7 @@ async def test_delete_dict_type(monkeypatch: pytest.MonkeyPatch) -> None:
         async def delete(self, **kw): self.deleted = kw
     class D:
         def __init__(self, *a): pass
-        async def get_list(self, **kw): return [SimpleNamespace(id=1)]
+        async def get_list(self, **kw): return [SimpleNamespace(id=1,dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)]
     class DEmpty(D):
         async def get_list(self, **kw): return []
     s = _svc(monkeypatch, C, D)
