@@ -276,3 +276,14 @@ async def test_delete_gen_table(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(CustomException, match="不能为空"):
         await s.delete_gen_table([])
     await s.delete_gen_table([1])
+
+
+async def test_delete_gen_table_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    class C:
+        def __init__(self,*a): pass
+        async def delete_gen_table_column_by_table_id_crud(self, ids): raise RuntimeError()
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",C)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(RuntimeError):
+        await s.delete_gen_table([1])
