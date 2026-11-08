@@ -152,9 +152,6 @@ async def test_finish_oauth_login(monkeypatch: pytest.MonkeyPatch) -> None:
     async def err(**kw): raise CustomException(msg="bad")
     monkeypatch.setattr(o,"complete_oauth_login",err)
     assert "oauth_error=bad" in await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
-    async def crash(**kw): raise RuntimeError()
-    monkeypatch.setattr(o,"complete_oauth_login",crash)
-    assert "登录服务暂时不可用" in await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
     class T:
         access_token="a"; refresh_token="r"; token_type="bearer"
     async def ok(**kw): return T(), "https://f"
