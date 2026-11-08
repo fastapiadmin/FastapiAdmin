@@ -387,3 +387,17 @@ async def test_current_info_with_dept(monkeypatch: pytest.MonkeyPatch) -> None:
     s._load_menus=menus
     out=await s.current_info()
     assert out.dept_name=="D"
+
+
+async def test_update_current_info_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.user.schema import CurrentUserUpdateSchema
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=2) if kw.get("mobile") else None
+    s=_svc(monkeypatch,U)
+    s.auth=SimpleNamespace(user=SimpleNamespace(id=0))
+    with pytest.raises(CustomException, match="不存在"):
+        await s.update_current_info(CurrentUserUpdateSchema(mobile="13800000000"))
+    s.auth=SimpleNamespace(user=SimpleNamespace(id=1))
+    with pytest.raises(CustomException, match="已存在"):
+        await s.update_current_info(CurrentUserUpdateSchema(mobile="13800000000"))
