@@ -71,3 +71,19 @@ async def test_workflow_delete(monkeypatch) -> None:
         await s.delete([])
     await s.delete([1])
     assert len(calls)==3
+
+
+async def test_workflow_queries(monkeypatch) -> None:
+    import pytest
+    from app.core.exceptions import CustomException
+    class C:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+        async def get_or_404(self,**kw): raise CustomException(msg="不存在")
+    s=WorkflowService.__new__(WorkflowService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    async def enrich(objs): return []
+    s._to_out_list=enrich
+    assert await s.get_list()==[]
+    with pytest.raises(CustomException, match="不存在"):
+        await s.detail(1)
