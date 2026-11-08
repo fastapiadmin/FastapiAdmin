@@ -317,3 +317,16 @@ async def test_update_same_username(monkeypatch: pytest.MonkeyPatch) -> None:
     async def noop(*a,**k): return None
     s._set_user_roles=noop; s._set_user_positions=noop
     assert await s.update(1, UserUpdateSchema(username="abc")) == "ok"
+
+
+async def test_update_same_mobile_email(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1)
+        async def update(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.update(1, UserUpdateSchema(mobile="13800000000", email="a@b.com")) == "ok"
