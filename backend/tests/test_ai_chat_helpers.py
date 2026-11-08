@@ -345,3 +345,32 @@ async def test_ai_active_config(monkeypatch: pytest.MonkeyPatch) -> None:
     assert await mod.set_active_model_config(r,1,"none") is False
     r2=R({mod._ai_model_items_key(1):json.dumps([{"id":"a"}])})
     assert await mod.set_active_model_config(r2,1,"a") is True and r2.d[mod._ai_model_active_key(1)]=="a"
+
+
+def test_session_format_helpers() -> None:
+    import json
+    from types import SimpleNamespace
+    import app.modules.ai.chat.service as mod
+    assert mod._session_to_dict({"a":1})=={"a":1}
+    assert mod._session_to_dict(SimpleNamespace(to_dict=lambda:{"b":2}))=={"b":2}
+    assert mod._session_to_dict(SimpleNamespace(session_id="s"))["session_id"]=="s"
+    assert mod._normalize_runs("bad")==[]
+    assert mod._normalize_runs('{"a":1}')==[]
+    assert mod._normalize_runs('[{"a":1}]')==[{"a":1}]
+    runs=[{"messages":[{"role":"user","content":"q"},{"role":"system","content":"x"},{"role":"assistant","content":"a"}]}]
+    msgs=mod._extract_messages(runs)
+    assert [m["role"] for m in msgs]==["user","assistant"]
+    assert mod._unix_to_datetime(None) is None
+    assert mod._unix_to_datetime("bad") is None
+
+
+def test_format_session_data() -> None:
+    import json
+    import app.modules.ai.chat.service as mod
+    session={"session_id":"abcdef1234","runs":[{"messages":[{"role":"user","content":"q"}]}],"session_data":json.dumps({"session_name":"T"}),"summary":{"summary":"S"},"created_at":1}
+    out=mod._format_session_data(session)
+    assert out["title"]=="T" and out["message_count"]==1 and out["messages"][0]["role"]=="user"
+    out2=mod._format_session_data(session,with_messages=False)
+    assert out2["message_count"]==1 and out2["messages"]==[]
+    out3=mod._format_session_data({"session_id":"x","session_data":"bad"})
+    assert out3["title"]=="x" and out3["session_data"]=={}
