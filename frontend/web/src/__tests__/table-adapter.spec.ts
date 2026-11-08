@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { defaultResponseAdapter, extractTableData, updatePaginationFromResponse } from "@/utils/table";
+if (typeof window !== "undefined" && !window.matchMedia) {
+  (window as any).matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+}
+const { defaultResponseAdapter, extractTableData, updatePaginationFromResponse } = await import("@/utils/table");
 
 const page = { items: [{ id: 1 }], total: 1, page_no: 1, page_size: 10, has_next: false };
 
