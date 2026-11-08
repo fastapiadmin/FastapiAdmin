@@ -357,3 +357,24 @@ async def test_update_gen_table_columns(monkeypatch: pytest.MonkeyPatch) -> None
     out=await s.update_gen_table(data,1)
     assert out.table_name=="d"
     assert any(x[0]=="update" for x in c.calls) and any(x[0]=="create" for x in c.calls) and any(x[0]=="delete" for x in c.calls)
+
+
+async def test_sync_db_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="表名不能为空"):
+        await s.sync_db("")
+    class C:
+        def __init__(self,*a): self.obj=None
+        async def get_gen_table_by_name(self,*a,**k): return self.obj
+    c=C(); monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:c)
+    with pytest.raises(CustomException, match="业务表不存在"):
+        await s.sync_db("d")
+    c.obj=GenTableOutSchema(table_name="d")
+    with pytest.raises(CustomException, match="业务表ID不能为空"):
+        await s.sync_db("d")
+    c.obj=GenTableOutSchema(id=1,table_name="d")
+    async def cols(name): return []
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
