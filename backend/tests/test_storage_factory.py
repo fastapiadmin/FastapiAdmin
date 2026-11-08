@@ -20,3 +20,10 @@ def test_factory_creates_local(tmp_path) -> None:
     from app.modules.task.storage.core.local_adapter import LocalStorageAdapter
     cfg = StorageAdapterConfig(protocol=StorageProtocol.LOCAL, port=0, host=str(tmp_path))
     assert isinstance(StorageAdapterFactory.create(cfg), LocalStorageAdapter)
+
+
+def test_factory_s3_requires_credentials() -> None:
+    from app.modules.task.storage.core.base import StorageAdapterConfig, StorageProtocol
+    cfg=StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="",password="x")
+    with pytest.raises(CustomException, match="AccessKeyId"):
+        StorageAdapterFactory.create(cfg)
