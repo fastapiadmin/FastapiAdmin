@@ -54,3 +54,19 @@ async def test_create_table_alter_and_execute_fail(monkeypatch: pytest.MonkeyPat
         await s.create_table("CREATE TABLE demo (id INT);")
     with pytest.raises(CustomException):
         await s.create_table("CREATE TABLE demo (id INT); ALTER TABLE demo DROP COLUMN id;")
+
+
+async def test_create_table_imports(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def check_table_exists(self,name): return False
+        async def get_gen_table_by_name(self,name): return None
+        async def execute_sql(self,sql): return True
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:C())
+    s=_svc(); called=[]
+    async def by_names(names):
+        called.append(names); return ["cfg"]
+    async def imported(tables): called.append(tables)
+    s.get_gen_db_table_list_by_name=by_names; s.import_gen_table=imported
+    assert await s.create_table("CREATE TABLE demo (id INT);") is True
+    assert called == [["demo"], ["cfg"]]
