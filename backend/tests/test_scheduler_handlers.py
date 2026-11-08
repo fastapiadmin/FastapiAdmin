@@ -310,3 +310,19 @@ def test_finish_job_record(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: job))
     SchedulerUtil._finish_job_record(job_id="3",status=2,detail=None)
     assert len(records)==1 and removed==["3"]
+
+
+def test_task_wrapper(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.core.ap_scheduler as mod
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: lambda *a,**k: "ok"))
+    assert SchedulerUtil._task_wrapper(1,"builtin:x")=="ok"
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: None))
+    assert SchedulerUtil._task_wrapper(1,"builtin:x") is None
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",False)
+    with pytest.raises(RuntimeError, match="拒绝执行"):
+        SchedulerUtil._task_wrapper(1,"print(1)")
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",True)
+    assert SchedulerUtil._task_wrapper(1,None) is None
+    assert SchedulerUtil._task_wrapper(1,"def handler(*a,**k): return 1")==1
+    with pytest.raises(ValueError, match="handler"):
+        SchedulerUtil._task_wrapper(1,"x=1")
