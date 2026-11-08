@@ -91,3 +91,50 @@ async def test_node_create_update_delete(monkeypatch: pytest.MonkeyPatch) -> Non
     with pytest.raises(CustomException, match="不能为空"):
         await s.delete([])
     await s.delete([1]); assert c.deleted==[1]
+
+
+async def test_node_connection_and_active(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.task.storage.node.service as mod
+    from app.modules.task.storage.node.schema import StorageNodeTestSchema
+    node=_node()
+    class A:
+        def __init__(self,ok=True): self.ok=ok; self.closed=False
+        async def test_connection(self): return self.ok
+        async def close(self): self.closed=True
+    class C:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return node
+        async def get(self,**kw): return None
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    a=A(); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:a))
+    assert await s.test_connection(1) is True and a.closed
+    a2=A(False); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:a2))
+    with pytest.raises(CustomException, match="连接失败"):
+        await s.test_connection(1)
+    data=StorageNodeTestSchema(protocol="s3",port=443,bucket="b",username="u",password="p",endpoint="https://e")
+    assert await s.test_config(data) is True
+    with pytest.raises(CustomException, match="连接失败"):
+        await s.test_config(data)
+
+
+async def test_active_source_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,src): self.src=src
+        async def get_or_404(self,**kw): return self.src
+        async def get(self,**kw):
+            if kw.get("is_default"): return self.src if self.src.status==0 else None
+            return self.src if self.src.status==0 else None
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    src=SimpleNamespace(id=1,status=1)
+    s._crud=lambda: C(src)
+    with pytest.raises(CustomException, match="停用"):
+        await s.get_active_source(1)
+    src2=SimpleNamespace(id=2,status=0)
+    s._crud=lambda: C(src2)
+    assert (await s.get_active_source(None)).id==2
+    class Empty:
+        async def get(self,**kw): return None
+    s._crud=lambda: Empty()
+    with pytest.raises(CustomException, match="未配置"):
+        await s.get_active_source(None)
