@@ -108,3 +108,28 @@ async def test_process_import_row_superuser(monkeypatch: pytest.MonkeyPatch) -> 
     s=UserService.__new__(UserService); s.auth=object(); s.db=object()
     out=await s._process_import_row(2,row,True)
     assert out[0]==0 and "超级管理员" in out[1]
+
+
+async def test_batch_import_validation(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class F:
+        async def read(self): return b"x"
+        async def close(self): return None
+    class X:
+        rows=[]
+        @staticmethod
+        async def aread_excel_to_dicts(contents): return X.rows
+    monkeypatch.setattr(mod,"ExcelUtil",X)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="为空"):
+        await s.batch_import(F())
+    X.rows=[{"账号":"user1"}]
+    with pytest.raises(CustomException, match="缺少必要的列"):
+        await s.batch_import(F())
+    X.rows=[{"部门编号":1,"账号":"user1","昵称":"N","邮箱":None,"手机号":None,"性别":"男","状态":"正常"}]
+    assert "成功导入" in await s.batch_import(F())
+    async def row(i,r,u): return (1,None) if i==2 else (0,"err")
+    s._process_import_row=row
+    X.rows=[{"部门编号":1,"账号":"user1","昵称":"N","邮箱":None,"手机号":None,"性别":"男","状态":"正常"}]*2
+    out=await s.batch_import(F())
+    assert "成功导入 1" in out and "err" in out
