@@ -140,3 +140,24 @@ async def test_oauth_state_and_start(monkeypatch: pytest.MonkeyPatch) -> None:
     assert await o._state_frontend_redirect(R(json.dumps({"frontend_redirect":"u"})),"s","fb") == "u"
     fallback = await o.start_oauth_login(request=object(),redis=r,provider="github",redirect_uri=None)
     assert "oauth_error" in fallback
+
+
+async def test_finish_oauth_login(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def front(redis,state,fallback): return "https://f"
+    monkeypatch.setattr(o,"_state_frontend_redirect",front)
+    async def missing(**kw): raise AssertionError("should not call")
+    monkeypatch.setattr(o,"complete_oauth_login",missing)
+    out = await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code=None,state=None)
+    assert "oauth_error" in out
+    async def err(**kw): raise CustomException(msg="bad")
+    monkeypatch.setattr(o,"complete_oauth_login",err)
+    assert "oauth_error=bad" in await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
+    async def crash(**kw): raise RuntimeError()
+    monkeypatch.setattr(o,"complete_oauth_login",crash)
+    assert "登录服务暂时不可用" in await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
+    class T:
+        access_token="a"; refresh_token="r"; token_type="bearer"
+    async def ok(**kw): return T(), "https://f"
+    monkeypatch.setattr(o,"complete_oauth_login",ok)
+    out = await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
+    assert "access_token=a" in out
