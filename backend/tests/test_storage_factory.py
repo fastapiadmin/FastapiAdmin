@@ -27,3 +27,10 @@ def test_factory_s3_requires_credentials() -> None:
     cfg=StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="",password="x")
     with pytest.raises(CustomException, match="AccessKeyId"):
         StorageAdapterFactory.create(cfg)
+
+
+def test_factory_s3_requires_bucket() -> None:
+    from app.modules.task.storage.core.base import StorageAdapterConfig, StorageProtocol
+    cfg=StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="",username="a",password="x")
+    with pytest.raises(CustomException, match="bucket"):
+        StorageAdapterFactory.create(cfg)
