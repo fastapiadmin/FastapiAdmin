@@ -299,3 +299,28 @@ async def test_ai_config_lock(monkeypatch: pytest.MonkeyPatch) -> None:
     assert r.unlocked
     with pytest.raises(CustomException, match="正在被修改"):
         async with mod._model_config_lock(R(False),1): pass
+
+
+async def test_ai_config_crud_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    from contextlib import asynccontextmanager
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import AiModelConfigSchema
+    @asynccontextmanager
+    async def lock(redis,user_id): yield
+    monkeypatch.setattr(mod,"_model_config_lock",lock)
+    class Store:
+        def __init__(self): self.d={}
+        async def get(self,k): return self.d.get(k)
+        async def set(self,k,v,expire=None): self.d[k]=v; return True
+        async def delete(self,k): self.d.pop(k,None); return True
+    st=Store(); monkeypatch.setattr(mod,"RedisCURD",lambda redis:st)
+    monkeypatch.setattr(mod,"_seal_item",lambda it:it)
+    cfg=AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k")
+    item=await mod.create_user_model_config(None,1,cfg)
+    assert st.d[mod._ai_model_active_key(1)]==item["id"]
+    await mod.update_user_model_config(None,1,item["id"],AiModelConfigSchema(name="n2",model_id="m2",base_url="https://x",api_key="k2"))
+    assert (await mod.list_user_model_configs(None,1))[0]["name"]=="n2"
+    assert await mod.delete_user_model_config(None,1,"none") is False
+    assert await mod.delete_user_model_config(None,1,item["id"]) is True
+    assert mod._ai_model_active_key(1) not in st.d
