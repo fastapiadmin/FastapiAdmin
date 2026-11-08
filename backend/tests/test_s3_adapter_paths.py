@@ -169,3 +169,24 @@ def test_s3_list_page_cursor() -> None:
     a=_a(); a.client=C()
     page=a._sync_list_page("d/",1,"c")
     assert page.has_next is True and page.next_cursor == "n" and page.items[0].key == "d/a"
+
+
+def test_s3_create_bucket_default_region() -> None:
+    a=_a({"region":"us-east-1"})
+    a._sync_create_bucket("b")
+    assert "CreateBucketConfiguration" not in a.client.calls[-1][1]
+
+
+def test_s3_get_url_and_close() -> None:
+    a=_a()
+    assert a._sync_get_url("a",10) == "https://url"
+    a._sync_close()
+    assert a.client.calls[-1][0] == "close"
+
+
+def test_s3_mkdir_rmdir() -> None:
+    a=_a()
+    a._sync_mkdir("d")
+    assert a.client.calls[-1][0] == "put_object"
+    a._sync_rmdir("d")
+    assert a.client.calls[-1][0] == "delete_object"
