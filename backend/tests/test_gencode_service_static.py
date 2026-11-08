@@ -300,7 +300,7 @@ async def test_write_plugin_migration_no_heads(monkeypatch: pytest.MonkeyPatch) 
         def get_heads(self): return []
     monkeypatch.setattr(cfg,"Config",C)
     monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
-    monkeypatch.setattr(cmd,"revision",lambda **kw: calls.append(kw))
+    monkeypatch.setattr(cmd,"revision",lambda *a,**kw: calls.append(kw))
     s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
     assert calls and calls[0]["head"] is None
