@@ -53,3 +53,21 @@ async def test_validate_nodes(monkeypatch) -> None:
     assert calls==[]
     await s._validate_nodes([WorkflowSourceSchema(source_id=1)],[WorkflowTargetSchema(target_id=2,target_path="/a")])
     assert calls==[[1,2]]
+
+
+async def test_workflow_delete(monkeypatch) -> None:
+    import pytest
+    from app.core.exceptions import CustomException
+    import app.modules.task.storage.workflow.service as mod
+    calls=[]
+    class C:
+        def __init__(self,*a): pass
+        async def delete(self,ids): calls.append(("flow",ids))
+        async def hard_delete_by_flow_ids(self,ids): calls.append(("child",ids))
+    monkeypatch.setattr(mod,"WorkflowNodeCRUD",C); monkeypatch.setattr(mod,"WorkflowEdgeCRUD",C)
+    s=WorkflowService.__new__(WorkflowService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.delete([])
+    await s.delete([1])
+    assert len(calls)==3
