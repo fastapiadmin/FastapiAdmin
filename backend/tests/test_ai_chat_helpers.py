@@ -259,3 +259,19 @@ async def test_ai_probe(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(401)))
     with pytest.raises(CustomException, match="HTTP 401"):
         await mod.probe_model_connection("https://x","k","m")
+
+
+async def test_ai_config_storage_reads(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,v): self.v=v
+        async def get(self,k): return self.v
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    assert await mod._read_raw_items(R(None),1)==[]
+    assert await mod._read_raw_items(R("bad"),1)==[]
+    assert await mod._read_raw_items(R(json.dumps({"a":1})),1)==[]
+    assert await mod._read_raw_items(R(json.dumps([{"id":"a"}])),1)==[{"id":"a"}]
+    monkeypatch.setattr(mod,"_open_item",lambda it:{"id":it["id"],"api_key":"k"})
+    assert await mod.list_user_model_configs(R(json.dumps([{"id":"a"}])),1)==[{"id":"a","api_key":"k"}]
+    assert await mod.get_active_model_id(R("a"),1)=="a"
