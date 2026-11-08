@@ -44,7 +44,8 @@ async def test_create_duplicate_and_invalid_trigger() -> None:
     s, m = _svc(C2())
     try:
         with pytest.raises(Exception):
-            NodeCreateSchema(name="n", func="builtin:x", trigger="cron", trigger_args="bad")
+            data = NodeCreateSchema(name="n", func="builtin:x", trigger="cron", trigger_args="bad")
+            await s.create(data)
     finally:
         m.undo()
 
