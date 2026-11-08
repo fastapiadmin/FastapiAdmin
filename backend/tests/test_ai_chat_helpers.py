@@ -152,3 +152,46 @@ async def test_chat_non_stream_success(monkeypatch: pytest.MonkeyPatch) -> None:
     s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
     out=await s.chat_non_stream("x",None)
     assert out["response"]=="hi" and out["session_id"]=="s"
+
+
+async def _collect(gen):
+    out=[]
+    async for x in gen: out.append(x)
+    return out
+
+
+async def test_chat_query_stream_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import asyncio
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import ChatQuerySchema
+    async def ensure(crud,sid): return "s"
+    monkeypatch.setattr(mod,"_ensure_session",ensure)
+    class Crud:
+        def __init__(self,*a): self.db=object()
+    monkeypatch.setattr(mod,"ChatSessionCRUD",Crud)
+    class Agent:
+        def __init__(self,stream): self.stream=stream
+        def arun(self,**kw): return self.stream
+    class F:
+        def __init__(self,stream): self.stream=stream
+        def create_agent(self,**kw): return Agent(self.stream)
+    def svc(stream):
+        s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
+        monkeypatch.setattr(mod,"AgnoFactory",lambda:F(stream))
+        return s
+    assert await _collect(svc(None).chat_query(ChatQuerySchema(message=" "))) == ["请输入消息内容"]
+    async def chunks():
+        for c in ("a","b"):
+            yield SimpleNamespace(content=c)
+    assert await _collect(svc(chunks()).chat_query(ChatQuerySchema(message="hi"))) == ["a","b"]
+    assert await _collect(svc(SimpleNamespace(content="z")).chat_query(ChatQuerySchema(message="hi"))) == ["z"]
+    async def bad():
+        raise RuntimeError()
+        yield
+    out=await _collect(svc(bad()).chat_query(ChatQuerySchema(message="hi")))
+    assert "暂时不可用" in out[0]
+    async def cancelled():
+        raise asyncio.CancelledError()
+        yield
+    with pytest.raises(asyncio.CancelledError):
+        await _collect(svc(cancelled()).chat_query(ChatQuerySchema(message="hi")))
