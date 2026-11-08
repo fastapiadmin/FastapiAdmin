@@ -208,3 +208,13 @@ def test_s3_operation_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(RuntimeError): a._sync_delete("a")
     with pytest.raises(RuntimeError): a._sync_list_buckets()
     with pytest.raises(RuntimeError): a._sync_get_url("a",1)
+
+
+def test_s3_list_errors_and_close_missing() -> None:
+    a=_a()
+    def fail(**kw): raise RuntimeError("x")
+    a.client.list_objects_v2=fail
+    with pytest.raises(RuntimeError): a._sync_list("d/")
+    with pytest.raises(RuntimeError): a._sync_list_page("d/",1,None)
+    del a.client.close
+    a._sync_close()
