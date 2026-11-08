@@ -216,4 +216,4 @@ def test_resolve_builtin_import_branches(monkeypatch: pytest.MonkeyPatch) -> Non
     g.__module__="other"
     monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m5", f=g))
     with pytest.raises(ValueError, match="必须在本模块"):
-        SchedulerUtil.resolve_builtin_handler("builtin:m.f")
+        SchedulerUtil.resolve_builtin_handler("builtin:m5.f")
