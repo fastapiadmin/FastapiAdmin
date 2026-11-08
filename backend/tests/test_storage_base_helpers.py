@@ -40,3 +40,30 @@ def test_storage_object_page() -> None:
     o = StorageObject(name="a", key="a", size=1)
     p = StoragePage(items=[o], has_next=True, next_cursor="c")
     assert p.items[0].name == "a" and p.has_next is True
+
+
+def test_adapter_bucket_and_multipart() -> None:
+    from app.core.exceptions import CustomException
+    from app.modules.task.storage.core.base import StorageAdapter, StorageAdapterConfig
+    cfg=StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="u",password="p")
+    a=StorageAdapter.__new__(StorageAdapter); a.config=cfg; a.bucket_name=cfg.bucket
+    assert a._require_bucket()=="b"
+    a.set_bucket("b2"); assert a.bucket_name=="b2"
+    a.bucket_name=""
+    try:
+        a._require_bucket()
+    except CustomException:
+        pass
+    else:
+        raise AssertionError("expected")
+    cfg.multipart_part_size=50; cfg.multipart_concurrency=6; cfg.multipart_memory_budget=512
+    assert a._multipart_settings()==(50*1024*1024,6,True)
+    cfg.transfer_mode="stream"
+    assert a._multipart_settings()[2] is False
+
+
+def test_entries_from_keys() -> None:
+    from app.modules.task.storage.core.base import StorageAdapter
+    items=StorageAdapter._entries_from_keys(["a/b/","a/b/c","a/d","a/b",""])
+    assert [x.key for x in items if x.is_dir]==["a","a/b"]
+    assert [x.key for x in items if not x.is_dir]==["a/b/c","a/d"]
