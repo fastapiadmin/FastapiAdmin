@@ -128,3 +128,18 @@ async def test_update_type_status_cascade(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr(RedisCURD,"set",staticmethod(set_))
     out=await s.update(object(),1,DictTypeUpdateSchema(dict_name="n",dict_type="t",status=1))
     assert out.dict_type == "t"
+
+
+async def test_delete_type_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1,dict_type="t")]
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    s=_svc(monkeypatch,C,D)
+    from app.core.redis_crud import RedisCURD
+    async def bad(key): raise RuntimeError()
+    monkeypatch.setattr(RedisCURD,"delete",staticmethod(bad))
+    with pytest.raises(RuntimeError):
+        await s.delete(object(),[1])
