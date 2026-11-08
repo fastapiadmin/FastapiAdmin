@@ -78,3 +78,31 @@ def test_entries_from_keys() -> None:
     items=BaseStorageAdapter._entries_from_keys(["a/b/","a/b/c","a/d","a/b",""])
     assert [x.key for x in items if x.is_dir]==["a","a/b"]
     assert [x.key for x in items if not x.is_dir]==["a/b","a/b/c","a/d"]
+
+
+def test_recursive_dir_ops(tmp_path) -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig, StorageObject
+    class D(BaseStorageAdapter):
+        def __init__(self,cfg): super().__init__(cfg); self.calls=[]
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b): self.calls.append(("up",a,b)); return b
+        def _sync_download(self,a,b): return b
+        def _sync_delete(self,a): self.calls.append(("del",a))
+        def _sync_exists(self,a): return False
+        def _sync_list(self,a): return []
+        def _sync_mkdir(self,a): self.calls.append(("mkdir",a))
+        def _sync_rmdir(self,a): self.calls.append(("rmdir",a))
+        def _sync_rename(self,a,b): return None
+        def _sync_copy(self,a,b): self.calls.append(("copy",a,b))
+        def _sync_list_recursive(self,prefix):
+            return [StorageObject(name="sub",key="src/sub",is_dir=True),StorageObject(name="a",key="src/sub/a",is_dir=False)]
+    cfg=StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket="")
+    a=D(cfg)
+    a._sync_copy_dir("src/","dst/")
+    assert ("mkdir","dst/sub") in a.calls and ("copy","src/sub/a","dst/sub/a") in a.calls
+    a.calls.clear(); a._sync_move_dir("src","dst")
+    assert any(c[0]=="copy" for c in a.calls) and any(c[0]=="del" for c in a.calls)
+    a.calls.clear(); a._sync_delete_dir("src")
+    assert any(c[0]=="del" for c in a.calls)
+    with pytest.raises(Exception):
+        a._sync_upload_dir(str(tmp_path/"missing"),"r",1)
