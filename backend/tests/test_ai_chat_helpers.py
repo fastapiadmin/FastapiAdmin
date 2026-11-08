@@ -374,3 +374,16 @@ def test_format_session_data() -> None:
     assert out2["message_count"]==1 and out2["messages"]==[]
     out3=mod._format_session_data({"session_id":"x","session_data":"bad"})
     assert out3["title"]=="x" and out3["session_data"]=={}
+
+
+async def test_ensure_session_and_tools(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    assert await mod._ensure_session(object(),"s")=="s"
+    class C:
+        async def create(self,data): return SimpleNamespace(session_id="new")
+    assert await mod._ensure_session(C(),None)=="new"
+    s=ChatService.__new__(ChatService); s.auth=object(); s.redis=None
+    assert s._chat_tools(False)==[]
+    import app.modules.ai.tools.registry as reg
+    monkeypatch.setattr(reg,"build_readonly_tools",lambda auth,redis: [SimpleNamespace(func="f")])
+    assert s._chat_tools(True)==["f"]
