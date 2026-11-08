@@ -44,9 +44,9 @@ def test_storage_object_page() -> None:
 
 def test_adapter_bucket_and_multipart() -> None:
     from app.core.exceptions import CustomException
-    from app.modules.task.storage.core.base import StorageAdapter, StorageAdapterConfig
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig
     cfg=StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="u",password="p")
-    a=StorageAdapter.__new__(StorageAdapter); a.config=cfg; a.bucket_name=cfg.bucket
+    a=BaseStorageAdapter.__new__(StorageAdapter); a.config=cfg; a.bucket_name=cfg.bucket
     assert a._require_bucket()=="b"
     a.set_bucket("b2"); assert a.bucket_name=="b2"
     a.bucket_name=""
@@ -63,7 +63,7 @@ def test_adapter_bucket_and_multipart() -> None:
 
 
 def test_entries_from_keys() -> None:
-    from app.modules.task.storage.core.base import StorageAdapter
-    items=StorageAdapter._entries_from_keys(["a/b/","a/b/c","a/d","a/b",""])
+    from app.modules.task.storage.core.base import BaseStorageAdapter
+    items=BaseStorageAdapter._entries_from_keys(["a/b/","a/b/c","a/d","a/b",""])
     assert [x.key for x in items if x.is_dir]==["a","a/b"]
     assert [x.key for x in items if not x.is_dir]==["a/b/c","a/d"]
