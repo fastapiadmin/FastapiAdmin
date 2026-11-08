@@ -38,3 +38,18 @@ def test_split_graph_valid_duplicate_self() -> None:
         WorkflowService._split_graph({"nodes":nodes,"edges":[{"id":"e","source":"s","target":"s"}]})
     with pytest.raises(CustomException, match="连线"):
         WorkflowService._split_graph({"nodes":nodes,"edges":[{"id":"e","source":"x","target":"y"}]})
+
+
+async def test_validate_nodes(monkeypatch) -> None:
+    import app.modules.task.storage.workflow.service as mod
+    from app.modules.task.storage.workflow.schema import WorkflowSourceSchema, WorkflowTargetSchema
+    calls=[]
+    class N:
+        def __init__(self,*a): pass
+        async def get_active_sources(self,ids): calls.append(ids)
+    monkeypatch.setattr(mod,"StorageNodeService",N)
+    s=WorkflowService.__new__(WorkflowService); s.auth=object(); s.db=object()
+    await s._validate_nodes([],[])
+    assert calls==[]
+    await s._validate_nodes([WorkflowSourceSchema(source_id=1)],[WorkflowTargetSchema(target_id=2,target_path="/a")])
+    assert calls==[[1,2]]
