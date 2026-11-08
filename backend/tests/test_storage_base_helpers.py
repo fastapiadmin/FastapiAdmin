@@ -222,3 +222,21 @@ def test_parse_advanced_config_protocols() -> None:
     assert parse_advanced_config(StorageProtocol.OSS,{}) is not None
     assert parse_advanced_config(StorageProtocol.OBS,{}) is not None
     assert parse_advanced_config(StorageProtocol.COS,{}) is not None
+
+
+async def test_base_optional_wrappers() -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig
+    class D(BaseStorageAdapter):
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b): return b
+        def _sync_download(self,a,b): return b
+        def _sync_delete(self,a): pass
+        def _sync_exists(self,a): return False
+        def _sync_list(self,a): return []
+        def _sync_mkdir(self,a): pass
+        def _sync_rmdir(self,a): pass
+        def _sync_rename(self,a,b): pass
+        def _sync_copy(self,a,b): pass
+    d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
+    assert await d.get_url("a") is None
+    await d.close()
