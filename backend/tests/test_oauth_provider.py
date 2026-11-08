@@ -158,3 +158,11 @@ async def test_finish_oauth_login(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(o,"complete_oauth_login",ok)
     out = await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
     assert "access_token=a" in out
+
+
+async def test_start_oauth_login_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def save(**kw): return None
+    monkeypatch.setattr(o,"save_oauth_state",save)
+    monkeypatch.setattr(o,"_callback_url",lambda req,p:"https://cb")
+    monkeypatch.setattr(o,"build_authorize_url",lambda **kw:"https://auth")
+    assert await o.start_oauth_login(request=object(),redis=object(),provider="github",redirect_uri="https://f") == "https://auth"
