@@ -115,6 +115,7 @@ async def test_node_connection_and_active(monkeypatch: pytest.MonkeyPatch) -> No
     data=StorageNodeTestSchema(protocol="s3",port=443,bucket="b",username="u",password="p",endpoint="https://e")
     a3=A(); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:a3))
     assert await s.test_config(data) is True
+    a4=A(False); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:a4))
     with pytest.raises(CustomException, match="连接失败"):
         await s.test_config(data)
 
