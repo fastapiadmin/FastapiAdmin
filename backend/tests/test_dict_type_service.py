@@ -96,3 +96,18 @@ async def test_dict_type_set_available(monkeypatch: pytest.MonkeyPatch) -> None:
     s = _svc(monkeypatch, C)
     from app.core.base_schema import BatchSetAvailable
     await s.set_available(BatchSetAvailable(ids=[1], status=1))
+
+
+async def test_update_type_no_cascade(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): self.obj=SimpleNamespace(dict_name="n",dict_type="t",status=0,id=1)
+        async def get_or_404(self,**kw): return self.obj
+        async def update(self,**kw): return self.obj
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    s=_svc(monkeypatch,C,D)
+    from app.core.redis_crud import RedisCURD
+    async def set_(key,value,expire=None): return True
+    monkeypatch.setattr(RedisCURD,"set",staticmethod(set_))
+    assert (await s.update(object(),1,DictTypeUpdateSchema(dict_name="n",dict_type="t",status=0))).dict_type == "t"
