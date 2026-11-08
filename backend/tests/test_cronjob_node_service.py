@@ -58,3 +58,35 @@ async def test_batch_set_status_empty() -> None:
             await s.batch_set_status([], 0)
     finally:
         m.undo()
+
+
+async def test_node_update_delete_execute(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.cronjob.node.schema import NodeUpdateSchema
+    class C:
+        def __init__(self,obj=None): self.obj=obj; self.deleted=None; self.cleared=False
+        async def get_obj_by_id_crud(self,**kw): return self.obj
+        async def update_obj_crud(self,**kw): return self.obj
+        async def delete_obj_crud(self,ids): self.deleted=ids
+        async def clear_obj_crud(self): self.cleared=True
+    c=C(None); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="更新失败"):
+        await s.update(1,NodeUpdateSchema(name="n",func="builtin:x"))
+    with pytest.raises(CustomException, match="删除失败"):
+        await s.delete([1])
+    with pytest.raises(CustomException, match="执行失败"):
+        await s.execute(1)
+    async def noop(*a,**k): return None
+    monkeypatch.setattr(mod,"unregister_node_job",noop)
+    monkeypatch.setattr(mod,"SchedulerUtil",SimpleNamespace(clear_jobs=lambda:None))
+    await s.clear(); assert c.cleared
+    obj=SimpleNamespace(id=1,name="n",func="builtin:x",status=0)
+    c.obj=obj
+    async def ok(*a,**k): return None
+    monkeypatch.setattr(mod,"register_node_job",ok)
+    async def enrich(items): return None
+    s._enrich_runtime=enrich
+    out=await s.update(1,NodeUpdateSchema(name="n",func="builtin:x"))
+    assert out.id==1
+    monkeypatch.setattr(mod,"run_node_once",lambda **kw:"tmp")
+    assert (await s.execute(1)).job_id=="tmp"
