@@ -96,6 +96,7 @@ D 包含四个独立目标：
 | 前端 `node_modules` 被 npm 临时安装污染，出现 60 个假类型错误 | 按 `pnpm-lock.yaml` 冻结重装，`vue-tsc` 恢复 0 错误 |
 | 部署脚本重复（deploy.sh / deploy-artifacts.sh） | 合并为统一 `deploy.sh`，文档同步 |
 | 代码生成新增字段重复传 `table_id`，新增列必然 TypeError | 字段 dump 排除 `table_id`，由外层统一传 |
+| 目录复制目标带尾斜杠时生成 `dst//sub` 双斜杠 key | `_sync_copy_dir` 对 dst 去尾斜杠 |
 
 ## 现实约束
 
