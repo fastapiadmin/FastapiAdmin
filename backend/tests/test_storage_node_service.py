@@ -171,3 +171,29 @@ async def test_node_update_and_password_fallback(monkeypatch: pytest.MonkeyPatch
     data=StorageNodeTestSchema(protocol="s3",port=443,bucket="b",username="u",endpoint="https://e",node_id=1)
     assert await s.test_config(data) is True
     assert captured["cfg"].password == "p"
+
+
+async def test_active_sources_branches() -> None:
+    class C:
+        def __init__(self,objs): self.objs=objs
+        async def get_list(self,**kw): return self.objs
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    s._crud=lambda: C([])
+    assert await s.get_active_sources([])==[]
+    s._crud=lambda: C([])
+    with pytest.raises(CustomException, match="不存在"):
+        await s.get_active_sources([1])
+    s._crud=lambda: C([SimpleNamespace(id=1,status=1,name="n")])
+    with pytest.raises(CustomException, match="已停用"):
+        await s.get_active_sources([1])
+    s._crud=lambda: C([SimpleNamespace(id=1,status=0,name="n")])
+    assert (await s.get_active_sources([1]))[0].id==1
+
+
+async def test_import_empty() -> None:
+    class C:
+        async def get_list(self): return []
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    out=await s.import_config({"version":1,"nodes":[]})
+    assert out["created"]==0
