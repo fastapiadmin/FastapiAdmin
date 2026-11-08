@@ -50,7 +50,7 @@ async def test_export_empty(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_node_queries(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.modules.task.storage.node.schema import StorageNodeOutSchema
     from app.core.base_schema import PageResultSchema
-    node=StorageNodeOutSchema(name="n",protocol="s3",port=443,bucket="b",username="u",password="x")
+    node=StorageNodeOutSchema(name="n",protocol="s3",port=443,bucket="b",username="u",password="x",endpoint="https://e")
     class C:
         async def get_or_404(self,**kw): return node
         async def page(self,**kw): return PageResultSchema(page_no=1,page_size=10,total=1,has_next=False,items=[node])
