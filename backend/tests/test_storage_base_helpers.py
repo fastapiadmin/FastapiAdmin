@@ -190,3 +190,26 @@ async def test_base_async_wrappers() -> None:
     assert await d.exists("a") is True
     await d.mkdir("d"); await d.rmdir("d"); await d.rename("a","b"); await d.copy("a","b")
     assert d.calls==["up","down","del","mkdir","rmdir","rename","copy"]
+
+
+async def test_base_unsupported_and_recursive() -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig, StorageObject
+    class D(BaseStorageAdapter):
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b): return b
+        def _sync_download(self,a,b): return b
+        def _sync_delete(self,a): pass
+        def _sync_exists(self,a): return False
+        def _sync_list(self,prefix):
+            return [StorageObject(name="f",key=f"{prefix}/f",is_dir=False),StorageObject(name="d",key=f"{prefix}/d",is_dir=True)] if prefix!="d" else []
+        def _sync_mkdir(self,a): pass
+        def _sync_rmdir(self,a): pass
+        def _sync_rename(self,a,b): pass
+        def _sync_copy(self,a,b): pass
+    d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
+    with pytest.raises(NotImplementedError):
+        await d.list_buckets()
+    with pytest.raises(NotImplementedError):
+        await d.create_bucket("b")
+    keys=[x.key for x in d._sync_list_recursive("")]
+    assert "f" in keys and "d" in keys
