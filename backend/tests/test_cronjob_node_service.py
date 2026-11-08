@@ -90,3 +90,27 @@ async def test_node_update_delete_execute(monkeypatch: pytest.MonkeyPatch) -> No
     assert out.id==1
     monkeypatch.setattr(mod,"run_node_once",lambda **kw:"tmp")
     assert (await s.execute(1)).job_id=="tmp"
+
+
+async def test_batch_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self): self.set_called=None
+        async def get_obj_by_id_crud(self,**kw): return SimpleNamespace(id=kw["id"],func="builtin:x") if kw["id"]==1 else None
+        async def set(self,**kw): self.set_called=kw
+    c=C(); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    reg=[]; unreg=[]
+    monkeypatch.setattr(mod,"register_node_job",lambda obj:reg.append(obj.id))
+    monkeypatch.setattr(mod,"unregister_node_job",lambda node_id:unreg.append(node_id))
+    await s.batch_set_status([1],1)
+    assert unreg==[1] and c.set_called["status"]==1
+    await s.batch_set_status([1,2],0)
+    assert reg==[1] and c.set_called["status"]==0
+
+
+async def test_get_list_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        async def get_obj_list_crud(self,**kw): return []
+    monkeypatch.setattr(mod,"NodeCRUD",lambda *a:C())
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    assert await s.get_list()==[]
