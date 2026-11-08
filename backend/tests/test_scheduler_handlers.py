@@ -217,3 +217,26 @@ def test_resolve_builtin_import_branches(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m5", f=g))
     with pytest.raises(ValueError, match="必须在本模块"):
         SchedulerUtil.resolve_builtin_handler("builtin:m5.f")
+
+
+def test_temp_job_id_helpers() -> None:
+    assert SchedulerUtil._is_temp_job_id("1:manual:x")
+    assert SchedulerUtil._is_temp_job_id("1_run_now_x")
+    assert not SchedulerUtil._is_temp_job_id("1")
+    assert SchedulerUtil._normalize_job_id("1:manual:x")=="1"
+    assert SchedulerUtil._normalize_job_id("2_run_now_x")=="2"
+    assert SchedulerUtil._normalize_job_id("3")=="3"
+
+
+def test_get_trigger_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from apscheduler.triggers.cron import CronTrigger
+    from apscheduler.triggers.interval import IntervalTrigger
+    from apscheduler.triggers.date import DateTrigger
+    assert SchedulerUtil._get_trigger_type("x")=="manual"
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=CronTrigger())))
+    assert SchedulerUtil._get_trigger_type("x")=="cron"
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=IntervalTrigger(seconds=1))))
+    assert SchedulerUtil._get_trigger_type("x")=="interval"
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=DateTrigger(run_date="2099-01-01"))))
+    assert SchedulerUtil._get_trigger_type("x")=="date"
