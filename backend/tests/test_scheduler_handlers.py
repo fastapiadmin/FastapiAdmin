@@ -268,6 +268,7 @@ def test_job_status_and_run_now(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: SimpleNamespace(next_run_time="x")))
     monkeypatch.setattr(mod.scheduler,"state",0,raising=False)
     assert SchedulerUtil.get_job_status(1)==2
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: None))
     assert SchedulerUtil.run_job_now(1) is None
     job=SimpleNamespace(func=lambda:None,args=[],kwargs={},name="n",executor="default")
     monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: job))
