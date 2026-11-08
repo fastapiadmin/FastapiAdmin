@@ -291,3 +291,22 @@ def test_dispatch_job_event(monkeypatch: pytest.MonkeyPatch) -> None:
     assert len(recorded)==2 and recorded[0]["status"]==2 and recorded[1]["status"]==3
     for code in (EVENT_JOB_MISSED,EVENT_JOB_SUBMITTED,EVENT_JOB_REMOVED):
         SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=3,code=code))
+
+
+def test_finish_job_record(monkeypatch: pytest.MonkeyPatch) -> None:
+    from apscheduler.triggers.date import DateTrigger
+    from types import SimpleNamespace
+    records=[]; removed=[]
+    monkeypatch.setattr(SchedulerUtil,"_record_job_log",classmethod(lambda cls,r: records.append(r)))
+    monkeypatch.setattr(SchedulerUtil,"remove_job",classmethod(lambda cls,job_id: removed.append(job_id)))
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: None))
+    SchedulerUtil._finish_job_record(job_id="1:manual:x",status=2,detail="ok")
+    assert len(records)==1 and removed==["1:manual:x"]
+    records.clear(); removed.clear()
+    SchedulerUtil._finish_job_record(job_id="2",status=3,detail=RuntimeError("bad"))
+    assert len(records)==1 and records[0]["error"] and removed==[]
+    records.clear()
+    job=SimpleNamespace(name="n",next_run_time=None,trigger=DateTrigger(run_date="2099-01-01"))
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: job))
+    SchedulerUtil._finish_job_record(job_id="3",status=2,detail=None)
+    assert len(records)==1 and removed==["3"]
