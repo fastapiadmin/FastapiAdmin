@@ -277,3 +277,17 @@ def test_job_status_and_run_now(monkeypatch: pytest.MonkeyPatch) -> None:
         def add_job(self,**kw): self.kw=kw; return "temp"
     s=S(); monkeypatch.setattr(mod,"scheduler",s)
     assert SchedulerUtil.run_job_now(1)=="temp" and "1_run_now_" in s.kw["id"]
+
+
+def test_dispatch_job_event(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED, EVENT_JOB_SUBMITTED, EVENT_JOB_REMOVED
+    recorded=[]
+    monkeypatch.setattr(SchedulerUtil,"_finish_job_record",classmethod(lambda cls,**kw: recorded.append(kw)))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(code=EVENT_JOB_EXECUTED))
+    assert recorded==[]
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=1,code=EVENT_JOB_EXECUTED,retval="ok"))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=2,code=EVENT_JOB_ERROR,exception=RuntimeError("x")))
+    assert len(recorded)==2 and recorded[0]["status"]==2 and recorded[1]["status"]==3
+    for code in (EVENT_JOB_MISSED,EVENT_JOB_SUBMITTED,EVENT_JOB_REMOVED):
+        SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=3,code=code))
