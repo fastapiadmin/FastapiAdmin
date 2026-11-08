@@ -61,7 +61,7 @@ async def test_batch_import_missing_headers() -> None:
 
 async def test_process_import_row_branches(monkeypatch: pytest.MonkeyPatch) -> None:
     import app.modules.system.user.service as mod
-    row={"username":"u","name":"N","dept_id":1,"email":"a@b.com","mobile":"13800000000","gender":"男","status":"正常"}
+    row={"username":"user1","name":"N","dept_id":1,"email":"a@b.com","mobile":"13800000000","gender":"男","status":"正常"}
     class D:
         def __init__(self,*a): pass
         async def get(self,**kw): return object()
