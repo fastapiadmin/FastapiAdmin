@@ -201,7 +201,7 @@ async def test_base_unsupported_and_recursive() -> None:
         def _sync_delete(self,a): pass
         def _sync_exists(self,a): return False
         def _sync_list(self,prefix):
-            return [StorageObject(name="f",key=f"{prefix}/f",is_dir=False),StorageObject(name="d",key=f"{prefix}/d",is_dir=True)] if prefix!="d" else []
+            return [StorageObject(name="f",key=f"{prefix}f",is_dir=False),StorageObject(name="d",key=f"{prefix}d",is_dir=True)] if prefix!="d" else []
         def _sync_mkdir(self,a): pass
         def _sync_rmdir(self,a): pass
         def _sync_rename(self,a,b): pass
