@@ -127,3 +127,28 @@ async def test_chat_non_stream_error(monkeypatch: pytest.MonkeyPatch) -> None:
     s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
     out=await s.chat_non_stream("x",None)
     assert out["action"] is None and "暂时不可用" in out["response"]
+
+
+def test_extract_action_branches() -> None:
+    assert ChatService._extract_action('{"type":"x"}') == {"type":"x"}
+    assert ChatService._extract_action('```json\n{"type":"y"}\n```') == {"type":"y"}
+    assert ChatService._extract_action('```json{bad}```') is None
+    assert ChatService._extract_action("请打开用户管理页面") == {"type":"navigate","path":"/system/user","name":"用户管理"}
+    assert ChatService._extract_action("打开未知页面") is None
+
+
+async def test_chat_non_stream_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    async def ensure(crud,sid): return "s"
+    monkeypatch.setattr(mod,"_ensure_session",ensure)
+    class Crud:
+        def __init__(self,*a): self.db=object()
+    monkeypatch.setattr(mod,"ChatSessionCRUD",Crud)
+    class Agent:
+        async def arun(self,input): return SimpleNamespace(content="hi")
+    class F:
+        def create_agent(self,**kw): return Agent()
+    monkeypatch.setattr(mod,"AgnoFactory",F)
+    s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
+    out=await s.chat_non_stream("x",None)
+    assert out["response"]=="hi" and out["session_id"]=="s"
