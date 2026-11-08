@@ -227,3 +227,35 @@ async def test_ai_config_service(monkeypatch: pytest.MonkeyPatch) -> None:
     await s.set_active("a")
     with pytest.raises(CustomException, match="不存在"):
         await s.set_active("b")
+
+
+async def test_ai_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,status=200,data=None): self.status_code=status; self._data=data or {}
+        def json(self): return self._data
+    class C:
+        def __init__(self,resp=None,err=None): self.resp=resp; self.err=err
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+        async def get(self,*a,**k):
+            if self.err: raise self.err
+            return self.resp
+        async def post(self,*a,**k):
+            if self.err: raise self.err
+            return self.resp
+    def client(resp=None,err=None): return lambda *a,**k:C(resp,err)
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(200,{"data":[{"id":"m","owned_by":"o"},{"bad":1}]})))
+    assert await mod.probe_available_models("https://x/","k")==[{"id":"m","owned_by":"o"}]
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(500)))
+    with pytest.raises(CustomException, match="HTTP 500"):
+        await mod.probe_available_models("https://x","k")
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(err=mod.httpx.HTTPError("x")))
+    with pytest.raises(CustomException, match="请求模型列表失败"):
+        await mod.probe_available_models("https://x","k")
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(200)))
+    out=await mod.probe_model_connection("https://x","k","m")
+    assert out["ok"] is True and out["model_id"]=="m"
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(401)))
+    with pytest.raises(CustomException, match="HTTP 401"):
+        await mod.probe_model_connection("https://x","k","m")
