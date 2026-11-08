@@ -237,4 +237,4 @@ def test_oauth_redirects() -> None:
     err=o._frontend_error_redirect("https://f/login?x=1","bad msg")
     assert "oauth_error=" in err and "bad" in err
     ok=o._frontend_success_redirect("https://f", "a b", "r", "bearer")
-    assert "access_token=a%20b" in ok and "refresh_token=r" in ok
+    assert "access_token=a+b" in ok and "refresh_token=r" in ok
