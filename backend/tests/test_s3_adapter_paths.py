@@ -192,3 +192,19 @@ def test_s3_mkdir_rmdir() -> None:
     assert a.client.calls[-1][0] == "put_object"
     a._sync_rmdir("d")
     assert a.client.calls[-1][0] == "delete_object"
+
+
+def test_s3_operation_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    a=_a()
+    a._multipart_settings=lambda: (1,1,True)
+    import app.modules.task.storage.core.s3_adapter as mod
+    from types import SimpleNamespace
+    monkeypatch.setattr(mod,"boto_transfer",SimpleNamespace(TransferConfig=lambda **kw: kw))
+    for name in ("upload_file","download_file","delete_object","list_buckets","generate_presigned_url"):
+        def fail(*args,**kw): raise RuntimeError("x")
+        setattr(a.client,name,fail)
+    with pytest.raises(RuntimeError): a._sync_upload("/tmp/a","a")
+    with pytest.raises(RuntimeError): a._sync_download("a","/tmp/a")
+    with pytest.raises(RuntimeError): a._sync_delete("a")
+    with pytest.raises(RuntimeError): a._sync_list_buckets()
+    with pytest.raises(RuntimeError): a._sync_get_url("a",1)
