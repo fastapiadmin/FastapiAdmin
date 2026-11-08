@@ -330,3 +330,14 @@ async def test_update_same_mobile_email(monkeypatch: pytest.MonkeyPatch) -> None
     async def noop(*a,**k): return None
     s._set_user_roles=noop; s._set_user_positions=noop
     assert await s.update(1, UserUpdateSchema(mobile="13800000000", email="a@b.com")) == "ok"
+
+
+async def test_current_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1,username="u",name="U",dept=None,roles=[],positions=[],is_superuser=False)
+    s=_svc(monkeypatch,U)
+    async def menus(): return []
+    s._load_menus=menus
+    out=await s.current_info()
+    assert out.id == 1
