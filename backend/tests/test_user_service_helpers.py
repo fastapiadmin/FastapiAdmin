@@ -5,6 +5,7 @@ from __future__ import annotations
 from io import BytesIO
 
 import pytest
+from types import SimpleNamespace
 from openpyxl import load_workbook
 from starlette.datastructures import UploadFile
 
