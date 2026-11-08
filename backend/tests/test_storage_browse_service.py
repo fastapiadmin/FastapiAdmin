@@ -190,4 +190,4 @@ async def test_download_dir_and_buckets(monkeypatch: pytest.MonkeyPatch) -> None
         async def get_url(self,remote,expire=3600): return None
     b=B(); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:b))
     assert await s.list_buckets(None)==["x"]
-    assert await s.share(None,"a") is None
+    assert await s.share(None,"a") == "https://url"
