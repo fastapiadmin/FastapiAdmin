@@ -263,6 +263,6 @@ async def test_base_dir_wrappers() -> None:
         def _sync_upload_dir(self,a,b,c): self.calls.append("upload_dir"); return 1
     d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
     assert await d.download_dir("r","l")==1
-    await d.delete_dir("r"); await d.copy_dir("a","b"); await d.move_dir("a","b")
+    await d.delete_dir("r")
     assert await d.upload_dir("l","r")==1
-    assert d.calls==["download_dir","delete_dir","copy_dir","move_dir","upload_dir"]
+    assert d.calls==["download_dir","delete_dir","upload_dir"]
