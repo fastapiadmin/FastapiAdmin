@@ -108,3 +108,38 @@ def test_recursive_dir_ops(tmp_path) -> None:
     assert any(c[0]=="del" for c in a.calls)
     with pytest.raises(Exception):
         a._sync_upload_dir(str(tmp_path/"missing"),"r",1)
+
+
+def test_bulk_upload_download(tmp_path) -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig, StorageObject
+    class D(BaseStorageAdapter):
+        def __init__(self,cfg): super().__init__(cfg); self.fail=False; self.entries=[]
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b):
+            if self.fail: raise RuntimeError("up")
+            return b
+        def _sync_download(self,a,b):
+            if self.fail: raise RuntimeError("down")
+            Path(b).write_text("x"); return b
+        def _sync_delete(self,a): pass
+        def _sync_exists(self,a): return False
+        def _sync_list(self,a): return []
+        def _sync_mkdir(self,a): pass
+        def _sync_rmdir(self,a): pass
+        def _sync_rename(self,a,b): pass
+        def _sync_copy(self,a,b): pass
+        @property
+        def concurrency_safe(self): return True
+        def _sync_list_recursive(self,prefix): return self.entries
+    cfg=StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket="")
+    d=tmp_path/"src"; d.mkdir(); (d/"a.txt").write_text("a"); (d/"sub").mkdir(); (d/"sub"/"b.txt").write_text("b")
+    a=D(cfg)
+    assert a._sync_upload_dir(str(d),"r",2)==2
+    assert a._sync_upload_dir(str(tmp_path/"empty"),"r",2)==0 if (tmp_path/"empty").mkdir() is None else True
+    a.fail=True
+    with pytest.raises(RuntimeError): a._sync_upload_dir(str(d),"r",2)
+    a.fail=False; a.entries=[StorageObject(name="a",key="r/a",is_dir=False)]
+    assert a._sync_download_dir("r",str(tmp_path/"out"),2)==1
+    a.entries=[]; assert a._sync_download_dir("r",str(tmp_path/"out"),2)==0
+    a.entries=[StorageObject(name="a",key="r/a",is_dir=False)]; a.fail=True
+    with pytest.raises(RuntimeError): a._sync_download_dir("r",str(tmp_path/"out2"),2)
