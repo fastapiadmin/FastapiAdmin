@@ -263,3 +263,16 @@ async def test_package_directory_existing_with_parent() -> None:
         async def get(self,**kw): return SimpleNamespace(id=7)
     s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     assert await s._get_or_create_package_directory_menu(M(),1,"module_demo","demo","demo") == 7
+
+
+async def test_delete_gen_table(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    class C:
+        def __init__(self,*a): pass
+        async def delete_gen_table_column_by_table_id_crud(self, ids): self.cols=ids
+        async def delete_gen_table(self, ids): self.tables=ids
+    monkeypatch.setattr(mod,"GenTableCRUD",C); monkeypatch.setattr(mod,"GenTableColumnCRUD",C)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.delete_gen_table([])
+    await s.delete_gen_table([1])
