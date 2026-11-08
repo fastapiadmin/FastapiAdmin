@@ -166,3 +166,13 @@ async def test_start_oauth_login_success(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(o,"_callback_url",lambda req,p:"https://cb")
     monkeypatch.setattr(o,"build_authorize_url",lambda **kw:"https://auth")
     assert await o.start_oauth_login(request=object(),redis=object(),provider="github",redirect_uri="https://f") == "https://auth"
+
+
+async def test_finish_oauth_login_generic_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    from urllib.parse import unquote
+    async def front(redis,state,fallback): return "https://f"
+    monkeypatch.setattr(o,"_state_frontend_redirect",front)
+    async def crash(**kw): raise RuntimeError()
+    monkeypatch.setattr(o,"complete_oauth_login",crash)
+    out = await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
+    assert "登录服务暂时不可用" in unquote(out)
