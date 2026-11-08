@@ -140,3 +140,34 @@ async def test_active_source_branches(monkeypatch: pytest.MonkeyPatch) -> None:
     s._crud=lambda: Empty()
     with pytest.raises(CustomException, match="未配置"):
         await s.get_active_source(None)
+
+
+async def test_node_update_and_password_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.task.storage.node.service as mod
+    from app.modules.task.storage.node.schema import StorageNodeUpdateSchema, StorageNodeTestSchema
+    node=_node()
+    class C:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return node
+        async def get(self,**kw): return SimpleNamespace(id=2)
+        async def update(self,**kw): return None
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    with pytest.raises(CustomException, match="名称已存在"):
+        await s.update(1, StorageNodeUpdateSchema(name="n",protocol="s3",port=443,bucket="b",username="u",endpoint="https://e"))
+    class C2(C):
+        async def get(self,**kw): return None
+    s._crud=lambda: C2()
+    async def clear(*a,**k): return None
+    s._clear_other_default=clear
+    assert (await s.update(1, StorageNodeUpdateSchema(name="n",protocol="s3",port=443,bucket="b",username="u",endpoint="https://e",is_default=True))).name=="n"
+    captured={}
+    class A:
+        async def test_connection(self): return True
+        async def close(self): pass
+    def make(cfg): captured["cfg"]=cfg; return A()
+    monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(make))
+    monkeypatch.setattr(mod,"decrypt_password",lambda p:"p")
+    data=StorageNodeTestSchema(protocol="s3",port=443,bucket="b",username="u",endpoint="https://e",node_id=1)
+    assert await s.test_config(data) is True
+    assert captured["cfg"].password == "p"
