@@ -97,7 +97,7 @@ async def test_chat_session_service_success(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(mod, "_format_session_data", lambda s, **kw: {"session_id": "s"})
     class C:
         def __init__(self,*a): self.renamed=False
-        async def get_by_id(self,**kw): return {}
+        async def get_by_id(self,**kw): return {"x":1}
         async def list_page(self,**kw): return ([{}], 2)
         async def create(self,**kw): return {}
         async def rename(self,**kw): self.renamed=True
