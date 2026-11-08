@@ -261,3 +261,39 @@ def test_require_credentials_missing(monkeypatch: pytest.MonkeyPatch) -> None:
         o._require_credentials("github")
     with pytest.raises(CustomException, match="不支持"):
         o._require_credentials("bad")
+
+
+async def _complete_for(monkeypatch, provider, exchange, fetch):
+    import json
+    class R:
+        def __init__(self): self.d={o.STATE_PREFIX+"s":json.dumps({"provider":provider,"frontend_redirect":"https://f"})}
+        async def get(self,k): return self.d.get(k)
+        async def delete(self,*k): return True
+    monkeypatch.setattr(o,"RedisCURD",lambda *a:R())
+    monkeypatch.setattr(o,"_callback_url",lambda req,p:"https://cb")
+    monkeypatch.setattr(o,"_require_credentials",lambda p:("i","s"))
+    monkeypatch.setattr(o,exchange,fetch)
+    async def ensure(**kw): return "u"
+    async def prep(**kw): return "u"
+    async def token(**kw): return "tok"
+    monkeypatch.setattr(o,"ensure_oauth_user",ensure)
+    class L:
+        prepare_user_for_login=staticmethod(prep); create_token=staticmethod(token)
+    monkeypatch.setattr(o,"LoginService",L)
+    return await o.complete_oauth_login(request=object(),redis=object(),db=object(),provider=provider,code="c",state="s")
+
+
+async def test_complete_gitee(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def gt(*a): return "a"
+    async def fp(t): return ("l","N",None)
+    assert (await _complete_for(monkeypatch,"gitee","exchange_gitee_token",gt))[0] == "tok"
+    # 单独再设 profile mock 后完整跑一次
+    async def full(monkeypatch=monkeypatch):
+        import json
+        class R:
+            async def get(self,k): return json.dumps({"provider":"gitee","frontend_redirect":"https://f"})
+            async def delete(self,*k): return True
+        monkeypatch.setattr(o,"RedisCURD",lambda *a:R())
+        monkeypatch.setattr(o,"exchange_gitee_token",gt); monkeypatch.setattr(o,"fetch_gitee_profile",fp)
+        return await _complete_for(monkeypatch,"gitee","exchange_gitee_token",gt)
+    assert (await full())[0]=="tok"
