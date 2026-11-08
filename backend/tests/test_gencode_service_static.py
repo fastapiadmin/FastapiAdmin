@@ -287,3 +287,20 @@ async def test_delete_gen_table_failure(monkeypatch: pytest.MonkeyPatch) -> None
     s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     with pytest.raises(RuntimeError):
         await s.delete_gen_table([1])
+
+
+async def test_write_plugin_migration_no_heads(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd, alembic.config as cfg, alembic.script as script
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    calls=[]
+    class C:
+        def __init__(self,*a): pass
+    class S:
+        def get_heads(self): return []
+    monkeypatch.setattr(cfg,"Config",C)
+    monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
+    monkeypatch.setattr(cmd,"revision",lambda **kw: calls.append(kw))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+    assert calls and calls[0]["head"] is None
