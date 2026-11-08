@@ -46,7 +46,18 @@ def test_adapter_bucket_and_multipart() -> None:
     from app.core.exceptions import CustomException
     from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig
     cfg=StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="u",password="p")
-    a=BaseStorageAdapter.__new__(BaseStorageAdapter); a.config=cfg; a.bucket_name=cfg.bucket
+    class Dummy(BaseStorageAdapter):
+        def _sync_test_connection(self): return True
+        def _sync_upload(self, a, b): return b
+        def _sync_download(self, a, b): return b
+        def _sync_delete(self, a): return None
+        def _sync_exists(self, a): return False
+        def _sync_list(self, a): return []
+        def _sync_mkdir(self, a): return None
+        def _sync_rmdir(self, a): return None
+        def _sync_rename(self, a, b): return None
+        def _sync_copy(self, a, b): return None
+    a=Dummy(cfg)
     assert a._require_bucket()=="b"
     a.set_bucket("b2"); assert a.bucket_name=="b2"
     a.bucket_name=""
