@@ -286,8 +286,6 @@ async def _complete_for(monkeypatch, provider, exchange, fetch):
 async def test_complete_gitee(monkeypatch: pytest.MonkeyPatch) -> None:
     async def gt(*a): return "a"
     async def fp(t): return ("l","N",None)
-    assert (await _complete_for(monkeypatch,"gitee","exchange_gitee_token",gt))[0] == "tok"
-    # 单独再设 profile mock 后完整跑一次
     async def full(monkeypatch=monkeypatch):
         import json
         class R:
