@@ -324,3 +324,24 @@ async def test_ai_config_crud_storage(monkeypatch: pytest.MonkeyPatch) -> None:
     assert await mod.delete_user_model_config(None,1,"none") is False
     assert await mod.delete_user_model_config(None,1,item["id"]) is True
     assert mod._ai_model_active_key(1) not in st.d
+
+
+async def test_ai_active_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,d): self.d=d
+        async def get(self,k): return self.d.get(k)
+        async def set(self,k,v,expire=None): self.d[k]=v; return True
+        async def delete(self,k): self.d.pop(k,None); return True
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    assert await mod.get_user_model_config(R({}),1) is None
+    assert await mod.get_user_model_config(R({mod._ai_model_active_key(1):"x"}),1) is None
+    store={mod._ai_model_active_key(1):"a",mod._ai_model_items_key(1):json.dumps([{"id":"a","api_key":"k"}])}
+    monkeypatch.setattr(mod,"_open_item",lambda it:it)
+    assert (await mod.get_user_model_config(R(store),1))["id"]=="a"
+    r=R({})
+    assert await mod.set_active_model_config(r,1,"") is True
+    assert await mod.set_active_model_config(r,1,"none") is False
+    r2=R({mod._ai_model_items_key(1):json.dumps([{"id":"a"}])})
+    assert await mod.set_active_model_config(r2,1,"a") is True and r2.d[mod._ai_model_active_key(1)]=="a"
