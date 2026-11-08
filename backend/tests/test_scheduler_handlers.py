@@ -135,3 +135,34 @@ def test_finish_job_record_temp_and_date(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: job))
     SchedulerUtil._finish_job_record(job_id="2", status=2, detail="ok")
     assert "2" in removed
+
+
+async def test_reconcile_node_jobs(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from datetime import datetime, timedelta
+    import app.core.database as dbmod
+    import app.core.ap_scheduler as mod
+    nodes = [
+        SimpleNamespace(id=1, status=0, trigger="cron", trigger_args="* * * * *", func="builtin:x", name="a"),
+        SimpleNamespace(id=2, status=1, trigger="cron", trigger_args="* * * * *", func="x", name="b"),
+        SimpleNamespace(id=3, status=0, trigger="date", trigger_args=(datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S"), func="x", name="c"),
+        SimpleNamespace(id=4, status=0, trigger="date", trigger_args=(datetime.now()+timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S"), func="x", name="d"),
+    ]
+    class R:
+        def scalars(self): return self
+        def all(self): return nodes
+    class S:
+        async def execute(self, stmt): return R()
+    class Ctx:
+        async def __aenter__(self): return S()
+        async def __aexit__(self,*a): return False
+    monkeypatch.setattr(dbmod,"async_db_session",lambda: Ctx())
+    monkeypatch.setattr(SchedulerUtil,"get_jobs",classmethod(lambda cls: [SimpleNamespace(id="1"),SimpleNamespace(id="2"),SimpleNamespace(id="tmp")]))
+    removed=[]; registered=[]
+    monkeypatch.setattr(SchedulerUtil,"remove_job",classmethod(lambda cls, jid: removed.append(jid)))
+    import app.modules.task.cronjob.node.service as ns
+    monkeypatch.setattr(ns,"register_node_job",lambda node: registered.append(node.id))
+    monkeypatch.setattr("app.core.ap_scheduler.SchedulerUtil.describe_schedulability",classmethod(lambda cls, func: (True,None)))
+    monkeypatch.setattr(SchedulerUtil,"log_unschedulable_jobs",classmethod(lambda cls, context=None: []))
+    await SchedulerUtil.reconcile_node_jobs()
+    assert "2" in removed and 1 in registered and 4 in registered
