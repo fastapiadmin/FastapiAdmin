@@ -82,3 +82,16 @@ async def test_local_missing_operations(tmp_path: Path) -> None:
         await a.copy("missing", "x")
     with pytest.raises(Exception):
         await a.download("missing", str(tmp_path / "x"))
+
+
+async def test_local_edge_operations(tmp_path: Path) -> None:
+    root=tmp_path/"root"; root.mkdir(); a=_adapter(root)
+    assert await a.exists("missing") is False
+    with pytest.raises(Exception):
+        await a.list_files("missing")
+    with pytest.raises(Exception):
+        await a.rename("missing","x")
+    with pytest.raises(Exception):
+        await a.copy("missing","x")
+    with pytest.raises(Exception):
+        await a.download("missing",str(tmp_path/"x"))
