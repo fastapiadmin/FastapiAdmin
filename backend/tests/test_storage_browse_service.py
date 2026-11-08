@@ -111,3 +111,21 @@ async def test_zip_directory(tmp_path: Path) -> None:
     zip_path = tmp_path / "out.zip"
     StorageFileService._zip_directory(root, str(zip_path), root)
     assert zip_path.exists() and zip_path.stat().st_size > 0
+
+
+async def test_delete_fallback_and_bucket_validation(monkeypatch: pytest.MonkeyPatch) -> None:
+    class A(FakeAdapter):
+        async def list_files(self,prefix,page_size=None,cursor=None): raise RuntimeError()
+        async def delete(self,remote): raise RuntimeError()
+        async def delete_dir(self,remote): self.deleted.append("dir:"+remote)
+    a=A(); s=_service(a)
+    await s.delete(None,"x")
+    assert "dir:x" in a.deleted
+    async def source(_sid):
+        from app.modules.task.storage.core.base import StorageAdapterConfig, StorageProtocol
+        return StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,host="/tmp")
+    s._get_source=source
+    assert await s.list_buckets(None) == []
+    for bad in ("","   ","x"*64,"a/b","a b"):
+        with pytest.raises(CustomException):
+            await s.create_bucket(None,bad)
