@@ -256,3 +256,23 @@ def test_describe_schedulability(monkeypatch: pytest.MonkeyPatch) -> None:
     assert ok is False and "SCHEDULER_ALLOW_CODE_EXEC" in reason
     monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",True)
     assert SchedulerUtil.describe_schedulability("print(1)")==(True,None)
+
+
+def test_job_status_and_run_now(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    import app.core.ap_scheduler as mod
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: None))
+    assert SchedulerUtil.get_job_status(1)==3
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: SimpleNamespace(next_run_time=None)))
+    assert SchedulerUtil.get_job_status(1)==1
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: SimpleNamespace(next_run_time="x")))
+    monkeypatch.setattr(mod.scheduler,"state",0,raising=False)
+    assert SchedulerUtil.get_job_status(1)==2
+    assert SchedulerUtil.run_job_now(1) is None
+    job=SimpleNamespace(func=lambda:None,args=[],kwargs={},name="n",executor="default")
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: job))
+    class S:
+        state=1
+        def add_job(self,**kw): self.kw=kw; return "temp"
+    s=S(); monkeypatch.setattr(mod,"scheduler",s)
+    assert SchedulerUtil.run_job_now(1)=="temp" and "1_run_now_" in s.kw["id"]
