@@ -176,3 +176,36 @@ async def test_finish_oauth_login_generic_error(monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setattr(o,"complete_oauth_login",crash)
     out = await o.finish_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
     assert "登录服务暂时不可用" in unquote(out)
+
+
+async def test_oauth_extra_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    async def bad_save(**kw): raise RuntimeError()
+    monkeypatch.setattr(o,"save_oauth_state",bad_save)
+    out=await o.start_oauth_login(request=object(),redis=object(),provider="github",redirect_uri="https://f")
+    assert "oauth_error" in out
+    class R:
+        def __init__(self,v): self.v=v
+        async def get(self,k): return self.v
+    monkeypatch.setattr(o,"RedisCURD",lambda r:r)
+    raw=json.dumps({"frontend_redirect":"u"}).encode()
+    assert await o._state_frontend_redirect(R(raw),"s","fb") == "u"
+    assert await o._state_frontend_redirect(R(json.dumps({"frontend_redirect":""})),"s","fb") == "fb"
+
+
+def test_username_for_oauth() -> None:
+    assert o._username_for_oauth("github","abc").startswith("oauth_github_")
+
+
+async def test_http_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    class R:
+        text="hi"
+        def raise_for_status(self): pass
+    class C:
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+        async def request(self,*a,**k): return R()
+    class H:
+        AsyncClient=lambda *a,**k:C()
+    monkeypatch.setattr(o,"httpx",H)
+    assert await o._http_text("GET","http://x") == "hi"
