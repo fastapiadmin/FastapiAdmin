@@ -503,7 +503,7 @@ class GenTableService:
                             # 新增列：前端新增但库中无对应记录
                             column_schema = GenTableColumnSchema(
                                 table_id=table_id,
-                                **gen_table_column.model_dump(exclude={"id", "super_column"}),
+                                **gen_table_column.model_dump(exclude={"id", "super_column", "table_id"}),
                             )
                             GenUtils.init_column_field(column_schema, gen_table_info)
                             await GenTableColumnCRUD(self.auth, self.db).create_gen_table_column_crud(column_schema)
