@@ -144,3 +144,28 @@ def test_bulk_upload_download(tmp_path) -> None:
     a.entries=[]; assert a._sync_download_dir("r",str(tmp_path/"out"),2)==0
     a.entries=[StorageObject(name="a",key="r/a",is_dir=False)]; a.fail=True
     with pytest.raises(RuntimeError): a._sync_download_dir("r",str(tmp_path/"out2"),2)
+
+
+async def test_base_pagination_and_wrappers() -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig, StorageObject
+    items=[StorageObject(name=str(i),key=str(i),is_dir=False) for i in range(3)]
+    class D(BaseStorageAdapter):
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b): return b
+        def _sync_download(self,a,b): return b
+        def _sync_delete(self,a): pass
+        def _sync_exists(self,a): return True
+        def _sync_list(self,a): return items
+        def _sync_mkdir(self,a): pass
+        def _sync_rmdir(self,a): pass
+        def _sync_rename(self,a,b): pass
+        def _sync_copy(self,a,b): pass
+    d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
+    p1=d._sync_list_page("",2,None)
+    assert len(p1.items)==2 and p1.has_next and p1.next_cursor=="2"
+    p2=d._sync_list_page("",2,"2")
+    assert len(p2.items)==1 and p2.has_next is False
+    p3=d._sync_list_page("",2,"bad")
+    assert len(p3.items)==2
+    assert await d.list_files()==items
+    assert await d.test_connection() is True
