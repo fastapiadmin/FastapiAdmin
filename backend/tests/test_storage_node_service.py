@@ -32,3 +32,16 @@ async def test_clear_other_default(monkeypatch: pytest.MonkeyPatch) -> None:
     await s._clear_other_default()
     await s._clear_other_default(1)
     assert len(calls)==2
+
+
+def test_build_config_other_ports() -> None:
+    assert StorageNodeService._build_config_from(_src(protocol="sftp",port=None),"p").port == 22
+    assert StorageNodeService._build_config_from(_src(protocol="ftps",port=None),"p").port == 21
+
+
+async def test_export_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        async def get_list(self): return []
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    assert await s.export_config() == {}
