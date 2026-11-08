@@ -156,3 +156,16 @@ line-ending = "auto"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+# 已确认范围：仅 MinIO/S3 有真实服务；以下协议无服务、不在验收口径内
+omit = [
+    "app/modules/task/storage/core/ftp_ftps_adapter.py",
+    "app/modules/task/storage/core/sftp_adapter.py",
+    "app/modules/task/storage/core/obs_adapter.py",
+    "app/modules/task/storage/core/oss_adapter.py",
+    "app/modules/task/storage/core/cos_adapter.py",
+]
+
+[tool.coverage.report]
+skip_covered = true
