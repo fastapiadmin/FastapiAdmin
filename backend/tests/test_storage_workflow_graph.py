@@ -18,3 +18,10 @@ def test_sources_and_targets() -> None:
 def test_sources_targets_empty() -> None:
     assert WorkflowService._sources_from([],{})==[]
     assert WorkflowService._targets_from([],{})==[]
+
+
+def test_split_empty_edges() -> None:
+    from app.core.exceptions import CustomException
+    import pytest
+    with pytest.raises(CustomException, match="连线"):
+        WorkflowService._split_graph({})
