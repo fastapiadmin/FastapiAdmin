@@ -101,6 +101,7 @@ async def test_chat_session_service_success(monkeypatch: pytest.MonkeyPatch) -> 
         async def list_page(self,**kw): return ([{}], 2)
         async def create(self,**kw): return {}
         async def rename(self,**kw): self.renamed=True
+        async def delete(self,**kw): self.deleted=True
     monkeypatch.setattr(mod, "ChatSessionCRUD", C)
     s=ChatService.__new__(ChatService); s.auth=object(); s.redis=None
     assert (await s.get_session("s")).session_id == "s"
@@ -108,3 +109,4 @@ async def test_chat_session_service_success(monkeypatch: pytest.MonkeyPatch) -> 
     page=await s.page(1,10,ChatSessionQueryParam())
     assert page.total == 2
     await s.update("s", ChatSessionUpdateSchema(title="n"))
+    await s.delete(["s"])
