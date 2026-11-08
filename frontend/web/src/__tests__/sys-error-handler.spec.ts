@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+vi.mock("@utils", () => ({ Auth: { getAccessToken: () => "" }, StorageConfig: { appName: "app", CURRENT_VERSION: "1.0" } }));
+vi.mock("@stores", () => ({ useUserStore: () => ({}) }));
 import { scriptErrorHandler, vueErrorHandler } from "@/utils/sys";
 
 describe("sys error handler", () => {
