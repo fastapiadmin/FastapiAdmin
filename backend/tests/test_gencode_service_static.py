@@ -402,3 +402,32 @@ async def test_sync_db_columns(monkeypatch: pytest.MonkeyPatch) -> None:
     s._get_db_table_columns=cols
     await s.sync_db("d")
     assert any(x[0]=="update" for x in calls) and any(x[0]=="create" and x[1]=="b" for x in calls)
+
+
+async def test_sync_db_delete_and_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    table=GenTableOutSchema(id=1,table_name="d",columns=[GenTableColumnOutSchema(id=2,column_name="gone")])
+    class C:
+        def __init__(self,*a): self.obj=table
+        async def get_gen_table_by_name(self,*a,**k): return self.obj
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:C())
+    calls=[]
+    class Col:
+        def __init__(self,*a): pass
+        async def delete_gen_table_column_by_column_id_crud(self,ids): calls.append(ids)
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda col,t:None))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def cols(name): return []
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+    assert calls == [[2]]
+    def bad(*a): raise RuntimeError()
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(bad))
+    s._get_db_table_columns=lambda name: _async([GenTableColumnOutSchema(column_name="x")])
+    with pytest.raises(RuntimeError):
+        await s.sync_db("d")
+
+
+async def _async(v): return v
