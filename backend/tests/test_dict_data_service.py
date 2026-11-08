@@ -115,3 +115,15 @@ async def test_create_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     s._refresh_dict_cache=bad
     with pytest.raises(RuntimeError):
         await s.create(object(),DictDataCreateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1))
+
+
+async def test_delete_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [_obj()]
+        async def delete(self,**kw): pass
+    s=_svc(monkeypatch,C)
+    async def bad(redis,dt): raise RuntimeError()
+    s._refresh_dict_cache=bad
+    with pytest.raises(RuntimeError):
+        await s.delete(object(),[1])
