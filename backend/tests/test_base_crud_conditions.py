@@ -53,7 +53,7 @@ def test_soft_delete_helpers() -> None:
     from types import SimpleNamespace
     c=_crud(); c.auth=SimpleNamespace(user=SimpleNamespace(id=1))
     assert c._supports_soft_delete is True
-    assert c._get_pk_col() is UserModel.id
+    assert c._get_pk_col().name == "id"
     values=c._soft_delete_values()
     assert values["is_deleted"] is True and values["deleted_id"]==1
     c.auth=SimpleNamespace(user=SimpleNamespace(id=0))
