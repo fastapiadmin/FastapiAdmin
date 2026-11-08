@@ -47,3 +47,14 @@ def test_loader_options_and_invalid_preload() -> None:
     # 已存在的 option 对象原样追加
     marker = object()
     assert marker in c._loader_options([marker])
+
+
+def test_soft_delete_helpers() -> None:
+    from types import SimpleNamespace
+    c=_crud(); c.auth=SimpleNamespace(user=SimpleNamespace(id=1))
+    assert c._supports_soft_delete is True
+    assert c._get_pk_col() is UserModel.id
+    values=c._soft_delete_values()
+    assert values["is_deleted"] is True and values["deleted_id"]==1
+    c.auth=SimpleNamespace(user=SimpleNamespace(id=0))
+    assert "deleted_id" not in c._soft_delete_values()
