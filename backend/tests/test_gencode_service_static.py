@@ -304,3 +304,29 @@ async def test_write_plugin_migration_no_heads(monkeypatch: pytest.MonkeyPatch) 
     s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
     assert calls and calls[0]["head"] is None
+
+
+async def test_update_gen_table_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def none_id(i): return GenTableOutSchema(table_name="d")
+    s.get_gen_table_by_id=none_id
+    with pytest.raises(CustomException, match="不存在"):
+        await s.update_gen_table(GenTableSchema(table_name="d"),1)
+    async def one(i): return GenTableOutSchema(id=1,table_name="d")
+    s.get_gen_table_by_id=one
+    class C:
+        def __init__(self,*a): pass
+        async def edit_gen_table(self,*a): return None
+    monkeypatch.setattr(mod,"GenTableCRUD",C)
+    with pytest.raises(CustomException, match="更新业务表信息失败"):
+        await s.update_gen_table(GenTableSchema(table_name="d"),1)
+    class C2(C):
+        async def edit_gen_table(self,*a): return True
+        async def get_gen_table_by_id(self,*a,**k): return {"id":1,"table_name":"d"}
+    monkeypatch.setattr(mod,"GenTableCRUD",C2)
+    async def noop(*a,**k): return None
+    s._assert_parent_menu_is_catalog=noop; s.set_pk_column=noop; s.hydrate_sub_table=noop
+    out=await s.update_gen_table(GenTableSchema(table_name="d"),1)
+    assert out.table_name=="d"
