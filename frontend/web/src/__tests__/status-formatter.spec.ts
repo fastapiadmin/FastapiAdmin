@@ -14,7 +14,7 @@ describe("status formatter", () => {
     expect(vnode.props?.label).toBe("—");
   });
   it("直接 value 模式", () => {
-    const vnode = makeStatusFormatter({ map })(1);
+    const vnode = (makeStatusFormatter({ map }) as any)(1);
     expect(vnode.props?.label).toBe("停用");
   });
   it("resolveStatusColumns 保留显式 formatter 并转换 status", () => {
