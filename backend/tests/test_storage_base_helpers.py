@@ -240,3 +240,29 @@ async def test_base_optional_wrappers() -> None:
     d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
     assert await d.get_url("a") is None
     await d.close()
+
+
+async def test_base_dir_wrappers() -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig
+    class D(BaseStorageAdapter):
+        def __init__(self,c): super().__init__(c); self.calls=[]
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b): return b
+        def _sync_download(self,a,b): return b
+        def _sync_delete(self,a): pass
+        def _sync_exists(self,a): return False
+        def _sync_list(self,a): return []
+        def _sync_mkdir(self,a): pass
+        def _sync_rmdir(self,a): pass
+        def _sync_rename(self,a,b): pass
+        def _sync_copy(self,a,b): pass
+        def _sync_download_dir(self,a,b,c): self.calls.append("download_dir"); return 1
+        def _sync_delete_dir(self,a): self.calls.append("delete_dir")
+        def _sync_copy_dir(self,a,b): self.calls.append("copy_dir")
+        def _sync_move_dir(self,a,b): self.calls.append("move_dir")
+        def _sync_upload_dir(self,a,b,c): self.calls.append("upload_dir"); return 1
+    d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
+    assert await d.download_dir("r","l")==1
+    await d.delete_dir("r"); await d.copy_dir("a","b"); await d.move_dir("a","b")
+    assert await d.upload_dir("l","r")==1
+    assert d.calls==["download_dir","delete_dir","copy_dir","move_dir","upload_dir"]
