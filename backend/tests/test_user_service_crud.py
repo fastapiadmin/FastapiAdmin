@@ -376,3 +376,14 @@ async def test_create_superuser_rejected(monkeypatch: pytest.MonkeyPatch) -> Non
     s=_svc(monkeypatch,U)
     with pytest.raises(CustomException, match="不允许创建超级管理员"):
         await s.create(UserCreateSchema(username="abc",name="A",password="Abc123!x",dept_id=1,is_superuser=True))
+
+
+async def test_current_info_with_dept(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(name="D"),roles=[],positions=[],is_superuser=False)
+    s=_svc(monkeypatch,U)
+    async def menus(): return []
+    s._load_menus=menus
+    out=await s.current_info()
+    assert out.dept_name=="D"
