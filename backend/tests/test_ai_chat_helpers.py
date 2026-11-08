@@ -89,3 +89,22 @@ async def test_chat_non_stream(monkeypatch: pytest.MonkeyPatch) -> None:
     svc = ChatService.__new__(ChatService); svc.auth = SimpleNamespace(user=SimpleNamespace(username="u")); svc.redis = None
     out = await svc.chat_non_stream("hi", None)
     assert out["session_id"] == "s1" and out["action"]["path"] == "/system/user"
+
+
+async def test_chat_session_service_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import ChatSessionCreateSchema, ChatSessionQueryParam, ChatSessionUpdateSchema
+    monkeypatch.setattr(mod, "_format_session_data", lambda s, **kw: {"session_id": "s"})
+    class C:
+        def __init__(self,*a): self.renamed=False
+        async def get_by_id(self,**kw): return {}
+        async def list_page(self,**kw): return ([{}], 2)
+        async def create(self,**kw): return {}
+        async def rename(self,**kw): self.renamed=True
+    monkeypatch.setattr(mod, "ChatSessionCRUD", C)
+    s=ChatService.__new__(ChatService); s.auth=object(); s.redis=None
+    assert (await s.get_session("s")).session_id == "s"
+    assert (await s.create(ChatSessionCreateSchema(title="t"))).session_id == "s"
+    page=await s.page(1,10,ChatSessionQueryParam())
+    assert page.total == 2
+    await s.update("s", ChatSessionUpdateSchema(title="n"))
