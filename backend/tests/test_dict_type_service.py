@@ -120,7 +120,7 @@ async def test_update_type_status_cascade(monkeypatch: pytest.MonkeyPatch) -> No
         async def update(self,**kw): return self.obj
     class D:
         def __init__(self,*a): self.set_called=None
-        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def get_list(self,**kw): return [SimpleNamespace(id=1,dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)]
         async def set(self,**kw): self.set_called=kw
     s=_svc(monkeypatch,C,D)
     from app.core.redis_crud import RedisCURD
