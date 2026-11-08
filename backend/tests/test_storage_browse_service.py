@@ -129,3 +129,42 @@ async def test_delete_fallback_and_bucket_validation(monkeypatch: pytest.MonkeyP
     for bad in ("","   ","x"*64,"a/b","a b"):
         with pytest.raises(CustomException):
             await s.create_bucket(None,bad)
+
+
+async def test_bucket_protocol_and_copy(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.storage.core.base import StorageAdapterConfig, StorageProtocol
+    import app.modules.task.storage.browse.service as mod
+    s=_service(FakeAdapter())
+    async def local(_sid): return StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,host="/tmp")
+    s._get_source=local
+    with pytest.raises(CustomException, match="对象存储"):
+        await s.create_bucket(None,"b")
+    class A(FakeAdapter):
+        async def create_bucket(self,b): self.created=b
+    a=A(); s._get_source=lambda sid: local(sid)
+    async def obj(_sid): return StorageAdapterConfig(protocol=StorageProtocol.S3,port=443,bucket="b",username="a",password="s")
+    s._get_source=obj
+    monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:a))
+    await s.create_bucket(None,"b")
+    assert a.created=="b" and a.closed
+
+
+async def test_copy_move_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.storage.core.base import StorageAdapterConfig, StorageProtocol
+    import app.modules.task.storage.browse.service as mod
+    s=_service(FakeAdapter())
+    cfg=StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,host="/tmp")
+    async def src(_sid): return cfg
+    s._get_source=src
+    with pytest.raises(CustomException, match="相同"):
+        await s.copy_or_move(1,"a",1,"a",move=True)
+    class A(FakeAdapter):
+        async def list_files(self,prefix,page_size=None,cursor=None):
+            from app.modules.task.storage.core.base import StorageObject
+            return [StorageObject(name="d",key="d",is_dir=True)]
+    a=A()
+    monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:a))
+    with pytest.raises(CustomException, match="目录"):
+        await s.copy_or_move(1,"d",1,"e")
+    with pytest.raises(CustomException, match="相同"):
+        await s.rename(1,"a","a")
