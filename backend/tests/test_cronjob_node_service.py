@@ -146,3 +146,30 @@ async def test_node_delete_success_and_execute_error(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(mod,"run_node_once",bad)
     with pytest.raises(CustomException, match="执行失败"):
         await s.execute(1)
+
+
+async def test_node_create_register_and_update_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.cronjob.node.schema import NodeCreateSchema, NodeUpdateSchema
+    node=SimpleNamespace(id=1,name="n",func="builtin:x",status=0)
+    class C:
+        def __init__(self): self.deleted=None
+        async def get(self,**kw): return None
+        async def create_obj_crud(self,data): return node
+        async def delete_obj_crud(self,ids): self.deleted=ids
+        async def get_obj_by_id_crud(self,**kw): return node
+        async def update_obj_crud(self,**kw): return node
+    c=C(); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    async def noop(*a,**k): return None
+    s._enrich_runtime=noop
+    monkeypatch.setattr(mod,"register_node_job",noop)
+    assert (await s.create(NodeCreateSchema(name="n",func="builtin:x"))).id==1
+    def fail(*a,**k): raise CustomException(msg="bad")
+    monkeypatch.setattr(mod,"register_node_job",fail)
+    with pytest.raises(CustomException, match="注册失败"):
+        await s.create(NodeCreateSchema(name="n",func="builtin:x"))
+    assert c.deleted==[1]
+    with pytest.raises(CustomException, match="注册失败"):
+        await s.update(1,NodeUpdateSchema(name="n",func="builtin:x"))
+    with pytest.raises(Exception):
+        await s.update(1,NodeUpdateSchema(name="n",func="builtin:x",trigger="bad",trigger_args="x"))
