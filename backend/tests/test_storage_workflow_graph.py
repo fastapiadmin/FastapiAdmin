@@ -25,3 +25,16 @@ def test_split_empty_edges() -> None:
     import pytest
     with pytest.raises(CustomException, match="连线"):
         WorkflowService._split_graph({})
+
+
+def test_split_graph_valid_duplicate_self() -> None:
+    from app.core.exceptions import CustomException
+    import pytest
+    nodes=[{"id":"s","data":{"source_id":1,"source_path":"/a"}},{"id":"t","data":{"source_id":2,"source_path":"/b"}}]
+    edges=[{"id":"e1","source":"s","target":"t"},{"id":"e2","source":"s","target":"t"}]
+    out=WorkflowService._split_graph({"nodes":nodes,"edges":edges})
+    assert [x.source_id for x in out.sources]==[1] and [x.target_id for x in out.targets]==[2]
+    with pytest.raises(CustomException, match="不能相同"):
+        WorkflowService._split_graph({"nodes":nodes,"edges":[{"id":"e","source":"s","target":"s"}]})
+    with pytest.raises(CustomException, match="连线"):
+        WorkflowService._split_graph({"nodes":nodes,"edges":[{"id":"e","source":"x","target":"y"}]})
