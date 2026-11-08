@@ -195,3 +195,35 @@ async def test_chat_query_stream_branches(monkeypatch: pytest.MonkeyPatch) -> No
         yield
     with pytest.raises(asyncio.CancelledError):
         await _collect(svc(cancelled()).chat_query(ChatQuerySchema(message="hi")))
+
+
+async def test_ai_config_service(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import AiModelConfigSchema
+    async def list_(r,u): return [{"id":"a"}]
+    async def active(r,u): return "a"
+    async def get(r,u): return {"id":"a"}
+    async def create_(r,u,c): return {"id":"new"}
+    async def update_(r,u,cid,c): return {"id":cid} if cid=="a" else None
+    async def delete_(r,u,cid): return cid=="a"
+    async def set_(r,u,cid): return cid=="a"
+    monkeypatch.setattr(mod,"list_user_model_configs",list_)
+    monkeypatch.setattr(mod,"get_active_model_id",active)
+    monkeypatch.setattr(mod,"get_user_model_config",get)
+    monkeypatch.setattr(mod,"create_user_model_config",create_)
+    monkeypatch.setattr(mod,"update_user_model_config",update_)
+    monkeypatch.setattr(mod,"delete_user_model_config",delete_)
+    monkeypatch.setattr(mod,"set_active_model_config",set_)
+    s=mod.AiModelConfigService(auth=SimpleNamespace(user=SimpleNamespace(id=1)),redis=None)
+    assert (await s.list_configs())["active_id"]=="a"
+    assert (await s.get_active())["id"]=="a"
+    assert (await s.create(AiModelConfigSchema(name="n",provider="openai",model="m",base_url="https://x",api_key="k")))["id"]=="new"
+    assert (await s.update("a",AiModelConfigSchema(name="n",provider="openai",model="m",base_url="https://x",api_key="k")))["id"]=="a"
+    with pytest.raises(CustomException, match="不存在"):
+        await s.update("b",AiModelConfigSchema(name="n",provider="openai",model="m",base_url="https://x",api_key="k"))
+    await s.delete("a")
+    with pytest.raises(CustomException, match="不存在"):
+        await s.delete("b")
+    await s.set_active("a")
+    with pytest.raises(CustomException, match="不存在"):
+        await s.set_active("b")
