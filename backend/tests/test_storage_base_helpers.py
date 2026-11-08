@@ -169,3 +169,24 @@ async def test_base_pagination_and_wrappers() -> None:
     assert len(p3.items)==2
     assert await d.list_files()==items
     assert await d.test_connection() is True
+
+
+async def test_base_async_wrappers() -> None:
+    from app.modules.task.storage.core.base import BaseStorageAdapter, StorageAdapterConfig
+    class D(BaseStorageAdapter):
+        def __init__(self,c): super().__init__(c); self.calls=[]
+        def _sync_test_connection(self): return True
+        def _sync_upload(self,a,b): self.calls.append("up"); return b
+        def _sync_download(self,a,b): self.calls.append("down"); return b
+        def _sync_delete(self,a): self.calls.append("del")
+        def _sync_exists(self,a): return True
+        def _sync_list(self,a): return []
+        def _sync_mkdir(self,a): self.calls.append("mkdir")
+        def _sync_rmdir(self,a): self.calls.append("rmdir")
+        def _sync_rename(self,a,b): self.calls.append("rename")
+        def _sync_copy(self,a,b): self.calls.append("copy")
+    d=D(StorageAdapterConfig(protocol=StorageProtocol.LOCAL,port=0,bucket=""))
+    await d.upload("/tmp/a","a"); await d.download("a","/tmp/a"); await d.delete("a")
+    assert await d.exists("a") is True
+    await d.mkdir("d"); await d.rmdir("d"); await d.rename("a","b"); await d.copy("a","b")
+    assert d.calls==["up","down","del","mkdir","rmdir","rename","copy"]
