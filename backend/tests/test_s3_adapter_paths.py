@@ -28,6 +28,12 @@ class FakeClient:
     def head_object(self, **kw):
         self.calls.append(("head_object", kw))
 
+    def upload_file(self, *args, **kw):
+        self.calls.append(("upload_file", args))
+
+    def download_file(self, *args, **kw):
+        self.calls.append(("download_file", args))
+
     def put_object(self, **kw):
         self.calls.append(("put_object", kw))
 
@@ -108,3 +114,22 @@ def test_s3_validation_errors() -> None:
         S3StorageAdapter(StorageAdapterConfig(protocol=StorageProtocol.S3, port=0, bucket="b", username="", password="x"))
     with pytest.raises(CustomException):
         S3StorageAdapter(StorageAdapterConfig(protocol=StorageProtocol.S3, port=0, bucket="", username="a", password="x"))
+
+
+def test_s3_upload_download_delete(monkeypatch: pytest.MonkeyPatch) -> None:
+    a=_a()
+    a._multipart_settings=lambda: (5*1024*1024, 2, True)
+    import app.modules.task.storage.core.s3_adapter as mod
+    monkeypatch.setattr(mod.boto_transfer, "TransferConfig", lambda **kw: kw)
+    assert a._sync_upload("/tmp/a", "a") == "a"
+    assert a._sync_download("a", "/tmp/a") == "/tmp/a"
+    a._sync_delete("a")
+    assert any(c[0]=="upload_file" for c in a.client.calls)
+
+
+def test_s3_create_bucket_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    a=_a()
+    def fail(**kw): raise RuntimeError("x")
+    a.client.create_bucket=fail
+    with pytest.raises(CustomException):
+        a._sync_create_bucket("b")
