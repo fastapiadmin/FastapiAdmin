@@ -60,3 +60,32 @@ async def test_node_queries(monkeypatch: pytest.MonkeyPatch) -> None:
     assert (await s.detail(1)).name=="n"
     assert (await s.page(None,1,10)).total==1
     assert len(await s.get_list())==1
+
+
+def _node():
+    from app.modules.task.storage.node.schema import StorageNodeOutSchema
+    return StorageNodeOutSchema(id=1,name="n",protocol="s3",port=443,bucket="b",username="u",password="x",endpoint="https://e")
+
+
+async def test_node_create_update_delete(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.storage.node.schema import StorageNodeCreateSchema, StorageNodeUpdateSchema
+    import app.modules.task.storage.node.service as mod
+    node=_node()
+    class C:
+        def __init__(self,*a): self.deleted=None
+        async def get(self,**kw): return None
+        async def create(self,**kw): return node
+        async def get_or_404(self,**kw): return node
+        async def update(self,**kw): return None
+        async def delete(self,ids): self.deleted=ids
+    c=C()
+    class DB:
+        async def execute(self,stmt): return None
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=DB()
+    s._crud=lambda: c
+    monkeypatch.setattr(mod,"encrypt_password",lambda p:"enc")
+    data=StorageNodeCreateSchema(name="n",protocol="s3",port=443,bucket="b",username="u",password="p",endpoint="https://e",is_default=True)
+    assert (await s.create(data)).name=="n"
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.delete([])
+    await s.delete([1]); assert c.deleted==[1]
