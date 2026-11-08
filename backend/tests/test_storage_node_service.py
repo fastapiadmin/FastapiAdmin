@@ -6,6 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.core.exceptions import CustomException
+
 from app.modules.task.storage.core.base import StorageProtocol
 from app.modules.task.storage.node.service import StorageNodeService
 
