@@ -90,3 +90,21 @@ async def test_process_import_row_branches(monkeypatch: pytest.MonkeyPatch) -> N
         async def get(self,**kw): return None
     monkeypatch.setattr(mod,"UserCRUD",UNew)
     assert (await s._process_import_row(1,row,False))[0]==1
+
+
+async def test_process_import_row_superuser(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    row={"username":"user1","name":"N","dept_id":1,"email":None,"mobile":None,"gender":"未知","status":"停用"}
+    class D:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return object()
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1,is_superuser=True)
+    class P:
+        @staticmethod
+        async def ahash_password(**kw): return "Hashed123!x"
+    monkeypatch.setattr(mod,"DeptCRUD",D); monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    out=await s._process_import_row(2,row,True)
+    assert out[0]==0 and "超级管理员" in out[1]
