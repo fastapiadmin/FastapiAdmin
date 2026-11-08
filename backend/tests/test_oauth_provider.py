@@ -102,3 +102,20 @@ async def test_complete_oauth_login_success(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(o,"LoginService",L)
     tok,front = await o.complete_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
     assert tok == "tok" and front == "https://f"
+
+
+async def test_complete_oauth_login_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    class R:
+        def __init__(self, raw): self.raw=raw
+        async def get(self,k): return self.raw
+        async def delete(self,*k): return True
+    async def call(raw, provider="github"):
+        monkeypatch.setattr(o,"RedisCURD",lambda *a: R(raw))
+        return await o.complete_oauth_login(request=object(),redis=object(),db=object(),provider=provider,code="c",state="s")
+    with pytest.raises(CustomException, match="失效"):
+        await call(None)
+    with pytest.raises(CustomException, match="不匹配"):
+        await call(json.dumps({"provider":"qq"}))
+    with pytest.raises(CustomException, match="前端回调"):
+        await call(json.dumps({"provider":"github"}))
