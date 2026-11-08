@@ -29,3 +29,24 @@ async def test_server_status_error(monkeypatch: pytest.MonkeyPatch) -> None:
     tools = {t.name: t for t in r.build_readonly_tools(object())}
     out = await tools["server_status"].func()
     assert out["error"].startswith("查询服务器状态失败")
+
+
+async def test_tool_storage_and_cron_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Ctx:
+        async def __aenter__(self): return object()
+        async def __aexit__(self,*a): return False
+    monkeypatch.setattr(r,"async_db_session",lambda: Ctx())
+    class N:
+        def __init__(self,*a): pass
+        async def get_list(self): raise RuntimeError("x")
+    monkeypatch.setattr(r,"StorageNodeService",N)
+    tools={t.name:t for t in r.build_readonly_tools(object())}
+    out=await tools["storage_sources"].func()
+    assert out[0]["error"].startswith("列出存储源失败")
+    class DB:
+        async def execute(self,stmt): raise RuntimeError("x")
+    class Ctx2(Ctx):
+        async def __aenter__(self): return DB()
+    monkeypatch.setattr(r,"async_db_session",lambda: Ctx2())
+    out=await tools["cron_jobs"].func()
+    assert out[0]["error"].startswith("列出定时任务失败")
