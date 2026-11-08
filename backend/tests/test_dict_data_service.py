@@ -103,3 +103,15 @@ async def test_dict_data_create_duplicate_value(monkeypatch: pytest.MonkeyPatch)
     data=DictDataCreateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)
     with pytest.raises(CustomException, match="键值"):
         await s.create(object(),data)
+
+
+async def test_create_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def create(self,data): return _obj()
+    s=_svc(monkeypatch,C)
+    async def bad(redis,dt): raise RuntimeError()
+    s._refresh_dict_cache=bad
+    with pytest.raises(RuntimeError):
+        await s.create(object(),DictDataCreateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1))
