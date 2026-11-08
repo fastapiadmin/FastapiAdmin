@@ -191,3 +191,17 @@ async def test_download_dir_and_buckets(monkeypatch: pytest.MonkeyPatch) -> None
     b=B(); monkeypatch.setattr(mod.StorageAdapterFactory,"create",staticmethod(lambda cfg:b))
     assert await s.list_buckets(None)==["x"]
     assert await s.share(None,"a") == "https://url"
+
+
+async def test_upload_paths_and_failure(tmp_path: Path) -> None:
+    class A(FakeAdapter):
+        async def upload(self,local,remote):
+            if remote=="fail.txt": raise RuntimeError()
+    a=A(); s=_service(a)
+    with pytest.raises(CustomException, match="请选择"):
+        await s.upload(None, None)
+    assert (await s.upload(None, UploadFile(filename="a.txt", file=BytesIO(b"x")), "dir/")).file_path == "dir/a.txt"
+    assert (await s.upload(None, UploadFile(filename="a.txt", file=BytesIO(b"x")), "name")).file_path == "name.txt"
+    assert (await s.upload(None, UploadFile(filename="a.JPG", file=BytesIO(b"x")), "name.jpg")).file_path == "name.jpg"
+    with pytest.raises(RuntimeError):
+        await s.upload(None, UploadFile(filename="fail.txt", file=BytesIO(b"x")), "fail.txt")
