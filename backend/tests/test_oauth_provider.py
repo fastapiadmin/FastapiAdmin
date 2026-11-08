@@ -119,3 +119,24 @@ async def test_complete_oauth_login_errors(monkeypatch: pytest.MonkeyPatch) -> N
         await call(json.dumps({"provider":"qq"}))
     with pytest.raises(CustomException, match="前端回调"):
         await call(json.dumps({"provider":"github"}))
+
+
+async def test_oauth_state_and_start(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    class R:
+        def __init__(self, getval=None, setok=True): self.getval=getval; self.setok=setok; self.sets=[]
+        async def get(self,k): return self.getval
+        async def set(self,**kw): self.sets.append(kw); return self.setok
+    monkeypatch.setattr(o,"RedisCURD",lambda redis: redis)
+    r=R(); await o.save_oauth_state(redis=r,state="s",provider="github",frontend_redirect="https://f")
+    assert r.sets
+    class Bad(R):
+        async def set(self,**kw): return False
+    with pytest.raises(CustomException, match="缓存"):
+        await o.save_oauth_state(redis=Bad(),state="s",provider="github",frontend_redirect="x")
+    assert await o._state_frontend_redirect(R(),None,"fb") == "fb"
+    assert await o._state_frontend_redirect(R(),"s","fb") == "fb"
+    assert await o._state_frontend_redirect(R("bad"),"s","fb") == "fb"
+    assert await o._state_frontend_redirect(R(json.dumps({"frontend_redirect":"u"})),"s","fb") == "u"
+    fallback = await o.start_oauth_login(request=object(),redis=r,provider="github",redirect_uri=None)
+    assert "oauth_error" in fallback
