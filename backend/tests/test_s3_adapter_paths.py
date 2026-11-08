@@ -120,7 +120,8 @@ def test_s3_upload_download_delete(monkeypatch: pytest.MonkeyPatch) -> None:
     a=_a()
     a._multipart_settings=lambda: (5*1024*1024, 2, True)
     import app.modules.task.storage.core.s3_adapter as mod
-    monkeypatch.setattr(mod.boto_transfer, "TransferConfig", lambda **kw: kw)
+    from types import SimpleNamespace
+    monkeypatch.setattr(mod, "boto_transfer", SimpleNamespace(TransferConfig=lambda **kw: kw))
     assert a._sync_upload("/tmp/a", "a") == "a"
     assert a._sync_download("a", "/tmp/a") == "/tmp/a"
     a._sync_delete("a")
