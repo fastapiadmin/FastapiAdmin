@@ -166,3 +166,30 @@ async def test_reconcile_node_jobs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(SchedulerUtil,"log_unschedulable_jobs",classmethod(lambda cls, context=None: []))
     await SchedulerUtil.reconcile_node_jobs()
     assert "2" in removed and 1 in registered and 4 in registered
+
+
+def test_scheduler_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    assert SchedulerUtil.job_code_block(None) is None
+    assert SchedulerUtil.job_code_block(SimpleNamespace(args=["1"])) is None
+    assert SchedulerUtil.job_code_block(SimpleNamespace(args=["1","builtin:x"])) == "builtin:x"
+    monkeypatch.setattr(SchedulerUtil,"describe_schedulability",classmethod(lambda cls,c: (True,None)))
+    SchedulerUtil.require_schedulable("x")
+    monkeypatch.setattr(SchedulerUtil,"describe_schedulability",classmethod(lambda cls,c: (False,"bad")))
+    with pytest.raises(CustomException, match="bad"):
+        SchedulerUtil.require_schedulable("x")
+    SchedulerUtil.register_builtin_handler("t", lambda: 1)
+    assert SchedulerUtil.resolve_builtin_handler("builtin:t")() == 1
+    assert SchedulerUtil.resolve_builtin_handler("exec") is None
+    with pytest.raises(ValueError):
+        SchedulerUtil.resolve_builtin_handler("builtin:bad/name")
+
+
+def test_unschedulable_jobs(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    monkeypatch.setattr(SchedulerUtil,"get_jobs",classmethod(lambda cls: [SimpleNamespace(id=1,name="n",args=["1","x"])]))
+    monkeypatch.setattr(SchedulerUtil,"job_code_block",classmethod(lambda cls,j: "x"))
+    monkeypatch.setattr(SchedulerUtil,"describe_schedulability",classmethod(lambda cls,c: (False,"bad")))
+    out=SchedulerUtil.iter_unschedulable_jobs()
+    assert out==[("1","n","bad")]
+    assert SchedulerUtil.log_unschedulable_jobs(context="test")==out
