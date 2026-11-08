@@ -56,3 +56,36 @@ async def test_batch_import_missing_headers() -> None:
     svc = UserService.__new__(UserService)
     with pytest.raises(CustomException, match="缺少必要的列"):
         await svc.batch_import(FakeFile(b.getvalue()))
+
+
+async def test_process_import_row_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    row={"username":"u","name":"N","dept_id":1,"email":"a@b.com","mobile":"13800000000","gender":"男","status":"正常"}
+    class D:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return object()
+    class U:
+        def __init__(self,*a): self.updated=False; self.created=False
+        async def get(self,**kw): return SimpleNamespace(id=1,is_superuser=False)
+        async def update(self,**kw): self.updated=True
+        async def create(self,**kw): self.created=True; return SimpleNamespace(id=2)
+    class P:
+        @staticmethod
+        async def ahash_password(**kw): return "Hashed123!x"
+    monkeypatch.setattr(mod,"DeptCRUD",D); monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert (await s._process_import_row(1,{**row,"username":""},False))[1].startswith("第1行")
+    assert (await s._process_import_row(1,{**row,"name":""},False))[1].startswith("第1行")
+    class DNone(D):
+        async def get(self,**kw): return None
+    monkeypatch.setattr(mod,"DeptCRUD",DNone)
+    assert "不存在" in (await s._process_import_row(1,row,False))[1]
+    monkeypatch.setattr(mod,"DeptCRUD",D)
+    assert (await s._process_import_row(1,row,True))[0]==1
+    assert (await s._process_import_row(1,row,False))[0]==0
+    class UNew(U):
+        async def get(self,**kw): return None
+    monkeypatch.setattr(mod,"UserCRUD",UNew)
+    assert (await s._process_import_row(1,row,False))[0]==1
