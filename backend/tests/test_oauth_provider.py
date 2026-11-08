@@ -126,7 +126,7 @@ async def test_oauth_state_and_start(monkeypatch: pytest.MonkeyPatch) -> None:
     class R:
         def __init__(self, getval=None, setok=True): self.getval=getval; self.setok=setok; self.sets=[]
         async def get(self,k): return self.getval
-        async def set(self,**kw): self.sets.append(kw); return self.setok
+        async def set(self,key,value,expire=None,**kw): self.sets.append((key,value,expire)); return self.setok
     monkeypatch.setattr(o,"RedisCURD",lambda redis: redis)
     r=R(); await o.save_oauth_state(redis=r,state="s",provider="github",frontend_redirect="https://f")
     assert r.sets
