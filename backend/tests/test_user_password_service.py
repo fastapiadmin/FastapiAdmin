@@ -77,3 +77,19 @@ async def test_register(monkeypatch: pytest.MonkeyPatch) -> None:
     s2 = _svc(monkeypatch, U2)
     with pytest.raises(CustomException, match="相同用户"):
         await s2.register(UserRegisterSchema(username="abc", password="Abc123!x", name="A"))
+
+
+async def test_register_create_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def create(self,data): return None
+    monkeypatch.setattr(mod,"UserCRUD",U)
+    class P:
+        @staticmethod
+        async def ahash_password(password): return "Hashed123!x"
+    monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="注册失败"):
+        await s.register(UserRegisterSchema(username="abc",password="Abc123!x",name="A"))
