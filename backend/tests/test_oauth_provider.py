@@ -62,3 +62,43 @@ async def test_profile_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     async def qq(method, url, **kw): return {"ret": 1, "msg": "bad"}
     monkeypatch.setattr(o, "_http_json", qq)
     with pytest.raises(CustomException): await o.fetch_qq_profile("t", "a", "o")
+
+
+async def test_ensure_oauth_user(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return "existing"
+    monkeypatch.setattr(o,"UserCRUD",U)
+    assert await o.ensure_oauth_user(db=object(),provider="github",unique_id="1",display_name="n") == "existing"
+    async def auto(**kw): return "new"
+    monkeypatch.setattr(o,"auto_register_login_user",auto)
+    class U2(U):
+        async def get(self,**kw): return None
+    monkeypatch.setattr(o,"UserCRUD",U2)
+    assert await o.ensure_oauth_user(db=object(),provider="github",unique_id="1",display_name="n") == "new"
+
+
+async def test_complete_oauth_login_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    from types import SimpleNamespace
+    class R:
+        def __init__(self,*a): self.store={o.STATE_PREFIX+"s": json.dumps({"provider":"github","frontend_redirect":"https://f"})}
+        async def get(self,k): return self.store.get(k)
+        async def delete(self,*ks): return True
+    monkeypatch.setattr(o,"RedisCURD",R)
+    async def cb(req,provider): return "https://cb"
+    monkeypatch.setattr(o,"_callback_url",cb)
+    monkeypatch.setattr(o,"_require_credentials",lambda p:("i","s"))
+    async def gt(*a): return "a"
+    async def fp(tok): return ("login","Name",None)
+    async def ensure(**kw): return "user"
+    async def prep(**kw): return "user"
+    async def token(**kw): return "tok"
+    monkeypatch.setattr(o,"exchange_github_token",gt); monkeypatch.setattr(o,"fetch_github_profile",fp)
+    monkeypatch.setattr(o,"ensure_oauth_user",ensure)
+    class L:
+        prepare_user_for_login=staticmethod(prep)
+        create_token=staticmethod(token)
+    monkeypatch.setattr(o,"LoginService",L)
+    tok,front = await o.complete_oauth_login(request=object(),redis=object(),db=object(),provider="github",code="c",state="s")
+    assert tok == "tok" and front == "https://f"
