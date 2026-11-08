@@ -238,3 +238,26 @@ def test_oauth_redirects() -> None:
     assert "oauth_error=" in err and "bad" in err
     ok=o._frontend_success_redirect("https://f", "a b", "r", "bearer")
     assert "access_token=a+b" in ok and "refresh_token=r" in ok
+
+
+def test_build_authorize_all_providers(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(o.settings,"OAUTH_GITHUB_CLIENT_ID","gh")
+    monkeypatch.setattr(o.settings,"OAUTH_GITHUB_CLIENT_SECRET","s")
+    assert "github.com/login/oauth/authorize" in o.build_authorize_url(provider="github",callback_url="https://cb",state="st")
+    monkeypatch.setattr(o.settings,"OAUTH_GITEE_CLIENT_ID","ge")
+    monkeypatch.setattr(o.settings,"OAUTH_GITEE_CLIENT_SECRET","s")
+    assert "gitee.com/oauth/authorize" in o.build_authorize_url(provider="gitee",callback_url="https://cb",state="st")
+    monkeypatch.setattr(o.settings,"OAUTH_WECHAT_OPEN_APP_ID","wx")
+    monkeypatch.setattr(o.settings,"OAUTH_WECHAT_OPEN_APP_SECRET","s")
+    assert "#wechat_redirect" in o.build_authorize_url(provider="wechat",callback_url="https://cb",state="st")
+    monkeypatch.setattr(o.settings,"OAUTH_QQ_APP_ID","qq")
+    monkeypatch.setattr(o.settings,"OAUTH_QQ_APP_SECRET","s")
+    assert "graph.qq.com/oauth2.0/authorize" in o.build_authorize_url(provider="qq",callback_url="https://cb",state="st")
+
+
+def test_require_credentials_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(o.settings,"OAUTH_GITHUB_CLIENT_ID","")
+    with pytest.raises(RuntimeError, match="未配置"):
+        o._require_credentials("github")
+    with pytest.raises(CustomException, match="不支持"):
+        o._require_credentials("bad")
