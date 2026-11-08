@@ -330,3 +330,30 @@ async def test_update_gen_table_branches(monkeypatch: pytest.MonkeyPatch) -> Non
     s._assert_parent_menu_is_catalog=noop; s.set_pk_column=noop; s.hydrate_sub_table=noop
     out=await s.update_gen_table(GenTableSchema(table_name="d"),1)
     assert out.table_name=="d"
+
+
+async def test_update_gen_table_columns(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema, GenTableSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def one(i): return GenTableOutSchema(id=1,table_name="d")
+    s.get_gen_table_by_id=one
+    class T:
+        def __init__(self,*a): pass
+        async def edit_gen_table(self,*a): return True
+        async def get_gen_table_by_id(self,*a,**k): return {"id":1,"table_name":"d"}
+    class C:
+        def __init__(self,*a): self.calls=[]
+        async def list_gen_table_column_crud(self,**k): return [SimpleNamespace(id=1,column_name="a"),SimpleNamespace(id=2,column_name="gone")]
+        async def update(self,**k): self.calls.append(("update",k))
+        async def create_gen_table_column_crud(self,data): self.calls.append(("create",data))
+        async def delete(self,**k): self.calls.append(("delete",k))
+    c=C(); monkeypatch.setattr(mod,"GenTableCRUD",T); monkeypatch.setattr(mod,"GenTableColumnCRUD",lambda *a:c)
+    async def noop(*a,**k): return None
+    s._assert_parent_menu_is_catalog=noop; s.set_pk_column=noop; s.hydrate_sub_table=noop
+    old=GenTableColumnOutSchema(id=1,column_name="a",column_type="int")
+    new=GenTableColumnOutSchema(column_name="b",column_type="int")
+    data=GenTableSchema(table_name="d",columns=[old,new])
+    out=await s.update_gen_table(data,1)
+    assert out.table_name=="d"
+    assert any(x[0]=="update" for x in c.calls) and any(x[0]=="create" for x in c.calls) and any(x[0]=="delete" for x in c.calls)
