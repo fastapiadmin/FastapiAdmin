@@ -357,7 +357,7 @@ async def test_update_current_info_success(monkeypatch: pytest.MonkeyPatch) -> N
 
 async def test_user_queries_success(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.core.base_schema import PageResultSchema
-    u=SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(name="D"),roles=[SimpleNamespace(id=2)],positions=[SimpleNamespace(id=3)])
+    u=SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(id=2,name="D",status=0),roles=[SimpleNamespace(id=2)],positions=[SimpleNamespace(id=3)])
     class U:
         def __init__(self,*a): pass
         async def get_or_404(self,**kw): return u
@@ -381,7 +381,7 @@ async def test_create_superuser_rejected(monkeypatch: pytest.MonkeyPatch) -> Non
 async def test_current_info_with_dept(monkeypatch: pytest.MonkeyPatch) -> None:
     class U:
         def __init__(self,*a): pass
-        async def get(self,**kw): return SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(name="D"),roles=[],positions=[],is_superuser=False)
+        async def get(self,**kw): return SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(id=2,name="D",status=0),roles=[],positions=[],is_superuser=False)
     s=_svc(monkeypatch,U)
     async def menus(): return []
     s._load_menus=menus
