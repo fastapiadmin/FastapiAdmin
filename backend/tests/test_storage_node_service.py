@@ -45,3 +45,18 @@ async def test_export_empty(monkeypatch: pytest.MonkeyPatch) -> None:
     s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
     s._crud=lambda: C()
     out = await s.export_config(); assert out["nodes"] == [] and out["version"] == 1
+
+
+async def test_node_queries(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.storage.node.schema import StorageNodeOutSchema
+    from app.core.base_schema import PageResultSchema
+    node=StorageNodeOutSchema(name="n",protocol="s3",port=443,password="x")
+    class C:
+        async def get_or_404(self,**kw): return node
+        async def page(self,**kw): return PageResultSchema(page_no=1,page_size=10,total=1,has_next=False,items=[node])
+        async def get_list(self,**kw): return [node]
+    s=StorageNodeService.__new__(StorageNodeService); s.auth=object(); s.db=object()
+    s._crud=lambda: C()
+    assert (await s.detail(1)).name=="n"
+    assert (await s.page(None,1,10)).total==1
+    assert len(await s.get_list())==1
