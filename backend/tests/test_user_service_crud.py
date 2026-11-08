@@ -293,3 +293,14 @@ async def test_create_without_password(monkeypatch: pytest.MonkeyPatch) -> None:
     async def noop(*a,**k): return None
     s._set_user_roles=noop; s._set_user_positions=noop
     assert await s.create(_data(password=None)) == "ok"
+
+
+async def test_delete_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): self.deleted=None
+        async def get_list(self,**kw): return [SimpleNamespace(id=1,is_superuser=False)]
+        async def set_user_roles(self,**kw): self.roles=True
+        async def set_user_positions(self,**kw): self.pos=True
+        async def delete(self,ids): self.deleted=ids
+    s=_svc(monkeypatch,U)
+    await s.delete([1])
