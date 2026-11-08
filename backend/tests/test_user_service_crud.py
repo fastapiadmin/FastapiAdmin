@@ -368,3 +368,11 @@ async def test_user_queries_success(monkeypatch: pytest.MonkeyPatch) -> None:
     assert d.dept_name=="D" and d.role_ids==[2] and d.position_ids==[3]
     assert (await s.get_list())[0].dept_name=="D"
     assert (await s.page(1,10)).items[0].role_ids==[2]
+
+
+async def test_create_superuser_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+    s=_svc(monkeypatch,U)
+    with pytest.raises(CustomException, match="不允许创建超级管理员"):
+        await s.create(UserCreateSchema(username="abc",name="A",password="Abc123!x",dept_id=1,is_superuser=True))
