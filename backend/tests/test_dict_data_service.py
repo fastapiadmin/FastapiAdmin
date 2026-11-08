@@ -127,3 +127,19 @@ async def test_delete_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     s._refresh_dict_cache=bad
     with pytest.raises(RuntimeError):
         await s.delete(object(),[1])
+
+
+async def test_update_old_type_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return _obj(dict_type="old")
+        async def get(self,**kw): return None
+        async def update(self,**kw): return _obj(dict_type="new")
+    class T:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return _obj(dict_type="old")
+    s=_svc(monkeypatch,C,T)
+    async def bad(redis,dt): raise RuntimeError()
+    s._refresh_dict_cache=bad
+    with pytest.raises(RuntimeError):
+        await s.update(object(),1,DictDataUpdateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="new",dict_type_id=1))
