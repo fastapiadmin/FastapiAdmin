@@ -341,3 +341,15 @@ async def test_current_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
     s._load_menus=menus
     out=await s.current_info()
     assert out.id == 1
+
+
+async def test_update_current_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.user.schema import CurrentUserUpdateSchema
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def update(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    assert await s.update_current_info(CurrentUserUpdateSchema(name="N")) == "ok"
