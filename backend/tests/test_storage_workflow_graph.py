@@ -87,3 +87,17 @@ async def test_workflow_queries(monkeypatch) -> None:
     assert await s.get_list()==[]
     with pytest.raises(CustomException, match="不存在"):
         await s.detail(1)
+
+
+async def test_load_flow_graph() -> None:
+    class R:
+        def __init__(self,v): self.v=v
+        def scalars(self): return self
+        def all(self): return self.v
+    class DB:
+        def __init__(self): self.n=0
+        async def execute(self,stmt):
+            self.n+=1; return R(["n"] if self.n==1 else ["e"])
+    s=WorkflowService.__new__(WorkflowService); s.auth=object(); s.db=DB()
+    nodes,edges=await s._load_flow_graph(1)
+    assert nodes==["n"] and edges==["e"]
