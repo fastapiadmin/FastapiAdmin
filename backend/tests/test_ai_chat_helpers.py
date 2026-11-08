@@ -110,3 +110,20 @@ async def test_chat_session_service_success(monkeypatch: pytest.MonkeyPatch) -> 
     assert page.total == 2
     await s.update("s", ChatSessionUpdateSchema(title="n"))
     await s.delete(["s"])
+
+
+async def test_chat_non_stream_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    async def ensure(crud,sid): return "s"
+    monkeypatch.setattr(mod,"_ensure_session",ensure)
+    class Crud:
+        def __init__(self,*a): self.db=object()
+    monkeypatch.setattr(mod,"ChatSessionCRUD",Crud)
+    class Agent:
+        async def arun(self,input): raise RuntimeError()
+    class F:
+        def create_agent(self,**kw): return Agent()
+    monkeypatch.setattr(mod,"AgnoFactory",F)
+    s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
+    out=await s.chat_non_stream("x",None)
+    assert out["action"] is None and "暂时不可用" in out["response"]
