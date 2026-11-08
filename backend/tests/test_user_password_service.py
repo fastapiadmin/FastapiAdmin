@@ -112,10 +112,10 @@ async def test_change_reset_forget_branches(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(mod,"PwdUtil",P)
     s=UserService.__new__(UserService); s.auth=SimpleNamespace(user=SimpleNamespace(id=0)); s.db=object()
     with pytest.raises(CustomException, match="不存在"):
-        await s.change_password(UserChangePasswordSchema(old_password="a",new_password="Abc123!x"))
+        await s.change_password(UserChangePasswordSchema(old_password="Old123!",new_password="Abc123!x"))
     s.auth=SimpleNamespace(user=SimpleNamespace(id=1))
     with pytest.raises(CustomException, match="原密码"):
-        await s.change_password(UserChangePasswordSchema(old_password="a",new_password="Abc123!x"))
+        await s.change_password(UserChangePasswordSchema(old_password="Old123!",new_password="Abc123!x"))
     with pytest.raises(CustomException, match="超级管理员"):
         await s.reset_password(ResetPasswordSchema(id=1,password="Abc123!x"))
     assert await s.forget_password(UserForgetPasswordSchema(username="none")) is None
