@@ -196,3 +196,14 @@ async def test_connection_duplicate_update(test_client) -> None:
             await svc.update(row.id, DbConnectionUpdateSchema(name=b, db_type="postgres", host="127.0.0.1", port=5432, username=settings.DATABASE_USER, password=None, database=settings.DATABASE_NAME))
     finally:
         await _cleanup(a); await _cleanup(b)
+
+
+async def test_connection_errors(test_client) -> None:
+    from app.core.exceptions import CustomException
+    from app.modules.ops.dbconsole.schema import DbConnectionTestSchema
+    async with _db() as db:
+        svc = DbConsoleService(_auth(), db)
+        with pytest.raises(CustomException):
+            await svc.run_query(99999999, "SELECT 1")
+        with pytest.raises(CustomException):
+            await svc.test_connection(DbConnectionTestSchema(db_type="postgres", host="127.0.0.1", port=1, username="u", password="p"))

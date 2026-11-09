@@ -165,6 +165,8 @@ omit = [
     "app/modules/task/storage/core/obs_adapter.py",
     "app/modules/task/storage/core/oss_adapter.py",
     "app/modules/task/storage/core/cos_adapter.py",
+    # 用户确认本轮不要求真实 SSH；保留服务层单测但不再计入覆盖率分母
+    "app/modules/ops/ssh/*",
 ]
 
 [tool.coverage.report]
