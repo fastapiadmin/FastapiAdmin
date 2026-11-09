@@ -50,3 +50,18 @@ async def test_tool_storage_and_cron_errors(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(r,"async_db_session",lambda: Ctx2())
     out=await tools["cron_jobs"].func()
     assert out[0]["error"].startswith("列出定时任务失败")
+
+
+async def test_storage_files_tool(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    class Ctx:
+        async def __aenter__(self): return object()
+        async def __aexit__(self,*a): return False
+    monkeypatch.setattr(r,"async_db_session",lambda: Ctx())
+    class N:
+        def __init__(self,*a): pass
+        async def get_list(self): return [SimpleNamespace(id=1,name="n")]
+    monkeypatch.setattr(r,"StorageNodeService",N)
+    tools={t.name:t for t in r.build_readonly_tools(object())}
+    out=await tools["storage_files"].func("x")
+    assert out["error"].startswith("存储源不存在") and out["available"]==["n"]
