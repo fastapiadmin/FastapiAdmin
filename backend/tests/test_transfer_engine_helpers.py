@@ -311,3 +311,44 @@ async def test_run_step_local_success(tmp_path: Path, monkeypatch: pytest.Monkey
     step2=SimpleNamespace(**{**step.__dict__,"source_path":str(d),"target_path":"r","status":"pending","error_msg":None})
     assert await engine._run_step(DB(),task2,step2) is True
     assert a.uploads and a.uploads[0][1]=="r/x.txt"
+
+
+async def test_run_step_remote_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.core.base import StorageObject
+    from app.modules.task.storage.transfer import engine
+    class DB:
+        async def commit(self): return None
+    class Src:
+        def __init__(self,isdir=False): self.isdir=isdir; self.closed=False
+        async def list_files(self,p): return [StorageObject(name="d",key="d",is_dir=True)] if self.isdir else []
+        async def list_recursive(self,p): return [StorageObject(name="a",key="d/a",is_dir=False,size=3)]
+        async def download(self,k,l):
+            from pathlib import Path
+            Path(l).write_text("123")
+        async def download_dir(self,p,l):
+            from pathlib import Path
+            Path(l).mkdir(exist_ok=True); (Path(l)/"a").write_text("x")
+        async def close(self): self.closed=True
+    class Dst:
+        def __init__(self): self.up=[]
+        async def upload(self,a,b): self.up.append(b)
+        async def close(self): return None
+    async def cfg(db,sid): return "cfg"
+    async def load(db,tid): return []
+    async def bc(t,s): return None
+    monkeypatch.setattr(engine,"_build_config",cfg); monkeypatch.setattr(engine,"_load_steps",load); monkeypatch.setattr(engine,"_broadcast",bc)
+    dst=Dst()
+    for isdir in (False,True):
+        src=Src(isdir)
+        def create(c,src=src,dst=dst): return src if c=="cfg" and not hasattr(create,"x") else dst
+        create.x=1
+        # 第一次调用返回 src，第二次返回 dst
+        calls=[]
+        def factory(c):
+            calls.append(c); return src if len(calls)==1 else dst
+        monkeypatch.setattr(engine.StorageAdapterFactory,"create",staticmethod(factory))
+        task=SimpleNamespace(id=1,transferred_size=0,total_size=10,progress=0,speed=0,status="pending",error_msg=None,finished_at=None)
+        step=SimpleNamespace(step_order=1,source_id=1,target_id=2,source_path="d",target_path="r",transfer_mode=None,multipart_part_size=None,multipart_concurrency=None,status="pending",started_at=None,finished_at=None,progress=0,error_msg=None,total_size=0,transferred_size=0,speed=0)
+        assert await engine._run_step(DB(),task,step) is True
+        assert dst.up and src.closed
