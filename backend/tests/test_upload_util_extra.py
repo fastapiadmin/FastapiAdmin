@@ -63,3 +63,8 @@ def test_upload_validators() -> None:
     assert UploadUtil.check_file_size(SimpleNamespace(size=1)) is True
     with pytest.raises(CustomException):
         UploadUtil.validate_file_extension(".exe")
+
+
+def test_content_type_mismatch() -> None:
+    png = b"\x89PNG\r\n\x1a\n" + b"0" * 32
+    assert UploadUtil.validate_file_content_type(png, ".jpg") is True
