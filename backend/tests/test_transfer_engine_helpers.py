@@ -209,3 +209,23 @@ async def test_local_file_helpers(tmp_path: Path) -> None:
     d=tmp_path/"rm"; d.mkdir(); (d/"x").write_text("x")
     await engine._remove_local_temp_dir(str(d))
     assert not d.exists()
+
+
+async def test_resolve_source_and_dir(tmp_path: Path) -> None:
+    from app.modules.task.storage.core.base import StorageObject
+    from app.modules.task.storage.transfer import engine
+    class A:
+        def __init__(self): self.downloaded=[]
+        async def list_files(self,p):
+            if p=="bad": raise RuntimeError()
+            return [StorageObject(name="d",key="d",is_dir=True),StorageObject(name="f",key="f",is_dir=False,size=5)]
+        async def list_recursive(self,p): return [StorageObject(name="a",key="d/a",is_dir=False,size=3),StorageObject(name="sub",key="d/sub",is_dir=True)]
+        async def download(self,k,l): self.downloaded.append((k,l))
+    a=A()
+    assert await engine._resolve_source_size(a,"d")==3
+    assert await engine._resolve_source_size(a,"f")==5
+    assert await engine._resolve_source_size(a,"bad")==0
+    assert await engine._is_dir_path(a,"d") is True
+    assert await engine._is_dir_path(a,"f") is False
+    await engine._download_dir(a,"d",str(tmp_path))
+    assert a.downloaded and a.downloaded[0][0]=="d/a"
