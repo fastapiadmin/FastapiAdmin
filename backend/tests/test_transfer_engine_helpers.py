@@ -230,3 +230,22 @@ async def test_resolve_source_and_dir(tmp_path: Path) -> None:
     assert await engine._is_dir_path(a,"f") is False
     await engine._download_dir(a,"d",str(tmp_path))
     assert a.downloaded and a.downloaded[0][0]=="d/a"
+
+
+async def test_remove_local_temp_and_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    f=tmp_path/"a"; f.write_text("x")
+    engine._remove_local_temp(SimpleNamespace(source_type="local",source_path=str(f)))
+    assert not f.exists()
+    d=tmp_path/"d"; d.mkdir()
+    engine._remove_local_temp(SimpleNamespace(source_type="local",source_path=str(d)))
+    assert d.exists()
+    class DB:
+        def __init__(self,obj): self.obj=obj
+        async def get(self,model,id): return self.obj
+    assert await engine._build_config(DB(None),1) is None
+    assert await engine._build_config(DB(SimpleNamespace(status=1)),1) is None
+    obj=SimpleNamespace(status=0)
+    monkeypatch.setattr(engine.StorageNodeService,"_build_config",staticmethod(lambda s:"cfg"))
+    assert await engine._build_config(DB(obj),1)=="cfg"
