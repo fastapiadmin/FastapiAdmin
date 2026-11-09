@@ -70,3 +70,14 @@ async def test_logout(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod,"decode_access_token",lambda token: SimpleNamespace(sub=None))
     with pytest.raises(CustomException, match="会话编号"):
         await mod.LoginService.logout(r,"t")
+
+
+def test_build_session_dict(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    user=SimpleNamespace(id=1,is_superuser=False,status=0,name="N",username="u",dept_id=2,mobile=None,email=None,gender=None,avatar=None,last_login=1)
+    ua=SimpleNamespace(os=SimpleNamespace(family="Mac"),user_agent=SimpleNamespace(family="Safari"))
+    out=LoginService._build_session_dict(user,"s",["p"],[1],"1.1.1.1","loc",ua,"password")
+    assert out["os"]=="Mac" and out["browser"]=="Safari" and out["permissions"]==["p"]
+    out2=LoginService._build_session_dict(user,"s",[],[],"ip",None,SimpleNamespace(os=None,user_agent=None),"password")
+    assert out2["os"]=="Unknown" and out2["browser"]=="Unknown"
+    assert LoginService._redis_key("k").endswith(":k")
