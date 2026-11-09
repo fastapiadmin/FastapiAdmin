@@ -102,3 +102,42 @@ async def test_redis_real_roundtrip() -> None:
         assert await client.get(key) is None
     finally:
         await client.aclose()
+
+
+async def test_crud_real_roundtrip_and_explicit_null(test_client) -> None:
+    from types import SimpleNamespace
+    from app.core.base_crud import CRUDBase
+    from app.modules.system.user.model import UserModel
+    from app.modules.system.user.schema import UserUpdateSchema
+
+    username = _username()
+    auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    try:
+        async with _db() as db:
+            crud = CRUDBase(UserModel, auth, db)
+            user = await crud.create({"username": username, "password": "hash", "name": "IT", "status": 0, "description": "x"})
+            uid = user.id
+            assert (await crud.get(username=username)).id == uid
+            await crud.update(uid, UserUpdateSchema(description=None))
+            assert (await crud.get(id=uid)).description is None
+            page = await crud.page(1, 10, {"username": username}, None)
+            assert page.total == 1
+            await crud.delete(ids=[uid])
+            assert await crud.get(id=uid) is None
+    finally:
+        async with _db() as db:
+            await db.execute(text("DELETE FROM sys_user WHERE username=:u"), {"u": username})
+            await db.commit()
+
+
+async def test_redis_real_expiry() -> None:
+    from redis.asyncio import Redis
+
+    client = Redis(host="localhost", port=6379, db=1, decode_responses=True)
+    key = f"it:ttl:{uuid.uuid4().hex}"
+    try:
+        assert await client.set(key, "1", ex=30)
+        assert 0 < await client.ttl(key) <= 30
+        assert await client.delete(key) == 1
+    finally:
+        await client.aclose()
