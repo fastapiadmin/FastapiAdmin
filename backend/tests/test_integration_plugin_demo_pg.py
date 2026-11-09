@@ -144,3 +144,34 @@ def test_demo_service_export_import_errors(test_client) -> None:
         finally:
             await e.dispose()
     asyncio.run(run())
+
+
+def test_demo_service_crud_errors(test_client) -> None:
+    from app.plugin.module_example.demo.schema import DemoCreateSchema, DemoUpdateSchema
+    from app.plugin.module_example.demo.service import DemoService
+    from app.core.exceptions import CustomException
+    import asyncio
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.pool import NullPool
+    from app.config.setting import settings
+    name = "it_dup_demo"
+    auth = __import__("types").SimpleNamespace(user=__import__("types").SimpleNamespace(id=0))
+    async def run():
+        e = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool)
+        f = async_sessionmaker(e, expire_on_commit=False)
+        try:
+            async with f() as db:
+                svc = DemoService(auth, db)
+                obj = await svc.create(DemoCreateSchema(name=name))
+                await db.commit()
+                with pytest.raises(CustomException):
+                    await svc.create(DemoCreateSchema(name=name))
+                with pytest.raises(CustomException):
+                    await svc.update(99999999, DemoUpdateSchema(name="xx"))
+                with pytest.raises(CustomException):
+                    await svc.delete([99999999])
+                await svc.delete([obj.id])
+                await db.commit()
+        finally:
+            await e.dispose()
+    asyncio.run(run())

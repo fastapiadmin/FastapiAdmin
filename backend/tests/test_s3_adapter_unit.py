@@ -78,3 +78,27 @@ def test_dir_operations() -> None:
     assert a._sync_list_recursive("a/")
     a._sync_delete_dir("a/")
     assert c.batch["Delete"]["Quiet"] is True
+
+
+def test_adapter_error_paths() -> None:
+    class Bad:
+        def __getattr__(self, name):
+            def fail(*a, **k): raise RuntimeError("boom")
+            return fail
+    a = _adapter(Bad())
+    import pytest
+    with pytest.raises(Exception):
+        a._sync_upload("/tmp/x", "k")
+    with pytest.raises(Exception):
+        a._sync_download("k", "/tmp/y")
+    with pytest.raises(Exception):
+        a._sync_delete("k")
+    with pytest.raises(Exception):
+        a._sync_get_url("k", 1)
+    with pytest.raises(Exception):
+        a._sync_mkdir("d/")
+    with pytest.raises(Exception):
+        a._sync_rmdir("d/")
+    with pytest.raises(Exception):
+        a._sync_delete_dir("d/")
+    assert a._is_dir("d/") is False
