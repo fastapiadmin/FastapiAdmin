@@ -121,3 +121,37 @@ async def test_user_service_duplicate(test_client) -> None:
                 await service.create(UserCreateSchema(username=username, password="Abc123!x", name="IT"))
     finally:
         await _cleanup_user(username)
+
+
+async def test_user_role_assignment(test_client) -> None:
+    from app.modules.system.role.schema import RoleCreateSchema
+    from app.modules.system.role.service import RoleService
+    from app.modules.system.user.schema import UserCreateSchema, UserUpdateSchema
+    from app.modules.system.user.service import UserService
+
+    tag = _tag(); username = f"it_{tag}"; role_name = f"it_role_{tag}"; code = f"it_{tag}"
+    auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    try:
+        async with _db() as db:
+            role = await RoleService(auth, db).create(RoleCreateSchema(name=role_name, code=code))
+            us = UserService(auth, db)
+            user = await us.create(UserCreateSchema(username=username, password="Abc123!x", name="IT", role_ids=[role.id]))
+            got = await us.detail(user.id)
+            assert got.role_ids == [role.id]
+            await us.update(user.id, UserUpdateSchema(role_ids=[]))
+            assert (await us.detail(user.id)).role_ids == []
+    finally:
+        await _cleanup_user(username); await _cleanup_role(role_name)
+
+
+async def test_user_role_invalid_id(test_client) -> None:
+    from app.modules.system.user.schema import UserCreateSchema
+    from app.modules.system.user.service import UserService
+
+    tag = _tag(); username = f"it_{tag}"; auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    try:
+        async with _db() as db:
+            with pytest.raises(CustomException, match="角色不存在"):
+                await UserService(auth, db).create(UserCreateSchema(username=username, password="Abc123!x", name="IT", role_ids=[99999999]))
+    finally:
+        await _cleanup_user(username)

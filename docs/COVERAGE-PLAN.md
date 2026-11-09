@@ -94,7 +94,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 - 当前覆盖：`SELECT 1`、用户 CRUD 往返、显式 NULL 更新、分页、唯一约束回滚、Redis set/get/ttl/delete；
 - 服务层：角色创建/更新/分页/删除、角色重名、用户创建/详情/更新/分页/删除、用户重名；
 - RedisCURD：set/get/delete、expire/ttl、lock/unlock、compare_and_set、scan/mget、hash；
-- 当前真实集成 **56 passed**（PG 基础 6、RedisCURD 6、服务层 4、认证会话 4、gencode 3、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4）；
+- 当前真实集成 **58 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、gencode 3、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4）；
 - 后续把调度器、认证会话、gencode 同步迁到真实 DB/Redis 验证。
 
 ## 范围口径 A（2026-11-09 确认）
@@ -133,6 +133,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 | JWT 无唯一标识，同一秒内登录/刷新会生成完全相同的 access/refresh token，刷新轮换与重放检测失效 | `JWTPayloadSchema` 增加 `jti`，登录与刷新均写入 `uuid4` |
 | gencode 重复同步时既有字段未取到，重复插入字段（2 列同步两次变 4 条） | 预加载为空时按 `table_id` 兜底查询现有字段，再做匹配更新 |
 | 字典类型编码重复时直接撞数据库唯一约束，返回 500 而非业务错误 | 创建前增加 `dict_type` 查重，返回“字典编码已存在” |
+| 更新用户时传 `role_ids=[]` / `position_ids=[]` 实际不清空关联 | 更新路径新增 `clear_when_empty=True`，显式清空；创建/导入路径保持 no-op |
 
 ## 现实约束
 
