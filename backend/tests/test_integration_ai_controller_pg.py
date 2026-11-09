@@ -91,3 +91,14 @@ def test_ai_chat_permission_helper() -> None:
     assert _has_chat_permission(superuser) is True
     assert _has_chat_permission(normal) is True
     assert _has_chat_permission(denied) is False
+
+
+def test_ai_chat_endpoint(test_client, auth_headers, monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.controller as c
+    async def cfg(redis, uid): return {"model_id": "m"}
+    async def chat(self, **kw): return {"response": "pong", "session_id": "s", "function_calls": None, "action": None}
+    monkeypatch.setattr(c, "get_user_model_config", cfg)
+    monkeypatch.setattr(c.ChatService, "chat_non_stream", chat)
+    resp = test_client.post("/api/v1/ai/chat/ai-chat", json={"message": "ping"}, headers=auth_headers)
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["data"]["response"] == "pong"

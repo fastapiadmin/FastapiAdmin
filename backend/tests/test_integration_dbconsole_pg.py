@@ -144,3 +144,40 @@ async def test_connection_update_and_missing(test_client) -> None:
                 await svc.detail(row.id)
     finally:
         await _cleanup(name); await _cleanup(name + "x")
+
+
+async def test_dbconsole_edge_branches(test_client) -> None:
+    from app.modules.ops.dbconsole.schema import DbConnectionUpdateSchema
+    from app.core.exceptions import CustomException
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = DbConsoleService(_auth(), db)
+            row = await svc.create(_data(name))
+            with pytest.raises(CustomException):
+                await svc.create(_data(name))
+            with pytest.raises(CustomException):
+                await svc.run_query(row.id, "")
+            with pytest.raises(CustomException):
+                await svc.run_query(row.id, "SELECT 1; SELECT 2", confirmed=True)
+            res = await svc.run_query(row.id, "CREATE TEMP TABLE it_tmp (id INT)", confirmed=True)
+            assert res.read_only is False
+    finally:
+        await _cleanup(name)
+
+
+async def test_dbconsole_mysql_branches(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.ops.dbconsole.schema import DbConnectionCreateSchema
+    from app.core.exceptions import CustomException
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = DbConsoleService(_auth(), db)
+            row = await svc.create(DbConnectionCreateSchema(name=name, db_type="mysql", host="127.0.0.1", port=3306, username="u", password="p", database=None))
+            async def fetch(*a, **k): return [["t1"]]
+            svc._fetch = fetch
+            assert await svc.list_databases(row.id)
+            with pytest.raises(CustomException):
+                await svc.list_tables(row.id)
+    finally:
+        await _cleanup(name)
