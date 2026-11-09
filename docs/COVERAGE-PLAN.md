@@ -94,7 +94,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 - 当前覆盖：`SELECT 1`、用户 CRUD 往返、显式 NULL 更新、分页、唯一约束回滚、Redis set/get/ttl/delete；
 - 服务层：角色创建/更新/分页/删除、角色重名、用户创建/详情/更新/分页/删除、用户重名；
 - RedisCURD：set/get/delete、expire/ttl、lock/unlock、compare_and_set、scan/mget、hash；
-- 当前真实集成 **20 passed**（PG 基础 6、RedisCURD 6、服务层 4、认证会话 4）；
+- 当前真实集成 **22 passed**（PG 基础 6、RedisCURD 6、服务层 4、认证会话 4、gencode 同步 2）；
 - 后续把调度器、认证会话、gencode 同步迁到真实 DB/Redis 验证。
 
 ## 范围口径 A（2026-11-09 确认）
@@ -131,6 +131,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 | 代码生成新增字段重复传 `table_id`，新增列必然 TypeError | 字段 dump 排除 `table_id`，由外层统一传 |
 | 目录复制目标带尾斜杠时生成 `dst//sub` 双斜杠 key | `_sync_copy_dir` 对 dst 去尾斜杠 |
 | JWT 无唯一标识，同一秒内登录/刷新会生成完全相同的 access/refresh token，刷新轮换与重放检测失效 | `JWTPayloadSchema` 增加 `jti`，登录与刷新均写入 `uuid4` |
+| gencode 重复同步时既有字段未取到，重复插入字段（2 列同步两次变 4 条） | 预加载为空时按 `table_id` 兜底查询现有字段，再做匹配更新 |
 
 ## 现实约束
 

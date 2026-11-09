@@ -983,6 +983,10 @@ class GenTableService:
         if not table.id:
             raise CustomException(msg="业务表ID不能为空")
         table_columns = table.columns or []
+        if not table_columns:
+            # 预加载缺失时的兜底：直接按 table_id 读现有字段，避免重复同步时重复插入
+            existing_columns = await GenTableColumnCRUD(self.auth, self.db).list_gen_table_column_crud(search={"table_id": table.id})
+            table_columns = [GenTableColumnOutSchema.model_validate(column) for column in existing_columns]
         table_column_map = {column.column_name: column for column in table_columns}
         # 确保db_table_columns始终是列表类型，避免None值
         db_table_columns = await self._get_db_table_columns(table_name)
