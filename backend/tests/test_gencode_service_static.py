@@ -376,6 +376,10 @@ async def test_sync_db_branches(monkeypatch: pytest.MonkeyPatch) -> None:
         await s.sync_db("d")
     c.obj=GenTableOutSchema(id=1,table_name="d")
     async def cols(name): return []
+    class Col:
+        def __init__(self,*a): pass
+        async def list_gen_table_column_crud(self,**kw): return []
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
     s._get_db_table_columns=cols
     await s.sync_db("d")
 
@@ -448,6 +452,7 @@ async def test_sync_db_preserve_and_sub(monkeypatch: pytest.MonkeyPatch) -> None
     updated=[]
     class Col:
         def __init__(self,*a): pass
+        async def list_gen_table_column_crud(self,**kw): return []
         async def update_gen_table_column_crud(self,i,d): updated.append(d)
     monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
     monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda c,t:None))
