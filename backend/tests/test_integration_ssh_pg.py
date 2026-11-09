@@ -150,3 +150,21 @@ async def test_ssh_open_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
         s = await svc.open_terminal(1,80,24)
         assert s.host_name == "h"
         await svc.open_log_tail(1,"/var/log/x",10)
+
+
+async def test_ssh_snippet_crud(test_client) -> None:
+    from app.modules.ops.ssh.schema import SshSnippetCreateSchema, SshSnippetUpdateSchema
+    from app.modules.ops.ssh.service import SshSnippetService
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = SshSnippetService(_auth(), db)
+            row = await svc.create(SshSnippetCreateSchema(name=name, command="ls"))
+            assert row.name == name
+            assert any(x.name == name for x in await svc.get_list())
+            await svc.update(row.id, SshSnippetUpdateSchema(name=name, command="pwd"))
+            await svc.delete([row.id])
+    finally:
+        async with _db() as db:
+            await db.execute(text("DELETE FROM ops_ssh_snippet WHERE name=:n"), {"n": name})
+            await db.commit()
