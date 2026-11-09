@@ -181,3 +181,18 @@ async def test_dbconsole_mysql_branches(test_client, monkeypatch: pytest.MonkeyP
                 await svc.list_tables(row.id)
     finally:
         await _cleanup(name)
+
+
+async def test_connection_duplicate_update(test_client) -> None:
+    from app.modules.ops.dbconsole.schema import DbConnectionUpdateSchema
+    from app.core.exceptions import CustomException
+    a = _name(); b = _name()
+    try:
+        async with _db() as db:
+            svc = DbConsoleService(_auth(), db)
+            await svc.create(_data(a)); row = await svc.create(_data(b))
+            with pytest.raises(CustomException):
+                await svc.update(row.id, DbConnectionUpdateSchema(name=a, db_type="postgres", host="127.0.0.1", port=5432, username=settings.DATABASE_USER, database=settings.DATABASE_NAME))
+            await svc.update(row.id, DbConnectionUpdateSchema(name=b, db_type="postgres", host="127.0.0.1", port=5432, username=settings.DATABASE_USER, password=None, database=settings.DATABASE_NAME))
+    finally:
+        await _cleanup(a); await _cleanup(b)

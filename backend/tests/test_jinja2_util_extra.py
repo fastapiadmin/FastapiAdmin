@@ -90,3 +90,17 @@ def test_all_template_file_names() -> None:
     table = GenTableOutSchema(table_name="demo", class_name="Demo", package_name="module_demo", module_name="demo", business_name="demo", function_name="Demo")
     for tpl in J.get_template_list() + J.get_sub_table_template_list():
         assert J.get_file_name(tpl, table)
+
+
+def test_env_errors_and_sanitizers() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    from app.core.exceptions import CustomException
+    import pytest
+    with pytest.raises(Exception):
+        J.get_template("no_such_template.j2")
+    assert J.business_name_to_path(None) is not None
+    assert J.get_permission_prefix("", "") is not None
+    table = GenTableOutSchema(table_name="t", class_name="T", columns=[GenTableColumnSchema(column_name="id", column_type="int", html_type="select", dict_type="d")])
+    assert J.safe_render_schema(table) is not None
+    assert J.sentinel_render_schema(table) is not None
+    assert J.get_dicts(table) == "'d'"
