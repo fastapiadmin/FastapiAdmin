@@ -401,3 +401,11 @@ async def test_update_current_info_errors(monkeypatch: pytest.MonkeyPatch) -> No
     s.auth=SimpleNamespace(user=SimpleNamespace(id=1))
     with pytest.raises(CustomException, match="已存在"):
         await s.update_current_info(CurrentUserUpdateSchema(mobile="13800000000"))
+
+
+async def test_current_info_light(monkeypatch: pytest.MonkeyPatch) -> None:
+    s=UserService.__new__(UserService); s.auth=SimpleNamespace(user=SimpleNamespace(id=1)); s.db=object()
+    async def menus(): return []
+    s._load_menus=menus
+    out=await s.current_info(check_data_scope=False)
+    assert out.menus==[]
