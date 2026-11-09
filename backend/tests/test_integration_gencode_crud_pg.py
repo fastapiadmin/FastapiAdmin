@@ -128,3 +128,22 @@ async def test_preview_code(test_client) -> None:
             await crud.delete_gen_table([obj.id])
     finally:
         await _cleanup(table)
+
+
+async def test_preview_code_with_sub_table(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    main = _name(); sub = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            sub_obj = await crud.add_gen_table(GenTableSchema(table_name=sub, class_name="SubItem", package_name="module_it", module_name="it", business_name="sub", function_name="Sub"))
+            col = GenTableColumnCRUD(_auth(), db)
+            await col.create_gen_table_column_crud(GenTableColumnSchema(table_id=sub_obj.id, column_name="main_id", column_type="int", html_type="input"))
+            main_obj = await crud.add_gen_table(GenTableSchema(table_name=main, class_name="MainItem", package_name="module_it", module_name="it", business_name="main", function_name="Main", sub_table_name=sub, sub_table_fk_name="main_id"))
+            await db.commit()
+            out = await GenTableService(_auth(), db).preview_code(main_obj.id)
+            assert isinstance(out, dict) and out
+            await crud.delete_gen_table([main_obj.id, sub_obj.id])
+    finally:
+        await _cleanup(main); await _cleanup(sub)

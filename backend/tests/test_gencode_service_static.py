@@ -553,3 +553,34 @@ async def test_hydrate_sub_config_valid(monkeypatch: pytest.MonkeyPatch) -> None
     t = GenTableOutSchema(table_name="m", package_name="p", sub_table_name="s", sub_table_fk_name="m_id")
     await svc.hydrate_sub_table(t)
     assert t.sub is True and t.sub_table is not None
+
+
+def test_sync_preview_diff() -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema
+    svc = object.__new__(GenTableService)
+    cur = [GenTableColumnOutSchema(column_name="a", column_type="int"), GenTableColumnOutSchema(column_name="b", column_type="int")]
+    db = [GenTableColumnOutSchema(column_name="a", column_type="int"), GenTableColumnOutSchema(column_name="b", column_type="bigint"), GenTableColumnOutSchema(column_name="c", column_type="int")]
+    added, removed, changed, unchanged = svc._sync_preview_diff(cur, db)
+    assert added == ["c"] and removed == []
+    assert changed and changed[0].column_name == "b"
+    assert unchanged == 1
+
+
+async def test_hydrate_sub_fallback_errors() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    svc = object.__new__(GenTableService)
+    t = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="m_id")
+    async def boom(_): raise RuntimeError("db down")
+    svc._get_db_table_columns = boom
+    await svc.hydrate_sub_table(t)
+    assert "无法读取子表结构" in (t.master_sub_hint or "")
+    t2 = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="m_id")
+    async def empty(_): return []
+    svc._get_db_table_columns = empty
+    await svc.hydrate_sub_table(t2)
+    assert "不存在表" in (t2.master_sub_hint or "")
+    t3 = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="m_id")
+    async def cols(_): return [GenTableColumnSchema(column_name="id", column_type="int")]
+    svc._get_db_table_columns = cols
+    await svc.hydrate_sub_table(t3)
+    assert "不存在名为" in (t3.master_sub_hint or "")
