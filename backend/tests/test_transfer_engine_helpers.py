@@ -283,3 +283,31 @@ async def test_run_step_failures(monkeypatch: pytest.MonkeyPatch) -> None:
     step2=SimpleNamespace(**{**step.__dict__,"source_id":None,"source_path":"/no/such/file","status":"pending","error_msg":None})
     task2=SimpleNamespace(**{**task.__dict__,"status":"pending","error_msg":None})
     assert await engine._run_step(db,task2,step2) is False and "源文件不存在" in step2.error_msg
+
+
+async def test_run_step_local_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    class DB:
+        async def commit(self): return None
+    class A:
+        def __init__(self): self.uploads=[]
+        async def upload(self,a,b): self.uploads.append((a,b))
+        async def close(self): return None
+    a=A()
+    async def cfg(db,sid): return "cfg"
+    async def load(db,tid): return []
+    async def bc(t,s): return None
+    monkeypatch.setattr(engine,"_build_config",cfg); monkeypatch.setattr(engine,"_load_steps",load); monkeypatch.setattr(engine,"_broadcast",bc)
+    monkeypatch.setattr(engine.StorageAdapterFactory,"create",staticmethod(lambda c:a))
+    f=tmp_path/"a.txt"; f.write_text("123")
+    task=SimpleNamespace(id=1,transferred_size=0,total_size=10,progress=0,speed=0,status="pending",error_msg=None,finished_at=None)
+    step=SimpleNamespace(step_order=1,source_id=None,target_id=2,source_path=str(f),target_path="remote/a.txt",transfer_mode=None,multipart_part_size=None,multipart_concurrency=None,status="pending",started_at=None,finished_at=None,progress=0,error_msg=None,total_size=0,transferred_size=0,speed=0)
+    assert await engine._run_step(DB(),task,step) is True
+    assert a.uploads[0][1]=="remote/a.txt" and task.transferred_size==3
+    d=tmp_path/"dir"; d.mkdir(); (d/"x.txt").write_text("12")
+    a.uploads.clear()
+    task2=SimpleNamespace(**{**task.__dict__,"transferred_size":0,"total_size":0,"status":"pending"})
+    step2=SimpleNamespace(**{**step.__dict__,"source_path":str(d),"target_path":"r","status":"pending","error_msg":None})
+    assert await engine._run_step(DB(),task2,step2) is True
+    assert a.uploads and a.uploads[0][1]=="r/x.txt"
