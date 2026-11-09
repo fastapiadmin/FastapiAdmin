@@ -112,3 +112,12 @@ async def test_node_duplicate_and_missing(test_client) -> None:
                 await svc.delete([])
     finally:
         await _cleanup(name)
+
+
+async def test_cron_job_api(test_client, auth_headers) -> None:
+    paths = test_client.get("/openapi.json").json()["paths"]
+    base = next(p for p in paths if p.endswith("/cronjob/job/scheduler/status")).rsplit("/scheduler/status", 1)[0]
+    assert test_client.get(f"{base}/scheduler/status", headers=auth_headers).status_code == 200
+    assert test_client.get(f"{base}/scheduler/jobs", headers=auth_headers).status_code == 200
+    assert test_client.get(f"{base}/scheduler/console", headers=auth_headers).status_code == 200
+    assert test_client.get(f"{base}/log/list", params={"page_no": 1, "page_size": 10}, headers=auth_headers).status_code == 200

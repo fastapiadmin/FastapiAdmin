@@ -113,3 +113,20 @@ async def test_ticket_delete_missing(test_client) -> None:
     auth = await _auth()
     async with _db() as db:
         await TicketService(auth, db).delete([99999999])
+
+
+async def test_ticket_batch_and_export(test_client) -> None:
+    from app.modules.system.ticket.schema import TicketBatchSchema, TicketCreateSchema
+    title = _title(); auth = await _auth()
+    try:
+        async with _db() as db:
+            svc = TicketService(auth, db)
+            a = await svc.create(TicketCreateSchema(title=title))
+            b = await svc.create(TicketCreateSchema(title=title + "_b"))
+            await svc.batch(TicketBatchSchema(ids=[a.id], status=1))
+            data = await TicketService.export_list([a.model_dump(), b.model_dump()])
+            assert data
+            with pytest.raises(CustomException):
+                await svc.batch(TicketBatchSchema(ids=[99999999], status=1))
+    finally:
+        await _cleanup(title); await _cleanup(title + "_b")

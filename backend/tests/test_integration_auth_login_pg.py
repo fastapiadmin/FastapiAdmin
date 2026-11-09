@@ -140,3 +140,22 @@ async def test_refresh_disabled_user(test_client, monkeypatch: pytest.MonkeyPatc
                 await LoginService.refresh_token(db, r, out.refresh_token)
     finally:
         await _cleanup(username); await r.aclose()
+
+
+async def test_refresh_invalid_tokens(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_side_effects(monkeypatch)
+    username, _ = await _user()
+    r = Redis(host="localhost", port=6379, db=1, decode_responses=True)
+    try:
+        async with _db() as db:
+            out = await LoginService.authenticate_user(_req(), r, _form(username, "Abc123!x"), db)
+            with pytest.raises(CustomException):
+                await LoginService.refresh_token(db, r, out.access_token)
+            from app.core.security import decode_access_token
+            from app.common.enums import RedisInitKeyConfig
+            sid = decode_access_token(out.refresh_token).sub
+            await r.delete(f"{RedisInitKeyConfig.USER_SESSION.key}:{sid}")
+            with pytest.raises(CustomException):
+                await LoginService.refresh_token(db, r, out.refresh_token)
+    finally:
+        await _cleanup(username); await r.aclose()
