@@ -119,3 +119,28 @@ def test_demo_service_errors(test_client, auth_headers) -> None:
         finally:
             await e.dispose()
     asyncio.run(run())
+
+
+def test_demo_service_export_import_errors(test_client) -> None:
+    from io import BytesIO
+    from fastapi import UploadFile
+    from app.core.exceptions import CustomException
+    from app.plugin.module_example.demo.service import DemoService
+    import asyncio
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.pool import NullPool
+    from app.config.setting import settings
+    auth = __import__("types").SimpleNamespace(user=__import__("types").SimpleNamespace(id=0))
+    async def run():
+        e = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool)
+        f = async_sessionmaker(e, expire_on_commit=False)
+        try:
+            async with f() as db:
+                svc = DemoService(auth, db)
+                out = await svc.batch_export([{"id": 1, "name": "n", "status": 0, "created_id": {"name": "u"}}, {"id": 2, "name": "n2", "status": 1}])
+                assert out
+                with pytest.raises(Exception):
+                    await svc.batch_import(UploadFile(filename="e.xlsx", file=BytesIO(b"not-excel")))
+        finally:
+            await e.dispose()
+    asyncio.run(run())

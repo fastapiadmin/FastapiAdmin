@@ -73,3 +73,13 @@ def test_import_lists_datetime_decimal_sub() -> None:
     schemas = J.get_schema_import_list(table)
     assert any("datetime" in x for x in schemas)
     assert J.get_model_import_list(table)
+
+
+def test_env_template_and_filename() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    assert J.get_env() is J.get_env()
+    templates = J.get_template_list()
+    assert templates
+    table = GenTableOutSchema(table_name="demo", class_name="Demo", package_name="module_demo", module_name="demo", business_name="demo", function_name="Demo")
+    assert J.get_file_name(templates[0], table)
+    assert J.get_template(templates[0])
