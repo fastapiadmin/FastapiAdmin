@@ -113,3 +113,14 @@ async def test_sync_configs_redis_failure(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr("app.modules.system.params.service.RedisCURD", Bad)
     cfg = SimpleNamespace(config_name="IT", config_key="k", config_value="1", status=0, config_type=False, id=1)
     assert await ParamsService._sync_configs_to_redis(object(), [cfg]) == []
+
+
+async def test_get_init_cache_with_config(test_client) -> None:
+    import json
+    key = _key(); r = Redis(host="localhost", port=6379, db=1, decode_responses=True)
+    try:
+        await r.set(f"system_config:{key}", json.dumps({"config_name": "IT", "config_key": key, "config_value": "1", "config_type": False, "status": 0}))
+        rows = await ParamsService.get_init_cache(r)
+        assert any(x["config_key"] == key for x in rows)
+    finally:
+        await r.delete(f"system_config:{key}"); await r.aclose()

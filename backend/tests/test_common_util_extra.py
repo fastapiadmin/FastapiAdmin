@@ -40,3 +40,15 @@ def test_compute_menu_route_first_segment() -> None:
     assert C.compute_menu_route_first_segment(None, "x", None) == "module_x"
     with pytest.raises(CustomException):
         C.compute_menu_route_first_segment(None, "", None)
+
+
+async def test_import_modules_async(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+    from types import ModuleType
+    mod = ModuleType("it_fake_mod"); seen = []
+    async def f(**kw): seen.append(kw)
+    mod.f = f; sys.modules["it_fake_mod"] = mod
+    await C.import_modules_async(["it_fake_mod.f", ""], "X", a=1)
+    assert seen == [{"a": 1}]
+    with pytest.raises(ModuleNotFoundError):
+        await C.import_modules_async(["no_such_mod.f"], "X")

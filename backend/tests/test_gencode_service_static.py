@@ -536,3 +536,20 @@ async def test_hydrate_sub_fallback_columns(monkeypatch: pytest.MonkeyPatch) -> 
     t = GenTableOutSchema(table_name="m", package_name="p", sub_table_name="s", sub_table_fk_name="m_id")
     await svc.hydrate_sub_table(t)
     assert t.sub is True and t.sub_table is not None
+
+
+async def test_hydrate_sub_config_valid(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    class M:
+        id=1; table_name="s"; table_comment="S"; class_name="S"; package_name="p"; module_name="m"; business_name="b"; function_name="F"
+        columns=[GenTableColumnSchema(column_name="m_id", column_type="int")]
+    class C:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_name(self,*a,**k): return M()
+    monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+    svc = object.__new__(GenTableService); svc.auth=None; svc.db=None
+    async def pk(x): return None
+    svc.set_pk_column = pk
+    t = GenTableOutSchema(table_name="m", package_name="p", sub_table_name="s", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is True and t.sub_table is not None

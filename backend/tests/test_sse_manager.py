@@ -52,3 +52,13 @@ async def test_slow_consumer_removed() -> None:
     await m.send_to_user(1, {"a": 2})
     assert q.qsize() == 1
     assert m.all_connections() == []
+
+
+async def test_relay_redis_publish() -> None:
+    m = SSEConnectionManager("it"); q = asyncio.Queue(); m.connect(1, q)
+    class R:
+        def __init__(self): self.messages=[]
+        async def publish(self, channel, message): self.messages.append((channel, message))
+    r=R(); m._redis=r
+    await m.send_to_user(1, {"a": 1})
+    assert r.messages and q.get_nowait() == {"a": 1}
