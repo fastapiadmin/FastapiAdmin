@@ -258,9 +258,9 @@ async def test_broadcast_and_empty_temp(monkeypatch: pytest.MonkeyPatch) -> None
     async def send(uid,data): sent.append(uid)
     monkeypatch.setattr(engine.transfer_stream_manager,"send_to_user",send)
     monkeypatch.setattr(engine,"_task_payload",lambda t,s: {})
-    await engine._broadcast(SimpleNamespace(created_id=1),[])
+    await engine._broadcast(SimpleNamespace(created_id=1,id=1),[])
     assert sent==[1]
     async def bad(uid,data): raise RuntimeError()
     monkeypatch.setattr(engine.transfer_stream_manager,"send_to_user",bad)
-    await engine._broadcast(SimpleNamespace(created_id=1),[])
+    await engine._broadcast(SimpleNamespace(created_id=1,id=1),[])
     await engine._remove_local_temp_dir("")
