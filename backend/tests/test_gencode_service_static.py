@@ -457,3 +457,19 @@ async def test_sync_db_preserve_and_sub(monkeypatch: pytest.MonkeyPatch) -> None
     await s.sync_db("d")
     d=updated[0]
     assert d.is_insert is False and d.dict_type=="d" and d.sort==2
+
+
+async def test_write_plugin_migration_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd, alembic.config as cfg, alembic.script as script
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    calls=[]
+    class C:
+        def __init__(self,*a): pass
+    class S:
+        def get_heads(self): return ["h"]
+    monkeypatch.setattr(cfg,"Config",C)
+    monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
+    monkeypatch.setattr(cmd,"revision",lambda *a,**k: calls.append(k))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+    assert calls and calls[0]["head"]=="h"

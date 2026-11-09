@@ -94,3 +94,9 @@ async def test_create_table_comment_only() -> None:
     s=_svc()
     with pytest.raises(CustomException, match="缺少 CREATE"):
         await s.create_table("COMMENT ON TABLE x IS 'x';")
+
+
+async def test_create_table_parse_error() -> None:
+    s=_svc()
+    with pytest.raises(Exception):
+        await s.create_table("this is not sql")
