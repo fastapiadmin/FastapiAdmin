@@ -106,3 +106,22 @@ async def test_subscribe_skip_and_errors(monkeypatch: pytest.MonkeyPatch) -> Non
     async def ok(method, url, **kw): return {"errcode": 0}
     monkeypatch.setattr(wx, "_http_json", ok)
     assert await wx.send_subscribe_message(object(), openid="o", template_id="t", page="p") is True
+
+
+async def test_wx_login_orchestration(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    async def code2(**kw): return {"openid": "o", "session_key": "s"}
+    async def user(**kw): return SimpleNamespace(username="u", id=1, name="N", avatar=None, is_superuser=False)
+    async def token(**kw): return SimpleNamespace(access_token="a", refresh_token="r", expires_in=1, token_type="Bearer")
+    monkeypatch.setattr(wx, "code2session", code2)
+    monkeypatch.setattr(wx, "get_wx_login_user", user)
+    monkeypatch.setattr(wx.LoginService, "create_token", staticmethod(token))
+    monkeypatch.setattr(wx.LoginService, "build_login_out", staticmethod(lambda **k: SimpleNamespace(access_token="a")))
+    out = await wx.wx_mini_login(request=None, redis=None, db=None, code="c")
+    assert out.access_token == "a"
+    async def phone(redis, code): return "13800138000"
+    async def puser(*, db, phone): return SimpleNamespace(username="u2", id=2, name="N2", avatar=None, is_superuser=False, mobile=phone)
+    monkeypatch.setattr(wx, "get_phone_number", phone)
+    monkeypatch.setattr(wx, "get_wx_phone_login_user", puser)
+    out2 = await wx.wx_mini_phone_login(request=None, redis=None, db=None, code="c")
+    assert out2.access_token == "a"

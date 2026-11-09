@@ -147,3 +147,41 @@ async def test_preview_code_with_sub_table(test_client) -> None:
             await crud.delete_gen_table([main_obj.id, sub_obj.id])
     finally:
         await _cleanup(main); await _cleanup(sub)
+
+
+async def test_sync_preview_with_sub(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    main = _name(); sub = _name()
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{main}" (id SERIAL PRIMARY KEY)'))
+            await db.execute(text(f'CREATE TABLE "{sub}" (id SERIAL PRIMARY KEY, main_id INT)'))
+            await db.commit()
+            crud = GenTableCRUD(_auth(), db)
+            sub_obj = await crud.add_gen_table(GenTableSchema(table_name=sub, class_name="Sub", package_name="module_it", module_name="it", business_name="sub", function_name="Sub"))
+            await GenTableColumnCRUD(_auth(), db).create_gen_table_column_crud(GenTableColumnSchema(table_id=sub_obj.id, column_name="main_id", column_type="int", html_type="input"))
+            main_obj = await crud.add_gen_table(GenTableSchema(table_name=main, class_name="Main", package_name="module_it", module_name="it", business_name="main", function_name="Main", sub_table_name=sub, sub_table_fk_name="main_id"))
+            await db.commit()
+            out = await GenTableService(_auth(), db).sync_db_preview(main)
+            assert out.sub is not None and out.sub.table_name == sub
+            await crud.delete_gen_table([main_obj.id, sub_obj.id])
+    finally:
+        await _cleanup(main); await _cleanup(sub)
+
+
+async def test_create_table_guards(test_client) -> None:
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    async with _db() as db:
+        svc = GenTableService(_auth(), db)
+        with pytest.raises(CustomException):
+            await svc.create_table("")
+        with pytest.raises(CustomException):
+            await svc.create_table("SELECT 1")
+        with pytest.raises(CustomException):
+            await svc.create_table("DROP TABLE x")
+        with pytest.raises(CustomException):
+            await svc.create_table("ALTER TABLE x DROP COLUMN y")
+        with pytest.raises(CustomException):
+            await svc.create_table("CREATE TABLE sys_user (id INT)")
