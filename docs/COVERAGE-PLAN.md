@@ -106,13 +106,13 @@ uv run pytest -q tests/test_integration_pg_redis.py
   - `obs_adapter.py`
   - `oss_adapter.py`
   - `cos_adapter.py`
-- 剔除后分母 15,579 行，当前覆盖 74%（4,063 未覆盖）；
+- 剔除后分母 15,595 行，当前覆盖 87%（2,041 未覆盖）；
 - 工厂、懒加载、安全校验等与协议无关的逻辑仍在统计内；
 - 将来提供这些协议的真实服务后，再移除 omit 并补集成测试。
 
 ## 外部协议范围（2026-11-05 确认）
 
-- 当前只有 **MinIO S3** 可用；
+- 本机 **MinIO S3** 已可用，并已完成真实适配器集成；
 - FTP/FTPS、SFTP、OBS、OSS、COS 没有可用测试服务，**不纳入本轮集成 100%**；
 - 对应适配器不做真实协议验证，只保留现有懒加载/工厂/安全单测；
 - 覆盖率统计若包含这些适配器，必须标记为“环境不可用”，不能伪装成真实通过；
@@ -138,7 +138,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 
 ## 现实约束
 
-- 后端当前还有 2,055 行未被测试覆盖，包含调度器生命周期、AI WebSocket 流式、gencode 写盘、监控/初始化及部分工具函数；
+- 后端当前还有 2,041 行未被测试覆盖，包含调度器生命周期、AI WebSocket 流式、gencode 写盘、监控/初始化及部分工具函数；
 - 前端若开启 `coverage.all`，大量 views/components/hooks 会进入统计；
 - FTP/SFTP/OBS/OSS/COS 适配器已从 coverage 分母剔除，只保留工厂/懒加载逻辑测试；提供真实服务后再恢复统计。
 - 本机 PostgreSQL/Redis 可用并已用于真实集成；MinIO 端口 9000/9001 在监听，但现有默认凭据无效，未完成真实 S3 集成；
@@ -163,8 +163,8 @@ cd frontend/web && pnpm exec vitest run --coverage
 
 ## 验收状态（当前）
 
-- 后端全量：**986 passed**，行覆盖 **87%**（2,045 / 15,595 未覆盖），重复运行一致。
-- 真实集成：**130 passed**，覆盖 PostgreSQL/Redis 会话、权限、字典、菜单、公告、工单、日志、存储源、传输、流程、调度节点、SQL 控制台等。
+- 后端全量：**989 passed**（含真实 MinIO），行覆盖 **87%**（2,041 / 15,595 未覆盖）。
+- 真实集成：**133 passed**，覆盖 PostgreSQL/Redis 会话、权限、字典、菜单、公告、工单、日志、存储源、传输、流程、调度节点、SQL 控制台、MinIO 上传/下载/复制/重命名/目录/桶列表。
 - 真实 S3/MinIO：**已完成**（本机 MinIO 9000，凭据通过 `S3_ACCESS_KEY`/`S3_SECRET_KEY` 环境变量注入，不写入仓库）。
 - 真实 SSH：**未完成**（本机无 sshd，仅 fake 连接覆盖）。
 - 真实 AI 对话：**未完成**（无外部模型服务，仅配置/会话/工具/错误分支）。
