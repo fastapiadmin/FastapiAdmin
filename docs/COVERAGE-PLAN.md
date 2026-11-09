@@ -168,5 +168,5 @@ cd frontend/web && pnpm exec vitest run --coverage
 - 真实 S3/MinIO：**已完成**（本机 MinIO 9000，凭据通过 `S3_ACCESS_KEY`/`S3_SECRET_KEY` 环境变量注入，不写入仓库）。
   - 代码生成写盘：**已完成**（`BASE_DIR` 隔离到临时仓库，验证 .py 产物落盘）。
 - 真实 SSH：**未完成**（本机无 sshd，仅 fake 连接覆盖）。
-- 真实 AI 对话：**未完成**（无外部模型服务，仅配置/会话/工具/错误分支）。
+- 真实 AI 对话：**部分完成**（本地 OpenAI 兼容 mock 验证 `/models` 与 `/chat/completions` 探测；无外部模型服务，Agent 对话仍未实测）。
 - 结论：**未达到支持范围 100%**；87% 是当前可复现实测基线，不以 mock 或排除文件冒充达标。
