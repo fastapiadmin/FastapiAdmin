@@ -99,3 +99,34 @@ async def test_batch_gen_code_all_failed(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(mod, "Jinja2TemplateUtil", J)
     with pytest.raises(CustomException, match="未能生成"):
         await s.batch_gen_code(["bad"])
+
+
+async def test_batch_gen_code_sub_table(monkeypatch: pytest.MonkeyPatch) -> None:
+    import io, zipfile
+    from types import SimpleNamespace
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    sub=GenTableOutSchema(id=2,table_name="sub")
+    table=GenTableOutSchema(id=1,table_name="demo",sub=True,sub_table_name="sub")
+    table.sub_table=sub
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def info(name): return [["a.py"],["out/a.py"],{},table,table]
+    s._GenTableService__get_gen_render_info=info
+    class T:
+        async def render_async(self,**kw): return "x"
+    class Env:
+        def get_template(self,name): return T()
+    class J:
+        @staticmethod
+        def get_env(): return Env()
+        @staticmethod
+        def prepare_sub_render_context(*a): return {}
+        @staticmethod
+        def get_sub_table_template_list(): return ["sub.py"]
+        @staticmethod
+        def get_file_name(*a): return "out/sub.py"
+    import app.modules.generator.gencode.service as mod
+    monkeypatch.setattr(mod,"Jinja2TemplateUtil",J)
+    data,failed=await s.batch_gen_code(["demo"])
+    assert failed==[]
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        assert "out/sub.py" in z.namelist()
