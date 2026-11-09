@@ -36,3 +36,11 @@ def test_db_type_and_dicts() -> None:
     assert J.get_db_type("timestamp") == "timestamp"
     from app.modules.generator.gencode.schema import GenTableOutSchema
     assert J.get_dicts(GenTableOutSchema(table_name="t", columns=[])) == ""
+
+
+def test_schema_model_imports_and_context() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    table = GenTableOutSchema(table_name="demo", class_name="Demo", package_name="module_demo", module_name="demo", business_name="demo", function_name="Demo", columns=[GenTableColumnSchema(column_name="id", column_type="int", is_pk=True, html_type="input")])
+    schemas = J.get_schema_import_list(table)
+    models = J.get_model_import_list(table)
+    assert isinstance(schemas, set) and isinstance(models, list)

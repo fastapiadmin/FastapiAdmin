@@ -521,3 +521,18 @@ async def test_hydrate_sub_config_missing_fk(monkeypatch: pytest.MonkeyPatch) ->
     t = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="missing_id")
     await svc.hydrate_sub_table(t)
     assert t.sub is False and "不存在外键列" in (t.master_sub_hint or "")
+
+
+async def test_hydrate_sub_fallback_columns(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    class C:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_name(self,*a,**k): return None
+        async def get_db_table_comment(self,*a,**k): return "子表"
+    monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+    svc = object.__new__(GenTableService); svc.auth=None; svc.db=None
+    async def cols(_): return [GenTableColumnSchema(column_name="m_id", column_type="int", is_pk=True)]
+    svc._get_db_table_columns = cols
+    t = GenTableOutSchema(table_name="m", package_name="p", sub_table_name="s", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is True and t.sub_table is not None

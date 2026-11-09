@@ -98,3 +98,16 @@ async def test_workflow_execute_no_enabled_edges(test_client) -> None:
                 await svc.execute(flow_id)
     finally:
         await _cleanup(flow_id, names)
+
+
+async def test_workflow_execute_plan(test_client) -> None:
+    tag = _name(); names = [tag + "_s", tag + "_d"]
+    async with _db() as db:
+        auth = _auth()
+        src = await StorageNodeService(auth, db).create(StorageNodeCreateSchema(name=names[0], protocol="local", host="/tmp", port=0))
+        dst = await StorageNodeService(auth, db).create(StorageNodeCreateSchema(name=names[1], protocol="local", host="/tmp/dst", port=0))
+        svc = WorkflowService(auth, db)
+        flow = await svc.create(WorkflowCreateSchema(name=tag, graph=_graph(src.id, dst.id, "/tmp", "/tmp/out")))
+        ids = await svc.execute(flow.id, {str(src.id): "/tmp"})
+        assert ids
+        await db.rollback()
