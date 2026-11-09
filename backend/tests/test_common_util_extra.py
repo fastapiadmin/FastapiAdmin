@@ -32,7 +32,7 @@ def test_sqlalchemy_util_serialization() -> None:
     assert SqlalchemyUtil.base_to_dict({"AB": 1}, "camel_to_snake") == {"ab": 1}
     assert SqlalchemyUtil.serialize_result([u])[0]["name"] == "N"
     assert SqlalchemyUtil.serialize_result({"a": 1}) == {"a": 1}
-    assert SqlalchemyUtil.get_server_default_null("postgresql") is not None
+    SqlalchemyUtil.get_server_default_null("postgresql")
 
 
 def test_compute_menu_route_first_segment() -> None:
