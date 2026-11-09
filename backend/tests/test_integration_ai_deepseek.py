@@ -32,3 +32,18 @@ async def test_real_ai_non_stream(test_client) -> None:
     )
     assert out["session_id"]
     assert out["response"] and "AI 服务暂时不可用" not in out["response"]
+
+
+async def test_real_ai_stream(test_client) -> None:
+    from app.modules.ai.chat.schema import ChatQuerySchema
+    from app.modules.ai.chat.service import ChatService
+    auth = SimpleNamespace(user=SimpleNamespace(id=1, username=f"it_ai_{uuid.uuid4().hex[:6]}", is_superuser=False))
+    chunks = []
+    async for chunk in ChatService(auth, redis=None).chat_query(
+        ChatQuerySchema(message="只回复 pong"),
+        model_config={"base_url": settings.OPENAI_BASE_URL, "api_key": settings.OPENAI_API_KEY, "model_id": settings.OPENAI_MODEL},
+    ):
+        if chunk:
+            chunks.append(chunk)
+    assert chunks
+    assert "AI 服务暂时不可用" not in "".join(chunks)

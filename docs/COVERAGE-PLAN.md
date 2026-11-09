@@ -4,8 +4,8 @@
 
 | 口径 | 当前值 | 说明 |
 |---|---:|---|
-| 后端 pytest | **992 passed**（含真实集成） | 全量 pytest，覆盖 15,603 statements（已剔除无服务协议） |
-| 后端行覆盖 | **87%**（2,038 missed） | `pytest --cov=app`，口径仅支持范围 |
+| 后端 pytest | **995 passed**（含真实集成） | 全量 pytest，覆盖 15,603 statements（已剔除无服务协议） |
+| 后端行覆盖 | **87%**（2,029 missed） | `pytest --cov=app`，口径仅支持范围 |
 | 前端 vitest | **94 passed** | 14 个测试文件 |
 | 前端行覆盖 | 未启用 all-source | 不能当全站覆盖率，暂不作为验收口径 |
 | 接口 | 250 个 | 还没有做到每个接口成功/校验/权限三路径 |
@@ -94,7 +94,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 - 当前覆盖：`SELECT 1`、用户 CRUD 往返、显式 NULL 更新、分页、唯一约束回滚、Redis set/get/ttl/delete；
 - 服务层：角色创建/更新/分页/删除、角色重名、用户创建/详情/更新/分页/删除、用户重名；
 - RedisCURD：set/get/delete、expire/ttl、lock/unlock、compare_and_set、scan/mget、hash；
-- 当前真实集成 **136 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、账号密码登录 4、gencode 5、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4、工单 4、数据库控制台 4、AI 接口 4、数据权限 4、部门 4、示例插件接口 3、公告 2、系统参数 4）；
+- 当前真实集成 **139 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、账号密码登录 4、gencode 5、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4、工单 4、数据库控制台 4、AI 接口 4、数据权限 4、部门 4、示例插件接口 3、公告 2、系统参数 4）；
 - 后续把调度器、认证会话、gencode 同步迁到真实 DB/Redis 验证。
 
 ## 范围口径 A（2026-11-09 确认）
@@ -167,6 +167,7 @@ cd frontend/web && pnpm exec vitest run --coverage
 - 真实集成：**135 passed**，覆盖 PostgreSQL/Redis 会话、权限、字典、菜单、公告、工单、日志、存储源、传输、流程、调度节点、SQL 控制台、MinIO 上传/下载/复制/重命名/目录/桶列表。
 - 真实 S3/MinIO：**已完成**（本机 MinIO 9000，凭据通过 `S3_ACCESS_KEY`/`S3_SECRET_KEY` 环境变量注入，不写入仓库）。
   - 代码生成写盘：**已完成**（`BASE_DIR` 隔离到临时仓库，验证 .py 产物落盘）。
+  - MinIO 传输：**已完成**（本地→MinIO 上传、MinIO→本地下载，真实传输引擎）。
 - 真实 SSH：**不要求**（用户确认本轮不测；保留服务/controller 与 fake 连接覆盖）。
-- 真实 AI 对话：**已完成**（DeepSeek OpenAI 兼容端点，真实非流式对话通过；凭据来自本地 env，不写入仓库）。
+- 真实 AI 对话：**已完成**（DeepSeek 真实非流式 + 流式生成通过；凭据来自本地 env，不写入仓库）。
 - 结论：**未达到支持范围 100%**；87% 是当前可复现实测基线，不以 mock 或排除文件冒充达标。
