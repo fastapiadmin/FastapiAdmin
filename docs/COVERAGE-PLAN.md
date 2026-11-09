@@ -77,6 +77,24 @@ A（支持范围）包含四个独立目标：
 - 存储基类补充端点规范化/密码加解密/高级配置/字段元数据；
 - 存储工厂补充非法协议拒绝和本地适配器创建，factory 100%。
 
+## 真实 DB/Redis 集成测试（2026-11-09）
+
+- 本机 PostgreSQL `localhost:5432`、Redis `localhost:6379` 已启动；
+- 测试库：`fastapiadmin_test`（不写生产库）；
+- 文件：`backend/tests/test_integration_pg_redis.py`；
+- 默认套件跳过，需显式开启：
+
+```bash
+cd backend
+RUN_INTEGRATION=1 TEST_DB_TYPE=postgres TEST_DB_USER=root \
+TEST_DB_PASSWORD=*** TEST_DB_NAME=fastapiadmin_test \
+uv run pytest -q tests/test_integration_pg_redis.py
+```
+
+- 当前覆盖：`SELECT 1`、用户 CRUD 往返、显式 NULL 更新、分页、唯一约束回滚、Redis set/get/ttl/delete；
+- 本批 **6 passed**；
+- 后续把调度器、认证会话、gencode 同步迁到真实 DB/Redis 验证。
+
 ## 范围口径 A（2026-11-09 确认）
 
 - 验收目标改为“支持范围内 100%”，不再要求全仓 100%；
