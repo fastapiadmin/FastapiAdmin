@@ -104,3 +104,19 @@ def test_env_errors_and_sanitizers() -> None:
     assert J.safe_render_schema(table) is not None
     assert J.sentinel_render_schema(table) is not None
     assert J.get_dicts(table) == "'d'"
+
+
+def test_more_branches() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    assert J.normalize_db_column_type_for_mapping("VARCHAR(10) COLLATE utf8 UNSIGNED") == "VARCHAR(10)"
+    assert J.normalize_db_column_type_for_mapping("INT UNSIGNED") == "INT"
+    assert J.business_name_to_slug("a/b") == "b"
+    assert J.business_name_to_path("a/b") == "a/b"
+    assert J.business_name_to_path("1abc") == "_1abc"
+    assert J.business_name_to_path(None) == "entity"
+    t = GenTableOutSchema(table_name="m", class_name="M", package_name="module_x", columns=[
+        GenTableColumnSchema(column_name="d", column_type="decimal", python_type="Decimal"),
+        GenTableColumnSchema(column_name="dt", column_type="datetime", python_type="datetime"),
+    ])
+    assert J.get_model_import_list(t)
+    assert J.get_schema_import_list(t)

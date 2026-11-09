@@ -185,3 +185,47 @@ async def test_create_table_guards(test_client) -> None:
             await svc.create_table("ALTER TABLE x DROP COLUMN y")
         with pytest.raises(CustomException):
             await svc.create_table("CREATE TABLE sys_user (id INT)")
+
+
+async def test_create_table_more_guards(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    existing = _name(); tmp_table = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            await crud.add_gen_table(GenTableSchema(table_name=existing, class_name="X", package_name="module_it", module_name="it", business_name="x", function_name="X"))
+            await db.commit()
+            svc = GenTableService(_auth(), db)
+            with pytest.raises(CustomException):
+                await svc.create_table(";")
+            with pytest.raises(CustomException):
+                await svc.create_table(f'CREATE TABLE "{existing}" (id INT)')
+            with pytest.raises(CustomException):
+                await svc.create_table(f'CREATE TABLE "{tmp_table}" (id INT); ALTER TABLE "{tmp_table}" ADD COLUMN y INT')
+    finally:
+        await _cleanup(existing)
+        async with _db() as db:
+            await db.execute(text(f'DROP TABLE IF EXISTS "{tmp_table}"'))
+            await db.commit()
+
+
+async def test_preview_render_error(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    import app.modules.generator.gencode.jinja2_template_util as j
+    name = _name()
+    async with _db() as db:
+        obj = await GenTableCRUD(_auth(), db).add_gen_table(GenTableSchema(table_name=name, class_name="X", package_name="module_it", module_name="it", business_name="x", function_name="X"))
+        await db.commit()
+        class T:
+            async def render_async(self, **k): raise RuntimeError("render")
+        class Env:
+            def get_template(self, name): return T()
+        monkeypatch.setattr(j.Jinja2TemplateUtil, "get_env", classmethod(lambda cls: Env()))
+        monkeypatch.setattr(j.Jinja2TemplateUtil, "get_template_list", classmethod(lambda cls: ["backend/app/plugin/x.py.j2"]))
+        monkeypatch.setattr(j.Jinja2TemplateUtil, "get_file_name", staticmethod(lambda tpl, t: "x.py"))
+        out = await GenTableService(_auth(), db).preview_code(obj.id)
+        assert "渲染错误" in str(out)
+        await GenTableCRUD(_auth(), db).delete_gen_table([obj.id])
