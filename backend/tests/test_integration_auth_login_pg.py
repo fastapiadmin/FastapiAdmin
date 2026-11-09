@@ -125,3 +125,18 @@ async def test_login_success(test_client, monkeypatch: pytest.MonkeyPatch) -> No
             )
     finally:
         await _cleanup(username)
+
+
+async def test_refresh_disabled_user(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_side_effects(monkeypatch)
+    username, uid = await _user()
+    r = Redis(host="localhost", port=6379, db=1, decode_responses=True)
+    try:
+        async with _db() as db:
+            out = await LoginService.authenticate_user(_req(), r, _form(username, "Abc123!x"), db)
+            await db.execute(text("UPDATE sys_user SET status=1 WHERE id=:i"), {"i": uid})
+            await db.commit()
+            with pytest.raises(CustomException, match="停用"):
+                await LoginService.refresh_token(db, r, out.refresh_token)
+    finally:
+        await _cleanup(username); await r.aclose()
