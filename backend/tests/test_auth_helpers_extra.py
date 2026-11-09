@@ -6,7 +6,7 @@ import pytest
 from types import SimpleNamespace
 
 from app.core.exceptions import CustomException
-from app.modules.system.auth.service import LoginService
+from app.modules.system.auth.service import CaptchaService, LoginService
 
 
 def test_collect_permissions() -> None:
