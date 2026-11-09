@@ -58,3 +58,12 @@ def test_soft_delete_helpers() -> None:
     assert values["is_deleted"] is True and values["deleted_id"]==1
     c.auth=SimpleNamespace(user=SimpleNamespace(id=0))
     assert "deleted_id" not in c._soft_delete_values()
+
+
+async def test_update_missing() -> None:
+    from types import SimpleNamespace
+    c=_crud(); c.auth=SimpleNamespace(user=SimpleNamespace(id=1)); c.db=object()
+    async def get(**kw): return None
+    c.get=get
+    with pytest.raises(Exception, match="更新对象不存在"):
+        await c.update(1,{})
