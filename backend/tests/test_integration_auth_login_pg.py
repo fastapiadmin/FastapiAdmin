@@ -106,6 +106,9 @@ async def test_login_success(test_client, monkeypatch: pytest.MonkeyPatch) -> No
         async with _db() as db, Redis(host="localhost", port=6379, db=1, decode_responses=True) as r:
             out = await LoginService.authenticate_user(_req(), r, _form(username, "Abc123!x"), db)
             assert out.access_token and out.user_info["id"] == uid
+            from app.core.dependencies import _authenticate
+            auth = await _authenticate(out.access_token, db, r)
+            assert auth.user.id == uid
             from app.core.security import decode_access_token
             sid = decode_access_token(out.access_token).sub
             from app.common.enums import RedisInitKeyConfig
