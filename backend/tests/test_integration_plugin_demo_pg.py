@@ -89,3 +89,33 @@ def test_demo_import_errors(test_client, auth_headers) -> None:
     assert missing.status_code == 400
     bad = test_client.post(f"{base}/import", files={"file": ("b.xlsx", _xlsx([["it_bad", "未知", "d"]], ["名称", "状态", "描述"]), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}, headers=auth_headers)
     assert bad.status_code == 200 and "状态必须" in bad.json()["data"]
+
+
+def test_demo_service_errors(test_client, auth_headers) -> None:
+    from app.core.exceptions import CustomException
+    from app.modules.task.storage.node.service import StorageNodeService  # noqa: F401
+    from app.plugin.module_example.demo.schema import DemoCreateSchema, DemoUpdateSchema
+    from app.plugin.module_example.demo.service import DemoService
+    import asyncio
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.pool import NullPool
+    from app.config.setting import settings
+    auth = __import__("types").SimpleNamespace(user=__import__("types").SimpleNamespace(id=0))
+    async def run():
+        e = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool)
+        f = async_sessionmaker(e, expire_on_commit=False)
+        try:
+            async with f() as db:
+                svc = DemoService(auth, db)
+                with pytest.raises(CustomException):
+                    await svc.detail(99999999)
+                with pytest.raises(CustomException):
+                    await svc.update(99999999, DemoUpdateSchema(name="xx"))
+                with pytest.raises(CustomException):
+                    await svc.delete([])
+                with pytest.raises(CustomException):
+                    await svc.delete([99999999])
+                assert await svc.get_list() is not None
+        finally:
+            await e.dispose()
+    asyncio.run(run())
