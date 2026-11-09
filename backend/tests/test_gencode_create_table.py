@@ -70,3 +70,21 @@ async def test_create_table_imports(monkeypatch: pytest.MonkeyPatch) -> None:
     s.get_gen_db_table_list_by_name=by_names; s.import_gen_table=imported
     assert await s.create_table("CREATE TABLE demo (id INT);") is True
     assert called == [["demo"], ["cfg"]]
+
+
+async def test_create_table_alter_fk_allowed(monkeypatch: pytest.MonkeyPatch) -> None:
+    sqls=[]
+    class C:
+        def __init__(self,*a): pass
+        async def check_table_exists(self,name): return False
+        async def get_gen_table_by_name(self,name): return None
+        async def execute_sql(self,sql): sqls.append(sql); return True
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:C())
+    s=_svc(); s.get_gen_db_table_list_by_name=lambda names: _empty()
+    async def imported(t): return None
+    s.import_gen_table=imported
+    assert await s.create_table("CREATE TABLE demo (id INT); ALTER TABLE demo ADD CONSTRAINT fk FOREIGN KEY (id) REFERENCES x(id);") is True
+    assert len(sqls)>=2
+
+
+async def _empty(): return []
