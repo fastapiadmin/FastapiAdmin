@@ -138,10 +138,13 @@ uv run pytest -q tests/test_integration_pg_redis.py
 
 ## 现实约束
 
-- 后端当前还有 4,063 行未被测试覆盖，包含 gencode、调度器、传输引擎、工作流、监控、初始化、工具函数等；
+- 后端当前还有 2,055 行未被测试覆盖，包含调度器生命周期、AI WebSocket 流式、gencode 写盘、监控/初始化及部分工具函数；
 - 前端若开启 `coverage.all`，大量 views/components/hooks 会进入统计；
 - FTP/SFTP/OBS/OSS/COS 适配器已从 coverage 分母剔除，只保留工厂/懒加载逻辑测试；提供真实服务后再恢复统计。
-- 100% 代码覆盖不能替代功能验收，反之亦然。
+- 本机 PostgreSQL/Redis 可用并已用于真实集成；MinIO 端口 9000/9001 在监听，但现有默认凭据无效，未完成真实 S3 集成；
+  - 无本地 sshd，SSH 集成只覆盖服务/controller 与 fake 连接；
+  - 无外部 AI 服务，AI 对话/流式只覆盖配置、会话、工具与错误分支；
+  - 100% 代码覆盖不能替代功能验收，反之亦然。
 
 ## 执行顺序
 
