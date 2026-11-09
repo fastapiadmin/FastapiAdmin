@@ -88,3 +88,9 @@ async def test_create_table_alter_fk_allowed(monkeypatch: pytest.MonkeyPatch) ->
 
 
 async def _empty(): return []
+
+
+async def test_create_table_comment_only() -> None:
+    s=_svc()
+    with pytest.raises(CustomException, match="缺少 CREATE"):
+        await s.create_table("COMMENT ON TABLE x IS 'x';")
