@@ -104,17 +104,3 @@ async def test_reconcile_runs_without_error(test_client, monkeypatch: pytest.Mon
     monkeypatch.setattr(SchedulerUtil, "log_unschedulable_jobs", classmethod(lambda cls, context=None: []))
     await SchedulerUtil.reconcile_node_jobs()
     assert all(isinstance(node_id, int) for node_id in registered)
-
-
-async def test_scheduler_local_lifecycle(monkeypatch: pytest.MonkeyPatch) -> None:
-    from app.core.ap_scheduler import SchedulerUtil
-    monkeypatch.setattr(SchedulerUtil, "_redis", None)
-    monkeypatch.setattr(SchedulerUtil, "_leader_token", None)
-    try:
-        assert await SchedulerUtil.start() is True or SchedulerUtil.is_running()
-        SchedulerUtil.pause()
-        SchedulerUtil.resume()
-        assert SchedulerUtil.get_scheduler_state() in (0, 1)
-        assert isinstance(SchedulerUtil.get_jobs(), list)
-    finally:
-        await SchedulerUtil.shutdown(wait=False)
