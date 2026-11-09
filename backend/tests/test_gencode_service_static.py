@@ -473,3 +473,15 @@ async def test_write_plugin_migration_success(monkeypatch: pytest.MonkeyPatch) -
     s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
     assert calls and calls[0]["head"]=="h"
+
+
+async def test_update_gen_table_exceptions(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def one(i): return GenTableOutSchema(id=1,table_name="d")
+    s.get_gen_table_by_id=one
+    def bad(*a,**k): raise CustomException(msg="bad")
+    s.normalize_and_validate_master_sub=bad
+    with pytest.raises(CustomException, match="bad"):
+        await s.update_gen_table(GenTableSchema(table_name="d"),1)
