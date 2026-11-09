@@ -86,3 +86,27 @@ async def test_sync_db_is_idempotent_and_removes_stale(test_client) -> None:
             assert "age" in names
     finally:
         await _cleanup(table)
+
+
+async def test_batch_gen_code_real_table(test_client) -> None:
+    import io
+    import zipfile
+    table = _name()
+    auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{table}" (id SERIAL PRIMARY KEY, name VARCHAR(50) NOT NULL)'))
+            await db.commit()
+            gen = GenTableModel(table_name=table, class_name="ItGen", table_comment="it")
+            db.add(gen); await db.commit(); await db.refresh(gen)
+            service = GenTableService(auth, db)
+            await service.sync_db(table)
+            gen.package_name = "module_it"; gen.module_name = "it"; gen.business_name = "demo"; gen.function_name = "Demo"
+            await db.commit()
+            data, failed = await service.batch_gen_code([table])
+            assert failed == []
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                names = z.namelist()
+                assert names and any(n.endswith(".py") for n in names)
+    finally:
+        await _cleanup(table)
