@@ -490,3 +490,34 @@ async def test_update_gen_table_exceptions(monkeypatch: pytest.MonkeyPatch) -> N
     s.normalize_and_validate_master_sub=bad
     with pytest.raises(CustomException, match="bad"):
         await s.update_gen_table(GenTableSchema(table_name="d"),1)
+
+
+async def test_hydrate_sub_early_branches() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    svc = object.__new__(GenTableService)
+    svc.auth = None; svc.db = None
+    t = GenTableOutSchema(table_name="m")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is False and t.sub_table is None
+    t2 = GenTableOutSchema(table_name="m", sub_table_name="s")
+    await svc.hydrate_sub_table(t2)
+    assert "请同时填写" in (t2.master_sub_hint or "")
+    t3 = GenTableOutSchema(table_name="m", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t3)
+    assert "请同时填写" in (t3.master_sub_hint or "")
+    t4 = GenTableOutSchema(table_name="m", sub_table_name="m", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t4)
+    assert "不能与主表" in (t4.master_sub_hint or "")
+
+
+async def test_hydrate_sub_config_missing_fk(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    class C:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_name(self,*a,**k):
+            return type("M",(),{"id":1,"table_name":"s","columns":[],"table_comment":"S","class_name":"S","package_name":"p","module_name":"m","business_name":"b","function_name":"F"})()
+    monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+    svc = object.__new__(GenTableService); svc.auth=None; svc.db=None
+    t = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="missing_id")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is False and "不存在外键列" in (t.master_sub_hint or "")

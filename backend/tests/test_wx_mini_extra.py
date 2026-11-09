@@ -87,3 +87,22 @@ async def test_qrcode(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(wx,"httpx",H(R("application/json")))
     with pytest.raises(CustomException, match="生成小程序码失败"):
         await wx.get_qrcode(object(),"s")
+
+
+async def test_subscribe_skip_and_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(wx.settings, "WX_MINI_APP_ID", "")
+    assert await wx.send_subscribe_message(object(), openid="o", template_id="t") is False
+    monkeypatch.setattr(wx.settings, "WX_MINI_APP_ID", "id")
+    monkeypatch.setattr(wx.settings, "WX_MINI_APP_SECRET", "s")
+    assert await wx.send_subscribe_message(object(), openid="o", template_id="") is False
+    assert await wx.send_subscribe_message(object(), openid="", template_id="t") is False
+    async def token(redis): return "tok"
+    async def not_sub(method, url, **kw): return {"errcode": 43101}
+    monkeypatch.setattr(wx, "_get_access_token", token); monkeypatch.setattr(wx, "_http_json", not_sub)
+    assert await wx.send_subscribe_message(object(), openid="o", template_id="t") is False
+    async def bad(method, url, **kw): raise RuntimeError("x")
+    monkeypatch.setattr(wx, "_http_json", bad)
+    assert await wx.send_subscribe_message(object(), openid="o", template_id="t") is False
+    async def ok(method, url, **kw): return {"errcode": 0}
+    monkeypatch.setattr(wx, "_http_json", ok)
+    assert await wx.send_subscribe_message(object(), openid="o", template_id="t", page="p") is True

@@ -68,3 +68,26 @@ def test_ai_tools_api(test_client, auth_headers) -> None:
     assert resp.status_code == 200
     names = {item["name"] for item in resp.json()["data"]}
     assert {"server_status", "storage_sources", "redis_keys"} <= names
+
+
+def test_ai_model_probe_api(test_client, auth_headers, monkeypatch: pytest.MonkeyPatch) -> None:
+    async def models(base_url, api_key): return [{"id": "m1", "owned_by": "x"}]
+    async def probe(base_url, api_key, model_id): return {"ok": True, "model_id": model_id, "latency_ms": 1}
+    import app.modules.ai.chat.controller as c
+    monkeypatch.setattr(c, "probe_available_models", models)
+    monkeypatch.setattr(c, "probe_model_connection", probe)
+    a = test_client.post("/api/v1/ai/chat/model/available", json={"base_url": "https://x/v1", "api_key": "k"}, headers=auth_headers)
+    assert a.status_code == 200 and a.json()["data"][0]["id"] == "m1"
+    b = test_client.post("/api/v1/ai/chat/model/test", json={"base_url": "https://x/v1", "api_key": "k", "model_id": "m1"}, headers=auth_headers)
+    assert b.status_code == 200 and b.json()["data"]["ok"] is True
+
+
+def test_ai_chat_permission_helper() -> None:
+    from types import SimpleNamespace
+    from app.modules.ai.chat.controller import _has_chat_permission
+    superuser = SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=True), permissions=[])
+    normal = SimpleNamespace(user=SimpleNamespace(id=2, is_superuser=False), permissions=["module_ai:chat:query"])
+    denied = SimpleNamespace(user=SimpleNamespace(id=3, is_superuser=False), permissions=[])
+    assert _has_chat_permission(superuser) is True
+    assert _has_chat_permission(normal) is True
+    assert _has_chat_permission(denied) is False
