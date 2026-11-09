@@ -86,3 +86,15 @@ async def test_storage_tools_success(monkeypatch: pytest.MonkeyPatch) -> None:
     assert sources[0]["name"]=="n"
     files=await tools["storage_files"].func("n")
     assert files["entries"][0]["name"]=="a"
+
+
+async def test_redis_keys_tool(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    class B:
+        @staticmethod
+        async def scan_keys(redis,db,pattern,count):
+            return SimpleNamespace(keys=[SimpleNamespace(key="k1")],cursor="c")
+    monkeypatch.setattr(r,"RedisBrowserService",B)
+    tools={t.name:t for t in r.build_readonly_tools(object(),redis=object())}
+    out=await tools["redis_keys"].func("a*",5)
+    assert out=={"keys":["k1"],"cursor":"c"}
