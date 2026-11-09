@@ -129,3 +129,22 @@ async def test_user_crud_api(test_client, auth_headers) -> None:
         assert test_client.request("DELETE", f"{base}/delete", json=[uid], headers=auth_headers).status_code == 200
     finally:
         await _cleanup(username)
+
+
+async def test_user_extra_api(test_client, auth_headers) -> None:
+    async with _db() as db:
+        dept_id = (await db.execute(text("SELECT id FROM sys_dept LIMIT 1"))).scalar_one_or_none()
+    username = _username()
+    paths = test_client.get("/openapi.json").json()["paths"]
+    base = next(p for p in paths if p.endswith("/user/create")).rsplit("/create", 1)[0]
+    try:
+        assert test_client.get(f"{base}/current/info", headers=auth_headers).status_code == 200
+        assert test_client.put(f"{base}/current/info/update", json={"name": "Admin"}, headers=auth_headers).status_code == 200
+        reg = test_client.post(f"{base}/register", json={"username": username, "password": "Abc123!x", "name": "Reg"})
+        if reg.status_code in (200, 201):
+            uid = reg.json()["data"]["id"]
+            assert test_client.put(f"{base}/password/reset/{uid}", json={"password": "Abc123!y"}, headers=auth_headers).status_code == 200
+            assert test_client.patch(f"{base}/status/batch", json={"ids": [uid], "status": 1}, headers=auth_headers).status_code == 200
+            assert test_client.request("DELETE", f"{base}/delete", json=[uid], headers=auth_headers).status_code == 200
+    finally:
+        await _cleanup(username)
