@@ -92,3 +92,59 @@ async def test_transfer_local_missing_source(test_client, tmp_path, monkeypatch:
         assert status == "failed"
     finally:
         await _cleanup(task_id, name, root)
+
+
+async def _run_multi(tmp_path, monkeypatch: pytest.MonkeyPatch, targets: int, canceled: bool) -> tuple[str, list[Path], int, list[str]]:
+    name = _name(); src = tmp_path / f"{name}.txt"; src.write_text("hello")
+    auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    roots: list[Path] = []
+    node_names: list[str] = []
+    async with _db() as db:
+        node_ids = []
+        for i in range(targets):
+            n = f"{name}_{i}"; node_names.append(n); root = tmp_path / n; root.mkdir(); roots.append(root)
+            node = await StorageNodeService(auth, db).create(StorageNodeCreateSchema(name=n, protocol="local", host=str(root), port=0))
+            node_ids.append(node.id)
+        task = StorageTransferTaskModel(name=name, task_type="parallel", source_type="local", source_path=str(src), source_name=src.name, status="pending")
+        db.add(task); await db.commit(); await db.refresh(task)
+        for i, nid in enumerate(node_ids):
+            db.add(StorageTransferStepModel(task_id=task.id, step_order=i, source_path=str(src), target_id=nid, target_path=f"out/{i}.txt"))
+        await db.commit(); task_id = task.id
+
+    @asynccontextmanager
+    async def test_session():
+        async with _db() as session:
+            yield session
+    monkeypatch.setattr(transfer_engine, "async_db_session", test_session)
+    if canceled:
+        transfer_engine.transfer_task_registry.mark_cancel(task_id)
+    await transfer_engine._execute_transfer_task(task_id)
+    async with _db() as db:
+        status = (await db.execute(text("SELECT status FROM task_storage_transfer WHERE id=:i"), {"i": task_id})).scalar_one()
+    return status, roots, task_id, node_names
+
+
+async def test_transfer_multi_target(test_client, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    status, roots, task_id, names = await _run_multi(tmp_path, monkeypatch, 2, False)
+    try:
+        assert status == "success"
+        assert all((root / "out" / f"{i}.txt").read_text() == "hello" for i, root in enumerate(roots))
+    finally:
+        async with _db() as db:
+            await db.execute(text("DELETE FROM task_storage_transfer WHERE id=:i"), {"i": task_id})
+            for name in names:
+                await db.execute(text("DELETE FROM task_storage_node WHERE name=:n"), {"n": name})
+            await db.commit()
+
+
+async def test_transfer_canceled(test_client, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    status, roots, task_id, names = await _run_multi(tmp_path, monkeypatch, 1, True)
+    try:
+        assert status == "canceled"
+        assert not (roots[0] / "out" / "0.txt").exists()
+    finally:
+        async with _db() as db:
+            await db.execute(text("DELETE FROM task_storage_transfer WHERE id=:i"), {"i": task_id})
+            for name in names:
+                await db.execute(text("DELETE FROM task_storage_node WHERE name=:n"), {"n": name})
+            await db.commit()
