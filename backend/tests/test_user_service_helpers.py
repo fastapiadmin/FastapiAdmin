@@ -133,3 +133,14 @@ async def test_batch_import_validation(monkeypatch: pytest.MonkeyPatch) -> None:
     X.rows=[{"部门编号":1,"账号":"user1","昵称":"N","邮箱":None,"手机号":None,"性别":"男","状态":"正常"}]*2
     out=await s.batch_import(F())
     assert "成功导入 1" in out and "err" in out
+
+
+async def test_export_list(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class X:
+        @staticmethod
+        def export_to_excel(data, headers): return b"x"
+    monkeypatch.setattr(mod,"ExcelUtil",X)
+    with pytest.raises(CustomException, match="没有数据"):
+        await UserService.export_list([])
+    assert await UserService.export_list([{"username":"u"}])==b"x"
