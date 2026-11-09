@@ -34,8 +34,13 @@ async def test_sync_configs_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 async def test_load_all_configs(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Tx:
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+    class S:
+        def begin(self): return Tx()
     class Ctx:
-        async def __aenter__(self): return object()
+        async def __aenter__(self): return S()
         async def __aexit__(self,*a): return False
     class C:
         def __init__(self,*a): pass
