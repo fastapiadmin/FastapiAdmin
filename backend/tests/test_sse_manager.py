@@ -62,3 +62,23 @@ async def test_relay_redis_publish() -> None:
     r=R(); m._redis=r
     await m.send_to_user(1, {"a": 1})
     assert r.messages and q.get_nowait() == {"a": 1}
+
+
+async def test_listen_dispatch_and_skip() -> None:
+    import json
+    from app.core.sse_manager import _PROCESS_TOKEN
+    m = SSEConnectionManager("it"); q = asyncio.Queue(); m.connect(1, q)
+    class PS:
+        async def subscribe(self, c): pass
+        async def unsubscribe(self, c): pass
+        async def close(self): pass
+        async def listen(self):
+            yield {"type": "message", "data": json.dumps({"sender": "other", "target": {"users": [1]}, "data": {"a": 1}})}
+            yield {"type": "message", "data": "bad-json"}
+            yield {"type": "message", "data": json.dumps({"sender": _PROCESS_TOKEN, "target": {"users": [1]}, "data": {"a": 2}})}
+            yield {"type": "subscribe", "data": 1}
+    class R:
+        def pubsub(self): return PS()
+    await m._listen(R())
+    assert q.get_nowait() == {"a": 1}
+    assert q.empty()
