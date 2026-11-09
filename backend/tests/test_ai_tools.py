@@ -98,3 +98,19 @@ async def test_redis_keys_tool(monkeypatch: pytest.MonkeyPatch) -> None:
     tools={t.name:t for t in r.build_readonly_tools(object(),redis=object())}
     out=await tools["redis_keys"].func("a*",5)
     assert out=={"keys":["k1"],"cursor":"c"}
+
+
+async def test_cron_jobs_tool(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    class R:
+        def scalars(self): return self
+        def all(self): return [SimpleNamespace(job_name="j",trigger_type="cron",next_run_time=None,status=0)]
+    class DB:
+        async def execute(self,stmt): return R()
+    class Ctx:
+        async def __aenter__(self): return DB()
+        async def __aexit__(self,*a): return False
+    monkeypatch.setattr(r,"async_db_session",lambda: Ctx())
+    tools={t.name:t for t in r.build_readonly_tools(object())}
+    out=await tools["cron_jobs"].func(10)
+    assert out[0]["job_name"]=="j" and out[0]["trigger_type"]=="cron"
