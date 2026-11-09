@@ -249,3 +249,18 @@ async def test_remove_local_temp_and_config(tmp_path: Path, monkeypatch: pytest.
     obj=SimpleNamespace(status=0)
     monkeypatch.setattr(engine.StorageNodeService,"_build_config",staticmethod(lambda s:"cfg"))
     assert await engine._build_config(DB(obj),1)=="cfg"
+
+
+async def test_broadcast_and_empty_temp(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    sent=[]
+    async def send(uid,data): sent.append(uid)
+    monkeypatch.setattr(engine.transfer_stream_manager,"send_to_user",send)
+    monkeypatch.setattr(engine,"_task_payload",lambda t,s: {})
+    await engine._broadcast(SimpleNamespace(created_id=1),[])
+    assert sent==[1]
+    async def bad(uid,data): raise RuntimeError()
+    monkeypatch.setattr(engine.transfer_stream_manager,"send_to_user",bad)
+    await engine._broadcast(SimpleNamespace(created_id=1),[])
+    await engine._remove_local_temp_dir("")
