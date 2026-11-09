@@ -179,8 +179,7 @@ _mock_redis.dbsize = AsyncMock(side_effect=_redis_dbsize)
 
 patch("redis.asyncio.Redis.from_url", return_value=_mock_redis).start()
 # slowapi 限流器由中间件处理，测试中无需 mock
-patch("app.core.ap_scheduler.SchedulerUtil.init_scheduler", new=AsyncMock()).start()
-patch("app.core.ap_scheduler.SchedulerUtil.shutdown", new=AsyncMock()).start()
+# 调度器 init/shutdown 不再全局 mock：由 isolated 生命周期测试自行启动/关闭
 
 # slowapi 通过中间件限流，测试无需 mock
 

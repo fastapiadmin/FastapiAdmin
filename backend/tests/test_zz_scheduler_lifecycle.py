@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from app.core.ap_scheduler import SchedulerUtil
+from app.core.ap_scheduler import SchedulerUtil, scheduler
 
 pytestmark = pytest.mark.skipif(os.getenv("RUN_INTEGRATION") != "1", reason="需要集成环境")
 
@@ -27,6 +27,11 @@ async def test_redis_scheduler_start_stop(test_client, monkeypatch: pytest.Monke
     from redis.asyncio import Redis
     r = Redis(host="localhost", port=6379, db=1, decode_responses=True)
     try:
+        await SchedulerUtil.shutdown(wait=True)
+        SchedulerUtil._redis = None
+        SchedulerUtil._leader_token = None
+        import asyncio
+        scheduler._eventloop = asyncio.get_running_loop()
         await SchedulerUtil.init_scheduler(r)
         await SchedulerUtil.start()
         assert SchedulerUtil.is_scheduler_ready() or True
