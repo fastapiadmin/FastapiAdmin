@@ -109,3 +109,23 @@ async def test_user_import_api(test_client, auth_headers) -> None:
         assert export.status_code == 200 and export.content
     finally:
         await _cleanup(username)
+
+
+async def test_user_crud_api(test_client, auth_headers) -> None:
+    async with _db() as db:
+        dept_id = (await db.execute(text("SELECT id FROM sys_dept LIMIT 1"))).scalar_one_or_none()
+    username = _username()
+    paths = test_client.get("/openapi.json").json()["paths"]
+    base = next(p for p in paths if p.endswith("/user/create")).rsplit("/create", 1)[0]
+    try:
+        payload = {"username": username, "password": "Abc123!x", "name": "IT API", "dept_id": dept_id, "status": 0}
+        created = test_client.post(f"{base}/create", json=payload, headers=auth_headers)
+        assert created.status_code in (200, 201), created.text
+        uid = created.json()["data"]["id"]
+        assert test_client.get(f"{base}/detail/{uid}", headers=auth_headers).status_code == 200
+        assert test_client.get(f"{base}/list", params={"page_no": 1, "page_size": 10}, headers=auth_headers).status_code == 200
+        payload["name"] = "IT API 2"
+        assert test_client.put(f"{base}/update/{uid}", json=payload, headers=auth_headers).status_code == 200
+        assert test_client.request("DELETE", f"{base}/delete", json=[uid], headers=auth_headers).status_code == 200
+    finally:
+        await _cleanup(username)
