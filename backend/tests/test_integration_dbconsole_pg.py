@@ -106,3 +106,22 @@ async def test_run_select_and_reject_unconfirmed_write(test_client) -> None:
                 await service.run_query(row.id, "DELETE FROM sys_user WHERE id=-1")
     finally:
         await _cleanup(name)
+
+
+async def test_dbconsole_api(test_client, auth_headers) -> None:
+    name = _name()
+    payload = {"name": name, "db_type": "postgres", "host": "127.0.0.1", "port": 5432, "username": settings.DATABASE_USER, "password": settings.DATABASE_PASSWORD, "database": settings.DATABASE_NAME}
+    try:
+        created = test_client.post("/api/v1/ops/dbconsole/connection/create", json=payload, headers=auth_headers)
+        assert created.status_code in (200, 201), created.text
+        cid = created.json()["data"]["id"]
+        assert test_client.get("/api/v1/ops/dbconsole/connection/list", headers=auth_headers).status_code == 200
+        assert test_client.get(f"/api/v1/ops/dbconsole/connection/detail/{cid}", headers=auth_headers).status_code == 200
+        assert test_client.post(f"/api/v1/ops/dbconsole/connection/test/{cid}", headers=auth_headers).status_code == 200
+        assert test_client.get(f"/api/v1/ops/dbconsole/connection/{cid}/databases", headers=auth_headers).status_code == 200
+        assert test_client.get(f"/api/v1/ops/dbconsole/connection/{cid}/tables", headers=auth_headers).status_code == 200
+        q = test_client.post(f"/api/v1/ops/dbconsole/connection/{cid}/query", json={"sql": "SELECT 1 AS n"}, headers=auth_headers)
+        assert q.status_code == 200
+        assert test_client.request("DELETE", "/api/v1/ops/dbconsole/connection/delete", json=[cid], headers=auth_headers).status_code == 200
+    finally:
+        await _cleanup(name)
