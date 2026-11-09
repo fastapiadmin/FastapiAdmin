@@ -160,3 +160,12 @@ uv run pytest -q tests/test_integration_pg_redis.py
 cd backend && uv run pytest -q --cov=app --cov-report=term-missing
 cd frontend/web && pnpm exec vitest run --coverage
 ```
+
+## 验收状态（当前）
+
+- 后端全量：**986 passed**，行覆盖 **87%**（2,045 / 15,595 未覆盖），重复运行一致。
+- 真实集成：**130 passed**，覆盖 PostgreSQL/Redis 会话、权限、字典、菜单、公告、工单、日志、存储源、传输、流程、调度节点、SQL 控制台等。
+- 真实 S3/MinIO：**未完成**（端口在监听，AccessKey/SecretKey 无效）。
+- 真实 SSH：**未完成**（本机无 sshd，仅 fake 连接覆盖）。
+- 真实 AI 对话：**未完成**（无外部模型服务，仅配置/会话/工具/错误分支）。
+- 结论：**未达到支持范围 100%**；87% 是当前可复现实测基线，不以 mock 或排除文件冒充达标。
