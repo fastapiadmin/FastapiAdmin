@@ -52,3 +52,22 @@ def test_demo_import_export(test_client, auth_headers) -> None:
     base = _base(test_client)
     export = test_client.post(f"{base}/export", json={"page_no": 1, "page_size": 10}, headers=auth_headers)
     assert export.status_code == 200 and export.content
+
+
+def test_demo_import(test_client, auth_headers) -> None:
+    from io import BytesIO
+    from openpyxl import Workbook
+    base = _base(test_client)
+    wb = Workbook(); ws = wb.active
+    ws.append(["名称", "状态", "描述"])
+    ws.append(["it_import_demo", "正常", "imported"])
+    buf = BytesIO(); wb.save(buf); buf.seek(0)
+    resp = test_client.post(f"{base}/import", files={"file": ("demo.xlsx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}, headers=auth_headers)
+    assert resp.status_code == 200, resp.text
+    assert "成功导入 1" in resp.json()["data"]
+    listing = test_client.get(f"{base}/list", params={"page_no": 1, "page_size": 10, "name": "it_import_demo"}, headers=auth_headers)
+    items = listing.json()["data"]["items"]
+    assert items
+    ids = [x["id"] for x in items if x["name"] == "it_import_demo"]
+    if ids:
+        test_client.request("DELETE", f"{base}/delete", json=ids, headers=auth_headers)
