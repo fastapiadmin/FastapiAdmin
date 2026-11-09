@@ -94,7 +94,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 - 当前覆盖：`SELECT 1`、用户 CRUD 往返、显式 NULL 更新、分页、唯一约束回滚、Redis set/get/ttl/delete；
 - 服务层：角色创建/更新/分页/删除、角色重名、用户创建/详情/更新/分页/删除、用户重名；
 - RedisCURD：set/get/delete、expire/ttl、lock/unlock、compare_and_set、scan/mget、hash；
-- 当前真实集成 **58 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、gencode 3、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4）；
+- 当前真实集成 **62 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、账号密码登录 4、gencode 3、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4）；
 - 后续把调度器、认证会话、gencode 同步迁到真实 DB/Redis 验证。
 
 ## 范围口径 A（2026-11-09 确认）
