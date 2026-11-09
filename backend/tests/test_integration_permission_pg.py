@@ -105,3 +105,24 @@ async def test_superuser_and_anonymous(test_client) -> None:
         assert await p2._permission_condition() is None
         p3 = Permission(UserModel, SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=True)), db)
         assert await p3._permission_condition() is None
+
+
+def test_permission_helpers() -> None:
+    from types import SimpleNamespace
+    from app.core.permission import Permission
+    class Target:
+        dept_id = "dept"
+    rel = SimpleNamespace(property=SimpleNamespace(mapper=SimpleNamespace(class_=Target)))
+    assert Permission._relationship_column(rel, "dept_id") == "dept"
+    assert Permission._relationship_column(rel, "missing") is None
+    assert Permission._relationship_column(None, "dept_id") is None
+
+
+async def test_permission_dept_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.core.permission import Permission
+    svc = Permission(object, SimpleNamespace(user=SimpleNamespace(id=1, dept_id=7)), object())
+    async def fail(_): raise RuntimeError("x")
+    monkeypatch.setattr(Permission, "_load_dept_children", fail)
+    ids = await svc._get_accessible_dept_ids({Permission.DATA_SCOPE_DEPT_AND_CHILD})
+    assert ids == {7}

@@ -125,3 +125,22 @@ async def test_dbconsole_api(test_client, auth_headers) -> None:
         assert test_client.request("DELETE", "/api/v1/ops/dbconsole/connection/delete", json=[cid], headers=auth_headers).status_code == 200
     finally:
         await _cleanup(name)
+
+
+async def test_connection_update_and_missing(test_client) -> None:
+    from app.modules.ops.dbconsole.schema import DbConnectionUpdateSchema
+    from app.core.exceptions import CustomException
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = DbConsoleService(_auth(), db)
+            row = await svc.create(_data(name))
+            updated = await svc.update(row.id, DbConnectionUpdateSchema(name=name + "x", db_type="postgres", host="127.0.0.1", port=5432, username=settings.DATABASE_USER, password=None, database=settings.DATABASE_NAME))
+            assert updated.name.endswith("x")
+            with pytest.raises(CustomException):
+                await svc.test_by_id(99999999)
+            await svc.delete([row.id])
+            with pytest.raises(CustomException):
+                await svc.detail(row.id)
+    finally:
+        await _cleanup(name); await _cleanup(name + "x")
