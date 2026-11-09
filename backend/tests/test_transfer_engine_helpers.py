@@ -218,8 +218,9 @@ async def test_resolve_source_and_dir(tmp_path: Path) -> None:
         def __init__(self): self.downloaded=[]
         async def list_files(self,p):
             if p=="bad": raise RuntimeError()
-            return [StorageObject(name="d",key="d",is_dir=True),StorageObject(name="f",key="f",is_dir=False,size=5)]
-        async def list_recursive(self,p): return [StorageObject(name="a",key="d/a",is_dir=False,size=3),StorageObject(name="sub",key="d/sub",is_dir=True)]
+            if p=="f": return [StorageObject(name="f",key="f",is_dir=False,size=5)]
+            return [StorageObject(name="d",key="d",is_dir=True)]
+        async def list_recursive(self,p): return [StorageObject(name="a",key="d/a",is_dir=False,size=3),StorageObject(name="sub",key="d/sub",is_dir=True)] if p=="d" else []
         async def download(self,k,l): self.downloaded.append((k,l))
     a=A()
     assert await engine._resolve_source_size(a,"d")==3
