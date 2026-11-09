@@ -115,3 +115,38 @@ async def test_ssh_batch_execute(test_client, monkeypatch: pytest.MonkeyPatch) -
         assert out[0].ok is True and out[0].stdout == "ok"
         assert out[1].ok is False and "停用" in (out[1].error or "")
         assert out[2].ok is False and "不存在" in (out[2].error or "")
+
+
+async def test_ssh_exec_on_host(monkeypatch: pytest.MonkeyPatch) -> None:
+    class S:
+        def read(self): return b"hello"
+        channel = SimpleNamespace(recv_exit_status=lambda: 0)
+    class C:
+        def exec_command(self,*a,**k): return None, S(), S()
+        def close(self): pass
+    monkeypatch.setattr(ssh_mod, "connect_client", lambda **kw: C())
+    async with _db() as db:
+        svc = SshHostService(_auth(), db)
+        row = SimpleNamespace(id=1,name="h",host="127.0.0.1",port=22,username="u",auth_type="password",password="",private_key="",passphrase="")
+        out = svc._exec_on_host(row,"echo",2)
+        assert out.ok and out.stdout=="hello"
+
+
+async def test_ssh_open_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Ch:
+        def send(self,*a,**k): pass
+    class C:
+        def invoke_shell(self,**k): return Ch()
+        def close(self): pass
+    monkeypatch.setattr(ssh_mod, "connect_client", lambda **kw: C())
+    from app.modules.ops.ssh.terminal import TerminalManager
+    monkeypatch.setattr(TerminalManager, "open", lambda **kw: SimpleNamespace(host_name=kw["host_name"], session_id=1))
+    monkeypatch.setattr(TerminalManager, "write", lambda *a, **k: None)
+    async with _db() as db:
+        svc = SshHostService(_auth(), db)
+        row = SimpleNamespace(id=1,name="h",host="127.0.0.1",port=22,username="u",auth_type="password",password="",private_key="",passphrase="",status=0)
+        async def host(_): return row
+        svc._enabled_host = host
+        s = await svc.open_terminal(1,80,24)
+        assert s.host_name == "h"
+        await svc.open_log_tail(1,"/var/log/x",10)
