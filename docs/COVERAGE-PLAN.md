@@ -142,7 +142,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 - 前端若开启 `coverage.all`，大量 views/components/hooks 会进入统计；
 - FTP/SFTP/OBS/OSS/COS 适配器已从 coverage 分母剔除，只保留工厂/懒加载逻辑测试；提供真实服务后再恢复统计。
 - 本机 PostgreSQL/Redis 可用并已用于真实集成；MinIO 端口 9000/9001 在监听，但现有默认凭据无效，未完成真实 S3 集成；
-  - 无本地 sshd，SSH 集成只覆盖服务/controller 与 fake 连接；
+  - 按用户确认，真实 SSH 本轮不要求；SSH 仅覆盖服务/controller 与 fake 连接；
   - 无外部 AI 服务，AI 对话/流式只覆盖配置、会话、工具与错误分支；
   - 100% 代码覆盖不能替代功能验收，反之亦然。
 
@@ -167,6 +167,6 @@ cd frontend/web && pnpm exec vitest run --coverage
 - 真实集成：**135 passed**，覆盖 PostgreSQL/Redis 会话、权限、字典、菜单、公告、工单、日志、存储源、传输、流程、调度节点、SQL 控制台、MinIO 上传/下载/复制/重命名/目录/桶列表。
 - 真实 S3/MinIO：**已完成**（本机 MinIO 9000，凭据通过 `S3_ACCESS_KEY`/`S3_SECRET_KEY` 环境变量注入，不写入仓库）。
   - 代码生成写盘：**已完成**（`BASE_DIR` 隔离到临时仓库，验证 .py 产物落盘）。
-- 真实 SSH：**未完成**（本机无 sshd，仅 fake 连接覆盖）。
+- 真实 SSH：**不要求**（用户确认本轮不测；保留服务/controller 与 fake 连接覆盖）。
 - 真实 AI 对话：**已完成**（DeepSeek OpenAI 兼容端点，真实非流式对话通过；凭据来自本地 env，不写入仓库）。
 - 结论：**未达到支持范围 100%**；87% 是当前可复现实测基线，不以 mock 或排除文件冒充达标。
