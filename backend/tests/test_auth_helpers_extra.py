@@ -56,3 +56,16 @@ def test_captcha_matches(monkeypatch: pytest.MonkeyPatch) -> None:
     assert mod.CaptchaService._matches({"fingerprint":""},object()) is True
     assert mod.CaptchaService._matches({"fingerprint":"f"},object()) is True
     assert mod.CaptchaService._matches({"fingerprint":"x"},object()) is False
+
+
+async def test_logout(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.auth.service as mod
+    class R:
+        def __init__(self): self.deleted=[]
+        async def delete(self,k): self.deleted.append(k); return True
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    monkeypatch.setattr(mod,"decode_access_token",lambda token: SimpleNamespace(sub="s"))
+    r=R(); assert await mod.LoginService.logout(r,"t") is True and len(r.deleted)==3
+    monkeypatch.setattr(mod,"decode_access_token",lambda token: SimpleNamespace(sub=None))
+    with pytest.raises(CustomException, match="会话编号"):
+        await mod.LoginService.logout(r,"t")
