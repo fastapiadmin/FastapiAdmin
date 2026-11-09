@@ -58,3 +58,18 @@ def test_schema_import_branches() -> None:
     assert isinstance(J.get_schema_import_list(table), set)
     assert isinstance(J.get_model_import_list(table), list)
     assert isinstance(J.get_model_import_list(table, is_sub_entity=True), list)
+
+
+def test_import_lists_datetime_decimal_sub() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    cols = [
+        GenTableColumnSchema(column_name="a", column_type="datetime", python_type="datetime"),
+        GenTableColumnSchema(column_name="b", column_type="date", python_type="date"),
+        GenTableColumnSchema(column_name="c", column_type="time", python_type="time"),
+        GenTableColumnSchema(column_name="d", column_type="decimal", python_type="Decimal"),
+    ]
+    sub = GenTableOutSchema(table_name="s", class_name="Sub", package_name="module_demo", columns=cols)
+    table = GenTableOutSchema(table_name="m", class_name="M", package_name="module_demo", columns=cols, sub=True, sub_table=sub, sub_table_name="s", sub_table_fk_name="m_id")
+    schemas = J.get_schema_import_list(table)
+    assert any("datetime" in x for x in schemas)
+    assert J.get_model_import_list(table)

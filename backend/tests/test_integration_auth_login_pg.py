@@ -111,6 +111,12 @@ async def test_login_success(test_client, monkeypatch: pytest.MonkeyPatch) -> No
             assert auth.user.id == uid
             from app.core.security import decode_access_token
             sid = decode_access_token(out.access_token).sub
+            from app.core.exceptions import CustomException
+            from app.core.dependencies import _authenticate
+            from app.common.enums import RedisInitKeyConfig
+            await r.delete(f"{RedisInitKeyConfig.USER_SESSION.key}:{sid}")
+            with pytest.raises(CustomException):
+                await _authenticate(out.access_token, db, r)
             from app.common.enums import RedisInitKeyConfig
             await r.delete(
                 f"{RedisInitKeyConfig.USER_SESSION.key}:{sid}",
