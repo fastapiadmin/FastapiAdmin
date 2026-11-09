@@ -67,3 +67,21 @@ async def test_ws_auth_and_permission_errors(monkeypatch: pytest.MonkeyPatch) ->
     ws2 = FakeWS([])
     await C.websocket_chat_controller(ws2)
     assert ws2.closed == 4003
+
+
+async def test_ws_error_path_and_close(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.exceptions import CustomException
+    async def auth(ws): return _auth(), None
+    class Svc:
+        def __init__(self, *a, **k): pass
+        async def chat_query(self, query, stop_event=None, model_config=None):
+            if False: yield None
+            raise CustomException(msg="业务错误")
+    monkeypatch.setattr(C, "websocket_authenticate", auth)
+    monkeypatch.setattr(C, "ChatService", Svc)
+    class M:
+        async def __call__(self, redis, uid): return None
+    monkeypatch.setattr(C, "get_user_model_config", M())
+    ws = FakeWS([json.dumps({"message": "hi"})])
+    await C.websocket_chat_controller(ws)
+    assert any("业务错误" in s for s in ws.sent)

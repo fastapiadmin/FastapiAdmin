@@ -83,3 +83,10 @@ def test_env_template_and_filename() -> None:
     table = GenTableOutSchema(table_name="demo", class_name="Demo", package_name="module_demo", module_name="demo", business_name="demo", function_name="Demo")
     assert J.get_file_name(templates[0], table)
     assert J.get_template(templates[0])
+
+
+def test_all_template_file_names() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    table = GenTableOutSchema(table_name="demo", class_name="Demo", package_name="module_demo", module_name="demo", business_name="demo", function_name="Demo")
+    for tpl in J.get_template_list() + J.get_sub_table_template_list():
+        assert J.get_file_name(tpl, table)

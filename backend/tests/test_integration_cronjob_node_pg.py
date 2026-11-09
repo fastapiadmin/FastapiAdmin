@@ -121,6 +121,8 @@ async def test_cron_job_api(test_client, auth_headers) -> None:
     assert test_client.get(f"{base}/scheduler/jobs", headers=auth_headers).status_code == 200
     assert test_client.get(f"{base}/scheduler/console", headers=auth_headers).status_code == 200
     assert test_client.get(f"{base}/log/list", params={"page_no": 1, "page_size": 10}, headers=auth_headers).status_code == 200
+    assert test_client.get(f"{base}/log/detail/99999999", headers=auth_headers).status_code in (400, 404)
+    assert test_client.request("DELETE", f"{base}/log/delete", json=[], headers=auth_headers).status_code == 400
 
 
 async def test_cron_node_api(test_client, auth_headers) -> None:

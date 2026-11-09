@@ -92,3 +92,35 @@ async def test_generate_guards(test_client) -> None:
             await svc.batch_gen_code([])
         with pytest.raises(CustomException):
             await svc.preview_code(99999999)
+
+
+async def test_generate_code_with_sub(test_client, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    import app.modules.generator.gencode.service as svc_mod
+    main = _name(); sub = _name(); func = f"IT Sub {main}"
+    root = tmp_path / "repo"; (root / "backend" / "app" / "plugin").mkdir(parents=True)
+    monkeypatch.setattr(svc_mod, "BASE_DIR", root / "backend")
+    async def noop(_): return None
+    monkeypatch.setattr(GenTableService, "_write_plugin_migration", staticmethod(noop))
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{main}" (id SERIAL PRIMARY KEY)'))
+            await db.execute(text(f'CREATE TABLE "{sub}" (id SERIAL PRIMARY KEY, main_id INT)'))
+            await db.commit()
+            crud = GenTableCRUD(_auth(), db)
+            sub_obj = await crud.add_gen_table(GenTableSchema(table_name=sub, class_name="SubRow", package_name="module_it", module_name=f"its{uuid.uuid4().hex[:5]}", business_name="sub", function_name="SubRow"))
+            await GenTableColumnCRUD(_auth(), db).create_gen_table_column_crud(GenTableColumnSchema(table_id=sub_obj.id, column_name="main_id", column_type="int", html_type="input"))
+            main_obj = await crud.add_gen_table(GenTableSchema(table_name=main, class_name="MainRow", package_name="module_it", module_name=f"itm{uuid.uuid4().hex[:5]}", business_name="main", function_name=func, sub_table_name=sub, sub_table_fk_name="main_id"))
+            await db.commit()
+            assert await GenTableService(_auth(), db).generate_code(main) is True
+            await crud.delete_gen_table([main_obj.id, sub_obj.id])
+            await db.execute(text("DELETE FROM sys_menu WHERE name=:n"), {"n": func})
+            await db.commit()
+    finally:
+        async with _db() as db:
+            await db.execute(text(f'DROP TABLE IF EXISTS "{main}"'))
+            await db.execute(text(f'DROP TABLE IF EXISTS "{sub}"'))
+            await db.execute(text("DELETE FROM gen_table WHERE table_name IN (:m,:s)"), {"m": main, "s": sub})
+            await db.execute(text("DELETE FROM sys_menu WHERE name=:n"), {"n": func})
+            await db.commit()
