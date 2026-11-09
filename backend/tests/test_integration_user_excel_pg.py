@@ -86,3 +86,26 @@ async def test_import_missing_header(test_client) -> None:
         service = UserService(auth, db)
         with pytest.raises(Exception, match="缺少必要"):
             await service.batch_import(_file([[1, _username(), "IT"]], headers=["部门编号", "账号"]))
+
+
+async def test_user_import_api(test_client, auth_headers) -> None:
+    from io import BytesIO
+    from openpyxl import Workbook
+    async with _db() as db:
+        dept_id = (await db.execute(text("SELECT id FROM sys_dept LIMIT 1"))).scalar_one_or_none()
+    if not dept_id:
+        pytest.skip("测试库缺少部门")
+    username = _username()
+    wb = Workbook(); ws = wb.active
+    ws.append(["部门编号", "账号", "昵称", "邮箱", "手机号", "性别", "状态"])
+    ws.append([dept_id, username, "IT", None, None, "男", "正常"])
+    buf = BytesIO(); wb.save(buf)
+    try:
+        tpl = test_client.get("/api/v1/system/user/import/template", headers=auth_headers)
+        assert tpl.status_code == 200 and tpl.content
+        resp = test_client.post("/api/v1/system/user/import/data", files={"file": ("u.xlsx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}, headers=auth_headers)
+        assert resp.status_code == 200, resp.text
+        export = test_client.post("/api/v1/system/user/export?page_no=1&page_size=10", json={}, headers=auth_headers)
+        assert export.status_code == 200 and export.content
+    finally:
+        await _cleanup(username)
