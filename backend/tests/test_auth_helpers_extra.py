@@ -80,4 +80,4 @@ def test_build_session_dict(monkeypatch: pytest.MonkeyPatch) -> None:
     assert out["os"]=="Mac" and out["browser"]=="Safari" and out["permissions"]==["p"]
     out2=LoginService._build_session_dict(user,"s",[],[],"ip",None,SimpleNamespace(os=None,user_agent=None),"password")
     assert out2["os"]=="Unknown" and out2["browser"]=="Unknown"
-    assert LoginService._redis_key("k").endswith(":k")
+    assert CaptchaService._redis_key("k").endswith(":k")
