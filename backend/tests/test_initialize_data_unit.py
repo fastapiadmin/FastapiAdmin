@@ -71,3 +71,45 @@ async def test_init_data_writes_rows(monkeypatch: pytest.MonkeyPatch) -> None:
         async def flush(self): self.flushed=True
     db=DB(); await svc._InitializeData__init_data(db)
     assert db.added and db.flushed
+
+
+def test_autogen_migration_branches(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd
+    monkeypatch.setattr("app.scripts.initialize.ALEMBIC_VERSION_DIR", tmp_path)
+    svc = InitializeData()
+    monkeypatch.setattr(cmd, "revision", lambda *a, **k: None)
+    assert svc._InitializeData__autogen_migration(object()) is False
+    def safe(*a, **k): (tmp_path / "m.py").write_text("def upgrade():\n    pass")
+    monkeypatch.setattr(cmd, "revision", safe)
+    assert svc._InitializeData__autogen_migration(object()) is True
+    (tmp_path / ".keep").write_text("")
+    def danger(*a, **k): (tmp_path / "d.py").write_text("def upgrade():\n    op.drop_table('x')")
+    monkeypatch.setattr(cmd, "revision", danger)
+    assert svc._InitializeData__autogen_migration(object()) is None
+    assert not (tmp_path / "d.py").exists()
+    def boom(*a, **k): raise RuntimeError("x")
+    monkeypatch.setattr(cmd, "revision", boom)
+    assert svc._InitializeData__autogen_migration(object()) is None
+
+
+async def test_clear_alembic_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.scripts.initialize as I
+    class Ctx:
+        def __init__(self, rows): self.rows = rows
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+        async def execute(self,*a,**k): return self.rows
+        async def run_sync(self, fn): return fn(None)
+    class Eng:
+        def __init__(self, rows): self.rows=rows
+        def begin(self): return Ctx(self.rows)
+    import alembic.script as scr
+    class Script:
+        def __init__(self,*a,**k): pass
+        def walk_revisions(self): return [SimpleNamespace(revision="known")]
+    monkeypatch.setattr(scr.ScriptDirectory, "from_config", classmethod(lambda cls, cfg: Script()))
+    monkeypatch.setattr(I, "inspect", lambda c: SimpleNamespace(has_table=lambda n: True))
+    monkeypatch.setattr(I, "async_engine", Eng([]))
+    await InitializeData._InitializeData__clear_unresolvable_alembic_version(object())
+    monkeypatch.setattr(I, "async_engine", Eng([("known",), ("stale",)]))
+    await InitializeData._InitializeData__clear_unresolvable_alembic_version(object())
