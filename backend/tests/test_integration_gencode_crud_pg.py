@@ -90,3 +90,23 @@ async def test_gen_table_and_column_crud(test_client) -> None:
             await crud.delete_gen_table([obj.id])
     finally:
         await _cleanup(table)
+
+
+async def test_db_table_page_and_list(test_client) -> None:
+    table = _name()
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{table}" (id SERIAL PRIMARY KEY)'))
+            await db.execute(text(f'COMMENT ON TABLE "{table}" IS \'IT page comment\''))
+            await db.commit()
+            crud = GenTableCRUD(_auth(), db)
+            rows = await crud.get_db_table_list(table_name=table)
+            assert len(rows) == 1 and rows[0]["table_name"] == table
+            rows_c = await crud.get_db_table_list(table_comment="IT page comment")
+            assert any(r["table_name"] == table for r in rows_c)
+            items, total = await crud.get_db_table_page(table_name=table, offset=0, limit=10)
+            assert total >= 1 and any(i["table_name"] == table for i in items)
+            items2, total2 = await crud.get_db_table_page(table_name=table, table_comment="IT page comment", offset=0, limit=1)
+            assert total2 >= 1 and len(items2) <= 1
+    finally:
+        await _cleanup(table)
