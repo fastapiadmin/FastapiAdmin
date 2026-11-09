@@ -79,3 +79,16 @@ async def test_generate_code_isolated(test_client, tmp_path, monkeypatch: pytest
 
 async def _noop():
     return None
+
+
+async def test_generate_guards(test_client) -> None:
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    async with _db() as db:
+        svc = GenTableService(_auth(), db)
+        with pytest.raises(CustomException):
+            await svc.generate_code("")
+        with pytest.raises(CustomException):
+            await svc.batch_gen_code([])
+        with pytest.raises(CustomException):
+            await svc.preview_code(99999999)
