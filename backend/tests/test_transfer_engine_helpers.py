@@ -193,3 +193,19 @@ async def test_execute_transfer_task_missing_source(monkeypatch: pytest.MonkeyPa
     db=DB(task); monkeypatch.setattr(engine,"async_db_session",lambda:Ctx(db))
     await engine._execute_transfer_task(1)
     assert task.status=="failed" and "不存在或已停用" in task.error_msg
+
+
+async def test_local_file_helpers(tmp_path: Path) -> None:
+    from app.modules.task.storage.transfer import engine
+    f=tmp_path/"a.txt"; f.write_text("123")
+    assert engine._local_path_size(str(f))==3
+    assert engine._local_path_size(str(tmp_path/"none"))==0
+    assert engine._local_path_size(str(tmp_path))>=0
+    files=engine._list_local_files(str(tmp_path))
+    assert files and files[0][1]=="a.txt"
+    out=tmp_path/"sub"/"b.txt"
+    engine._prepare_local_dirs([str(out)])
+    assert out.parent.exists()
+    d=tmp_path/"rm"; d.mkdir(); (d/"x").write_text("x")
+    await engine._remove_local_temp_dir(str(d))
+    assert not d.exists()
