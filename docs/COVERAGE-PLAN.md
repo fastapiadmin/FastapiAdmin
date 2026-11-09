@@ -4,8 +4,8 @@
 
 | 口径 | 当前值 | 说明 |
 |---|---:|---|
-| 后端 pytest | **997 passed**（含真实集成） | 全量 pytest，覆盖 15,603 statements（已剔除无服务协议） |
-| 后端行覆盖 | **87%**（2,016 missed） | `pytest --cov=app`，口径仅支持范围 |
+| 后端 pytest | **1002 passed**（含真实集成） | 全量 pytest，覆盖 15,603 statements（已剔除无服务协议） |
+| 后端行覆盖 | **88%**（1,941 missed） | `pytest --cov=app`，口径仅支持范围 |
 | 前端 vitest | **94 passed** | 14 个测试文件 |
 | 前端行覆盖 | 未启用 all-source | 不能当全站覆盖率，暂不作为验收口径 |
 | 接口 | 250 个 | 还没有做到每个接口成功/校验/权限三路径 |
@@ -94,7 +94,7 @@ uv run pytest -q tests/test_integration_pg_redis.py
 - 当前覆盖：`SELECT 1`、用户 CRUD 往返、显式 NULL 更新、分页、唯一约束回滚、Redis set/get/ttl/delete；
 - 服务层：角色创建/更新/分页/删除、角色重名、用户创建/详情/更新/分页/删除、用户重名；
 - RedisCURD：set/get/delete、expire/ttl、lock/unlock、compare_and_set、scan/mget、hash；
-- 当前真实集成 **140 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、账号密码登录 4、gencode 5、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4、工单 4、数据库控制台 4、AI 接口 4、数据权限 4、部门 4、示例插件接口 3、公告 2、系统参数 4）；
+- 当前真实集成 **141 passed**（PG 基础 6、RedisCURD 6、服务与角色关联 6、认证会话 4、账号密码登录 4、gencode 5、调度器自愈 3、字典 3、菜单 4、AI 配置 5、存储源 3、文件浏览 3、AI 会话 5、Excel 导入 3、传输端到端 4、工单 4、数据库控制台 4、AI 接口 4、数据权限 4、部门 4、示例插件接口 3、公告 2、系统参数 4）；
 - 后续把调度器、认证会话、gencode 同步迁到真实 DB/Redis 验证。
 
 ## 范围口径 A（2026-11-09 确认）
