@@ -50,3 +50,16 @@ async def test_upload_file_rejects(tmp_path, monkeypatch) -> None:
         await UploadUtil.upload_file(UploadFile(filename="../x.txt", file=BytesIO(b"x")), "http://x")
     with pytest.raises(CustomException):
         await UploadUtil.upload_file(UploadFile(filename="", file=BytesIO(b"x")), "http://x")
+
+
+def test_upload_validators() -> None:
+    from types import SimpleNamespace
+    from app.core.exceptions import CustomException
+    assert UploadUtil.get_extension_from_filename("a.PNG") == ".png"
+    assert UploadUtil.is_dangerous_extension(".exe") is True
+    assert UploadUtil.check_path_traversal("a.txt") is True
+    assert UploadUtil.check_path_traversal("../a.txt") is False
+    assert UploadUtil.sanitize_filename("a b.txt")
+    assert UploadUtil.check_file_size(SimpleNamespace(size=1)) is True
+    with pytest.raises(CustomException):
+        UploadUtil.validate_file_extension(".exe")
