@@ -76,3 +76,21 @@ async def test_node_clear(test_client) -> None:
             assert isinstance(await svc.get_list(), list)
     finally:
         await _cleanup(name)
+
+
+async def test_node_execute_errors(test_client) -> None:
+    from app.modules.task.cronjob.node.schema import NodeCreateSchema
+    from app.core.exceptions import CustomException
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = NodeService(_auth(), db)
+            with pytest.raises(CustomException):
+                await svc.execute(99999999)
+            node = await svc.create(NodeCreateSchema(name=name, func="builtin:missing_handler", trigger=None))
+            with pytest.raises(CustomException):
+                await svc.execute(node.id)
+            with pytest.raises(CustomException):
+                await svc.update(99999999, NodeCreateSchema(name=name, func="builtin:missing_handler", trigger=None))
+    finally:
+        await _cleanup(name)

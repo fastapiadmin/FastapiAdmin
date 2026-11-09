@@ -43,3 +43,28 @@ def test_mobile_code_validators() -> None:
     assert V.validate_required_code("Abc_1") == "Abc_1"
 
 
+
+def test_menu_request_validator_branches() -> None:
+    from types import SimpleNamespace
+    menu = SimpleNamespace(type=2, route_name="r", route_path="/p", component_path="c", redirect=None, client="pc")
+    assert V.menu_request_validator(menu) is menu
+    with pytest.raises(CustomException):
+        V.menu_request_validator(SimpleNamespace(type=9))
+    with pytest.raises(CustomException):
+        V.menu_request_validator(SimpleNamespace(type=1, route_name="r", route_path="/p", redirect=None, client="pc"))
+    with pytest.raises(CustomException):
+        V.menu_request_validator(SimpleNamespace(type=2, route_name="r", route_path="/p", component_path="", client="pc"))
+    with pytest.raises(CustomException):
+        V.menu_request_validator(SimpleNamespace(type=4, route_name="r", route_path="/p", client="pc"))
+    with pytest.raises(CustomException):
+        V.menu_request_validator(SimpleNamespace(type=4, route_name="r", route_path="/p", link="u", client="bad"))
+
+
+def test_role_permission_validator() -> None:
+    from types import SimpleNamespace
+    role = SimpleNamespace(data_scope=3, role_ids=[1])
+    assert V.role_permission_request_validator(role) is role
+    with pytest.raises(CustomException):
+        V.role_permission_request_validator(SimpleNamespace(data_scope=9, role_ids=[1]))
+    with pytest.raises(CustomException):
+        V.role_permission_request_validator(SimpleNamespace(data_scope=1, role_ids=[]))
