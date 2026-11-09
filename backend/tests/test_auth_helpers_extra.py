@@ -48,3 +48,11 @@ async def test_captcha_state(monkeypatch: pytest.MonkeyPatch) -> None:
     r=R(None)
     await mod.CaptchaService._write_state(r,"k","ok","f",1,2)
     assert r.sets and "fingerprint" in r.sets[0]["value"]
+
+
+def test_captcha_matches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.auth.service as mod
+    monkeypatch.setattr(mod,"get_client_fingerprint",lambda req:"f")
+    assert mod.CaptchaService._matches({"fingerprint":""},object()) is True
+    assert mod.CaptchaService._matches({"fingerprint":"f"},object()) is True
+    assert mod.CaptchaService._matches({"fingerprint":"x"},object()) is False
