@@ -409,3 +409,15 @@ async def test_current_info_light(monkeypatch: pytest.MonkeyPatch) -> None:
     s._load_menus=menus
     out=await s.current_info(check_data_scope=False)
     assert out.menus==[]
+
+
+async def test_set_available_empty_and_current_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): self.set_called=False
+        async def get_list(self,**kw): return []
+        async def set(self,**kw): self.set_called=True
+        async def get(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    await s.set_available(BatchSetAvailable(ids=[],status=1))
+    with pytest.raises(CustomException, match="不存在"):
+        await s.current_info()
