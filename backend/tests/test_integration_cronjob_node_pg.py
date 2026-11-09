@@ -143,3 +143,23 @@ async def test_cron_node_api(test_client, auth_headers) -> None:
         assert test_client.request("DELETE", f"{base}/delete", json=[nid], headers=auth_headers).status_code == 200
     finally:
         await _cleanup(name)
+
+
+async def test_cron_job_control_routes(test_client, auth_headers, monkeypatch: pytest.MonkeyPatch) -> None:
+    from unittest.mock import AsyncMock, MagicMock
+    import app.modules.task.cronjob.job.controller as c
+    for name in ("start_scheduler", "shutdown_scheduler"):
+        monkeypatch.setattr(c.JobService, name, staticmethod(AsyncMock()))
+    for name in ("pause_scheduler", "resume_scheduler", "clear_scheduler_jobs", "pause_job", "resume_job", "run_job_now", "modify_job", "remove_job"):
+        monkeypatch.setattr(c.JobService, name, staticmethod(MagicMock()))
+    paths = test_client.get("/openapi.json").json()["paths"]
+    base = next(p for p in paths if p.endswith("/cronjob/job/scheduler/status")).rsplit("/scheduler/status", 1)[0]
+    assert test_client.post(f"{base}/scheduler/start", headers=auth_headers).status_code == 200
+    assert test_client.post(f"{base}/scheduler/pause", headers=auth_headers).status_code == 200
+    assert test_client.post(f"{base}/scheduler/resume", headers=auth_headers).status_code == 200
+    assert test_client.post(f"{base}/scheduler/shutdown", headers=auth_headers).status_code == 200
+    assert test_client.delete(f"{base}/scheduler/jobs/clear", headers=auth_headers).status_code == 200
+    assert test_client.post(f"{base}/task/pause/1", headers=auth_headers).status_code == 200
+    assert test_client.post(f"{base}/task/resume/1", headers=auth_headers).status_code == 200
+    assert test_client.post(f"{base}/task/run/1", headers=auth_headers).status_code == 200
+    assert test_client.delete(f"{base}/task/remove/1", headers=auth_headers).status_code == 200
