@@ -412,6 +412,7 @@ async def test_current_info_light(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 async def test_set_available_empty_and_current_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import BatchSetAvailable
     class U:
         def __init__(self,*a): self.set_called=False
         async def get_list(self,**kw): return []
