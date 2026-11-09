@@ -71,3 +71,21 @@ def test_demo_import(test_client, auth_headers) -> None:
     ids = [x["id"] for x in items if x["name"] == "it_import_demo"]
     if ids:
         test_client.request("DELETE", f"{base}/delete", json=ids, headers=auth_headers)
+
+
+def _xlsx(rows, headers) -> bytes:
+    from io import BytesIO
+    from openpyxl import Workbook
+    wb = Workbook(); ws = wb.active; ws.append(headers)
+    for r in rows: ws.append(r)
+    buf = BytesIO(); wb.save(buf); return buf.getvalue()
+
+
+def test_demo_import_errors(test_client, auth_headers) -> None:
+    base = _base(test_client)
+    empty = test_client.post(f"{base}/import", files={"file": ("e.xlsx", _xlsx([], ["名称", "状态", "描述"]), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}, headers=auth_headers)
+    assert empty.status_code == 400
+    missing = test_client.post(f"{base}/import", files={"file": ("m.xlsx", _xlsx([["x"]], ["名称"]), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}, headers=auth_headers)
+    assert missing.status_code == 400
+    bad = test_client.post(f"{base}/import", files={"file": ("b.xlsx", _xlsx([["it_bad", "未知", "d"]], ["名称", "状态", "描述"]), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}, headers=auth_headers)
+    assert bad.status_code == 200 and "状态必须" in bad.json()["data"]
