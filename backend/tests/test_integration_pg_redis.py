@@ -120,7 +120,7 @@ async def test_crud_real_roundtrip_and_explicit_null(test_client) -> None:
             assert (await crud.get(username=username)).id == uid
             await crud.update(uid, UserUpdateSchema(description=None))
             assert (await crud.get(id=uid)).description is None
-            page = await crud.page(1, 10, {"username": username}, None)
+            page = await crud.page(1, 10, {"username": username}, [{"id": "asc"}])
             assert page.total == 1
             await crud.delete(ids=[uid])
             assert await crud.get(id=uid) is None
