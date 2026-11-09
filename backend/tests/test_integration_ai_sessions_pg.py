@@ -17,6 +17,13 @@ pytestmark = [
 ]
 
 
+@pytest.fixture(autouse=True)
+def _reset_agno_db() -> None:
+    """其他测试可能已在 TestClient 事件循环创建 agno 单例；本文件用 session loop，重置后重建。"""
+    import app.modules.ai.chat.crud as crud
+    crud._db_instance = None
+
+
 def _auth():
     return SimpleNamespace(user=SimpleNamespace(username=f"it_ai_{uuid.uuid4().hex[:8]}", id=0))
 

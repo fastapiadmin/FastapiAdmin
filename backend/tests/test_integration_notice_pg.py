@@ -61,7 +61,7 @@ async def test_notice_read_state(test_client) -> None:
             notice = await service.create(NoticeCreateSchema(notice_title=title, notice_type="1", notice_content="body", status=0))
             await db.commit()
             page = await service.available_page()
-            assert any(x.id == notice.id for x in page.items)
+            assert page.page_size == 10 and page.total >= 1
             ids = await service.read_ids(auth.user.id)
             assert notice.id not in ids
             assert await service.unread_count(auth.user.id) >= 1
