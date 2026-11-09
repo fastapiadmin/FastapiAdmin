@@ -139,7 +139,7 @@ async def test_export_list(monkeypatch: pytest.MonkeyPatch) -> None:
     import app.modules.system.user.service as mod
     class X:
         @staticmethod
-        def export_to_excel(data, headers): return b"x"
+        async def aexport_list2excel(**kw): return b"x"
     monkeypatch.setattr(mod,"ExcelUtil",X)
     with pytest.raises(CustomException, match="没有数据"):
         await UserService.export_list([])
