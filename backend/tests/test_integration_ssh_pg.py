@@ -98,3 +98,20 @@ async def test_ssh_test_connection(test_client, monkeypatch: pytest.MonkeyPatch)
     async with _db() as db:
         with pytest.raises(CustomException, match="连接失败"):
             await SshHostService(_auth(), db).test_connection(_data(_name()))
+
+
+async def test_ssh_batch_execute(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.ops.ssh.schema import BatchExecResultSchema
+    rows = [SimpleNamespace(id=1, status=0, name="ok"), SimpleNamespace(id=2, status=1, name="off")]
+    class C:
+        async def get_list(self): return rows
+    async with _db() as db:
+        svc = SshHostService(_auth(), db)
+        svc._crud = lambda: C()
+        def run(row, command, timeout):
+            return SimpleNamespace(host_id=row.id, host_name=row.name, ok=True, exit_status=0, stdout="ok", stderr="", error=None, elapsed_ms=1)
+        svc._exec_on_host = run
+        out = await svc.batch_execute([1, 2, 999], "echo ok", 2)
+        assert out[0].ok is True and out[0].stdout == "ok"
+        assert out[1].ok is False and "停用" in (out[1].error or "")
+        assert out[2].ok is False and "不存在" in (out[2].error or "")
