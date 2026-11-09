@@ -42,3 +42,23 @@ async def test_session_crud_errors(monkeypatch: pytest.MonkeyPatch) -> None:
         await crud.rename("s", C.ChatSessionUpdateSchema(title="t"))
     with pytest.raises(Exception):
         await crud.delete(["s"])
+
+
+async def test_create_none_and_delete_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    crud = C.ChatSessionCRUD(SimpleNamespace(user=SimpleNamespace(id=1, username="u")))
+    class DB:
+        async def upsert_session(self, **k): return None
+        async def delete_session(self, **k): raise RuntimeError("x")
+    crud.db = DB()
+    with pytest.raises(RuntimeError):
+        await crud.create(C.ChatSessionCreateSchema(title="t"))
+    with pytest.raises(Exception):
+        await crud.delete(["s"])
+
+
+def test_unsupported_db(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.crud as mod
+    monkeypatch.setattr(mod, "_db_instance", None)
+    monkeypatch.setattr(mod, "settings", SimpleNamespace(DATABASE_TYPE="oracle", ASYNC_DB_URI="x"))
+    with pytest.raises(RuntimeError):
+        mod._get_agno_db()

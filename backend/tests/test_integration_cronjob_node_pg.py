@@ -162,4 +162,5 @@ async def test_cron_job_control_routes(test_client, auth_headers, monkeypatch: p
     assert test_client.post(f"{base}/task/pause/1", headers=auth_headers).status_code == 200
     assert test_client.post(f"{base}/task/resume/1", headers=auth_headers).status_code == 200
     assert test_client.post(f"{base}/task/run/1", headers=auth_headers).status_code == 200
+    assert test_client.put(f"{base}/task/modify/1", json={"name": "n"}, headers=auth_headers).status_code == 200
     assert test_client.delete(f"{base}/task/remove/1", headers=auth_headers).status_code == 200
