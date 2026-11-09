@@ -148,3 +148,41 @@ async def test_transfer_canceled(test_client, tmp_path, monkeypatch: pytest.Monk
             for name in names:
                 await db.execute(text("DELETE FROM task_storage_node WHERE name=:n"), {"n": name})
             await db.commit()
+
+
+
+async def test_transfer_service_create_local(test_client, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from io import BytesIO
+    from fastapi import UploadFile
+    from app.modules.task.storage.transfer.schema import TransferTargetSchema, TransferTaskCreateSchema
+    from app.modules.task.storage.transfer.service import StorageTransferService
+    name = _name(); root = tmp_path / name; root.mkdir()
+    auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    async with _db() as db:
+        node = await StorageNodeService(auth, db).create(StorageNodeCreateSchema(name=name, protocol="local", host=str(root), port=0))
+        svc = StorageTransferService(auth, db)
+        monkeypatch.setattr(svc, "_launch_after_commit", lambda task_id: None)
+        data = TransferTaskCreateSchema(name=name, task_type="parallel", source_type="local", targets=[TransferTargetSchema(target_id=node.id, target_path="out/a.txt")])
+        task_id = await svc.create_local(data, UploadFile(filename="a.txt", file=BytesIO(b"hello")))
+        await db.commit()
+        detail = await svc.detail(task_id)
+        assert detail.name == name and detail.steps
+        page = await svc.page(None, 1, 10)
+        assert page.total >= 1
+        await svc.cancel(task_id)
+        await db.commit()
+        await svc.delete([task_id])
+        await db.commit()
+    import shutil; shutil.rmtree(root, ignore_errors=True)
+    await _cleanup(task_id, name, root)
+
+
+async def test_transfer_service_validation(test_client) -> None:
+    from app.modules.task.storage.transfer.schema import TransferTargetSchema, TransferTaskCreateSchema
+    from app.modules.task.storage.transfer.service import StorageTransferService
+    auth = SimpleNamespace(user=SimpleNamespace(id=0))
+    async with _db() as db:
+        svc = StorageTransferService(auth, db)
+        data = TransferTaskCreateSchema(name=_name(), task_type="parallel", source_type="local", targets=[TransferTargetSchema(target_id=99999999, target_path="x")])
+        with pytest.raises(Exception):
+            await svc.create(data)
