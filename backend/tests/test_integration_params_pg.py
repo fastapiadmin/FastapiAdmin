@@ -103,3 +103,13 @@ async def test_init_cache_empty(test_client, monkeypatch: pytest.MonkeyPatch) ->
         assert await ParamsService.get_init_cache(r) == []
     finally:
         await r.aclose()
+
+
+async def test_sync_configs_redis_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    class Bad:
+        def __init__(self,*a): pass
+        async def set(self,**kw): raise RuntimeError("redis down")
+    monkeypatch.setattr("app.modules.system.params.service.RedisCURD", Bad)
+    cfg = SimpleNamespace(config_name="IT", config_key="k", config_value="1", status=0, config_type=False, id=1)
+    assert await ParamsService._sync_configs_to_redis(object(), [cfg]) == []
