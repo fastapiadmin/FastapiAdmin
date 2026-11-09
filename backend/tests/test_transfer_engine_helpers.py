@@ -264,3 +264,22 @@ async def test_broadcast_and_empty_temp(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(engine.transfer_stream_manager,"send_to_user",bad)
     await engine._broadcast(SimpleNamespace(created_id=1,id=1),[])
     await engine._remove_local_temp_dir("")
+
+
+async def test_run_step_failures(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from app.modules.task.storage.transfer import engine
+    class DB:
+        def __init__(self): self.commits=0
+        async def commit(self): self.commits+=1
+    async def load(db,tid): return []
+    async def broadcast(t,s): return None
+    async def none(db,sid): return None
+    monkeypatch.setattr(engine,"_load_steps",load); monkeypatch.setattr(engine,"_broadcast",broadcast); monkeypatch.setattr(engine,"_build_config",none)
+    task=SimpleNamespace(id=1,transferred_size=0,total_size=0,progress=0,speed=0,status="pending",error_msg=None,finished_at=None)
+    step=SimpleNamespace(step_order=1,source_id=9,target_id=2,source_path="x",target_path="y",transfer_mode=None,multipart_part_size=None,multipart_concurrency=None,status="pending",started_at=None,finished_at=None,progress=0,error_msg=None,total_size=0,transferred_size=0,speed=0)
+    db=DB(); assert await engine._run_step(db,task,step) is False
+    assert step.status=="failed" and task.status=="failed"
+    step2=SimpleNamespace(**{**step.__dict__,"source_id":None,"source_path":"/no/such/file","status":"pending","error_msg":None})
+    task2=SimpleNamespace(**{**task.__dict__,"status":"pending","error_msg":None})
+    assert await engine._run_step(db,task2,step2) is False and "源文件不存在" in step2.error_msg
