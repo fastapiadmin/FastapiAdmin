@@ -27,3 +27,23 @@ def test_build_login_out() -> None:
     assert out.user_info["username"]=="u" and "mobile" not in out.user_info
     out2=LoginService.build_login_out(token,user,with_mobile=True)
     assert out2.user_info["mobile"]=="13800000000"
+
+
+async def test_captcha_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    import app.modules.system.auth.service as mod
+    class R:
+        def __init__(self,v): self.v=v; self.sets=[]
+        async def get(self,k): return self.v
+        async def set(self,k,v,expire=None): self.sets.append((k,v)); return True
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    from app.core.exceptions import CustomException
+    with pytest.raises(CustomException, match="过期"):
+        await mod.CaptchaService._read_state(R(None),"k")
+    assert (await mod.CaptchaService._read_state(R("plain"),"k"))["status"]=="plain"
+    assert (await mod.CaptchaService._read_state(R("[]"),"k"))["status"]==""
+    state=json.dumps({"status":"ok","fingerprint":"f","issued_at":1,"target_x":2})
+    assert (await mod.CaptchaService._read_state(R(state),"k"))["target_x"]==2
+    r=R(None)
+    await mod.CaptchaService._write_state(r,"k","ok","f",1,2)
+    assert r.sets and "fingerprint" in r.sets[0][1]
