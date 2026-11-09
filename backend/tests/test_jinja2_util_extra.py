@@ -44,3 +44,17 @@ def test_schema_model_imports_and_context() -> None:
     schemas = J.get_schema_import_list(table)
     models = J.get_model_import_list(table)
     assert isinstance(schemas, set) and isinstance(models, list)
+
+
+def test_schema_import_branches() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    cols = [
+        GenTableColumnSchema(column_name="id", column_type="int", is_pk=True, html_type="input"),
+        GenTableColumnSchema(column_name="status", column_type="varchar(10)", html_type="select", dict_type="sys_status"),
+        GenTableColumnSchema(column_name="avatar", column_type="varchar(255)", html_type="imageUpload"),
+        GenTableColumnSchema(column_name="extra", column_type="json", python_type="dict"),
+    ]
+    table = GenTableOutSchema(table_name="demo", class_name="Demo", package_name="module_demo", module_name="demo", business_name="demo", function_name="Demo", columns=cols)
+    assert isinstance(J.get_schema_import_list(table), set)
+    assert isinstance(J.get_model_import_list(table), list)
+    assert isinstance(J.get_model_import_list(table, is_sub_entity=True), list)

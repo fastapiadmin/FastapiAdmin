@@ -110,3 +110,21 @@ async def test_db_table_page_and_list(test_client) -> None:
             assert total2 >= 1 and len(items2) <= 1
     finally:
         await _cleanup(table)
+
+
+async def test_preview_code(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    table = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            obj = await crud.add_gen_table(GenTableSchema(table_name=table, class_name="ItPreview", package_name="module_it", module_name="it", business_name="demo", function_name="Demo"))
+            col = GenTableColumnCRUD(_auth(), db)
+            await col.create_gen_table_column_crud(GenTableColumnSchema(table_id=obj.id, column_name="id", column_type="int", is_pk=True, html_type="input"))
+            await db.commit()
+            out = await GenTableService(_auth(), db).preview_code(obj.id)
+            assert isinstance(out, dict) and out
+            await crud.delete_gen_table([obj.id])
+    finally:
+        await _cleanup(table)
