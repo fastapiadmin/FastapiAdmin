@@ -230,3 +230,36 @@ async def test_dbconsole_probe_fetch_errors(monkeypatch, test_client) -> None:
                 await svc.run_query(row.id, "SELECT * FROM no_such_table")
     finally:
         await _cleanup(name)
+
+
+async def test_dbconsole_timeout_errors(monkeypatch) -> None:
+    from app.core.exceptions import CustomException
+    import app.modules.ops.dbconsole.service as m
+    class Ctx:
+        async def __aenter__(self): raise TimeoutError()
+        async def __aexit__(self, *a): return False
+    class E:
+        def connect(self): return Ctx()
+        async def dispose(self): pass
+    monkeypatch.setattr(m, "create_async_engine", lambda *a, **k: E())
+    with pytest.raises(CustomException):
+        await DbConsoleService._probe("postgresql+asyncpg://x")
+    async with _db() as db:
+        svc = DbConsoleService(_auth(), db)
+        row = await svc.create(_data(_name()))
+        with pytest.raises(CustomException):
+            await svc._fetch(await svc._crud().get_or_404(id=row.id), "SELECT 1")
+        await _cleanup(row.name)
+
+
+async def test_dbconsole_update_password(test_client) -> None:
+    from app.modules.ops.dbconsole.schema import DbConnectionUpdateSchema
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = DbConsoleService(_auth(), db)
+            row = await svc.create(_data(name))
+            out = await svc.update(row.id, DbConnectionUpdateSchema(name=name, db_type="postgres", host="127.0.0.1", port=5432, username=settings.DATABASE_USER, password="newpass", database=settings.DATABASE_NAME))
+            assert out.id == row.id
+    finally:
+        await _cleanup(name)

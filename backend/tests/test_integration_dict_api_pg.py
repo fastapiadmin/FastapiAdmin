@@ -124,3 +124,24 @@ class R:
     async def set(self, **k): raise RuntimeError("redis")
     async def get(self, **k): return None
     async def delete(self, *a, **k): pass
+
+
+async def test_dict_init_cache_more(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.exceptions import CustomException
+    from app.modules.system.dict.service import DictDataService
+    import app.modules.system.dict.service as m
+    class BadCtx:
+        async def __aenter__(self): raise RuntimeError("x")
+        async def __aexit__(self, *a): return False
+    monkeypatch.setattr(m, "async_db_session", lambda: BadCtx())
+    with pytest.raises(RuntimeError):
+        await DictDataService.init_cache(R())
+    class R2:
+        async def get(self, **k): return None
+        async def set(self, **k): return True
+    class R3:
+        async def get(self, **k): return "bad"
+    async def noop(*a, **k): return None
+    monkeypatch.setattr(DictDataService, "init_cache", staticmethod(noop))
+    with pytest.raises(CustomException):
+        await DictDataService.get_init_cache(R3(), "it")

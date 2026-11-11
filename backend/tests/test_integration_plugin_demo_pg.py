@@ -207,3 +207,36 @@ def test_demo_import_update_branches(test_client) -> None:
         finally:
             await e.dispose()
     asyncio.run(run())
+
+
+def test_demo_update_duplicate_and_import_missing(test_client) -> None:
+    import asyncio, io, uuid
+    from openpyxl import Workbook
+    from starlette.datastructures import UploadFile
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.pool import NullPool
+    from app.config.setting import settings
+    from app.plugin.module_example.demo.schema import DemoCreateSchema, DemoUpdateSchema
+    from app.plugin.module_example.demo.service import DemoService
+    from app.core.exceptions import CustomException
+    a = f"it_demo_a_{uuid.uuid4().hex[:6]}"; b = f"it_demo_b_{uuid.uuid4().hex[:6]}"
+    async def run():
+        e = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool); f = async_sessionmaker(e, expire_on_commit=False)
+        try:
+            async with f() as db:
+                auth = __import__("types").SimpleNamespace(user=__import__("types").SimpleNamespace(id=0))
+                svc = DemoService(auth, db)
+                await svc.create(DemoCreateSchema(name=a)); obj = await svc.create(DemoCreateSchema(name=b)); await db.commit()
+                with pytest.raises(CustomException):
+                    await svc.update(obj.id, DemoUpdateSchema(name=a))
+                wb = Workbook(); ws = wb.active; ws.append(["名称", "状态", "描述"]); ws.append([None, "正常", ""])
+                bio = io.BytesIO(); wb.save(bio); bio.seek(0)
+                with pytest.raises(CustomException):
+                    await svc.batch_import(UploadFile(filename="a.xlsx", file=bio))
+                await svc.delete([obj.id])
+        finally:
+            from sqlalchemy import text
+            async with f() as db:
+                await db.execute(text("DELETE FROM example_demo WHERE name IN (:a,:b)"), {"a": a, "b": b}); await db.commit()
+            await e.dispose()
+    asyncio.run(run())

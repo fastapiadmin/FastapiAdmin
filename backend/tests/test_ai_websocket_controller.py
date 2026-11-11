@@ -108,3 +108,20 @@ async def test_schema_error_and_unknown(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(C, "get_user_model_config", M())
     ws2 = FakeWS([json.dumps({"message": "hi"})])
     await C.websocket_chat_controller(ws2)
+
+
+async def test_ws_empty_chunk_and_send_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def auth(ws): return _auth(), None
+    async def model(redis, uid): return None
+    class Svc:
+        def __init__(self, *a, **k): pass
+        async def chat_query(self, query, stop_event=None, model_config=None):
+            yield ""; yield "a"
+    monkeypatch.setattr(C, "websocket_authenticate", auth)
+    monkeypatch.setattr(C, "get_user_model_config", model)
+    monkeypatch.setattr(C, "ChatService", Svc)
+    ws = FakeWS([json.dumps({"message": "hi"})])
+    await C.websocket_chat_controller(ws)
+    assert "a" in ws.sent
+    ws2 = FakeWS([json.dumps({"message": "hi"})]); ws2.fail_send = True
+    await C.websocket_chat_controller(ws2)
