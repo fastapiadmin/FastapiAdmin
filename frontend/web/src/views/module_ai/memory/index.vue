@@ -369,7 +369,7 @@ const detailFormData = ref<Partial<ChatSessionDetail>>({});
 const memoryDetailItems: import("@/components/display/fa-descriptions/index.vue").DescriptionsItem[] =
   [
     { label: "会话ID", prop: "session_id" },
-    { label: "标题", prop: "title" },
+    { label: "标题", prop: "title", span: 4 },
     { label: "用户ID", prop: "user_id", span: 1 },
     { label: "团队ID", prop: "team_id", span: 1 },
     { label: "部门名称", prop: "team_name", span: 1 },
@@ -377,8 +377,8 @@ const memoryDetailItems: import("@/components/display/fa-descriptions/index.vue"
     { label: "创建时间", prop: "created_time", span: 1 },
     { label: "更新时间", prop: "updated_time", span: 1 },
     { label: "消息数量", prop: "message_count", span: 1 },
-    { label: "会话摘要", prop: "summary" },
-    { label: "元数据", prop: "metadata", slot: "metadata" },
+    { label: "会话摘要", prop: "summary", span: 4 },
+    { label: "元数据", prop: "metadata", slot: "metadata", span: 4 },
   ];
 
 const rules = reactive({

@@ -984,7 +984,7 @@ const detailRowData = computed<Record<string, unknown> | null>(() =>
 );
 /** 详情字段：类型/状态用 tag 渲染，其余格式化字段走具名插槽 */
 const transferDetailItems: DescriptionsItem[] = [
-  { label: "任务名称", prop: "name", slot: "name" },
+  { label: "任务名称", prop: "name", slot: "name", span: 2 },
   {
     label: "类型",
     prop: "task_type",
@@ -995,7 +995,7 @@ const transferDetailItems: DescriptionsItem[] = [
       },
     },
   },
-  { label: "来源", prop: "source", slot: "source" },
+  { label: "来源", prop: "source", slot: "source", span: 2 },
   {
     label: "状态",
     prop: "status",

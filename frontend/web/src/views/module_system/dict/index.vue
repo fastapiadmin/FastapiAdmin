@@ -181,7 +181,7 @@ const dictDetailItems: import("@/components/display/fa-descriptions/index.vue").
         map: { "0": { type: "success", text: "启用" }, "1": { type: "danger", text: "停用" } },
       },
     },
-    { label: "描述", prop: "description" },
+    { label: "描述", prop: "description", span: 4 },
     { label: "创建时间", prop: "created_time" },
     { label: "更新时间", prop: "updated_time" },
   ];

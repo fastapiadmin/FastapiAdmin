@@ -484,7 +484,7 @@ const dictDataDetailItems: import("@/components/display/fa-descriptions/index.vu
       },
     },
     { label: "排序", prop: "dict_sort" },
-    { label: "描述", prop: "description" },
+    { label: "描述", prop: "description", span: 4 },
   ];
 
 const formData = ref<DictDataForm>({

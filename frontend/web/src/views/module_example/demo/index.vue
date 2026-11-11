@@ -406,7 +406,7 @@ const demoDetailItems: import("@/components/display/fa-descriptions/index.vue").
     { label: "日期时间", prop: "datetime_val" },
     { label: "长文本", prop: "text_val" },
     { label: "元数据", prop: "json_val", slot: "json_val" },
-    { label: "描述", prop: "description" },
+    { label: "描述", prop: "description", span: 4 },
     { label: "创建人", prop: "created_by.name" },
     { label: "更新人", prop: "updated_by.name" },
     { label: "创建时间", prop: "created_time" },
