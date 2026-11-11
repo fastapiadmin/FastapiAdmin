@@ -192,7 +192,6 @@
           :column="4"
           :data="detailFormData"
           :items="userDetailItems"
-          :scrollbar="false"
         >
           <!-- 头像 → 自定义渲染 -->
           <template #avatar="{ row }">

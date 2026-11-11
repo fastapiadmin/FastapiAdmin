@@ -193,7 +193,8 @@ const props = withDefaults(defineProps<Props>(), {
   items: () => [],
   data: null,
   span: 2,
-  scrollbar: true,
+  // 统一由弹窗/页面外层滚动，详情组件内不再套第二层滚动条
+  scrollbar: false,
   maxHeight: "70vh",
 });
 

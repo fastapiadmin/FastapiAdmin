@@ -167,7 +167,6 @@
           :column="4"
           :data="detailFormData"
           :items="menuDetailItems"
-          :scrollbar="false"
         >
           <template #type="{ row }">
             <FaStatusTag v-if="row?.type === MenuTypeEnum.CATALOG" type="primary" label="目录" />
