@@ -23,20 +23,24 @@ def _app() -> FastAPI:
     @r.post("/big")
     async def big():
         return {"a": "x" * 5000}
-    @r.get("/badjson")
+    @r.post("/badjson")
     async def badjson():
         return Response("{bad", media_type="application/json")
-    @r.get("/plain")
+    @r.post("/plain")
     async def plain():
         return Response("plain", media_type="text/plain")
     app.include_router(r)
     return app
 
 
-def test_router_asgi_paths() -> None:
+def test_router_asgi_paths(monkeypatch) -> None:
+    import app.core.router_class as m
     c = TestClient(_app())
     assert c.post("/ok", json={"a": 1}).status_code == 200
     assert c.post("/form", data={"x": "y"}).status_code == 200
     assert c.post("/big", json={"a": "x" * 10000}).status_code == 200
-    assert c.get("/badjson").status_code == 200
-    assert c.get("/plain").status_code == 200
+    assert c.post("/badjson").status_code == 200
+    assert c.post("/plain").status_code == 200
+    monkeypatch.setattr(m, "_redact_sensitive", lambda x: (_ for _ in ()).throw(RuntimeError("x")))
+    assert c.post("/ok", json={"a": 1}).status_code == 200
+    assert c.post("/form", content=b"bad", headers={"content-type": "multipart/form-data; boundary=x"}).status_code in (200, 400, 422)
