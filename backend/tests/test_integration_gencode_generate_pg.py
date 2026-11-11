@@ -124,3 +124,16 @@ async def test_generate_code_with_sub(test_client, tmp_path, monkeypatch: pytest
             await db.execute(text("DELETE FROM gen_table WHERE table_name IN (:m,:s)"), {"m": main, "s": sub})
             await db.execute(text("DELETE FROM sys_menu WHERE name=:n"), {"n": func})
             await db.commit()
+
+
+async def test_gencode_missing_guards(test_client) -> None:
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    async with _db() as db:
+        svc = GenTableService(_auth(), db)
+        with pytest.raises(CustomException):
+            await svc.generate_code("not-exists")
+        with pytest.raises(CustomException):
+            await svc.preview_code(99999999)
+        with pytest.raises(CustomException):
+            await svc.create_table(";")
