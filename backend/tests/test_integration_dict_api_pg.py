@@ -98,3 +98,29 @@ async def test_dict_cache_failures(test_client, monkeypatch: pytest.MonkeyPatch)
         with pytest.raises(Exception):
             await DictDataService.get_init_cache(R(), name)
     await _cleanup(name)
+
+
+async def test_dict_service_extra(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.exceptions import CustomException
+    from app.modules.system.dict.service import DictDataService
+    from app.modules.system.dict.schema import DictDataUpdateSchema, DictDataCreateSchema
+    import app.modules.system.dict.service as m
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = DictDataService(_auth(), db)
+            await svc.get_list()
+            with pytest.raises(Exception):
+                await svc.update_data(R(), 99999999, DictDataUpdateSchema(dict_type=name, dict_label="x", dict_value="1", dict_sort=1, status=0))
+        async def boom(*a, **k): raise RuntimeError("x")
+        monkeypatch.setattr(m, "async_db_session", lambda: (_ for _ in ()).throw(RuntimeError("x")))
+        with pytest.raises(Exception):
+            await DictDataService.init_cache(R())
+    finally:
+        await _cleanup(name)
+
+
+class R:
+    async def set(self, **k): raise RuntimeError("redis")
+    async def get(self, **k): return None
+    async def delete(self, *a, **k): pass

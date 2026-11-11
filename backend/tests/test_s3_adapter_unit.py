@@ -11,7 +11,7 @@ from app.modules.task.storage.core.s3_adapter import S3StorageAdapter
 
 def _adapter(client):
     a = object.__new__(S3StorageAdapter)
-    a.config = SimpleNamespace(bucket="b", region="us-east-1", endpoint="http://x", scheme="http")
+    a.config = SimpleNamespace(bucket="b", region="us-east-1", endpoint="http://x", scheme="http", username="u", password="p", advanced_config={})
     a.bucket_name = "b"
     a.client = client
     return a
@@ -102,3 +102,28 @@ def test_adapter_error_paths() -> None:
     with pytest.raises(Exception):
         a._sync_delete_dir("d/")
     assert a._is_dir("d/") is False
+
+
+def test_adapter_advanced_and_errors(monkeypatch) -> None:
+    import pytest
+    from app.core.exceptions import CustomException
+    class C:
+        def head_object(self, **k): raise RuntimeError("x")
+        def put_object(self, **k): pass
+        def list_objects_v2(self, **k): return {"CommonPrefixes": [{"Prefix": "d/"}], "Contents": [{"Key": "d/", "Size": 0}, {"Key": "d/a", "Size": 1}]}
+        def create_bucket(self, **k): raise RuntimeError("x")
+        def copy_object(self, **k): raise RuntimeError("x")
+        def delete_object(self, **k): pass
+    a = _adapter(C())
+    a.config.advanced_config = {"proxies": "http://p", "use_accelerate_endpoint": True, "us_east_1_regional_endpoint": "regional"}
+    from app.modules.task.storage.core.s3_adapter import S3StorageAdapter
+    b = S3StorageAdapter(a.config)
+    assert b.config.username
+    assert a._sync_exists("x") is False
+    assert a._sync_list("d") is not None
+    with pytest.raises(CustomException):
+        a._sync_create_bucket("it-x")
+    with pytest.raises(Exception):
+        a._sync_copy("x", "y")
+    with pytest.raises(Exception):
+        a._sync_list_recursive("d")
