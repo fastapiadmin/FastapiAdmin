@@ -52,3 +52,13 @@ async def test_auth_controller_more(test_client, auth_headers) -> None:
     assert test_client.get(f"{base}/oauth/github/login", headers=auth_headers, follow_redirects=False).status_code in (302, 307, 400, 403, 404, 500)
     assert test_client.get(f"{base}/oauth/github/callback", params={"code": "x", "state": "y"}, headers=auth_headers, follow_redirects=False).status_code in (200, 302, 307, 400, 403, 404, 500)
     assert test_client.post(f"{base}/wx-qrcode/generate", json={"scene": "x"}, headers=auth_headers).status_code in (400, 500)
+
+
+async def test_auth_login_refresh_logout(test_client) -> None:
+    paths = test_client.get("/openapi.json").json()["paths"]
+    base = next(p for p in paths if p.endswith("/auth/login")).rsplit("/login", 1)[0]
+    r = test_client.post(f"{base}/login", data={"username": "admin", "password": "admin123"})
+    assert r.status_code == 200, r.text
+    data = r.json()["data"]
+    assert test_client.post(f"{base}/token/refresh", json=data["refresh_token"]).status_code == 200
+    assert test_client.post(f"{base}/logout", json=data["access_token"], headers={"Authorization": "Bearer " + data["access_token"]}).status_code in (200, 400)
