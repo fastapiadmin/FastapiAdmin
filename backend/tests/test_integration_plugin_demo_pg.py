@@ -175,3 +175,35 @@ def test_demo_service_crud_errors(test_client) -> None:
         finally:
             await e.dispose()
     asyncio.run(run())
+
+
+def test_demo_import_update_branches(test_client) -> None:
+    import asyncio, io
+    from openpyxl import Workbook
+    from starlette.datastructures import UploadFile
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.pool import NullPool
+    from app.config.setting import settings
+    from app.plugin.module_example.demo.schema import DemoCreateSchema
+    from app.plugin.module_example.demo.service import DemoService
+    import uuid
+    name = f"it_imp_{uuid.uuid4().hex[:8]}"
+    async def run():
+        e = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool); f = async_sessionmaker(e, expire_on_commit=False)
+        try:
+            async with f() as db:
+                auth = __import__("types").SimpleNamespace(user=__import__("types").SimpleNamespace(id=0))
+                svc = DemoService(auth, db)
+                await svc.create(DemoCreateSchema(name=name)); await db.commit()
+                wb = Workbook(); ws = wb.active; ws.append(["名称", "状态", "描述"]); ws.append([name, "停用", "d"]); ws.append(["it_new", "错误", "d"])
+                bio = io.BytesIO(); wb.save(bio); bio.seek(0)
+                up = UploadFile(filename="a.xlsx", file=bio)
+                out = await svc.batch_import(up, update_support=True)
+                assert "成功" in out
+                bio2 = io.BytesIO(); wb.save(bio2); bio2.seek(0)
+                await svc.batch_import(UploadFile(filename="b.xlsx", file=bio2), update_support=False)
+                from sqlalchemy import text
+                await db.execute(text("DELETE FROM example_demo WHERE name IN (:a,:b)"), {"a": name, "b": "it_new"}); await db.commit()
+        finally:
+            await e.dispose()
+    asyncio.run(run())

@@ -4,14 +4,35 @@ from __future__ import annotations
 
 import os
 import uuid
+from contextlib import asynccontextmanager
+from types import SimpleNamespace
+from typing import AsyncIterator
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
+from app.config.setting import settings
 
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_INTEGRATION") != "1",
     reason="需要真实 PostgreSQL：设置 RUN_INTEGRATION=1 且 TEST_DB_TYPE=postgres",
 )
+
+
+@asynccontextmanager
+async def _db() -> AsyncIterator[AsyncSession]:
+    engine = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    try:
+        async with factory() as session:
+            yield session
+    finally:
+        await engine.dispose()
+
+
+def _auth():
+    return SimpleNamespace(user=SimpleNamespace(id=0))
 
 
 def _name() -> str:
@@ -55,3 +76,25 @@ async def test_dict_api(test_client, auth_headers) -> None:
         assert test_client.request("DELETE", f"{base}/type/delete", json=[tid], headers=auth_headers).status_code == 200
     finally:
         await _cleanup(code)
+
+
+async def test_dict_cache_failures(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.exceptions import CustomException
+    from app.modules.system.dict.service import DictDataService, DictTypeService
+    from app.modules.system.dict.schema import DictTypeCreateSchema
+    import app.modules.system.dict.service as m
+    name = _name()
+    class R:
+        async def set(self, **k): raise RuntimeError("redis")
+        async def get(self, **k): return "bad"
+    async def boom(*a, **k): raise RuntimeError("redis")
+    monkeypatch.setattr(m.RedisCURD, "set", boom)
+    async with _db() as db:
+        svc = DictTypeService(_auth(), db)
+        with pytest.raises(Exception):
+            await svc.create(R(), DictTypeCreateSchema(dict_name=name, dict_type=name))
+    monkeypatch.setattr(m.DictDataService, "init_cache", staticmethod(boom))
+    async with _db() as db:
+        with pytest.raises(Exception):
+            await DictDataService.get_init_cache(R(), name)
+    await _cleanup(name)

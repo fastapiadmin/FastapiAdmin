@@ -130,3 +130,18 @@ async def test_ticket_batch_and_export(test_client) -> None:
                 await svc.batch(TicketBatchSchema(ids=[99999999], status=1))
     finally:
         await _cleanup(title); await _cleanup(title + "_b")
+
+
+async def test_ticket_transition_permissions(test_client) -> None:
+    from types import SimpleNamespace
+    from app.core.exceptions import CustomException
+    async with _db() as db:
+        auth = SimpleNamespace(user=SimpleNamespace(id=99, is_superuser=False))
+        svc = TicketService(auth, db)
+        ticket = SimpleNamespace(status=0, created_id=1, assigned_id=2)
+        with pytest.raises(CustomException): svc._validate_status_transition(ticket, 1)
+        for old, new in ((0, 3), (1, 2), (1, 3), (2, 3)):
+            ticket.status = old
+            with pytest.raises(CustomException): svc._validate_status_transition(ticket, new)
+        ticket.status = 2
+        with pytest.raises(CustomException): svc._validate_status_transition(ticket, 0)
