@@ -396,7 +396,7 @@ const versionDetailItems: import("@/components/display/fa-descriptions/index.vue
     { label: "状态", prop: "status", slot: "status" },
     { label: "发布日期", prop: "date" },
     { label: "排序", prop: "sort" },
-    { label: "备注", prop: "description" },
+    { label: "备注", prop: "description", span: 4 },
     { label: "更新内容", prop: "content", slot: "content", span: 4 },
     { label: "创建时间", prop: "created_time" },
     { label: "更新时间", prop: "updated_time" },

@@ -350,7 +350,7 @@ const noticeDetailItems: import("@/components/display/fa-descriptions/index.vue"
         map: { 0: { type: "success", text: "启用" }, 1: { type: "danger", text: "停用" } },
       },
     },
-    { label: "描述", prop: "description" },
+    { label: "描述", prop: "description", span: 4 },
     { label: "内容", prop: "notice_content", slot: "notice_content", span: 4 },
     { label: "创建人", prop: "created_by.name" },
     { label: "更新人", prop: "updated_by.name" },

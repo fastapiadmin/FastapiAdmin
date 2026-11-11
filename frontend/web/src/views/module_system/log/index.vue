@@ -148,6 +148,11 @@
                 row?.response_code
               }}</ElTag>
             </template>
+            <template #request_path="{ row }">
+              <span class="break-all font-mono text-xs">{{
+                (row as unknown as OperationLogTable)?.request_path || "—"
+              }}</span>
+            </template>
             <template #request_payload="{ row }">
               <FaJsonPretty
                 :value="(row as unknown as OperationLogTable)?.request_payload"
@@ -520,14 +525,14 @@ const opFormData = ref<OperationLogTable>({} as OperationLogTable);
 
 const opDetailItems: import("@/components/display/fa-descriptions/index.vue").DescriptionsItem[] = [
   { label: "描述", prop: "description", span: 8 },
-  { label: "请求路径", prop: "request_path" },
-  { label: "请求方法", prop: "request_method", slot: "request_method" },
-  { label: "响应状态码", prop: "response_code", slot: "response_code" },
-  { label: "请求IP", prop: "request_ip" },
-  { label: "处理时间", prop: "process_time" },
+  { label: "请求路径", prop: "request_path", span: 8 },
+  { label: "请求方法", prop: "request_method", slot: "request_method", span: 2 },
+  { label: "响应状态码", prop: "response_code", slot: "response_code", span: 2 },
+  { label: "请求IP", prop: "request_ip", span: 2 },
+  { label: "处理时间", prop: "process_time", span: 2 },
   { label: "请求参数", prop: "request_payload", slot: "request_payload", span: 8 },
   { label: "响应数据", prop: "response_json", slot: "response_json", span: 8 },
-  { label: "创建时间", prop: "created_time" },
+  { label: "创建时间", prop: "created_time", span: 4 },
 ];
 
 const { dialogVisible: opDialogVisible, closeDialog: opCloseDialog } = useCrudDialog();
