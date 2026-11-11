@@ -49,3 +49,23 @@ def test_migration_upgrade_downgrade(monkeypatch: pytest.MonkeyPatch) -> None:
     op.f.side_effect = lambda x: x
     monkeypatch.setattr(mod, "op", op)
     mod.upgrade(); mod.downgrade()
+
+
+async def test_upload_more_branches(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(U.settings, "UPLOAD_FILE_PATH", tmp_path)
+    class F:
+        filename = "a" + U.settings.ALLOWED_EXTENSIONS[0]
+        def __init__(self): self.done = False
+        async def read(self, n=-1):
+            if self.done: return b""
+            self.done = True; return b"abc"
+        async def seek(self, pos): self.done = False
+    monkeypatch.setattr(U.UploadUtil, "validate_file_content_type", staticmethod(lambda *a: None))
+    monkeypatch.setattr(U.UploadUtil, "check_file_size", staticmethod(lambda *a: None))
+    assert await U.UploadUtil.upload_file(F(), "http://x", upload_type="resource")
+    import aiofiles
+    class Bad:
+        def __call__(self, *a, **k): raise RuntimeError("x")
+    monkeypatch.setattr(aiofiles, "open", Bad())
+    with pytest.raises(Exception):
+        await U.UploadUtil.upload_file(F(), "http://x", upload_type="resource", target_path="sub")

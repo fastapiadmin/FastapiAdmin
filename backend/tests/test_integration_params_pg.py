@@ -124,3 +124,34 @@ async def test_get_init_cache_with_config(test_client) -> None:
         assert any(x["config_key"] == key for x in rows)
     finally:
         await r.delete(f"system_config:{key}"); await r.aclose()
+
+
+async def test_params_service_guards(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from sqlalchemy import text
+    from app.core.exceptions import CustomException
+    from app.modules.system.params.schema import ParamsUpdateSchema
+    from app.modules.system.params.service import ParamsService
+    import app.modules.system.params.service as m
+    async with _db() as db:
+        row = (await db.execute(text("SELECT id, config_key, config_name FROM sys_param LIMIT 1"))).first()
+    assert row is not None
+    async with _db() as db:
+        auth = SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=True))
+        svc = ParamsService(auth, db)
+        data = ParamsUpdateSchema(config_name=row.config_name, config_key=row.config_key, config_value="x")
+        bad = ParamsUpdateSchema(config_name=row.config_name, config_key="other_key", config_value="x")
+        with pytest.raises(CustomException):
+            await svc.update(None, row.id, bad)
+        class R:
+            def __init__(self, *a): pass
+            async def set(self, **k): return False
+        monkeypatch.setattr(m, "RedisCURD", R)
+        with pytest.raises(RuntimeError):
+            await svc.update(None, row.id, data)
+        monkeypatch.setattr(ParamsService, "_load_all_configs_from_db", staticmethod(lambda: _empty()))
+        with pytest.raises(Exception):
+            await ParamsService.init_cache(None)
+
+
+async def _empty(): return []
