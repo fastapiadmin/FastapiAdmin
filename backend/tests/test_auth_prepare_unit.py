@@ -55,3 +55,38 @@ async def test_write_login_log_failure(monkeypatch: pytest.MonkeyPatch) -> None:
         async def create(self,**k): raise RuntimeError("x")
     monkeypatch.setattr(mod, "LoginLogCRUD", C)
     assert await mod._write_login_log(username="u", status=1, login_ip="1", login_location="x", request_os="o", request_browser="b", msg="m") is None
+
+
+async def test_auto_register_exception_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.auth.service as mod
+    class S:
+        def __init__(self,*a): pass
+        async def create(self,**k): raise RuntimeError("x")
+    class Existing:
+        def __init__(self,*a): pass
+        async def get(self,**k): return SimpleNamespace(id=1)
+    monkeypatch.setattr(mod, "UserService", S); monkeypatch.setattr(mod, "UserCRUD", Existing)
+    assert (await mod.auto_register_login_user(db=object(), username="user_1", display_name="N", fail_msg="f")).id == 1
+    class NoneC(Existing):
+        async def get(self,**k): return None
+    monkeypatch.setattr(mod, "UserCRUD", NoneC)
+    with pytest.raises(RuntimeError):
+        await mod.auto_register_login_user(db=object(), username="user_1", display_name="N", fail_msg="f")
+
+
+async def test_captcha_missing_and_bad(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.auth.service as mod
+    monkeypatch.setattr(mod.settings, "CAPTCHA_ENABLE", True)
+    form = SimpleNamespace(captcha_key=None, login_type=1, username="user_1")
+    with pytest.raises(CustomException):
+        await mod.LoginService.authenticate_user(SimpleNamespace(headers={}, client=None, method="POST", url=SimpleNamespace(path="/")), None, form, None)
+    form2 = SimpleNamespace(captcha_key="k", login_type=1, username="user_1")
+    class Cap:
+        @staticmethod
+        async def check_captcha(**k): raise CustomException(msg="bad")
+    monkeypatch.setattr(mod, "CaptchaService", Cap)
+    from unittest.mock import AsyncMock
+    monkeypatch.setattr(mod.LoginService, "_check_login_rate_limit", AsyncMock())
+    monkeypatch.setattr(mod.IpLocalUtil, "resolve_location", AsyncMock(return_value="x"))
+    with pytest.raises(CustomException):
+        await mod.LoginService.authenticate_user(SimpleNamespace(headers={}, client=None, method="POST", url=SimpleNamespace(path="/")), None, form2, None)
