@@ -57,3 +57,10 @@ async def test_browse_api(test_client, auth_headers, tmp_path) -> None:
             await db.execute(text("DELETE FROM task_storage_node WHERE name=:n"), {"n": name})
             await db.commit()
         import shutil; shutil.rmtree(root, ignore_errors=True)
+
+
+def test_delete_temp_file_helper(tmp_path) -> None:
+    from app.modules.task.storage.browse.controller import _delete_temp_file
+    f = tmp_path / "x"; f.write_text("x")
+    _delete_temp_file(str(f))
+    _delete_temp_file(str(f))
