@@ -82,7 +82,7 @@
       size="xl"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="70vh" :view-style="{ overflowX: 'hidden' }">
+        <div class="session-detail-body">
           <FaDescriptions
             :column="4"
             :data="detailFormData"
@@ -117,7 +117,7 @@
             </ElTimelineItem>
           </ElTimeline>
           <FaEmptyState v-else icon="ri:history-line" title="暂无消息记录" compact />
-        </ElScrollbar>
+        </div>
       </template>
       <template v-else>
         <FaForm
