@@ -85,3 +85,26 @@ async def test_ws_error_path_and_close(monkeypatch: pytest.MonkeyPatch) -> None:
     ws = FakeWS([json.dumps({"message": "hi"})])
     await C.websocket_chat_controller(ws)
     assert any("业务错误" in s for s in ws.sent)
+
+
+async def test_send_error_and_close(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Bad:
+        async def send_text(self, *a): raise RuntimeError("x")
+        async def close(self, *a, **k): raise RuntimeError("x")
+    await C._send_error_and_close(Bad(), "err")
+
+
+async def test_schema_error_and_unknown(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def auth(ws): return _auth(), None
+    monkeypatch.setattr(C, "websocket_authenticate", auth)
+    ws = FakeWS([json.dumps({"message": {"a": 1}})])
+    await C.websocket_chat_controller(ws)
+    assert any("消息格式错误" in s for s in ws.sent)
+    class BadSvc:
+        def __init__(self, *a, **k): raise RuntimeError("x")
+    monkeypatch.setattr(C, "ChatService", BadSvc)
+    class M:
+        async def __call__(self, redis, uid): return None
+    monkeypatch.setattr(C, "get_user_model_config", M())
+    ws2 = FakeWS([json.dumps({"message": "hi"})])
+    await C.websocket_chat_controller(ws2)

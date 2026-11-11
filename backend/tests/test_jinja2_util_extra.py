@@ -120,3 +120,27 @@ def test_more_branches() -> None:
     ])
     assert J.get_model_import_list(t)
     assert J.get_schema_import_list(t)
+
+
+def test_more_jinja_errors() -> None:
+    import pytest
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    assert J.business_name_to_slug(None) == "entity"
+    assert J.business_name_to_slug("/") == "entity"
+    assert J.business_name_to_slug("9a") == "_9a"
+    t = GenTableOutSchema(table_name="x", class_name="X", package_name="", columns=[GenTableColumnSchema(column_name="a", column_type="integer[]")])
+    with pytest.raises(ValueError):
+        J.get_file_name("backend/model.py.j2", t)
+    t.package_name = "module_x"; t.module_name = ""
+    with pytest.raises(ValueError):
+        J.get_file_name("backend/model.py.j2", t)
+    with pytest.raises(ValueError):
+        J.get_file_name("no_such.j2", t)
+    t.module_name = "x"
+    assert J.get_model_import_list(t)
+    assert J.get_db_type("varchar(10) COLLATE x UNSIGNED") == "varchar"
+    assert J.get_db_type("integer[]") == "array"
+    assert J.python_type_to_ts_type(None) == "string"
+    assert J.get_api_route_prefix(None) == ""
+    assert J.get_api_route_prefix("module_x") == "x"
+    J._sentinelize_schema_in_place(None, set())

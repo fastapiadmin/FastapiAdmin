@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from types import SimpleNamespace
 
 from app.modules.generator.gencode.crud import GenTableColumnCRUD, GenTableCRUD
@@ -67,3 +68,44 @@ async def test_get_columns_guard() -> None:
     c = GenTableColumnCRUD(SimpleNamespace(user=None), object())
     with _p.raises(ValueError):
         await c.get_gen_db_table_columns_by_name(None)
+
+
+def test_crud_more_branches(monkeypatch) -> None:
+    import app.modules.generator.gencode.crud as c
+    class Type:
+        def __init__(self, s, item=None): self.s=s; self.item_type=item
+        def __str__(self): return self.s
+    class Insp:
+        def get_table_names(self): return []
+        def has_table(self, n): return True
+        def get_table_comment(self, n): raise RuntimeError("x")
+        def get_columns(self, n):
+            return [
+                {"name": "a", "type": Type("INTEGER[]", Type("INTEGER")), "nullable": True, "default": None, "comment": ""},
+                {"name": "b", "type": Type("VARCHAR(10) COLLATE x"), "nullable": False, "default": "", "comment": ""},
+            ]
+        def get_pk_constraint(self, n): raise RuntimeError("x")
+        def get_unique_constraints(self, n): return [{"column_names": ["a"]}]
+    monkeypatch.setattr(c, "inspect", lambda e: Insp())
+    assert c.GenTableCRUD._sync_get_db_table_comment("x") == ""
+    assert c.GenTableCRUD._sync_get_db_table_list_by_names([]) == []
+    pg = c.GenTableColumnCRUD._sync_get_table_columns("postgres", "x")
+    my = c.GenTableColumnCRUD._sync_get_table_columns("mysql", "x")
+    assert pg and my
+    monkeypatch.setattr(c.asyncio, "to_thread", lambda *a: (_ for _ in ()).throw(RuntimeError("x")))
+    import asyncio as _a
+    with pytest.raises(RuntimeError):
+        _a.run(c.GenTableColumnCRUD(object(), object()).get_gen_db_table_columns_by_name("x"))
+
+
+async def test_delete_columns_by_table() -> None:
+    class Res:
+        def fetchall(self): return [(1,), (2,)]
+    class DB:
+        async def execute(self, *a): return Res()
+    crud = GenTableColumnCRUD(SimpleNamespace(user=None), DB())
+    called = {}
+    async def delete(ids): called["ids"] = ids
+    crud.delete = delete
+    await crud.delete_gen_table_column_by_table_id_crud([1])
+    assert called["ids"] == [1, 2]
