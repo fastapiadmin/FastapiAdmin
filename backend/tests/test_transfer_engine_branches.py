@@ -131,3 +131,15 @@ async def test_run_step_remote_and_dir(monkeypatch: pytest.MonkeyPatch, tmp_path
 
 
 async def _false(): return False
+
+
+async def test_run_step_source_config_none(monkeypatch) -> None:
+    class DB:
+        async def commit(self): pass
+    monkeypatch.setattr(E, "_load_steps", AsyncMock(return_value=[]))
+    monkeypatch.setattr(E, "_broadcast", AsyncMock())
+    async def build(db, sid): return None
+    monkeypatch.setattr(E, "_build_config", build)
+    task = SimpleNamespace(id=1, status="running", total_size=0, transferred_size=0, speed=0, error_msg=None, finished_at=None)
+    step = SimpleNamespace(source_id=1, source_path="x", target_id=2, target_path="y", status="pending", started_at=None, progress=0, total_size=0, transferred_size=0, speed=0, error_msg=None, finished_at=None, step_order=0, transfer_mode=None, multipart_part_size=None, multipart_concurrency=None)
+    assert await E._run_step(DB(), task, step) is False
