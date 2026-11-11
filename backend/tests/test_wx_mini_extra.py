@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -130,7 +131,6 @@ async def test_wx_login_orchestration(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 async def test_http_json_and_phone(monkeypatch: pytest.MonkeyPatch) -> None:
-    from unittest.mock import AsyncMock
     class Resp:
         text = "bad"
         headers = {"content-type": "application/json"}
@@ -157,3 +157,34 @@ async def test_http_json_and_phone(monkeypatch: pytest.MonkeyPatch) -> None:
         async def get(self, **k): return None
     monkeypatch.setattr(wx, "UserCRUD", C)
     assert await wx.get_wx_phone_login_user(db=None, phone="13800138000") is not None
+
+
+async def test_wx_http_and_qr_edges(monkeypatch) -> None:
+    import json as _json
+    class Resp:
+        text = "bad"; content = b"x"; headers = {"content-type": "application/json"}
+        def raise_for_status(self): pass
+        def json(self): raise _json.JSONDecodeError("x", "bad", 0)
+    class Client:
+        def __init__(self, **k): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        async def request(self, *a, **k): return Resp()
+        async def post(self, *a, **k): return Resp()
+    monkeypatch.setattr(wx.httpx, "AsyncClient", Client)
+    with pytest.raises(Exception):
+        await wx._http_json("GET", "http://x")
+    monkeypatch.setattr(wx, "_get_access_token", AsyncMock(return_value="t"))
+    with pytest.raises(CustomException):
+        await wx.get_qrcode(redis=None, scene="s", page="p")
+
+
+async def test_wx_login_user_and_subscribe(monkeypatch) -> None:
+    async def ensure(**k): return SimpleNamespace(id=1)
+    async def prep(**k): return SimpleNamespace(id=1)
+    monkeypatch.setattr(wx, "ensure_wx_user", ensure)
+    monkeypatch.setattr(wx.LoginService, "prepare_user_for_login", staticmethod(prep))
+    assert await wx.get_wx_login_user(db=None, openid="o") is not None
+    async def http(*a, **k): return {"errcode": 1, "errmsg": "bad"}
+    monkeypatch.setattr(wx, "_http_json", http)
+    assert await wx.send_subscribe_message(redis=None, openid="o", template_id="t", data={}) is False

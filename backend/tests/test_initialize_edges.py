@@ -78,3 +78,22 @@ async def test_apply_empty_no_migrations(monkeypatch, tmp_path) -> None:
     with patch.object(command, "stamp") as stamp:
         await I.InitializeData._InitializeData__apply_migrations()
     assert not stamp.called
+
+
+def test_load_json_directory(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(I, "SCRIPT_DIR", tmp_path)
+    (tmp_path / "d.json").mkdir()
+    with pytest.raises(Exception):
+        I.InitializeData._InitializeData__load_json("d")
+
+
+async def test_init_dict_data_empty(monkeypatch) -> None:
+    from app.modules.system.dict.model import DictDataModel
+    class DB:
+        async def execute(self, *a, **k): return SimpleNamespace(scalar=lambda: 0)
+        async def flush(self): pass
+    obj = object.__new__(I.InitializeData)
+    obj.prepare_init_models = [DictDataModel]
+    monkeypatch.setattr(I.InitializeData, "_InitializeData__load_json", staticmethod(lambda n: [{"x": 1}]))
+    monkeypatch.setattr(I.InitializeData, "_InitializeData__create_dict_data_objs", AsyncMock(return_value=[]))
+    await obj._InitializeData__init_data(DB())
