@@ -102,3 +102,30 @@ async def test_dept_delete_protection(test_client) -> None:
 async def test_dept_delete_missing(test_client) -> None:
     async with _db() as db:
         await DeptService(_auth(), db).delete([99999999])
+
+
+async def test_dept_service_guards(test_client) -> None:
+    from app.core.base_schema import BatchSetAvailable
+    from app.modules.system.dept.schema import DeptCreateSchema, DeptUpdateSchema
+    a = _name(); b = _name(); code = _code()
+    try:
+        async with _db() as db:
+            svc = DeptService(_auth(), db)
+            p = await svc.create(DeptCreateSchema(name=a, code=code, order=1))
+            with pytest.raises(CustomException):
+                await svc.create(DeptCreateSchema(name=a, code=_code(), order=1))
+            with pytest.raises(CustomException):
+                await svc.create(DeptCreateSchema(name=b, code=code, order=1))
+            c = await svc.create(DeptCreateSchema(name=b, code=_code(), parent_id=p.id, order=1))
+            with pytest.raises(CustomException):
+                await svc.update(c.id, DeptUpdateSchema(name=a, code=c.code, order=1))
+            with pytest.raises(CustomException):
+                await svc.update(c.id, DeptUpdateSchema(name=c.name, code=code, order=1))
+            with pytest.raises(CustomException):
+                await svc.delete([])
+            with pytest.raises(CustomException):
+                await svc.delete([p.id])
+            await svc.set_available(BatchSetAvailable(ids=[p.id], status=1))
+            await svc.set_available(BatchSetAvailable(ids=[p.id], status=0))
+    finally:
+        await _cleanup(b, a)
