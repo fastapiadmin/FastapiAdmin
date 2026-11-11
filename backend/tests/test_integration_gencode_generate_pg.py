@@ -169,3 +169,29 @@ async def test_generate_package_empty_and_traversal(test_client, tmp_path, monke
 
 
 async def _pkg(): return "module_it"
+
+
+async def test_gencode_empty_and_sync_preview_edges(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    name = _name()
+    async with _db() as db:
+        svc = GenTableService(_auth(), db)
+        with pytest.raises(CustomException):
+            await svc.generate_code("")
+        obj = await GenTableCRUD(_auth(), db).add_gen_table(GenTableSchema(table_name=name, class_name="X", package_name="module_it", module_name="it", business_name="x", function_name="X"))
+        await db.commit()
+        class Fake:
+            id = None
+            table_name = name
+            columns = []
+            sub_table_name = None
+            sub_table_fk_name = None
+        class C:
+            def __init__(self, *a): pass
+            async def get_gen_table_by_name(self, *a, **k): return Fake()
+        monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+        with pytest.raises(CustomException):
+            await svc.sync_db_preview(name)
+        await GenTableCRUD(_auth(), db).delete_gen_table([obj.id])
