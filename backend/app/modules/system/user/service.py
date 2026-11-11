@@ -137,8 +137,8 @@ class UserService:
 
         update_data = data.model_dump(exclude_unset=True, exclude_none=True, exclude={"role_ids", "position_ids"})
         await UserCRUD(self.auth, self.db).update(id=id, data=update_data)
-        await self._set_user_roles(user_ids=[id], role_ids=data.role_ids or [])
-        await self._set_user_positions(user_ids=[id], position_ids=data.position_ids or [])
+        await self._set_user_roles(user_ids=[id], role_ids=data.role_ids or [], clear_when_empty=True)
+        await self._set_user_positions(user_ids=[id], position_ids=data.position_ids or [], clear_when_empty=True)
 
         return await self.detail(id=id)
 
@@ -177,9 +177,12 @@ class UserService:
             raise CustomException(msg=f"用户不存在: {missing}")
         return users
 
-    async def _set_user_roles(self, user_ids: list[int], role_ids: list[int]) -> None:
+    async def _set_user_roles(self, user_ids: list[int], role_ids: list[int], clear_when_empty: bool = False) -> None:
         """替换用户角色关联：service 校验角色存在性与启用状态，CRUD 仅负责持久化。"""
         if not role_ids:
+            if clear_when_empty:
+                users = await self._load_users(user_ids, preload=["roles"])
+                await UserCRUD(self.auth, self.db).set_user_roles(user_objs=users, role_objs=[])
             return
         users = await self._load_users(user_ids, preload=["roles"])
         roles = await RoleCRUD(self.auth, self.db).get_list(search={"id": ("in", role_ids)})
@@ -190,9 +193,12 @@ class UserService:
             raise CustomException(msg="部分角色已被禁用")
         await UserCRUD(self.auth, self.db).set_user_roles(user_objs=users, role_objs=roles)
 
-    async def _set_user_positions(self, user_ids: list[int], position_ids: list[int]) -> None:
+    async def _set_user_positions(self, user_ids: list[int], position_ids: list[int], clear_when_empty: bool = False) -> None:
         """替换用户岗位关联：service 校验岗位存在性与启用状态，CRUD 仅负责持久化。"""
         if not position_ids:
+            if clear_when_empty:
+                users = await self._load_users(user_ids, preload=["positions"])
+                await UserCRUD(self.auth, self.db).set_user_positions(user_objs=users, position_objs=[])
             return
         users = await self._load_users(user_ids, preload=["positions"])
         positions = await PositionCRUD(self.auth, self.db).get_list(search={"id": ("in", position_ids)})

@@ -78,13 +78,15 @@ def test_init_column_html_types_and_query() -> None:
     from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableOutSchema
     table = GenTableOutSchema(table_name="demo", id=1)
     from app.common.constant import GenConstant
+    from app.config.setting import settings
+    time_type = "timestamp without time zone" if settings.DATABASE_TYPE == "postgres" else "datetime"
     cases = [
         ("status", "tinyint(1)", "radio", GenConstant.QUERY_EQ),
         ("user_type", "varchar(10)", "select", GenConstant.QUERY_LIKE),
         ("avatar_image", "varchar(64)", "imageUpload", GenConstant.QUERY_LIKE),
         ("doc_file", "varchar(64)", "fileUpload", GenConstant.QUERY_LIKE),
         ("content", "text", "editor", GenConstant.QUERY_LIKE),
-        ("created_time", "datetime", "datetime", "EQ"),
+        ("created_time", time_type, "datetime", "EQ"),
         ("age", "int", "input", GenConstant.QUERY_EQ),
         ("description", "varchar(1000)", "textarea", None),
         ("name", "varchar(10)", "input", GenConstant.QUERY_LIKE),

@@ -1,0 +1,175 @@
+"""定时任务节点服务基础分支。"""
+
+from __future__ import annotations
+
+import pytest
+from types import SimpleNamespace
+
+import app.modules.task.cronjob.node.service as mod
+from app.core.exceptions import CustomException
+from app.modules.task.cronjob.node.schema import NodeCreateSchema
+from app.modules.task.cronjob.node.service import NodeService
+
+
+def _svc(crud):
+    monkeypatch = pytest.MonkeyPatch(); monkeypatch.setattr(mod, "NodeCRUD", lambda *a: crud)
+    s = NodeService.__new__(NodeService); s.auth = object(); s.db = object()
+    return s, monkeypatch
+
+
+async def test_options_and_detail_missing() -> None:
+    class C:
+        async def get_obj_list_crud(self): return []
+        async def get_obj_by_id_crud(self, **kw): return None
+    s, m = _svc(C())
+    try:
+        assert await s.options() == []
+        with pytest.raises(CustomException, match="不存在"):
+            await s.detail(1)
+    finally:
+        m.undo()
+
+
+async def test_create_duplicate_and_invalid_trigger() -> None:
+    class C:
+        async def get(self, **kw): return SimpleNamespace(id=1)
+    s, m = _svc(C())
+    try:
+        with pytest.raises(CustomException, match="已存在"):
+            await s.create(NodeCreateSchema(name="n", func="builtin:x"))
+    finally:
+        m.undo()
+    class C2:
+        async def get(self, **kw): return None
+    s, m = _svc(C2())
+    try:
+        with pytest.raises(Exception):
+            data = NodeCreateSchema(name="n", func="builtin:x", trigger="cron", trigger_args="bad")
+            await s.create(data)
+    finally:
+        m.undo()
+
+
+async def test_batch_set_status_empty() -> None:
+    class C: ...
+    s, m = _svc(C())
+    try:
+        with pytest.raises(CustomException, match="请选择"):
+            await s.batch_set_status([], 0)
+    finally:
+        m.undo()
+
+
+async def test_node_update_delete_execute(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.cronjob.node.schema import NodeUpdateSchema
+    class C:
+        def __init__(self,obj=None): self.obj=obj; self.deleted=None; self.cleared=False
+        async def get_obj_by_id_crud(self,**kw): return self.obj
+        async def update_obj_crud(self,**kw): return self.obj
+        async def delete_obj_crud(self,ids): self.deleted=ids
+        async def clear_obj_crud(self): self.cleared=True
+    c=C(None); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="更新失败"):
+        await s.update(1,NodeUpdateSchema(name="n",func="builtin:x"))
+    with pytest.raises(CustomException, match="删除失败"):
+        await s.delete([1])
+    with pytest.raises(CustomException, match="执行失败"):
+        await s.execute(1)
+    async def noop(*a,**k): return None
+    monkeypatch.setattr(mod,"unregister_node_job",noop)
+    monkeypatch.setattr(mod,"SchedulerUtil",SimpleNamespace(clear_jobs=lambda:None))
+    await s.clear(); assert c.cleared
+    obj=SimpleNamespace(id=1,name="n",func="builtin:x",status=0)
+    c.obj=obj
+    async def ok(*a,**k): return None
+    monkeypatch.setattr(mod,"register_node_job",ok)
+    async def enrich(items): return None
+    s._enrich_runtime=enrich
+    out=await s.update(1,NodeUpdateSchema(name="n",func="builtin:x"))
+    assert out.id==1
+    monkeypatch.setattr(mod,"run_node_once",lambda **kw:"tmp")
+    assert (await s.execute(1)).job_id=="tmp"
+
+
+async def test_batch_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self): self.set_called=None
+        async def get_obj_by_id_crud(self,**kw): return SimpleNamespace(id=kw["id"],func="builtin:x") if kw["id"]==1 else None
+        async def set(self,**kw): self.set_called=kw
+    c=C(); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    reg=[]; unreg=[]
+    monkeypatch.setattr(mod,"register_node_job",lambda obj:reg.append(obj.id))
+    monkeypatch.setattr(mod,"unregister_node_job",lambda node_id:unreg.append(node_id))
+    await s.batch_set_status([1],1)
+    assert unreg==[1] and c.set_called["status"]==1
+    await s.batch_set_status([1,2],0)
+    assert reg==[1] and c.set_called["status"]==0
+
+
+async def test_get_list_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        async def get_obj_list_crud(self,**kw): return []
+    monkeypatch.setattr(mod,"NodeCRUD",lambda *a:C())
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    assert await s.get_list()==[]
+
+
+async def test_node_options_detail_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import PageResultSchema
+    from app.modules.task.cronjob.node.schema import NodeOutSchema
+    node=NodeOutSchema(id=1,name="n",func="builtin:x",status=0)
+    class C:
+        async def get_obj_list_crud(self,**kw): return [node]
+        async def get_obj_by_id_crud(self,**kw): return node
+        async def page(self,**kw): return PageResultSchema(page_no=1,page_size=10,total=1,has_next=False,items=[node])
+    monkeypatch.setattr(mod,"NodeCRUD",lambda *a:C())
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    async def enrich(items): return None
+    s._enrich_runtime=enrich
+    assert len(await s.options())==1
+    assert (await s.detail(1)).id==1
+    assert (await s.page(1,10)).total==1
+
+
+async def test_node_delete_success_and_execute_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self): self.deleted=None
+        async def get_obj_by_id_crud(self,**kw): return SimpleNamespace(id=1)
+        async def delete_obj_crud(self,ids): self.deleted=ids
+    c=C(); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    monkeypatch.setattr(mod,"unregister_node_job",lambda node_id:None)
+    await s.delete([1]); assert c.deleted==[1]
+    def bad(**kw): raise ValueError("bad")
+    monkeypatch.setattr(mod,"run_node_once",bad)
+    with pytest.raises(CustomException, match="执行失败"):
+        await s.execute(1)
+
+
+async def test_node_create_register_and_update_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.task.cronjob.node.schema import NodeCreateSchema, NodeUpdateSchema
+    node=SimpleNamespace(id=1,name="n",func="builtin:x",status=0)
+    class C:
+        def __init__(self): self.deleted=None
+        async def get(self,**kw): return None
+        async def create_obj_crud(self,data): return node
+        async def delete_obj_crud(self,ids): self.deleted=ids
+        async def get_obj_by_id_crud(self,**kw): return node
+        async def update_obj_crud(self,**kw): return node
+    c=C(); monkeypatch.setattr(mod,"NodeCRUD",lambda *a:c)
+    s=NodeService.__new__(NodeService); s.auth=object(); s.db=object()
+    async def noop(*a,**k): return None
+    s._enrich_runtime=noop
+    monkeypatch.setattr(mod,"register_node_job",noop)
+    assert (await s.create(NodeCreateSchema(name="n",func="builtin:x"))).id==1
+    def fail(*a,**k): raise CustomException(msg="bad")
+    monkeypatch.setattr(mod,"register_node_job",fail)
+    with pytest.raises(CustomException, match="注册失败"):
+        await s.create(NodeCreateSchema(name="n",func="builtin:x"))
+    assert c.deleted==[1]
+    with pytest.raises(CustomException, match="注册失败"):
+        await s.update(1,NodeUpdateSchema(name="n",func="builtin:x"))
+    with pytest.raises(Exception):
+        await s.update(1,NodeUpdateSchema(name="n",func="builtin:x",trigger="bad",trigger_args="x"))

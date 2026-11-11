@@ -109,3 +109,118 @@ async def test_role_create_duplicate_code(monkeypatch: pytest.MonkeyPatch) -> No
     s = _svc(monkeypatch, c)
     with pytest.raises(CustomException, match="编码已存在"):
         await s.create(RoleCreateSchema(name="r", code="r1"))
+
+
+async def test_role_set_menus_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    class M:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    monkeypatch.setattr(mod,"RoleCRUD",R); monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="菜单不存在"):
+        await s._set_role_menus([1],[2])
+
+
+async def test_role_set_depts_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    monkeypatch.setattr(mod,"RoleCRUD",R); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="部门不存在"):
+        await s._set_role_depts([1],[2])
+
+
+async def test_role_set_menus_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): self.set_called=False
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_role_menus_crud(self,**kw): self.set_called=True
+    r=R()
+    class M:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2)]
+    monkeypatch.setattr(mod,"RoleCRUD",lambda *a: r); monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    await s._set_role_menus([1],[2])
+
+
+async def test_role_set_depts_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_role_depts_crud(self,**kw): self.called=True
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2)]
+    monkeypatch.setattr(mod,"RoleCRUD",R); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    await s._set_role_depts([1],[2])
+
+
+async def test_role_set_menus_empty_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_role_menus_crud(self,**kw): self.called=True
+    monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    await s._set_role_menus([1],[])
+
+
+async def test_role_set_depts_empty_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_role_depts_crud(self,**kw): self.called=True
+    monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    await s._set_role_depts([1],[])
+
+
+async def test_load_roles_duplicate_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    assert len(await s._load_roles([1,1],[])) == 1
+
+
+async def test_role_set_permission_empty_roles(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.role.schema import RolePermissionSettingSchema
+    import app.modules.system.role.service as mod
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=RoleService.__new__(RoleService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.set_permission(RolePermissionSettingSchema(role_ids=[], menu_ids=[], data_scope=1))
+
+
+async def test_role_update_duplicate_code(monkeypatch: pytest.MonkeyPatch) -> None:
+    c=C(name=None, code=SimpleNamespace(id=2))
+    s=_svc(monkeypatch,c)
+    with pytest.raises(CustomException, match="编码已存在"):
+        await s.update(1, RoleUpdateSchema(name="r", code="r1"))
+
+
+async def test_role_update_duplicate_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    c=C(name=SimpleNamespace(id=2), code=None)
+    s=_svc(monkeypatch,c)
+    with pytest.raises(CustomException, match="名称已存在"):
+        await s.update(1, RoleUpdateSchema(name="r", code="r1"))

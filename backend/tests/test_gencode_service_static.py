@@ -172,3 +172,415 @@ async def test_write_plugin_migration(monkeypatch: pytest.MonkeyPatch) -> None:
     s = GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
     await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
     assert calls
+
+
+async def test_write_plugin_migration_multiple_heads(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd, alembic.config as cfg, alembic.script as script
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    class C:
+        def __init__(self,*a): pass
+    class S:
+        def get_heads(self): return ["a","b"]
+    monkeypatch.setattr(cfg,"Config",C)
+    monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
+    monkeypatch.setattr(cmd,"revision",lambda *a,**k: None)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="多个 head"):
+        await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+
+
+async def test_package_directory_menu(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    class M:
+        def __init__(self,*a): self.created=[]
+        async def get(self,**kw): return None
+        async def create(self,data): self.created.append(data); return SimpleNamespace(id=9)
+    m=M(); s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    assert await s._get_or_create_package_directory_menu(m,None,"module_demo","demo","demo") == 9
+    class M2(M):
+        async def get(self,**kw): return SimpleNamespace(id=8)
+    assert await s._get_or_create_package_directory_menu(M2(),None,"module_demo","demo","demo") == 8
+
+
+async def test_assert_parent_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    import app.modules.generator.gencode.service as mod
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._assert_parent_menu_is_catalog(None)
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    with pytest.raises(CustomException, match="不存在"):
+        await s._assert_parent_menu_is_catalog(1)
+    class M2(M):
+        async def get(self,**kw): return SimpleNamespace(type=2)
+    monkeypatch.setattr(mod,"MenuCRUD",M2)
+    with pytest.raises(CustomException, match="目录"):
+        await s._assert_parent_menu_is_catalog(1)
+    class M3(M2):
+        async def get(self,**kw): return SimpleNamespace(type=1)
+    monkeypatch.setattr(mod,"MenuCRUD",M3)
+    await s._assert_parent_menu_is_catalog(1)
+
+
+async def test_effective_package_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    import app.modules.generator.gencode.service as mod
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    assert await s._effective_package_name(None,"demo") == "module_demo"
+    assert await s._effective_package_name(None,"module_demo") == "module_demo"
+    with pytest.raises(CustomException, match="包名不能为空"):
+        await s._effective_package_name(None,"")
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(route_path="/module_sys/demo")
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    assert await s._effective_package_name(1,"x") == "module_sys"
+    class M2(M):
+        async def get(self,**kw): return SimpleNamespace(route_path="")
+    monkeypatch.setattr(mod,"MenuCRUD",M2)
+    assert await s._effective_package_name(1,"demo") == "module_demo"
+    with pytest.raises(CustomException, match="无法从上级"):
+        await s._effective_package_name(1,"")
+
+
+async def test_package_directory_validation(monkeypatch: pytest.MonkeyPatch) -> None:
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    class M:
+        def __init__(self,*a): pass
+    with pytest.raises(CustomException, match="包名不能为空"):
+        await s._get_or_create_package_directory_menu(M(),None,"","demo","demo")
+    with pytest.raises(CustomException, match="模块名不能为空"):
+        await s._get_or_create_package_directory_menu(M(),None,"module_demo","","demo")
+
+
+async def test_package_directory_existing_with_parent() -> None:
+    from types import SimpleNamespace
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=7)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    assert await s._get_or_create_package_directory_menu(M(),1,"module_demo","demo","demo") == 7
+
+
+async def test_delete_gen_table(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    class C:
+        def __init__(self,*a): pass
+        async def delete_gen_table_column_by_table_id_crud(self, ids): self.cols=ids
+        async def delete_gen_table(self, ids): self.tables=ids
+    monkeypatch.setattr(mod,"GenTableCRUD",C); monkeypatch.setattr(mod,"GenTableColumnCRUD",C)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="不能为空"):
+        await s.delete_gen_table([])
+    await s.delete_gen_table([1])
+
+
+async def test_delete_gen_table_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    class C:
+        def __init__(self,*a): pass
+        async def delete_gen_table_column_by_table_id_crud(self, ids): raise RuntimeError()
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",C)
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(RuntimeError):
+        await s.delete_gen_table([1])
+
+
+async def test_write_plugin_migration_no_heads(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd, alembic.config as cfg, alembic.script as script
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    calls=[]
+    class C:
+        def __init__(self,*a): pass
+    class S:
+        def get_heads(self): return []
+    monkeypatch.setattr(cfg,"Config",C)
+    monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
+    monkeypatch.setattr(cmd,"revision",lambda *a,**kw: calls.append(kw))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+    assert calls and calls[0]["head"] is None
+
+
+async def test_update_gen_table_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def none_id(i): return GenTableOutSchema(table_name="d")
+    s.get_gen_table_by_id=none_id
+    with pytest.raises(CustomException, match="不存在"):
+        await s.update_gen_table(GenTableSchema(table_name="d"),1)
+    async def one(i): return GenTableOutSchema(id=1,table_name="d")
+    s.get_gen_table_by_id=one
+    class C:
+        def __init__(self,*a): pass
+        async def edit_gen_table(self,*a): return None
+    monkeypatch.setattr(mod,"GenTableCRUD",C)
+    with pytest.raises(CustomException, match="更新业务表信息失败"):
+        await s.update_gen_table(GenTableSchema(table_name="d"),1)
+    class C2(C):
+        async def edit_gen_table(self,*a): return True
+        async def get_gen_table_by_id(self,*a,**k): return {"id":1,"table_name":"d"}
+    monkeypatch.setattr(mod,"GenTableCRUD",C2)
+    async def noop(*a,**k): return None
+    s._assert_parent_menu_is_catalog=noop; s.set_pk_column=noop; s.hydrate_sub_table=noop
+    out=await s.update_gen_table(GenTableSchema(table_name="d"),1)
+    assert out.table_name=="d"
+
+
+async def test_update_gen_table_columns(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema, GenTableSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def one(i): return GenTableOutSchema(id=1,table_name="d")
+    s.get_gen_table_by_id=one
+    class T:
+        def __init__(self,*a): pass
+        async def edit_gen_table(self,*a): return True
+        async def get_gen_table_by_id(self,*a,**k): return {"id":1,"table_name":"d"}
+    class C:
+        def __init__(self,*a): self.calls=[]
+        async def list_gen_table_column_crud(self,**k): return [SimpleNamespace(id=1,column_name="a"),SimpleNamespace(id=2,column_name="gone")]
+        async def update(self,**k): self.calls.append(("update",k))
+        async def create_gen_table_column_crud(self,data): self.calls.append(("create",data))
+        async def delete(self,**k): self.calls.append(("delete",k))
+    c=C(); monkeypatch.setattr(mod,"GenTableCRUD",T); monkeypatch.setattr(mod,"GenTableColumnCRUD",lambda *a:c)
+    async def noop(*a,**k): return None
+    s._assert_parent_menu_is_catalog=noop; s.set_pk_column=noop; s.hydrate_sub_table=noop
+    old=GenTableColumnOutSchema(id=1,column_name="a",column_type="int")
+    new=GenTableColumnOutSchema(column_name="b",column_type="int")
+    data=GenTableSchema(table_name="d",columns=[old,new])
+    out=await s.update_gen_table(data,1)
+    assert out.table_name=="d"
+    assert any(x[0]=="update" for x in c.calls) and any(x[0]=="create" for x in c.calls) and any(x[0]=="delete" for x in c.calls)
+
+
+async def test_sync_db_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="表名不能为空"):
+        await s.sync_db("")
+    class C:
+        def __init__(self,*a): self.obj=None
+        async def get_gen_table_by_name(self,*a,**k): return self.obj
+    c=C(); monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:c)
+    with pytest.raises(CustomException, match="业务表不存在"):
+        await s.sync_db("d")
+    c.obj=GenTableOutSchema(table_name="d")
+    with pytest.raises(CustomException, match="业务表ID不能为空"):
+        await s.sync_db("d")
+    c.obj=GenTableOutSchema(id=1,table_name="d")
+    async def cols(name): return []
+    class Col:
+        def __init__(self,*a): pass
+        async def list_gen_table_column_crud(self,**kw): return []
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+
+
+async def test_sync_db_columns(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    table=GenTableOutSchema(id=1,table_name="d",columns=[GenTableColumnOutSchema(id=1,column_name="a")])
+    db_cols=[GenTableColumnOutSchema(column_name="a"),GenTableColumnOutSchema(column_name="b")]
+    class C:
+        def __init__(self,*a): self.obj=table
+        async def get_gen_table_by_name(self,*a,**k): return self.obj
+    c=C(); monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:c)
+    calls=[]
+    class Col:
+        def __init__(self,*a): pass
+        async def update_gen_table_column_crud(self,i,d): calls.append(("update",i))
+        async def create_gen_table_column_crud(self,d): calls.append(("create",d.column_name))
+        async def delete_gen_table_column_by_column_id_crud(self,ids): calls.append(("delete",ids))
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda col,t:None))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def cols(name): return db_cols
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+    assert any(x[0]=="update" for x in calls) and any(x[0]=="create" and x[1]=="b" for x in calls)
+
+
+async def test_sync_db_delete_and_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    table=GenTableOutSchema(id=1,table_name="d",columns=[GenTableColumnOutSchema(id=2,column_name="gone")])
+    class C:
+        def __init__(self,*a): self.obj=table
+        async def get_gen_table_by_name(self,*a,**k): return self.obj
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:C())
+    calls=[]
+    class Col:
+        def __init__(self,*a): pass
+        async def delete_gen_table_column_by_column_id_crud(self,ids): calls.append(ids)
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda col,t:None))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def cols(name): return []
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+    assert calls == [[2]]
+    def bad(*a): raise RuntimeError()
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(bad))
+    s._get_db_table_columns=lambda name: _async([GenTableColumnOutSchema(column_name="x")])
+    with pytest.raises(RuntimeError):
+        await s.sync_db("d")
+
+
+async def _async(v): return v
+
+
+async def test_sync_db_preserve_and_sub(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema, GenTableOutSchema
+    prev=GenTableColumnOutSchema(id=1,column_name="a",is_pk=True,is_insert=True,is_edit=True,is_list=True,is_query=True,html_type="input",dict_type="d",sort=2)
+    table=GenTableOutSchema(id=1,table_name="d",columns=[prev],sub_table_name="sub",sub_table_fk_name="fk")
+    db=GenTableColumnOutSchema(column_name="a",is_pk=True)
+    class C:
+        def __init__(self,*a): self.n=0
+        async def get_gen_table_by_name(self,name,*a,**k):
+            if name=="sub": return GenTableOutSchema(id=2,table_name="sub")
+            return table
+    monkeypatch.setattr(mod,"GenTableCRUD",lambda *a:C())
+    updated=[]
+    class Col:
+        def __init__(self,*a): pass
+        async def list_gen_table_column_crud(self,**kw): return []
+        async def update_gen_table_column_crud(self,i,d): updated.append(d)
+    monkeypatch.setattr(mod,"GenTableColumnCRUD",Col)
+    monkeypatch.setattr(mod.GenUtils,"init_column_field",staticmethod(lambda c,t:None))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def cols(name): return [db] if name=="d" else []
+    s._get_db_table_columns=cols
+    await s.sync_db("d")
+    d=updated[0]
+    assert d.is_insert is False and d.dict_type=="d" and d.sort==2
+
+
+async def test_write_plugin_migration_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import alembic.command as cmd, alembic.config as cfg, alembic.script as script
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    calls=[]
+    class C:
+        def __init__(self,*a): pass
+    class S:
+        def get_heads(self): return ["h"]
+    monkeypatch.setattr(cfg,"Config",C)
+    monkeypatch.setattr(script,"ScriptDirectory",type("SD",(),{"from_config":staticmethod(lambda c:S())}))
+    monkeypatch.setattr(cmd,"revision",lambda *a,**k: calls.append(k))
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    await s._write_plugin_migration(GenTableOutSchema(table_name="demo"))
+    assert calls and calls[0]["head"]=="h"
+
+
+async def test_update_gen_table_exceptions(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.generator.gencode.service as mod
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableSchema
+    s=GenTableService.__new__(GenTableService); s.auth=object(); s.db=object()
+    async def one(i): return GenTableOutSchema(id=1,table_name="d")
+    s.get_gen_table_by_id=one
+    def bad(*a,**k): raise CustomException(msg="bad")
+    s.normalize_and_validate_master_sub=bad
+    with pytest.raises(CustomException, match="bad"):
+        await s.update_gen_table(GenTableSchema(table_name="d"),1)
+
+
+async def test_hydrate_sub_early_branches() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    svc = object.__new__(GenTableService)
+    svc.auth = None; svc.db = None
+    t = GenTableOutSchema(table_name="m")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is False and t.sub_table is None
+    t2 = GenTableOutSchema(table_name="m", sub_table_name="s")
+    await svc.hydrate_sub_table(t2)
+    assert "请同时填写" in (t2.master_sub_hint or "")
+    t3 = GenTableOutSchema(table_name="m", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t3)
+    assert "请同时填写" in (t3.master_sub_hint or "")
+    t4 = GenTableOutSchema(table_name="m", sub_table_name="m", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t4)
+    assert "不能与主表" in (t4.master_sub_hint or "")
+
+
+async def test_hydrate_sub_config_missing_fk(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema
+    class C:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_name(self,*a,**k):
+            return type("M",(),{"id":1,"table_name":"s","columns":[],"table_comment":"S","class_name":"S","package_name":"p","module_name":"m","business_name":"b","function_name":"F"})()
+    monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+    svc = object.__new__(GenTableService); svc.auth=None; svc.db=None
+    t = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="missing_id")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is False and "不存在外键列" in (t.master_sub_hint or "")
+
+
+async def test_hydrate_sub_fallback_columns(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    class C:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_name(self,*a,**k): return None
+        async def get_db_table_comment(self,*a,**k): return "子表"
+    monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+    svc = object.__new__(GenTableService); svc.auth=None; svc.db=None
+    async def cols(_): return [GenTableColumnSchema(column_name="m_id", column_type="int", is_pk=True)]
+    svc._get_db_table_columns = cols
+    t = GenTableOutSchema(table_name="m", package_name="p", sub_table_name="s", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is True and t.sub_table is not None
+
+
+async def test_hydrate_sub_config_valid(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    class M:
+        id=1; table_name="s"; table_comment="S"; class_name="S"; package_name="p"; module_name="m"; business_name="b"; function_name="F"
+        columns=[GenTableColumnSchema(column_name="m_id", column_type="int")]
+    class C:
+        def __init__(self,*a): pass
+        async def get_gen_table_by_name(self,*a,**k): return M()
+    monkeypatch.setattr("app.modules.generator.gencode.service.GenTableCRUD", C)
+    svc = object.__new__(GenTableService); svc.auth=None; svc.db=None
+    async def pk(x): return None
+    svc.set_pk_column = pk
+    t = GenTableOutSchema(table_name="m", package_name="p", sub_table_name="s", sub_table_fk_name="m_id")
+    await svc.hydrate_sub_table(t)
+    assert t.sub is True and t.sub_table is not None
+
+
+def test_sync_preview_diff() -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnOutSchema
+    svc = object.__new__(GenTableService)
+    cur = [GenTableColumnOutSchema(column_name="a", column_type="int"), GenTableColumnOutSchema(column_name="b", column_type="int")]
+    db = [GenTableColumnOutSchema(column_name="a", column_type="int"), GenTableColumnOutSchema(column_name="b", column_type="bigint"), GenTableColumnOutSchema(column_name="c", column_type="int")]
+    added, removed, changed, unchanged = svc._sync_preview_diff(cur, db)
+    assert added == ["c"] and removed == []
+    assert changed and changed[0].column_name == "b"
+    assert unchanged == 1
+
+
+async def test_hydrate_sub_fallback_errors() -> None:
+    from app.modules.generator.gencode.schema import GenTableOutSchema, GenTableColumnSchema
+    svc = object.__new__(GenTableService)
+    t = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="m_id")
+    async def boom(_): raise RuntimeError("db down")
+    svc._get_db_table_columns = boom
+    await svc.hydrate_sub_table(t)
+    assert "无法读取子表结构" in (t.master_sub_hint or "")
+    t2 = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="m_id")
+    async def empty(_): return []
+    svc._get_db_table_columns = empty
+    await svc.hydrate_sub_table(t2)
+    assert "不存在表" in (t2.master_sub_hint or "")
+    t3 = GenTableOutSchema(table_name="m", sub_table_name="s", sub_table_fk_name="m_id")
+    async def cols(_): return [GenTableColumnSchema(column_name="id", column_type="int")]
+    svc._get_db_table_columns = cols
+    await svc.hydrate_sub_table(t3)
+    assert "不存在名为" in (t3.master_sub_hint or "")

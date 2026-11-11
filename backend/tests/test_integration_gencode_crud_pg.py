@@ -1,0 +1,231 @@
+"""真实 PostgreSQL 代码生成 CRUD/物理表探测集成。"""
+
+from __future__ import annotations
+
+import os
+import uuid
+from contextlib import asynccontextmanager
+from types import SimpleNamespace
+from typing import AsyncIterator
+
+import pytest
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
+
+from app.config.setting import settings
+from app.modules.generator.gencode.crud import GenTableColumnCRUD, GenTableCRUD
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("RUN_INTEGRATION") != "1",
+    reason="需要真实 PostgreSQL：设置 RUN_INTEGRATION=1 且 TEST_DB_TYPE=postgres",
+)
+
+
+@asynccontextmanager
+async def _db() -> AsyncIterator[AsyncSession]:
+    engine = create_async_engine(settings.ASYNC_DB_URI, poolclass=NullPool)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    try:
+        async with factory() as session:
+            yield session
+    finally:
+        await engine.dispose()
+
+
+def _name() -> str:
+    return f"it_gcrud_{uuid.uuid4().hex[:10]}"
+
+
+async def _cleanup(table: str) -> None:
+    async with _db() as db:
+        await db.execute(text(f'DROP TABLE IF EXISTS "{table}"'))
+        await db.execute(text("DELETE FROM gen_table WHERE table_name=:t"), {"t": table})
+        await db.commit()
+
+
+def _auth():
+    return SimpleNamespace(user=SimpleNamespace(id=0))
+
+
+async def test_physical_table_detection(test_client) -> None:
+    table = _name(); extra = _name()
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{table}" (id SERIAL PRIMARY KEY, name VARCHAR(20))'))
+            await db.execute(text(f'COMMENT ON TABLE "{table}" IS \'IT comment\''))
+            await db.commit()
+            crud = GenTableCRUD(_auth(), db)
+            assert await crud.check_table_exists(table) is True
+            assert await crud.check_table_exists("no_such_table_x") is False
+            assert await crud.get_db_table_comment(table) == "IT comment"
+            rows = await crud.get_db_table_list_by_names([table])
+            assert rows and rows[0].table_name == table
+            assert await crud.execute_sql(f'CREATE TABLE "{extra}" (id INT)') is True
+    finally:
+        await _cleanup(table); await _cleanup(extra)
+
+
+async def test_gen_table_and_column_crud(test_client) -> None:
+    table = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+            obj = await crud.add_gen_table(GenTableSchema(table_name=table, class_name="ItCrud", package_name="module_it", module_name="it", business_name="demo", function_name="Demo"))
+            assert obj.id and (await crud.get_gen_table_by_id(obj.id)).table_name == table
+            assert (await crud.get_gen_table_by_name(table)).id == obj.id
+            edited = await crud.edit_gen_table(obj.id, GenTableSchema(table_name=table, class_name="ItCrud2", package_name="module_it", module_name="it", business_name="demo", function_name="Demo"))
+            assert edited.class_name == "ItCrud2"
+
+            col = GenTableColumnCRUD(_auth(), db)
+            created = await col.create_gen_table_column_crud(GenTableColumnSchema(table_id=obj.id, column_name="id", column_type="int"))
+            assert created is not None
+            assert (await col.get_gen_table_column_by_id(created.id)).column_name == "id"
+            cols = await col.list_gen_table_column_crud_by_table_id(obj.id)
+            assert len(cols) == 1
+            updated = await col.update_gen_table_column_crud(created.id, GenTableColumnSchema(table_id=obj.id, column_name="id", column_type="bigint"))
+            assert updated.column_type == "bigint"
+            await col.delete_gen_table_column_by_column_id_crud([created.id])
+            await crud.delete_gen_table([obj.id])
+    finally:
+        await _cleanup(table)
+
+
+async def test_db_table_page_and_list(test_client) -> None:
+    table = _name()
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{table}" (id SERIAL PRIMARY KEY)'))
+            await db.execute(text(f'COMMENT ON TABLE "{table}" IS \'IT page comment\''))
+            await db.commit()
+            crud = GenTableCRUD(_auth(), db)
+            rows = await crud.get_db_table_list(table_name=table)
+            assert len(rows) == 1 and rows[0]["table_name"] == table
+            rows_c = await crud.get_db_table_list(table_comment="IT page comment")
+            assert any(r["table_name"] == table for r in rows_c)
+            items, total = await crud.get_db_table_page(table_name=table, offset=0, limit=10)
+            assert total >= 1 and any(i["table_name"] == table for i in items)
+            items2, total2 = await crud.get_db_table_page(table_name=table, table_comment="IT page comment", offset=0, limit=1)
+            assert total2 >= 1 and len(items2) <= 1
+    finally:
+        await _cleanup(table)
+
+
+async def test_preview_code(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    table = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            obj = await crud.add_gen_table(GenTableSchema(table_name=table, class_name="ItPreview", package_name="module_it", module_name="it", business_name="demo", function_name="Demo"))
+            col = GenTableColumnCRUD(_auth(), db)
+            await col.create_gen_table_column_crud(GenTableColumnSchema(table_id=obj.id, column_name="id", column_type="int", is_pk=True, html_type="input"))
+            await db.commit()
+            out = await GenTableService(_auth(), db).preview_code(obj.id)
+            assert isinstance(out, dict) and out
+            await crud.delete_gen_table([obj.id])
+    finally:
+        await _cleanup(table)
+
+
+async def test_preview_code_with_sub_table(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    main = _name(); sub = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            sub_obj = await crud.add_gen_table(GenTableSchema(table_name=sub, class_name="SubItem", package_name="module_it", module_name="it", business_name="sub", function_name="Sub"))
+            col = GenTableColumnCRUD(_auth(), db)
+            await col.create_gen_table_column_crud(GenTableColumnSchema(table_id=sub_obj.id, column_name="main_id", column_type="int", html_type="input"))
+            main_obj = await crud.add_gen_table(GenTableSchema(table_name=main, class_name="MainItem", package_name="module_it", module_name="it", business_name="main", function_name="Main", sub_table_name=sub, sub_table_fk_name="main_id"))
+            await db.commit()
+            out = await GenTableService(_auth(), db).preview_code(main_obj.id)
+            assert isinstance(out, dict) and out
+            await crud.delete_gen_table([main_obj.id, sub_obj.id])
+    finally:
+        await _cleanup(main); await _cleanup(sub)
+
+
+async def test_sync_preview_with_sub(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema, GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    main = _name(); sub = _name()
+    try:
+        async with _db() as db:
+            await db.execute(text(f'CREATE TABLE "{main}" (id SERIAL PRIMARY KEY)'))
+            await db.execute(text(f'CREATE TABLE "{sub}" (id SERIAL PRIMARY KEY, main_id INT)'))
+            await db.commit()
+            crud = GenTableCRUD(_auth(), db)
+            sub_obj = await crud.add_gen_table(GenTableSchema(table_name=sub, class_name="Sub", package_name="module_it", module_name="it", business_name="sub", function_name="Sub"))
+            await GenTableColumnCRUD(_auth(), db).create_gen_table_column_crud(GenTableColumnSchema(table_id=sub_obj.id, column_name="main_id", column_type="int", html_type="input"))
+            main_obj = await crud.add_gen_table(GenTableSchema(table_name=main, class_name="Main", package_name="module_it", module_name="it", business_name="main", function_name="Main", sub_table_name=sub, sub_table_fk_name="main_id"))
+            await db.commit()
+            out = await GenTableService(_auth(), db).sync_db_preview(main)
+            assert out.sub is not None and out.sub.table_name == sub
+            await crud.delete_gen_table([main_obj.id, sub_obj.id])
+    finally:
+        await _cleanup(main); await _cleanup(sub)
+
+
+async def test_create_table_guards(test_client) -> None:
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    async with _db() as db:
+        svc = GenTableService(_auth(), db)
+        with pytest.raises(CustomException):
+            await svc.create_table("")
+        with pytest.raises(CustomException):
+            await svc.create_table("SELECT 1")
+        with pytest.raises(CustomException):
+            await svc.create_table("DROP TABLE x")
+        with pytest.raises(CustomException):
+            await svc.create_table("ALTER TABLE x DROP COLUMN y")
+        with pytest.raises(CustomException):
+            await svc.create_table("CREATE TABLE sys_user (id INT)")
+
+
+async def test_create_table_more_guards(test_client) -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    existing = _name(); tmp_table = _name()
+    try:
+        async with _db() as db:
+            crud = GenTableCRUD(_auth(), db)
+            await crud.add_gen_table(GenTableSchema(table_name=existing, class_name="X", package_name="module_it", module_name="it", business_name="x", function_name="X"))
+            await db.commit()
+            svc = GenTableService(_auth(), db)
+            with pytest.raises(CustomException):
+                await svc.create_table(";")
+            with pytest.raises(CustomException):
+                await svc.create_table(f'CREATE TABLE "{existing}" (id INT)')
+            with pytest.raises(CustomException):
+                await svc.create_table(f'CREATE TABLE "{tmp_table}" (id INT); ALTER TABLE "{tmp_table}" ADD COLUMN y INT')
+    finally:
+        await _cleanup(existing)
+        async with _db() as db:
+            await db.execute(text(f'DROP TABLE IF EXISTS "{tmp_table}"'))
+            await db.commit()
+
+
+async def test_preview_render_error(test_client, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    import app.modules.generator.gencode.jinja2_template_util as j
+    name = _name()
+    async with _db() as db:
+        obj = await GenTableCRUD(_auth(), db).add_gen_table(GenTableSchema(table_name=name, class_name="X", package_name="module_it", module_name="it", business_name="x", function_name="X"))
+        await db.commit()
+        class T:
+            async def render_async(self, **k): raise RuntimeError("render")
+        class Env:
+            def get_template(self, name): return T()
+        monkeypatch.setattr(j.Jinja2TemplateUtil, "get_env", classmethod(lambda cls: Env()))
+        monkeypatch.setattr(j.Jinja2TemplateUtil, "get_template_list", classmethod(lambda cls: ["backend/app/plugin/x.py.j2"]))
+        monkeypatch.setattr(j.Jinja2TemplateUtil, "get_file_name", staticmethod(lambda tpl, t: "x.py"))
+        out = await GenTableService(_auth(), db).preview_code(obj.id)
+        assert "渲染错误" in str(out)
+        await GenTableCRUD(_auth(), db).delete_gen_table([obj.id])

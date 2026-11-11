@@ -65,7 +65,7 @@ async def test_delete_dict_type(monkeypatch: pytest.MonkeyPatch) -> None:
         async def delete(self, **kw): self.deleted = kw
     class D:
         def __init__(self, *a): pass
-        async def get_list(self, **kw): return [SimpleNamespace(id=1)]
+        async def get_list(self, **kw): return [SimpleNamespace(id=1,dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)]
     class DEmpty(D):
         async def get_list(self, **kw): return []
     s = _svc(monkeypatch, C, D)
@@ -96,3 +96,50 @@ async def test_dict_type_set_available(monkeypatch: pytest.MonkeyPatch) -> None:
     s = _svc(monkeypatch, C)
     from app.core.base_schema import BatchSetAvailable
     await s.set_available(BatchSetAvailable(ids=[1], status=1))
+
+
+async def test_update_type_no_cascade(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): self.obj=SimpleNamespace(dict_name="n",dict_type="t",status=0,id=1)
+        async def get_or_404(self,**kw): return self.obj
+        async def update(self,**kw): return self.obj
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    s=_svc(monkeypatch,C,D)
+    from app.core.redis_crud import RedisCURD
+    async def set_(key,value,expire=None): return True
+    monkeypatch.setattr(RedisCURD,"set",staticmethod(set_))
+    assert (await s.update(object(),1,DictTypeUpdateSchema(dict_name="n",dict_type="t",status=0))).dict_type == "t"
+
+
+async def test_update_type_status_cascade(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): self.obj=SimpleNamespace(dict_name="n",dict_type="t",status=0,id=1)
+        async def get_or_404(self,**kw): return self.obj
+        async def update(self,**kw): return self.obj
+    class D:
+        def __init__(self,*a): self.set_called=None
+        async def get_list(self,**kw): return [SimpleNamespace(id=1,dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)]
+        async def set(self,**kw): self.set_called=kw
+    s=_svc(monkeypatch,C,D)
+    from app.core.redis_crud import RedisCURD
+    async def set_(key,value,expire=None): return True
+    monkeypatch.setattr(RedisCURD,"set",staticmethod(set_))
+    out=await s.update(object(),1,DictTypeUpdateSchema(dict_name="n",dict_type="t",status=1))
+    assert out.dict_type == "t"
+
+
+async def test_delete_type_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1,dict_type="t")]
+    class D:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    s=_svc(monkeypatch,C,D)
+    from app.core.redis_crud import RedisCURD
+    async def bad(key): raise RuntimeError()
+    monkeypatch.setattr(RedisCURD,"delete",staticmethod(bad))
+    with pytest.raises(RuntimeError):
+        await s.delete(object(),[1])

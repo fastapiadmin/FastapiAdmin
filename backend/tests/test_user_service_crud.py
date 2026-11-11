@@ -170,3 +170,255 @@ async def test_current_info_missing_user(monkeypatch: pytest.MonkeyPatch) -> Non
     s._load_menus = menus
     with pytest.raises(CustomException, match="不存在"):
         await s.current_info()
+
+
+async def test_set_user_roles_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2,status=1)]
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    await s._set_user_roles([1],[])
+    with pytest.raises(CustomException, match="角色不存在"):
+        await s._set_user_roles([1],[3])
+    with pytest.raises(CustomException, match="已被禁用"):
+        await s._set_user_roles([1],[2])
+
+
+async def test_set_user_positions_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    class P:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2,status=1)]
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"PositionCRUD",P)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    await s._set_user_positions([1],[])
+    with pytest.raises(CustomException, match="岗位不存在"):
+        await s._set_user_positions([1],[3])
+    with pytest.raises(CustomException, match="已被禁用"):
+        await s._set_user_positions([1],[2])
+
+
+async def test_set_user_positions_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_user_positions(self,**kw): self.called=True
+    class P:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2,status=0)]
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"PositionCRUD",P)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    await s._set_user_positions([1],[2])
+
+
+async def test_set_user_roles_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+        async def set_user_roles(self,**kw): self.called=True
+    class R:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=2,status=0)]
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"RoleCRUD",R)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    await s._set_user_roles([1],[2])
+
+
+async def test_load_users_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1),SimpleNamespace(id=2)]
+    s=_svc(monkeypatch,U)
+    assert len(await s._load_users([1,2],[])) == 2
+
+
+async def test_load_users_duplicate_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [SimpleNamespace(id=1)]
+    s=_svc(monkeypatch,U)
+    assert len(await s._load_users([1,1],[])) == 1
+
+
+async def test_update_dept_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+    class D:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(status=1)
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="部门已被禁用"):
+        await s.update(1, UserUpdateSchema(dept_id=2))
+
+
+async def test_update_dept_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def update(self,**kw): return None
+    class D:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(status=0)
+    monkeypatch.setattr(mod,"UserCRUD",U); monkeypatch.setattr(mod,"DeptCRUD",D)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.update(1, UserUpdateSchema(dept_id=2)) == "ok"
+
+
+async def test_create_without_password(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def create(self,data): return SimpleNamespace(id=1)
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.create(_data(password=None)) == "ok"
+
+
+async def test_delete_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): self.deleted=None
+        async def get_list(self,**kw): return [SimpleNamespace(id=1,is_superuser=False)]
+        async def set_user_roles(self,**kw): self.roles=True
+        async def set_user_positions(self,**kw): self.pos=True
+        async def delete(self,ids): self.deleted=ids
+    s=_svc(monkeypatch,U)
+    await s.delete([1])
+
+
+async def test_update_same_username(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1)
+        async def update(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.update(1, UserUpdateSchema(username="abc")) == "ok"
+
+
+async def test_update_same_mobile_email(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1)
+        async def update(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    async def noop(*a,**k): return None
+    s._set_user_roles=noop; s._set_user_positions=noop
+    assert await s.update(1, UserUpdateSchema(mobile="13800000000", email="a@b.com")) == "ok"
+
+
+async def test_current_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1,username="u",name="U",dept=None,roles=[],positions=[],is_superuser=False)
+    s=_svc(monkeypatch,U)
+    async def menus(): return []
+    s._load_menus=menus
+    out=await s.current_info()
+    assert out.id == 1
+
+
+async def test_update_current_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.user.schema import CurrentUserUpdateSchema
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def update(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    async def detail(id): return "ok"
+    s.detail=detail
+    assert await s.update_current_info(CurrentUserUpdateSchema(name="N")) == "ok"
+
+
+async def test_user_queries_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import PageResultSchema
+    u=SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(id=2,name="D",status=0),roles=[SimpleNamespace(id=2)],positions=[SimpleNamespace(id=3)])
+    class U:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return u
+        async def get_list(self,**kw): return [u]
+        async def page(self,**kw): return PageResultSchema(page_no=1,page_size=10,total=1,has_next=False,items=[u])
+    s=_svc(monkeypatch,U)
+    d=await s.detail(1)
+    assert d.dept_name=="D" and d.role_ids==[2] and d.position_ids==[3]
+    assert (await s.get_list())[0].dept_name=="D"
+    assert (await s.page(1,10)).items[0].role_ids==[2]
+
+
+async def test_create_superuser_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+    s=_svc(monkeypatch,U)
+    with pytest.raises(CustomException, match="不允许创建超级管理员"):
+        await s.create(UserCreateSchema(username="abc",name="A",password="Abc123!x",dept_id=1,is_superuser=True))
+
+
+async def test_current_info_with_dept(monkeypatch: pytest.MonkeyPatch) -> None:
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=1,username="u",name="U",dept=SimpleNamespace(id=2,name="D",status=0),roles=[],positions=[],is_superuser=False)
+    s=_svc(monkeypatch,U)
+    async def menus(): return []
+    s._load_menus=menus
+    out=await s.current_info()
+    assert out.dept_name=="D"
+
+
+async def test_update_current_info_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.system.user.schema import CurrentUserUpdateSchema
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return SimpleNamespace(id=2) if kw.get("mobile") else None
+    s=_svc(monkeypatch,U)
+    s.auth=SimpleNamespace(user=SimpleNamespace(id=0))
+    with pytest.raises(CustomException, match="不存在"):
+        await s.update_current_info(CurrentUserUpdateSchema(mobile="13800000000"))
+    s.auth=SimpleNamespace(user=SimpleNamespace(id=1))
+    with pytest.raises(CustomException, match="已存在"):
+        await s.update_current_info(CurrentUserUpdateSchema(mobile="13800000000"))
+
+
+async def test_current_info_light(monkeypatch: pytest.MonkeyPatch) -> None:
+    s=UserService.__new__(UserService); s.auth=SimpleNamespace(user=SimpleNamespace(id=1)); s.db=object()
+    async def menus(): return []
+    s._load_menus=menus
+    out=await s.current_info(check_data_scope=False)
+    assert out.menus==[]
+
+
+async def test_set_available_empty_and_current_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.base_schema import BatchSetAvailable
+    class U:
+        def __init__(self,*a): self.set_called=False
+        async def get_list(self,**kw): return []
+        async def set(self,**kw): self.set_called=True
+        async def get(self,**kw): return None
+    s=_svc(monkeypatch,U)
+    await s.set_available(BatchSetAvailable(ids=[],status=1))
+    with pytest.raises(CustomException, match="不存在"):
+        await s.current_info()

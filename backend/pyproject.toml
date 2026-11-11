@@ -156,3 +156,20 @@ line-ending = "auto"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+# FastAPI TestClient/anyio 在后台线程执行端点；不启用线程追踪会漏记 controller 行
+concurrency = ["thread", "greenlet"]
+# 已确认范围：仅 MinIO/S3 有真实服务；以下协议无服务、不在验收口径内
+omit = [
+    "app/modules/task/storage/core/ftp_ftps_adapter.py",
+    "app/modules/task/storage/core/sftp_adapter.py",
+    "app/modules/task/storage/core/obs_adapter.py",
+    "app/modules/task/storage/core/oss_adapter.py",
+    "app/modules/task/storage/core/cos_adapter.py",
+    # 用户确认本轮不要求真实 SSH；保留服务层单测但不再计入覆盖率分母
+    "app/modules/ops/ssh/*",
+]
+
+[tool.coverage.report]
+skip_covered = true

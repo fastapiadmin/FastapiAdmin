@@ -403,6 +403,7 @@ class LoginService:
                 sub=session_id,
                 is_refresh=False,
                 exp=now + access_expires,
+                jti=uuid.uuid4().hex,
             ),
         )
         refresh_token = create_access_token(
@@ -410,6 +411,7 @@ class LoginService:
                 sub=session_id,
                 is_refresh=True,
                 exp=now + refresh_expires,
+                jti=uuid.uuid4().hex,
             ),
         )
 
@@ -493,6 +495,7 @@ class LoginService:
                 sub=session_id,
                 is_refresh=False,
                 exp=now + access_expires,
+                jti=uuid.uuid4().hex,
             ),
         )
 
@@ -501,6 +504,7 @@ class LoginService:
                 sub=session_id,
                 is_refresh=True,
                 exp=now + refresh_expires,
+                jti=uuid.uuid4().hex,
             ),
         )
 

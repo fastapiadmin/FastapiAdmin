@@ -229,3 +229,78 @@ async def test_dict_init_cache_with_type(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(mod, "DictDataCRUD", D)
     await mod.DictDataService.init_cache(object())
     assert written and written[0].endswith(":1:t")
+
+
+async def test_menu_detail_parent_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuOutSchema
+    child=MenuOutSchema(id=2,name="c",type=2,order=1,parent_id=1,route_name="c",route_path="/c",component_path="c")
+    parent=MenuOutSchema(id=1,name="p",type=1,order=1,route_name="p",route_path="/p",component_path="p",redirect="/p")
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return parent if kw.get("id")==1 else child
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    out=await s.detail(2)
+    assert out.parent_name == "p"
+
+
+async def test_menu_update_duplicate_title(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuUpdateSchema
+    class M:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return SimpleNamespace(id=1)
+        async def get(self,**kw): return SimpleNamespace(id=2)
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    async def noop(*a,**k): return None
+    s._validate_parent_child_type=noop; s._validate_parent_child_scope=noop
+    with pytest.raises(CustomException, match="标题重复"):
+        await s.update(1,MenuUpdateSchema(name="n",type=2,order=1,title="n",route_name="n",route_path="/n",component_path="n"))
+
+
+async def test_menu_tree_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    class M:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return []
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    assert await s.tree() == []
+
+
+async def test_menu_scope_parent_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    class M:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+    monkeypatch.setattr(mod,"MenuCRUD",M)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    await s._validate_parent_child_scope(1,"web")
+
+
+async def test_menu_batch_edges(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.menu.service as mod
+    from app.modules.system.menu.schema import MenuCreateSchema, MenuOutSchema, MenuUpdateSchema
+    from app.core.base_schema import BatchSetAvailable
+    base=MenuOutSchema(id=1,name="p",type=1,order=1,route_name="p",route_path="/p",component_path="p",redirect="/p")
+    class M:
+        def __init__(self,*a): self.set_calls=[]
+        async def get(self,**kw): return None
+        async def create(self,data): return base
+        async def update(self,**kw): return base
+        async def get_list(self,**kw): return [base]
+        async def set(self,**kw): self.set_calls.append(kw)
+        async def get_or_404(self,**kw): return base
+    m=M(); monkeypatch.setattr(mod,"MenuCRUD",lambda *a: m)
+    s=MenuService.__new__(MenuService); s.auth=object(); s.db=object()
+    async def noop(*a,**k): return None
+    s._validate_parent_child_type=noop; s._validate_parent_child_scope=noop
+    # title 为空，跳过同名检查
+    assert (await s.create(MenuCreateSchema(name="x",type=2,order=1,route_name="x",route_path="/x",component_path="x"))).id == 1
+    # update 不传 title/status，跳过重复与状态联动
+    assert (await s.update(1,MenuUpdateSchema(name="x",type=2,order=1,route_name="x",route_path="/x",component_path="x"))).id == 1
+    # 空批量启停仍调用 set
+    await s.set_available(BatchSetAvailable(ids=[],status=0))
+    assert m.set_calls

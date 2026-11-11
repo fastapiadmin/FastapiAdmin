@@ -283,6 +283,7 @@ class BaseStorageAdapter(ABC):
     def _sync_copy_dir(self, src: str, dst: str) -> None:
         """递归复制目录（src/dst 为相对存储真根的路径）：遍历后先建目录再逐文件复制。"""
         src = src.rstrip("/")
+        dst = dst.rstrip("/")
         for entry in self._sync_list_recursive(src):
             full = entry.key
             rel = full[len(src) + 1 :] if full.startswith(src + "/") else entry.key

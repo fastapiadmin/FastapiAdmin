@@ -1,4 +1,5 @@
 import json
+import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -85,6 +86,9 @@ class NodeService:
             raise CustomException(msg="创建失败，该节点已存在")
 
         _validate_node_plan(data.trigger, data.trigger_args)
+        if not data.code:
+            # code 是模型必填且唯一；未填写时生成稳定可读的任务编码
+            data.code = f"job_{uuid.uuid4().hex[:12]}"
         obj = await NodeCRUD(self.auth, self.db).create_obj_crud(data=data)
         if not obj:
             raise CustomException(msg="创建失败")

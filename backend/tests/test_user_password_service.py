@@ -77,3 +77,66 @@ async def test_register(monkeypatch: pytest.MonkeyPatch) -> None:
     s2 = _svc(monkeypatch, U2)
     with pytest.raises(CustomException, match="相同用户"):
         await s2.register(UserRegisterSchema(username="abc", password="Abc123!x", name="A"))
+
+
+async def test_register_create_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    class U:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def create(self,data): return None
+    monkeypatch.setattr(mod,"UserCRUD",U)
+    class P:
+        @staticmethod
+        async def ahash_password(password): return "Hashed123!x"
+    monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=object(); s.db=object()
+    with pytest.raises(CustomException, match="注册失败"):
+        await s.register(UserRegisterSchema(username="abc",password="Abc123!x",name="A"))
+
+
+async def test_change_reset_forget_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    from app.modules.system.user.schema import UserChangePasswordSchema, ResetPasswordSchema, UserForgetPasswordSchema
+    class U:
+        def __init__(self,*a): self.changed=False
+        async def get_or_404(self,**kw): return SimpleNamespace(id=1,password="hash",is_superuser=True)
+        async def get(self,**kw): return None
+        async def change_password(self,**kw): self.changed=True
+    u=U(); monkeypatch.setattr(mod,"UserCRUD",lambda *a:u)
+    class P:
+        @staticmethod
+        async def averify_password(**kw): return False
+        @staticmethod
+        async def ahash_password(**kw): return "new"
+    monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=SimpleNamespace(user=SimpleNamespace(id=0)); s.db=object()
+    with pytest.raises(CustomException, match="不存在"):
+        await s.change_password(UserChangePasswordSchema(old_password="Old123!",new_password="Abc123!x"))
+    s.auth=SimpleNamespace(user=SimpleNamespace(id=1))
+    with pytest.raises(CustomException, match="原密码"):
+        await s.change_password(UserChangePasswordSchema(old_password="Old123!",new_password="Abc123!x"))
+    with pytest.raises(CustomException, match="超级管理员"):
+        await s.reset_password(ResetPasswordSchema(id=1,password="Abc123!x"))
+    assert await s.forget_password(UserForgetPasswordSchema(username="none")) is None
+
+
+async def test_change_reset_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.system.user.service as mod
+    from app.modules.system.user.schema import UserChangePasswordSchema, ResetPasswordSchema
+    class U:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return SimpleNamespace(id=1,password="hash",is_superuser=False)
+        async def change_password(self,**kw): return None
+    monkeypatch.setattr(mod,"UserCRUD",lambda *a:U())
+    class P:
+        @staticmethod
+        async def averify_password(**kw): return True
+        @staticmethod
+        async def ahash_password(**kw): return "new"
+    monkeypatch.setattr(mod,"PwdUtil",P)
+    s=UserService.__new__(UserService); s.auth=SimpleNamespace(user=SimpleNamespace(id=1)); s.db=object()
+    async def detail(id): return "ok"
+    s.detail=detail
+    assert await s.change_password(UserChangePasswordSchema(old_password="Old123!",new_password="Abc123!x"))=="ok"
+    assert await s.reset_password(ResetPasswordSchema(id=1,password="Abc123!x"))=="ok"

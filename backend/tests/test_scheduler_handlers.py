@@ -135,3 +135,194 @@ def test_finish_job_record_temp_and_date(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(SchedulerUtil, "get_job", classmethod(lambda cls, job_id: job))
     SchedulerUtil._finish_job_record(job_id="2", status=2, detail="ok")
     assert "2" in removed
+
+
+async def test_reconcile_node_jobs(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from datetime import datetime, timedelta
+    import app.core.database as dbmod
+    import app.core.ap_scheduler as mod
+    nodes = [
+        SimpleNamespace(id=1, status=0, trigger="cron", trigger_args="* * * * *", func="builtin:x", name="a"),
+        SimpleNamespace(id=2, status=1, trigger="cron", trigger_args="* * * * *", func="x", name="b"),
+        SimpleNamespace(id=3, status=0, trigger="date", trigger_args=(datetime.now()-timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S"), func="x", name="c"),
+        SimpleNamespace(id=4, status=0, trigger="date", trigger_args=(datetime.now()+timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S"), func="x", name="d"),
+    ]
+    class R:
+        def scalars(self): return self
+        def all(self): return nodes
+    class S:
+        async def execute(self, stmt): return R()
+    class Ctx:
+        async def __aenter__(self): return S()
+        async def __aexit__(self,*a): return False
+    monkeypatch.setattr(dbmod,"async_db_session",lambda: Ctx())
+    monkeypatch.setattr(SchedulerUtil,"get_jobs",classmethod(lambda cls: [SimpleNamespace(id="1"),SimpleNamespace(id="2"),SimpleNamespace(id="tmp")]))
+    removed=[]; registered=[]
+    monkeypatch.setattr(SchedulerUtil,"remove_job",classmethod(lambda cls, jid: removed.append(jid)))
+    import app.modules.task.cronjob.node.service as ns
+    monkeypatch.setattr(ns,"register_node_job",lambda node: registered.append(node.id))
+    monkeypatch.setattr("app.core.ap_scheduler.SchedulerUtil.describe_schedulability",classmethod(lambda cls, func: (True,None)))
+    monkeypatch.setattr(SchedulerUtil,"log_unschedulable_jobs",classmethod(lambda cls, context=None: []))
+    await SchedulerUtil.reconcile_node_jobs()
+    assert "2" in removed and 1 in registered and 4 in registered
+
+
+def test_scheduler_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    assert SchedulerUtil.job_code_block(None) is None
+    assert SchedulerUtil.job_code_block(SimpleNamespace(args=["1"])) is None
+    assert SchedulerUtil.job_code_block(SimpleNamespace(args=["1","builtin:x"])) == "builtin:x"
+    monkeypatch.setattr(SchedulerUtil,"describe_schedulability",classmethod(lambda cls,c: (True,None)))
+    SchedulerUtil.require_schedulable("x")
+    monkeypatch.setattr(SchedulerUtil,"describe_schedulability",classmethod(lambda cls,c: (False,"bad")))
+    with pytest.raises(CustomException, match="bad"):
+        SchedulerUtil.require_schedulable("x")
+    SchedulerUtil.register_builtin_handler("t", lambda: 1)
+    assert SchedulerUtil.resolve_builtin_handler("builtin:t")() == 1
+    assert SchedulerUtil.resolve_builtin_handler("exec") is None
+    with pytest.raises(ValueError):
+        SchedulerUtil.resolve_builtin_handler("builtin:bad/name")
+
+
+def test_unschedulable_jobs(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    monkeypatch.setattr(SchedulerUtil,"get_jobs",classmethod(lambda cls: [SimpleNamespace(id=1,name="n",args=["1","x"])]))
+    monkeypatch.setattr(SchedulerUtil,"job_code_block",classmethod(lambda cls,j: "x"))
+    monkeypatch.setattr(SchedulerUtil,"describe_schedulability",classmethod(lambda cls,c: (False,"bad")))
+    out=SchedulerUtil.iter_unschedulable_jobs()
+    assert out==[("1","n","bad")]
+    assert SchedulerUtil.log_unschedulable_jobs(context="test")==out
+
+
+def test_resolve_builtin_import_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib
+    from types import SimpleNamespace
+    def f(): return 1
+    mod=SimpleNamespace(__name__="m", f=f, HANDLERS={"f": f})
+    monkeypatch.setattr(importlib,"import_module",lambda path: mod)
+    assert SchedulerUtil.resolve_builtin_handler("builtin:m.f") is f
+    def missing(path): raise ModuleNotFoundError()
+    monkeypatch.setattr(importlib,"import_module",missing)
+    with pytest.raises(ValueError, match="模块不存在"):
+        SchedulerUtil.resolve_builtin_handler("builtin:m2.f")
+    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m3"))
+    with pytest.raises(ValueError, match="不可用"):
+        SchedulerUtil.resolve_builtin_handler("builtin:m3.f")
+    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m4", f=1))
+    with pytest.raises(ValueError, match="不可用"):
+        SchedulerUtil.resolve_builtin_handler("builtin:m4.f")
+    def g(): return 1
+    g.__module__="other"
+    monkeypatch.setattr(importlib,"import_module",lambda path: SimpleNamespace(__name__="m5", f=g))
+    with pytest.raises(ValueError, match="必须在本模块"):
+        SchedulerUtil.resolve_builtin_handler("builtin:m5.f")
+
+
+def test_temp_job_id_helpers() -> None:
+    assert SchedulerUtil._is_temp_job_id("1:manual:x")
+    assert SchedulerUtil._is_temp_job_id("1_run_now_x")
+    assert not SchedulerUtil._is_temp_job_id("1")
+    assert SchedulerUtil._normalize_job_id("1:manual:x")=="1"
+    assert SchedulerUtil._normalize_job_id("2_run_now_x")=="2"
+    assert SchedulerUtil._normalize_job_id("3")=="3"
+
+
+def test_get_trigger_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from apscheduler.triggers.cron import CronTrigger
+    from apscheduler.triggers.interval import IntervalTrigger
+    from apscheduler.triggers.date import DateTrigger
+    assert SchedulerUtil._get_trigger_type("x")=="manual"
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=CronTrigger())))
+    assert SchedulerUtil._get_trigger_type("x")=="cron"
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=IntervalTrigger(seconds=1))))
+    assert SchedulerUtil._get_trigger_type("x")=="interval"
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: SimpleNamespace(trigger=DateTrigger(run_date="2099-01-01"))))
+    assert SchedulerUtil._get_trigger_type("x")=="date"
+
+
+def test_describe_schedulability(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.core.ap_scheduler as mod
+    ok,reason=SchedulerUtil.describe_schedulability(None)
+    assert ok is False and "未配置" in reason
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: (_ for _ in ()).throw(ValueError("bad"))))
+    ok,reason=SchedulerUtil.describe_schedulability("builtin:x")
+    assert ok is False and "内置处理器不可用" in reason
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: lambda: None))
+    assert SchedulerUtil.describe_schedulability("builtin:x")==(True,None)
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",False)
+    ok,reason=SchedulerUtil.describe_schedulability("print(1)")
+    assert ok is False and "SCHEDULER_ALLOW_CODE_EXEC" in reason
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",True)
+    assert SchedulerUtil.describe_schedulability("print(1)")==(True,None)
+
+
+def test_job_status_and_run_now(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    import app.core.ap_scheduler as mod
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: None))
+    assert SchedulerUtil.get_job_status(1)==3
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: SimpleNamespace(next_run_time=None)))
+    assert SchedulerUtil.get_job_status(1)==1
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: SimpleNamespace(next_run_time="x")))
+    monkeypatch.setattr(mod.scheduler,"state",0,raising=False)
+    assert SchedulerUtil.get_job_status(1)==2
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: None))
+    assert SchedulerUtil.run_job_now(1) is None
+    job=SimpleNamespace(func=lambda:None,args=[],kwargs={},name="n",executor="default")
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id,jobstore=None: job))
+    class S:
+        state=1
+        def add_job(self,**kw): self.kw=kw; return "temp"
+    s=S(); monkeypatch.setattr(mod,"scheduler",s)
+    assert SchedulerUtil.run_job_now(1)=="temp" and "1_run_now_" in s.kw["id"]
+
+
+def test_dispatch_job_event(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED, EVENT_JOB_SUBMITTED, EVENT_JOB_REMOVED
+    recorded=[]
+    monkeypatch.setattr(SchedulerUtil,"_finish_job_record",classmethod(lambda cls,**kw: recorded.append(kw)))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(code=EVENT_JOB_EXECUTED))
+    assert recorded==[]
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=1,code=EVENT_JOB_EXECUTED,retval="ok"))
+    SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=2,code=EVENT_JOB_ERROR,exception=RuntimeError("x")))
+    assert len(recorded)==2 and recorded[0]["status"]==2 and recorded[1]["status"]==3
+    for code in (EVENT_JOB_MISSED,EVENT_JOB_SUBMITTED,EVENT_JOB_REMOVED):
+        SchedulerUtil._dispatch_job_event(SimpleNamespace(job_id=3,code=code))
+
+
+def test_finish_job_record(monkeypatch: pytest.MonkeyPatch) -> None:
+    from apscheduler.triggers.date import DateTrigger
+    from types import SimpleNamespace
+    records=[]; removed=[]
+    monkeypatch.setattr(SchedulerUtil,"_record_job_log",classmethod(lambda cls,r: records.append(r)))
+    monkeypatch.setattr(SchedulerUtil,"remove_job",classmethod(lambda cls,job_id: removed.append(job_id)))
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: None))
+    SchedulerUtil._finish_job_record(job_id="1:manual:x",status=2,detail="ok")
+    assert len(records)==1 and removed==["1:manual:x"]
+    records.clear(); removed.clear()
+    SchedulerUtil._finish_job_record(job_id="2",status=3,detail=RuntimeError("bad"))
+    assert len(records)==1 and records[0]["error"] and removed==[]
+    records.clear()
+    job=SimpleNamespace(name="n",next_run_time=None,trigger=DateTrigger(run_date="2099-01-01"))
+    monkeypatch.setattr(SchedulerUtil,"get_job",classmethod(lambda cls,job_id: job))
+    SchedulerUtil._finish_job_record(job_id="3",status=2,detail=None)
+    assert len(records)==1 and removed==["3"]
+
+
+def test_task_wrapper(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.core.ap_scheduler as mod
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: lambda *a,**k: "ok"))
+    assert SchedulerUtil._task_wrapper(1,"builtin:x")=="ok"
+    monkeypatch.setattr(SchedulerUtil,"resolve_builtin_handler",classmethod(lambda cls,raw: None))
+    assert SchedulerUtil._task_wrapper(1,"builtin:x") is None
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",False)
+    with pytest.raises(RuntimeError, match="拒绝执行"):
+        SchedulerUtil._task_wrapper(1,"print(1)")
+    monkeypatch.setattr(mod.settings,"SCHEDULER_ALLOW_CODE_EXEC",True)
+    assert SchedulerUtil._task_wrapper(1,None) is None
+    assert SchedulerUtil._task_wrapper(1,"def handler(*a,**k): return 1")==1
+    with pytest.raises(ValueError, match="handler"):
+        SchedulerUtil._task_wrapper(1,"x=1")

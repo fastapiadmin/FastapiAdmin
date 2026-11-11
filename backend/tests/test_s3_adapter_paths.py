@@ -28,6 +28,12 @@ class FakeClient:
     def head_object(self, **kw):
         self.calls.append(("head_object", kw))
 
+    def upload_file(self, *args, **kw):
+        self.calls.append(("upload_file", args))
+
+    def download_file(self, *args, **kw):
+        self.calls.append(("download_file", args))
+
     def put_object(self, **kw):
         self.calls.append(("put_object", kw))
 
@@ -56,7 +62,9 @@ class FakeClient:
 
 def _a(config=None):
     a = S3StorageAdapter.__new__(S3StorageAdapter)
-    a.config = SimpleNamespace(bucket="b", region="eu-west-1", **(config or {}))
+    data = {"bucket": "b", "region": "eu-west-1"}
+    data.update(config or {})
+    a.config = SimpleNamespace(**data)
     a.bucket_name = "b"
     a.client = FakeClient()
     return a
@@ -108,3 +116,104 @@ def test_s3_validation_errors() -> None:
         S3StorageAdapter(StorageAdapterConfig(protocol=StorageProtocol.S3, port=0, bucket="b", username="", password="x"))
     with pytest.raises(CustomException):
         S3StorageAdapter(StorageAdapterConfig(protocol=StorageProtocol.S3, port=0, bucket="", username="a", password="x"))
+
+
+def test_s3_upload_download_delete(monkeypatch: pytest.MonkeyPatch) -> None:
+    a=_a()
+    a._multipart_settings=lambda: (5*1024*1024, 2, True)
+    import app.modules.task.storage.core.s3_adapter as mod
+    from types import SimpleNamespace
+    monkeypatch.setattr(mod, "boto_transfer", SimpleNamespace(TransferConfig=lambda **kw: kw))
+    assert a._sync_upload("/tmp/a", "a") == "a"
+    assert a._sync_download("a", "/tmp/a") == "/tmp/a"
+    a._sync_delete("a")
+    assert any(c[0]=="upload_file" for c in a.client.calls)
+
+
+def test_s3_create_bucket_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    a=_a()
+    def fail(**kw): raise RuntimeError("x")
+    a.client.create_bucket=fail
+    with pytest.raises(CustomException):
+        a._sync_create_bucket("b")
+
+
+def test_s3_exists_404_and_error() -> None:
+    from botocore.exceptions import ClientError
+    class C:
+        def __init__(self, code): self.code=code
+        def head_object(self, **kw):
+            raise ClientError({"Error":{"Code":str(self.code)},"ResponseMetadata":{"HTTPStatusCode":self.code}}, "HeadObject")
+    a=_a(); a.client=C(404)
+    assert a._sync_exists("x") is False
+    a.client=C(500)
+    assert a._sync_exists("x") is False
+
+
+def test_s3_list_pagination_and_placeholders() -> None:
+    class C:
+        def __init__(self): self.n=0
+        def list_objects_v2(self, **kw):
+            self.n+=1
+            if self.n==1:
+                return {"IsTruncated":True,"NextContinuationToken":"c","CommonPrefixes":[{"Prefix":"d/"},{"Prefix":"d/"}],"Contents":[{"Key":"d/a","Size":1},{"Key":"d/","Size":0}]}
+            return {"IsTruncated":False,"CommonPrefixes":[],"Contents":[{"Key":"d/b","Size":2}]}
+    a=_a(); a.client=C()
+    items=a._sync_list("d/")
+    assert {x.key for x in items} == {"d","d/a","d/b"}
+
+
+def test_s3_list_page_cursor() -> None:
+    class C:
+        def list_objects_v2(self, **kw):
+            assert kw["ContinuationToken"] == "c"
+            return {"IsTruncated":True,"NextContinuationToken":"n","CommonPrefixes":[],"Contents":[{"Key":"d/a","Size":1}]}
+    a=_a(); a.client=C()
+    page=a._sync_list_page("d/",1,"c")
+    assert page.has_next is True and page.next_cursor == "n" and page.items[0].key == "d/a"
+
+
+def test_s3_create_bucket_default_region() -> None:
+    a=_a({"region":"us-east-1"})
+    a._sync_create_bucket("b")
+    assert "CreateBucketConfiguration" not in a.client.calls[-1][1]
+
+
+def test_s3_get_url_and_close() -> None:
+    a=_a()
+    assert a._sync_get_url("a",10) == "https://url"
+    a._sync_close()
+    assert a.client.calls[-1][0] == "close"
+
+
+def test_s3_mkdir_rmdir() -> None:
+    a=_a()
+    a._sync_mkdir("d")
+    assert a.client.calls[-1][0] == "put_object"
+    a._sync_rmdir("d")
+    assert a.client.calls[-1][0] == "delete_object"
+
+
+def test_s3_operation_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    a=_a()
+    a._multipart_settings=lambda: (1,1,True)
+    import app.modules.task.storage.core.s3_adapter as mod
+    from types import SimpleNamespace
+    monkeypatch.setattr(mod,"boto_transfer",SimpleNamespace(TransferConfig=lambda **kw: kw))
+    for name in ("upload_file","download_file","delete_object","list_buckets","generate_presigned_url"):
+        def fail(*args,**kw): raise RuntimeError("x")
+        setattr(a.client,name,fail)
+    with pytest.raises(RuntimeError): a._sync_upload("/tmp/a","a")
+    with pytest.raises(RuntimeError): a._sync_download("a","/tmp/a")
+    with pytest.raises(RuntimeError): a._sync_delete("a")
+    with pytest.raises(RuntimeError): a._sync_list_buckets()
+    with pytest.raises(RuntimeError): a._sync_get_url("a",1)
+
+
+def test_s3_list_errors_and_close_missing() -> None:
+    a=_a()
+    def fail(**kw): raise RuntimeError("x")
+    a.client.list_objects_v2=fail
+    with pytest.raises(RuntimeError): a._sync_list("d/")
+    with pytest.raises(RuntimeError): a._sync_list_page("d/",1,None)
+    a._sync_close()

@@ -106,6 +106,9 @@ class DictTypeService:
         exist_obj = await DictTypeCRUD(self.auth, self.db).get(dict_name=data.dict_name)
         if exist_obj:
             raise CustomException(msg="创建失败，该数据已存在")
+        exist_code = await DictTypeCRUD(self.auth, self.db).get(dict_type=data.dict_type)
+        if exist_code:
+            raise CustomException(msg="创建失败，字典编码已存在")
         obj = await DictTypeCRUD(self.auth, self.db).create(data=data)
 
         new_obj_dict = DictTypeOutSchema.model_validate(obj)

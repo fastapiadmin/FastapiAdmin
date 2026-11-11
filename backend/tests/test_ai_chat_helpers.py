@@ -89,3 +89,301 @@ async def test_chat_non_stream(monkeypatch: pytest.MonkeyPatch) -> None:
     svc = ChatService.__new__(ChatService); svc.auth = SimpleNamespace(user=SimpleNamespace(username="u")); svc.redis = None
     out = await svc.chat_non_stream("hi", None)
     assert out["session_id"] == "s1" and out["action"]["path"] == "/system/user"
+
+
+async def test_chat_session_service_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import ChatSessionCreateSchema, ChatSessionQueryParam, ChatSessionUpdateSchema
+    monkeypatch.setattr(mod, "_format_session_data", lambda s, **kw: {"session_id": "s"})
+    class C:
+        def __init__(self,*a): self.renamed=False
+        async def get_by_id(self,**kw): return {"x":1}
+        async def list_page(self,**kw): return ([{}], 2)
+        async def create(self,**kw): return {}
+        async def rename(self,**kw): self.renamed=True
+        async def delete(self,**kw): self.deleted=True
+    monkeypatch.setattr(mod, "ChatSessionCRUD", C)
+    s=ChatService.__new__(ChatService); s.auth=object(); s.redis=None
+    assert (await s.get_session("s")).session_id == "s"
+    assert (await s.create(ChatSessionCreateSchema(title="t"))).session_id == "s"
+    page=await s.page(1,10,ChatSessionQueryParam())
+    assert page.total == 2
+    await s.update("s", ChatSessionUpdateSchema(title="n"))
+    await s.delete(["s"])
+
+
+async def test_chat_non_stream_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    async def ensure(crud,sid): return "s"
+    monkeypatch.setattr(mod,"_ensure_session",ensure)
+    class Crud:
+        def __init__(self,*a): self.db=object()
+    monkeypatch.setattr(mod,"ChatSessionCRUD",Crud)
+    class Agent:
+        async def arun(self,input): raise RuntimeError()
+    class F:
+        def create_agent(self,**kw): return Agent()
+    monkeypatch.setattr(mod,"AgnoFactory",F)
+    s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
+    out=await s.chat_non_stream("x",None)
+    assert out["action"] is None and "暂时不可用" in out["response"]
+
+
+def test_extract_action_branches() -> None:
+    assert ChatService._extract_action('{"type":"x"}') == {"type":"x"}
+    assert ChatService._extract_action('```json\n{"type":"y"}\n```') == {"type":"y"}
+    assert ChatService._extract_action('```json{bad}```') is None
+    assert ChatService._extract_action("请打开用户管理页面") == {"type":"navigate","path":"/system/user","name":"用户管理"}
+    assert ChatService._extract_action("打开未知页面") is None
+
+
+async def test_chat_non_stream_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    async def ensure(crud,sid): return "s"
+    monkeypatch.setattr(mod,"_ensure_session",ensure)
+    class Crud:
+        def __init__(self,*a): self.db=object()
+    monkeypatch.setattr(mod,"ChatSessionCRUD",Crud)
+    class Agent:
+        async def arun(self,input): return SimpleNamespace(content="hi")
+    class F:
+        def create_agent(self,**kw): return Agent()
+    monkeypatch.setattr(mod,"AgnoFactory",F)
+    s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
+    out=await s.chat_non_stream("x",None)
+    assert out["response"]=="hi" and out["session_id"]=="s"
+
+
+async def _collect(gen):
+    out=[]
+    async for x in gen: out.append(x)
+    return out
+
+
+async def test_chat_query_stream_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    import asyncio
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import ChatQuerySchema
+    async def ensure(crud,sid): return "s"
+    monkeypatch.setattr(mod,"_ensure_session",ensure)
+    class Crud:
+        def __init__(self,*a): self.db=object()
+    monkeypatch.setattr(mod,"ChatSessionCRUD",Crud)
+    class Agent:
+        def __init__(self,stream): self.stream=stream
+        def arun(self,**kw): return self.stream
+    class F:
+        def __init__(self,stream): self.stream=stream
+        def create_agent(self,**kw): return Agent(self.stream)
+    def svc(stream):
+        s=ChatService.__new__(ChatService); s.auth=SimpleNamespace(user=SimpleNamespace(username="u")); s.redis=None
+        monkeypatch.setattr(mod,"AgnoFactory",lambda:F(stream))
+        return s
+    assert await _collect(svc(None).chat_query(ChatQuerySchema(message=" "))) == ["请输入消息内容"]
+    async def chunks():
+        for c in ("a","b"):
+            yield SimpleNamespace(content=c)
+    assert await _collect(svc(chunks()).chat_query(ChatQuerySchema(message="hi"))) == ["a","b"]
+    assert await _collect(svc(SimpleNamespace(content="z")).chat_query(ChatQuerySchema(message="hi"))) == ["z"]
+    async def bad():
+        raise RuntimeError()
+        yield
+    out=await _collect(svc(bad()).chat_query(ChatQuerySchema(message="hi")))
+    assert "暂时不可用" in out[0]
+    async def cancelled():
+        raise asyncio.CancelledError()
+        yield
+    with pytest.raises(asyncio.CancelledError):
+        await _collect(svc(cancelled()).chat_query(ChatQuerySchema(message="hi")))
+
+
+async def test_ai_config_service(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import AiModelConfigSchema
+    async def list_(r,u): return [{"id":"a"}]
+    async def active(r,u): return "a"
+    async def get(r,u): return {"id":"a"}
+    async def create_(r,u,c): return {"id":"new"}
+    async def update_(r,u,cid,c): return {"id":cid} if cid=="a" else None
+    async def delete_(r,u,cid): return cid=="a"
+    async def set_(r,u,cid): return cid=="a"
+    monkeypatch.setattr(mod,"list_user_model_configs",list_)
+    monkeypatch.setattr(mod,"get_active_model_id",active)
+    monkeypatch.setattr(mod,"get_user_model_config",get)
+    monkeypatch.setattr(mod,"create_user_model_config",create_)
+    monkeypatch.setattr(mod,"update_user_model_config",update_)
+    monkeypatch.setattr(mod,"delete_user_model_config",delete_)
+    monkeypatch.setattr(mod,"set_active_model_config",set_)
+    s=mod.AiModelConfigService(auth=SimpleNamespace(user=SimpleNamespace(id=1)),redis=None)
+    assert (await s.list_configs())["active_id"]=="a"
+    assert (await s.get_active())["id"]=="a"
+    assert (await s.create(AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k")))["id"]=="new"
+    assert (await s.update("a",AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k")))["id"]=="a"
+    with pytest.raises(CustomException, match="不存在"):
+        await s.update("b",AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k"))
+    await s.delete("a")
+    with pytest.raises(CustomException, match="不存在"):
+        await s.delete("b")
+    await s.set_active("a")
+    with pytest.raises(CustomException, match="不存在"):
+        await s.set_active("b")
+
+
+async def test_ai_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,status=200,data=None): self.status_code=status; self._data=data or {}
+        def json(self): return self._data
+    class C:
+        def __init__(self,resp=None,err=None): self.resp=resp; self.err=err
+        async def __aenter__(self): return self
+        async def __aexit__(self,*a): return False
+        async def get(self,*a,**k):
+            if self.err: raise self.err
+            return self.resp
+        async def post(self,*a,**k):
+            if self.err: raise self.err
+            return self.resp
+    def client(resp=None,err=None): return lambda *a,**k:C(resp,err)
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(200,{"data":[{"id":"m","owned_by":"o"},{"bad":1}]})))
+    assert await mod.probe_available_models("https://x/","k")==[{"id":"m","owned_by":"o"}]
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(500)))
+    with pytest.raises(CustomException, match="HTTP 500"):
+        await mod.probe_available_models("https://x","k")
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(err=mod.httpx.HTTPError("x")))
+    with pytest.raises(CustomException, match="请求模型列表失败"):
+        await mod.probe_available_models("https://x","k")
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(200)))
+    out=await mod.probe_model_connection("https://x","k","m")
+    assert out["ok"] is True and out["model_id"]=="m"
+    monkeypatch.setattr(mod.httpx,"AsyncClient",client(R(401)))
+    with pytest.raises(CustomException, match="HTTP 401"):
+        await mod.probe_model_connection("https://x","k","m")
+
+
+async def test_ai_config_storage_reads(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,v): self.v=v
+        async def get(self,k): return self.v
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    assert await mod._read_raw_items(R(None),1)==[]
+    assert await mod._read_raw_items(R("bad"),1)==[]
+    assert await mod._read_raw_items(R(json.dumps({"a":1})),1)==[]
+    assert await mod._read_raw_items(R(json.dumps([{"id":"a"}])),1)==[{"id":"a"}]
+    monkeypatch.setattr(mod,"_open_item",lambda it:{"id":it["id"],"api_key":"k"})
+    assert await mod.list_user_model_configs(R(json.dumps([{"id":"a"}])),1)==[{"id":"a","api_key":"k"}]
+    assert await mod.get_active_model_id(R("a"),1)=="a"
+
+
+def test_ai_seal_open(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    monkeypatch.setattr(mod.CryptoUtil,"encrypt",staticmethod(lambda s:"enc:"+s))
+    monkeypatch.setattr(mod.CryptoUtil,"decrypt_or_keep",staticmethod(lambda s:s.removeprefix("enc:")))
+    assert mod._seal_item({"id":"a"}) == {"id":"a"}
+    assert mod._seal_item({"api_key":"k"})["api_key"] == "enc:k"
+    assert mod._open_item({"api_key":"enc:k"})["api_key"] == "k"
+    assert mod._open_item({"id":"a"}) == {"id":"a"}
+
+
+async def test_ai_config_lock(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,ok): self.ok=ok; self.unlocked=None
+        async def lock(self,**kw): return self.ok, "t"
+        async def unlock(self,**kw): self.unlocked=kw
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    r=R(True)
+    async with mod._model_config_lock(r,1): pass
+    assert r.unlocked
+    with pytest.raises(CustomException, match="正在被修改"):
+        async with mod._model_config_lock(R(False),1): pass
+
+
+async def test_ai_config_crud_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    from contextlib import asynccontextmanager
+    import app.modules.ai.chat.service as mod
+    from app.modules.ai.chat.schema import AiModelConfigSchema
+    @asynccontextmanager
+    async def lock(redis,user_id): yield
+    monkeypatch.setattr(mod,"_model_config_lock",lock)
+    class Store:
+        def __init__(self): self.d={}
+        async def get(self,k): return self.d.get(k)
+        async def set(self,k,v,expire=None): self.d[k]=v; return True
+        async def delete(self,k): self.d.pop(k,None); return True
+    st=Store(); monkeypatch.setattr(mod,"RedisCURD",lambda redis:st)
+    monkeypatch.setattr(mod,"_seal_item",lambda it:it)
+    cfg=AiModelConfigSchema(name="n",model_id="m",base_url="https://x",api_key="k")
+    item=await mod.create_user_model_config(None,1,cfg)
+    assert st.d[mod._ai_model_active_key(1)]==item["id"]
+    await mod.update_user_model_config(None,1,item["id"],AiModelConfigSchema(name="n2",model_id="m2",base_url="https://x",api_key="k2"))
+    assert (await mod.list_user_model_configs(None,1))[0]["name"]=="n2"
+    assert await mod.delete_user_model_config(None,1,"none") is False
+    assert await mod.delete_user_model_config(None,1,item["id"]) is True
+    assert mod._ai_model_active_key(1) not in st.d
+
+
+async def test_ai_active_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    import app.modules.ai.chat.service as mod
+    class R:
+        def __init__(self,d): self.d=d
+        async def get(self,k): return self.d.get(k)
+        async def set(self,k,v,expire=None): self.d[k]=v; return True
+        async def delete(self,k): self.d.pop(k,None); return True
+    monkeypatch.setattr(mod,"RedisCURD",lambda r:r)
+    assert await mod.get_user_model_config(R({}),1) is None
+    assert await mod.get_user_model_config(R({mod._ai_model_active_key(1):"x"}),1) is None
+    store={mod._ai_model_active_key(1):"a",mod._ai_model_items_key(1):json.dumps([{"id":"a","api_key":"k"}])}
+    monkeypatch.setattr(mod,"_open_item",lambda it:it)
+    assert (await mod.get_user_model_config(R(store),1))["id"]=="a"
+    r=R({})
+    assert await mod.set_active_model_config(r,1,"") is True
+    assert await mod.set_active_model_config(r,1,"none") is False
+    r2=R({mod._ai_model_items_key(1):json.dumps([{"id":"a"}])})
+    assert await mod.set_active_model_config(r2,1,"a") is True and r2.d[mod._ai_model_active_key(1)]=="a"
+
+
+def test_session_format_helpers() -> None:
+    import json
+    from types import SimpleNamespace
+    import app.modules.ai.chat.service as mod
+    assert mod._session_to_dict({"a":1})=={"a":1}
+    assert mod._session_to_dict(SimpleNamespace(to_dict=lambda:{"b":2}))=={"b":2}
+    assert mod._session_to_dict(SimpleNamespace(session_id="s"))["session_id"]=="s"
+    assert mod._normalize_runs("bad")==[]
+    assert mod._normalize_runs('{"a":1}')==[]
+    assert mod._normalize_runs('[{"a":1}]')==[{"a":1}]
+    runs=[{"messages":[{"role":"user","content":"q"},{"role":"system","content":"x"},{"role":"assistant","content":"a"}]}]
+    msgs=mod._extract_messages(runs)
+    assert [m["role"] for m in msgs]==["user","assistant"]
+    assert mod._unix_to_datetime(None) is None
+    assert mod._unix_to_datetime("bad") is None
+
+
+def test_format_session_data() -> None:
+    import json
+    import app.modules.ai.chat.service as mod
+    session={"session_id":"abcdef1234","runs":[{"messages":[{"role":"user","content":"q"}]}],"session_data":json.dumps({"session_name":"T"}),"summary":{"summary":"S"},"created_at":1}
+    out=mod._format_session_data(session)
+    assert out["title"]=="T" and out["message_count"]==1 and out["messages"][0]["role"]=="user"
+    out2=mod._format_session_data(session,with_messages=False)
+    assert out2["message_count"]==1 and out2["messages"]==[]
+    out3=mod._format_session_data({"session_id":"x","session_data":"bad"})
+    assert out3["title"]=="x" and out3["session_data"]=={}
+
+
+async def test_ensure_session_and_tools(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.modules.ai.chat.service as mod
+    assert await mod._ensure_session(object(),"s")=="s"
+    class C:
+        async def create(self,data): return SimpleNamespace(session_id="new")
+    assert await mod._ensure_session(C(),None)=="new"
+    s=ChatService.__new__(ChatService); s.auth=object(); s.redis=None
+    assert s._chat_tools(False)==[]
+    import app.modules.ai.tools.registry as reg
+    monkeypatch.setattr(reg,"build_readonly_tools",lambda auth,redis: [SimpleNamespace(func="f")])
+    assert s._chat_tools(True)==["f"]

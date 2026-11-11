@@ -93,3 +93,53 @@ async def test_dict_data_update_value_duplicate(monkeypatch: pytest.MonkeyPatch)
     data = DictDataUpdateSchema(dict_sort=1, dict_label="A", dict_value="b", dict_type="t", dict_type_id=1)
     with pytest.raises(CustomException, match="键值"):
         await s.update(object(), 1, data)
+
+
+async def test_dict_data_create_duplicate_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return _obj() if "dict_value" in kw else None
+    s=_svc(monkeypatch,C)
+    data=DictDataCreateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1)
+    with pytest.raises(CustomException, match="键值"):
+        await s.create(object(),data)
+
+
+async def test_create_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return None
+        async def create(self,data): return _obj()
+    s=_svc(monkeypatch,C)
+    async def bad(redis,dt): raise RuntimeError()
+    s._refresh_dict_cache=bad
+    with pytest.raises(RuntimeError):
+        await s.create(object(),DictDataCreateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="t",dict_type_id=1))
+
+
+async def test_delete_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get_list(self,**kw): return [_obj()]
+        async def delete(self,**kw): pass
+    s=_svc(monkeypatch,C)
+    async def bad(redis,dt): raise RuntimeError()
+    s._refresh_dict_cache=bad
+    with pytest.raises(RuntimeError):
+        await s.delete(object(),[1])
+
+
+async def test_update_old_type_cache_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    class C:
+        def __init__(self,*a): pass
+        async def get_or_404(self,**kw): return _obj(dict_type="old")
+        async def get(self,**kw): return None
+        async def update(self,**kw): return _obj(dict_type="new")
+    class T:
+        def __init__(self,*a): pass
+        async def get(self,**kw): return _obj(dict_type="old")
+    s=_svc(monkeypatch,C,T)
+    async def bad(redis,dt): raise RuntimeError()
+    s._refresh_dict_cache=bad
+    with pytest.raises(RuntimeError):
+        await s.update(object(),1,DictDataUpdateSchema(dict_sort=1,dict_label="A",dict_value="a",dict_type="new",dict_type_id=1))
