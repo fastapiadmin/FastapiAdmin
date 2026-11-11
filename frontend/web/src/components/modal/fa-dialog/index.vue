@@ -160,7 +160,9 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 
 const dialogClass = computed(() => {
   const a = attrs.class;
-  return [props.dialogClass, a].filter(Boolean);
+  return [props.dialogClass, a, props.formMode === "detail" ? "fa-dialog-detail-scroll" : ""].filter(
+    Boolean
+  );
 });
 
 const visible = computed({
