@@ -132,10 +132,10 @@
           size="xl"
         >
           <FaDescriptions
-            :column="8"
+            :column="6"
             :data="opFormData"
             :items="opDetailItems"
-            label-width="100px"
+            label-width="96px"
             max-height="70vh"
           >
             <template #request_method="{ row }">
@@ -542,14 +542,14 @@ const opFormData = ref<OperationLogTable>({} as OperationLogTable);
 
 const opDetailItems: import("@/components/display/fa-descriptions/index.vue").DescriptionsItem[] = [
   { label: "描述", prop: "description", span: 6 },
-  { label: "响应状态码", prop: "response_code", slot: "response_code", span: 2 },
-  { label: "请求路径", prop: "request_path", span: 4 },
+  { label: "请求路径", prop: "request_path", span: 6 },
   { label: "请求方法", prop: "request_method", slot: "request_method", span: 2 },
+  { label: "响应状态码", prop: "response_code", slot: "response_code", span: 2 },
   { label: "请求IP", prop: "request_ip", slot: "request_ip", span: 2 },
-  { label: "处理时间", prop: "process_time", slot: "process_time", span: 4 },
-  { label: "创建时间", prop: "created_time", slot: "created_time", span: 4 },
-  { label: "请求参数", prop: "request_payload", slot: "request_payload", span: 8 },
-  { label: "响应数据", prop: "response_json", slot: "response_json", span: 8 },
+  { label: "处理时间", prop: "process_time", slot: "process_time", span: 3 },
+  { label: "创建时间", prop: "created_time", slot: "created_time", span: 3 },
+  { label: "请求参数", prop: "request_payload", slot: "request_payload", span: 6 },
+  { label: "响应数据", prop: "response_json", slot: "response_json", span: 6 },
 ];
 
 const { dialogVisible: opDialogVisible, closeDialog: opCloseDialog } = useCrudDialog();
