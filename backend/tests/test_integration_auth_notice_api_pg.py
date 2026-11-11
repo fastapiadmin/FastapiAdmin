@@ -62,3 +62,4 @@ async def test_auth_login_refresh_logout(test_client) -> None:
     data = r.json()["data"]
     assert test_client.post(f"{base}/token/refresh", json=data["refresh_token"]).status_code == 200
     assert test_client.post(f"{base}/logout", json=data["access_token"], headers={"Authorization": "Bearer " + data["access_token"]}).status_code in (200, 400)
+    assert test_client.post(f"{base}/token/refresh", json=data["refresh_token"]).status_code in (401, 400)

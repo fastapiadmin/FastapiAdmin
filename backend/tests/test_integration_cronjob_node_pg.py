@@ -143,6 +143,7 @@ async def test_cron_node_api(test_client, auth_headers) -> None:
         assert test_client.put(f"{base}/update/{nid}", json={"name": name, "func": "builtin:server_status", "trigger": None}, headers=auth_headers).status_code == 200
         assert test_client.post(f"{base}/status/batch", json={"ids": [nid], "status": 1}, headers=auth_headers).status_code in (200, 405, 404)
         assert test_client.post(f"{base}/execute/{nid}", headers=auth_headers).status_code in (200, 400)
+        assert test_client.post(f"{base}/execute/99999999", headers=auth_headers).status_code in (400, 404)
         assert test_client.request("DELETE", f"{base}/delete", json=[nid, created_id], headers=auth_headers).status_code == 200
     finally:
         await _cleanup(name)

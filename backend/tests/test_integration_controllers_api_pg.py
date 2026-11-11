@@ -86,6 +86,9 @@ async def test_version_controller(test_client, auth_headers) -> None:
         assert r.status_code in (200, 201), r.text
         vid = r.json()["data"]["id"]
         assert test_client.get(f"{base}/detail/{vid}", headers=auth_headers).status_code == 200
+        assert test_client.get(f"{base}/list", params={"page_no": 1, "page_size": 10}, headers=auth_headers).status_code == 200
+        assert test_client.get(f"{base}/published", headers=auth_headers).status_code == 200
+        assert test_client.put(f"{base}/{vid}/status", json={"status": 1}, headers=auth_headers).status_code == 200
         assert test_client.put(f"{base}/update/{vid}", json=payload, headers=auth_headers).status_code == 200
         assert test_client.request("DELETE", f"{base}/delete", json=[vid], headers=auth_headers).status_code == 200
     finally:
