@@ -143,3 +143,24 @@ async def test_run_step_source_config_none(monkeypatch) -> None:
     task = SimpleNamespace(id=1, status="running", total_size=0, transferred_size=0, speed=0, error_msg=None, finished_at=None)
     step = SimpleNamespace(source_id=1, source_path="x", target_id=2, target_path="y", status="pending", started_at=None, progress=0, total_size=0, transferred_size=0, speed=0, error_msg=None, finished_at=None, step_order=0, transfer_mode=None, multipart_part_size=None, multipart_concurrency=None)
     assert await E._run_step(DB(), task, step) is False
+
+
+async def test_broadcast_failure_and_unlink(monkeypatch) -> None:
+    class M:
+        async def send_to_user(self, *a, **k): raise RuntimeError("x")
+    monkeypatch.setattr(E, "transfer_stream_manager", M())
+    monkeypatch.setattr(E, "_task_payload", lambda t, s: {})
+    await E._broadcast(SimpleNamespace(created_id=1, id=1), [])
+    import os
+    monkeypatch.setattr(os, "unlink", lambda p: (_ for _ in ()).throw(OSError("x")))
+    E._remove_local_temp(SimpleNamespace(source_type="local", source_path="/tmp/x"))
+
+
+async def test_run_step_empty_source(monkeypatch) -> None:
+    class DB:
+        async def commit(self): pass
+    monkeypatch.setattr(E, "_load_steps", AsyncMock(return_value=[]))
+    monkeypatch.setattr(E, "_broadcast", AsyncMock())
+    task = SimpleNamespace(id=1, status="running", total_size=0, transferred_size=0, speed=0, error_msg=None, finished_at=None)
+    step = SimpleNamespace(source_id=None, source_path="", target_id=1, target_path="y", status="pending", started_at=None, progress=0, total_size=0, transferred_size=0, speed=0, error_msg=None, finished_at=None, step_order=0, transfer_mode=None, multipart_part_size=None, multipart_concurrency=None)
+    assert await E._run_step(DB(), task, step) is False

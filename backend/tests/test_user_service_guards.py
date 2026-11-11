@@ -54,3 +54,35 @@ async def test_user_import_errors(test_client) -> None:
             await svc.batch_import(UploadFile(filename="a.txt", file=io.BytesIO(b"not excel")))
         with pytest.raises(CustomException):
             await svc.batch_import(UploadFile(filename="a.txt", file=io.BytesIO(b"")))
+
+
+async def test_user_load_menus_empty(test_client) -> None:
+    async with _db() as db:
+        from app.core.base_schema import AuthSchema
+        auth = AuthSchema(user=__import__("types").SimpleNamespace(id=1, is_superuser=False), menu_ids=[])
+        svc = UserService(auth, db)
+        assert await svc._load_menus() == []
+
+
+async def test_user_import_custom_and_fields(test_client) -> None:
+    import io
+    from starlette.datastructures import UploadFile
+    from openpyxl import Workbook
+    from app.core.exceptions import CustomException
+    import app.modules.system.user.service as m
+    class E:
+        @staticmethod
+        async def aread_excel_to_dicts(c): raise CustomException(msg="x")
+    old = m.ExcelUtil
+    m.ExcelUtil = E
+    try:
+        async with _db() as db:
+            with pytest.raises(CustomException):
+                await UserService(_auth(0), db).batch_import(UploadFile(filename="a.xlsx", file=io.BytesIO(b"x")))
+    finally:
+        m.ExcelUtil = old
+    wb = Workbook(); ws = wb.active; ws.append(["部门编号", "账号", "昵称"]); ws.append([None, "u", "n"])
+    bio = io.BytesIO(); wb.save(bio); bio.seek(0)
+    async with _db() as db:
+        with pytest.raises(CustomException):
+            await UserService(_auth(0), db).batch_import(UploadFile(filename="a.xlsx", file=bio))
