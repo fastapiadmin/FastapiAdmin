@@ -144,3 +144,19 @@ def test_more_jinja_errors() -> None:
     assert J.get_api_route_prefix(None) == ""
     assert J.get_api_route_prefix("module_x") == "x"
     J._sentinelize_schema_in_place(None, set())
+
+
+def test_jinja_env_and_path_edges(monkeypatch) -> None:
+    import pytest
+    class Bad:
+        def __init__(self, *a, **k): raise RuntimeError("x")
+    import app.modules.generator.gencode.jinja2_template_util as jm
+    monkeypatch.setattr(jm, "Environment", Bad)
+    monkeypatch.setattr(J, "_env", None)
+    with pytest.raises(RuntimeError):
+        J.get_env()
+    assert J.get_db_type("varchar(10) UNSIGNED") == "varchar"
+    assert J.get_api_route_prefix("x") == "x"
+    assert J.iter_render_dynamic_values(None) == []
+    with pytest.raises(ValueError):
+        J.get_file_name("no_such.j2", __import__("app.modules.generator.gencode.schema", fromlist=["GenTableOutSchema"]).GenTableOutSchema(table_name="x", class_name="X", package_name="module_x", module_name="x"))

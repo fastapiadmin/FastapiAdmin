@@ -131,3 +131,32 @@ async def test_refresh_token_edges(monkeypatch) -> None:
     monkeypatch.setattr(mod, "RedisCURD", R2)
     with pytest.raises(CustomException):
         await mod.LoginService.refresh_token(None, None, "refresh")
+
+
+async def test_prepare_refresh_none(monkeypatch) -> None:
+    import app.modules.system.auth.service as mod
+    class C:
+        def __init__(self,*a): pass
+        async def update_last_login(self, **k): return None
+    monkeypatch.setattr(mod, "UserCRUD", C)
+    with pytest.raises(CustomException):
+        await mod.LoginService.prepare_user_for_login(None, SimpleNamespace(status=0, id=1))
+
+
+async def test_captcha_states(monkeypatch) -> None:
+    import app.modules.system.auth.service as mod
+    class Cap(mod.CaptchaService):
+        PENDING = 0; VERIFIED = 1
+        @staticmethod
+        async def _read_state(**k): return {"status": 9, "target_x": 0, "issued_at": 0, "fingerprint": "f"}
+    monkeypatch.setattr(mod, "CaptchaService", Cap)
+    with pytest.raises(CustomException):
+        await mod.CaptchaService.slider_complete(redis=None, request=None, captcha_key="k", position=0)
+    class Cap2(Cap):
+        @staticmethod
+        async def _read_state(**k): return {"status": 0, "target_x": 0, "issued_at": 0, "fingerprint": "f"}
+        @staticmethod
+        def _matches(state, request): return False
+    monkeypatch.setattr(mod, "CaptchaService", Cap2)
+    with pytest.raises(CustomException):
+        await Cap2.slider_complete(redis=None, request=None, captcha_key="k", position=0)
