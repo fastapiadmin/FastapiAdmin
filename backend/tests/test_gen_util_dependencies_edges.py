@@ -48,3 +48,15 @@ async def test_authenticate_session_guards(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setattr(D, "RedisCURD", R)
     with pytest.raises(CustomException):
         await D._authenticate("x", None, object())
+
+
+def test_gen_util_column_init(monkeypatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableColumnSchema
+    import app.modules.generator.gencode.gen_util as G
+    for db in ("mysql", "postgres"):
+        monkeypatch.setattr(G.settings, "DATABASE_TYPE", db)
+        c = GenTableColumnSchema(column_name="g", column_type="geometry", python_type="")
+        G.GenUtils.init_column_field(c, type("T", (), {"table_name": "t", "id": 1})())
+        assert c.python_type in ("bytes", "list")
+    assert G.GenUtils.get_column_length("decimal(10,2)") == 10
+    assert G.GenUtils.get_column_length("decimal(bad)") == 0

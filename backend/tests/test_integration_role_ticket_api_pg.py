@@ -75,3 +75,7 @@ async def test_cache_controller(test_client, auth_headers) -> None:
     assert test_client.get(f"{base}/get/keys/system_config", headers=auth_headers).status_code in (200, 400)
     assert test_client.get(f"{base}/get/value/system_config/x", headers=auth_headers).status_code in (200, 400, 404)
     assert test_client.get(f"{base}/redis/keys", params={"pattern": "*", "limit": 5}, headers=auth_headers).status_code in (200, 400)
+    assert test_client.get(f"{base}/redis/databases", headers=auth_headers).status_code in (200, 400)
+    assert test_client.get(f"{base}/redis/value", params={"key": "missing"}, headers=auth_headers).status_code in (200, 400)
+    assert test_client.request("DELETE", f"{base}/delete/key/missing", headers=auth_headers).status_code in (200, 400)
+    assert test_client.request("DELETE", f"{base}/delete/name/missing", headers=auth_headers).status_code in (200, 400)
