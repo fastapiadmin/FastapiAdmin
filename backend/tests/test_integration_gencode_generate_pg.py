@@ -137,3 +137,35 @@ async def test_gencode_missing_guards(test_client) -> None:
             await svc.preview_code(99999999)
         with pytest.raises(CustomException):
             await svc.create_table(";")
+
+
+async def test_generate_package_empty_and_traversal(test_client, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.modules.generator.gencode.schema import GenTableSchema
+    from app.modules.generator.gencode.service import GenTableService
+    from app.core.exceptions import CustomException
+    import app.modules.generator.gencode.service as sm
+    import app.modules.generator.gencode.jinja2_template_util as jm
+    name = _name()
+    root = tmp_path / "repo"; (root / "backend").mkdir(parents=True)
+    monkeypatch.setattr(sm, "BASE_DIR", root / "backend")
+    async with _db() as db:
+        obj = await GenTableCRUD(_auth(), db).add_gen_table(GenTableSchema(table_name=name, class_name="X", package_name="module_it", module_name="it", business_name="x", function_name="X"))
+        await db.commit()
+        svc = GenTableService(_auth(), db)
+        async def empty_pkg(*a): return ""
+        monkeypatch.setattr(svc, "_effective_package_name", empty_pkg)
+        with pytest.raises(CustomException):
+            await svc.generate_code(name)
+        monkeypatch.setattr(svc, "_effective_package_name", lambda *a: _pkg())
+        class T:
+            async def render_async(self, **k): return "x = 1"
+        class Env:
+            def get_template(self, n): return T()
+        monkeypatch.setattr(jm.Jinja2TemplateUtil, "get_env", classmethod(lambda cls: Env()))
+        monkeypatch.setattr(jm.Jinja2TemplateUtil, "get_file_name", staticmethod(lambda t, s: "../evil.py"))
+        with pytest.raises(CustomException):
+            await svc.generate_code(name)
+        await GenTableCRUD(_auth(), db).delete_gen_table([obj.id])
+
+
+async def _pkg(): return "module_it"
