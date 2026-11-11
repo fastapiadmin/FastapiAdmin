@@ -57,3 +57,24 @@ async def test_init_data_error(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(I.InitializeData, "_InitializeData__load_json", staticmethod(lambda n: [{"bad": 1}]))
     with pytest.raises(Exception):
         await obj._InitializeData__init_data(DB())
+
+
+def test_load_json_errors(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(I, "SCRIPT_DIR", tmp_path)
+    (tmp_path / "bad.json").write_text("{bad")
+    with pytest.raises(Exception):
+        I.InitializeData._InitializeData__load_json("bad")
+    (tmp_path / "x.json").write_text("[1]")
+    assert I.InitializeData._InitializeData__load_json("x") == [1]
+
+
+async def test_apply_empty_no_migrations(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(I, "async_engine", Engine(False))
+    monkeypatch.setattr(I, "create_tables", AsyncMock())
+    monkeypatch.setattr(I, "ALEMBIC_VERSION_DIR", tmp_path)
+    (tmp_path / "__init__.py").write_text("")
+    monkeypatch.setattr(I.settings, "ENVIRONMENT", I.EnvironmentEnum.DEV)
+    monkeypatch.setattr(I.InitializeData, "_InitializeData__autogen_migration", staticmethod(lambda cfg: False))
+    with patch.object(command, "stamp") as stamp:
+        await I.InitializeData._InitializeData__apply_migrations()
+    assert not stamp.called
