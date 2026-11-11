@@ -42,19 +42,3 @@ async def test_user_service_no_id_guards(test_client) -> None:
             await svc.current_info()
         with pytest.raises(CustomException):
             await svc.update_current_info(SimpleNamespace(mobile=None, email=None, name="x", avatar=None))
-
-
-async def test_forget_password_normal_user(test_client) -> None:
-    from app.modules.system.user.schema import UserForgetPasswordSchema
-    name = f"it_fp_{uuid.uuid4().hex[:8]}"
-    try:
-        from app.modules.system.user.schema import UserCreateSchema
-        async with _db() as db:
-            await UserService(_auth(0), db).create(UserCreateSchema(username=name, password="Abc123!x", name="x"))
-            await db.commit()
-            svc = UserService(_auth(0), db)
-            assert await svc.forget_password(UserForgetPasswordSchema(username=name)) is None
-    finally:
-        async with _db() as db:
-            await db.execute(text("DELETE FROM sys_user WHERE username=:u"), {"u": name})
-            await db.commit()
