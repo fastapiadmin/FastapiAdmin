@@ -7,6 +7,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+import os
+
+pytestmark = pytest.mark.skipif(os.getenv("RUN_INTEGRATION") != "1", reason="需要真实 PostgreSQL")
+
 from app.modules.system.dict.crud import DictDataCRUD
 from app.modules.task.cronjob.node.handlers.system_log import cleanup_expired_logs
 
