@@ -87,8 +87,7 @@
             :column="4"
             :data="detailFormData"
             :items="memoryDetailItems"
-            :scrollbar="false"
-          >
+            >
             <template #metadata="{ row }">
               <pre v-if="row?.metadata">{{ JSON.stringify(row?.metadata, null, 2) }}</pre>
               <span v-else>无</span>
