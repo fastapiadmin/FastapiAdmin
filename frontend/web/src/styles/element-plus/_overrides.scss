@@ -151,6 +151,15 @@ html.dark .el-card {
   padding: 16px !important;
 }
 
+// 详情弹窗统一限制高度，使用浏览器原生纵向滚动（不再套 ElScrollbar）
+.el-dialog.fa-dialog-detail-scroll .el-dialog__body {
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--el-text-color-placeholder) transparent;
+}
+
 .el-dialog__footer {
   padding: 8px 16px 16px !important;
   border-top: 1px solid var(--fa-gray-200);
