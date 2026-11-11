@@ -175,7 +175,7 @@
       size="xl"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <ElScrollbar max-height="65vh">
+        <div>
           <FaDescriptions
             :column="4"
             :data="detailFormData"
@@ -195,24 +195,22 @@
               />
             </template>
             <template #ticket_content>
-              <ElScrollbar
-                class="box-border min-h-30 max-h-[min(360px,45vh)] bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)]"
-                view-class="p-3"
+              <div
+                class="box-border min-h-30 bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)] p-3"
               >
                 <template v-if="detailHasRenderableContent">
                   <div v-html="detailContentHtml" />
                 </template>
                 <p v-else class="m-0 text-sm text-(--el-text-color-placeholder)">暂无内容</p>
-              </ElScrollbar>
+              </div>
             </template>
             <template #reply_content>
-              <ElScrollbar
+              <div
                 v-if="detailFormData.reply"
-                class="box-border min-h-30h-[min(360px,45vh)] bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)]"
-                view-class="p-3"
+                class="box-border min-h-30 bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)] p-3"
               >
                 <div v-html="sanitizedReply" />
-              </ElScrollbar>
+              </div>
               <p v-else class="m-0 text-sm text-(--el-text-color-placeholder)">暂无回复</p>
             </template>
           </FaDescriptions>
@@ -227,7 +225,7 @@
             </span>
           </ElDivider>
           <div class="flex flex-col gap-3">
-            <ElScrollbar class="px-1">
+            <div class="px-1">
               <div v-if="commentsLoading" class="py-3">
                 <ElSkeleton :rows="2" animated />
               </div>
@@ -259,7 +257,7 @@
                 </div>
               </template>
               <FaEmptyState v-else icon="ri:chat-3-line" title="暂无评论" compact />
-            </ElScrollbar>
+            </div>
 
             <!-- 提交评论 -->
             <div
@@ -284,7 +282,7 @@
               </ElButton>
             </div>
           </div>
-        </ElScrollbar>
+        </div>
       </template>
       <template v-else>
         <FaForm
@@ -341,7 +339,7 @@
         </FaForm>
 
         <!-- 处理工单：展示工单信息 + 回复处理 -->
-        <ElScrollbar v-else max-height="75vh" class="flex flex-col">
+        <div v-else class="flex flex-col">
           <!-- 工单信息区 -->
           <div class="flex flex-col gap-3 py-1">
             <div class="flex gap-2.5 items-center">
@@ -382,7 +380,7 @@
               />
             </div>
           </div>
-        </ElScrollbar>
+        </div>
       </template>
     </FaDialog>
   </div>
@@ -412,7 +410,6 @@ import {
   ElOption,
   ElRadioGroup,
   ElRadio,
-  ElScrollbar,
   ElDivider,
   ElInput,
   ElMessageBox,
