@@ -42,3 +42,15 @@ async def test_user_service_no_id_guards(test_client) -> None:
             await svc.current_info()
         with pytest.raises(CustomException):
             await svc.update_current_info(SimpleNamespace(mobile=None, email=None, name="x", avatar=None))
+
+
+async def test_user_import_errors(test_client) -> None:
+    import io
+    from starlette.datastructures import UploadFile
+    from app.core.exceptions import CustomException
+    async with _db() as db:
+        svc = UserService(_auth(0), db)
+        with pytest.raises(CustomException):
+            await svc.batch_import(UploadFile(filename="a.txt", file=io.BytesIO(b"not excel")))
+        with pytest.raises(CustomException):
+            await svc.batch_import(UploadFile(filename="a.txt", file=io.BytesIO(b"")))
