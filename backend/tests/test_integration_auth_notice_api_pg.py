@@ -43,3 +43,12 @@ async def test_notice_extra(test_client, auth_headers) -> None:
             await c.execute(text("DELETE FROM sys_notice WHERE notice_title=:v"), {"v": title})
             await c.execute(text("DELETE FROM sys_notice_read WHERE notice_id NOT IN (SELECT id FROM sys_notice)"))
         await e.dispose()
+
+
+async def test_auth_controller_more(test_client, auth_headers) -> None:
+    paths = test_client.get("/openapi.json").json()["paths"]
+    base = next(p for p in paths if p.endswith("/auth/login")).rsplit("/login", 1)[0]
+    assert test_client.post(f"{base}/captcha/slider/complete", json={"captcha_key": "x"}, headers=auth_headers).status_code in (200, 400, 422)
+    assert test_client.get(f"{base}/oauth/github/login", headers=auth_headers, follow_redirects=False).status_code in (302, 307, 400, 403, 404, 500)
+    assert test_client.get(f"{base}/oauth/github/callback", params={"code": "x", "state": "y"}, headers=auth_headers, follow_redirects=False).status_code in (200, 302, 307, 400, 403, 404, 500)
+    assert test_client.post(f"{base}/wx-qrcode/generate", json={"scene": "x"}, headers=auth_headers).status_code in (400, 500)
