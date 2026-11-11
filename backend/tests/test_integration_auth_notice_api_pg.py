@@ -32,6 +32,8 @@ async def test_notice_extra(test_client, auth_headers) -> None:
         r = test_client.post(f"{base}/create", json={"notice_title": title, "notice_type": "1", "notice_content": "x", "status": 0}, headers=auth_headers)
         assert r.status_code in (200, 201), r.text
         nid = r.json()["data"]["id"]
+        assert test_client.get(f"{base}/list", params={"page_no": 1, "page_size": 10}, headers=auth_headers).status_code == 200
+        assert test_client.get(f"{base}/detail/{nid}", headers=auth_headers).status_code == 200
         assert test_client.patch(f"{base}/status/batch", json={"ids": [nid], "status": 1}, headers=auth_headers).status_code == 200
         assert test_client.get(f"{base}/available", headers=auth_headers).status_code == 200
         assert test_client.get(f"{base}/unread-count", headers=auth_headers).status_code == 200

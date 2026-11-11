@@ -138,10 +138,11 @@ async def test_cron_node_api(test_client, auth_headers) -> None:
         created = test_client.post(f"{base}/create", json={"name": name + "_api", "func": "builtin:server_status", "trigger": None}, headers=auth_headers)
         assert created.status_code in (200, 201), created.text
         created_id = created.json()["data"]["id"]
+        assert test_client.get(f"{base}/options", headers=auth_headers).status_code == 200
         assert test_client.get(f"{base}/list", params={"page_no": 1, "page_size": 10}, headers=auth_headers).status_code == 200
         assert test_client.get(f"{base}/detail/{nid}", headers=auth_headers).status_code == 200
         assert test_client.put(f"{base}/update/{nid}", json={"name": name, "func": "builtin:server_status", "trigger": None}, headers=auth_headers).status_code == 200
-        assert test_client.post(f"{base}/status/batch", json={"ids": [nid], "status": 1}, headers=auth_headers).status_code in (200, 405, 404)
+        assert test_client.patch(f"{base}/status/batch", json={"ids": [nid], "status": 1}, headers=auth_headers).status_code == 200
         assert test_client.post(f"{base}/execute/{nid}", headers=auth_headers).status_code in (200, 400)
         assert test_client.post(f"{base}/execute/99999999", headers=auth_headers).status_code in (400, 404)
         assert test_client.request("DELETE", f"{base}/delete", json=[nid, created_id], headers=auth_headers).status_code == 200
