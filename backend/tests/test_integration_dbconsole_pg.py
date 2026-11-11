@@ -207,3 +207,26 @@ async def test_connection_errors(test_client) -> None:
             await svc.run_query(99999999, "SELECT 1")
         with pytest.raises(CustomException):
             await svc.test_connection(DbConnectionTestSchema(db_type="postgres", host="127.0.0.1", port=1, username="u", password="p"))
+
+
+async def test_dbconsole_probe_fetch_errors(monkeypatch, test_client) -> None:
+    from app.core.exceptions import CustomException
+    import app.modules.ops.dbconsole.service as m
+    name = _name()
+    try:
+        async with _db() as db:
+            svc = DbConsoleService(_auth(), db)
+            row = await svc.create(_data(name))
+            class E:
+                def connect(self): raise RuntimeError("x")
+                async def dispose(self): pass
+            monkeypatch.setattr(m, "create_async_engine", lambda *a, **k: E())
+            with pytest.raises(CustomException):
+                await svc._probe("postgresql+asyncpg://x")
+            with pytest.raises(CustomException):
+                await svc._fetch(await svc._crud().get_or_404(id=row.id), "SELECT 1")
+            monkeypatch.undo()
+            with pytest.raises(CustomException):
+                await svc.run_query(row.id, "SELECT * FROM no_such_table")
+    finally:
+        await _cleanup(name)

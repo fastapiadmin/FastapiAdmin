@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from app.core.exceptions import CustomException
@@ -125,3 +127,33 @@ async def test_wx_login_orchestration(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(wx, "get_wx_phone_login_user", puser)
     out2 = await wx.wx_mini_phone_login(request=None, redis=None, db=None, code="c")
     assert out2.access_token == "a"
+
+
+async def test_http_json_and_phone(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unittest.mock import AsyncMock
+    class Resp:
+        text = "bad"
+        headers = {"content-type": "application/json"}
+        content = b"x"
+        def raise_for_status(self): pass
+        def json(self): raise json.JSONDecodeError("x", "bad", 0)
+    class Client:
+        def __init__(self, **k): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        async def request(self, *a, **k): return Resp()
+        async def post(self, *a, **k): return Resp()
+    monkeypatch.setattr(wx.httpx, "AsyncClient", Client)
+    with pytest.raises(Exception):
+        await wx._http_json("GET", "http://x")
+    monkeypatch.setattr(wx, "_get_access_token", AsyncMock(return_value="t"))
+    with pytest.raises(Exception):
+        await wx.generate_wxacodeunlimit(redis=None, scene="s", page="p")
+    async def prepare(db, user): return user
+    monkeypatch.setattr(wx.LoginService, "prepare_user_for_login", prepare)
+    monkeypatch.setattr(wx, "auto_register_login_user", AsyncMock(return_value=SimpleNamespace(id=1)))
+    class C:
+        def __init__(self, *a): pass
+        async def get(self, **k): return None
+    monkeypatch.setattr(wx, "UserCRUD", C)
+    assert await wx.get_wx_phone_login_user(db=None, phone="13800138000") is not None
