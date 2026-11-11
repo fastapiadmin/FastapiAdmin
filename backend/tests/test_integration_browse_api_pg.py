@@ -47,6 +47,9 @@ async def test_browse_api(test_client, auth_headers, tmp_path) -> None:
         assert test_client.post(f"{base}/copy", json={"source_id": node.id, "target_id": node.id, "source_path": "dir/a.txt", "target_path": "dir/b.txt"}, headers=auth_headers).status_code == 200
         assert test_client.put(f"{base}/rename", json={"source_id": node.id, "source_path": "dir/b.txt", "target_path": "dir/c.txt"}, headers=auth_headers).status_code == 200
         assert test_client.request("DELETE", f"{base}/delete", json={"source_id": node.id, "remote_path": "dir/c.txt"}, headers=auth_headers).status_code == 200
+        assert test_client.get(f"{base}/buckets", params={"source_id": node.id}, headers=auth_headers).status_code in (200, 400)
+        assert test_client.post(f"{base}/create-bucket", json={"source_id": node.id, "bucket": "it-b"}, headers=auth_headers).status_code in (200, 400)
+        assert test_client.post(f"{base}/share", json={"source_id": node.id, "remote_path": "dir/a.txt"}, headers=auth_headers).status_code in (200, 400)
     finally:
         async with _db() as db:
             await db.execute(text("DELETE FROM task_storage_node WHERE name=:n"), {"n": name})

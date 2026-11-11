@@ -71,3 +71,5 @@ async def test_transfer_controller_errors(test_client, auth_headers) -> None:
     assert test_client.get(f"{base}/task/99999999", headers=auth_headers).status_code in (400, 404)
     assert test_client.post(f"{base}/task/99999999/cancel", headers=auth_headers).status_code in (400, 404)
     assert test_client.request("DELETE", f"{base}/task", json=[], headers=auth_headers).status_code in (200, 400)
+    assert test_client.post(f"{base}/task", json={}, headers=auth_headers).status_code in (400, 422)
+    assert test_client.post(f"{base}/task/upload", data={"name": "x", "task_type": "parallel", "targets": "bad"}, files={"file": ("a.txt", b"x", "text/plain")}, headers=auth_headers).status_code in (400, 422)
