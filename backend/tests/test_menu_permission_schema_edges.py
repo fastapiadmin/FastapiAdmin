@@ -70,3 +70,27 @@ async def test_permission_fallbacks(monkeypatch) -> None:
     class BadRel:
         property = SimpleNamespace(mapper=SimpleNamespace(class_=Weird))
     assert p._relationship_column(BadRel(), "x") is None
+
+
+async def test_permission_all_paths(monkeypatch) -> None:
+    from sqlalchemy import column
+    auth = SimpleNamespace(user=SimpleNamespace(id=1, is_superuser=False, dept_id=2))
+    class M:
+        __name__ = "UserModel"
+        id = column("id")
+        created_id = column("created_id")
+        dept_id = column("dept_id")
+    p = Permission(M, auth, None)
+    async def scopes(s): return s
+    async def depts(s): return {2}
+    monkeypatch.setattr(p, "_load_user_data_scopes", lambda: scopes({2}))
+    monkeypatch.setattr(p, "_get_accessible_dept_ids", depts)
+    assert await p._filter_by_data_scope() is not None
+    class N:
+        __name__ = "M"
+        created_id = column("created_id")
+    p2 = Permission(N, auth, None)
+    monkeypatch.setattr(p2, "_load_user_data_scopes", lambda: scopes({2}))
+    monkeypatch.setattr(p2, "_get_accessible_dept_ids", depts)
+    res = await p2._filter_by_data_scope()
+    assert res is not None
