@@ -70,13 +70,14 @@
       :confirm-loading="submitLoading"
       @cancel="handleCloseDialog"
       @confirm="dialogVisible.type === 'detail' ? handleCloseDialog() : handleSubmit()"
-      size="lg"
+      :size="dialogVisible.type === 'detail' ? 'xl' : 'lg'"
     >
       <template v-if="dialogVisible.type === 'detail'">
         <FaDescriptions
-          :column="2"
+          :column="4"
           :data="detailFormData"
           :items="sourceDetailItems"
+          label-width="110px"
           max-height="70vh"
         >
           <template #protocol="{ row }">
@@ -554,29 +555,30 @@ const detailFormData = ref<SourceTable>({} as SourceTable);
 
 const sourceDetailItems: import("@/components/display/fa-descriptions/index.vue").DescriptionsItem[] =
   [
-    { label: "存储源名称", prop: "name" },
-    { label: "协议", prop: "protocol", slot: "protocol" },
-    { label: "主机地址", prop: "host" },
-    { label: "端口", prop: "port" },
-    { label: "用户名", prop: "username" },
-    { label: "密码", prop: "has_password", slot: "has_password" },
-    { label: "Bucket", prop: "bucket" },
-    { label: "端点地址", prop: "endpoint" },
-    { label: "区域", prop: "region" },
-    { label: "路径前缀", prop: "path_prefix" },
-    { label: "分片大小(MB)", prop: "multipart_part_size" },
-    { label: "分片并发", prop: "multipart_concurrency" },
-    { label: "内存预算(MB)", prop: "multipart_memory_budget" },
-    { label: "TLS(FTPS)", prop: "is_secure", slot: "is_secure" },
-    { label: "默认存储源", prop: "is_default", slot: "is_default" },
+    { label: "存储源名称", prop: "name", span: 2 },
+    { label: "协议", prop: "protocol", slot: "protocol", span: 2 },
+    { label: "主机地址", prop: "host", span: 2 },
+    { label: "端口", prop: "port", span: 2 },
+    { label: "用户名", prop: "username", span: 2 },
+    { label: "密码", prop: "has_password", slot: "has_password", span: 2 },
+    { label: "Bucket", prop: "bucket", span: 2 },
+    { label: "区域", prop: "region", span: 2 },
+    { label: "端点地址", prop: "endpoint", span: 4 },
+    { label: "路径前缀", prop: "path_prefix", span: 4 },
+    { label: "分片大小(MB)", prop: "multipart_part_size", span: 2 },
+    { label: "分片并发", prop: "multipart_concurrency", span: 2 },
+    { label: "内存预算(MB)", prop: "multipart_memory_budget", span: 2 },
+    { label: "TLS(FTPS)", prop: "is_secure", slot: "is_secure", span: 2 },
+    { label: "默认存储源", prop: "is_default", slot: "is_default", span: 2 },
     {
       label: "状态",
       prop: "status",
+      span: 2,
       tag: { map: { 0: { type: "success", text: "启用" }, 1: { type: "danger", text: "停用" } } },
     },
-    { label: "备注", prop: "description" },
-    { label: "创建时间", prop: "created_time" },
-    { label: "更新时间", prop: "updated_time" },
+    { label: "备注", prop: "description", span: 4 },
+    { label: "创建时间", prop: "created_time", span: 2 },
+    { label: "更新时间", prop: "updated_time", span: 2 },
   ];
 
 const initialFormData: SourceForm = {
