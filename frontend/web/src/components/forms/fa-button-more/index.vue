@@ -1,7 +1,7 @@
 <!-- 更多按钮 -->
 <template>
   <div>
-    <ElDropdown v-if="visibleItems.length">
+    <ElDropdown v-if="visibleItems.length" popper-class="fa-button-more-popper">
       <FaIconButton icon="ri:more-2-fill" class="size-8! bg-g-200 dark:bg-g-300/45 text-sm" />
       <template #dropdown>
         <ElDropdownMenu>
