@@ -11,7 +11,6 @@
           :icon="Plus"
           :loading="createLoading"
           @click="$emit('add')"
-          plain
         >
           {{ $t("common.addNew") }}
         </ElButton>

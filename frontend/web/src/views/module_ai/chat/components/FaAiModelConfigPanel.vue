@@ -169,7 +169,7 @@
 
         <!-- 底部固定添加按钮 - 始终可见 -->
         <div v-if="items.length > 0" class="footer-add">
-          <ElButton type="primary" plain :icon="Plus" class="add-btn" @click="openCreate">
+          <ElButton type="primary" :icon="Plus" class="add-btn" @click="openCreate">
             {{ $t("common.aiConfig.addModel") }}
           </ElButton>
         </div>

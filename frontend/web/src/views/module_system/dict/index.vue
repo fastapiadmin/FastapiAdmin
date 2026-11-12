@@ -33,7 +33,6 @@
               v-hasPerm="['module_system:dict_type:create']"
               type="primary"
               size="small"
-              plain
               @click="handleAdd"
             >
               新增
