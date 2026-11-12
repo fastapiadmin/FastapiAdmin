@@ -728,7 +728,7 @@ const {
       {
         prop: "operation",
         label: "操作",
-        width: 110,
+        width: 150,
         fixed: "right",
         align: "center",
         formatter: (row: JobLogTable) => formatLogOperationCell(row),
