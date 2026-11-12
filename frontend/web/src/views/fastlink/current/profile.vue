@@ -162,14 +162,14 @@
 
       <!-- 右侧表单 -->
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
-        <div class="grid grid-cols-1 gap-5 items-start xl:grid-cols-2">
-          <div class="fa-card-sm">
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <div class="fa-card-sm flex h-full flex-col">
             <h1 class="p-4 text-xl font-normal border-b border-line">基本设置</h1>
 
             <ElForm
               ref="infoFormRef"
               :model="infoFormState"
-              class="box-border p-5 [&_.el-input]:w-full [&_.el-select]:w-full"
+              class="box-border p-5 flex flex-1 flex-col [&_.el-input]:w-full [&_.el-select]:w-full"
               :rules="rules"
               label-width="96px"
               label-position="top"
@@ -228,7 +228,7 @@
                 </ElFormItem>
               </ElRow>
 
-              <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
+              <div class="mt-auto flex items-center justify-end [&_.el-button]:w-27.5!">
                 <ElButton
                   type="primary"
                   class="w-22.5"
@@ -242,13 +242,13 @@
             </ElForm>
           </div>
 
-          <div class="fa-card-sm">
+          <div class="fa-card-sm flex h-full flex-col">
             <h1 class="p-4 text-xl font-normal border-b border-line">更改密码</h1>
 
             <ElForm
               ref="passwordFormRef"
               :model="passwordFormState"
-              class="box-border p-5"
+              class="box-border p-5 flex flex-1 flex-col"
               :rules="resetPasswordRules"
               label-width="96px"
               label-position="top"
@@ -280,7 +280,7 @@
                 />
               </ElFormItem>
 
-              <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
+              <div class="mt-auto flex items-center justify-end [&_.el-button]:w-27.5!">
                 <ElButton
                   type="primary"
                   class="w-22.5"
