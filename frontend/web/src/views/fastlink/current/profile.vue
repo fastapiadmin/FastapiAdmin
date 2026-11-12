@@ -263,7 +263,7 @@
             class="w-full p-4"
             size="small"
           >
-            <ElTableColumn type="index" label="#" width="50" />
+            <ElTableColumn type="index" label="序号" width="60" />
             <ElTableColumn label="浏览器" min-width="110" show-overflow-tooltip>
               <template #default="{ row }">
                 <FaSvgIcon :icon="getBrowserIcon(row.browser)" class="mr-1" />{{
