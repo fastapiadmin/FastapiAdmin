@@ -44,7 +44,11 @@
                 @command="(cmd) => handleConnCommand(String(cmd), item)"
                 @click.stop
               >
-                <ElIcon class="fa-list-item__action"><FaSvgIcon icon="ri:more-2-fill" /></ElIcon>
+                <FaIconButton
+                  icon="ri:more-2-fill"
+                  class="fa-list-item__action size-7!"
+                  :aria-label="$t('common.more')"
+                />
                 <template #dropdown>
                   <ElDropdownMenu>
                     <ElDropdownItem command="test">{{
