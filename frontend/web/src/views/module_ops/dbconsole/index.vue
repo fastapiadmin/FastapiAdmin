@@ -73,7 +73,7 @@
               {{ $t("common.db.selectConnectionFirst") }}
             </div>
             <template v-else>
-              <div class="fa-hint">{{ $t("common.db.schemaLabel") }}</div>
+              <div class="fa-hint db-section-label">{{ $t("common.db.schemaLabel") }}</div>
               <div
                 v-for="db in databases"
                 :key="`db-${db.name}`"
@@ -84,7 +84,7 @@
                 <FaSvgIcon icon="ri:database-2-line" class="fa-list-item__icon" />
                 <span class="fa-list-item__title" :title="db.name">{{ db.name }}</span>
               </div>
-              <div class="fa-hint mt-2">{{ $t("common.db.tablesLabel") }}</div>
+              <div class="fa-hint db-section-label mt-2">{{ $t("common.db.tablesLabel") }}</div>
               <div
                 v-for="table in tables"
                 :key="`t-${table.name}`"
@@ -544,5 +544,10 @@ onMounted(() => {
 .db-side-panel {
   width: 100%;
   height: 100%;
+}
+
+.db-section-label {
+  margin-left: 2px;
+  white-space: nowrap;
 }
 </style>
