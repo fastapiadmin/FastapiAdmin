@@ -668,7 +668,7 @@ function buildNoticeRowActions(row: NoticeTable): TableOperationAction[] {
 
 function formatNoticeOperationCell(row: NoticeTable) {
   return renderTableOperationCell(buildNoticeRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 notice-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap notice-table-actions",
   });
 }
 

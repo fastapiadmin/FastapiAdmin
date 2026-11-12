@@ -704,7 +704,7 @@ function buildDictDataRowActions(row: DictDataTable): TableOperationAction[] {
 
 function formatDictDataOperationCell(row: DictDataTable) {
   return renderTableOperationCell(buildDictDataRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 dict-data-drawer-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap dict-data-drawer-actions",
   });
 }
 

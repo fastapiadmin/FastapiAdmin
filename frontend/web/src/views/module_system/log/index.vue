@@ -666,7 +666,7 @@ function buildOpRowActions(row: OperationLogTable): TableOperationAction[] {
 
 function formatOpActionCell(row: OperationLogTable) {
   return renderTableOperationCell(buildOpRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 log-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap log-table-actions",
   });
 }
 
@@ -921,7 +921,7 @@ function buildLoginRowActions(row: LoginLogTable): TableOperationAction[] {
 
 function formatLoginActionCell(row: LoginLogTable) {
   return renderTableOperationCell(buildLoginRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 loginlog-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap loginlog-table-actions",
   });
 }
 

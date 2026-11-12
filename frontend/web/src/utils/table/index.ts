@@ -533,7 +533,7 @@ export function renderTableOperationCell(
   const isMobile = typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
   const maxInline = isMobile ? 0 : (options?.maxInline ?? DEFAULT_MAX_INLINE_TABLE_OPERATIONS);
   const wrapperClass =
-    options?.wrapperClass ?? "inline-flex flex-wrap items-center justify-end gap-1";
+    options?.wrapperClass ?? "inline-flex items-center justify-center gap-1 whitespace-nowrap";
   const emptyText = options?.emptyText ?? "—";
 
   if (permittedActions.length === 0) return h("span", { class: "text-g-400" }, emptyText);

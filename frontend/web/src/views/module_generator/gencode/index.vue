@@ -748,7 +748,7 @@ function buildGencodeRowActions(row: GenTableSchema): TableOperationAction[] {
 
 function formatGencodeOperationCell(row: GenTableSchema) {
   return renderTableOperationCell(buildGencodeRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 gencode-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap gencode-table-actions",
   });
 }
 

@@ -451,7 +451,7 @@ function formatMenuOperationCell(row: MenuTable, ctx: Parameters<typeof buildMen
   const actions = buildMenuRowActions(row, ctx);
   return renderTableOperationCell(actions, {
     wrapperClass:
-      "inline-flex flex-wrap items-center justify-end gap-1 menu-table-actions align-middle",
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap menu-table-actions align-middle",
   });
 }
 const menuClientTab = ref<"pc" | "app">("pc");

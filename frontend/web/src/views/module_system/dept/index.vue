@@ -274,7 +274,7 @@ function buildDeptRowActions(
 function formatDeptOperationCell(row: DeptTable, ctx: Parameters<typeof buildDeptRowActions>[1]) {
   const actions = buildDeptRowActions(row, ctx);
   return renderTableOperationCell(actions, {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 dept-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap dept-table-actions",
   });
 }
 

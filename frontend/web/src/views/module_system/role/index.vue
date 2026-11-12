@@ -382,7 +382,7 @@ function buildRoleRowActions(
 
 function formatRoleOperationCell(row: RoleTable, ctx: Parameters<typeof buildRoleRowActions>[1]) {
   return renderTableOperationCell(buildRoleRowActions(row, ctx), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 role-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap role-table-actions",
   });
 }
 

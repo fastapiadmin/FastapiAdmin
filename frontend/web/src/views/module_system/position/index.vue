@@ -278,7 +278,7 @@ function formatPositionOperationCell(
 ) {
   return renderTableOperationCell(buildPositionRowActions(row, ctx), {
     wrapperClass:
-      "inline-flex flex-wrap items-center justify-end gap-1 position-table-actions align-middle",
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap position-table-actions align-middle",
   });
 }
 
