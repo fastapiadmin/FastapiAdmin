@@ -746,13 +746,15 @@ const form = ref({
 const createFormItems = computed<FormItem[]>(() => [
   {
     key: "name",
+    span: 12,
     label: "任务名称",
     type: "input",
     props: { placeholder: "例如：传输_文件A_20260825" },
   },
-  { key: "flow_id", label: "传输流程" /* #flow_id 插槽接管 */ },
+  { key: "flow_id", span: 12, label: "传输流程" /* #flow_id 插槽接管 */ },
   {
     key: "task_type",
+    span: 12,
     label: "传输方式",
     type: "radiogroup",
     props: {
@@ -764,6 +766,7 @@ const createFormItems = computed<FormItem[]>(() => [
   },
   {
     key: "source_type",
+    span: 12,
     label: "源类型",
     type: "radiogroup",
     props: {
@@ -775,6 +778,7 @@ const createFormItems = computed<FormItem[]>(() => [
   },
   {
     key: "source_id",
+    span: 12,
     label: "源存储源",
     type: "select",
     hidden: form.value.source_type !== "remote",
@@ -790,6 +794,7 @@ const createFormItems = computed<FormItem[]>(() => [
   },
   {
     key: "source_path",
+    span: 24,
     label: "源路径",
     type: "input",
     hidden: form.value.source_type !== "remote",
@@ -797,10 +802,11 @@ const createFormItems = computed<FormItem[]>(() => [
   },
   {
     key: "local_file",
+    span: 12,
     label: "本地文件",
     hidden: form.value.source_type === "remote" /* #local_file 插槽接管 */,
   },
-  { key: "targets", label: "目标" /* #targets 插槽接管 */ },
+  { key: "targets", span: 24, label: "目标" /* #targets 插槽接管 */ },
 ]);
 
 function timeStamp(): string {

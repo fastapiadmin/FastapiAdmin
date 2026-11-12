@@ -578,12 +578,14 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "部门名称",
     key: "name",
+    span: 12,
     type: "input",
     props: { placeholder: "请输入部门名称", maxlength: 50 },
   },
   {
     label: "部门编码",
     key: "code",
+    span: 12,
     type: "input",
     props: {
       placeholder: "字母开头，2-16位字母/数字/下划线",
@@ -594,6 +596,7 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "上级部门",
     key: "parent_id",
+    span: 12,
     type: "treeselect",
     props: {
       placeholder: "请选择上级部门",
@@ -606,6 +609,7 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "排序",
     key: "order",
+    span: 12,
     type: "number",
     props: {
       controlsPosition: "right",
@@ -616,6 +620,7 @@ const deptDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "状态",
     key: "status",
+    span: 12,
     type: "radiogroup",
     props: {
       options: [
