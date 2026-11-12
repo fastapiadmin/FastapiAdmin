@@ -1,102 +1,97 @@
 <!-- SSH 运维：左侧主机导航 + 右侧终端/批量执行/命令片段工作区 -->
 <template>
   <div class="fa-full-height">
-    <FaWorkbench :side-width="280">
+    <FaWorkbench :side-width="320">
       <template #side>
         <!-- 左：主机列表 -->
-        <ElCard
-          shadow="hover"
-          class="fa-card flex h-full w-full flex-col"
-          body-class="flex min-h-0 flex-1 flex-col p-0"
-        >
-          <div class="flex h-full min-h-0 flex-col">
-            <div class="fa-panel-header justify-between">
-              <span class="fa-panel-title">{{ $t("common.sshHost") }}</span>
-              <ElButton
-                v-hasPerm="['module_ops:ssh:create']"
-                type="primary"
-                size="small"
-                :loading="createLoading"
-                @click="handleAdd"
-              >
-                <ElIcon class="mr-1"><FaSvgIcon icon="ri:add-line" /></ElIcon>新增
-              </ElButton>
-            </div>
+        <FaSidePanel :title="$t('common.sshHost')" class="ssh-side-panel">
+          <template #actions>
+            <ElButton
+              v-hasPerm="['module_ops:ssh:create']"
+              type="primary"
+              size="small"
+              :loading="createLoading"
+              @click="handleAdd"
+            >
+              <ElIcon class="mr-1"><FaSvgIcon icon="ri:add-line" /></ElIcon>新增
+            </ElButton>
+          </template>
 
-            <div class="px-2 pb-2">
-              <ElInput
-                v-model="hostKeyword"
-                size="small"
-                :placeholder="$t('common.searchHost')"
-                clearable
-                :aria-label="$t('common.searchHost')"
-              >
-                <template #prefix>
-                  <ElIcon><FaSvgIcon icon="ri:search-line" /></ElIcon>
-                </template>
-              </ElInput>
-            </div>
+          <template #search>
+            <ElInput
+              v-model="hostKeyword"
+              size="small"
+              :placeholder="$t('common.searchHost')"
+              clearable
+              :aria-label="$t('common.searchHost')"
+            >
+              <template #prefix>
+                <ElIcon><FaSvgIcon icon="ri:search-line" /></ElIcon>
+              </template>
+            </ElInput>
+          </template>
 
-            <ElScrollbar class="min-h-0 flex-1 px-2">
-              <div
-                v-for="host in filteredHosts"
-                :key="host.id"
-                class="fa-list-item"
-                :class="{ 'is-active': host.id === activeHostId }"
-                @click="selectHost(host)"
-                @dblclick="openTerminalFor(host)"
-              >
-                <span
-                  class="fa-status-dot"
-                  :style="{
-                    background:
-                      host.status === 0 ? 'var(--el-color-success)' : 'var(--el-color-info)',
-                  }"
-                />
-                <div class="min-w-0 flex-1">
-                  <div class="fa-list-item__title">{{ host.name }}</div>
-                  <div class="fa-list-item__meta">
-                    {{ host.username }}@{{ host.host }}:{{ host.port }}
-                  </div>
-                </div>
-                <ElDropdown
-                  trigger="click"
-                  @command="(cmd) => handleHostCommand(String(cmd), host)"
-                  @click.stop
-                >
-                  <FaIconButton
-                    icon="ri:more-2-fill"
-                    class="fa-list-item__action size-7!"
-                    :aria-label="$t('common.more')"
-                  />
-                  <template #dropdown>
-                    <ElDropdownMenu>
-                      <ElDropdownItem command="terminal">{{
-                        $t("common.openTerminal")
-                      }}</ElDropdownItem>
-                      <ElDropdownItem command="test">{{
-                        $t("common.testConnection")
-                      }}</ElDropdownItem>
-                      <ElDropdownItem command="edit">{{ $t("common.edit") }}</ElDropdownItem>
-                      <ElDropdownItem command="delete" divided>{{
-                        $t("common.delete")
-                      }}</ElDropdownItem>
-                    </ElDropdownMenu>
-                  </template>
-                </ElDropdown>
-              </div>
-              <FaEmptyState
-                v-if="!filteredHosts.length"
-                icon="ri:server-line"
-                :title="$t('common.noHost')"
-                :description="$t('common.noHostDesc')"
-                compact
+          <div class="px-1">
+            <div
+              v-for="host in filteredHosts"
+              :key="host.id"
+              class="fa-list-item"
+              :class="{ 'is-active': host.id === activeHostId }"
+              @click="selectHost(host)"
+              @dblclick="openTerminalFor(host)"
+            >
+              <span
+                class="fa-status-dot"
+                :style="{
+                  background:
+                    host.status === 0 ? 'var(--el-color-success)' : 'var(--el-color-info)',
+                }"
               />
-            </ElScrollbar>
-
-            <div class="fa-hint px-3 py-2">{{ $t("common.doubleClickHint") }}</div>
+              <div class="min-w-0 flex-1">
+                <div class="fa-list-item__title" :title="host.name">{{ host.name }}</div>
+                <div class="fa-list-item__meta">
+                  {{ host.username }}@{{ host.host }}:{{ host.port }}
+                </div>
+              </div>
+              <ElDropdown
+                trigger="click"
+                @command="(cmd) => handleHostCommand(String(cmd), host)"
+                @click.stop
+              >
+                <FaIconButton
+                  icon="ri:more-2-fill"
+                  class="fa-list-item__action size-7!"
+                  :aria-label="$t('common.more')"
+                />
+                <template #dropdown>
+                  <ElDropdownMenu>
+                    <ElDropdownItem command="terminal">{{
+                      $t("common.openTerminal")
+                    }}</ElDropdownItem>
+                    <ElDropdownItem command="test">{{
+                      $t("common.testConnection")
+                    }}</ElDropdownItem>
+                    <ElDropdownItem command="edit">{{ $t("common.edit") }}</ElDropdownItem>
+                    <ElDropdownItem command="delete" divided>{{
+                      $t("common.delete")
+                    }}</ElDropdownItem>
+                  </ElDropdownMenu>
+                </template>
+              </ElDropdown>
+            </div>
+            <FaEmptyState
+              v-if="!filteredHosts.length"
+              icon="ri:server-line"
+              :title="$t('common.noHost')"
+              :description="$t('common.noHostDesc')"
+              compact
+            />
           </div>
-        </ElCard>
+
+          <template #footer>
+            <div class="fa-hint px-2">{{ $t("common.doubleClickHint") }}</div>
+          </template>
+        </FaSidePanel>
       </template>
 
       <!-- 右：工作区 -->
@@ -981,3 +976,10 @@ onBeforeUnmount(() => {
   if (resizeTimer !== undefined) window.clearTimeout(resizeTimer);
 });
 </script>
+
+<style lang="scss" scoped>
+.ssh-side-panel {
+  width: 100%;
+  height: 100%;
+}
+</style>
