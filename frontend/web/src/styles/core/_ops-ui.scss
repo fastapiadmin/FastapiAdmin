@@ -65,11 +65,20 @@
 }
 
 .fa-list-item__title {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--fa-font-size-md);
   line-height: 1.4;
   white-space: nowrap;
+}
+
+.fa-list-item__icon {
+  flex-shrink: 0;
+  color: var(--el-text-color-secondary);
 }
 
 .fa-list-item__meta {
