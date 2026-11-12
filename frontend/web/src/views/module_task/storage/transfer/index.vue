@@ -771,8 +771,8 @@ const createFormItems = computed<FormItem[]>(() => [
     type: "radiogroup",
     props: {
       options: [
-        { label: "远端存储源", value: "remote" },
-        { label: "本地文件", value: "local" },
+        { label: "远端", value: "remote" },
+        { label: "本地", value: "local" },
       ],
     },
   },
