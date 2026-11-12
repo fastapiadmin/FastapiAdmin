@@ -601,7 +601,9 @@ function buildLogRowActions(row: JobLogTable): TableOperationAction[] {
 }
 
 function formatLogOperationCell(row: JobLogTable) {
-  return renderTableOperationCell(buildLogRowActions(row));
+  return renderTableOperationCell(buildLogRowActions(row), {
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap",
+  });
 }
 
 const logfaTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
@@ -640,24 +642,24 @@ const {
       trigger_type: undefined,
     },
     columnsFactory: (): ColumnOption<JobLogTable>[] => [
-      { type: "selection", width: 48, fixed: "left" },
-      { type: "globalIndex", width: 56, label: "序号" },
+      { type: "selection", width: 44, fixed: "left" },
+      { type: "globalIndex", width: 52, label: "序号" },
       {
         prop: "job_id",
         label: "任务ID",
-        minWidth: 80,
+        minWidth: 72,
         showOverflowTooltip: true,
       },
       {
         prop: "job_name",
         label: "任务名称",
-        minWidth: 140,
+        minWidth: 150,
         showOverflowTooltip: true,
       },
       {
         prop: "trigger_type",
         label: "触发方式",
-        minWidth: 120,
+        minWidth: 100,
         status: {
           cron: { type: "info", text: "Cron表达式" },
           interval: { type: "info", text: "时间间隔" },
@@ -668,7 +670,7 @@ const {
       {
         prop: "status",
         label: "状态",
-        minWidth: 80,
+        minWidth: 84,
         status: {
           pending: { type: "info", text: "待执行" },
           running: { type: "primary", text: "执行中" },
@@ -681,25 +683,25 @@ const {
       {
         prop: "next_run_time",
         label: "下次执行时间",
-        minWidth: 200,
+        minWidth: 170,
         showOverflowTooltip: true,
       },
       {
         prop: "result",
         label: "执行结果",
-        minWidth: 100,
+        minWidth: 90,
         showOverflowTooltip: true,
       },
       {
         prop: "error",
         label: "错误信息",
-        minWidth: 100,
+        minWidth: 150,
         showOverflowTooltip: true,
       },
       {
         prop: "job_state",
         label: "执行元数据",
-        minWidth: 100,
+        minWidth: 90,
         formatter: (row: JobLogTable) => {
           if (!row.job_state) return h("span", null, "—");
           return h(
@@ -712,21 +714,21 @@ const {
       {
         prop: "created_time",
         label: "创建时间",
-        minWidth: 160,
+        minWidth: 150,
         sortable: true,
         showOverflowTooltip: true,
       },
       {
         prop: "updated_time",
         label: "更新时间",
-        minWidth: 160,
+        minWidth: 150,
         sortable: true,
         showOverflowTooltip: true,
       },
       {
         prop: "operation",
         label: "操作",
-        width: 88,
+        width: 110,
         fixed: "right",
         align: "center",
         formatter: (row: JobLogTable) => formatLogOperationCell(row),
