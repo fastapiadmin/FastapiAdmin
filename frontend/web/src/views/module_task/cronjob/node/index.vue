@@ -712,7 +712,7 @@ const rules = reactive({
 const nodeDialogFormItems = computed<FormItem[]>(() => {
   const trig = formData.value.trigger;
   let planArgsLabel = "执行计划参数";
-  if (trig === "cron") planArgsLabel = "Cron表达式";
+  if (trig === "cron") planArgsLabel = "Cron";
   else if (trig === "interval") planArgsLabel = "间隔时间";
   else if (trig === "date") planArgsLabel = "执行时间";
   const isRangePlan = trig === "cron" || trig === "interval";
@@ -977,6 +977,11 @@ watch(openCron, (val) => {
 
 .node-splitter-art-form :deep(.el-form-item__content) {
   max-width: 100%;
+}
+
+/* 左栏较窄，标签保持单行，避免 Cron/最大实例数等领域标签折行 */
+.node-splitter-art-form :deep(.el-form-item__label) {
+  white-space: nowrap;
 }
 
 .node-splitter-art-form :deep(section) {
