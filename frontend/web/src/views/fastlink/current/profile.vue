@@ -162,86 +162,140 @@
 
       <!-- 右侧表单 -->
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
-        <div class="fa-card-sm">
-          <h1 class="p-4 text-xl font-normal border-b border-line">基本设置</h1>
+        <div class="grid grid-cols-1 gap-5 items-start xl:grid-cols-2">
+          <div class="fa-card-sm">
+            <h1 class="p-4 text-xl font-normal border-b border-line">基本设置</h1>
 
-          <ElForm
-            ref="infoFormRef"
-            :model="infoFormState"
-            class="box-border p-5 [&>.el-row_.el-form-item]:w-[calc(50%-10px)] [&>.el-row_.el-input]:w-full [&>.el-row_.el-select]:w-full"
-            :rules="rules"
-            label-width="96px"
-            label-position="top"
-          >
-            <ElRow>
-              <ElFormItem label="姓名" prop="name">
-                <ElInput
-                  v-model="infoFormState.name"
-                  :disabled="!isEdit"
-                  placeholder="请输入姓名"
-                />
-              </ElFormItem>
-              <ElFormItem label="性别" prop="gender" class="ml-5">
-                <ElSelect
-                  v-model="infoFormState.gender"
-                  placeholder="请选择"
-                  :disabled="!isEdit"
-                  class="w-full"
-                >
-                  <ElOption
-                    v-for="item in dictDataStore['sys_user_sex']"
-                    :key="String(item.dict_value)"
-                    :label="item.dict_label"
-                    :value="normalizeGenderValue(item.dict_value)"
+            <ElForm
+              ref="infoFormRef"
+              :model="infoFormState"
+              class="box-border p-5 [&_.el-input]:w-full [&_.el-select]:w-full"
+              :rules="rules"
+              label-width="96px"
+              label-position="top"
+            >
+              <ElRow>
+                <ElFormItem label="姓名" prop="name" class="w-full">
+                  <ElInput
+                    v-model="infoFormState.name"
+                    :disabled="!isEdit"
+                    placeholder="请输入姓名"
                   />
-                </ElSelect>
-              </ElFormItem>
-            </ElRow>
+                </ElFormItem>
+                <ElFormItem label="性别" prop="gender" class="w-full mt-3">
+                  <ElSelect
+                    v-model="infoFormState.gender"
+                    placeholder="请选择"
+                    :disabled="!isEdit"
+                    class="w-full"
+                  >
+                    <ElOption
+                      v-for="item in dictDataStore['sys_user_sex']"
+                      :key="String(item.dict_value)"
+                      :label="item.dict_label"
+                      :value="normalizeGenderValue(item.dict_value)"
+                    />
+                  </ElSelect>
+                </ElFormItem>
+              </ElRow>
 
-            <ElRow>
-              <ElFormItem label="邮箱" prop="email">
+              <ElRow>
+                <ElFormItem label="邮箱" prop="email" class="w-full">
+                  <ElInput
+                    v-model="infoFormState.email"
+                    :disabled="!isEdit"
+                    placeholder="请输入邮箱"
+                  />
+                </ElFormItem>
+                <ElFormItem label="手机" prop="mobile" class="w-full mt-3">
+                  <ElInput
+                    v-model="infoFormState.mobile"
+                    :disabled="!isEdit"
+                    placeholder="请输入手机号码"
+                  />
+                </ElFormItem>
+              </ElRow>
+
+              <ElRow class="mb-4">
+                <ElFormItem label="描述" prop="description" class="w-full!">
+                  <ElInput
+                    v-model="infoFormState.description"
+                    :disabled="!isEdit"
+                    type="textarea"
+                    :rows="4"
+                    placeholder="请输入描述"
+                  />
+                </ElFormItem>
+              </ElRow>
+
+              <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
+                <ElButton
+                  type="primary"
+                  class="w-22.5"
+                  :loading="infoSubmitting"
+                  v-ripple
+                  @click="onBasicToggleSave"
+                >
+                  {{ isEdit ? "保存" : "编辑" }}
+                </ElButton>
+              </div>
+            </ElForm>
+          </div>
+
+          <div class="fa-card-sm">
+            <h1 class="p-4 text-xl font-normal border-b border-line">更改密码</h1>
+
+            <ElForm
+              ref="passwordFormRef"
+              :model="passwordFormState"
+              class="box-border p-5"
+              :rules="resetPasswordRules"
+              label-width="96px"
+              label-position="top"
+            >
+              <ElFormItem label="当前密码" prop="old_password">
                 <ElInput
-                  v-model="infoFormState.email"
-                  :disabled="!isEdit"
-                  placeholder="请输入邮箱"
+                  v-model="passwordFormState.old_password"
+                  type="password"
+                  :disabled="!isEditPwd"
+                  show-password
                 />
               </ElFormItem>
-              <ElFormItem label="手机" prop="mobile" class="ml-5">
+
+              <ElFormItem label="新密码" prop="new_password">
                 <ElInput
-                  v-model="infoFormState.mobile"
-                  :disabled="!isEdit"
-                  placeholder="请输入手机号码"
+                  v-model="passwordFormState.new_password"
+                  type="password"
+                  :disabled="!isEditPwd"
+                  show-password
                 />
               </ElFormItem>
-            </ElRow>
 
-            <ElRow class="mb-4">
-              <ElFormItem label="描述" prop="description" class="w-full!">
+              <ElFormItem label="确认新密码" prop="confirm_password">
                 <ElInput
-                  v-model="infoFormState.description"
-                  :disabled="!isEdit"
-                  type="textarea"
-                  :rows="4"
-                  placeholder="请输入描述"
+                  v-model="passwordFormState.confirm_password"
+                  type="password"
+                  :disabled="!isEditPwd"
+                  show-password
                 />
               </ElFormItem>
-            </ElRow>
 
-            <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
-              <ElButton
-                type="primary"
-                class="w-22.5"
-                :loading="infoSubmitting"
-                v-ripple
-                @click="onBasicToggleSave"
-              >
-                {{ isEdit ? "保存" : "编辑" }}
-              </ElButton>
-            </div>
-          </ElForm>
+              <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
+                <ElButton
+                  type="primary"
+                  class="w-22.5"
+                  :loading="passwordChanging"
+                  v-ripple
+                  @click="onPasswordToggleSave"
+                >
+                  {{ isEditPwd ? "保存" : "编辑" }}
+                </ElButton>
+              </div>
+            </ElForm>
+          </div>
         </div>
 
-        <div class="fa-card-sm my-5">
+        <div class="fa-card-sm mt-5">
           <h1 class="p-4 text-xl font-normal border-b border-line">登录会话</h1>
 
           <div v-if="loadingSessions" class="flex justify-center py-6">
@@ -289,58 +343,6 @@
               </template>
             </ElTableColumn>
           </ElTable>
-        </div>
-
-        <div class="fa-card-sm my-5">
-          <h1 class="p-4 text-xl font-normal border-b border-line">更改密码</h1>
-
-          <ElForm
-            ref="passwordFormRef"
-            :model="passwordFormState"
-            class="box-border p-5"
-            :rules="resetPasswordRules"
-            label-width="96px"
-            label-position="top"
-          >
-            <ElFormItem label="当前密码" prop="old_password">
-              <ElInput
-                v-model="passwordFormState.old_password"
-                type="password"
-                :disabled="!isEditPwd"
-                show-password
-              />
-            </ElFormItem>
-
-            <ElFormItem label="新密码" prop="new_password">
-              <ElInput
-                v-model="passwordFormState.new_password"
-                type="password"
-                :disabled="!isEditPwd"
-                show-password
-              />
-            </ElFormItem>
-
-            <ElFormItem label="确认新密码" prop="confirm_password">
-              <ElInput
-                v-model="passwordFormState.confirm_password"
-                type="password"
-                :disabled="!isEditPwd"
-                show-password
-              />
-            </ElFormItem>
-
-            <div class="flex items-center justify-end [&_.el-button]:w-27.5!">
-              <ElButton
-                type="primary"
-                class="w-22.5"
-                :loading="passwordChanging"
-                v-ripple
-                @click="onPasswordToggleSave"
-              >
-                {{ isEditPwd ? "保存" : "编辑" }}
-              </ElButton>
-            </div>
-          </ElForm>
         </div>
       </div>
     </div>
