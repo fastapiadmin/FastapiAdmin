@@ -83,38 +83,41 @@
     >
       <template v-if="dialogVisible.type === 'detail'">
         <div class="session-detail-body">
-          <FaDescriptions
-            :column="4"
-            :data="detailFormData"
-            :items="memoryDetailItems"
-            >
+          <FaDescriptions :column="4" :data="detailFormData" :items="memoryDetailItems">
             <template #metadata="{ row }">
-              <pre v-if="row?.metadata">{{ JSON.stringify(row?.metadata, null, 2) }}</pre>
+              <ElScrollbar v-if="row?.metadata" max-height="min(140px, 18vh)">
+                <pre class="m-0">{{ JSON.stringify(row?.metadata, null, 2) }}</pre>
+              </ElScrollbar>
               <span v-else>无</span>
             </template>
           </FaDescriptions>
 
           <ElDivider content-position="left">消息记录</ElDivider>
-          <ElTimeline v-if="detailFormData.messages && detailFormData.messages.length > 0">
-            <ElTimelineItem
-              v-for="msg in detailFormData.messages"
-              :key="msg.id"
-              :type="msg.role === 'user' ? 'primary' : 'success'"
-              :icon="msg.role === 'user' ? 'User' : 'ChatDotRound'"
-            >
-              <div class="message-item">
-                <div class="message-header">
-                  <ElTag size="small" :type="msg.role === 'user' ? 'primary' : 'success'">
-                    {{ msg.role === "user" ? "用户" : "助手" }}
-                  </ElTag>
-                  <span v-if="msg.created_at" class="message-time">
-                    {{ formatMsgTime(msg.created_at) }}
-                  </span>
+          <ElScrollbar
+            v-if="detailFormData.messages && detailFormData.messages.length > 0"
+            max-height="min(300px, 36vh)"
+          >
+            <ElTimeline>
+              <ElTimelineItem
+                v-for="msg in detailFormData.messages"
+                :key="msg.id"
+                :type="msg.role === 'user' ? 'primary' : 'success'"
+                :icon="msg.role === 'user' ? 'User' : 'ChatDotRound'"
+              >
+                <div class="message-item">
+                  <div class="message-header">
+                    <ElTag size="small" :type="msg.role === 'user' ? 'primary' : 'success'">
+                      {{ msg.role === "user" ? "用户" : "助手" }}
+                    </ElTag>
+                    <span v-if="msg.created_at" class="message-time">
+                      {{ formatMsgTime(msg.created_at) }}
+                    </span>
+                  </div>
+                  <div class="message-content">{{ msg.content }}</div>
                 </div>
-                <div class="message-content">{{ msg.content }}</div>
-              </div>
-            </ElTimelineItem>
-          </ElTimeline>
+              </ElTimelineItem>
+            </ElTimeline>
+          </ElScrollbar>
           <FaEmptyState v-else icon="ri:history-line" title="暂无消息记录" compact />
         </div>
       </template>

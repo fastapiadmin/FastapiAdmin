@@ -178,7 +178,9 @@
             />
           </template>
           <template #notice_content>
-            <FaMarkdownRenderer :content="detailFormData.notice_content ?? ''" />
+            <ElScrollbar max-height="min(280px, 34vh)">
+              <FaMarkdownRenderer :content="detailFormData.notice_content ?? ''" />
+            </ElScrollbar>
           </template>
         </FaDescriptions>
       </template>

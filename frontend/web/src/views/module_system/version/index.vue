@@ -124,12 +124,9 @@
             </ElTag>
           </template>
           <template #content="{ row }">
-            <FaMarkdownRenderer
-              v-if="row?.content"
-              :content="String(row.content)"
-              height="auto"
-              max-height="260px"
-            />
+            <ElScrollbar v-if="row?.content" max-height="min(260px, 32vh)">
+              <FaMarkdownRenderer :content="String(row.content)" />
+            </ElScrollbar>
             <span v-else class="text-g-400">—</span>
           </template>
         </FaDescriptions>
