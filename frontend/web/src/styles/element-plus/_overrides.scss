@@ -240,6 +240,16 @@ html.dark .el-card {
 }
 
 // 修改 el-dropdown 样式
+// 表格行内「更多」菜单：按内容自适应，避免过宽
+.fa-button-more-popper .el-dropdown-menu {
+  max-width: 180px;
+}
+
+.fa-button-more-popper .el-dropdown-menu__item {
+  padding-right: 12px !important;
+  padding-left: 12px !important;
+}
+
 .el-dropdown-menu {
   padding: 6px !important;
   border: none !important;
