@@ -9,53 +9,50 @@
       modal-class="crud-embed-dialog"
       @close="handleClose"
     >
-      <!-- 表单 -->
-      <ElForm
-        ref="importFormRef"
-        :style="'padding-right: var(--el-dialog-padding-primary)'"
-        :model="importFormData"
-        :rules="importFormRules"
-      >
-        <ElFormItem prop="files">
-          <ElUpload
-            ref="uploadRef"
-            v-model:file-list="importFormData.files"
-            class="w-full"
-            :accept="props.accept"
-            :drag="true"
-            :limit="props.limit"
-            :auto-upload="false"
-            :on-exceed="handleFileExceed"
-          >
-            <ElIcon class="el-icon--upload"><UploadFilled /></ElIcon>
-            <div class="el-upload__text">
-              {{ props.dropText || "将文件拖到此处，或" }}
-              <em>{{ props.browseText || "点击上传" }}</em>
-            </div>
-            <template #tip>
-              <div class="el-upload__tip flex flex-wrap gap-2">
-                <ElText v-if="props.note" type="warning" class="mx-1">{{ props.note }}</ElText>
-                <ElText v-if="props.fileTypeWarning" type="danger" class="mx-1">
-                  {{ props.fileTypeWarning }}
-                </ElText>
-                <ElLink
-                  v-if="props.showTemplateDownload"
-                  v-hasPerm="[`${props.contentConfig.permPrefix}:download`]"
-                  class="mx-1 inline-flex items-center gap-0.5"
-                  type="primary"
-                  underline="never"
-                  @click="handleDownloadTemplate"
-                >
-                  <ElIcon class="text-base"><FaSvgIcon icon="ri:download-2-line" /></ElIcon>
-                  <span>{{ props.templateDownloadText || "下载模板" }}</span>
-                </ElLink>
+      <div class="crud-import-body">
+        <!-- 表单 -->
+        <ElForm ref="importFormRef" :model="importFormData" :rules="importFormRules">
+          <ElFormItem prop="files">
+            <ElUpload
+              ref="uploadRef"
+              v-model:file-list="importFormData.files"
+              class="w-full"
+              :accept="props.accept"
+              :drag="true"
+              :limit="props.limit"
+              :auto-upload="false"
+              :on-exceed="handleFileExceed"
+            >
+              <ElIcon class="el-icon--upload"><UploadFilled /></ElIcon>
+              <div class="el-upload__text">
+                {{ props.dropText || "将文件拖到此处，或" }}
+                <em>{{ props.browseText || "点击上传" }}</em>
               </div>
-            </template>
-          </ElUpload>
-        </ElFormItem>
-      </ElForm>
+              <template #tip>
+                <div class="el-upload__tip flex flex-wrap gap-2">
+                  <ElText v-if="props.note" type="warning" class="mx-1">{{ props.note }}</ElText>
+                  <ElText v-if="props.fileTypeWarning" type="danger" class="mx-1">
+                    {{ props.fileTypeWarning }}
+                  </ElText>
+                  <ElLink
+                    v-if="props.showTemplateDownload"
+                    v-hasPerm="[`${props.contentConfig.permPrefix}:download`]"
+                    class="mx-1 inline-flex items-center gap-0.5"
+                    type="primary"
+                    underline="never"
+                    @click="handleDownloadTemplate"
+                  >
+                    <ElIcon class="text-base"><FaSvgIcon icon="ri:download-2-line" /></ElIcon>
+                    <span>{{ props.templateDownloadText || "下载模板" }}</span>
+                  </ElLink>
+                </div>
+              </template>
+            </ElUpload>
+          </ElFormItem>
+        </ElForm>
+      </div>
       <template #footer>
-        <div :style="'padding-right: var(--el-dialog-padding-primary)'">
+        <div>
           <ElButton @click="handleClose">{{ props.cancelButtonText || "取 消" }}</ElButton>
           <ElButton
             type="primary"
@@ -321,3 +318,24 @@ defineExpose({
   handleClose,
 });
 </script>
+
+<style scoped>
+.crud-import-body :deep(.el-upload) {
+  width: 100%;
+}
+
+.crud-import-body :deep(.el-upload-dragger) {
+  width: 100%;
+  padding: 32px 20px;
+}
+
+.crud-import-body :deep(.el-form-item__content) {
+  width: 100%;
+}
+
+.crud-import-body :deep(.el-upload__tip) {
+  justify-content: center;
+  margin-top: 12px;
+  text-align: center;
+}
+</style>
