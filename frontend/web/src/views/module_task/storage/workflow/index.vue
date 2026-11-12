@@ -399,7 +399,7 @@ function buildFlowRowActions(
 function formatFlowOperationCell(row: FlowTable, ctx: Parameters<typeof buildFlowRowActions>[1]) {
   return renderTableOperationCell(buildFlowRowActions(row, ctx), {
     wrapperClass:
-      "inline-flex flex-wrap items-center justify-end gap-1 flow-table-actions align-middle",
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap flow-table-actions align-middle",
   });
 }
 

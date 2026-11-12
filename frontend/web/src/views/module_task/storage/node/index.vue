@@ -396,7 +396,7 @@ function formatSourceOperationCell(
   ctx: Parameters<typeof buildSourceRowActions>[1]
 ) {
   return renderTableOperationCell(buildSourceRowActions(row, ctx), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 source-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap source-table-actions",
   });
 }
 

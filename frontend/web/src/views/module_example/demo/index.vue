@@ -623,7 +623,7 @@ function buildDemoRowActions(row: DemoTable): TableOperationAction[] {
 
 function formatDemoOperationCell(row: DemoTable) {
   return renderTableOperationCell(buildDemoRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap",
   });
 }
 

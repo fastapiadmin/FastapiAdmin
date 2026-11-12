@@ -220,7 +220,7 @@
             stepSummaryText(row as TransferTaskItem)
           }}</span>
         </template>
-        <template #actions="{ row }">
+        <template #operation="{ row }">
           <span v-html="formatTransferOperationCell(row as TransferTaskItem)" />
         </template>
         <template #empty>
@@ -591,10 +591,11 @@ const columnChecks = ref<ColumnOption[]>([
   { prop: "progress", label: "进度", minWidth: 200, useSlot: true },
   { prop: "info", label: "信息", minWidth: 160, useSlot: true },
   {
-    prop: "actions",
+    prop: "operation",
     label: "操作",
-    width: 150,
+    width: 200,
     fixed: "right",
+    align: "center",
     formatter: formatTransferOperationCell,
   },
 ]);
@@ -961,7 +962,7 @@ function buildTransferRowActions(row: TransferTaskItem): TableOperationAction[] 
 }
 function formatTransferOperationCell(row: TransferTaskItem) {
   return renderTableOperationCell(buildTransferRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap",
   });
 }
 async function cancelTask(row: TransferTaskItem) {

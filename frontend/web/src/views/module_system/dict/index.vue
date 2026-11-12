@@ -420,7 +420,7 @@ function runDictTypeAction(row: DictTable, key: string): void {
 
 function formatDictOperationCell(row: DictTable) {
   return renderTableOperationCell(buildDictRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 dict-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap dict-table-actions",
   });
 }
 

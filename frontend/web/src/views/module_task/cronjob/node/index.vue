@@ -483,7 +483,7 @@ async function handleBatchMoreStatus(type: "enable" | "disable") {
 
 function formatNodeOperationCell(row: NodeTable) {
   return renderTableOperationCell(buildNodeRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 cronjob-node-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap cronjob-node-table-actions",
   });
 }
 

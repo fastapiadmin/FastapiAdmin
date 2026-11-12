@@ -423,7 +423,7 @@ function buildUserRowActions(
 function formatUserOperationCell(row: UserInfo, ctx: Parameters<typeof buildUserRowActions>[1]) {
   const actions = buildUserRowActions(row, ctx);
   return renderTableOperationCell(actions, {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 user-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap user-table-actions",
   });
 }
 

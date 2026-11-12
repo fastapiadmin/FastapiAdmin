@@ -366,60 +366,6 @@
                       formatTime(row.modified_time)
                     }}</span>
                   </template>
-                  <template #operation="{ row }">
-                    <div class="inline-flex items-center justify-end gap-1">
-                      <el-button
-                        link
-                        type="primary"
-                        size="small"
-                        :icon="Download"
-                        :title="row.is_dir ? '下载目录（ZIP）' : '下载'"
-                        @click.stop="downloadRow(row)"
-                      />
-                      <el-dropdown
-                        size="small"
-                        trigger="click"
-                        @command="(cmd) => onRowMoreCommand(cmd as string, row)"
-                      >
-                        <el-button link type="primary" size="small" :icon="MoreFilled" />
-                        <template #dropdown>
-                          <el-dropdown-menu>
-                            <el-dropdown-item
-                              v-if="isObjectStorage"
-                              command="share"
-                              :icon="Share"
-                              :disabled="row.is_dir"
-                              >分享</el-dropdown-item
-                            >
-                            <el-dropdown-item
-                              command="copy"
-                              :icon="CopyDocument"
-                              :disabled="row.is_dir"
-                              >复制到</el-dropdown-item
-                            >
-                            <el-dropdown-item
-                              command="move"
-                              :icon="FolderOpened"
-                              :disabled="row.is_dir"
-                              >移动到</el-dropdown-item
-                            >
-                            <el-dropdown-item
-                              command="rename"
-                              :icon="EditPen"
-                              :disabled="isObjectStorage && row.is_dir"
-                              >重命名</el-dropdown-item
-                            >
-                            <el-dropdown-item command="delete" divided>
-                              <el-icon class="mr-1.5 text-(--el-color-danger)"
-                                ><FaSvgIcon icon="ri:delete-bin-4-line"
-                              /></el-icon>
-                              <span class="text-(--el-color-danger)">删除</span>
-                            </el-dropdown-item>
-                          </el-dropdown-menu>
-                        </template>
-                      </el-dropdown>
-                    </div>
-                  </template>
                 </FaTable>
               </div>
 
@@ -676,12 +622,10 @@ import {
   ArrowLeft,
   ArrowRight,
   CopyDocument,
-  Download,
   EditPen,
   FolderAdd,
   FolderOpened,
   Loading,
-  MoreFilled,
   Promotion,
   Refresh,
   Share,
@@ -691,6 +635,7 @@ import NodeAPI, { type SourceTable } from "@/api/module_storage/node";
 import TransferAPI from "@/api/module_storage/transfer";
 import type { ColumnOption } from "@/types/component";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
+import { renderTableOperationCell, type TableOperationAction } from "@utils";
 
 defineOptions({
   name: "WorkflowBrowse",
@@ -767,7 +712,68 @@ const isObjectStorage = computed(() =>
 const sortKey = ref<"name" | "size" | "modified_time" | "">("");
 const sortOrder = ref<"ascending" | "descending" | null>(null);
 
-/** 文件浏览表格列配置：选择列 + 自定义排序，复杂单元格走具名插槽（FaTable） */
+/** 行操作：与系统表格统一使用 renderTableOperationCell，1 个常用操作 + 更多菜单 */
+function buildBrowseRowActions(row: StorageObject): TableOperationAction[] {
+  const actions: TableOperationAction[] = [
+    {
+      key: "download",
+      label: row.is_dir ? "下载目录" : "下载",
+      artType: "view",
+      icon: "ri:download-2-line",
+      run: () => downloadRow(row),
+    },
+  ];
+  if (isObjectStorage.value) {
+    actions.push({
+      key: "share",
+      label: "分享",
+      artType: "more",
+      icon: "ri:share-line",
+      disabled: row.is_dir,
+      run: () => shareRow(row),
+    });
+  }
+  actions.push(
+    {
+      key: "copy",
+      label: "复制到",
+      artType: "more",
+      icon: "ri:file-copy-line",
+      disabled: row.is_dir,
+      run: () => copyMove([row], "copy"),
+    },
+    {
+      key: "move",
+      label: "移动到",
+      artType: "more",
+      icon: "ri:folder-shared-line",
+      disabled: row.is_dir,
+      run: () => copyMove([row], "move"),
+    },
+    {
+      key: "rename",
+      label: "重命名",
+      artType: "edit",
+      disabled: isObjectStorage.value && row.is_dir,
+      run: () => renameRow(row),
+    },
+    {
+      key: "delete",
+      label: "删除",
+      artType: "delete",
+      run: () => deleteRow(row),
+    }
+  );
+  return actions;
+}
+
+function formatBrowseOperationCell(row: StorageObject) {
+  return renderTableOperationCell(buildBrowseRowActions(row), { maxInline: 1 });
+}
+
+/**
+ * 文件浏览表格列配置：选择列 + 自定义排序，复杂单元格走具名插槽（FaTable）
+ */
 const browseColumns: ColumnOption[] = [
   { type: "selection", width: 45 },
   {
@@ -783,10 +789,10 @@ const browseColumns: ColumnOption[] = [
   {
     prop: "operation",
     label: "操作",
-    width: 110,
+    width: 130,
     fixed: "right",
     align: "center",
-    useSlot: true,
+    formatter: formatBrowseOperationCell,
   },
 ];
 
@@ -1567,13 +1573,6 @@ function onMoreCommand(cmd: string) {
   if (cmd === "rename") return row ? renameRow(row) : undefined;
   if (cmd === "share") return row ? shareRow(row) : undefined;
   if (cmd === "delete") return batchDelete();
-}
-
-function onRowMoreCommand(cmd: string, row: StorageObject) {
-  if (cmd === "copy") return copyMove([row], "copy");
-  if (cmd === "move") return copyMove([row], "move");
-  if (cmd === "rename") return renameRow(row);
-  if (cmd === "delete") return deleteRow(row);
 }
 
 // ─── 文件操作：分享（对象存储预签名链接） ───────────────────────────

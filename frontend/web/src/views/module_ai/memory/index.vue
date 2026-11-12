@@ -493,7 +493,7 @@ function buildMemoryRowActions(row: ChatSession): TableOperationAction[] {
 
 function formatMemoryOperationCell(row: ChatSession) {
   return renderTableOperationCell(buildMemoryRowActions(row), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 memory-table-actions",
+    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap memory-table-actions",
   });
 }
 
