@@ -307,7 +307,7 @@
       "noConnectionDesc": "Add a database connection",
       "dbTables": "Databases / Tables",
       "selectConnectionFirst": "Select a connection first",
-      "schemaLabel": "Database / schema",
+      "schemaLabel": "Databases",
       "tablesLabel": "Tables",
       "selectDbHint": "Select a database to load tables (click a table to fill the query)",
       "sqlConsole": "SQL console",

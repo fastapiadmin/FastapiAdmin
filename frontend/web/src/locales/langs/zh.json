@@ -307,7 +307,7 @@
       "noConnectionDesc": "新增一个数据库连接",
       "dbTables": "库 / 表",
       "selectConnectionFirst": "先选择一个连接",
-      "schemaLabel": "库 / schema",
+      "schemaLabel": "数据库",
       "tablesLabel": "表",
       "selectDbHint": "选择库后加载表（点击表名自动填入查询）",
       "sqlConsole": "SQL 控制台",
