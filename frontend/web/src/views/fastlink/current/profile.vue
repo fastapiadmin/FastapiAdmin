@@ -169,20 +169,20 @@
             <ElForm
               ref="infoFormRef"
               :model="infoFormState"
-              class="box-border p-5 flex flex-1 flex-col [&_.el-input]:w-full [&_.el-select]:w-full"
+              class="box-border p-5 flex flex-1 flex-col [&>.el-row_.el-form-item]:w-[calc(50%-10px)] [&_.el-input]:w-full [&_.el-select]:w-full"
               :rules="rules"
               label-width="96px"
               label-position="top"
             >
               <ElRow>
-                <ElFormItem label="姓名" prop="name" class="w-full">
+                <ElFormItem label="姓名" prop="name">
                   <ElInput
                     v-model="infoFormState.name"
                     :disabled="!isEdit"
                     placeholder="请输入姓名"
                   />
                 </ElFormItem>
-                <ElFormItem label="性别" prop="gender" class="w-full mt-3">
+                <ElFormItem label="性别" prop="gender" class="ml-5">
                   <ElSelect
                     v-model="infoFormState.gender"
                     placeholder="请选择"
@@ -200,14 +200,14 @@
               </ElRow>
 
               <ElRow>
-                <ElFormItem label="邮箱" prop="email" class="w-full">
+                <ElFormItem label="邮箱" prop="email">
                   <ElInput
                     v-model="infoFormState.email"
                     :disabled="!isEdit"
                     placeholder="请输入邮箱"
                   />
                 </ElFormItem>
-                <ElFormItem label="手机" prop="mobile" class="w-full mt-3">
+                <ElFormItem label="手机" prop="mobile" class="ml-5">
                   <ElInput
                     v-model="infoFormState.mobile"
                     :disabled="!isEdit"
