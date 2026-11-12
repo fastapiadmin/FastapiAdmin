@@ -96,7 +96,8 @@
   opacity: 0;
   transition: opacity 0.15s;
 
-  .fa-list-item:hover & {
+  .fa-list-item:hover &,
+  .fa-list-item:focus-within & {
     opacity: 1;
   }
 }
