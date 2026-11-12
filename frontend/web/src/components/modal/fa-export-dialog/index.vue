@@ -7,64 +7,97 @@
       dialog-class="crud-embed-dialog"
       modal-class="crud-embed-dialog"
       @close="handleCloseExportsModal"
-      size="md"
+      size="lg"
     >
-      <!-- 滚动 -->
-      <ElScrollbar max-height="60vh">
-        <!-- 表单 -->
-        <ElForm
-          ref="exportsFormRef"
-          :style="'padding-right: var(--el-dialog-padding-primary)'"
-          :model="exportsFormData"
-          :rules="exportsFormRules"
-        >
-          <ElFormItem label="文件名" prop="filename">
-            <ElInput v-model="exportsFormData.filename" placeholder="请输入文件名" clearable />
-          </ElFormItem>
-          <ElFormItem label="工作表名" prop="sheetname">
-            <ElInput v-model="exportsFormData.sheetname" placeholder="请输入工作表名" clearable />
-          </ElFormItem>
-          <ElFormItem label="数据源" prop="origin">
-            <ElSelect v-model="exportsFormData.origin">
-              <ElOption
-                label="当前数据 (当前页的数据)"
-                :value="ExportsOriginEnum.CURRENT"
-                :disabled="!pageData?.length"
-              />
-              <ElOption
-                label="选中数据 (所有选中的数据)"
-                :value="ExportsOriginEnum.SELECTED"
-                :disabled="!selectionData?.length"
-              />
-              <ElOption
-                label="全量数据 (所有分页的数据)"
-                :value="ExportsOriginEnum.REMOTE"
-                :disabled="!remoteExportEnabled"
-              />
-            </ElSelect>
-          </ElFormItem>
-          <ElFormItem label="导出格式" prop="format">
-            <ElRadioGroup v-model="exportsFormData.format">
-              <ElRadio value="xlsx">Excel (.xlsx)</ElRadio>
-              <ElRadio value="csv">CSV (.csv)</ElRadio>
-            </ElRadioGroup>
-          </ElFormItem>
-          <ElFormItem label="字段" prop="fields">
-            <ElCheckboxGroup v-model="exportsFormData.fields">
-              <template v-for="col in cols" :key="col.prop">
-                <ElCheckbox v-if="col.prop" :value="col.prop" :label="col.label" />
-              </template>
-            </ElCheckboxGroup>
-          </ElFormItem>
-        </ElForm>
-      </ElScrollbar>
+      <ElForm
+        ref="exportsFormRef"
+        :style="'padding-right: var(--el-dialog-padding-primary)'"
+        :model="exportsFormData"
+        :rules="exportsFormRules"
+        label-width="88px"
+      >
+        <ElRow :gutter="16">
+          <ElCol :span="12">
+            <ElFormItem label="文件名" prop="filename">
+              <ElInput v-model="exportsFormData.filename" placeholder="请输入文件名" clearable />
+            </ElFormItem>
+          </ElCol>
+          <ElCol :span="12">
+            <ElFormItem label="工作表名" prop="sheetname">
+              <ElInput v-model="exportsFormData.sheetname" placeholder="请输入工作表名" clearable />
+            </ElFormItem>
+          </ElCol>
+          <ElCol :span="12">
+            <ElFormItem label="数据源" prop="origin">
+              <ElSelect v-model="exportsFormData.origin">
+                <ElOption
+                  label="当前页数据"
+                  :value="ExportsOriginEnum.CURRENT"
+                  :disabled="!pageData?.length"
+                />
+                <ElOption
+                  label="选中数据"
+                  :value="ExportsOriginEnum.SELECTED"
+                  :disabled="!selectionData?.length"
+                />
+                <ElOption
+                  label="全量数据"
+                  :value="ExportsOriginEnum.REMOTE"
+                  :disabled="!remoteExportEnabled"
+                />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :span="12">
+            <ElFormItem label="导出格式" prop="format">
+              <ElRadioGroup v-model="exportsFormData.format">
+                <ElRadio value="xlsx">Excel (.xlsx)</ElRadio>
+                <ElRadio value="csv">CSV (.csv)</ElRadio>
+              </ElRadioGroup>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :span="24">
+            <ElFormItem label="字段" prop="fields">
+              <div class="w-full">
+                <div class="mb-2 flex items-center justify-between">
+                  <ElCheckbox
+                    :model-value="allFieldsChecked"
+                    @change="(val) => toggleAllFields(Boolean(val))"
+                  >
+                    全选
+                  </ElCheckbox>
+                  <span class="text-xs text-(--el-text-color-secondary)">
+                    已选 {{ exportsFormData.fields.length }} / {{ allFieldProps.length }}
+                  </span>
+                </div>
+                <ElScrollbar
+                  max-height="200px"
+                  class="box-border w-full rounded-md border border-(--el-border-color-lighter) p-3"
+                >
+                  <ElCheckboxGroup
+                    v-model="exportsFormData.fields"
+                    class="grid grid-cols-2 gap-x-4 gap-y-2"
+                  >
+                    <ElCheckbox
+                      v-for="col in cols.filter((item) => item.prop)"
+                      :key="col.prop"
+                      :value="col.prop"
+                      :label="col.label"
+                    />
+                  </ElCheckboxGroup>
+                </ElScrollbar>
+              </div>
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
+      </ElForm>
       <!-- 弹窗底部操作按钮 -->
       <template #footer>
         <div :style="'padding-right: var(--el-dialog-padding-primary)'">
+          <ElButton @click="handleCloseExportsModal">取 消</ElButton>
           <ElButton type="primary" :loading="loadingRef" @click="handleExportsSubmit"
             >确 定</ElButton
           >
-          <ElButton @click="handleCloseExportsModal">取 消</ElButton>
         </div>
       </template>
     </FaDialog>
@@ -192,6 +225,19 @@ const initFields = () => {
 
 // 初始化
 initFields();
+
+const allFieldProps = computed(
+  () => cols.value.map((item) => item.prop).filter(Boolean) as string[]
+);
+const allFieldsChecked = computed(
+  () =>
+    allFieldProps.value.length > 0 &&
+    allFieldProps.value.every((prop) => exportsFormData.fields.includes(prop))
+);
+
+function toggleAllFields(checked: boolean) {
+  exportsFormData.fields = checked ? [...allFieldProps.value] : [];
+}
 
 // 关闭导出弹窗
 function handleCloseExportsModal() {
