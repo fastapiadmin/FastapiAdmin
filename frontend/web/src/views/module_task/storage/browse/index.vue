@@ -410,6 +410,9 @@
                               >重命名</el-dropdown-item
                             >
                             <el-dropdown-item command="delete" divided>
+                              <el-icon class="mr-1.5 text-(--el-color-danger)"
+                                ><FaSvgIcon icon="ri:delete-bin-4-line"
+                              /></el-icon>
                               <span class="text-(--el-color-danger)">删除</span>
                             </el-dropdown-item>
                           </el-dropdown-menu>
