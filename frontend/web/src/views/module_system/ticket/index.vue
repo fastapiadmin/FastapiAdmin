@@ -777,7 +777,7 @@ const ticketDialogFormItems = computed<FormItem[]>(() => [
     label: "工单标题",
     key: "title",
     type: "input",
-    span: 24,
+    span: 12,
     props: { placeholder: "请输入工单标题", maxlength: 200 },
   },
   {
@@ -794,7 +794,7 @@ const ticketDialogFormItems = computed<FormItem[]>(() => [
     span: 12,
     placeholder: "",
   },
-  { key: "status", label: "状态", type: "radiogroup", span: 24 },
+  { key: "status", label: "状态", type: "radiogroup", span: 12 },
   {
     label: "详细描述",
     key: "ticket_content",

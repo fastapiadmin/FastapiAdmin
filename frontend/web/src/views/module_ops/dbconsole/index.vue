@@ -447,14 +447,14 @@ const formItems = computed<FormItem[]>(() => [
     label: "名称",
     key: "name",
     type: "input",
-    span: 24,
+    span: 12,
     props: { placeholder: "唯一名称", maxlength: 64 },
   },
   {
     label: "类型",
     key: "db_type",
     type: "select",
-    span: 24,
+    span: 12,
     props: {
       options: [
         { label: "MySQL", value: "mysql" },
@@ -462,28 +462,28 @@ const formItems = computed<FormItem[]>(() => [
       ],
     },
   },
-  { label: "主机", key: "host", type: "input", span: 24, props: { placeholder: "如 127.0.0.1" } },
+  { label: "主机", key: "host", type: "input", span: 12, props: { placeholder: "如 127.0.0.1" } },
   {
     label: "端口",
     key: "port",
     type: "number",
-    span: 24,
+    span: 12,
     props: { controlsPosition: "right", min: 1, max: 65535, style: { width: "160px" } },
   },
-  { label: "用户名", key: "username", type: "input", span: 24 },
+  { label: "用户名", key: "username", type: "input", span: 12 },
   {
     label: "密码",
     key: "password",
     type: "input",
-    span: 24,
+    span: 12,
     props: { type: "password", showPassword: true, placeholder: "修改时不填表示不变" },
   },
-  { label: "默认库", key: "database", type: "input", span: 24, props: { placeholder: "可空" } },
+  { label: "默认库", key: "database", type: "input", span: 12, props: { placeholder: "可空" } },
   {
     label: "状态",
     key: "status",
     type: "radiogroup",
-    span: 24,
+    span: 12,
     props: {
       options: [
         { label: "启用", value: 0 },

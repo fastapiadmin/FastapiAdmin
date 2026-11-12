@@ -188,11 +188,7 @@
       @confirm="handleSubmit()"
     >
       <template v-if="dialogVisible.type === 'detail'">
-        <FaDescriptions
-          :column="4"
-          :data="detailFormData"
-          :items="userDetailItems"
-        >
+        <FaDescriptions :column="4" :data="detailFormData" :items="userDetailItems">
           <!-- 头像 → 自定义渲染 -->
           <template #avatar="{ row }">
             <ElAvatar v-if="row?.avatar" :src="row?.avatar as string" size="small" />
@@ -525,13 +521,15 @@ const userDetailItems: DescriptionsItem[] = [
 const userDialogFormItems = computed<FormItem[]>(() => [
   {
     key: "username",
+    span: 12,
     label: "账号",
     type: "input",
     props: { placeholder: "请输入账号", disabled: !!formData.value.id },
   },
-  { key: "name", label: "用户名", type: "input", props: { placeholder: "请输入用户名" } },
+  { key: "name", span: 12, label: "用户名", type: "input", props: { placeholder: "请输入用户名" } },
   {
     key: "gender",
+    span: 12,
     label: "性别",
     type: "select",
     props: {
@@ -545,29 +543,38 @@ const userDialogFormItems = computed<FormItem[]>(() => [
   },
   {
     key: "mobile",
+    span: 12,
     label: "手机号",
     type: "input",
     props: { placeholder: "请输入手机号码", maxlength: 11 },
   },
   {
     key: "email",
+    span: 12,
     label: "邮箱",
     type: "input",
     props: { placeholder: "请输入邮箱", maxlength: 50 },
   },
-  { key: "dept_id", label: "部门", type: "input" /* 实际渲染由 #dept_id 插槽接管 */ },
-  { key: "role_ids", label: "角色", type: "input" /* 实际渲染由 #role_ids 插槽接管 */ },
-  { key: "position_ids", label: "岗位", type: "input" /* 实际渲染由 #position_ids 插槽接管 */ },
+  { key: "dept_id", span: 12, label: "部门", type: "input" /* 实际渲染由 #dept_id 插槽接管 */ },
+  { key: "role_ids", span: 12, label: "角色", type: "input" /* 实际渲染由 #role_ids 插槽接管 */ },
+  {
+    key: "position_ids",
+    span: 12,
+    label: "岗位",
+    type: "input" /* 实际渲染由 #position_ids 插槽接管 */,
+  },
   {
     key: "password",
+    span: 12,
     label: "密码",
     type: "input",
     hidden: !!formData.value.id,
     props: { placeholder: "请输入密码", type: "password", showPassword: true, clearable: true },
   },
-  { key: "is_superuser", label: "是否超管", type: "switch" },
+  { key: "is_superuser", span: 12, label: "是否超管", type: "switch" },
   {
     key: "status",
+    span: 12,
     label: "状态",
     type: "radiogroup",
     props: {

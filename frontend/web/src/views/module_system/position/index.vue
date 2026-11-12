@@ -548,28 +548,28 @@ const positionDialogFormItems = computed<FormItem[]>(() => [
     label: "岗位名称",
     key: "name",
     type: "input",
-    span: 24,
+    span: 12,
     props: { placeholder: "请输入岗位名称", maxlength: 50 },
   },
   {
     label: "岗位编码",
     key: "code",
     type: "input",
-    span: 24,
+    span: 12,
     props: { placeholder: "请输入岗位编码", maxlength: 64 },
   },
   {
     label: "排序",
     key: "order",
     type: "number",
-    span: 24,
+    span: 12,
     props: { controlsPosition: "right", min: 1 },
   },
   {
     label: "状态",
     key: "status",
     type: "radiogroup",
-    span: 24,
+    span: 12,
     props: {
       options: [
         { label: "启用", value: 0 },

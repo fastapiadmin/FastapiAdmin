@@ -495,21 +495,21 @@ const formData = ref<SshHostFormModel>({ ...initialFormData });
 const formItems = computed<FormItem[]>(() => {
   const isKey = formData.value.auth_type === "key";
   return [
-    { label: "名称", key: "name", type: "input", span: 24, props: { placeholder: "唯一名称" } },
-    { label: "地址", key: "host", type: "input", span: 24, props: { placeholder: "如 10.0.0.1" } },
+    { label: "名称", key: "name", type: "input", span: 12, props: { placeholder: "唯一名称" } },
+    { label: "地址", key: "host", type: "input", span: 12, props: { placeholder: "如 10.0.0.1" } },
     {
       label: "端口",
       key: "port",
       type: "number",
-      span: 24,
+      span: 12,
       props: { controlsPosition: "right", min: 1, max: 65535, style: { width: "160px" } },
     },
-    { label: "用户名", key: "username", type: "input", span: 24 },
+    { label: "用户名", key: "username", type: "input", span: 12 },
     {
       label: "认证方式",
       key: "auth_type",
       type: "radiogroup",
-      span: 24,
+      span: 12,
       props: {
         options: [
           { label: "密码", value: "password" },
@@ -521,7 +521,7 @@ const formItems = computed<FormItem[]>(() => {
       label: "密码",
       key: "password",
       type: "input",
-      span: 24,
+      span: 12,
       hidden: isKey,
       props: { type: "password", showPassword: true, placeholder: "修改时不填表示不变" },
     },
@@ -537,7 +537,7 @@ const formItems = computed<FormItem[]>(() => {
       label: "私钥口令",
       key: "passphrase",
       type: "input",
-      span: 24,
+      span: 12,
       hidden: !isKey,
       props: { type: "password", showPassword: true, placeholder: "可选" },
     },
@@ -545,7 +545,7 @@ const formItems = computed<FormItem[]>(() => {
       label: "状态",
       key: "status",
       type: "radiogroup",
-      span: 24,
+      span: 12,
       props: {
         options: [
           { label: "启用", value: 0 },
@@ -618,12 +618,12 @@ const initialSnippetForm: SshSnippetFormModel = {
 const snippetFormData = ref<SshSnippetFormModel>({ ...initialSnippetForm });
 
 const snippetFormItems = computed<FormItem[]>(() => [
-  { label: "名称", key: "name", type: "input", span: 24 },
+  { label: "名称", key: "name", type: "input", span: 12 },
   {
     label: "命令",
     key: "command",
     type: "input",
-    span: 24,
+    span: 12,
     props: { type: "textarea", rows: 4, placeholder: "如 df -h" },
   },
   { label: "备注", key: "description", type: "input", span: 24 },

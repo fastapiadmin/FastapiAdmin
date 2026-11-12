@@ -517,6 +517,7 @@ const dictDataDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "数据类型",
     key: "dict_type",
+    span: 12,
     type: "input",
     props: {
       placeholder: "请输入数据类型",
@@ -527,28 +528,33 @@ const dictDataDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "数据标签",
     key: "dict_label",
+    span: 12,
     type: "input",
     props: { placeholder: "请输入数据标签", maxlength: 255 },
   },
   {
     label: "数据值",
     key: "dict_value",
+    span: 12,
     type: "input",
     props: { placeholder: "请输入数据值", maxlength: 255 },
   },
   {
     label: "样式属性",
     key: "css_class",
+    span: 12,
     type: "input",
   },
   {
     label: "列表类样式",
     key: "list_class",
+    span: 12,
     type: "input",
   },
   {
     label: "是否默认",
     key: "is_default",
+    span: 12,
     type: "radiogroup",
     props: {
       options: [
@@ -560,6 +566,7 @@ const dictDataDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "排序",
     key: "dict_sort",
+    span: 12,
     type: "number",
     props: {
       controlsPosition: "right",
@@ -570,6 +577,7 @@ const dictDataDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "状态",
     key: "status",
+    span: 12,
     type: "switch",
     props: {
       activeValue: 0,

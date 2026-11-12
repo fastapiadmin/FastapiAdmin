@@ -254,18 +254,21 @@ const dictDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "字典名称",
     key: "dict_name",
+    span: 12,
     type: "input",
     props: { placeholder: "请输入字典名称", maxlength: 50 },
   },
   {
     label: "字典类型",
     key: "dict_type",
+    span: 12,
     type: "input",
     props: { placeholder: "请输入字典类型", maxlength: 50 },
   },
   {
     label: "状态",
     key: "status",
+    span: 12,
     type: "radiogroup",
     props: {
       options: [

@@ -426,14 +426,14 @@ const noticeDialogFormItems = computed<FormItem[]>(() => [
     label: "标题",
     key: "notice_title",
     type: "input",
-    span: 24,
+    span: 12,
     props: { placeholder: "请输入标题", maxlength: 50 },
   },
   {
     label: "描述",
     key: "description",
     type: "input",
-    span: 24,
+    span: 12,
     props: {
       type: "textarea",
       rows: 2,
@@ -446,7 +446,7 @@ const noticeDialogFormItems = computed<FormItem[]>(() => [
     label: "类型",
     key: "notice_type",
     type: "select",
-    span: 24,
+    span: 12,
     props: {
       placeholder: "请选择类型",
       clearable: true,
@@ -457,7 +457,7 @@ const noticeDialogFormItems = computed<FormItem[]>(() => [
       })),
     },
   },
-  { key: "status", label: "状态", type: "radiogroup", span: 24 },
+  { key: "status", label: "状态", type: "radiogroup", span: 12 },
   {
     label: "内容",
     key: "notice_content",

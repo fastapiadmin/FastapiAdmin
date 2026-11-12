@@ -598,14 +598,14 @@ const roleDialogFormItems = computed<FormItem[]>(() => [
     label: "角色名称",
     key: "name",
     type: "input",
-    span: 24,
+    span: 12,
     props: { placeholder: "请输入角色名称" },
   },
   {
     label: "排序",
     key: "order",
     type: "number",
-    span: 24,
+    span: 12,
     props: {
       controlsPosition: "right",
       min: 0,
@@ -616,7 +616,7 @@ const roleDialogFormItems = computed<FormItem[]>(() => [
     label: "角色编码",
     key: "code",
     type: "input",
-    span: 24,
+    span: 12,
     props: {
       placeholder: "字母开头，2-64位字母/数字/下划线",
       maxlength: 64,
@@ -627,7 +627,7 @@ const roleDialogFormItems = computed<FormItem[]>(() => [
     label: "状态",
     key: "status",
     type: "radiogroup",
-    span: 24,
+    span: 12,
     props: {
       options: [
         { label: "启用", value: 0 },
