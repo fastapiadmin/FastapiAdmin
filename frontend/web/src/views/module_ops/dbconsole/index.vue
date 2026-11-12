@@ -1,7 +1,7 @@
 <!-- SQL 控制台：左侧连接/库表导航 + 右侧编辑器与结果区（外部 MySQL/PostgreSQL） -->
 <template>
   <div class="fa-full-height">
-    <FaWorkbench :side-width="280">
+    <FaWorkbench :side-width="320">
       <template #side>
         <!-- 左：连接 + 库表 -->
         <FaSidePanel :title="$t('common.db.databaseConnections')" class="db-side-panel">
@@ -81,7 +81,8 @@
                 :class="{ 'is-active': db.name === currentDatabase }"
                 @click="pickDatabase(db.name)"
               >
-                <span class="fa-list-item__title">{{ db.name }}</span>
+                <FaSvgIcon icon="ri:database-2-line" class="fa-list-item__icon" />
+                <span class="fa-list-item__title" :title="db.name">{{ db.name }}</span>
               </div>
               <div class="fa-hint mt-2">{{ $t("common.db.tablesLabel") }}</div>
               <div
@@ -90,7 +91,8 @@
                 class="fa-list-item fa-list-item--sm"
                 @click="insertTable(table.name)"
               >
-                <span class="fa-list-item__title">{{ table.name }}</span>
+                <FaSvgIcon icon="ri:table-line" class="fa-list-item__icon" />
+                <span class="fa-list-item__title" :title="table.name">{{ table.name }}</span>
               </div>
               <div v-if="!tables.length" class="fa-hint p-2">
                 {{ $t("common.db.selectDbHint") }}
