@@ -759,8 +759,8 @@ const createFormItems = computed<FormItem[]>(() => [
     type: "radiogroup",
     props: {
       options: [
-        { label: "多目标（同时传输到多个存储源）", value: "parallel" },
-        { label: "链式（按目标顺序逐跳传输）", value: "chain" },
+        { label: "多目标", value: "parallel" },
+        { label: "链式", value: "chain" },
       ],
     },
   },
