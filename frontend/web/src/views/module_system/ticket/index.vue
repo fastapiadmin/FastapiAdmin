@@ -195,22 +195,26 @@
               />
             </template>
             <template #ticket_content>
-              <div
-                class="box-border min-h-30 bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)] p-3"
+              <ElScrollbar
+                max-height="min(180px, 24vh)"
+                class="box-border min-h-30 bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)]"
+                view-class="p-3"
               >
                 <template v-if="detailHasRenderableContent">
                   <div v-html="detailContentHtml" />
                 </template>
                 <p v-else class="m-0 text-sm text-(--el-text-color-placeholder)">暂无内容</p>
-              </div>
+              </ElScrollbar>
             </template>
             <template #reply_content>
-              <div
+              <ElScrollbar
                 v-if="detailFormData.reply"
-                class="box-border min-h-30 bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)] p-3"
+                max-height="min(180px, 24vh)"
+                class="box-border min-h-30 bg-(--el-bg-color) border border-(--el-border-color-lighter) rounded-[calc(var(--custom-radius)/3+2px)]"
+                view-class="p-3"
               >
                 <div v-html="sanitizedReply" />
-              </div>
+              </ElScrollbar>
               <p v-else class="m-0 text-sm text-(--el-text-color-placeholder)">暂无回复</p>
             </template>
           </FaDescriptions>
@@ -225,7 +229,7 @@
             </span>
           </ElDivider>
           <div class="flex flex-col gap-3">
-            <div class="px-1">
+            <ElScrollbar max-height="min(220px, 28vh)" class="px-1">
               <div v-if="commentsLoading" class="py-3">
                 <ElSkeleton :rows="2" animated />
               </div>
@@ -257,7 +261,7 @@
                 </div>
               </template>
               <FaEmptyState v-else icon="ri:chat-3-line" title="暂无评论" compact />
-            </div>
+            </ElScrollbar>
 
             <!-- 提交评论 -->
             <div
@@ -413,6 +417,7 @@ import {
   ElDivider,
   ElInput,
   ElMessageBox,
+  ElScrollbar,
 } from "element-plus";
 import DOMPurify from "dompurify";
 import FaForm from "@/components/forms/fa-form/index.vue";
@@ -649,8 +654,8 @@ const ticketDetailItems: import("@/components/display/fa-descriptions/index.vue"
     { label: "状态", prop: "status", slot: "status" },
     { label: "处理人", prop: "assigned_by.name" },
     { label: "描述", prop: "description", span: 4 },
-    { label: "详细内容", prop: "ticket_content", slot: "ticket_content", span: 4 },
-    { label: "回复内容", prop: "reply", slot: "reply_content", span: 4 },
+    { label: "详细内容", prop: "ticket_content", slot: "ticket_content", span: 2 },
+    { label: "回复内容", prop: "reply", slot: "reply_content", span: 2 },
     { label: "创建人", prop: "created_by.name" },
     { label: "更新人", prop: "updated_by.name" },
     { label: "创建时间", prop: "created_time" },

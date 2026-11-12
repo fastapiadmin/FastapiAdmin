@@ -363,7 +363,18 @@
         :data="logDetailFormData"
         :items="logDetailItems"
         max-height="70vh"
-      />
+      >
+        <template #result="{ row }">
+          <ElScrollbar max-height="min(160px, 20vh)">
+            <div class="whitespace-pre-wrap break-all">{{ row?.result || "—" }}</div>
+          </ElScrollbar>
+        </template>
+        <template #error="{ row }">
+          <ElScrollbar max-height="min(160px, 20vh)">
+            <div class="whitespace-pre-wrap break-all">{{ row?.error || "—" }}</div>
+          </ElScrollbar>
+        </template>
+      </FaDescriptions>
     </FaDialog>
   </div>
 </template>
@@ -861,8 +872,8 @@ const logDetailItems: import("@/components/display/fa-descriptions/index.vue").D
     { label: "触发方式", prop: "trigger_type" },
     { label: "执行状态", prop: "status" },
     { label: "下次执行时间", prop: "next_run_time" },
-    { label: "执行结果", prop: "result", span: 4 },
-    { label: "错误信息", prop: "error", span: 4 },
+    { label: "执行结果", prop: "result", slot: "result", span: 4 },
+    { label: "错误信息", prop: "error", slot: "error", span: 4 },
     { label: "创建时间", prop: "created_time" },
     { label: "更新时间", prop: "updated_time" },
   ];

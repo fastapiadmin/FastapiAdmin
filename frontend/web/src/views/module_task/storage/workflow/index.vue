@@ -61,45 +61,49 @@
     >
       <FaDescriptions :column="2" :data="detailFormData" :items="flowDetailItems" max-height="70vh">
         <template #sources="{ row }">
-          <div class="flex flex-col gap-1">
-            <ElTooltip
-              v-for="(s, idx) in (row as unknown as FlowTable)?.sources || []"
-              :key="idx"
-              :content="nodeTip(s.source_id)"
-              placement="top"
-              :show-after="200"
-            >
-              <ElTag
-                size="small"
-                effect="plain"
-                :style="protocolTagStyle(sourceMap[s.source_id])"
-                class="w-fit"
-                >{{ sourceName(s.source_id) }}</ElTag
+          <ElScrollbar max-height="min(140px, 18vh)">
+            <div class="flex flex-col gap-1">
+              <ElTooltip
+                v-for="(s, idx) in (row as unknown as FlowTable)?.sources || []"
+                :key="idx"
+                :content="nodeTip(s.source_id)"
+                placement="top"
+                :show-after="200"
               >
-            </ElTooltip>
-          </div>
+                <ElTag
+                  size="small"
+                  effect="plain"
+                  :style="protocolTagStyle(sourceMap[s.source_id])"
+                  class="w-fit"
+                  >{{ sourceName(s.source_id) }}</ElTag
+                >
+              </ElTooltip>
+            </div>
+          </ElScrollbar>
         </template>
         <template #task_type="{ row }">
           <span>{{ taskTypeLabel((row as unknown as FlowTable)?.task_type) }}</span>
         </template>
         <template #targets="{ row }">
-          <div class="flex flex-col gap-1">
-            <div
-              v-for="(t, idx) in (row as unknown as FlowTable)?.targets || []"
-              :key="idx"
-              class="flex items-center gap-2 text-[13px]"
-            >
-              <ElTooltip :content="nodeTip(t.target_id)" placement="top" :show-after="200">
-                <ElTag
-                  size="small"
-                  effect="plain"
-                  :style="protocolTagStyle(sourceMap[t.target_id])"
-                  >{{ sourceName(t.target_id) }}</ElTag
-                >
-              </ElTooltip>
-              <span class="text-xs text-(--el-text-color-secondary)">{{ t.target_path }}</span>
+          <ElScrollbar max-height="min(140px, 18vh)">
+            <div class="flex flex-col gap-1">
+              <div
+                v-for="(t, idx) in (row as unknown as FlowTable)?.targets || []"
+                :key="idx"
+                class="flex items-center gap-2 text-[13px]"
+              >
+                <ElTooltip :content="nodeTip(t.target_id)" placement="top" :show-after="200">
+                  <ElTag
+                    size="small"
+                    effect="plain"
+                    :style="protocolTagStyle(sourceMap[t.target_id])"
+                    >{{ sourceName(t.target_id) }}</ElTag
+                  >
+                </ElTooltip>
+                <span class="text-xs text-(--el-text-color-secondary)">{{ t.target_path }}</span>
+              </div>
             </div>
-          </div>
+          </ElScrollbar>
         </template>
         <template #graph="{ row }">
           <span>{{ graphText(row as unknown as FlowTable) }}</span>
@@ -394,7 +398,8 @@ function buildFlowRowActions(
 
 function formatFlowOperationCell(row: FlowTable, ctx: Parameters<typeof buildFlowRowActions>[1]) {
   return renderTableOperationCell(buildFlowRowActions(row, ctx), {
-    wrapperClass: "inline-flex flex-wrap items-center justify-end gap-1 flow-table-actions align-middle",
+    wrapperClass:
+      "inline-flex flex-wrap items-center justify-end gap-1 flow-table-actions align-middle",
   });
 }
 

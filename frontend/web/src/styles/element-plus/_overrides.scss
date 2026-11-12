@@ -151,36 +151,6 @@ html.dark .el-card {
   padding: 16px !important;
 }
 
-// 详情弹窗统一限制高度，使用浏览器原生纵向滚动（不再套 ElScrollbar）
-// 原生滚动条沿用主题色，保持与 ElScrollbar 一致的视觉
-.el-dialog.fa-dialog-detail-scroll .el-dialog__body {
-  max-height: 70vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--theme-color) transparent;
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--theme-color) !important;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in srgb, var(--theme-color) 80%, black) !important;
-  }
-}
-
-.dark .el-dialog.fa-dialog-detail-scroll .el-dialog__body {
-  scrollbar-color: color-mix(in srgb, var(--theme-color) 55%, transparent) transparent;
-
-  &::-webkit-scrollbar-thumb {
-    background-color: color-mix(in srgb, var(--theme-color) 55%, transparent) !important;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in srgb, var(--theme-color) 75%, transparent) !important;
-  }
-}
-
 .el-dialog__footer {
   padding: 8px 16px 16px !important;
   border-top: 1px solid var(--fa-gray-200);

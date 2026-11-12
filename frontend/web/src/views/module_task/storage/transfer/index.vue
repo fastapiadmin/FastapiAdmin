@@ -401,49 +401,56 @@
         >
           传输步骤
         </div>
-        <div v-if="detailSteps.length" class="flex flex-col gap-2">
-          <template v-for="(step, idx) in detailSteps" :key="step.id ?? idx">
-            <div
-              class="rounded-md border border-(--el-border-color-lighter) bg-(--el-fill-color-lighter) px-3 py-2.5"
-            >
-              <div class="flex items-center gap-2">
-                <ElTag :type="idx === 0 ? 'primary' : 'warning'" size="small">#{{ idx + 1 }}</ElTag>
-                <ElTag :type="statusTypeMap[step.status] || 'info'" size="small">{{
-                  statusText[step.status] || step.status
-                }}</ElTag>
-                <span class="ml-auto text-xs text-(--el-text-color-secondary)"
-                  >{{ step.progress }}% · {{ formatSpeed(step.speed) }}</span
+        <ElScrollbar v-if="detailSteps.length" max-height="min(300px, 36vh)">
+          <div class="flex flex-col gap-2">
+            <template v-for="(step, idx) in detailSteps" :key="step.id ?? idx">
+              <div
+                class="rounded-md border border-(--el-border-color-lighter) bg-(--el-fill-color-lighter) px-3 py-2.5"
+              >
+                <div class="flex items-center gap-2">
+                  <ElTag :type="idx === 0 ? 'primary' : 'warning'" size="small"
+                    >#{{ idx + 1 }}</ElTag
+                  >
+                  <ElTag :type="statusTypeMap[step.status] || 'info'" size="small">{{
+                    statusText[step.status] || step.status
+                  }}</ElTag>
+                  <span class="ml-auto text-xs text-(--el-text-color-secondary)"
+                    >{{ step.progress }}% · {{ formatSpeed(step.speed) }}</span
+                  >
+                </div>
+                <div class="mt-1.5 break-all text-xs text-(--el-text-color-regular)">
+                  <span
+                    class="mr-1.5 inline-block rounded-[3px] bg-(--el-color-info) px-1.25 py-0.5 text-[11px] leading-none text-white"
+                    >{{ $t("common.source") }}</span
+                  >{{ sourceName(step.source_id) }} · {{ step.source_path || "—" }}
+                </div>
+                <div
+                  class="mt-1 text-center text-[14px] font-bold text-(--el-text-color-placeholder)"
                 >
-              </div>
-              <div class="mt-1.5 break-all text-xs text-(--el-text-color-regular)">
-                <span
-                  class="mr-1.5 inline-block rounded-[3px] bg-(--el-color-info) px-1.25 py-0.5 text-[11px] leading-none text-white"
-                  >{{ $t("common.source") }}</span
-                >{{ sourceName(step.source_id) }} · {{ step.source_path || "—" }}
+                  ↓
+                </div>
+                <div class="mt-1.5 break-all text-xs text-(--el-text-color-regular)">
+                  <span
+                    class="mr-1.5 inline-block rounded-[3px] bg-(--el-color-primary) px-1.25 py-0.5 text-[11px] leading-none text-white"
+                    >目标</span
+                  >{{ sourceName(step.target_id) }} · {{ step.target_path }}
+                </div>
+                <div
+                  v-if="step.error_msg"
+                  class="mt-1.5 break-all text-xs text-(--el-color-danger)"
+                >
+                  {{ step.error_msg }}
+                </div>
               </div>
               <div
-                class="mt-1 text-center text-[14px] font-bold text-(--el-text-color-placeholder)"
+                v-if="idx < detailSteps.length - 1"
+                class="text-center text-[18px] font-bold text-(--el-text-color-placeholder)"
               >
-                ↓
+                →
               </div>
-              <div class="mt-1.5 break-all text-xs text-(--el-text-color-regular)">
-                <span
-                  class="mr-1.5 inline-block rounded-[3px] bg-(--el-color-primary) px-1.25 py-0.5 text-[11px] leading-none text-white"
-                  >目标</span
-                >{{ sourceName(step.target_id) }} · {{ step.target_path }}
-              </div>
-              <div v-if="step.error_msg" class="mt-1.5 break-all text-xs text-(--el-color-danger)">
-                {{ step.error_msg }}
-              </div>
-            </div>
-            <div
-              v-if="idx < detailSteps.length - 1"
-              class="text-center text-[18px] font-bold text-(--el-text-color-placeholder)"
-            >
-              →
-            </div>
-          </template>
-        </div>
+            </template>
+          </div>
+        </ElScrollbar>
         <FaEmptyState icon="ri:inbox-line" title="暂无步骤" compact />
       </template>
     </FaDialog>
