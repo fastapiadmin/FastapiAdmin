@@ -305,11 +305,11 @@
       "databaseConnections": "Database connections",
       "noConnection": "No connections",
       "noConnectionDesc": "Add a database connection",
-      "dbTables": "Databases / Tables",
+      "dbTables": "Database objects",
       "selectConnectionFirst": "Select a connection first",
       "schemaLabel": "Databases",
       "tablesLabel": "Tables",
-      "selectDbHint": "Select a database to load tables (click a table to fill the query)",
+      "selectDbHint": "Select a database to view tables",
       "sqlConsole": "SQL console",
       "noConnectionSelected": "No connection selected",
       "allowWrite": "Allow writes",
@@ -324,7 +324,10 @@
       "truncatedRows": "Truncated to 200 rows",
       "exportCsv": "Export CSV",
       "noResult": "Run SQL to see results",
-      "lastRun": "Last run"
+      "lastRun": "Last run",
+      "noTablesHint": "No tables in this database",
+      "noDatabaseHint": "No databases available",
+      "insertTableHint": "Click a table name to insert it into the query"
     },
     "params": {
       "groupTitle": "Parameter groups",

@@ -74,28 +74,48 @@
             </div>
             <template v-else>
               <div class="fa-hint db-section-label">{{ $t("common.db.schemaLabel") }}</div>
-              <div
-                v-for="db in databases"
-                :key="`db-${db.name}`"
-                class="fa-list-item fa-list-item--sm"
-                :class="{ 'is-active': db.name === currentDatabase }"
-                @click="pickDatabase(db.name)"
-              >
-                <FaSvgIcon icon="ri:database-2-line" class="fa-list-item__icon" />
-                <span class="fa-list-item__title" :title="db.name">{{ db.name }}</span>
+              <div v-for="db in databases" :key="`db-${db.name}`" class="db-tree-node">
+                <div
+                  class="fa-list-item fa-list-item--sm"
+                  :class="{ 'is-active': db.name === currentDatabase }"
+                  @click="pickDatabase(db.name)"
+                >
+                  <FaSvgIcon
+                    icon="ri:arrow-right-s-line"
+                    class="fa-list-item__icon db-chevron"
+                    :class="{ 'is-open': db.name === currentDatabase }"
+                  />
+                  <FaSvgIcon icon="ri:database-2-line" class="fa-list-item__icon" />
+                  <span class="fa-list-item__title" :title="db.name">{{ db.name }}</span>
+                </div>
+
+                <div v-if="db.name === currentDatabase" class="db-tables">
+                  <div class="db-tables__title">
+                    {{ $t("common.db.tablesLabel") }}
+                    <span v-if="tables.length">（{{ tables.length }}）</span>
+                  </div>
+                  <div
+                    v-for="table in tables"
+                    :key="`t-${table.name}`"
+                    class="fa-list-item fa-list-item--sm db-table-item"
+                    @click="insertTable(table.name)"
+                  >
+                    <FaSvgIcon icon="ri:table-line" class="fa-list-item__icon" />
+                    <span class="fa-list-item__title" :title="table.name">{{ table.name }}</span>
+                  </div>
+                  <div v-if="!tables.length" class="fa-hint db-table-empty">
+                    {{ $t("common.db.noTablesHint") }}
+                  </div>
+                </div>
               </div>
-              <div class="fa-hint db-section-label mt-2">{{ $t("common.db.tablesLabel") }}</div>
-              <div
-                v-for="table in tables"
-                :key="`t-${table.name}`"
-                class="fa-list-item fa-list-item--sm"
-                @click="insertTable(table.name)"
-              >
-                <FaSvgIcon icon="ri:table-line" class="fa-list-item__icon" />
-                <span class="fa-list-item__title" :title="table.name">{{ table.name }}</span>
+              <div v-if="!databases.length" class="fa-hint p-2">
+                {{ $t("common.db.noDatabaseHint") }}
               </div>
-              <div v-if="!tables.length" class="fa-hint p-2">
+              <div v-if="!currentDatabase && databases.length" class="fa-hint db-insert-hint">
                 {{ $t("common.db.selectDbHint") }}
+              </div>
+              <div v-else-if="currentDatabase" class="fa-hint db-insert-hint">
+                {{ $t("common.db.insertTableHint") }}
               </div>
             </template>
           </div>
@@ -549,5 +569,39 @@ onMounted(() => {
 .db-section-label {
   margin-left: 2px;
   white-space: nowrap;
+}
+
+.db-chevron {
+  transition: transform 0.15s ease;
+}
+
+.db-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+.db-tables {
+  margin: 2px 0 8px 26px;
+  padding-left: 10px;
+  border-left: 1px solid var(--el-border-color-lighter);
+}
+
+.db-tables__title {
+  padding: 4px 0 2px;
+  font-size: var(--fa-font-size-sm);
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+.db-table-item {
+  padding-left: 8px;
+}
+
+.db-table-empty {
+  padding: 4px 8px 6px;
+}
+
+.db-insert-hint {
+  margin-top: 8px;
+  padding-left: 2px;
 }
 </style>
