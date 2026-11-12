@@ -305,11 +305,11 @@
       "databaseConnections": "数据库连接",
       "noConnection": "暂无连接",
       "noConnectionDesc": "新增一个数据库连接",
-      "dbTables": "库 / 表",
+      "dbTables": "数据库对象",
       "selectConnectionFirst": "先选择一个连接",
       "schemaLabel": "数据库",
       "tablesLabel": "表",
-      "selectDbHint": "选择库后加载表（点击表名自动填入查询）",
+      "selectDbHint": "选择数据库后查看表",
       "sqlConsole": "SQL 控制台",
       "noConnectionSelected": "未选择连接",
       "allowWrite": "允许写操作",
@@ -324,7 +324,10 @@
       "truncatedRows": "已截断 200 行",
       "exportCsv": "导出 CSV",
       "noResult": "执行 SQL 后在此显示结果",
-      "lastRun": "上次执行"
+      "lastRun": "上次执行",
+      "noTablesHint": "该数据库暂无表",
+      "noDatabaseHint": "当前连接没有可用数据库",
+      "insertTableHint": "点击表名可填入查询"
     },
     "params": {
       "groupTitle": "参数分组",
