@@ -32,14 +32,13 @@
               <i
                 class="h-2 w-2 rounded-full"
                 :class="sseConnected ? 'bg-(--el-color-success)' : 'bg-(--el-color-info)'"
-              />{{ sseConnected ? "实时连接" : "连接中…" }}
+              />{{ sseConnected ? "实时连接" : hasActiveTask ? "连接中…" : "空闲" }}
             </span>
             <ElButton
               v-hasPerm="['module_task:storage:transfer:create']"
               type="primary"
               @click="openCreate"
               >{{ $t("common.newTransfer") }}</ElButton
-            >
             >
           </div>
         </template>
@@ -232,8 +231,7 @@
           >
             <ElButton type="primary" size="small" @click="openCreate">{{
               $t("common.newTransfer")
-            }}</ElButton
-            >>
+            }}</ElButton>
           </FaEmptyState>
         </template>
       </FaTable>
