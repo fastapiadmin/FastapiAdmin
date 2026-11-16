@@ -1,10 +1,18 @@
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
+import AutoImport from "unplugin-auto-import/vite";
 import path from "node:path";
 import { name, version } from "./package.json";
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    AutoImport({
+      imports: ["vue", "vue-router", "pinia", "@vueuse/core", "vue-i18n"],
+      dts: false,
+      vueTemplate: true,
+    }),
+  ],
   // 与 vite.config.ts 一致：注入构建期常量，否则 import 到 utils/storage 等模块会报
   // 「__APP_INFO__ is not defined」。
   define: {

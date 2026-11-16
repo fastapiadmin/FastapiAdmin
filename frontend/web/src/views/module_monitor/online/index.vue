@@ -46,6 +46,8 @@
         :pagination="pagination"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
+        :error="error"
+        @retry="getData"
       />
     </ElCard>
   </div>
@@ -151,6 +153,7 @@ const {
   columns,
   columnChecks,
   data,
+  error,
   loading,
   pagination,
   getData,

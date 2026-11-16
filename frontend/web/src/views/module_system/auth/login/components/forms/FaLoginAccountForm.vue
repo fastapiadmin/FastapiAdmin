@@ -16,6 +16,7 @@
           class="custom-height w-full"
           popper-class="login-account-dropdown"
           :placeholder="$t('login.quickSelectAccount')"
+          :aria-label="$t('login.quickSelectAccount')"
           @update:model-value="$emit('setupAccount', $event as AccountKey)"
         >
           <ElOption
@@ -67,7 +68,7 @@
         <div class="relative pb-3">
           <div
             class="relative z-2 overflow-hidden select-none rounded-lg border border-transparent transition duration-300"
-            :class="{ 'border-[#FF4E4F]!': !isPassing && isClickPass }"
+            :class="{ 'border-(--el-color-danger)!': !isPassing && isClickPass }"
           >
             <FaPuzzleCaptcha
               ref="puzzleRef"
@@ -91,7 +92,7 @@
             />
           </div>
           <p
-            class="absolute top-0 z-1 mt-2 px-px text-xs text-[#f56c6c] transition duration-300"
+            class="absolute top-0 z-1 mt-2 px-px text-xs text-(--el-color-danger) transition duration-300"
             :class="{ 'opacity-0': !isClickPass, 'translate-y-10': !isPassing && isClickPass }"
           >
             {{ $t("login.placeholder.slider") }}

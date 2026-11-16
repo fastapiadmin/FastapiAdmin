@@ -5,7 +5,7 @@
       <FaEmptyState
         v-if="!loading && items.length === 0"
         icon="ri:inbox-line"
-        :title="emptyText"
+        :title="emptyText || t('common.noData')"
         compact
       />
       <div v-else :class="gridClass">
@@ -13,7 +13,11 @@
           v-for="(item, index) in items"
           :key="item[keyField] ?? index"
           class="fa-card-item border border-line/60 dark:border-line rounded-xl overflow-hidden bg-white dark:bg-g-800 hover:shadow-lg transition-all duration-300"
+          role="button"
+          tabindex="0"
           @click="$emit('itemClick', item)"
+          @keydown.enter="$emit('itemClick', item)"
+          @keydown.space.prevent="$emit('itemClick', item)"
         >
           <slot name="card" :item="item" :index="index" />
         </div>
@@ -32,8 +36,11 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 defineOptions({ name: "FaCardList" });
+
+const { t } = useI18n();
 
 interface Props {
   items: any[];
@@ -53,7 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   columns: 4,
   keyField: "id",
-  emptyText: "暂无数据",
+  emptyText: "",
 });
 
 interface Emits {

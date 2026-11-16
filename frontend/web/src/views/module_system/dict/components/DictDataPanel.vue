@@ -144,9 +144,11 @@
           v-else
           ref="faTableRef"
           :loading="loading"
+          :error="error"
           :data="data"
           :columns="columns"
           :pagination="pagination"
+          @retry="getData"
           @pagination:size-change="handleSizeChange"
           @pagination:current-change="handleCurrentChange"
         />
@@ -400,6 +402,7 @@ const {
   columnChecks,
   data,
   loading,
+  error,
   pagination,
   getData,
   replaceSearchParams,
@@ -704,7 +707,8 @@ function buildDictDataRowActions(row: DictDataTable): TableOperationAction[] {
 
 function formatDictDataOperationCell(row: DictDataTable) {
   return renderTableOperationCell(buildDictDataRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap dict-data-drawer-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap dict-data-drawer-actions",
   });
 }
 

@@ -146,7 +146,7 @@
         <FaEmptyState
           v-if="!jobLoading && (!jobList || jobList.length === 0)"
           icon="ri:inbox-line"
-          title="暂无数据"
+          :title="$t('common.noData')"
           compact
         />
         <ElRow v-else :gutter="16">
@@ -300,12 +300,14 @@
             ref="logfaTableRef"
             row-key="id"
             :loading="logLoading"
+            :error="logError"
             :data="logTableData"
             :columns="logColumns"
             :pagination="logPaginationBind"
             @selection-change="onLogTableSelectionChange"
             @pagination:size-change="logHandleSizeChange"
             @pagination:current-change="logHandleCurrentChange"
+            @retry="getLogData"
           >
           </FaTable>
         </ElCard>
@@ -632,6 +634,7 @@ const {
   columns: logColumns,
   columnChecks: logColumnChecks,
   data: logTableData,
+  error: logError,
   loading: logLoading,
   pagination: logPagination,
   getData: getLogData,

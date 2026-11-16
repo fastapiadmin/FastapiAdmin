@@ -67,11 +67,13 @@
           </ElButton>
           <template #dropdown>
             <ElDropdownMenu>
-              <ElDropdownItem icon="Check" @click="$emit('more', 'enable')">{{
-                $t("common.batchEnable")
-              }}</ElDropdownItem>
-              <ElDropdownItem icon="CircleClose" @click="$emit('more', 'disable')">
-                {{ $t("common.batchDisable") }}
+              <ElDropdownItem
+                v-for="action in resolvedMoreActions"
+                :key="action.value"
+                :icon="action.icon"
+                @click="$emit('more', action.value)"
+              >
+                {{ action.label }}
               </ElDropdownItem>
             </ElDropdownMenu>
           </template>
@@ -82,11 +84,24 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { ArrowDown, Delete, Download, Plus, Upload } from "@element-plus/icons-vue";
 
 defineOptions({ name: "FaTableHeaderLeft" });
 
+interface MoreAction {
+  /** 下拉项文案（已翻译） */
+  label: string;
+  /** 回传给业务页的动作标识（沿用启用/停用语义，文案可自定义） */
+  value: "enable" | "disable";
+  /** Element Plus 图标名 */
+  icon?: string;
+}
+
 interface Props {
+  /** 自定义「更多」动作；不传时回退为批量启用/停用 */
+  moreActions?: MoreAction[];
   /** 勾选行主键，用于禁用批删 / 更多（插槽完全自定义时可不传） */
   removeIds?: Array<string | number>;
   /** 新增按钮权限，不传则不显示 */
@@ -111,13 +126,24 @@ interface Props {
   moreLoading?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   removeIds: () => [],
   deleteLoading: false,
   importLoading: false,
   exportLoading: false,
   createLoading: false,
   moreLoading: false,
+  moreActions: undefined,
+});
+
+const { t } = useI18n();
+
+const resolvedMoreActions = computed<MoreAction[]>(() => {
+  if (props.moreActions?.length) return props.moreActions;
+  return [
+    { label: t("common.batchEnable"), value: "enable", icon: "Check" },
+    { label: t("common.batchDisable"), value: "disable", icon: "CircleClose" },
+  ];
 });
 
 interface Emits {

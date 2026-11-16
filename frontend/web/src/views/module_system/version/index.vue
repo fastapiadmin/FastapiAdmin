@@ -90,9 +90,11 @@
         v-else
         ref="faTableRef"
         :loading="loading"
+        :error="error"
         :data="data"
         :columns="columns"
         :pagination="pagination"
+        @retry="getData"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
@@ -276,6 +278,7 @@ const {
   columnChecks,
   data,
   loading,
+  error,
   pagination,
   getData,
   replaceSearchParams,

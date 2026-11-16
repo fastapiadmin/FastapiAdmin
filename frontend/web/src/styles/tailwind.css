@@ -54,14 +54,15 @@
   --color-g-800: var(--fa-gray-800);
   --color-g-900: var(--fa-gray-900);
 
-  /* Font Size Configuration */
-  --font-size-xs: 11px;
-  --font-size-sm: 12px;
-  --font-size-base: 13px;
-  --font-size-lg: 15px;
-  --font-size-xl: 18px;
-  --font-size-2xl: 22px;
-  --font-size-3xl: 28px;
+  /* Font Size Configuration：Tailwind v4 的 text-* 读取 --text-*，不是 --font-size-* */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
 }
 
 /* ==================== Custom Border Radius Utilities ==================== */

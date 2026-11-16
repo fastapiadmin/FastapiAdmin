@@ -164,9 +164,11 @@
               ref="faTableRef"
               row-key="id"
               :loading="loading"
+              :error="error"
               :data="data"
               :columns="columns"
               :pagination="pagination"
+              @retry="getData"
               @selection-change="onTableSelectionChange"
               @pagination:size-change="handleSizeChange"
               @pagination:current-change="handleCurrentChange"
@@ -423,7 +425,8 @@ function buildUserRowActions(
 function formatUserOperationCell(row: UserInfo, ctx: Parameters<typeof buildUserRowActions>[1]) {
   const actions = buildUserRowActions(row, ctx);
   return renderTableOperationCell(actions, {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap user-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap user-table-actions",
   });
 }
 
@@ -702,6 +705,7 @@ const {
   columnChecks,
   data,
   loading,
+  error,
   pagination,
   searchParams,
   getData,

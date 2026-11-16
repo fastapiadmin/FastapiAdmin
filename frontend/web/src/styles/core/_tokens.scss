@@ -1,7 +1,9 @@
 // ============================================================
-// 设计 Token（阶段 0 基线）
-// 全站唯一来源：颜色 / 圆角 / 间距 / 字号 / 图标 / 终端 / 阴影
-// 规则：views 与 components 不再写十六进制颜色，统一引用这里或 EP 变量
+// 基础语义 Token
+// 品牌色、圆角、间距、字号、阴影的唯一来源是 design/tokens.json
+// （构建后生成 _brand-tokens.generated.scss）；这里只保留生成文件未覆盖的
+// 表面、文字层级、图标、终端与空状态语义，避免同名 token 双写后互相覆盖。
+// 规则：views 与 components 不再写十六进制颜色，统一引用这里或 EP 变量。
 // ============================================================
 :root {
   color-scheme: light;
@@ -17,21 +19,7 @@
   --fa-text-2: #4b5563;
   --fa-text-3: #6b7280;
 
-  /* 圆角 / 间距 / 字号 / 图标 */
-  /* 固定 px 圆角，避免 rem 随根字号（14px）换算成 7px 这类碎值 */
-  --fa-radius-xs: 6px;
-  --fa-radius-sm: 8px;
-  --fa-radius-md: 12px;
-  --fa-radius-lg: 16px;
-  --fa-radius-pill: 999px;
-  --fa-space-1: 4px;
-  --fa-space-2: 8px;
-  --fa-space-3: 12px;
-  --fa-space-4: 16px;
-  --fa-space-5: 24px;
-  --fa-font-sm: 12px;
-  --fa-font-md: 14px;
-  --fa-font-lg: 20px;
+  /* 图标 / 等宽字体 */
   --fa-font-mono: "SFMono-Regular", menlo, consolas, "Liberation Mono", monospace;
   --fa-icon-sm: 14px;
   --fa-icon-md: 16px;
@@ -42,11 +30,6 @@
   --fa-terminal-bg: #f5f6f8;
   --fa-terminal-fg: #303133;
 
-  /* 阴影 */
-  --fa-shadow-card: 0 1px 2px rgb(16 24 40 / 4%);
-  --fa-shadow-pop: 0 4px 16px rgb(16 24 40 / 8%), 0 2px 8px rgb(16 24 40 / 4%);
-  --fa-shadow-modal: 0 24px 64px rgb(16 24 40 / 18%);
-
   /* 空状态 */
   --fa-empty-size: 60px;
 }
@@ -54,18 +37,10 @@
 html.dark {
   color-scheme: dark;
 
-  --fa-surface: #15181e;
-  --fa-surface-2: #191d24;
-  --fa-border: #262b34;
+  /* 生成文件已覆盖 surface/border/text/shadow，这里只补终端与细分隔线语义 */
   --fa-border-subtle: #20242c;
-  --fa-text-1: #e5e7eb;
-  --fa-text-2: #a3aab8;
-  --fa-text-3: #8b93a1;
   --fa-terminal-bg: #0b0d10;
   --fa-terminal-fg: #d4d4d4;
-  --fa-shadow-card: 0 1px 2px rgb(0 0 0 / 35%);
-  --fa-shadow-pop: 0 4px 16px rgb(0 0 0 / 35%), 0 2px 8px rgb(0 0 0 / 25%);
-  --fa-shadow-modal: 0 24px 64px rgb(0 0 0 / 45%);
 }
 
 /* 工具类 */

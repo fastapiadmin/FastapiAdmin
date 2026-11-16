@@ -129,9 +129,11 @@
         v-else
         ref="faTableRef"
         :loading="loading"
+        :error="error"
         :data="data"
         :columns="columns"
         :pagination="pagination"
+        @retry="getData"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -382,7 +384,8 @@ function buildRoleRowActions(
 
 function formatRoleOperationCell(row: RoleTable, ctx: Parameters<typeof buildRoleRowActions>[1]) {
   return renderTableOperationCell(buildRoleRowActions(row, ctx), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap role-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap role-table-actions",
   });
 }
 
@@ -655,6 +658,7 @@ const {
   columnChecks,
   data,
   loading,
+  error,
   pagination,
   searchParams,
   getData,

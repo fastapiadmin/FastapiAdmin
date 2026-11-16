@@ -70,7 +70,8 @@ withDefaults(
   min-height: 0;
 }
 
-@media (width <= 1280px) {
+/* 1280 仍是常见桌面宽度：左栏 + 主区并排足够放得下；1024 以下再上下排列 */
+@media (width <= 1024px) {
   .fa-workbench {
     flex-direction: column;
   }

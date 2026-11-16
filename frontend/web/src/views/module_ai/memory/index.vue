@@ -43,12 +43,14 @@
         ref="faTableRef"
         row-key="id"
         :loading="loading"
+        :error="error"
         :data="data"
         :columns="columns"
         :pagination="pagination"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
+        @retry="getData"
       >
         <template #memory-title="{ row }">
           <ElInput
@@ -258,6 +260,7 @@ const {
   columns,
   columnChecks,
   data,
+  error,
   loading,
   pagination,
   getData,
@@ -493,7 +496,8 @@ function buildMemoryRowActions(row: ChatSession): TableOperationAction[] {
 
 function formatMemoryOperationCell(row: ChatSession) {
   return renderTableOperationCell(buildMemoryRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap memory-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap memory-table-actions",
   });
 }
 

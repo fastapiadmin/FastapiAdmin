@@ -84,7 +84,7 @@
         stripe
       >
         <template #empty>
-          <FaEmptyState icon="ri:inbox-line" title="暂无数据" compact />
+          <FaEmptyState icon="ri:inbox-line" :title="$t('common.noData')" compact />
         </template>
         <ElTableColumn label="拖拽" width="56" fixed align="center">
           <template #default>

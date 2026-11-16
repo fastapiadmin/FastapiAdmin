@@ -91,7 +91,14 @@
         </template>
 
         <template #default="{ item }">
-          <div class="flex flex-col cursor-pointer" @click="handleOpenDialog('detail', item.id!)">
+          <div
+            class="flex flex-col cursor-pointer"
+            role="button"
+            tabindex="0"
+            @click="handleOpenDialog('detail', item.id!)"
+            @keydown.enter.prevent="handleOpenDialog('detail', item.id!)"
+            @keydown.space.prevent="handleOpenDialog('detail', item.id!)"
+          >
             <div
               class="flex items-center gap-1.5 text-xs"
               style="color: var(--el-text-color-secondary)"

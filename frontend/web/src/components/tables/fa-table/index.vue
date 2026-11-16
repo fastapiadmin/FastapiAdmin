@@ -29,6 +29,18 @@
           </template>
         </ElSkeleton>
       </div>
+      <!-- 加载失败：保留页面骨架，提供明确原因与重试入口 -->
+      <div v-else-if="error && isEmpty" class="fa-table__error" role="alert">
+        <FaEmptyState
+          icon="ri:error-warning-line"
+          :title="$t('common.loadFailed')"
+          :description="error.message"
+        >
+          <ElButton type="primary" plain @click="emit('retry')">
+            {{ $t("common.retry") }}
+          </ElButton>
+        </FaEmptyState>
+      </div>
       <!-- 通用移动端卡片：由列配置自动渲染 -->
       <div v-else-if="mobileCardsActive" class="fa-table__mobile-cards pb-12">
         <div v-if="data && data.length" class="flex items-center gap-2 px-1">
@@ -41,7 +53,7 @@
           </ElCheckbox>
         </div>
         <div v-if="!(data && data.length)" class="py-10 text-center text-sm text-g-500">
-          暂无数据
+          {{ $t("common.noData") }}
         </div>
         <div
           v-for="(row, rowIndex) in data ?? []"
@@ -142,7 +154,11 @@
             <template #empty>
               <div v-if="loading"></div>
               <slot v-else name="empty">
-                <FaEmptyState icon="ri:inbox-line" :title="emptyText" compact />
+                <FaEmptyState
+                  icon="ri:inbox-line"
+                  :title="emptyText || $t('common.noData')"
+                  compact
+                />
               </slot>
             </template>
           </ElTable>
@@ -203,6 +219,7 @@ import { VueDraggable } from "vue-draggable-plus";
 import { Filter } from "@element-plus/icons-vue";
 import { MOBILE_BREAKPOINT } from "@utils/constants/definitions";
 import type { ColumnOption } from "@/types/component";
+import type { TableError } from "@utils/table";
 
 defineOptions({ name: "FaTable" });
 
@@ -262,6 +279,8 @@ interface PaginationOptions {
 interface Props extends TableProps<Record<string, any>> {
   /** 加载状态 */
   loading?: boolean;
+  /** 列表请求错误；有值时展示可重试错误态 */
+  error?: TableError | null;
   /** 列渲染配置 */
   columns?: ColumnOption[];
   /** 窄屏使用通用卡片列表（生成页/普通表格页可开启） */
@@ -289,7 +308,7 @@ const props = withDefaults(defineProps<Props>(), {
   border: undefined,
   size: undefined,
   emptyHeight: "100%",
-  emptyText: "暂无数据",
+  emptyText: "",
   showTableHeader: true,
   disableRowDrag: false,
 });
@@ -577,6 +596,7 @@ interface Emits {
   (e: "pagination:current-change", val: number): void;
   (e: "update:data", val: Record<string, unknown>[]): void;
   (e: "row-order-change", val: Record<string, unknown>[]): void;
+  (e: "retry"): void;
 }
 
 const emit = defineEmits<Emits>();
@@ -1095,6 +1115,15 @@ defineExpose({
   :deep(.cell.highlight .fa-filter-icon) {
     color: var(--theme-color);
   }
+}
+
+.fa-table__error {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: 32px 16px;
 }
 
 .fa-table__mobile-cards {
