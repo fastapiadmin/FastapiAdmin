@@ -46,7 +46,7 @@
       class="mb-5"
     >
       <template #empty>
-        <FaEmptyState icon="ri:inbox-line" title="暂无数据" compact />
+        <FaEmptyState icon="ri:inbox-line" :title="$t('common.noData')" compact />
       </template>
       <ElTableColumn type="selection" width="55"></ElTableColumn>
       <ElTableColumn label="序号" type="index" min-width="30" align="center" fixed>

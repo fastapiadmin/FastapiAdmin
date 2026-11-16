@@ -38,13 +38,25 @@
               新增
             </ElButton>
           </template>
-          <div v-if="!data.length" class="dict-type-empty">暂无字典类型</div>
+          <div v-if="error && !data.length" class="dict-type-empty dict-type-error" role="alert">
+            <p>{{ $t("common.loadFailed") }}</p>
+            <p class="dict-type-error__message">{{ error.message }}</p>
+            <ElButton size="small" plain @click="getData()">
+              {{ $t("common.retry") }}
+            </ElButton>
+          </div>
+          <div v-else-if="!data.length" class="dict-type-empty">暂无字典类型</div>
           <div
             v-for="row in data"
             :key="row.id"
             class="dict-type-row"
             :class="{ 'is-active': row.id === currentDictTypeId }"
+            role="button"
+            tabindex="0"
+            :aria-current="row.id === currentDictTypeId ? 'true' : undefined"
             @click="handleDictTypeRowClick(row)"
+            @keydown.enter.prevent="handleDictTypeRowClick(row)"
+            @keydown.space.prevent="handleDictTypeRowClick(row)"
           >
             <div class="min-w-0 flex-1">
               <div class="dict-type-name">{{ row.dict_name }}</div>
@@ -292,6 +304,7 @@ const dictDialogFormItems = computed<FormItem[]>(() => [
 
 const {
   data,
+  error,
   getData,
   replaceSearchParams,
   refreshData,
@@ -420,7 +433,8 @@ function runDictTypeAction(row: DictTable, key: string): void {
 
 function formatDictOperationCell(row: DictTable) {
   return renderTableOperationCell(buildDictRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap dict-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap dict-table-actions",
   });
 }
 
@@ -532,6 +546,11 @@ watch(data, (newData) => {
   background: var(--el-color-primary-light-9);
 }
 
+.dict-type-row:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: -2px;
+}
+
 .dict-type-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -579,5 +598,18 @@ watch(data, (newData) => {
   padding: 12px 8px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+
+.dict-type-error {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.dict-type-error__message {
+  margin: 0;
+  line-height: 1.5;
+  word-break: break-word;
 }
 </style>

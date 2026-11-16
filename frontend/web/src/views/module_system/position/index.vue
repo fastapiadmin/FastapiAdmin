@@ -125,6 +125,8 @@
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
+        :error="error"
+        @retry="getData"
       />
     </ElCard>
 
@@ -362,6 +364,7 @@ const {
   columns,
   columnChecks,
   data,
+  error,
   loading,
   pagination,
   searchParams,

@@ -113,9 +113,11 @@
             v-else
             ref="opTableRef"
             :loading="opLoading"
+            :error="opError"
             :data="opData"
             :columns="opColumns"
             :pagination="opPagination"
+            @retry="opGetData"
             @selection-change="onOpTableSelectionChange"
             @pagination:size-change="opHandleSizeChange"
             @pagination:current-change="opHandleCurrentChange"
@@ -311,9 +313,11 @@
             v-else
             ref="loginTableRef"
             :loading="loginLoading"
+            :error="loginError"
             :data="loginData"
             :columns="loginColumns"
             :pagination="loginPagination"
+            @retry="loginGetData"
             @selection-change="onLoginTableSelectionChange"
             @pagination:size-change="loginHandleSizeChange"
             @pagination:current-change="loginHandleCurrentChange"
@@ -451,6 +455,7 @@ const {
   columnChecks: opColumnChecks,
   data: opData,
   loading: opLoading,
+  error: opError,
   pagination: opPagination,
   searchParams: opSearchParams,
   getData: opGetData,
@@ -666,7 +671,8 @@ function buildOpRowActions(row: OperationLogTable): TableOperationAction[] {
 
 function formatOpActionCell(row: OperationLogTable) {
   return renderTableOperationCell(buildOpRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap log-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap log-table-actions",
   });
 }
 
@@ -773,6 +779,7 @@ const {
   columnChecks: loginColumnChecks,
   data: loginData,
   loading: loginLoading,
+  error: loginError,
   pagination: loginPagination,
   getData: loginGetData,
   replaceSearchParams: loginReplaceSearchParams,
@@ -921,7 +928,8 @@ function buildLoginRowActions(row: LoginLogTable): TableOperationAction[] {
 
 function formatLoginActionCell(row: LoginLogTable) {
   return renderTableOperationCell(buildLoginRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap loginlog-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap loginlog-table-actions",
   });
 }
 

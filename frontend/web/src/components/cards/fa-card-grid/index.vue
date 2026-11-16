@@ -65,7 +65,7 @@
       <!-- 空状态：有数据时不能渲染，否则会盖在卡片上显示“暂无数据” -->
       <template v-if="isEmpty">
         <slot v-if="$slots.empty" name="empty" />
-        <FaEmptyState v-else icon="ri:inbox-line" :title="emptyText" />
+        <FaEmptyState v-else icon="ri:inbox-line" :title="emptyText || t('common.noData')" />
       </template>
     </ElScrollbar>
 
@@ -85,10 +85,13 @@
 
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { ElCard, ElRow, ElCol, ElSkeleton, ElSkeletonItem, ElScrollbar } from "element-plus";
 import FaPagination from "@/components/tables/fa-pagination/index.vue";
 
 defineOptions({ name: "FaCardGrid" });
+
+const { t } = useI18n();
 
 /** 分页状态 */
 interface FaPaginationConfig {
@@ -131,7 +134,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
-  emptyText: "暂无数据",
+  emptyText: "",
   emptyImageSize: 60,
   pagination: undefined,
   paginationOptions: () => ({}),

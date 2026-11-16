@@ -43,6 +43,7 @@
             :delete-loading="batchDeleting"
             :create-loading="createLoading"
             :more-loading="moreLoading"
+            :more-actions="noticeMoreActions"
             @add="handleAdd"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -60,7 +61,18 @@
             {{ $t("common.selectAll") }}
           </ElCheckbox>
         </div>
-        <div v-if="!data.length" class="py-12">
+        <div v-if="error && !data.length" class="py-12" role="alert">
+          <FaEmptyState
+            icon="ri:error-warning-line"
+            :title="$t('common.loadFailed')"
+            :description="error.message"
+          >
+            <ElButton type="primary" plain @click="getData()">
+              {{ $t("common.retry") }}
+            </ElButton>
+          </FaEmptyState>
+        </div>
+        <div v-else-if="!data.length" class="py-12">
           <FaEmptyState
             icon="ri:notification-3-line"
             title="暂无公告"
@@ -85,8 +97,8 @@
                 :label="row.notice_type === '2' ? '公告' : '通知'"
               />
               <FaStatusTag
-                :type="row.status === 0 ? 'success' : 'danger'"
-                :label="row.status === 0 ? $t('common.enabled') : $t('common.disabled')"
+                :type="noticeStatusMeta(row.status).type"
+                :label="$t(noticeStatusMeta(row.status).label)"
               />
             </div>
           </div>
@@ -130,9 +142,11 @@
         v-else
         ref="faTableRef"
         :loading="loading"
+        :error="error"
         :data="data"
         :columns="columns"
         :pagination="pagination"
+        @retry="getData"
         @selection-change="onTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
@@ -204,8 +218,9 @@
         >
           <template #status>
             <ElRadioGroup v-model="formData.status">
-              <ElRadio :value="0">{{ $t("common.enabled") }}</ElRadio>
-              <ElRadio :value="1">{{ $t("common.disabled") }}</ElRadio>
+              <ElRadio :value="0">{{ $t("common.draft") }}</ElRadio>
+              <ElRadio :value="1">{{ $t("common.published") }}</ElRadio>
+              <ElRadio :value="2">{{ $t("common.archived") }}</ElRadio>
             </ElRadioGroup>
           </template>
           <template #notice_content>
@@ -226,7 +241,6 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
 import { useCrudForm } from "@/hooks/core/useCrudForm";
-import { confirmToggleStatus } from "@/hooks/core/useConfirm";
 import NoticeAPI, { type NoticeForm, type NoticeTable } from "@/api/module_system/notice";
 import {
   formatDateTime,
@@ -239,7 +253,7 @@ import type { SearchFormItem } from "@/components/forms/fa-search-bar/index.vue"
 import FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import FaTableHeader from "@/components/tables/fa-table-header/index.vue";
 import FaDescriptions from "@/components/display/fa-descriptions/index.vue";
 
@@ -283,9 +297,27 @@ const searchBarRef = ref<InstanceType<typeof FaSearchBar> | null>(null);
 const searchBarRules: Record<string, unknown> = {};
 
 const STATUS_OPTIONS = [
-  { label: "启用", value: 0 },
-  { label: "停用", value: 1 },
+  { label: "草稿", value: 0 },
+  { label: "已发布", value: 1 },
+  { label: "已归档", value: 2 },
 ] as const;
+
+/** 公告状态以 0 草稿 / 1 已发布 / 2 已归档 为准，与后端及移动端保持一致。 */
+const NOTICE_STATUS_META: Record<number, { type: "info" | "success" | "warning"; label: string }> =
+  {
+    0: { type: "info", label: "common.draft" },
+    1: { type: "success", label: "common.published" },
+    2: { type: "warning", label: "common.archived" },
+  };
+
+function noticeStatusMeta(status?: number) {
+  return NOTICE_STATUS_META[status ?? 0] ?? { type: "info" as const, label: "common.unknown" };
+}
+
+const noticeMoreActions: { label: string; value: "enable" | "disable"; icon: string }[] = [
+  { label: "批量发布", value: "enable", icon: "Promotion" },
+  { label: "批量转草稿", value: "disable", icon: "EditPen" },
+];
 
 const noticeTypeSearchOptions = computed(() =>
   dictStore.getDictArray("sys_notice_type").map((item) => ({
@@ -349,7 +381,11 @@ const noticeDetailItems: import("@/components/display/fa-descriptions/index.vue"
       label: "状态",
       prop: "status",
       tag: {
-        map: { 0: { type: "success", text: "启用" }, 1: { type: "danger", text: "停用" } },
+        map: {
+          0: { type: "info", text: "草稿" },
+          1: { type: "success", text: "已发布" },
+          2: { type: "warning", text: "已归档" },
+        },
       },
     },
     { label: "描述", prop: "description", span: 4 },
@@ -472,6 +508,7 @@ const {
   columnChecks,
   data,
   loading,
+  error,
   pagination,
   getData,
   replaceSearchParams,
@@ -498,8 +535,9 @@ const {
         label: "状态",
         width: 88,
         status: {
-          0: { type: "success", text: "启用" },
-          1: { type: "danger", text: "停用" },
+          0: { type: "info", text: "草稿" },
+          1: { type: "success", text: "已发布" },
+          2: { type: "warning", text: "已归档" },
         },
       },
       {
@@ -668,7 +706,8 @@ function buildNoticeRowActions(row: NoticeTable): TableOperationAction[] {
 
 function formatNoticeOperationCell(row: NoticeTable) {
   return renderTableOperationCell(buildNoticeRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap notice-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap notice-table-actions",
   });
 }
 
@@ -700,10 +739,15 @@ async function handleMoreClick(value: "enable" | "disable") {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
+  const action = value === "enable" ? "发布" : "转草稿";
   try {
-    await confirmToggleStatus(value);
+    await ElMessageBox.confirm(`确定将选中的 ${ids.length} 条公告${action}吗？`, "提示", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+    });
     moreLoading.value = true;
-    const status = value === "enable" ? 0 : 1;
+    const status = value === "enable" ? 1 : 0;
     await NoticeAPI.batchNotice({ ids, status });
     await refreshData();
     await noticeStore.getNotice(true);

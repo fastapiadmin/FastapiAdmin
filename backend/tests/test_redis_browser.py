@@ -117,9 +117,20 @@ class _FakeRedis:
 
 
 async def test_list_databases_parses_keyspace() -> None:
-    redis = _FakeRedis(keyspace={"db0": "keys=12,expires=3,avg_ttl=0", "db2": "keys=4,expires=0", "other": "x"})
+    redis = _FakeRedis(
+        keyspace={
+            "db0": "keys=12,expires=3,avg_ttl=0",
+            "db1": {"keys": 218, "expires": 22, "avg_ttl": 39276698},
+            "db2": "keys=4,expires=0",
+            "other": "x",
+        }
+    )
     result = await RedisBrowserService.list_databases(redis)  # type: ignore[arg-type]
-    assert [(item.db, item.keys, item.expires) for item in result] == [(0, 12, 3), (2, 4, 0)]
+    assert [(item.db, item.keys, item.expires) for item in result] == [
+        (0, 12, 3),
+        (1, 218, 22),
+        (2, 4, 0),
+    ]
 
 
 async def test_scan_keys_returns_meta_and_cursor() -> None:

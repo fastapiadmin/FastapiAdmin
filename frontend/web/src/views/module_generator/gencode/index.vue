@@ -79,6 +79,8 @@
         @selection-change="handleTableSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
+        :error="tableError"
+        @retry="getData"
       />
     </ElCard>
 
@@ -748,7 +750,8 @@ function buildGencodeRowActions(row: GenTableSchema): TableOperationAction[] {
 
 function formatGencodeOperationCell(row: GenTableSchema) {
   return renderTableOperationCell(buildGencodeRowActions(row), {
-    wrapperClass: "inline-flex items-center justify-center gap-1 whitespace-nowrap gencode-table-actions",
+    wrapperClass:
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap gencode-table-actions",
   });
 }
 
@@ -859,6 +862,7 @@ const columns = useTableResult.columns as ComputedRef<ColumnOption[]>;
 const columnChecks = useTableResult.columnChecks as Ref<ColumnOption[]>;
 const {
   data: tableListData,
+  error: tableError,
   loading: tableLoading,
   pagination,
   getData,
