@@ -77,13 +77,22 @@ class RedisBrowserService:
             if not isinstance(name, str) or not name.startswith("db") or not name[2:].isdigit():
                 continue
             parsed: dict[str, int] = {}
-            for part in str(value).split(","):
-                if "=" in part:
-                    k, v = part.split("=", 1)
+            if isinstance(value, dict):
+                # redis-py 会把 INFO keyspace 解析为 {db1: {keys, expires, avg_ttl}}
+                for k, v in value.items():
                     try:
-                        parsed[k.strip()] = int(v)
-                    except ValueError:
+                        parsed[str(k)] = int(v)
+                    except (TypeError, ValueError):
                         continue
+            else:
+                text = value.decode("utf-8", "ignore") if isinstance(value, bytes) else str(value)
+                for part in text.split(","):
+                    if "=" in part:
+                        k, v = part.split("=", 1)
+                        try:
+                            parsed[k.strip()] = int(v)
+                        except ValueError:
+                            continue
             result.append(
                 RedisDatabaseSchema(
                     db=int(name[2:]),
