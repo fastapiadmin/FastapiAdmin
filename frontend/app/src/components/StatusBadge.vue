@@ -30,7 +30,7 @@ const statusMap: Record<string, { labelKey: string, cls: string }> = {
   active: { labelKey: 'common.status.active', cls: 'status-badge--primary' },
   success: { labelKey: 'common.status.success', cls: 'status-badge--enabled' },
   failed: { labelKey: 'common.status.failed', cls: 'status-badge--danger' },
-  pending: { labelKey: 'common.status.pending', cls: 'status-badge--draft' },
+  pending: { labelKey: 'common.status.pending', cls: 'status-badge--pending' },
   processing: { labelKey: 'common.status.processing', cls: 'status-badge--primary' },
   completed: { labelKey: 'common.status.completed', cls: 'status-badge--enabled' },
   closed: { labelKey: 'common.status.closed', cls: 'status-badge--disabled' },
@@ -66,14 +66,14 @@ function resolve(input: string | boolean | number): { label: string, cls: string
 
 <style lang="scss">
 /* 状态徽标全局样式（非 scoped，供页面复用类名）
- * 颜色使用 wot-ui 语义变量，自动适配亮/暗主题 */
+ * 颜色使用经 WCAG AA 校验的实色，亮/暗主题分别覆盖 */
 .status-badge {
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
-  padding: 4rpx 14rpx;
+  padding: 6rpx 16rpx;
   border-radius: 999rpx;
-  font-size: 20rpx;
+  font-size: 24rpx;
   line-height: 1.4;
 }
 
@@ -86,48 +86,42 @@ function resolve(input: string | boolean | number): { label: string, cls: string
   background: currentColor;
 }
 
-/* 各状态仅定义文字色，背景色由带外层 .status-badge 的组合规则提供，
- * 使纯圆点模式只显示纯色圆点 */
-.status-badge--enabled {
-  @apply wot-text-success-main;
-}
-.status-badge.status-badge--enabled {
-  @apply wot-bg-success-surface;
-}
+.status-badge--enabled { color: #0B6B4F; }
+.status-badge.status-badge--enabled { background: #E8F8F2; }
 
-.status-badge--disabled {
-  @apply wot-text-text-auxiliary;
-}
-.status-badge.status-badge--disabled {
-  @apply wot-bg-filled-content;
-}
+.status-badge--disabled,
+.status-badge--draft { color: #5A5F70; }
+.status-badge.status-badge--disabled,
+.status-badge.status-badge--draft { background: #F2F3F5; }
 
-.status-badge--primary {
-  @apply wot-text-primary-6;
-}
-.status-badge.status-badge--primary {
-  @apply wot-bg-primary-1;
-}
+.status-badge--primary { color: #1C4ED8; }
+.status-badge.status-badge--primary { background: #EEF1FF; }
 
-.status-badge--danger {
-  @apply wot-text-danger-main;
-}
-.status-badge.status-badge--danger {
-  @apply wot-bg-danger-surface;
-}
+.status-badge--danger,
+.status-badge--failed { color: #B42318; }
+.status-badge.status-badge--danger,
+.status-badge.status-badge--failed { background: #FFF0EE; }
 
-/* failed 为 danger 的别名（menus 页菜单类型使用） */
-.status-badge--failed {
-  @apply wot-text-danger-main;
-}
-.status-badge.status-badge--failed {
-  @apply wot-bg-danger-surface;
-}
+.status-badge--pending { color: #8A4B00; }
+.status-badge.status-badge--pending { background: #FFF4E5; }
 
-.status-badge--draft {
-  @apply wot-text-text-secondary;
-}
-.status-badge.status-badge--draft {
-  @apply wot-bg-filled-content;
-}
+/* 暗色主题：提亮前景，背景用低透明度语义色 */
+.wot-theme-dark .status-badge--enabled { color: #7EE2C0; }
+.wot-theme-dark .status-badge.status-badge--enabled { background: rgba(18, 184, 134, 0.18); }
+
+.wot-theme-dark .status-badge--disabled,
+.wot-theme-dark .status-badge--draft { color: #C3C8D4; }
+.wot-theme-dark .status-badge.status-badge--disabled,
+.wot-theme-dark .status-badge.status-badge--draft { background: rgba(255, 255, 255, 0.08); }
+
+.wot-theme-dark .status-badge--primary { color: #B9C6FF; }
+.wot-theme-dark .status-badge.status-badge--primary { background: rgba(28, 100, 253, 0.2); }
+
+.wot-theme-dark .status-badge--danger,
+.wot-theme-dark .status-badge--failed { color: #FFB4AC; }
+.wot-theme-dark .status-badge.status-badge--danger,
+.wot-theme-dark .status-badge.status-badge--failed { background: rgba(241, 70, 70, 0.18); }
+
+.wot-theme-dark .status-badge--pending { color: #FFD18A; }
+.wot-theme-dark .status-badge.status-badge--pending { background: rgba(245, 127, 0, 0.18); }
 </style>

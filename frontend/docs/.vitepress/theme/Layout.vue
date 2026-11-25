@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import FooterNav from '../components/FooterNav.vue'
+import OpenSourceRepos from '../components/OpenSourceRepos.vue'
+import HeroShowcase from '../components/HeroShowcase.vue'
 
 const { lang } = useData()
 const route = useRoute()
@@ -33,6 +35,12 @@ const footerMode = computed<FooterMode | null>(() => {
     {{ skipText }}
   </a>
   <DefaultTheme.Layout>
+    <template #home-hero-image>
+      <HeroShowcase />
+    </template>
+    <template #home-hero-after>
+      <OpenSourceRepos />
+    </template>
     <template #layout-bottom>
       <FooterNav v-if="footerMode" :mode="footerMode" />
     </template>

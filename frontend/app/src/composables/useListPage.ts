@@ -72,10 +72,11 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
     }
   }
 
-  /** 强制刷新当前页（忽略缓存重新请求，下拉刷新场景） */
+  /** 下拉刷新：回到第 1 页并忽略缓存重新请求，避免刷新后仍停留在第 N 页 */
   async function refreshData() {
+    pageParams.value.page_no = 1
     try {
-      await refresh(pageParams.value.page_no)
+      await refresh(1)
     }
     catch {}
     finally {
@@ -103,8 +104,10 @@ export function useListPage<T, AG extends AlovaGenerics = AlovaGenerics>(options
     await loadData()
   }
 
-  /** 下一页 */
+  /** 下一页：已到 total 上限时不再发请求 */
   async function loadNext() {
+    if (total.value > 0 && (data.value?.length ?? 0) >= total.value)
+      return
     pageParams.value.page_no += 1
     await loadData()
   }

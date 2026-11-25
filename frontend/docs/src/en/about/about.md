@@ -104,6 +104,6 @@ Want to contribute? Feel free to participate via GitHub Issues or PRs.
 |----------|------|
 | GitHub | [FastapiAdmin](https://github.com/fastapiadmin/FastapiAdmin) |
 | Gitee | [FastapiAdmin](https://gitee.com/fastapiadmin/FastapiAdmin) |
-| GitCode | [FastapiAdmin](https://gitcode.com/qq_36002987/FastapiAdmin) |
+| AtomGit | [FastapiAdmin](https://atomgit.com/fastapiadmin/FastapiAdmin) |
 
 If FastapiAdmin helps you, feel free to follow and support the project's development ❤️

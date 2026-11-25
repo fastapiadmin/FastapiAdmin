@@ -8,6 +8,7 @@
     "new": "New",
     "confirm": "Confirm",
     "loadFailed": "Failed to load",
+    "retry": "Retry",
     "operationFailed": "Operation failed",
     "deleteSuccess": "Deleted",
     "deleteFailed": "Delete failed",
@@ -44,7 +45,11 @@
       "confirmNewRequired": "Please confirm the new password",
       "mismatch": "The two passwords do not match",
       "nicknamePlaceholder": "Please enter a nickname",
-      "nicknameRequired": "Please enter a nickname"
+      "nicknameRequired": "Please enter a nickname",
+      "username": "Username",
+      "nickname": "Nickname",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
     },
     "shareDefaultTitle": "FastapiAdmin - Efficient enterprise management mobile platform",
     "subscribeTitle": "Enable Message Notifications",
@@ -83,7 +88,10 @@
       "bug": "Bug",
       "optimize": "Optimization",
       "other": "Other"
-    }
+    },
+    "edit": "Edit",
+    "close": "Close",
+    "more": "More"
   },
   "login": {
     "navTitle": "Login",
@@ -195,6 +203,7 @@
     "selectGender": "Select Gender",
     "notSet": "Not set",
     "notBound": "Not bound",
+    "loadFailed": "Failed to load profile",
     "uploadFailed": "Avatar upload failed",
     "nicknameRequired": "Please enter a nickname"
   },
@@ -303,6 +312,7 @@
     "title": "Ticket Detail",
     "shareTitle": "Ticket: {title}",
     "loadFailed": "Failed to load ticket detail",
+    "commentsLoadFailed": "Failed to load comments, please retry",
     "commentRequired": "Please enter a comment",
     "commentSuccess": "Commented",
     "commentFailed": "Comment failed",
@@ -340,6 +350,7 @@
     "data": "Data",
     "dataTitle": "Overview",
     "dataSubtitle": "System status & trend analysis",
+    "loadFailed": "Failed to load data",
     "dataDesc": "Users {total} · Online {online} · Logins today {today}",
     "viewDetail": "View Details",
     "loginCount": "Logins",
@@ -360,7 +371,9 @@
     "independentUser": "{count} unique users",
     "sysMonitor": "System Monitor",
     "loginTrend": "Login Trend (7 days)",
-    "latestNotice": "Latest Notices"
+    "latestNotice": "Latest Notices",
+    "pauseBanner": "Pause carousel",
+    "playBanner": "Play carousel"
   },
   "work": {
     "navTitle": "Workbench",
@@ -370,7 +383,15 @@
     "nameFallback": "FastapiAdmin",
     "roleFallback": "Super Admin",
     "searchPlaceholder": "Search modules",
-    "emptyTip": "No matching module, try another keyword"
+    "emptyTip": "No matching module, try another keyword",
+    "ticketOverview": "Ticket Overview",
+    "viewAll": "View all",
+    "itemDesc": {
+      "notices": "Read system notices",
+      "tickets": "Submit and follow up issues",
+      "aiChat": "Ask questions and generate content",
+      "aiModels": "Browse models and settings"
+    }
   },
   "theme": {
     "colors": {
@@ -381,5 +402,13 @@
       "purple": "Violet",
       "red": "Vermilion Red"
     }
+  },
+  "privacy": {
+    "title": "Privacy Protection Notice",
+    "desc": "Thank you for using this app. Please read and agree to",
+    "subDesc": " before using our services. By tapping Agree, you confirm that you understand and accept these terms, which are legally binding. If you decline, you will not be able to use the related services.",
+    "protocol": "the Privacy Protection Guidelines",
+    "agree": "Agree",
+    "disagree": "Decline"
   }
 }

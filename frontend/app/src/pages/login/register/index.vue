@@ -148,27 +148,33 @@ function goLogin() {
 
       <view class="register-form">
         <wd-form ref="registerFormRef" :model="registerForm" :schema="registerSchema">
+          <text class="form-field-label">{{ t('common.form.username') }}</text>
           <wd-form-item prop="username" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
             <wd-input
               v-model="registerForm.username"
+              :aria-label="t('common.form.username')"
               :placeholder="t('common.form.usernamePlaceholder')"
               clearable
               :compact="false"
               prefix-icon="user"
             />
           </wd-form-item>
+          <text class="form-field-label">{{ t('common.form.nickname') }}</text>
           <wd-form-item prop="name" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
             <wd-input
               v-model="registerForm.name"
+              :aria-label="t('common.form.nickname')"
               :placeholder="t('common.form.nicknamePlaceholder')"
               clearable
               :compact="false"
               prefix-icon="user"
             />
           </wd-form-item>
+          <text class="form-field-label">{{ t('common.form.password') }}</text>
           <wd-form-item prop="password" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
             <wd-input
               v-model="registerForm.password"
+              :aria-label="t('common.form.password')"
               :placeholder="t('common.form.passwordPlaceholder')"
               show-password
               clearable
@@ -176,9 +182,11 @@ function goLogin() {
               prefix-icon="lock"
             />
           </wd-form-item>
+          <text class="form-field-label">{{ t('common.form.confirmPassword') }}</text>
           <wd-form-item prop="confirmPassword" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
             <wd-input
               v-model="registerForm.confirmPassword"
+              :aria-label="t('common.form.confirmPassword')"
               :placeholder="t('common.form.confirmPlaceholder')"
               show-password
               clearable
@@ -193,7 +201,9 @@ function goLogin() {
           <wd-checkbox v-model="agreeRead" size="18px">
             {{ t('register.agree') }}
           </wd-checkbox>
-          <wd-text class="register-agreement__link" :text="t('register.userAgreement')" type="primary" @click="handleAgreementOpen" />
+          <view class="tap-target" aria-role="button" :aria-label="t('register.userAgreement')" @click="handleAgreementOpen">
+            <wd-text class="register-agreement__link" :text="t('register.userAgreement')" type="primary" />
+          </view>
         </view>
 
         <wd-button type="primary" round block :loading="submitting" @click="handleSubmit">
@@ -203,7 +213,9 @@ function goLogin() {
 
       <view class="register-footer">
         <wd-text class="register-footer__text" :text="t('register.hasAccount')" />
-        <wd-text class="register-footer__link" :text="t('register.toLogin')" type="primary" @click="goLogin" />
+        <view class="tap-target" aria-role="button" :aria-label="t('register.toLogin')" @click="goLogin">
+          <wd-text class="register-footer__link" :text="t('register.toLogin')" type="primary" />
+        </view>
       </view>
     </view>
   </view>
@@ -225,7 +237,8 @@ function goLogin() {
   padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
   /* 接入全局水滴渐变（--drop-bg 由 App.vue 按主题色定义，暗色回退纯色由下方规则接管） */
   background: var(--drop-bg, #F9F9F9);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 

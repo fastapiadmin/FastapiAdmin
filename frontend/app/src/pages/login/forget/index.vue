@@ -73,9 +73,11 @@ function goLogin() {
 
       <view class="forget-form">
         <wd-form ref="forgetFormRef" :model="forgetForm" :schema="forgetSchema">
+          <text class="form-field-label">{{ t('common.form.username') }}</text>
           <wd-form-item prop="username" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
             <wd-input
               v-model="forgetForm.username"
+              :aria-label="t('common.form.username')"
               :placeholder="t('common.form.usernamePlaceholder')"
               clearable
               :compact="false"
@@ -89,7 +91,9 @@ function goLogin() {
       </view>
 
       <view class="forget-footer">
-        <wd-text class="forget-footer__link" :text="t('forget.toLogin')" type="primary" @click="goLogin" />
+        <view class="tap-target" aria-role="button" :aria-label="t('forget.toLogin')" @click="goLogin">
+          <wd-text class="forget-footer__link" :text="t('forget.toLogin')" type="primary" />
+        </view>
       </view>
     </view>
   </view>
@@ -111,7 +115,8 @@ function goLogin() {
   padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
   /* 接入全局水滴渐变（--drop-bg 由 App.vue 按主题色定义，暗色回退纯色由下方规则接管） */
   background: var(--drop-bg, #F9F9F9);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 

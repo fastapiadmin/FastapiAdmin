@@ -25,7 +25,7 @@ const STATUS_OPTIONS = [
 /** 公告状态：数字 → StatusBadge 内置 key，由 StatusBadge 的 map prop 一次性映射 */
 const NOTICE_STATUS_MAP: Record<string, string> = { 0: 'draft', 1: 'published', 2: 'archived' }
 
-const { list, total, loading, loadData, reload, refreshData, toFirst, loadNext } = useListPage<NoticeItem>({
+const { list, total, loading, error, loadData, reload, refreshData, toFirst, loadNext } = useListPage<NoticeItem>({
   fetcher: p => NoticeAPI.getPage({ ...p, notice_title: searchTitle.value || undefined }),
   onError: () => toast.error(t('common.loadFailed')),
 })
@@ -133,7 +133,11 @@ async function handleSubmit() {
   finally { loading.value = false }
 }
 const dialog = useGlobalDialog()
-function handleDelete(id: number) {
+function onSwipeAction(item: NoticeItem, e: { value: string }) {
+  if (e.value === 'right')
+    handleDelete(item.id!)
+}
+function handleDelete(id: number, after?: () => void) {
   dialog.confirm({
     title: t('common.title'),
     msg: t('common.deleteConfirm'),
@@ -142,11 +146,19 @@ function handleDelete(id: number) {
         try {
           await NoticeAPI.remove([id])
           toast.success(t('common.deleteSuccess'))
+          after?.()
           refreshData()
         }
         catch { toast.error(t('common.deleteFailed')) }
       }
     },
+  })
+}
+function deleteCurrent() {
+  if (currentId.value == null)
+    return
+  handleDelete(currentId.value, () => {
+    showForm.value = false
   })
 }
 
@@ -184,46 +196,72 @@ onLoad(() => {
       <wd-text class="wot-text-text-secondary text-3" :text="t('notices.count', { count: total })" />
       <view v-if="unreadCount > 0" class="flex items-center gap-3">
         <wd-text class="wot-text-danger-main text-3" :text="t('notices.unreadCount', { count: unreadCount })" />
-        <wd-text class="wot-text-primary-6 text-3" :text="t('notices.markAllRead')" @click="markAllRead" />
+        <view class="tap-target" aria-role="button" :aria-label="t('notices.markAllRead')" @click="markAllRead">
+          <wd-text class="wot-text-primary-6 text-3" :text="t('notices.markAllRead')" />
+        </view>
       </view>
     </view>
 
     <SkeletonPage v-if="loading && list.length === 0" :rows="5" search />
     <template v-else>
       <view class="mx-4">
-        <wd-empty v-if="!loading && list.length === 0" :tip="searchTitle ? t('notices.emptyWithFilter') : t('notices.empty')" />
-        <wd-cell-group v-else border custom-class="rounded-3! overflow-hidden">
-          <wd-cell v-for="item in list" :key="item.id" center is-link @click="markOneRead(item.id); openEdit(item.id!)">
-            <template #title>
-              <view class="min-w-0 flex-1">
-                <view class="flex items-center justify-between gap-2">
-                  <view class="min-w-0 flex items-center gap-2">
-                    <view v-if="isUnread(item)" class="notice-dot" />
-                    <wd-text class="wot-text-text-main truncate text-3.5 font-medium" :text="item.notice_title" />
-                  </view>
-                  <wd-text class="wot-text-text-auxiliary shrink-0 text-2.5" :text="(item.created_time || '').slice(0, 10)" />
-                </view>
-                <view class="mt-1 flex items-center justify-between gap-2">
-                  <wd-text class="wot-text-text-auxiliary truncate text-2.5" :text="item.description || ''" />
-                  <view class="flex shrink-0 items-center gap-2">
-                    <StatusBadge :status="item.status" :map="NOTICE_STATUS_MAP" />
-                    <wd-icon name="delete" size="18px" color="var(--wot-danger-main)" @click.stop="handleDelete(item.id!)" />
-                  </view>
-                </view>
+        <view v-if="error && !loading && list.length === 0" class="flex flex-col items-center gap-3 py-12">
+          <wd-icon name="no-result" size="48px" color="var(--wot-text-auxiliary)" />
+          <wd-text class="wot-text-text-secondary text-3" :text="t('common.loadFailed')" />
+          <wd-button size="small" type="primary" plain @click="reload">
+            {{ t('common.retry') }}
+          </wd-button>
+        </view>
+        <wd-empty v-else-if="!loading && list.length === 0" :tip="searchTitle ? t('notices.emptyWithFilter') : t('notices.empty')" />
+        <view v-else class="notice-list overflow-hidden rounded-3">
+          <wd-swipe-action
+            v-for="(item, index) in list"
+            :key="item.id"
+            @click="onSwipeAction(item, $event)"
+          >
+            <template #right>
+              <view class="wot-bg-danger-main h-full flex items-center justify-center px-6" style="color: #fff;">
+                <wd-text class="text-3" :text="t('common.delete')" />
               </view>
             </template>
-          </wd-cell>
-        </wd-cell-group>
+            <view
+              class="notice-row"
+              :class="{ 'notice-row--last': index === list.length - 1 }"
+              @click="markOneRead(item.id); openEdit(item.id!)"
+            >
+              <view class="flex items-start gap-2.5">
+                <view v-if="isUnread(item)" class="notice-dot mt-2" />
+                <view class="min-w-0 flex-1">
+                  <view class="flex items-start justify-between gap-2">
+                    <text class="notice-title">
+                      {{ item.notice_title }}
+                    </text>
+                    <text class="notice-date">
+                      {{ (item.created_time || '').slice(0, 10) }}
+                    </text>
+                  </view>
+                  <view class="mt-1.5 flex items-center justify-between gap-2">
+                    <text class="notice-desc">
+                      {{ item.description || item.notice_content || '' }}
+                    </text>
+                    <StatusBadge :status="item.status" :map="NOTICE_STATUS_MAP" />
+                  </view>
+                </view>
+                <wd-icon name="arrow-right" size="16px" color="var(--wot-text-auxiliary)" class="mt-1 shrink-0" />
+              </view>
+            </view>
+          </wd-swipe-action>
+        </view>
       </view>
       <!-- 触底加载更多提示 -->
       <wd-loading v-if="loading && list.length > 0" size="20px" class="mx-auto my-2 block" />
-      <wd-text v-else-if="total > 0 && list.length >= total" class="wot-text-text-auxiliary my-2 block text-center text-2.5" :text="t('common.noMore')" />
+      <wd-text v-else-if="total > 0 && list.length >= total" class="wot-text-text-auxiliary my-2 block text-center text-3" :text="t('common.noMore')" />
       <!-- 底部安全区（全面屏 Home 条避让） -->
       <wd-gap height="100rpx" safe-area-bottom />
     </template>
 
     <!-- 新增悬浮按钮 -->
-    <wd-fab position="right-bottom" :expandable="false" :gap="{ bottom: 40 }" @click="openCreate" />
+    <wd-fab v-if="!showForm" position="right-bottom" :expandable="false" :gap="{ bottom: 40 }" @click="openCreate" />
 
     <!-- 表单弹窗 -->
     <wd-popup v-model="showForm" position="bottom" round custom-style="max-height: 80vh; overflow-y: auto;" @close="showForm = false">
@@ -258,6 +296,9 @@ onLoad(() => {
           <wd-button block variant="plain" @click="showForm = false">
             {{ t('common.cancel') }}
           </wd-button>
+          <wd-button v-if="currentId" block variant="plain" type="danger" @click="deleteCurrent">
+            {{ t('common.delete') }}
+          </wd-button>
           <wd-button block type="primary" :loading="loading" @click="handleSubmit">
             {{ t('common.save') }}
           </wd-button>
@@ -268,6 +309,50 @@ onLoad(() => {
 </template>
 
 <style lang="scss" scoped>
+.notice-list {
+  background: var(--wot-filled-content);
+  border: 1px solid var(--wot-border-main);
+}
+
+.notice-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--wot-border-main);
+}
+
+.notice-row--last {
+  border-bottom: none;
+}
+
+.notice-title {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--wot-text-main);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.notice-date {
+  flex-shrink: 0;
+  color: var(--wot-text-auxiliary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.notice-desc {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--wot-text-auxiliary);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .notice-dot {
   width: 8px;
   height: 8px;

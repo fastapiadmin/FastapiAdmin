@@ -2,7 +2,9 @@
   <div class="home-sections">
     <SectionNav />
 
-    <!-- 分隔线:hero 与端到端区块之间的渐变过渡 -->
+    <ProductFeatures />
+
+    <!-- 分隔线:能力区与端到端展示之间的过渡 -->
     <hr class="section-divider" aria-hidden="true" />
 
     <!-- 端到端 S 型展示(Linear 风格 alternate 4 段,末尾含产品全览画廊) -->
@@ -13,6 +15,13 @@
       style="--reveal-delay: 0.1s"
     >
       <EndToEndShowcase />
+    </section>
+
+    <QuickStartBand />
+
+    <!-- 社区与支持:交流群二维码 + 自愿赞赏二维码 -->
+    <section id="community" class="home-section home-section--community">
+      <CommunitySupport />
     </section>
 
     <!-- CTA 由 StickyCta 承担:滚过 #end-to-end 后整底显示(异步加载 + 仅客户端,节省首屏) -->
@@ -26,6 +35,9 @@
 import { defineAsyncComponent, ref } from 'vue'
 import { useRevealOnScroll } from '../composables/useRevealOnScroll'
 import EndToEndShowcase from './EndToEndShowcase.vue'
+import CommunitySupport from './CommunitySupport.vue'
+import ProductFeatures from './ProductFeatures.vue'
+import QuickStartBand from './QuickStartBand.vue'
 import SectionNav from './SectionNav.vue'
 
 // ✅ R5 P1-1:首屏优化 — StickyCta 滚过 #end-to-end 才显示,异步加载节省首屏

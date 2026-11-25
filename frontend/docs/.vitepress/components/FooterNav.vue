@@ -13,6 +13,14 @@
           <a href="https://gitee.com/fastapiadmin/FastapiAdmin" target="_blank" rel="noreferrer" class="fn-social-link" :title="t.gitee">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.984 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.016 0zm6.09 5.333c.328 0 .593.266.593.593v1.482a.594.594 0 0 1-.593.593H9.777c-.982 0-1.778.796-1.778 1.778v5.63c0 .327.266.592.593.592h1.482c.327 0 .593-.265.593-.592v-4.445h6.667c.327 0 .593.265.593.593v1.482a.594.594 0 0 1-.593.593h-4.445v1.63c0 1.963-1.595 3.557-3.56 3.557H6.67a.594.594 0 0 1-.593-.593V9.778c0-2.456 1.995-4.445 4.445-4.445h5.552z"/></svg>
           </a>
+          <a href="https://atomgit.com/fastapiadmin/FastapiAdmin" target="_blank" rel="noreferrer" class="fn-social-link" :title="t.atomgit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none" />
+              <ellipse cx="12" cy="12" rx="10" ry="4.3" />
+              <ellipse cx="12" cy="12" rx="10" ry="4.3" transform="rotate(60 12 12)" />
+              <ellipse cx="12" cy="12" rx="10" ry="4.3" transform="rotate(120 12 12)" />
+            </svg>
+          </a>
         </div>
       </div>
 
@@ -149,11 +157,13 @@ const t = computed(() => isEn.value
         footerLabel: 'Site footer',
         github: 'GitHub',
         gitee: 'Gitee',
+        atomgit: 'AtomGit',
       }
     : {
         footerLabel: '网站页脚',
         github: 'GitHub',
         gitee: '码云',
+        atomgit: 'AtomGit',
       }
 )
 

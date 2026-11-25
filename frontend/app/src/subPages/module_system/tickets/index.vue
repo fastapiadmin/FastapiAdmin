@@ -12,6 +12,7 @@ useI18nNavTitle('tickets.title')
 const { t } = useI18n()
 const router = useRouter()
 const toast = useToast()
+const dialog = useGlobalDialog()
 const searchTitle = ref('')
 const showForm = ref(false)
 const formTitle = ref('')
@@ -79,7 +80,7 @@ function statusLabel(status: number | string | undefined) {
 const typePickerColumns = computed(() => [TYPE_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))])
 const statusPickerColumns = computed(() => [STATUS_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))])
 
-const { list, total, loading, loadData, reload, refreshData, toFirst, loadNext } = useListPage<TicketItem>({
+const { list, total, loading, error, loadData, reload, refreshData, toFirst, loadNext } = useListPage<TicketItem>({
   fetcher: p => TicketAPI.getPage({
     ...p,
     title: searchTitle.value || undefined,
@@ -105,9 +106,8 @@ function handleTabChange(e: { index: number }) {
 function onSearch() {
   toFirst()
 }
-function onReset() {
+function onClearSearch() {
   searchTitle.value = ''
-  typeFilter.value = ''
   toFirst()
 }
 function resetForm() {
@@ -151,11 +151,11 @@ async function handleSubmit() {
   finally { loading.value = false }
 }
 function handleDelete(id: number) {
-  uni.showModal({
+  dialog.confirm({
     title: t('common.title'),
-    content: t('common.deleteConfirm'),
-    success: async (res) => {
-      if (res.confirm) {
+    msg: t('common.deleteConfirm'),
+    success: async ({ action }) => {
+      if (action === 'confirm') {
         try {
           await TicketAPI.remove([id])
           toast.success(t('common.deleteSuccess'))
@@ -192,7 +192,7 @@ onLoad(() => loadData())
           :placeholder="t('tickets.searchPlaceholder')"
           custom-class="w-full"
           @search="onSearch"
-          @clear="onReset"
+          @clear="onClearSearch"
         >
           <template #suffix>
             <wd-drop-menu custom-class="inline-block! w-auto!" :z-index="20">
@@ -212,10 +212,17 @@ onLoad(() => loadData())
     <SkeletonPage v-if="loading && list.length === 0" :rows="5" search />
     <template v-else>
       <view class="mt-2 px-3">
-        <wd-empty v-if="!loading && list.length === 0" :tip="hasFilter ? t('tickets.emptyWithFilter') : t('tickets.empty')" />
-        <wd-cell-group v-else border custom-class="rounded-3! overflow-hidden">
+        <view v-if="error && !loading && list.length === 0" class="flex flex-col items-center gap-3 py-12">
+          <wd-icon name="no-result" size="48px" color="var(--wot-text-auxiliary)" />
+          <wd-text class="wot-text-text-secondary text-3" :text="t('common.loadFailed')" />
+          <wd-button size="small" type="primary" plain @click="reload">
+            {{ t('common.retry') }}
+          </wd-button>
+        </view>
+        <wd-empty v-else-if="!loading && list.length === 0" :tip="hasFilter ? t('tickets.emptyWithFilter') : t('tickets.empty')" />
+        <view v-else class="ticket-list overflow-hidden rounded-3">
           <wd-swipe-action
-            v-for="item in list"
+            v-for="(item, index) in list"
             :key="item.id"
             @click="onSwipeRight(item, $event)"
           >
@@ -224,27 +231,44 @@ onLoad(() => loadData())
                 <wd-text class="text-3" :text="t('common.delete')" />
               </view>
             </template>
-            <wd-cell
-              :title="item.title"
-              :label="typeLabel(item.ticket_type) + (item.ticket_content ? ` · ${item.ticket_content}` : '') + (item.created_time ? ` · ${item.created_time.slice(0, 10)}` : '')"
-              :value="statusLabel(item.status)"
-              is-link
-              border
+            <view
+              class="ticket-row"
+              :class="{ 'ticket-row--last': index === list.length - 1 }"
               @click="navigateToDetail(item.id!)"
             >
-            </wd-cell>
+              <view class="flex items-center justify-between gap-2">
+                <text class="ticket-title">
+                  {{ item.title }}
+                </text>
+                <StatusBadge :status="item.status" :map="TICKET_STATUS_MAP" />
+              </view>
+              <view class="mt-1 flex items-center gap-1.5">
+                <text class="ticket-meta">
+                  {{ typeLabel(item.ticket_type) }}
+                </text>
+                <text v-if="item.created_time" class="ticket-meta">
+                  · {{ item.created_time.slice(0, 10) }}
+                </text>
+                <text class="ticket-meta ticket-id">
+                  #{{ item.id }}
+                </text>
+              </view>
+              <text v-if="item.ticket_content" class="ticket-desc">
+                {{ item.ticket_content }}
+              </text>
+            </view>
           </wd-swipe-action>
-        </wd-cell-group>
+        </view>
       </view>
       <!-- 触底加载更多提示 -->
       <wd-loading v-if="loading && list.length > 0" size="20px" class="mx-auto my-2 block" />
-      <wd-text v-else-if="total > 0 && list.length >= total" class="wot-text-text-auxiliary my-2 block text-center text-2.5" :text="t('common.noMore')" />
+      <wd-text v-else-if="total > 0 && list.length >= total" class="wot-text-text-auxiliary my-2 block text-center text-3" :text="t('common.noMore')" />
       <!-- 底部安全区（全面屏 Home 条避让） -->
       <wd-gap height="100rpx" safe-area-bottom />
     </template>
 
     <!-- 新增悬浮按钮（bottom gap 上移避让 Home 条） -->
-    <wd-fab position="right-bottom" :expandable="false" :gap="{ bottom: 40 }" @click="openCreate" />
+    <wd-fab v-if="!showForm" position="right-bottom" :expandable="false" :gap="{ bottom: 40 }" @click="openCreate" />
 
     <!-- 表单弹窗 -->
     <wd-popup v-model="showForm" position="bottom" round custom-style="max-height: 80vh; overflow-y: auto;" @close="showForm = false">
@@ -258,13 +282,13 @@ onLoad(() => loadData())
             <wd-textarea v-model="formData.ticket_content" :placeholder="t('common.placeholder')" />
           </wd-form-item>
           <wd-form-item :label="t('tickets.type')" border>
-            <view class="flex-1" @click="showPickerType = true">
+            <view class="flex-1" aria-role="button" :aria-label="t('tickets.type')" @click="showPickerType = true">
               <wd-cell :value="typeLabel(formData.ticket_type) || t('common.selectPlaceholder')" is-link :border="false" />
             </view>
             <wd-picker :visible="showPickerType" :columns="typePickerColumns" @confirm="handleTypeConfirm" @cancel="showPickerType = false" />
           </wd-form-item>
           <wd-form-item v-if="currentId" :label="t('common.field.status')" border>
-            <view class="flex-1" @click="showPickerStatus = true">
+            <view class="flex-1" aria-role="button" :aria-label="t('common.field.status')" @click="showPickerStatus = true">
               <wd-cell :value="statusLabel(formData.status) || t('common.selectPlaceholder')" is-link :border="false" />
             </view>
             <wd-picker :visible="showPickerStatus" :columns="statusPickerColumns" @confirm="handleStatusConfirm" @cancel="showPickerStatus = false" />
@@ -290,6 +314,51 @@ onLoad(() => loadData())
 /* 工单状态页签：5 个状态在 375px 下保持单行可读 */
 .ticket-tabs {
   --wot-tabs-nav-item-font-size: 13px;
-  --wot-tabs-nav-item-padding: 5px 6px;
+  --wot-tabs-nav-item-padding: 13px 6px;
+}
+
+.ticket-list {
+  background: var(--wot-filled-content);
+  border: 1px solid var(--wot-border-main);
+}
+
+.ticket-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--wot-border-main);
+}
+
+.ticket-row--last {
+  border-bottom: none;
+}
+
+.ticket-title {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--wot-text-main);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ticket-meta {
+  color: var(--wot-text-auxiliary);
+  font-size: 12px;
+}
+
+.ticket-id {
+  margin-left: auto;
+}
+
+.ticket-desc {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  color: var(--wot-text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

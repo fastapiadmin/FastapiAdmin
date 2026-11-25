@@ -104,6 +104,6 @@ FastapiAdmin 将持续在以下方向深耕：
 | ------ | ------ |
 | GitHub | [FastapiAdmin](https://github.com/fastapiadmin/FastapiAdmin) |
 | Gitee | [FastapiAdmin](https://gitee.com/fastapiadmin/FastapiAdmin) |
-| GitCode | [FastapiAdmin](https://gitcode.com/qq_36002987/FastapiAdmin) |
+| AtomGit | [FastapiAdmin](https://atomgit.com/fastapiadmin/FastapiAdmin) |
 
 如果 FastapiAdmin 对你有帮助，欢迎持续关注和支持项目发展 ❤️

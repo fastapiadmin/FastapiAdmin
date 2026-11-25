@@ -265,9 +265,11 @@ async function handleOAuth(provider: OAuthProvider) {
 
       <wd-form ref="loginFormRef" :model="loginFormData" :schema="loginSchema">
         <!-- Username — wot 原生 wd-input，前缀图标走 prefix-icon 属性 -->
+        <text class="form-field-label">{{ t('common.form.username') }}</text>
         <wd-form-item prop="username" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
           <wd-input
             v-model="loginFormData.username"
+            :aria-label="t('common.form.username')"
             :placeholder="t('common.form.usernamePlaceholder')"
             clearable
             confirm-type="next"
@@ -278,9 +280,11 @@ async function handleOAuth(provider: OAuthProvider) {
         </wd-form-item>
 
         <!-- Password — show-password 自动启用密码可见性切换 -->
+        <text class="form-field-label">{{ t('common.form.password') }}</text>
         <wd-form-item prop="password" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
           <wd-input
             v-model="loginFormData.password"
+            :aria-label="t('common.form.password')"
             :placeholder="t('common.form.passwordPlaceholder')"
             clearable
             show-password
@@ -316,7 +320,14 @@ async function handleOAuth(provider: OAuthProvider) {
           <wd-checkbox v-model="loginFormData.remember" size="18px">
             {{ t('login.remember') }}
           </wd-checkbox>
-          <wd-text class="forgot-link" :text="t('login.forgot')" type="primary" @click="goForget" />
+          <view
+            class="tap-target"
+            aria-role="button"
+            :aria-label="t('login.forgot')"
+            @click="goForget"
+          >
+            <wd-text class="forgot-link" :text="t('login.forgot')" type="primary" />
+          </view>
         </view>
 
         <!-- Submit -->
@@ -337,7 +348,7 @@ async function handleOAuth(provider: OAuthProvider) {
       <wd-divider>{{ t('login.thirdParty') }}</wd-divider>
       <wd-grid :column="4" clickable :gutter="10">
         <!-- WeChat -->
-        <wd-grid-item @click="handleOAuth('wechat')">
+        <wd-grid-item aria-role="button" :aria-label="t('login.wechat')" @click="handleOAuth('wechat')">
           <view class="oauth-btn__icon" style="background: #07C160">
             <image class="oauth-btn__iconify" src="/static/icons/wechat.svg" />
           </view>
@@ -345,7 +356,7 @@ async function handleOAuth(provider: OAuthProvider) {
         </wd-grid-item>
 
         <!-- QQ -->
-        <wd-grid-item @click="handleOAuth('qq')">
+        <wd-grid-item aria-role="button" :aria-label="t('login.qq')" @click="handleOAuth('qq')">
           <view class="oauth-btn__icon" style="background: #12B7F5">
             <image class="oauth-btn__iconify" src="/static/icons/qq.svg" />
           </view>
@@ -353,7 +364,7 @@ async function handleOAuth(provider: OAuthProvider) {
         </wd-grid-item>
 
         <!-- Gitee -->
-        <wd-grid-item @click="handleOAuth('gitee')">
+        <wd-grid-item aria-role="button" :aria-label="t('login.gitee')" @click="handleOAuth('gitee')">
           <view class="oauth-btn__icon" style="background: #C71D23">
             <image class="oauth-btn__iconify" src="/static/icons/gitee.svg" />
           </view>
@@ -361,7 +372,7 @@ async function handleOAuth(provider: OAuthProvider) {
         </wd-grid-item>
 
         <!-- GitHub -->
-        <wd-grid-item @click="handleOAuth('github')">
+        <wd-grid-item aria-role="button" :aria-label="t('login.github')" @click="handleOAuth('github')">
           <view class="oauth-btn__icon" style="background: #24292F">
             <image class="oauth-btn__iconify" src="/static/icons/github.svg" />
           </view>
@@ -373,7 +384,9 @@ async function handleOAuth(provider: OAuthProvider) {
     <!-- Footer -->
     <view class="login-footer">
       <wd-text class="login-footer__text" :text="t('login.noAccount')" />
-      <wd-text class="login-footer__link" :text="t('login.toRegister')" type="primary" @click="goRegister" />
+      <view class="tap-target" aria-role="button" :aria-label="t('login.toRegister')" @click="goRegister">
+        <wd-text class="login-footer__link" :text="t('login.toRegister')" type="primary" />
+      </view>
     </view>
   </view>
 </template>
@@ -454,7 +467,7 @@ async function handleOAuth(provider: OAuthProvider) {
 .login-card {
   width: 100%;
   /* 亮色下默认带主题色最浅阶，避免一片纯白；--card-bg-color 可被外部覆盖 */
-  background: var(--card-bg-color, var(--wot-bg-filled-content, #FFFFFF));
+  background: var(--card-bg-color, var(--wot-primary-1, #F5F8FF));
   border-radius: var(--fa-radius-md, 24rpx);
   padding: 32rpx;
   /* 与 Web 卡片一致：中性描边，不跟随主题色 */
@@ -616,7 +629,7 @@ async function handleOAuth(provider: OAuthProvider) {
 }
 
 .oauth-btn__label {
-  font-size: var(--font-xs, 20rpx);
+  font-size: var(--font-xs, 24rpx);
   @apply wot-text-text-auxiliary;
 }
 

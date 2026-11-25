@@ -8,6 +8,7 @@
     "new": "新建",
     "confirm": "确定",
     "loadFailed": "加载失败",
+    "retry": "重试",
     "operationFailed": "操作失败",
     "deleteSuccess": "删除成功",
     "deleteFailed": "删除失败",
@@ -44,7 +45,11 @@
       "confirmNewRequired": "请确认新密码",
       "mismatch": "两次输入的密码不一致",
       "nicknamePlaceholder": "请输入昵称",
-      "nicknameRequired": "请输入昵称"
+      "nicknameRequired": "请输入昵称",
+      "username": "用户名",
+      "nickname": "昵称",
+      "password": "密码",
+      "confirmPassword": "确认密码"
     },
     "shareDefaultTitle": "FastapiAdmin - 高效的企业管理移动平台",
     "subscribeTitle": "开启消息通知",
@@ -83,7 +88,10 @@
       "bug": "缺陷",
       "optimize": "优化",
       "other": "其他"
-    }
+    },
+    "edit": "编辑",
+    "close": "关闭",
+    "more": "更多"
   },
   "login": {
     "navTitle": "登录",
@@ -195,6 +203,7 @@
     "selectGender": "选择性别",
     "notSet": "未设置",
     "notBound": "未绑定",
+    "loadFailed": "加载个人资料失败",
     "uploadFailed": "头像上传失败",
     "nicknameRequired": "请填写昵称"
   },
@@ -303,6 +312,7 @@
     "title": "工单详情",
     "shareTitle": "工单：{title}",
     "loadFailed": "加载工单详情失败",
+    "commentsLoadFailed": "评论加载失败，请重试",
     "commentRequired": "请输入评论内容",
     "commentSuccess": "评论成功",
     "commentFailed": "评论失败",
@@ -340,6 +350,7 @@
     "data": "数据",
     "dataTitle": "数据概览",
     "dataSubtitle": "系统运行状态与趋势分析",
+    "loadFailed": "数据加载失败",
     "dataDesc": "总用户 {total} · 在线 {online} · 今日登录 {today}",
     "viewDetail": "查看详情",
     "loginCount": "登录次数",
@@ -360,7 +371,9 @@
     "independentUser": "{count} 独立用户",
     "sysMonitor": "系统监控",
     "loginTrend": "登录趋势 (近7天)",
-    "latestNotice": "最新公告"
+    "latestNotice": "最新公告",
+    "pauseBanner": "暂停轮播",
+    "playBanner": "播放轮播"
   },
   "work": {
     "navTitle": "工作台",
@@ -370,7 +383,15 @@
     "nameFallback": "FastapiAdmin",
     "roleFallback": "超级管理员",
     "searchPlaceholder": "搜索模块功能",
-    "emptyTip": "未找到相关模块，换个关键词试试"
+    "emptyTip": "未找到相关模块，换个关键词试试",
+    "ticketOverview": "工单概览",
+    "viewAll": "查看全部",
+    "itemDesc": {
+      "notices": "查看系统通知与公告",
+      "tickets": "提交问题并跟进处理",
+      "aiChat": "智能问答与内容生成",
+      "aiModels": "查看可用模型与配置"
+    }
   },
   "theme": {
     "colors": {
@@ -381,5 +402,13 @@
       "purple": "紫罗兰",
       "red": "朱砂红"
     }
+  },
+  "privacy": {
+    "title": "用户隐私保护提示",
+    "desc": "感谢您使用本应用，您使用本应用的服务之前请仔细阅读并同意",
+    "subDesc": "。当您点击同意并开始使用产品服务时，即表示您已理解并同意该条款内容，该条款将对您产生法律约束力。如您拒绝，将无法使用相应服务。",
+    "protocol": "《用户隐私保护指引》",
+    "agree": "同意",
+    "disagree": "拒绝"
   }
 }

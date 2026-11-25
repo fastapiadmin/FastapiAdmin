@@ -25,6 +25,10 @@ useI18nNavTitle('ticketDetail.title')
 
 const toast = useToast()
 const loading = ref(false)
+const loadError = ref(false)
+const notFound = ref(false)
+const commentsLoading = ref(false)
+const commentsError = ref(false)
 const comments = ref<TicketComment[]>([])
 const commentTotal = ref(0)
 const commentPage = reactive({ page_no: 1, page_size: 20 })
@@ -33,31 +37,68 @@ const submitting = ref(false)
 const previewRef = ref<{ open: (options: { images: string[], startPosition?: number }) => void }>()
 
 async function loadTicket() {
-  if (!ticketId.value)
+  if (!ticketId.value) {
+    notFound.value = true
     return
+  }
   loading.value = true
+  loadError.value = false
+  notFound.value = false
   try {
-    ticket.value = await TicketAPI.getDetail(ticketId.value)
+    const res = await TicketAPI.getDetail(ticketId.value)
+    ticket.value = res || null
+    notFound.value = !res
   }
   catch {
-    toast.error(t('ticketDetail.loadFailed'))
+    // 全局 http 层已提示具体错误；页面保留可重试的错误态，而不是伪装成“不存在”
+    loadError.value = true
   }
   finally {
     loading.value = false
   }
 }
 
-async function loadComments() {
-  if (!ticketId.value)
+/**
+ * 加载评论。
+ * reset=true 时从第 1 页重新加载并替换；否则把新一页追加到现有列表。
+ * 旧实现每次都用 res.items 覆盖，导致“加载更多”永远只显示最后一页。
+ */
+async function loadComments(reset = false) {
+  if (!ticketId.value || commentsLoading.value)
     return
+  if (reset) {
+    commentPage.page_no = 1
+    comments.value = []
+  }
+  commentsLoading.value = true
+  commentsError.value = false
   try {
     const res = await TicketAPI.getComments(ticketId.value, { page_no: commentPage.page_no, page_size: commentPage.page_size })
-    comments.value = res.items || []
+    const items = res.items || []
+    comments.value = reset ? items : [...comments.value, ...items]
     commentTotal.value = res.total || 0
   }
   catch (e) {
+    commentsError.value = true
+    // 追加失败时回退页码，避免下次“加载更多”直接跳过失败页
+    if (!reset)
+      commentPage.page_no = Math.max(1, commentPage.page_no - 1)
     console.error(t('common.loadFailed'), e)
   }
+  finally {
+    commentsLoading.value = false
+  }
+}
+
+function loadMoreComments() {
+  if (commentsLoading.value || comments.value.length >= commentTotal.value)
+    return
+  commentPage.page_no += 1
+  loadComments(false)
+}
+
+async function retryLoad() {
+  await Promise.all([loadTicket(), loadComments(true)])
 }
 
 async function submitComment() {
@@ -68,7 +109,7 @@ async function submitComment() {
     await TicketAPI.createComment(ticketId.value, { content: commentText.value.trim() })
     commentText.value = ''
     toast.success(t('ticketDetail.commentSuccess'))
-    loadComments()
+    loadComments(true)
   }
   catch {
     toast.error(t('ticketDetail.commentFailed'))
@@ -92,7 +133,7 @@ function getTypeColor(type?: string) {
   return map[type || ''] || 'var(--wot-text-auxiliary)'
 }
 function getTypeBg(type?: string) {
-  const map: Record<string, string> = { suggestion: 'var(--wot-blue-2)', bug: 'var(--wot-danger-2)', optimize: 'var(--wot-orange-2)', other: 'var(--wot-coolgrey-2)' }
+  const map: Record<string, string> = { suggestion: 'var(--wot-blue-2)', bug: 'var(--wot-red-2)', optimize: 'var(--wot-orange-2)', other: 'var(--wot-coolgrey-2)' }
   return map[type || ''] || 'var(--wot-coolgrey-2)'
 }
 function getStatusLabel(status?: string | number) {
@@ -124,7 +165,7 @@ function previewImages(images: string[], current: number) {
 
 onPullDownRefresh(async () => {
   try {
-    await Promise.all([loadTicket(), loadComments()])
+    await Promise.all([loadTicket(), loadComments(true)])
   }
   finally {
     uni.stopPullDownRefresh()
@@ -133,15 +174,17 @@ onPullDownRefresh(async () => {
 
 onLoad((options) => {
   ticketId.value = Number(options?.id || 0)
-  if (ticketId.value) {
-    loadTicket()
-    loadComments()
+  if (!ticketId.value) {
+    notFound.value = true
+    return
   }
+  loadTicket()
+  loadComments(true)
 })
 </script>
 
 <template>
-  <view class="page-wraper" style="padding-bottom: 140rpx;">
+  <view class="page-wraper" style="padding-bottom: calc(140rpx + env(safe-area-inset-bottom));">
     <SkeletonPage v-if="loading && !ticket" :rows="5" />
 
     <template v-else-if="ticket">
@@ -181,15 +224,15 @@ onLoad((options) => {
       <!-- Ticket Content -->
       <view v-if="ticket.ticket_content || ticket.summary" class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.content')" bold />
-        <wd-divider class="my-3!" />
-        <mp-html :content="ticket.summary || ticket.ticket_content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
+        <view class="mt-3">
+          <mp-html :content="ticket.summary || ticket.ticket_content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
+        </view>
       </view>
 
       <!-- Images -->
       <view v-if="parseImages(ticket.images).length > 0" class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.attachments')" bold />
-        <wd-divider class="my-3!" />
-        <view class="flex flex-wrap gap-3">
+        <view class="mt-3 flex flex-wrap gap-3">
           <wd-img
             v-for="(img, idx) in parseImages(ticket.images)"
             :key="img"
@@ -207,8 +250,7 @@ onLoad((options) => {
       <!-- Reply -->
       <view v-if="ticket.reply" class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.replies')" bold />
-        <wd-divider class="my-3!" />
-        <view class="wot-bg-primary-1 rounded-lg p-3">
+        <view class="wot-bg-primary-1 mt-3 rounded-lg p-3">
           <mp-html :content="ticket.reply" markdown :tag-style="MARKDOWN_TAG_STYLE" />
         </view>
       </view>
@@ -216,30 +258,55 @@ onLoad((options) => {
       <!-- Comments -->
       <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.comments', { count: commentTotal })" bold />
-        <wd-divider class="my-3!" />
-        <wd-empty v-if="comments.length === 0" :tip="t('ticketDetail.emptyComments')" />
-        <view v-else class="flex flex-col gap-4">
-          <view v-for="comment in comments" :key="comment.id" class="flex gap-3">
-            <wd-avatar
-              size="32px"
-              round
-              :text="(comment.username || t('ticketDetail.anonymous')).charAt(0)"
-            />
-            <view class="min-w-0 flex-1">
-              <view class="flex items-center gap-3">
-                <wd-text class="wot-text-text-main text-3 font-semibold" :text="comment.username || t('ticketDetail.anonymous')" />
-                <wd-text class="wot-text-text-auxiliary text-2.5" :text="comment.created_time || ''" />
-              </view>
-              <wd-text class="wot-text-text-secondary mt-1 block text-3 leading-relaxed" :text="comment.content" />
-            </view>
+        <view class="mt-3">
+          <wd-loading v-if="commentsLoading && comments.length === 0" size="20px" class="mx-auto my-4 block" />
+          <view v-else-if="commentsError" class="flex flex-col items-center gap-2 py-4">
+            <wd-text class="wot-text-text-auxiliary text-3" :text="t('ticketDetail.commentsLoadFailed')" />
+            <wd-button size="small" plain @click="loadComments(true)">
+              {{ t('common.retry') }}
+            </wd-button>
           </view>
+          <view v-else-if="comments.length === 0" class="flex flex-col items-center gap-2 py-4">
+            <wd-icon name="message" size="28px" color="var(--wot-text-auxiliary)" />
+            <wd-text class="wot-text-text-auxiliary text-3" :text="t('ticketDetail.emptyComments')" />
+          </view>
+          <view v-else class="flex flex-col gap-4">
+            <view v-for="comment in comments" :key="comment.id" class="flex gap-3">
+              <wd-avatar
+                size="32px"
+                round
+                :text="(comment.username || t('ticketDetail.anonymous')).charAt(0)"
+              />
+              <view class="min-w-0 flex-1">
+                <view class="flex items-center gap-3">
+                  <wd-text class="wot-text-text-main text-3 font-semibold" :text="comment.username || t('ticketDetail.anonymous')" />
+                  <wd-text class="wot-text-text-auxiliary text-3" :text="comment.created_time || ''" />
+                </view>
+                <wd-text class="wot-text-text-secondary mt-1 block text-3 leading-relaxed" :text="comment.content" />
+              </view>
+            </view>
 
-          <view v-if="commentTotal > comments.length" class="flex items-center justify-center py-1" @click="commentPage.page_no++; loadComments()">
-            <wd-text class="text-3" :text="t('ticketDetail.loadMore')" type="primary" />
+            <view
+              v-if="commentTotal > comments.length"
+              class="tap-target mx-auto"
+              aria-role="button"
+              :aria-label="t('ticketDetail.loadMore')"
+              @click="loadMoreComments"
+            >
+              <wd-text class="text-3" :text="t('ticketDetail.loadMore')" type="primary" />
+            </view>
           </view>
         </view>
       </view>
     </template>
+
+    <view v-else-if="loadError" class="mx-4 flex flex-col items-center gap-3 py-12">
+      <wd-icon name="no-result" size="40px" color="var(--wot-text-auxiliary)" />
+      <wd-text class="wot-text-text-secondary text-3.5" :text="t('ticketDetail.loadFailed')" />
+      <wd-button size="small" plain @click="retryLoad">
+        {{ t('common.retry') }}
+      </wd-button>
+    </view>
 
     <wd-empty v-else :tip="t('ticketDetail.notFound')" />
 
