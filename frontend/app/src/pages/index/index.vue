@@ -64,6 +64,8 @@ function getRouter() {
 }
 
 const loading = ref(false)
+const statsError = ref(false)
+const bannerPaused = ref(false)
 const dashboardStats = ref<DashboardStats | null>(null)
 const pendingTickets = ref(0)
 const recentNotices = ref<NoticeItem[]>([])
@@ -273,6 +275,7 @@ async function loadData() {
       DashboardAPI.getStats(),
       TicketAPI.getPage({ page_no: 1, page_size: 1, status: '0' }),
     ])
+    statsError.value = statsRes.status === 'rejected'
     if (statsRes.status === 'fulfilled') {
       dashboardStats.value = statsRes.value
       loginTrend.value = statsRes.value.login_trend || []
@@ -298,8 +301,9 @@ onReady(() => {
   Promise.all([loadData(), loadNotices()])
 })
 
-onPullDownRefresh(() => {
-  Promise.all([loadData(), loadNotices()])
+onPullDownRefresh(async () => {
+  await Promise.all([loadData(), loadNotices()])
+  uni.stopPullDownRefresh()
 })
 
 useTabbarActive('pages/index/index', 'index')
@@ -355,15 +359,16 @@ function getGreeting() {
         height="120"
         radius="14"
         :interval="4500"
-        :autoplay="true"
+        :autoplay="!bannerPaused"
         :loop="true"
         adjust-height="none"
       >
         <template #default="{ index }">
-          <view class="banner-slide" :class="banners[index].cls" @click="banners[index].onClick">
+          <view class="banner-slide" :class="banners[index].cls" aria-role="button" :aria-label="banners[index].title" @click="banners[index].onClick">
+            <view class="banner-slide__scrim" />
             <view class="banner-slide__body">
               <view class="banner-slide__tag">
-                <wd-tag size="small" round bg-color="rgba(255, 255, 255, 0.22)" color="#FFFFFF">
+                <wd-tag size="small" round bg-color="rgba(15, 23, 42, 0.38)" color="#FFFFFF">
                   {{ banners[index].tag }}
                 </wd-tag>
               </view>
@@ -396,6 +401,14 @@ function getGreeting() {
               :class="{ 'is-active': i === current + 1 }"
             />
           </view>
+          <view
+            class="banner-pause"
+            aria-role="button"
+            :aria-label="bannerPaused ? t('index.playBanner') : t('index.pauseBanner')"
+            @click.stop="bannerPaused = !bannerPaused"
+          >
+            <wd-icon :name="bannerPaused ? 'play' : 'pause'" size="14px" color="#FFFFFF" />
+          </view>
         </template>
       </wd-swiper>
     </view>
@@ -415,7 +428,7 @@ function getGreeting() {
             >
               <wd-icon :name="item.icon" size="20px" :color="item.color" />
             </view>
-            <view class="wot-text-text-secondary mt-1 w-full text-center text-2.5">
+            <view class="wot-text-text-secondary mt-1 w-full text-center text-3">
               {{ t(item.titleKey) }}
             </view>
           </view>
@@ -428,8 +441,21 @@ function getGreeting() {
       <view class="wot-bg-primary-6 h-3.5 w-1 rounded-full" />
       <wd-text class="wot-text-text-main text-3.5" :text="t('index.opsOverview')" bold />
     </view>
+    <view v-if="statsError" class="home-error mx-4 mb-4">
+      <text class="home-error__text">
+        {{ t('index.loadFailed') }}
+      </text>
+      <view
+        class="home-error__action tap-target"
+        aria-role="button"
+        :aria-label="t('common.retry')"
+        @click="loadData"
+      >
+        {{ t('common.retry') }}
+      </view>
+    </view>
     <SkeletonPage v-if="loading && !dashboardStats" :rows="3" />
-    <view v-else class="mx-4">
+    <view v-else-if="dashboardStats" class="mx-4">
       <wd-row :gutter="12">
         <wd-col :span="8">
           <view class="stat-card wot-bg-filled-oppo">
@@ -443,7 +469,7 @@ function getGreeting() {
             <view class="wot-text-text-secondary mt-1 text-3">
               {{ t('index.registered') }}
             </view>
-            <view class="wot-text-text-auxiliary mt-0.5 text-2.5">
+            <view class="wot-text-text-auxiliary mt-0.5 text-3">
               {{ t('index.weekNew', { count: dashboardStats?.week_user_created ?? 0 }) }}
             </view>
           </view>
@@ -460,7 +486,7 @@ function getGreeting() {
             <view class="wot-text-text-secondary mt-1 text-3">
               {{ t('index.online') }}
             </view>
-            <view class="wot-text-text-auxiliary mt-0.5 text-2.5">
+            <view class="wot-text-text-auxiliary mt-0.5 text-3">
               {{ t('index.currentOnline') }}
             </view>
           </view>
@@ -477,7 +503,7 @@ function getGreeting() {
             <view class="wot-text-text-secondary mt-1 text-3">
               {{ t('index.todayLogin') }}
             </view>
-            <view class="wot-text-text-auxiliary mt-0.5 text-2.5">
+            <view class="wot-text-text-auxiliary mt-0.5 text-3">
               {{ t('index.independentUser', { count: dashboardStats?.today_unique_users ?? 0 }) }}
             </view>
           </view>
@@ -486,7 +512,7 @@ function getGreeting() {
     </view>
 
     <!-- 系统监控（原数据概览 dashboard 合并，Banner 点击可滚动到此区块） -->
-    <view id="monitor-section" class="mt-4">
+    <view v-if="loginTrend.length" id="monitor-section" class="mt-4">
       <view class="mb-2 flex items-center gap-2 px-3">
         <view class="wot-bg-danger-main h-3.5 w-1 rounded-full" />
         <wd-text class="wot-text-text-main text-3.5" :text="t('index.sysMonitor')" bold />
@@ -507,7 +533,14 @@ function getGreeting() {
         <view class="wot-bg-success-main h-3.5 w-1 rounded-full" />
         <wd-text class="wot-text-text-main text-3.5" :text="t('index.latestNotice')" bold />
       </view>
-      <wd-text class="text-3" :text="t('common.all')" type="primary" @click="navigateTo('work-notices')" />
+      <view
+        class="tap-target"
+        aria-role="button"
+        :aria-label="t('common.all')"
+        @click="navigateTo('work-notices')"
+      >
+        <wd-text class="text-3" :text="t('common.all')" type="primary" />
+      </view>
     </view>
     <view v-if="recentNotices.length > 0" class="mx-4">
       <wd-cell-group border custom-class="rounded-3! overflow-hidden">
@@ -519,7 +552,7 @@ function getGreeting() {
           @click="navigateTo('work-notices')"
         >
           <template #label>
-            <wd-text class="wot-text-text-auxiliary text-2.5" :text="item.created_time || ''" />
+            <wd-text class="wot-text-text-auxiliary text-3" :text="item.created_time || ''" />
           </template>
         </wd-cell>
       </wd-cell-group>
@@ -530,6 +563,27 @@ function getGreeting() {
 </template>
 
 <style lang="scss" scoped>
+.home-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--fa-radius-sm, 12px);
+  background: var(--wot-danger-surface, #FFF0EE);
+  color: #B42318;
+  font-size: 12px;
+}
+
+.wot-theme-dark .home-error {
+  background: rgba(241, 70, 70, 0.18);
+  color: #FFB4AC;
+}
+
+.home-error__action {
+  font-weight: 500;
+}
+
 /* ===== 运营概览指标卡片（图标徽章 + 数据层级） ===== */
 .stat-card {
   position: relative;
@@ -586,6 +640,15 @@ function getGreeting() {
   justify-content: space-between;
   color: #FFFFFF;
   overflow: hidden;
+
+  /* 深色遮罩：保证白色标题/副标题在橙、绿、浅紫渐变上仍达到 WCAG AA */
+  &__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(15, 23, 42, 0.58);
+    pointer-events: none;
+  }
 
   /* 装饰圆环（极光浮动动效） */
   &::before {
@@ -650,13 +713,13 @@ function getGreeting() {
 
   &__subtitle {
     font-size: 24rpx;
-    color: rgba(255, 255, 255, 0.88);
+    color: rgba(255, 255, 255, 0.95);
     margin-bottom: 8rpx;
   }
 
   &__desc {
-    font-size: 20rpx;
-    color: rgba(255, 255, 255, 0.68);
+    font-size: 24rpx;
+    color: rgba(255, 255, 255, 0.95);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -672,7 +735,7 @@ function getGreeting() {
     gap: 8rpx;
     padding: 16rpx 24rpx;
     border-radius: 9999rpx;
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(15, 23, 42, 0.38);
     border: 2rpx solid rgba(255, 255, 255, 0.35);
 
     &-text {
@@ -689,6 +752,20 @@ function getGreeting() {
       line-height: 1;
     }
   }
+}
+
+.banner-pause {
+  position: absolute;
+  right: 24rpx;
+  bottom: 56rpx;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.38);
 }
 
 .banner-dots {

@@ -24,12 +24,22 @@ useI18nNavTitle('work.navTitle')
 const router = useRouter()
 const userStore = useUserStore()
 const userInfo = computed(() => userStore.userInfo)
+const identityText = computed(() => {
+  const username = userInfo.value?.username ? `@${userInfo.value.username}` : ''
+  const role = userInfo.value?.roles?.map(item => item.name).filter(Boolean).join(', ')
+  return [username, role].filter(Boolean).join(' · ') || t('work.roleFallback')
+})
 function navigateTo(name: string) {
   router.push({ name })
 }
 
-/** 工单统计（共享缓存，与 mine 页面复用，仅预热缓存，展示在 mine 页） */
-const { loadTicketStats } = useTicketStats()
+/** 工单统计（共享缓存，与 mine 页面复用） */
+const { pendingTickets, processingTickets, doneTickets, loadTicketStats } = useTicketStats()
+const ticketStats = computed(() => [
+  { key: 'pending', label: t('common.status.pending'), value: pendingTickets.value, color: 'var(--wot-orange-6)' },
+  { key: 'processing', label: t('common.status.processing'), value: processingTickets.value, color: 'var(--wot-blue-6)' },
+  { key: 'done', label: t('common.status.completed'), value: doneTickets.value, color: 'var(--wot-success-main)' },
+])
 
 useTabbarActive('pages/work/index', 'work', loadTicketStats)
 
@@ -39,8 +49,8 @@ const groups = [
     color: 'var(--fa-brand-blue)',
     bg: 'wot-bg-primary-1',
     items: [
-      { icon: 'notification', titleKey: 'common.nav.notices', name: 'work-notices' },
-      { icon: 'message', titleKey: 'common.nav.tickets', name: 'work-tickets' },
+      { icon: 'notification', titleKey: 'common.nav.notices', descKey: 'work.itemDesc.notices', name: 'work-notices' },
+      { icon: 'message', titleKey: 'common.nav.tickets', descKey: 'work.itemDesc.tickets', name: 'work-tickets' },
     ],
   },
   {
@@ -48,8 +58,8 @@ const groups = [
     color: 'var(--wot-purple-6)',
     bg: 'wot-bg-purple-1',
     items: [
-      { icon: 'message', titleKey: 'common.nav.aiChat', name: 'work-chat' },
-      { icon: 'robot', titleKey: 'common.nav.aiModels', name: 'work-ai-models' },
+      { icon: 'message', titleKey: 'common.nav.aiChat', descKey: 'work.itemDesc.aiChat', name: 'work-chat' },
+      { icon: 'robot', titleKey: 'common.nav.aiModels', descKey: 'work.itemDesc.aiModels', name: 'work-ai-models' },
     ],
   },
 ]
@@ -80,15 +90,39 @@ const filteredGroups = computed(() => {
         <view class="text-4 text-white font-bold">
           {{ userInfo?.name || t('work.nameFallback') }}
         </view>
-        <view class="mt-1 truncate text-3" style="color: rgba(255, 255, 255, 0.75);">
-          {{ userInfo?.roles?.map(r => r.name).join(', ') || t('work.roleFallback') }}
+        <view class="mt-1 truncate text-3" style="color: rgba(255, 255, 255, 0.9);">
+          {{ identityText }}
+        </view>
+      </view>
+    </view>
+
+    <!-- 工单概览 -->
+    <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4 active:opacity-80" aria-role="button" :aria-label="t('work.viewAll')" @click="navigateTo('work-tickets')">
+      <view class="flex items-center justify-between">
+        <wd-text class="wot-text-text-main text-3.5" :text="t('work.ticketOverview')" bold />
+        <view class="flex items-center gap-1">
+          <wd-text class="wot-text-primary-6 text-3" :text="t('work.viewAll')" />
+          <wd-icon name="arrow-right" size="12px" color="var(--wot-text-auxiliary)" />
+        </view>
+      </view>
+      <view class="grid grid-cols-3 mt-3 gap-2">
+        <view v-for="stat in ticketStats" :key="stat.key" class="rounded-xl bg-black/5 px-3 py-2.5">
+          <view class="flex items-center gap-1.5">
+            <view class="h-1.5 w-1.5 rounded-full" :style="{ backgroundColor: stat.color }" />
+            <text class="wot-text-text-secondary text-3">
+              {{ stat.label }}
+            </text>
+          </view>
+          <view class="mt-1 text-5 font-bold" :style="{ color: stat.color }">
+            {{ stat.value ?? '–' }}
+          </view>
         </view>
       </view>
     </view>
 
     <!-- 模块搜索 -->
     <view class="mx-4 mb-4">
-      <wd-search class="work-search" v-model="keyword" :placeholder="t('work.searchPlaceholder')" variant="light" hide-cancel />
+      <wd-search v-model="keyword" class="work-search" :placeholder="t('work.searchPlaceholder')" variant="light" hide-cancel />
     </view>
 
     <!-- 模块分组 -->
@@ -96,31 +130,34 @@ const filteredGroups = computed(() => {
       <view class="mb-2 mt-1 flex items-center gap-2 px-3">
         <view class="h-3.5 w-1 rounded-full" :style="{ backgroundColor: group.color }" />
         <wd-text class="wot-text-text-main text-3.5" :text="t(group.titleKey)" bold />
-        <wd-text class="wot-text-text-auxiliary text-2.5" :text="group.items.length" />
+        <wd-text class="wot-text-text-auxiliary text-3" :text="group.items.length" />
       </view>
-      <wd-cell-group border custom-class="mx-4 rounded-3! overflow-hidden">
-        <wd-cell
+      <view class="grid grid-cols-2 mx-4 gap-3">
+        <view
           v-for="item in group.items"
           :key="item.name"
-          center
-          is-link
+          class="wot-bg-filled-oppo rounded-3 p-3.5 active:opacity-80"
+          aria-role="button"
+          :aria-label="t(item.titleKey)"
           @click="navigateTo(item.name)"
         >
-          <template #title>
-            <view class="flex items-center gap-2.5">
-              <view
-                class="h-8 w-8 flex shrink-0 items-center justify-center rounded-lg"
-                :class="group.bg"
-              >
-                <wd-icon :name="item.icon" size="16px" :color="group.color" />
-              </view>
-              <text>
-                {{ t(item.titleKey) }}
-              </text>
+          <view class="flex items-start justify-between">
+            <view
+              class="h-9 w-9 flex shrink-0 items-center justify-center rounded-xl"
+              :class="group.bg"
+            >
+              <wd-icon :name="item.icon" size="18px" :color="group.color" />
             </view>
-          </template>
-        </wd-cell>
-      </wd-cell-group>
+            <wd-icon name="arrow-right" size="14px" color="var(--wot-text-auxiliary)" />
+          </view>
+          <view class="wot-text-text-main mt-2.5 text-3.5 font-semibold">
+            {{ t(item.titleKey) }}
+          </view>
+          <view class="wot-text-text-auxiliary mt-1 text-3 leading-snug">
+            {{ t(item.descKey) }}
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 搜索无结果 -->
@@ -131,11 +168,11 @@ const filteredGroups = computed(() => {
 <style lang="scss">
 /* global work search：暗色下与卡片表面一致 */
 .work-search {
-  --wot-search-bg: #191d24;
-  --wot-search-light-bg: #191d24;
-  --wot-search-light-block-bg: #191d24;
+  --wot-search-bg: var(--wot-filled-oppo);
+  --wot-search-light-bg: var(--wot-filled-oppo);
+  --wot-search-light-block-bg: var(--wot-filled-oppo);
   overflow: hidden;
-  border: 2rpx solid #262b34;
+  border: 2rpx solid var(--wot-border-main, #eaecef);
   border-radius: 16rpx;
 }
 </style>

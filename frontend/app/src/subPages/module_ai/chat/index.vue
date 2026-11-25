@@ -26,6 +26,8 @@ const currentTitle = ref(t('chat.title'))
 const messages = ref<ChatMessage[]>([])
 const inputText = ref('')
 const loading = ref(false)
+const sessionsError = ref(false)
+const messagesError = ref(false)
 const showSessions = ref(false)
 
 /** 流式对话（WebSocket） */
@@ -56,14 +58,30 @@ function resetWindow() {
   scrollTarget.value = ''
 }
 
+function formatSessionTime(value?: string | number) {
+  if (!value)
+    return ''
+  const raw = String(value)
+  const numeric = /^\d+$/.test(raw)
+  const date = numeric
+    ? new Date(Number(raw) * (raw.length === 10 ? 1000 : 1))
+    : new Date(raw)
+  if (Number.isNaN(date.getTime()))
+    return raw
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 async function loadSessions() {
   loading.value = true
+  sessionsError.value = false
   try {
     const res = await ChatAPI.getSessions()
     sessions.value = res.items || []
   }
   catch {
     sessions.value = []
+    sessionsError.value = true
     toast.error(t('chat.loadSessionsFailed'))
   }
   finally { loading.value = false }
@@ -88,19 +106,28 @@ async function selectSession(id: number, title?: string) {
   currentTitle.value = title || t('chat.sessionId', { id })
   showSessions.value = false
   loading.value = true
+  messagesError.value = false
   try {
     const detail = await ChatAPI.getDetail(id)
     // 兼容后端可能返回 { messages: [] } 或 { data: { messages: [] } } 两种结构
     const detailRes = detail as { messages?: ChatMessage[], data?: { messages?: ChatMessage[] } }
     const msgs = detailRes?.messages || detailRes?.data?.messages || []
     resetWindow()
-    messages.value = msgs.map(m => ({ role: m.role || 'ai', content: m.content || '', time: String(m.created_at || m.time || '') }))
+    messages.value = msgs.length
+      ? msgs.map(m => ({ role: m.role || 'ai', content: m.content || '', time: String(m.created_at || m.time || '') }))
+      : [{ role: 'ai', content: t('chat.welcome') }]
   }
   catch {
     messages.value = []
+    messagesError.value = true
     toast.error(t('chat.loadMessagesFailed'))
   }
   finally { loading.value = false }
+}
+
+function retryMessages() {
+  if (currentSession.value)
+    selectSession(currentSession.value, currentTitle.value)
 }
 
 async function deleteSession(id: number) {
@@ -115,7 +142,7 @@ async function deleteSession(id: number) {
           if (currentSession.value === id) {
             currentSession.value = null
             currentTitle.value = t('chat.title')
-            messages.value = []
+            messages.value = [{ role: 'ai', content: t('chat.welcome') }]
           }
           toast.success(t('chat.deleted'))
         }
@@ -202,20 +229,31 @@ onLoad(() => {
 </script>
 
 <template>
-  <view class="page-wraper" style="display:flex;flex-direction:column;">
-    <!-- Header -->
-    <view class="wot-bg-filled-oppo wot-border-border-main wot-gap-extra-tight wot-p-tight flex items-center" style="border-bottom:1px solid;">
-      <wd-button size="small" variant="plain" @click="showSessions = !showSessions">
-        <wd-icon name="menu" size="16px" />
-      </wd-button>
-      <wd-text class="text-md flex-1 truncate text-center" :text="currentTitle" bold />
-      <wd-button size="small" type="primary" variant="plain" @click="createSession">
-        <wd-icon name="plus" size="16px" />
-      </wd-button>
+  <view class="page-wraper" style="display:flex;flex-direction:column;position:relative;height:calc(100vh - var(--window-top, 0px));overflow:hidden;">
+    <!-- 会话操作条：原生导航已提供页面标题，这里不再重复画标题栏 -->
+    <view class="chat-toolbar wot-bg-filled-oppo wot-border-border-main">
+      <view
+        class="tap-target chat-toolbar__action"
+        aria-role="button"
+        :aria-label="t('chat.sessionList')"
+        @click="showSessions = !showSessions"
+      >
+        <wd-icon name="menu" size="18px" color="var(--wot-text-main)" />
+        <text class="chat-toolbar__label">{{ t('chat.sessionList') }}</text>
+      </view>
+      <view
+        class="tap-target chat-toolbar__action"
+        aria-role="button"
+        :aria-label="t('chat.newSession')"
+        @click="createSession"
+      >
+        <wd-icon name="plus" size="18px" color="var(--wot-primary-6)" />
+        <text class="chat-toolbar__label chat-toolbar__label--primary">{{ t('chat.new') }}</text>
+      </view>
     </view>
 
     <!-- Session panel overlay -->
-    <view v-if="showSessions" class="session-overlay wot-bg-filled-oppo" style="position:absolute;top:88rpx;left:0;right:0;bottom:0;z-index:100;overflow-y:auto;">
+    <view v-if="showSessions" class="session-overlay wot-bg-filled-oppo" style="position:absolute;top:44px;left:0;right:0;bottom:0;z-index:100;overflow-y:auto;">
       <view class="p-sm">
         <view class="mb-md flex items-center justify-between px-xs">
           <wd-text class="text-lg" :text="t('chat.sessionList')" bold />
@@ -224,14 +262,25 @@ onLoad(() => {
           </wd-button>
         </view>
         <SkeletonPage v-if="loading && sessions.length === 0" />
-        <view v-for="s in sessions" v-else :key="s.id" class="admin-card">
-          <wd-cell :title="s.title" :label="s.created_at ? String(s.created_at) : ''" center is-link @click="selectSession(s.id, s.title)">
-            <template #default>
-              <wd-icon name="delete" size="18px" color="var(--wot-danger-main)" @click.stop="deleteSession(s.id)" />
-            </template>
-          </wd-cell>
+        <view v-else-if="sessionsError && sessions.length === 0" class="flex flex-col items-center gap-3 py-12">
+          <wd-icon name="no-result" size="48px" color="var(--wot-text-auxiliary)" />
+          <wd-text class="wot-text-text-secondary text-3" :text="t('chat.loadSessionsFailed')" />
+          <wd-button size="small" type="primary" @click="loadSessions">
+            {{ t('common.retry') }}
+          </wd-button>
         </view>
-        <wd-empty v-if="!loading && sessions.length === 0" :tip="t('chat.empty')" />
+        <template v-else>
+          <view v-for="s in sessions" :key="s.id" class="admin-card">
+            <wd-cell :title="s.title" :label="formatSessionTime(s.created_at)" center is-link @click="selectSession(s.id, s.title)">
+              <template #default>
+                <view class="icon-action" aria-role="button" :aria-label="t('common.delete')" @click.stop="deleteSession(s.id)">
+                  <wd-icon name="delete" size="18px" color="var(--wot-danger-main)" />
+                </view>
+              </template>
+            </wd-cell>
+          </view>
+          <wd-empty v-if="!loading && sessions.length === 0" :tip="t('chat.empty')" />
+        </template>
       </view>
     </view>
 
@@ -239,44 +288,53 @@ onLoad(() => {
     <scroll-view
       scroll-y
       class="chat-messages wot-p-tight"
-      style="flex:1;"
+      style="flex:1;min-height:0;"
       :scroll-into-view="scrollTarget || `msg-${visibleMessages.length - 1}`"
       :scroll-with-animation="true"
     >
+      <view v-if="messagesError" class="flex flex-col items-center gap-3 py-12">
+        <wd-icon name="no-result" size="48px" color="var(--wot-text-auxiliary)" />
+        <wd-text class="wot-text-text-secondary text-3" :text="t('chat.loadMessagesFailed')" />
+        <wd-button size="small" type="primary" @click="retryMessages">
+          {{ t('common.retry') }}
+        </wd-button>
+      </view>
       <!-- 窗口化渲染：仅渲染最近 N 条消息，支持加载更早消息 -->
-      <view v-if="hasOlderMessages" style="padding:16rpx 0;text-align:center;">
+      <view v-if="!messagesError && hasOlderMessages" style="padding:16rpx 0;text-align:center;">
         <wd-button size="small" variant="plain" @click="loadOlderMessages">
           {{ t('chat.loadMore', { count: messages.length - visibleMessages.length }) }}
         </wd-button>
       </view>
-      <view v-for="(msg, i) in visibleMessages" :id="`msg-${i}`" :key="i" style="margin-bottom:24rpx;">
-        <view class="flex items-start gap-sm" :class="msg.role === 'user' ? 'flex-row-reverse' : ''">
-          <view
-            v-if="msg.role === 'user'"
-            class="h-8 w-8 flex shrink-0 items-center justify-center rounded-full"
-            style="background: linear-gradient(135deg, var(--wot-primary-6), var(--wot-primary-7));"
-          >
-            <wd-icon name="user" size="18px" color="#FFFFFF" />
-          </view>
-          <wd-avatar v-else size="32px" shape="round" src="/static/logo.png" />
-          <view
-            class="max-w-[72%] break-words px-3 py-2"
-            :class="msg.role === 'user' ? 'wot-bg-primary-6 wot-text-text-white' : 'wot-bg-filled-oppo wot-text-text-main wot-border-border-main'"
-            :style="{
-              borderRadius: msg.role === 'user' ? '16rpx 16rpx 4rpx 16rpx' : '16rpx 16rpx 16rpx 4rpx',
-              border: msg.role === 'user' ? 'none' : '1px solid',
-            }"
-          >
-            <!-- AI 消息渲染 markdown；用户消息保持纯文本 -->
-            <template v-if="msg.role !== 'user'">
-              <wd-loading v-if="streaming && !msg.content" />
-              <mp-html v-else :content="msg.content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
-            </template>
-            <wd-text v-else style="white-space:pre-wrap;font-size:var(--font-sm,24rpx);line-height:1.7;" :text="msg.content" />
-            <wd-text v-if="msg.time" style="font-size:var(--font-xs,20rpx);opacity:0.6;margin-top:8rpx;display:block;" :style="msg.role === 'user' ? 'text-align:right' : 'text-align:left'" :text="msg.time" />
+      <template v-if="!messagesError">
+        <view v-for="(msg, i) in visibleMessages" :id="`msg-${i}`" :key="i" style="margin-bottom:24rpx;">
+          <view class="flex items-start gap-sm" :class="msg.role === 'user' ? 'flex-row-reverse' : ''">
+            <view
+              v-if="msg.role === 'user'"
+              class="h-8 w-8 flex shrink-0 items-center justify-center rounded-full"
+              style="background: linear-gradient(135deg, var(--wot-primary-6), var(--wot-primary-7));"
+            >
+              <wd-icon name="user" size="18px" color="#FFFFFF" />
+            </view>
+            <wd-avatar v-else size="32px" shape="round" src="/static/logo.png" />
+            <view
+              class="max-w-[72%] break-words px-3 py-2"
+              :class="msg.role === 'user' ? 'wot-bg-primary-6 wot-text-text-white' : 'wot-bg-filled-oppo wot-text-text-main wot-border-border-main'"
+              :style="{
+                borderRadius: msg.role === 'user' ? '16rpx 16rpx 4rpx 16rpx' : '16rpx 16rpx 16rpx 4rpx',
+                border: msg.role === 'user' ? 'none' : '1px solid',
+              }"
+            >
+              <!-- AI 消息渲染 markdown；用户消息保持纯文本 -->
+              <template v-if="msg.role !== 'user'">
+                <wd-loading v-if="streaming && !msg.content" />
+                <mp-html v-else :content="msg.content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
+              </template>
+              <wd-text v-else style="white-space:pre-wrap;font-size:var(--font-sm);line-height:1.7;" :text="msg.content" />
+              <wd-text v-if="msg.time" style="font-size:var(--font-xs);opacity:0.75;margin-top:8rpx;display:block;" :style="msg.role === 'user' ? 'text-align:right' : 'text-align:left'" :text="msg.time" />
+            </view>
           </view>
         </view>
-      </view>
+      </template>
     </scroll-view>
 
     <!-- Input -->
@@ -293,3 +351,27 @@ onLoad(() => {
     </view>
   </view>
 </template>
+
+<style lang="scss" scoped>
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--wot-border-main);
+}
+
+.chat-toolbar__action {
+  gap: 6px;
+}
+
+.chat-toolbar__label {
+  font-size: var(--font-xs);
+  color: var(--wot-text-secondary);
+}
+
+.chat-toolbar__label--primary {
+  color: var(--wot-primary-6);
+}
+</style>

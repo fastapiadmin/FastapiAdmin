@@ -23,7 +23,6 @@ declare module 'vue' {
     WdActionSheet: typeof import('@wot-ui/ui/components/wd-action-sheet/wd-action-sheet.vue')['WdActionSheet']
     WdAvatar: typeof import('@wot-ui/ui/components/wd-avatar/wd-avatar.vue')['WdAvatar']
     WdBacktop: typeof import('@wot-ui/ui/components/wd-backtop/wd-backtop.vue')['WdBacktop']
-    WdBadge: typeof import('@wot-ui/ui/components/wd-badge/wd-badge.vue')['WdBadge']
     WdButton: typeof import('@wot-ui/ui/components/wd-button/wd-button.vue')['WdButton']
     WdCell: typeof import('@wot-ui/ui/components/wd-cell/wd-cell.vue')['WdCell']
     WdCellGroup: typeof import('@wot-ui/ui/components/wd-cell-group/wd-cell-group.vue')['WdCellGroup']

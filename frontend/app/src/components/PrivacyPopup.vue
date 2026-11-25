@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   title?: string // 标题
@@ -8,12 +9,18 @@ interface Props {
   protocol?: string // 协议名称
 }
 
-withDefaults(defineProps<Props>(), {
-  title: '用户隐私保护提示',
-  desc: '感谢您使用本应用，您使用本应用的服务之前请仔细阅读并同意',
-  subDesc: '。当您点击同意并开始时用产品服务时，即表示你已理解并同意该条款内容，该条款将对您产生法律约束力。如您拒绝，将无法使用相应服务。',
-  protocol: '《用户隐私保护指引》',
+const props = withDefaults(defineProps<Props>(), {
+  title: '',
+  desc: '',
+  subDesc: '',
+  protocol: '',
 })
+
+const { t } = useI18n()
+const titleText = computed(() => props.title || t('privacy.title'))
+const descText = computed(() => props.desc || t('privacy.desc'))
+const subDescText = computed(() => props.subDesc || t('privacy.subDesc'))
+const protocolText = computed(() => props.protocol || t('privacy.protocol'))
 
 const emit = defineEmits(['agree', 'disagree'])
 const showPopup = ref<boolean>(false) // 是否展示popup
@@ -27,7 +34,7 @@ function privacyHandler(resolve: any) {
 
 onBeforeMount(() => {
   // 注册监听
-  if (wx.onNeedPrivacyAuthorization) {
+  if (typeof wx !== 'undefined' && wx.onNeedPrivacyAuthorization) {
     wx.onNeedPrivacyAuthorization((resolve: any) => {
       if (typeof privacyHandler === 'function') {
         privacyHandler(resolve)
@@ -68,7 +75,8 @@ function handleDisagree() {
  * 打开隐私协议
  */
 function openPrivacyContract() {
-  wx.openPrivacyContract({})
+  if (typeof wx !== 'undefined' && wx.openPrivacyContract)
+    wx.openPrivacyContract({})
 }
 
 /**
@@ -95,17 +103,17 @@ export default {
       <view class="wd-privacy-popup__header">
         <!-- 标题 -->
         <view class="wd-picker__title">
-          {{ title }}
+          {{ titleText }}
         </view>
       </view>
       <view class="wd-privacy-popup__container">
-        <wd-text :text="desc" />
-        <wd-text class="wd-privacy-popup__container-protocol" :text="protocol" @click="openPrivacyContract" />
-        <wd-text :text="subDesc" />
+        <wd-text :text="descText" />
+        <wd-text class="wd-privacy-popup__container-protocol" :text="protocolText" @click="openPrivacyContract" />
+        <wd-text :text="subDescText" />
       </view>
       <view class="wd-privacy-popup__footer">
         <button id="disagree-btn" class="is-block is-round is-medium is-plain wd-privacy-popup__footer-disagree wd-button" @click="handleDisagree">
-          拒绝
+          {{ t('privacy.disagree') }}
         </button>
         <button
           id="agree-btn"
@@ -113,7 +121,7 @@ export default {
           open-type="agreePrivacyAuthorization"
           @agreeprivacyauthorization="handleAgree"
         >
-          同意
+          {{ t('privacy.agree') }}
         </button>
       </view>
     </wd-popup>

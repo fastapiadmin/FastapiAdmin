@@ -104,6 +104,7 @@ const {
   theme,
   toggleTheme,
   currentThemeColor,
+  followSystem,
   showThemeColorSheet,
   themeColorOptions,
   openThemeColorPicker,
@@ -120,6 +121,11 @@ const isDark = computed({
     toggleTheme()
   },
 })
+
+/** 跟随系统：用开关展示当前状态，而不是一个没有选中态的普通按钮 */
+function handleFollowSystemChange(e: { value: boolean }) {
+  setFollowSystem(e.value)
+}
 
 // 当前主题色 i18n key（按 value 从预设中解析，兼容历史持久化数据缺失 labelKey 的情况；翻译交给模板的 t() 处理）
 const currentThemeNameKey = computed(() => {
@@ -168,12 +174,10 @@ function handleNavigate(url: string) {
       </view>
       <wd-cell-group border custom-class="rounded-3! overflow-hidden">
         <wd-cell :title="t('setting.darkMode')">
-          <wd-switch v-model="isDark" size="18px" />
+          <wd-switch v-model="isDark" size="18px" custom-style="padding: 13px 0;" />
         </wd-cell>
         <wd-cell :title="t('setting.followSystem')">
-          <wd-button size="small" @click="setFollowSystem(true)">
-            {{ t('setting.followSystem') }}
-          </wd-button>
+          <wd-switch :model-value="followSystem" size="18px" custom-style="padding: 13px 0;" @change="handleFollowSystemChange" />
         </wd-cell>
         <wd-cell :title="t('setting.themeColor')" is-link @click="openThemeColorPicker">
           <view class="flex items-center justify-end gap-2">

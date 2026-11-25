@@ -1,3 +1,52 @@
+/* 设计 token：字号统一走 CSS 变量，避免各页裸写 rpx 后无法统一调整 */
+page,
+:root {
+  --font-xs: 24rpx;
+  --font-sm: 26rpx;
+  --font-md: 28rpx;
+  --font-lg: 32rpx;
+  --font-xl: 40rpx;
+  --font-3xl: 56rpx;
+}
+
+/* 辅助文字在亮色主题下加深：原 #868A9C 白底仅 3.43:1，不满足 WCAG AA */
+page.wot-theme-light,
+.wot-theme-light {
+  --wot-text-auxiliary: #5B6472;
+  --wot-icon-auxiliary: #5B6472;
+}
+
+/* 表单可见 label：登录/注册/找回密码页使用，避免只靠 placeholder */
+.form-field-label {
+  display: block;
+  margin-bottom: 8rpx;
+  padding-left: 4rpx;
+  font-size: var(--font-xs, 24rpx);
+  line-height: 1.5;
+  color: var(--wot-text-secondary);
+}
+
+/* 纯图标操作：视觉 18-20px，热区 44px；负 margin 避免撑开紧凑行 */
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px 0;
+}
+
+/* 纯文本操作的最小点击热区：视觉不变，热区达到 44px */
+.tap-target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
 .page-wraper {
   min-height: calc(100vh - var(--window-top));
   box-sizing: border-box;
@@ -32,7 +81,10 @@
 .user-info-card {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--fa-brand-blue, #4F6BFF), var(--fa-brand-violet, #6D5BFF));
+  /* 叠加 25% 深色层，使白色文字在品牌渐变上达到 4.5:1 以上 */
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.25)),
+    linear-gradient(135deg, var(--fa-brand-blue, #4F6BFF), var(--fa-brand-violet, #6D5BFF));
   box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.18);
 
   /* 右上角装饰圆环 */

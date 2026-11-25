@@ -13,6 +13,11 @@ const { t } = useI18n()
 
 const userStore = useUserStore()
 const userInfo = computed(() => userStore.userInfo)
+const identityText = computed(() => {
+  const username = userInfo.value?.username ? `@${userInfo.value.username}` : ''
+  const role = userInfo.value?.roles?.map(item => item.name).filter(Boolean).join(', ')
+  return [username, role].filter(Boolean).join(' · ') || t('mine.roleFallback')
+})
 
 useShare(() => ({
   title: t('mine.shareTitle', { name: userInfo.value?.name || t('common.admin') }),
@@ -127,26 +132,26 @@ async function handleSubmitPassword() {
   <view class="tabbar-wraper py-3">
     <!-- 用户信息卡（品牌渐变 + 极光装饰圆环，与工作台一致） -->
     <view class="user-info-card mx-4 mb-4 flex items-center gap-4 rounded-3 px-5 py-6">
-      <wd-badge is-dot>
-        <wd-avatar
-          size="64px"
-          round
-          :src="userInfo?.avatar || ''"
-          icon="user"
-        />
-      </wd-badge>
+      <wd-avatar
+        size="64px"
+        round
+        :src="userInfo?.avatar || ''"
+        icon="user"
+      />
       <view class="min-w-0 flex-1">
         <view class="text-4 text-white font-bold">
           {{ userInfo?.name || t('common.admin') }}
         </view>
-        <view class="mt-1 truncate text-3" style="color: rgba(255, 255, 255, 0.75);">
-          {{ userInfo?.roles?.map(r => r.name).join(', ') || t('mine.roleFallback') }}
+        <view class="mt-1 truncate text-3" style="color: rgba(255, 255, 255, 0.9);">
+          {{ identityText }}
         </view>
       </view>
       <!-- 设置入口（纯 icon，打开设置页：内含主题设置） -->
       <view
-        class="relative z-10 h-9 w-9 flex shrink-0 items-center justify-center rounded-full active:opacity-70"
+        class="relative z-10 h-11 w-11 flex shrink-0 items-center justify-center rounded-full active:opacity-70"
         hover-class="none"
+        aria-role="button"
+        :aria-label="t('common.settings')"
         @click="navigateTo('setting')"
       >
         <wd-icon name="settings" size="20px" color="rgba(255, 255, 255, 0.9)" />
@@ -157,7 +162,7 @@ async function handleSubmitPassword() {
     <view class="mx-4 mb-4">
       <wd-row :gutter="12">
         <wd-col :span="8">
-          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" @click="navigateTo('work-tickets')">
+          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.pendingTickets')" @click="navigateTo('work-tickets')">
             <view class="wot-text-warning-main text-5 font-bold">
               {{ pendingTickets ?? '-' }}
             </view>
@@ -167,7 +172,7 @@ async function handleSubmitPassword() {
           </view>
         </wd-col>
         <wd-col :span="8">
-          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" @click="navigateTo('work-tickets')">
+          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.processingTickets')" @click="navigateTo('work-tickets')">
             <view class="wot-text-primary-6 text-5 font-bold">
               {{ processingTickets ?? '-' }}
             </view>
@@ -177,7 +182,7 @@ async function handleSubmitPassword() {
           </view>
         </wd-col>
         <wd-col :span="8">
-          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" @click="navigateTo('work-tickets')">
+          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.doneTickets')" @click="navigateTo('work-tickets')">
             <view class="wot-text-success-main text-5 font-bold">
               {{ doneTickets ?? '-' }}
             </view>
@@ -203,7 +208,7 @@ async function handleSubmitPassword() {
           >
             <wd-icon :name="item.icon" size="20px" :color="item.color" />
           </view>
-          <view class="wot-text-text-secondary mt-1 text-2.5">
+          <view class="wot-text-text-secondary mt-1 text-3">
             {{ t(item.titleKey) }}
           </view>
         </wd-grid-item>
@@ -283,9 +288,9 @@ async function handleSubmitPassword() {
 <style lang="scss">
 /* global logout：uni-button 自定义标签不受 scoped 样式作用域约束 */
 .wd-button.logout-btn {
-  color: #f56c6c !important;
+  color: var(--wot-danger-main) !important;
   background: transparent !important;
-  border: 2rpx solid rgb(245 108 108 / 45%) !important;
-  border-radius: 16rpx !important;
+  border: 2rpx solid var(--wot-danger-main) !important;
+  border-radius: var(--fa-radius-sm, 16rpx) !important;
 }
 </style>

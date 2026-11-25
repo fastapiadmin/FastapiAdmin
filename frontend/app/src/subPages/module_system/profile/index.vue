@@ -20,6 +20,7 @@ const toast = useToast()
 const userStore = useUserStore()
 
 const loading = ref(false)
+const loadError = ref(false)
 const saving = ref(false)
 const userProfile = ref<UserInfo>()
 
@@ -63,15 +64,23 @@ const genderText = computed(() => {
   return gender === '0' ? t('profile.male') : gender === '1' ? t('profile.female') : t('profile.unknown')
 })
 const deptText = computed(() => userProfile.value?.dept_name || '-')
-const roleText = computed(() => userProfile.value?.role_names?.join('、') || '-')
+const roleText = computed(() => {
+  const names = userProfile.value?.role_names?.filter(Boolean)
+  if (names?.length)
+    return names.join('、')
+  const roles = userProfile.value?.roles?.map(role => role.name).filter(Boolean)
+  return roles?.length ? roles.join('、') : '-'
+})
 
 async function loadUserProfile() {
   loading.value = true
+  loadError.value = false
   try {
     userProfile.value = await UserAPI.getCurrentUserInfo()
   }
   catch {
-    // http 层已统一错误提示
+    // http 层已统一错误提示，页面保留错误态与重试入口
+    loadError.value = true
   }
   finally {
     loading.value = false
@@ -170,6 +179,14 @@ onLoad(() => {
 <template>
   <view class="page-wraper py-3">
     <SkeletonPage v-if="loading && !userProfile" :rows="6" />
+
+    <view v-else-if="loadError && !userProfile" class="mx-4 flex flex-col items-center gap-3 py-12">
+      <wd-icon name="no-result" size="40px" color="var(--wot-text-auxiliary)" />
+      <wd-text class="wot-text-text-secondary text-3.5" :text="t('profile.loadFailed')" />
+      <wd-button size="small" plain @click="loadUserProfile">
+        {{ t('common.retry') }}
+      </wd-button>
+    </view>
 
     <template v-else>
       <!-- 头像 + 昵称（点击头像即上传更换） -->

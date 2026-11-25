@@ -14,7 +14,9 @@ useI18nNavTitle('aiModels.title')
 
 const { t } = useI18n()
 const toast = useToast()
+const dialog = useGlobalDialog()
 const loading = ref(false)
+const loadError = ref(false)
 const models = ref<AIModelConfig[]>([])
 /** 当前激活的模型配置 id（后端通过 active_id 集中管理激活态） */
 const activeId = ref<number | null>(null)
@@ -43,13 +45,17 @@ const temperature = computed<number>({
 
 async function loadModels() {
   loading.value = true
+  loadError.value = false
   try {
     const res = await ChatAPI.getModels()
     // 接口返回 { items, active_id }，取 items 并过滤 null/undefined 元素
     models.value = (res.items || []).filter((m): m is AIModelConfig => m != null)
     activeId.value = res.active_id ?? null
   }
-  catch { toast.error(t('aiModels.loadFailed')) }
+  catch {
+    loadError.value = true
+    toast.error(t('aiModels.loadFailed'))
+  }
   finally {
     loading.value = false
     uni.stopPullDownRefresh()
@@ -102,12 +108,12 @@ async function submitForm() {
   }
 }
 
-async function handleDelete(configId: number) {
-  uni.showModal({
+function handleDelete(configId: number) {
+  dialog.confirm({
     title: t('common.title'),
-    content: t('aiModels.deleteConfirm'),
-    success: async (res) => {
-      if (!res.confirm)
+    msg: t('aiModels.deleteConfirm'),
+    success: async ({ action }) => {
+      if (action !== 'confirm')
         return
       try {
         await ChatAPI.deleteModel(configId)
@@ -119,12 +125,12 @@ async function handleDelete(configId: number) {
   })
 }
 
-async function handleActivate(configId: number) {
-  uni.showModal({
+function handleActivate(configId: number) {
+  dialog.confirm({
     title: t('common.title'),
-    content: t('aiModels.activateConfirm'),
-    success: async (res) => {
-      if (!res.confirm)
+    msg: t('aiModels.activateConfirm'),
+    success: async ({ action }) => {
+      if (action !== 'confirm')
         return
       try {
         await ChatAPI.activateModel(configId)
@@ -148,6 +154,13 @@ onLoad(() => {
   <view class="page-wraper">
     <!-- List -->
     <SkeletonPage v-if="loading && models.length === 0" :rows="3" />
+    <view v-else-if="loadError && models.length === 0" class="mx-4 flex flex-col items-center gap-3 py-12">
+      <wd-icon name="no-result" size="48px" color="var(--wot-text-auxiliary)" />
+      <wd-text class="wot-text-text-secondary text-3" :text="t('aiModels.loadFailed')" />
+      <wd-button size="small" type="primary" @click="loadModels">
+        {{ t('common.retry') }}
+      </wd-button>
+    </view>
     <template v-else>
       <view class="mx-4">
         <wd-empty v-if="!loading && models.length === 0" :tip="t('aiModels.empty')" />
@@ -159,8 +172,8 @@ onLoad(() => {
             </template>
             <template #label>
               <view class="flex flex-col">
-                <wd-text class="wot-text-text-auxiliary truncate text-2.5" :text="`${model.model_id} · ${t('aiModels.temperature')} ${model.temperature ?? '—'}`" />
-                <wd-text class="wot-text-text-auxiliary truncate text-2.5" :text="model.base_url" />
+                <wd-text class="wot-text-text-auxiliary truncate text-3" :text="`${model.model_id} · ${t('aiModels.temperature')} ${model.temperature ?? '—'}`" />
+                <wd-text class="wot-text-text-auxiliary truncate text-3" :text="model.base_url" />
               </view>
             </template>
             <template #default>
@@ -170,15 +183,20 @@ onLoad(() => {
                 </wd-tag>
                 <wd-button
                   v-else
-                  size="mini"
+                  size="small"
                   type="primary"
                   variant="plain"
+                  custom-style="min-height: 44px;"
                   @click.stop="handleActivate(model.config_id)"
                 >
                   {{ t('aiModels.activate') }}
                 </wd-button>
-                <wd-icon name="edit" size="18px" color="var(--wot-text-auxiliary)" @click.stop="openEdit(model)" />
-                <wd-icon name="delete" size="18px" color="var(--wot-danger-main)" @click.stop="handleDelete(model.config_id)" />
+                <view class="icon-action" aria-role="button" :aria-label="t('common.edit')" @click.stop="openEdit(model)">
+                  <wd-icon name="edit" size="18px" color="var(--wot-text-auxiliary)" />
+                </view>
+                <view class="icon-action" aria-role="button" :aria-label="t('common.delete')" @click.stop="handleDelete(model.config_id)">
+                  <wd-icon name="delete" size="18px" color="var(--wot-danger-main)" />
+                </view>
               </view>
             </template>
           </wd-cell>
@@ -187,7 +205,7 @@ onLoad(() => {
     </template>
 
     <!-- 新增悬浮按钮（bottom gap 上移避让 Home 条） -->
-    <wd-fab position="right-bottom" :expandable="false" :gap="{ bottom: 40 }" @click="openCreate" />
+    <wd-fab v-if="!showForm" position="right-bottom" :expandable="false" :gap="{ bottom: 40 }" @click="openCreate" />
 
     <!-- Form Popup -->
     <wd-popup v-model="showForm" position="bottom" round custom-style="max-height: 80vh; overflow-y: auto;" @close="showForm = false">
