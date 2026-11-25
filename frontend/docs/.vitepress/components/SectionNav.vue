@@ -31,23 +31,31 @@ const navLabel = computed(() => isEn.value ? 'Page sections' : '页面章节')
 
 const sections = computed<Section[]>(() => isEn.value
     ? [
+        { id: 'repositories', label: 'Repositories' },
+        { id: 'features', label: 'Capabilities' },
         { id: 'end-to-end-web', label: 'Web Admin' },
         { id: 'end-to-end-gen', label: 'AI Generator' },
         { id: 'end-to-end-api', label: 'FastAPI Backend' },
         { id: 'end-to-end-app', label: 'Mobile' },
+        { id: 'quickstart', label: 'Quick Start' },
+        { id: 'community', label: 'Community' },
       ]
     : [
+        { id: 'repositories', label: '开源仓库' },
+        { id: 'features', label: '产品能力' },
         { id: 'end-to-end-web', label: 'Web 管理' },
         { id: 'end-to-end-gen', label: 'AI 生成' },
         { id: 'end-to-end-api', label: 'FastAPI 后端' },
         { id: 'end-to-end-app', label: '移动端' },
+        { id: 'quickstart', label: '快速开始' },
+        { id: 'community', label: '社区与支持' },
       ]
 )
 
 const activeSection = ref('')
 const visible = ref(false)
 let observer: IntersectionObserver | null = null
-let scrollTimer: ReturnType<typeof setTimeout> | null = null
+let scrollHandler: (() => void) | null = null
 
 const scrollTo = (id: string) => {
   const el = document.getElementById(id)
@@ -58,12 +66,22 @@ const scrollTo = (id: string) => {
 
 onMounted(() => {
   // Only show on homepage
-  if (typeof window !== 'undefined' && !window.location.pathname.includes('/guide/') && !window.location.pathname.includes('/about/')) {
-    // Delay showing to avoid flash
-    setTimeout(() => {
-      visible.value = true
-    }, 800)
+  if (typeof window === 'undefined' || window.location.pathname.includes('/guide/') || window.location.pathname.includes('/about/')) return
+
+  // 首屏不显示：滚过 Hero 后再出现，避免移动端底部导航压住首屏内容
+  const updateVisibility = () => {
+    const threshold = window.innerWidth <= 768 ? 480 : 240
+    const community = document.getElementById('community')
+    // 社区/赞赏区已是页尾，不再需要章节导航，同时避免遮住二维码卡片
+    const nearEnd = community
+      ? community.getBoundingClientRect().top < window.innerHeight - 40
+      : false
+    visible.value = window.scrollY > threshold && !nearEnd
   }
+  updateVisibility()
+  scrollHandler = updateVisibility
+  window.addEventListener('scroll', updateVisibility, { passive: true })
+  window.addEventListener('resize', updateVisibility)
 
   observer = new IntersectionObserver(
     (entries) => {
@@ -96,24 +114,14 @@ onMounted(() => {
     }
   }, 200)
 
-  // Hide/show on scroll direction
-  let lastScrollY = 0
-  const handleScroll = () => {
-    if (scrollTimer) clearTimeout(scrollTimer)
-    scrollTimer = setTimeout(() => {
-      const currentY = window.scrollY
-      if (currentY < 200) {
-        visible.value = true
-      }
-      lastScrollY = currentY
-    }, 50)
-  }
-
-  document.addEventListener('scroll', handleScroll, { passive: true })
 })
 
 onUnmounted(() => {
   if (observer) observer.disconnect()
+  if (scrollHandler) {
+    window.removeEventListener('scroll', scrollHandler)
+    window.removeEventListener('resize', scrollHandler)
+  }
 })
 </script>
 

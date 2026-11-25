@@ -85,3 +85,79 @@
     radial-gradient(ellipse 50% 45% at 30% 60%, rgba(109, 91, 255, 0.12), transparent 75%),
     radial-gradient(ellipse 50% 45% at 70% 60%, rgba(109, 91, 255, 0.10), transparent 75%);
 }
+
+/* 首屏标题平衡换行：避免中文标题在“一 / 套全栈”之间断行 */
+.VPHomeHero .text {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* Hero 右侧：真实产品截图，而不是放大的 Logo */
+.VPHomeHero .image-bg {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .VPHomeHero.has-image .container {
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .VPHomeHero.has-image .main {
+    width: 53%;
+    max-width: 640px;
+  }
+
+  .VPHomeHero.has-image .image {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    width: 47%;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .VPHomeHero.has-image .image-container {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: none;
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1279px) {
+  .VPHomeHero.has-image .text {
+    font-size: 48px;
+    line-height: 56px;
+  }
+}
+
+@media (max-width: 959px) {
+  .VPHomeHero .main {
+    order: 1;
+  }
+
+  .VPHomeHero .image {
+    order: 2;
+    margin: 1.5rem 0 0;
+  }
+
+  .VPHomeHero .image-container {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .VPHomeHero .image {
+    margin: 1rem 0 0;
+  }
+
+  /* 英文标题比中文长，移动端降一档字号，避免 “Mini Apps” 被拆开 */
+  html[lang^='en'] .VPHomeHero .text {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}

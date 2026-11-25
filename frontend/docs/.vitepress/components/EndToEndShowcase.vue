@@ -304,6 +304,9 @@ const lightboxNext = () => {
 }
 
 .endtoend-title {
+  text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   font-size: var(--vp-section-title-size);
   font-weight: 800;
   background: var(--vp-brand-gradient);

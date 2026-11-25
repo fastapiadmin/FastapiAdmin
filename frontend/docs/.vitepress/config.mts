@@ -114,6 +114,7 @@ export default defineConfig({
         logo: '/logo.svg',
         nav: [
           { text: '首页', link: '/' },
+          { text: '产品能力', link: '/#features' },
           {
             text: '快速开始',
             items: [
@@ -147,6 +148,7 @@ export default defineConfig({
         socialLinks: [
           { icon: 'github', link: 'https://github.com/fastapiadmin/FastapiAdmin' },
           { icon: 'gitee', link: 'https://gitee.com/fastapiadmin/FastapiAdmin'},
+          { icon: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><ellipse cx="12" cy="12" rx="10" ry="4.3"/><ellipse cx="12" cy="12" rx="10" ry="4.3" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.3" transform="rotate(120 12 12)"/></svg>' }, link: 'https://atomgit.com/fastapiadmin/FastapiAdmin', ariaLabel: 'AtomGit' },
         ],
         outline: {
             level: [2, 3],
@@ -175,6 +177,7 @@ export default defineConfig({
         logo: '/logo.svg',
         nav: [
           { text: 'Home', link: '/en/' },
+          { text: 'Capabilities', link: '/en/#features' },
           {
             text: 'Quick Start',
             items: [
@@ -208,6 +211,7 @@ export default defineConfig({
         socialLinks: [
           { icon: 'github', link: 'https://github.com/fastapiadmin/FastapiAdmin' },
           { icon: 'gitee', link: 'https://gitee.com/fastapiadmin/FastapiAdmin' },
+          { icon: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><ellipse cx="12" cy="12" rx="10" ry="4.3"/><ellipse cx="12" cy="12" rx="10" ry="4.3" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.3" transform="rotate(120 12 12)"/></svg>' }, link: 'https://atomgit.com/fastapiadmin/FastapiAdmin', ariaLabel: 'AtomGit' },
         ],
         outline: {
           level: [2, 3],
