@@ -756,8 +756,8 @@ function getGreeting() {
 
 .banner-pause {
   position: absolute;
-  right: 24rpx;
-  bottom: 56rpx;
+  right: 16rpx;
+  top: 16rpx;
   z-index: 3;
   width: 44px;
   height: 44px;

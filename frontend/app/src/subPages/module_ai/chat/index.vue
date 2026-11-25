@@ -321,7 +321,7 @@ onLoad(() => {
               :class="msg.role === 'user' ? 'wot-bg-primary-6 wot-text-text-white' : 'wot-bg-filled-oppo wot-text-text-main wot-border-border-main'"
               :style="{
                 borderRadius: msg.role === 'user' ? '16rpx 16rpx 4rpx 16rpx' : '16rpx 16rpx 16rpx 4rpx',
-                border: msg.role === 'user' ? 'none' : '1px solid',
+                border: msg.role === 'user' ? 'none' : '1px solid var(--wot-border-main)',
               }"
             >
               <!-- AI 消息渲染 markdown；用户消息保持纯文本 -->
