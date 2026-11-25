@@ -74,7 +74,7 @@ function goLogin() {
       <view class="forget-form">
         <wd-form ref="forgetFormRef" :model="forgetForm" :schema="forgetSchema">
           <text class="form-field-label">{{ t('common.form.username') }}</text>
-          <wd-form-item prop="username" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
+          <wd-form-item prop="username" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
             <wd-input
               v-model="forgetForm.username"
               :aria-label="t('common.form.username')"
@@ -206,7 +206,7 @@ function goLogin() {
 /* MP 端兼容：wd-form-item 内部 wd-cell 因 uni-app 插槽静态声明（u-s）误判 label/title 插槽被使用，
    showLeft=true 渲染空 left 区域（flex:1 占半宽），H5 端运行时插槽判定无此问题。
    本页 form-item 无 title/label/prefix 内容，隐藏 left 安全，保证输入框与登录按钮同宽 */
-.forget-card .wd-form-item .wd-cell__left {
+.forget-card :deep(.wd-form-item .wd-cell__left) {
   display: none;
 }
 </style>
