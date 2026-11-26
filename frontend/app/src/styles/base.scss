@@ -49,6 +49,26 @@ page.wot-theme-light,
   --wot-text-placeholder: #6B7280 !important;
 }
 
+/* Wot 默认主题在主样式之后注入，会把主色阶覆盖成 #1C64FD。
+   这里强制接回品牌色阶，保证按钮/链接/选中态与品牌渐变一致。 */
+page.wot-theme-light,
+page.wot-theme-dark,
+uni-page-body.wot-theme-light,
+uni-page-body.wot-theme-dark,
+.wot-theme-light,
+.wot-theme-dark {
+  --wot-primary-1: #EEF1FF !important;
+  --wot-primary-2: #DCE2FF !important;
+  --wot-primary-3: #C3CDFF !important;
+  --wot-primary-4: #A5B3FF !important;
+  --wot-primary-5: #4F6BFF !important;
+  --wot-primary-6: #4F6BFF !important;
+  --wot-primary-7: #3D55E0 !important;
+  --wot-primary-8: #2F43B8 !important;
+  --wot-primary-9: #24348F !important;
+  --wot-primary-10: #1A2669 !important;
+}
+
 /* 表单可见 label：登录/注册/找回密码页使用，避免只靠 placeholder */
 .form-field-label {
   display: block;

@@ -11,7 +11,7 @@ function buildThemeVars(color: ThemeColorOption) {
 
 /** 主题色 → 原生导航栏背景色（与水滴渐变顶部色 --drop-base-a 一致，消除导航栏与页面背景的白色断层） */
 const THEME_NAV_BG: Record<string, string> = {
-  blue: '#E3F1FF',
+  blue: '#EEF1FF',
   orange: '#FFF4E7',
   green: '#EAF9F1',
   pink: '#FFF0F7',
@@ -106,6 +106,13 @@ export const useThemeStore = defineStore('theme', {
      * 初始化主题
      */
     initTheme() {
+      // 迁移旧版持久化的主题色阶：按 value 重新取当前预设，避免历史缓存把主色留在旧蓝色
+      const freshColor = themeColorOptions.find(item => item.value === this.currentThemeColor?.value)
+      if (freshColor) {
+        this.currentThemeColor = freshColor
+        this.themeVars = buildThemeVars(freshColor)
+      }
+
       // 如果用户已手动设置且不跟随系统，保持当前主题
       if (this.hasUserSet && !this.followSystem) {
         this.setNavigationBarColor()

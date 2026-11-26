@@ -3,12 +3,6 @@ import type { SwiperItem } from '@wot-ui/ui/components/wd-swiper/types'
 import type { DashboardStats, LoginTrendItem } from '@/api/module_monitor/dashboard'
 import type { NoticeItem } from '@/api/module_system/notice'
 import { onPullDownRefresh, onReady } from '@dcloudio/uni-app'
-import { nextTick } from 'vue'
-import { LineChart } from 'echarts/charts'
-import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
-import * as echarts from 'echarts/core'
-import { LegacyGridContainLabel } from 'echarts/features'
-import { CanvasRenderer } from 'echarts/renderers'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatMessage } from '@/locales/format'
@@ -25,7 +19,7 @@ const { t, locale } = useI18n()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 
-/** 主题主色（primary6）→ rgba，供 echarts 面积渐变使用（echarts 无法直接消费 CSS 变量） */
+/** 主题主色（primary6）→ rgba，供通知栏背景使用 */
 function hexToRgba(hex: string, alpha: number): string {
   const r = Number.parseInt(hex.slice(1, 3), 16)
   const g = Number.parseInt(hex.slice(3, 5), 16)
@@ -38,14 +32,6 @@ useShare(() => ({
   path: '/pages/index/index',
 }))
 
-echarts.use([
-  GridComponent,
-  LegendComponent,
-  TooltipComponent,
-  LegacyGridContainLabel,
-  LineChart,
-  CanvasRenderer,
-])
 
 definePage({
   name: 'home',
@@ -87,29 +73,9 @@ const noticeBarColors = computed(() => {
 
 /** 页面滚动距离（供 wd-backtop 判断显示） */
 const scrollTop = ref(0)
-/** 趋势图是原生 canvas，滚动到 tabbar 下方时会盖住导航；完全进入可视区才渲染 */
-const chartSafe = ref(true)
-const windowHeight = ref(0)
-let lastChartCheck = 0
-
-/** 原生 canvas 会盖住 tabbar：用视口坐标判断，进入底部 60px 区域前移除 canvas */
-function updateChartSafe() {
-  const query = uni.createSelectorQuery()
-  query.select('#monitor-chart').boundingClientRect((rect) => {
-    const box = rect as UniApp.NodeInfo | null
-    if (!box || !windowHeight.value)
-      return
-    chartSafe.value = (box.bottom ?? 0) <= windowHeight.value - 60
-  }).exec()
-}
 
 onPageScroll((e) => {
   scrollTop.value = e.scrollTop
-  const now = Date.now()
-  if (now - lastChartCheck > 100) {
-    lastChartCheck = now
-    updateChartSafe()
-  }
 })
 
 const NAV_LIST = [
@@ -183,98 +149,21 @@ function navigateTo(name: string) {
 /** 近7天登录趋势（后端 monitor/online/stats 返回，含今日） */
 const loginTrend = ref<LoginTrendItem[]>([])
 
-/** 登录趋势折线图（真实数据：登录次数 / 独立访客 / 新增用户） */
-const loginTrendOption = computed(() => {
-  const days = loginTrend.value.length > 0
-    ? loginTrend.value.map(i => i.day.slice(5)) // 仅显示 MM-DD
-    : []
-  const logins = loginTrend.value.map(i => i.logins)
-  const uniques = loginTrend.value.map(i => i.unique_users)
-  const news = loginTrend.value.map(i => i.new_users)
-  /** 主题主色（跟随主题色切换），图表品牌感与全局换肤一致 */
-  const primaryColor = themeStore.currentThemeColor.primaryShades.primary6
-  /** 暗色模式下图表文字/网格线换亮色，保证深色卡片上可读 */
-  const isDark = themeStore.isDark
-  const axisTextColor = isDark ? '#A3AAB8' : '#6B7280'
-  const legendTextColor = isDark ? '#C3C9D3' : '#4B5563'
-  const splitLineColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(128, 128, 128, 0.12)'
-  return {
-    tooltip: {
-      trigger: 'axis',
-      textStyle: { fontSize: 12 },
-    },
-    legend: {
-      top: 0,
-      right: 0,
-      itemWidth: 10,
-      itemHeight: 10,
-      itemGap: 8,
-      textStyle: { fontSize: 12, color: legendTextColor },
-      data: [t('index.loginCount'), t('index.visitor'), t('index.newUser')],
-    },
-    grid: { left: 8, right: 8, top: 34, bottom: 0, containLabel: true },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: days,
-      axisLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: { fontSize: 12, color: axisTextColor },
-    },
-    yAxis: {
-      type: 'value',
-      axisLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: { fontSize: 12, color: axisTextColor },
-      splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } },
-    },
-    series: [
-      {
-        name: t('index.loginCount'),
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 5,
-        data: logins,
-        lineStyle: { width: 3, color: primaryColor },
-        itemStyle: { color: primaryColor },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: hexToRgba(primaryColor, 0.28) },
-              { offset: 1, color: hexToRgba(primaryColor, 0.02) },
-            ],
-          },
-        },
-      },
-      {
-        name: t('index.visitor'),
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 5,
-        data: uniques,
-        lineStyle: { width: 2.5, color: '#10B981' },
-        itemStyle: { color: '#10B981' },
-      },
-      {
-        name: t('index.newUser'),
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 5,
-        data: news,
-        lineStyle: { width: 2.5, color: '#F59E0B' },
-        itemStyle: { color: '#F59E0B' },
-      },
-    ],
-  }
-})
+/** 三条趋势分别按各自最大值归一化，避免登录量级过大把访客/新增压成一条线 */
+const trendSeries = computed(() => [
+  { key: 'login', label: t('index.loginCount'), values: loginTrend.value.map(i => i.logins) },
+  { key: 'visitor', label: t('index.visitor'), values: loginTrend.value.map(i => i.unique_users) },
+  { key: 'new', label: t('index.newUser'), values: loginTrend.value.map(i => i.new_users) },
+])
+
+function seriesHeight(values: number[], value: number) {
+  const max = Math.max(1, ...values)
+  return `${Math.max(6, Math.round((value / max) * 100))}%`
+}
+
+function seriesTotal(values: number[]) {
+  return values.reduce((sum, v) => sum + v, 0)
+}
 
 /** 滚动定位到系统监控区块（dashboard 合并后无独立页面，Banner 点击改为页内定位） */
 function scrollToMonitor() {
@@ -302,7 +191,6 @@ async function loadData() {
     if (statsRes.status === 'fulfilled') {
       dashboardStats.value = statsRes.value
       loginTrend.value = statsRes.value.login_trend || []
-      nextTick(updateChartSafe)
     }
     if (ticketRes.status === 'fulfilled')
       pendingTickets.value = ticketRes.value.total || 0
@@ -322,8 +210,6 @@ async function loadNotices() {
 }
 
 onReady(() => {
-  const info = typeof (uni as any).getWindowInfo === 'function' ? (uni as any).getWindowInfo() : uni.getSystemInfoSync()
-  windowHeight.value = info.windowHeight ?? 0
   Promise.all([loadData(), loadNotices()])
 })
 
@@ -552,8 +438,31 @@ function getGreeting() {
         <view class="mb-4 flex items-center gap-2">
           <wd-text class="wot-text-text-main text-3.5" :text="t('index.loginTrend')" bold />
         </view>
-        <view id="monitor-chart" class="h-52 w-full">
-          <uni-echarts v-show="chartSafe" custom-class="h-full w-full" :option="loginTrendOption" />
+        <view class="trend-rows">
+          <view
+            v-for="series in trendSeries"
+            :key="series.key"
+            class="trend-row"
+            :aria-label="`${series.label}：${seriesTotal(series.values)}`"
+          >
+            <view class="trend-row__label">
+              <view class="trend-dot" :class="`trend-dot--${series.key}`" />
+              <text class="trend-row__name">{{ series.label }}</text>
+            </view>
+            <view class="trend-row__bars">
+              <view
+                v-for="(value, idx) in series.values"
+                :key="idx"
+                class="trend-row__bar"
+                :class="`trend-row__bar--${series.key}`"
+                :style="{ height: seriesHeight(series.values, value) }"
+              />
+            </view>
+            <text class="trend-row__total">{{ seriesTotal(series.values) }}</text>
+          </view>
+        </view>
+        <view class="trend-days">
+          <text v-for="item in loginTrend" :key="item.day">{{ item.day.slice(5) }}</text>
         </view>
       </view>
     </view>
@@ -811,4 +720,112 @@ function getGreeting() {
     }
   }
 }
+
+/* 纯 CSS 柱状图：不依赖原生 canvas，首屏即可完整渲染，也不会盖住 tabbar */
+.trend-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.trend-row__label {
+  width: 58px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.trend-row__name {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--wot-text-secondary, #4B5563);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trend-dot--login {
+  background: var(--wot-primary-6, #4F6BFF);
+}
+
+.trend-dot--visitor {
+  background: var(--wot-success-main, #10B981);
+}
+
+.trend-dot--new {
+  background: var(--wot-warning-main, #F59E0B);
+}
+
+.trend-row__bars {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.trend-row__bar {
+  flex: 1;
+  min-height: 2px;
+  border-radius: 2px 2px 1px 1px;
+  transition: height 0.35s ease;
+}
+
+.trend-row__bar--login {
+  background: linear-gradient(180deg, var(--wot-primary-6, #4F6BFF), var(--wot-primary-4, #A5B3FF));
+}
+
+.trend-row__bar--visitor {
+  background: linear-gradient(180deg, var(--wot-success-main, #10B981), var(--wot-success-4, #6EE7B7));
+}
+
+.trend-row__bar--new {
+  background: linear-gradient(180deg, var(--wot-warning-main, #F59E0B), var(--wot-warning-4, #FCD34D));
+}
+
+.trend-row__total {
+  width: 34px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--wot-text-auxiliary, #6B7280);
+  font-variant-numeric: tabular-nums;
+}
+
+.trend-days {
+  display: flex;
+  gap: 3px;
+  margin-top: 6px;
+  padding-left: 68px;
+  padding-right: 44px;
+}
+
+.trend-days text {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--wot-text-auxiliary, #6B7280);
+  white-space: nowrap;
+}
+
 </style>

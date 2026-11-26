@@ -19,7 +19,6 @@ declare module 'vue' {
     PrivacyPopup: typeof import('./components/PrivacyPopup.vue')['default']
     SkeletonPage: typeof import('./components/SkeletonPage.vue')['default']
     StatusBadge: typeof import('./components/StatusBadge.vue')['default']
-    UniEcharts: typeof import('uni-echarts')['UniEcharts']
     WdActionSheet: typeof import('@wot-ui/ui/components/wd-action-sheet/wd-action-sheet.vue')['WdActionSheet']
     WdAvatar: typeof import('@wot-ui/ui/components/wd-avatar/wd-avatar.vue')['WdAvatar']
     WdBacktop: typeof import('@wot-ui/ui/components/wd-backtop/wd-backtop.vue')['WdBacktop']

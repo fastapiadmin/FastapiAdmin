@@ -107,7 +107,7 @@ export function useTheme() {
     followSystem: computed(() => store.followSystem),
     hasUserSet: computed(() => store.hasUserSet),
     currentThemeColor: computed(() => store.currentThemeColor),
-    themeVars: computed(() => store.themeVars),
+    themeVars: computed(() => ({ ...store.currentThemeColor.primaryShades })),
     showThemeColorSheet,
 
     // 常量
