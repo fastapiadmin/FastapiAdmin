@@ -95,7 +95,7 @@
   },
   "login": {
     "navTitle": "登录",
-    "cardTitle": "账号登录",
+    "cardTitle": "欢迎回来",
     "remember": "记住密码",
     "forgot": "忘记密码？",
     "submit": "登 录",
@@ -129,7 +129,8 @@
     "phoneCodeFailed": "手机号授权码获取失败",
     "puzzleText": "拖动滑块，使图块与缺口重合",
     "securityVerify": "安全验证",
-    "securityVerifyTip": "拖动滑块完成验证，验证通过后自动登录"
+    "securityVerifyTip": "拖动滑块完成验证，验证通过后自动登录",
+    "cardSubtitle": "登录后继续管理你的工作台"
   },
   "register": {
     "navTitle": "注册",

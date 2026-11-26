@@ -95,7 +95,7 @@
   },
   "login": {
     "navTitle": "Login",
-    "cardTitle": "Account Login",
+    "cardTitle": "Welcome back",
     "remember": "Remember me",
     "forgot": "Forgot password?",
     "submit": "Sign In",
@@ -129,7 +129,8 @@
     "phoneCodeFailed": "Failed to get phone number authorization code",
     "puzzleText": "Drag the slider to fit the piece into the gap",
     "securityVerify": "Security check",
-    "securityVerifyTip": "Drag the slider to verify, then sign in automatically"
+    "securityVerifyTip": "Drag the slider to verify, then sign in automatically",
+    "cardSubtitle": "Sign in to continue to your workspace"
   },
   "register": {
     "navTitle": "Register",

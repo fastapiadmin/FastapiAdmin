@@ -279,6 +279,9 @@ async function handleOAuth(provider: OAuthProvider) {
       <text class="login-card__title">
         {{ t('login.cardTitle') }}
       </text>
+      <text class="login-card__subtitle">
+        {{ t('login.cardSubtitle') }}
+      </text>
 
       <wd-form ref="loginFormRef" :model="loginFormData" :schema="loginSchema">
         <!-- Username — wot 原生 wd-input，前缀图标走 prefix-icon 属性 -->
@@ -501,7 +504,7 @@ async function handleOAuth(provider: OAuthProvider) {
   width: 100%;
   padding-top: 0;
   padding-bottom: 0;
-  margin-bottom: 20rpx;
+  margin-bottom: 24rpx;
   gap: 18rpx;
   flex-shrink: 0;
 
