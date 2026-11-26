@@ -83,3 +83,6 @@ backend/*.sql
 backend/sql/**/*.sql
 *.dump
 tmp
+
+# local release artifacts
+.release-assets/

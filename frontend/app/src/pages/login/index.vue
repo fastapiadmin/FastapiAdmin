@@ -263,25 +263,25 @@ async function handleOAuth(provider: OAuthProvider) {
 <template>
   <view class="login-page">
     <view class="login-shell">
-    <!-- Brand area -->
-    <view class="login-brand">
-      <image class="brand-logo" :src="brandLogo" mode="aspectFit" />
-      <view class="login-brand__text">
-        <text class="brand-title">
-          {{ brandTitle }}
-        </text>
-        <wd-text class="brand-subtitle" :text="brandSubtitle" />
-      </view>
-    </view>
-
     <!-- Form card -->
     <view class="login-card">
-      <text class="login-card__title">
-        {{ t('login.cardTitle') }}
-      </text>
-      <text class="login-card__subtitle">
-        {{ t('login.cardSubtitle') }}
-      </text>
+      <view class="login-brand">
+        <image class="brand-logo" :src="brandLogo" mode="aspectFit" />
+        <view class="login-brand__text">
+          <text class="brand-title">
+            {{ brandTitle }}
+          </text>
+          <wd-text class="brand-subtitle" :text="brandSubtitle" />
+        </view>
+      </view>
+      <view class="login-card__head">
+        <text class="login-card__title">
+          {{ t('login.cardTitle') }}
+        </text>
+        <text class="login-card__subtitle">
+          {{ t('login.cardSubtitle') }}
+        </text>
+      </view>
 
       <wd-form ref="loginFormRef" :model="loginFormData" :schema="loginSchema">
         <!-- Username — wot 原生 wd-input，前缀图标走 prefix-icon 属性 -->
@@ -289,6 +289,7 @@ async function handleOAuth(provider: OAuthProvider) {
         <wd-form-item prop="username" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
           <wd-input
             v-model="loginFormData.username"
+            custom-style="background: var(--wot-filled-bottom, #F7F8FA); border: 1rpx solid var(--wot-border-main, #E6E8EC); border-radius: 12rpx; box-shadow: none; box-sizing: border-box;"
             :aria-label="t('common.form.username')"
             :placeholder="t('common.form.usernamePlaceholder')"
             clearable
@@ -304,6 +305,7 @@ async function handleOAuth(provider: OAuthProvider) {
         <wd-form-item prop="password" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
           <wd-input
             v-model="loginFormData.password"
+            custom-style="background: var(--wot-filled-bottom, #F7F8FA); border: 1rpx solid var(--wot-border-main, #E6E8EC); border-radius: 12rpx; box-shadow: none; box-sizing: border-box;"
             :aria-label="t('common.form.password')"
             :placeholder="t('common.form.passwordPlaceholder')"
             clearable
@@ -471,13 +473,13 @@ async function handleOAuth(provider: OAuthProvider) {
 .login-page::before {
   top: -120rpx;
   right: -100rpx;
-  background: radial-gradient(circle, rgb(79 107 255 / 14%) 0%, rgb(79 107 255 / 0%) 70%);
+  background: radial-gradient(circle, rgb(79 107 255 / 18%) 0%, rgb(79 107 255 / 0%) 70%);
 }
 
 .login-page::after {
   bottom: -140rpx;
   left: -120rpx;
-  background: radial-gradient(circle, rgb(168 85 247 / 10%) 0%, rgb(168 85 247 / 0%) 70%);
+  background: radial-gradient(circle, rgb(168 85 247 / 14%) 0%, rgb(168 85 247 / 0%) 70%);
 }
 
 .login-shell {
@@ -504,7 +506,7 @@ async function handleOAuth(provider: OAuthProvider) {
   width: 100%;
   padding-top: 0;
   padding-bottom: 0;
-  margin-bottom: 24rpx;
+  margin-bottom: 22rpx;
   gap: 18rpx;
   flex-shrink: 0;
 
@@ -558,12 +560,12 @@ async function handleOAuth(provider: OAuthProvider) {
 .login-card {
   width: 100%;
   /* 亮色下默认带主题色最浅阶，避免一片纯白；--card-bg-color 可被外部覆盖 */
-  background: var(--card-bg-color, var(--wot-primary-1, #F5F8FF));
-  border-radius: var(--fa-radius-md, 24rpx);
-  padding: 24rpx;
+  background: var(--wot-bg-filled-content, #FFFFFF);
+  border-radius: var(--fa-radius-md, 20rpx);
+  padding: 28rpx 24rpx 24rpx;
   /* 与 Web 卡片一致：中性描边，不跟随主题色 */
-  border: 2rpx solid var(--fa-border, #E6E8EC);
-  box-shadow: var(--shadow-md, 0 8rpx 32rpx rgba(15, 23, 42, 0.04));
+  border: 1rpx solid var(--fa-border, #E6E8EC);
+  box-shadow: 0 20rpx 60rpx rgba(31, 45, 90, 0.10);
   margin-bottom: 12rpx;
   flex-shrink: 0;
 
@@ -598,12 +600,11 @@ async function handleOAuth(provider: OAuthProvider) {
   border-radius: var(--fa-radius-sm, 16rpx);
 }
 
-/* 输入框微调 — 圆角加大 + 主题色边框 + 轻阴影，从"方方正正"变"圆润悬浮" */
+/* 输入框 — 扁平浅灰底 + 细边框，不再用重阴影叠卡片 */
 :deep(.wd-input) {
-  border-radius: var(--fa-radius-sm, 16rpx);
-  /* 亮色下主题色浅阶边框与卡片边框呼应，白色底在淡色卡片上形成浮层 */
-  border: 2rpx solid var(--wot-primary-2, var(--wot-border-main, #EAECF0));
-  box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.05);
+  border-radius: 12rpx;
+  border: 1rpx solid var(--wot-border-main, #E6E8EC);
+  box-shadow: none;
 }
 
 /* H5 聚焦态：主题色描边 + 淡色光晕（MP 端不支持 :focus-within，跳过） */
