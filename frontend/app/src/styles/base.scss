@@ -82,6 +82,11 @@ page.wot-theme-light,
   min-height: calc(100vh - var(--window-top) - var(--tabbar-h, 50px));
 }
 
+/* tabbar 占位必须覆盖 tabbar 本体 + 安全区，否则滚动内容会从透明/安全区缝隙透出 */
+.tabbar-gap {
+  height: calc(var(--wot-tabbar-height, 50px) + env(safe-area-inset-bottom)) !important;
+}
+
 /* 中景亮斑呼吸层已移除：
    ::before 伪元素 top/bottom:-20% 溢出容器 + z-index:-1 + 半透明渐变，
    在容器边界外（tabbar 与内容区之间）叠出深色带/黑条。

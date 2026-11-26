@@ -462,7 +462,7 @@ function getGreeting() {
             <view class="stat-card__icon wot-bg-primary-6">
               <wd-icon name="user-group" size="18px" color="#FFFFFF" />
             </view>
-            <wd-count-to v-if="dashboardStats?.total_users != null" :end-val="dashboardStats.total_users" type="primary" custom-class="stat-count" />
+            <text v-if="dashboardStats?.total_users != null" class="stat-count wot-text-primary-6">{{ dashboardStats.total_users }}</text>
             <view v-else class="wot-text-text-main text-5 font-bold">
               -
             </view>
@@ -479,7 +479,7 @@ function getGreeting() {
             <view class="stat-card__icon wot-bg-success-main">
               <wd-icon name="eye" size="18px" color="#FFFFFF" />
             </view>
-            <wd-count-to v-if="dashboardStats?.online_users != null" :end-val="dashboardStats.online_users" type="success" custom-class="stat-count" />
+            <text v-if="dashboardStats?.online_users != null" class="stat-count wot-text-success-main">{{ dashboardStats.online_users }}</text>
             <view v-else class="wot-text-text-main text-5 font-bold">
               -
             </view>
@@ -496,7 +496,7 @@ function getGreeting() {
             <view class="stat-card__icon wot-bg-warning-main">
               <wd-icon name="clock-circle" size="18px" color="#FFFFFF" />
             </view>
-            <wd-count-to v-if="dashboardStats?.today_login_count != null" :end-val="dashboardStats.today_login_count" type="warning" custom-class="stat-count" />
+            <text v-if="dashboardStats?.today_login_count != null" class="stat-count wot-text-warning-main">{{ dashboardStats.today_login_count }}</text>
             <view v-else class="wot-text-text-main text-5 font-bold">
               -
             </view>
@@ -606,8 +606,8 @@ function getGreeting() {
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   }
 
-  /* 数字区域（count-to 输出文本，用类控制字号字重） */
-  :deep(.stat-count) {
+  /* 数字区域（直接输出数字，避免自定义组件在 MP 下渲染异常） */
+  .stat-count {
     font-size: 40rpx;
     font-weight: 700;
     line-height: 1.2;

@@ -42,11 +42,12 @@ export default {
   <slot />
   <wd-gap
     safe-area-bottom
-    height="var(--wot-tabbar-height, 50px)"
+    height="calc(var(--wot-tabbar-height, 50px) + env(safe-area-inset-bottom))"
     custom-class="tabbar-gap"
   />
   <wd-tabbar
     :model-value="activeTabbar.name" bordered safe-area-inset-bottom fixed
+    custom-style="background: var(--wot-tabbar-bg, #FFFFFF);"
     @change="handleTabbarChange"
   >
     <wd-tabbar-item
