@@ -33,7 +33,6 @@ declare module 'vue' {
     WdConfigProvider: typeof import('@wot-ui/ui/components/wd-config-provider/wd-config-provider.vue')['WdConfigProvider']
     WdCountTo: typeof import('@wot-ui/ui/components/wd-count-to/wd-count-to.vue')['WdCountTo']
     WdDialog: typeof import('@wot-ui/ui/components/wd-dialog/wd-dialog.vue')['WdDialog']
-    WdDivider: typeof import('@wot-ui/ui/components/wd-divider/wd-divider.vue')['WdDivider']
     WdDropMenu: typeof import('@wot-ui/ui/components/wd-drop-menu/wd-drop-menu.vue')['WdDropMenu']
     WdDropMenuItem: typeof import('@wot-ui/ui/components/wd-drop-menu-item/wd-drop-menu-item.vue')['WdDropMenuItem']
     WdEmpty: typeof import('@wot-ui/ui/components/wd-empty/wd-empty.vue')['WdEmpty']

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { FormSchema } from '@wot-ui/ui/components/wd-form/types'
 import type { CaptchaInfo, LoginFormData, OAuthProvider } from '@/api/module_system/auth'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AuthAPI from '@/api/module_system/auth'
@@ -11,7 +11,7 @@ import { useConfigStore } from '@/store/configStore'
 import { useUserStore } from '@/store/userStore'
 import { Storage } from '@/utils/storage'
 
-definePage({ name: 'login', style: { navigationBarTitleText: '登录' } })
+definePage({ name: 'login', style: { navigationBarTitleText: '登录', navigationBarTextStyle: 'white', navigationStyle: 'custom' } })
 useI18nNavTitle('login.navTitle')
 
 const { t } = useI18n()
@@ -176,6 +176,16 @@ onLoad((options) => {
   configStore.getConfig()
 })
 
+/**
+ * 自定义导航栏由页面承接状态栏：根组件 onShow 会按浅色主题把状态栏前景写成黑色，
+ * 这里在页面 onShow 再拉回白色，避免深色品牌区顶部出现黑字状态栏。
+ */
+onShow(() => {
+  // #ifndef H5
+  uni.setNavigationBarColor({ frontColor: '#ffffff', backgroundColor: '#3548C8' })
+  // #endif
+})
+
 /** 登录提交 — 字段验证 → 需要时弹出安全验证 → 自动登录 */
 async function handleSubmit() {
   if (loading.value)
@@ -262,133 +272,169 @@ async function handleOAuth(provider: OAuthProvider) {
 
 <template>
   <view class="login-page">
-    <view class="login-shell">
-    <!-- Form card -->
-    <view class="login-card">
-      <view class="login-brand">
-        <image class="brand-logo" :src="brandLogo" mode="aspectFit" />
-        <view class="login-brand__text">
-          <text class="brand-title">
-            {{ brandTitle }}
-          </text>
-          <wd-text class="brand-subtitle" :text="brandSubtitle" />
+    <!-- 品牌头部：从导航栏延续下来的满幅渐变，作为整页的构图起点 -->
+    <view class="login-hero">
+      <text class="login-hero__monogram" aria-hidden="true">F</text>
+      <view class="login-hero__brand">
+        <view class="brand-mark" aria-hidden="true">
+          <image class="brand-mark__logo" :src="brandLogo" mode="aspectFit" />
+        </view>
+        <view class="brand-copy">
+          <text class="brand-copy__name">{{ brandTitle }}</text>
+          <text class="brand-copy__line">{{ brandSubtitle }}</text>
         </view>
       </view>
-      <view class="login-card__head">
-        <text class="login-card__title">
-          {{ t('login.cardTitle') }}
-        </text>
-        <text class="login-card__subtitle">
-          {{ t('login.cardSubtitle') }}
-        </text>
+    </view>
+
+    <!-- 表单面板：白色圆角上沿轻轻叠在品牌区上，成为页面下半部的“纸面” -->
+    <view class="login-panel">
+      <view class="login-panel__head">
+        <text class="login-panel__title" aria-role="heading" aria-level="1">{{ t('login.cardTitle') }}</text>
+        <text class="login-panel__subtitle">{{ t('login.cardSubtitle') }}</text>
       </view>
 
-      <wd-form ref="loginFormRef" :model="loginFormData" :schema="loginSchema">
-        <!-- Username — wot 原生 wd-input，前缀图标走 prefix-icon 属性 -->
-        <text class="form-field-label">{{ t('common.form.username') }}</text>
-        <wd-form-item prop="username" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
-          <wd-input
-            v-model="loginFormData.username"
-            custom-style="background: var(--wot-filled-bottom, #F7F8FA); border: 1rpx solid var(--wot-border-main, #E6E8EC); border-radius: 12rpx; box-shadow: none; box-sizing: border-box;"
-            :aria-label="t('common.form.username')"
-            :placeholder="t('common.form.usernamePlaceholder')"
-            clearable
-            confirm-type="next"
-            :compact="false"
-            prefix-icon="user"
-            @confirm="handleSubmit"
-          />
-        </wd-form-item>
-
-        <!-- Password — show-password 自动启用密码可见性切换 -->
-        <text class="form-field-label">{{ t('common.form.password') }}</text>
-        <wd-form-item prop="password" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
-          <wd-input
-            v-model="loginFormData.password"
-            custom-style="background: var(--wot-filled-bottom, #F7F8FA); border: 1rpx solid var(--wot-border-main, #E6E8EC); border-radius: 12rpx; box-shadow: none; box-sizing: border-box;"
-            :aria-label="t('common.form.password')"
-            :placeholder="t('common.form.passwordPlaceholder')"
-            clearable
-            show-password
-            confirm-type="go"
-            :compact="false"
-            prefix-icon="lock"
-            @confirm="handleSubmit"
-          />
-        </wd-form-item>
-
-
-        <!-- 记住密码 + 忘记密码 -->
-        <view class="login-options">
-          <wd-checkbox v-model="loginFormData.remember" size="18px">
-            {{ t('login.remember') }}
-          </wd-checkbox>
-          <view
-            class="tap-target"
-            aria-role="button"
-            :aria-label="t('login.forgot')"
-            @click="goForget"
-          >
-            <wd-text class="forgot-link" :text="t('login.forgot')" type="primary" />
-          </view>
+      <wd-form ref="loginFormRef" :model="loginFormData" :schema="loginSchema" class="login-form">
+        <view class="form-field">
+          <text class="form-field__label">{{ t('common.form.username') }}</text>
+          <wd-form-item prop="username" title-width="0" custom-style="margin: 0; padding: 0;">
+            <wd-input
+              v-model="loginFormData.username"
+              :aria-label="t('common.form.username')"
+              :placeholder="t('common.form.usernamePlaceholder')"
+              clearable
+              confirm-type="next"
+              :compact="false"
+              prefix-icon="user"
+              @confirm="handleSubmit"
+            />
+          </wd-form-item>
         </view>
 
-        <!-- Submit -->
-        <wd-button
-          class="login-submit"
-          type="primary"
-          :loading="loading"
-          block
-          @click="handleSubmit"
-        >
-          {{ loading ? t('login.submitting') : t('login.submit') }}
-        </wd-button>
+        <view class="form-field form-field--last">
+          <text class="form-field__label">{{ t('common.form.password') }}</text>
+          <wd-form-item prop="password" title-width="0" custom-style="margin: 0; padding: 0;">
+            <wd-input
+              v-model="loginFormData.password"
+              :aria-label="t('common.form.password')"
+              :placeholder="t('common.form.passwordPlaceholder')"
+              clearable
+              show-password
+              confirm-type="go"
+              :compact="false"
+              prefix-icon="lock"
+              @confirm="handleSubmit"
+            />
+          </wd-form-item>
+        </view>
       </wd-form>
-    </view>
 
-    <!-- OAuth Login -->
-    <view class="oauth-section">
-      <wd-divider>{{ t('login.thirdParty') }}</wd-divider>
-      <wd-grid :column="4" clickable :gutter="10">
-        <!-- WeChat -->
-        <wd-grid-item aria-role="button" :aria-label="t('login.wechat')" @click="handleOAuth('wechat')">
-          <view class="oauth-btn__icon" style="background: #07C160">
-            <image class="oauth-btn__iconify" src="/static/icons/wechat.svg" />
+      <!-- 记住密码 + 忘记密码 -->
+      <view class="login-options">
+        <wd-checkbox v-model="loginFormData.remember" size="18px">
+          {{ t('login.remember') }}
+        </wd-checkbox>
+        <view
+          class="tap-target login-forgot"
+          aria-role="button"
+          :aria-label="t('login.forgot')"
+          tabindex="0"
+          @click="goForget"
+          @keyup.enter="goForget"
+        >
+          <text class="login-forgot__text">{{ t('login.forgot') }}</text>
+        </view>
+      </view>
+
+      <!-- 唯一主 CTA -->
+      <wd-button
+        class="login-submit"
+        type="primary"
+        :loading="loading"
+        block
+        @click="handleSubmit"
+      >
+        <text class="login-submit__text">{{ loading ? t('login.submitting') : t('login.submit') }}</text>
+      </wd-button>
+
+      <!-- 第三方登录：低饱和，不与主 CTA 抢层级 -->
+      <view class="login-oauth">
+        <view class="login-oauth__head">
+          <view class="login-oauth__rule" />
+          <text class="login-oauth__title">{{ t('login.thirdParty') }}</text>
+          <view class="login-oauth__rule" />
+        </view>
+        <view class="login-oauth__row">
+          <view
+            class="oauth-item"
+            hover-class="oauth-item--pressed"
+            aria-role="button"
+            :aria-label="t('login.wechat')"
+            tabindex="0"
+            @click="handleOAuth('wechat')"
+            @keyup.enter="handleOAuth('wechat')"
+          >
+            <view class="oauth-item__icon" style="background-color: #07C160">
+              <image class="oauth-item__img" src="/static/icons/wechat.svg" mode="aspectFit" />
+            </view>
+            <text class="oauth-item__label">{{ t('login.wechat') }}</text>
           </view>
-          <wd-text class="oauth-btn__label" :text="t('login.wechat')" />
-        </wd-grid-item>
-
-        <!-- QQ -->
-        <wd-grid-item aria-role="button" :aria-label="t('login.qq')" @click="handleOAuth('qq')">
-          <view class="oauth-btn__icon" style="background: #12B7F5">
-            <image class="oauth-btn__iconify" src="/static/icons/qq.svg" />
+          <view
+            class="oauth-item"
+            hover-class="oauth-item--pressed"
+            aria-role="button"
+            :aria-label="t('login.qq')"
+            tabindex="0"
+            @click="handleOAuth('qq')"
+            @keyup.enter="handleOAuth('qq')"
+          >
+            <view class="oauth-item__icon" style="background-color: #12B7F5">
+              <image class="oauth-item__img" src="/static/icons/qq.svg" mode="aspectFit" />
+            </view>
+            <text class="oauth-item__label">{{ t('login.qq') }}</text>
           </view>
-          <wd-text class="oauth-btn__label" :text="t('login.qq')" />
-        </wd-grid-item>
-
-        <!-- Gitee -->
-        <wd-grid-item aria-role="button" :aria-label="t('login.gitee')" @click="handleOAuth('gitee')">
-          <view class="oauth-btn__icon" style="background: #C71D23">
-            <image class="oauth-btn__iconify" src="/static/icons/gitee.svg" />
+          <view
+            class="oauth-item"
+            hover-class="oauth-item--pressed"
+            aria-role="button"
+            :aria-label="t('login.gitee')"
+            tabindex="0"
+            @click="handleOAuth('gitee')"
+            @keyup.enter="handleOAuth('gitee')"
+          >
+            <view class="oauth-item__icon" style="background-color: #C71D23">
+              <image class="oauth-item__img" src="/static/icons/gitee.svg" mode="aspectFit" />
+            </view>
+            <text class="oauth-item__label">{{ t('login.gitee') }}</text>
           </view>
-          <wd-text class="oauth-btn__label" :text="t('login.gitee')" />
-        </wd-grid-item>
-
-        <!-- GitHub -->
-        <wd-grid-item aria-role="button" :aria-label="t('login.github')" @click="handleOAuth('github')">
-          <view class="oauth-btn__icon" style="background: #24292F">
-            <image class="oauth-btn__iconify" src="/static/icons/github.svg" />
+          <view
+            class="oauth-item"
+            hover-class="oauth-item--pressed"
+            aria-role="button"
+            :aria-label="t('login.github')"
+            tabindex="0"
+            @click="handleOAuth('github')"
+            @keyup.enter="handleOAuth('github')"
+          >
+            <view class="oauth-item__icon" style="background-color: #24292F">
+              <image class="oauth-item__img" src="/static/icons/github.svg" mode="aspectFit" />
+            </view>
+            <text class="oauth-item__label">{{ t('login.github') }}</text>
           </view>
-          <wd-text class="oauth-btn__label" :text="t('login.github')" />
-        </wd-grid-item>
-      </wd-grid>
-    </view>
+        </view>
+      </view>
 
-    <!-- Footer -->
-    <view class="login-footer">
-      <wd-text class="login-footer__text" :text="t('login.noAccount')" />
-      <view class="tap-target" aria-role="button" :aria-label="t('login.toRegister')" @click="goRegister">
-        <wd-text class="login-footer__link" :text="t('login.toRegister')" type="primary" />
+      <view class="login-footer">
+        <text class="login-footer__text">{{ t('login.noAccount') }}</text>
+        <view
+          class="tap-target login-footer__link"
+          aria-role="button"
+          :aria-label="t('login.toRegister')"
+          tabindex="0"
+          @click="goRegister"
+          @keyup.enter="goRegister"
+        >
+          <text class="login-footer__link-text">{{ t('login.toRegister') }}</text>
+        </view>
       </view>
     </view>
 
@@ -397,9 +443,10 @@ async function handleOAuth(provider: OAuthProvider) {
       v-model="captchaVisible"
       position="bottom"
       :safe-area-inset-bottom="true"
-      custom-style="border-radius: 24rpx 24rpx 0 0; padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom));"
+      custom-style="border-radius: 28rpx 28rpx 0 0; padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom)); background: var(--wot-bg-filled-content, #FFFFFF);"
     >
       <view class="captcha-popup">
+        <view class="captcha-popup__grabber" aria-hidden="true" />
         <view class="captcha-popup__head">
           <view class="captcha-popup__titles">
             <text class="captcha-popup__title">{{ t('login.securityVerify') }}</text>
@@ -432,303 +479,483 @@ async function handleOAuth(provider: OAuthProvider) {
         />
       </view>
     </wd-popup>
-    </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
+/* ============================================================
+   登录页构图：品牌渐变头部（与导航栏同色，满幅） + 上叠的白色表单面板
+   所有高度预算按 390×844（自定义导航，整页 844px）校准，
+   一屏不滚动；小屏用 max-height 断点收紧，极矮屏才允许滚动。
+   ============================================================ */
 .login-page {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  /* H5 下 100vh 包含导航栏，使用uni-app的可用视口高度变量避免溢出 */
+  width: 100%;
+  /* 自定义导航栏：页面从屏幕最顶部开始，品牌区直接承接状态栏氛围 */
   /* #ifdef H5 */
-  height: calc(100vh - 44px);
+  height: 100vh;
+  height: 100dvh;
   /* #endif */
   /* #ifndef H5 */
   height: 100vh;
   /* #endif */
-  padding: 24rpx 64rpx 0;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  /* 接入全局水滴渐变（--drop-bg 由 App.vue 按主题色定义，暗色回退纯色由下方规则接管） */
-  background: var(--drop-bg, #F9F9F9);
   overflow-x: hidden;
   overflow-y: auto;
+  background: #FFFFFF;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
 }
 
-/* 背景光晕：不占布局，只给浅色登录页增加一点品牌氛围 */
-.login-page::before,
-.login-page::after {
-  position: absolute;
-  z-index: 0;
-  width: 320rpx;
-  height: 320rpx;
-  content: '';
-  pointer-events: none;
-  border-radius: 50%;
-}
-
-.login-page::before {
-  top: -120rpx;
-  right: -100rpx;
-  background: radial-gradient(circle, rgb(79 107 255 / 18%) 0%, rgb(79 107 255 / 0%) 70%);
-}
-
-.login-page::after {
-  bottom: -140rpx;
-  left: -120rpx;
-  background: radial-gradient(circle, rgb(168 85 247 / 14%) 0%, rgb(168 85 247 / 0%) 70%);
-}
-
-.login-shell {
+/* ===== Brand hero ===== */
+.login-hero {
   position: relative;
   z-index: 1;
+  flex: 0 0 276px;
+  width: 100%;
+  padding: 36px 24px 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  background-color: #3548C8;
+  background-image:
+    radial-gradient(70% 52% at 92% 88%, rgb(255 255 255 / 14%) 0%, rgb(255 255 255 / 0%) 66%),
+    linear-gradient(180deg, #3548C8 0%, #4155DE 62%, #6D5BFF 100%);
+
+  /* 品牌字母水印：只作为氛围，不承载信息 */
+  &__monogram {
+    position: absolute;
+    top: -18px;
+    right: -10px;
+    z-index: 0;
+    font-family: Inter, 'SF Pro Display', system-ui, sans-serif;
+    font-size: 212px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.08em;
+    color: rgb(255 255 255 / 7%);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__brand {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    max-width: 100%;
+    margin-top: 94px;
+    animation: login-brand-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  padding: 4px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border-radius: 18px;
+  box-shadow: 0 12px 26px rgb(23 32 90 / 28%);
+
+  &__logo {
+    display: block;
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+  }
+}
+
+.brand-copy {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin: auto 0;
-}
+  min-width: 0;
 
-/* 暗黑模式下整页背景变深，消除白色断层（wot 根类为 wot-theme-dark） */
-.wot-theme-dark .login-page {
-  @apply wot-bg-filled-bottom;
-}
-
-/* ===== Brand ===== */
-.login-brand {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-bottom: 22rpx;
-  gap: 18rpx;
-  flex-shrink: 0;
-
-  &__text {
-    display: flex;
-    flex-direction: column;
-    gap: 2rpx;
-    min-width: 0;
-  }
-
-  .brand-logo {
-    width: 80rpx;
-    height: 80rpx;
-    flex-shrink: 0;
-  }
-
-  .brand-title {
-    font-size: var(--font-xl, 40rpx);
-    line-height: 1.15;
+  &__name {
+    display: block;
+    overflow: hidden;
+    font-size: 23px;
     font-weight: 700;
-    /* 亮色下使用主题色渐变文字，品牌识别度更高（background-clip 不生效时回退主题主色） */
-    background: linear-gradient(135deg, var(--fa-brand-blue, #4F6BFF) 0%, var(--fa-brand-violet, #6D5BFF) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: var(--wot-primary-6, #1C64FD);
-
-    /* 暗黑模式下使用纯白，提升品牌标题醒目度 */
-    .wot-theme-dark & {
-      background: none;
-      -webkit-background-clip: initial;
-      background-clip: initial;
-      -webkit-text-fill-color: initial;
-      color: #FFFFFF;
-    }
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #FFFFFF;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .brand-subtitle {
-    font-size: var(--font-xs, 24rpx);
-    line-height: 1.3;
-    @apply wot-text-text-auxiliary;
-
-    /* 暗黑下提亮到 --text-color-2，避免 #9CA3AF 在深底上偏暗 */
-    .wot-theme-dark & {
-      @apply wot-text-text-secondary;
-    }
+  &__line {
+    display: -webkit-box;
+    overflow: hidden;
+    max-width: 210px;
+    margin-top: 5px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: rgb(255 255 255 / 92%);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    word-break: break-word;
   }
 }
 
-/* ===== Card（不再是毛玻璃，使用纯色背景 + 与页面背景形成层级差） ===== */
-.login-card {
+/* ===== Form sheet ===== */
+.login-panel {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   width: 100%;
-  /* 亮色下默认带主题色最浅阶，避免一片纯白；--card-bg-color 可被外部覆盖 */
-  background: var(--wot-bg-filled-content, #FFFFFF);
-  border-radius: var(--fa-radius-md, 20rpx);
-  padding: 28rpx 24rpx 24rpx;
-  /* 与 Web 卡片一致：中性描边，不跟随主题色 */
-  border: 1rpx solid var(--fa-border, #E6E8EC);
-  box-shadow: 0 20rpx 60rpx rgba(31, 45, 90, 0.10);
-  margin-bottom: 12rpx;
-  flex-shrink: 0;
+  min-height: 0;
+  margin-top: -26px;
+  padding: 26px 24px calc(14px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -12px 34px rgb(24 34 92 / 16%);
+  animation: login-panel-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 
-  /* 暗黑模式：卡片用深色 2 级，页面背景用深色 1 级，形成细微层级差 */
-  .wot-theme-dark & {
-    @apply wot-bg-filled-content;
-    border-color: var(--border-color, #2C2C2E);
-    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+  &__head {
+    flex-shrink: 0;
+    margin-bottom: 22px;
   }
 
   &__title {
     display: block;
-    font-size: var(--font-lg, 32rpx);
-    font-weight: 600;
-    @apply wot-text-text-main;
-    margin-bottom: 10rpx;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
 
-    /* 暗黑模式下使用纯白，提升卡片标题醒目度 */
-    .wot-theme-dark & {
-      color: #FFFFFF;
-    }
+  &__subtitle {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #5B6472;
   }
 }
 
-.login-submit :deep(.wd-button) {
-  border-radius: var(--fa-radius-sm, 16rpx);
-  height: 88rpx;
-  font-size: var(--font-md, 28rpx);
+/* 入场只做一次轻微上浮，避免登录页的第一帧是一次硬切换 */
+@keyframes login-brand-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.login-submit {
-  border-radius: var(--fa-radius-sm, 16rpx);
+@keyframes login-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* 输入框 — 扁平浅灰底 + 细边框，不再用重阴影叠卡片 */
-:deep(.wd-input) {
-  border-radius: 12rpx;
-  border: 1rpx solid var(--wot-border-main, #E6E8EC);
-  box-shadow: none;
+/* ===== Form fields ===== */
+.login-form {
+  flex-shrink: 0;
 }
 
-/* H5 聚焦态：主题色描边 + 淡色光晕（MP 端不支持 :focus-within，跳过） */
+.form-field {
+  margin-bottom: 14px;
+
+  &--last {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    display: block;
+    margin: 0 0 6px 2px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    color: #4B5563;
+  }
+}
+
+/* 去掉 wd-form-item 的 cell 外壳，让输入框直接落在面板网格上 */
+.login-form :deep(.wd-form-item) {
+  margin: 0;
+  padding: 0;
+}
+
+.login-form :deep(.wd-form-item .wd-cell) {
+  --wot-cell-bg: transparent;
+
+  padding: 0;
+}
+
+/* MP 端插槽静态判定会渲染空 left 列，隐藏后输入框才能满宽 */
+.login-form :deep(.wd-form-item .wd-cell__left) {
+  display: none;
+}
+
+.login-form :deep(.wd-form-item .wd-cell__right) {
+  flex: 1;
+  min-width: 0;
+}
+
+.login-form :deep(.wd-form-item .wd-cell__value) {
+  width: 100%;
+}
+
+.login-form :deep(.wd-form-item__error-message) {
+  margin: 5px 0 0 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #D92D20;
+}
+
+/* 输入框：软色块 + 无边框，聚焦时出现品牌描边，触控高度 50px */
+.login-form :deep(.wd-input) {
+  --wot-input-bg: transparent;
+  --wot-input-inner-height: 24px;
+  --wot-input-inner-font-size: 15px;
+  --wot-input-inner-color: #111827;
+  --wot-input-inner-placeholder-color: #5B6472;
+  --wot-input-icon-color: #6B7280;
+  --wot-input-icon-font-size: 18px;
+  --wot-input-icon-margin: 10px;
+
+  height: 50px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  background: #F4F6FB;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.login-form :deep(.wd-input__prefix) {
+  color: #4F6BFF;
+}
+
+.login-form :deep(.wd-input__prefix .wd-input__icon) {
+  color: #4F6BFF;
+}
+
+.login-form :deep(.wd-input__inner) {
+  caret-color: #4F6BFF;
+}
+
+/* 密码可见 / 清空图标：视觉保持 18px，点击热区扩到 44px；
+   -8px 让图标视觉中心仍贴近输入框右侧，不因热区变大而显得内缩 */
+.login-form :deep(.wd-input__suffix) {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  min-height: 44px;
+  margin-right: -8px;
+}
+
+.login-form :deep(.wd-input__suffix .wd-input__icon),
+.login-form :deep(.wd-input__clear) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+}
+
 /* #ifdef H5 */
-:deep(.wd-input:focus-within) {
-  border-color: var(--wot-primary-6, #1C64FD);
-  box-shadow: 0 0 0 4rpx var(--wot-primary-1, #F5F8FF);
+.login-form :deep(.wd-input:focus-within) {
+  background: #FFFFFF;
+  border-color: #4F6BFF;
+  box-shadow: 0 0 0 3px rgb(79 107 255 / 12%);
 }
 /* #endif */
 
-/* cell 容器回归透明：亮色下消除输入框外围的白色方形区域，暗色下消除纯黑块，
-   让自带圆角+边框的输入框直接显示在卡片上 */
-:deep(.wd-cell) {
-  --wot-cell-bg: transparent;
-}
-
-/* 滑块验证 — 滑块按钮默认纯白（filled-oppo）在浅灰轨道上不明显；同时整个滑块行
-   默认浅灰底在淡主题色卡片上也几乎隐形，只有拖动时才变色。
-   统一改为与输入框一致的"白底 + 主题色边框 + 轻阴影"浮层语言，静态即可见 */
-:deep(.wd-slide-verify) {
-  /* 整行容器：白底替代浅灰轨道，静态可见 */
-  --wot-slide-verify-bg: #FFFFFF;
-  /* 滑块按钮：主题色描边 + 图标，白底保留 */
-  --wot-slide-verify-button-bg: #FFFFFF;
-  --wot-slide-verify-button-border-color: var(--wot-primary-6, #1C64FD);
-  --wot-slide-verify-button-color: var(--wot-primary-6, #1C64FD);
-  --wot-slide-verify-button-shadow: 0 4rpx 12rpx rgba(15, 23, 42, 0.12);
-  /* 与输入框呼应的边框 + 浮层阴影 */
-  overflow: hidden;
-  border: 2rpx solid var(--wot-primary-2, var(--wot-border-main, #EAECF0));
-  border-radius: var(--fa-radius-sm, 16rpx);
-  box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.05);
-}
-
-/* 成功文案默认隐藏：Wot 初始轨道宽度不为 0 时会从滑块两侧漏出 */
-:deep(.wd-slide-verify__track-text) {
-  opacity: 0;
-}
-
-:deep(.wd-slide-verify.is-success .wd-slide-verify__track-text) {
-  opacity: 1;
-}
-
-.wot-theme-dark .login-page :deep(.wd-input) {
-  /* 比卡片背景（filled-content）亮一档，输入框在暗色卡片上凸起有层次 */
-  --wot-input-bg: var(--wot-coolgrey-8, var(--wot-filled-content));
-  border-color: var(--wot-border-main, #2C2C2E);
-  box-shadow: none;
-}
-
-.wot-theme-dark .login-page :deep(.wd-slide-verify) {
-  /* 滑块行与按钮：默认纯黑（filled-oppo）/纯黑轨道在暗色下均不可见，
-     统一改亮一档底色 + 主题色描边/图标，与输入框的暗色浮层语言一致 */
-  --wot-slide-verify-bg: var(--wot-coolgrey-8, var(--wot-filled-content));
-  --wot-slide-verify-button-bg: var(--wot-coolgrey-8, var(--wot-filled-content));
-  --wot-slide-verify-button-border-color: var(--wot-primary-5, #4480FF);
-  --wot-slide-verify-button-color: var(--wot-primary-5, #4480FF);
-  --wot-slide-verify-button-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.4);
-  border-color: var(--wot-border-main, #2C2C2E);
-  box-shadow: none;
-}
-
-:deep(.wd-form-item) {
-  margin-bottom: 14rpx;
-  /* 去掉 wd-cell 自带左右内边距，使输入框/滑块与登录按钮同宽 */
-  padding-left: 0;
-  padding-right: 0;
-}
-
-/* ===== 记住密码 + 忘记密码 ===== */
+/* ===== Remember / Forgot ===== */
 .login-options {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8rpx;
-}
-
-.forgot-link {
-  font-size: var(--font-md, 28rpx);
-}
-
-/* ===== OAuth Section ===== */
-.oauth-section {
-  width: 100%;
-  margin-top: 0;
+  min-height: 44px;
+  margin: 2px 0 14px;
   flex-shrink: 0;
 
-  :deep(.wd-divider) {
-    margin: 8rpx 0;
-  }
+  :deep(.wd-checkbox) {
+    --wot-checkbox-icon-size: 18px;
+    --wot-checkbox-label-font-size: 13px;
+    --wot-checkbox-label-color: #4B5563;
+    --wot-checkbox-label-margin: 8px;
+    --wot-checkbox-unchecked-color: #6B7280;
 
-  /* 去掉宫格项默认填充背景，仅保留图标/文字与轻量点击反馈 */
-  :deep(.wd-grid-item) {
-    --wot-grid-item-bg: transparent;
-  }
-}
-
-/* ===== 微信一键登录区域 ===== */
-.wx-login-section {
-  margin-bottom: 16rpx;
-
-  :deep(.wd-button) {
-    height: 88rpx;
-    font-size: 30rpx;
+    min-height: 44px;
   }
 }
 
-.oauth-btn__icon {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 30rpx;
+.login-forgot {
+  margin-right: -8px;
+
+  &__text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3D55E0;
+  }
+}
+
+/* ===== Primary CTA ===== */
+.login-submit {
+  flex-shrink: 0;
+  margin-bottom: 18px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 52px;
+  padding: 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #4055E6 0%, #5A49E0 100%);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgb(64 85 230 / 26%);
 }
 
-.oauth-btn__iconify {
-  width: 40rpx;
-  height: 40rpx;
+.login-submit__text {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-.oauth-btn__label {
-  font-size: 22rpx;
-  @apply wot-text-text-auxiliary;
+.login-submit.wd-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #4055E6 0%, #5A49E0 100%);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgb(64 85 230 / 26%);
+}
+
+.login-submit:active {
+  background: linear-gradient(135deg, #3448D0 0%, #4B3BC8 100%);
+  box-shadow: 0 6px 16px rgb(64 85 230 / 22%);
+}
+
+/* H5 键盘焦点：登录页的辅助入口也要有可见焦点 */
+/* #ifdef H5 */
+.login-submit:focus-visible {
+  outline: 2px solid #1B2559;
+  outline-offset: 3px;
+}
+
+.tap-target:focus-visible,
+.oauth-item:focus-visible {
+  outline: 2px solid var(--fa-brand-blue, #4F6BFF);
+  outline-offset: 2px;
+}
+/* #endif */
+
+/* ===== Third-party ===== */
+.login-oauth {
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__rule {
+    flex: 1;
+    height: 1px;
+    background: #ECEEF3;
+  }
+
+  &__title {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.04em;
+    color: #5B6472;
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+}
+
+.oauth-item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 2px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  transition: opacity 0.15s ease;
+
+  &--pressed {
+    opacity: 0.62;
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+
+  &__img {
+    display: block;
+    width: 22px;
+    height: 22px;
+  }
+
+  &__label {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 16px;
+    color: #5B6472;
+  }
 }
 
 /* ===== Footer ===== */
@@ -737,70 +964,341 @@ async function handleOAuth(provider: OAuthProvider) {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  padding: 4rpx 0 0;
+  gap: 2px;
+  min-height: 44px;
+  margin-top: auto;
   flex-shrink: 0;
 
   &__text {
-    font-size: var(--font-xs, 24rpx);
-    @apply wot-text-text-auxiliary;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #5B6472;
   }
 
   &__link {
-    font-size: var(--font-xs, 24rpx);
+    margin-right: -8px;
+
+    &-text {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #3D55E0;
+    }
   }
 }
 
-/* MP 端兼容：wd-form-item 内部 wd-cell 因 uni-app 插槽静态声明（u-s）误判 label/title 插槽被使用，
-   showLeft=true 渲染空 left 区域（flex:1 占半宽），H5 端运行时插槽判定无此问题。
-   本页 form-item 无 title/label/prefix 内容，隐藏 left 安全，保证输入框与登录按钮同宽 */
-.login-card :deep(.wd-form-item .wd-cell__left) {
-  display: none;
+/* ===== Dark mode ===== */
+.wot-theme-dark .login-page {
+  background: #101216;
 }
 
-/* 紧凑登录：表单行距与验证码高度收紧，保证 390×844 一屏放得下 */
-.login-card :deep(.wd-form-item) {
-  margin-bottom: 8rpx;
+.wot-theme-dark .login-panel {
+  background: #15181E;
+  box-shadow: 0 -12px 34px rgb(0 0 0 / 42%);
+
+  .login-panel__title {
+    color: #F3F4F6;
+  }
+
+  .login-panel__subtitle {
+    color: #A3AAB8;
+  }
+}
+
+.wot-theme-dark .form-field__label {
+  color: #A3AAB8;
+}
+
+.wot-theme-dark .login-form :deep(.wd-input) {
+  --wot-input-inner-color: #F3F4F6;
+  --wot-input-inner-placeholder-color: #8B93A1;
+
+  background: #1D222B;
+  border-color: #262B34;
+}
+
+/* #ifdef H5 */
+.wot-theme-dark .login-form :deep(.wd-input:focus-within) {
+  background: #1A2029;
+  border-color: #6D8BFF;
+  box-shadow: 0 0 0 3px rgb(109 139 255 / 16%);
+}
+/* #endif */
+
+.wot-theme-dark .login-options :deep(.wd-checkbox) {
+  --wot-checkbox-label-color: #A3AAB8;
+  --wot-checkbox-unchecked-color: #8A94A6;
+}
+
+/* 暗色下默认错误红 #D92D20 在 #15181E 上只有 3.68:1，提到 AA */
+.wot-theme-dark .login-form :deep(.wd-form-item__error-message) {
+  color: #FF8A80;
+}
+
+.wot-theme-dark .login-forgot__text,
+.wot-theme-dark .login-footer__link-text {
+  color: #9BB0FF;
+}
+
+.wot-theme-dark .login-oauth__rule {
+  background: #262B34;
+}
+
+.wot-theme-dark .login-oauth__title,
+.wot-theme-dark .oauth-item__label,
+.wot-theme-dark .login-footer__text {
+  color: #A3AAB8;
+}
+
+/* GitHub 的深色圆在暗色面板上容易和背景融在一起，加一圈极淡的内描边 */
+.wot-theme-dark .oauth-item__icon {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+}
+
+/* ===== 小屏收紧（高度断点，不改横向布局） ===== */
+@media (max-height: 820px) {
+  .login-hero {
+    flex-basis: 246px;
+    padding-top: 28px;
+  }
+
+  .login-hero__brand {
+    margin-top: 84px;
+  }
+
+  .login-hero__monogram {
+    font-size: 188px;
+  }
+
+  .login-panel {
+    margin-top: -22px;
+    padding-top: 22px;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .login-panel__head {
+    margin-bottom: 18px;
+  }
+
+  .login-panel__title {
+    font-size: 24px;
+  }
+
+  .form-field {
+    margin-bottom: 10px;
+  }
+
+  .login-form :deep(.wd-input) {
+    height: 48px;
+  }
+
+  .login-options {
+    margin-bottom: 10px;
+  }
+
+  .login-submit {
+    margin-bottom: 14px;
+  }
+
+  .login-oauth__row {
+    margin-top: 8px;
+  }
+
+  .oauth-item__icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-height: 800px) {
+  .login-hero {
+    flex-basis: 208px;
+    padding-top: 20px;
+  }
+
+  .login-hero__brand {
+    margin-top: 60px;
+  }
+
+  .brand-mark {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+  }
+
+  .brand-mark__logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .brand-copy__name {
+    font-size: 21px;
+  }
+
+  .login-panel {
+    margin-top: -20px;
+    padding-top: 20px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .login-panel__title {
+    font-size: 23px;
+  }
+
+  .login-panel__head {
+    margin-bottom: 12px;
+  }
+
+  .login-panel__subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .login-form :deep(.wd-input) {
+    height: 46px;
+  }
+
+  .login-options {
+    margin-bottom: 8px;
+  }
+
+  .login-submit {
+    margin-bottom: 12px;
+  }
+
+  .login-submit.wd-button {
+    height: 50px;
+  }
+
+  .login-oauth__row {
+    margin-top: 6px;
+  }
+
+  .login-oauth__head {
+    gap: 10px;
+  }
+
+  .oauth-item__icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .oauth-item__label {
+    margin-top: 4px;
+  }
+}
+
+/* 极矮屏（<600px）不再硬挤：允许页面自然滚动，保证元素不被压扁 */
+@media (max-height: 600px) {
+  .login-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .login-hero {
+    flex: 0 0 198px;
+  }
+}
+
+/* H5 桌面/平板：保留移动端构图，不把 390 的纸面拉成整屏表单 */
+@media (min-width: 600px) {
+  .login-page {
+    width: 430px;
+    height: 844px;
+    max-height: 100vh;
+    /* 用 top 位移而不是上下 margin：避免 margin 折叠把 body 整体顶下去，产生 28px 多余滚动 */
+    margin: 0 auto;
+    top: max(0px, calc((100vh - 844px) / 2));
+    border-radius: 28px;
+    box-shadow:
+      0 0 0 1px rgb(17 24 39 / 6%),
+      0 0 0 100vmax #EEF2FB;
+  }
+
+  .login-hero {
+    border-radius: 28px 28px 0 0;
+  }
+
+  .wot-theme-dark .login-page {
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 8%),
+      0 0 0 100vmax #090B0F;
+  }
+}
+
+/* 动效尊重系统偏好；关闭后页面仍以最终态直接出现 */
+@media (prefers-reduced-motion: reduce) {
+  .login-hero__brand,
+  .login-panel {
+    animation: none;
+  }
 }
 
 /* 安全验证弹层 */
 .captcha-popup {
   width: 100%;
-  padding-top: 4rpx;
+  padding-top: 2px;
+
+  &__grabber {
+    width: 36px;
+    height: 4px;
+    margin: 0 auto 16px;
+    background: #E6E8EC;
+    border-radius: 999px;
+  }
 
   &__head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16rpx;
-    margin-bottom: 12rpx;
+    gap: 16px;
+    margin-bottom: 12px;
   }
 
   &__titles {
     display: flex;
     flex-direction: column;
-    gap: 4rpx;
+    gap: 4px;
     min-width: 0;
   }
 
   &__title {
-    font-size: var(--font-lg, 32rpx);
+    font-size: 19px;
     font-weight: 600;
-    @apply wot-text-text-main;
+    line-height: 1.35;
+    color: #111827;
   }
 
   &__tip {
-    font-size: var(--font-xs, 24rpx);
-    @apply wot-text-text-auxiliary;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #5B6472;
   }
 
   &__close {
-    margin: -8rpx -8rpx 0 0;
-    color: var(--wot-text-auxiliary);
+    margin: -10px -8px 0 0;
+    color: #5B6472;
   }
 
   :deep(.fa-puzzle) {
-    margin: 4rpx auto 0;
+    margin: 4px auto 0;
+  }
+}
+
+.wot-theme-dark .captcha-popup {
+  &__grabber {
+    background: #2C313A;
+  }
+
+  &__title {
+    color: #F3F4F6;
+  }
+
+  &__tip,
+  &__close {
+    color: #A3AAB8;
   }
 }
 </style>
