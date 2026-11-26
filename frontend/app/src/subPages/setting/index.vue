@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { useGlobalDialog } from '@/composables/useGlobalDialog'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
 import {
@@ -152,7 +153,7 @@ function handleNavigate(url: string) {
     showToast: false,
     success: () => {
       uni.hideToast()
-      showSuccess({ msg: t('setting.copied', { url }) })
+      showSuccess({ msg: formatMessage(t, 'setting.copied', { url }) })
     },
   })
   // #endif

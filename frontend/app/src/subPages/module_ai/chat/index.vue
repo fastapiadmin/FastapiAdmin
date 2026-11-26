@@ -3,6 +3,7 @@ import type { ChatMessage, ChatSession } from '@/api/module_ai/chat'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { ChatAPI } from '@/api/module_ai/chat'
 import { useAiChat } from '@/composables/useAiChat'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
@@ -103,7 +104,7 @@ async function createSession() {
 
 async function selectSession(id: number, title?: string) {
   currentSession.value = id
-  currentTitle.value = title || t('chat.sessionId', { id })
+  currentTitle.value = title || formatMessage(t, 'chat.sessionId', { id })
   showSessions.value = false
   loading.value = true
   messagesError.value = false
@@ -302,7 +303,7 @@ onLoad(() => {
       <!-- 窗口化渲染：仅渲染最近 N 条消息，支持加载更早消息 -->
       <view v-if="!messagesError && hasOlderMessages" style="padding:16rpx 0;text-align:center;">
         <wd-button size="small" variant="plain" @click="loadOlderMessages">
-          {{ t('chat.loadMore', { count: messages.length - visibleMessages.length }) }}
+          {{ formatMessage(t, 'chat.loadMore', { count: messages.length - visibleMessages.length }) }}
         </wd-button>
       </view>
       <template v-if="!messagesError">

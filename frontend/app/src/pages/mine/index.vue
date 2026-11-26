@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { PasswordChangeForm } from '@/api/module_system/user'
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import UserAPI from '@/api/module_system/user'
 import { useGlobalDialog } from '@/composables/useGlobalDialog'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
@@ -20,7 +21,7 @@ const identityText = computed(() => {
 })
 
 useShare(() => ({
-  title: t('mine.shareTitle', { name: userInfo.value?.name || t('common.admin') }),
+  title: formatMessage(t, 'mine.shareTitle', { name: userInfo.value?.name || t('common.admin') }),
   path: '/pages/index/index',
 }))
 

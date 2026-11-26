@@ -3,6 +3,7 @@ import type { AIModelConfig, AIModelForm } from '@/api/module_ai/chat'
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { ChatAPI } from '@/api/module_ai/chat'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
 
@@ -165,7 +166,7 @@ onLoad(() => {
       <view class="mx-4">
         <wd-empty v-if="!loading && models.length === 0" :tip="t('aiModels.empty')" />
         <wd-cell-group v-else border custom-class="rounded-3! overflow-hidden">
-          <wd-cell :title="t('aiModels.groupTitle')" :value="t('aiModels.count', { count: models.length })" border />
+          <wd-cell :title="t('aiModels.groupTitle')" :value="formatMessage(t, 'aiModels.count', { count: models.length })" border />
           <wd-cell v-for="model in models" :key="model.config_id" center>
             <template #title>
               <wd-text class="wot-text-text-main truncate text-3.5 font-medium" :text="model.name || t('aiModels.unnamed')" />

@@ -11,6 +11,7 @@ import { LegacyGridContainLabel } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { DashboardAPI } from '@/api/module_monitor/dashboard'
 import { NoticeAPI } from '@/api/module_system/notice'
 import { TicketAPI } from '@/api/module_system/ticket'
@@ -33,7 +34,7 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 useShare(() => ({
-  title: t('index.shareTitle', { greeting: t(`index.${getGreeting()}`), name: userStore.userInfo?.name || t('common.admin') }),
+  title: formatMessage(t, 'index.shareTitle', { greeting: t(`index.${getGreeting()}`), name: userStore.userInfo?.name || t('common.admin') }),
   path: '/pages/index/index',
 }))
 
@@ -152,7 +153,7 @@ const banners = computed<BannerItem[]>(() => [
     key: 'ticket',
     tag: t('index.todo'),
     cls: pendingTickets.value > 0 ? 'banner-slide--ticket' : 'banner-slide--ticket-empty',
-    title: pendingTickets.value > 0 ? t('index.pendingCount', { count: pendingTickets.value }) : t('index.allDone'),
+    title: pendingTickets.value > 0 ? formatMessage(t, 'index.pendingCount', { count: pendingTickets.value }) : t('index.allDone'),
     subtitle: pendingTickets.value > 0 ? t('index.todoSubtitle') : t('index.doneSubtitle'),
     desc: t('index.ticketDesc'),
     cta: pendingTickets.value > 0 ? t('index.goHandle') : t('index.viewTickets'),
@@ -164,7 +165,7 @@ const banners = computed<BannerItem[]>(() => [
     cls: 'banner-slide--stats',
     title: t('index.dataTitle'),
     subtitle: t('index.dataSubtitle'),
-    desc: t('index.dataDesc', {
+    desc: formatMessage(t, 'index.dataDesc', {
       total: dashboardStats.value?.total_users ?? '-',
       online: dashboardStats.value?.online_users ?? '-',
       today: dashboardStats.value?.today_login_count ?? '-',
@@ -496,7 +497,7 @@ function getGreeting() {
               {{ t('index.registered') }}
             </view>
             <view class="wot-text-text-auxiliary mt-0.5 text-3">
-              {{ t('index.weekNew', { count: dashboardStats?.week_user_created ?? 0 }) }}
+              {{ formatMessage(t, 'index.weekNew', { count: dashboardStats?.week_user_created ?? 0 }) }}
             </view>
           </view>
         </wd-col>
@@ -530,7 +531,7 @@ function getGreeting() {
               {{ t('index.todayLogin') }}
             </view>
             <view class="wot-text-text-auxiliary mt-0.5 text-3">
-              {{ t('index.independentUser', { count: dashboardStats?.today_unique_users ?? 0 }) }}
+              {{ formatMessage(t, 'index.independentUser', { count: dashboardStats?.today_unique_users ?? 0 }) }}
             </view>
           </view>
         </wd-col>

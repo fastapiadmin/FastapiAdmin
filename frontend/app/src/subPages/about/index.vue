@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
 import { useConfigStore } from '@/store/configStore'
 
@@ -57,7 +58,7 @@ function handleNavigate(url: string) {
           {{ sysName }}
         </view>
         <view v-if="version" class="wot-text-text-secondary mb-2 text-3.5">
-          {{ t('about.currentVersion', { version }) }}
+          {{ formatMessage(t, 'about.currentVersion', { version }) }}
         </view>
         <view v-if="loginSubtitle" class="wot-text-text-secondary text-3 leading-relaxed">
           {{ loginSubtitle }}

@@ -3,6 +3,7 @@ import type { NoticeForm, NoticeItem } from '@/api/module_system/notice'
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
 import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { NoticeAPI } from '@/api/module_system/notice'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
 
@@ -193,9 +194,9 @@ onLoad(() => {
 
     <!-- 列表头部：总数 -->
     <view class="mx-4 mb-2 mt-3 flex items-center justify-between px-1">
-      <wd-text class="wot-text-text-secondary text-3" :text="t('notices.count', { count: total })" />
+      <wd-text class="wot-text-text-secondary text-3" :text="formatMessage(t, 'notices.count', { count: total })" />
       <view v-if="unreadCount > 0" class="flex items-center gap-3">
-        <wd-text class="wot-text-danger-main text-3" :text="t('notices.unreadCount', { count: unreadCount })" />
+        <wd-text class="wot-text-danger-main text-3" :text="formatMessage(t, 'notices.unreadCount', { count: unreadCount })" />
         <view class="tap-target" aria-role="button" :aria-label="t('notices.markAllRead')" @click="markAllRead">
           <wd-text class="wot-text-primary-6 text-3" :text="t('notices.markAllRead')" />
         </view>

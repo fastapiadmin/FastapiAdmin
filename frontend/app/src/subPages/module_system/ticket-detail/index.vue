@@ -3,6 +3,7 @@ import type { TicketComment, TicketItem } from '@/api/module_system/ticket'
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
 import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatMessage } from '@/locales/format'
 import { TicketAPI } from '@/api/module_system/ticket'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
 import { useShare } from '@/composables/useShare'
@@ -13,7 +14,7 @@ const ticket = ref<TicketItem | null>(null)
 const ticketId = ref(0)
 
 useShare(() => ({
-  title: ticket.value ? t('ticketDetail.shareTitle', { title: ticket.value.title }) : t('ticketDetail.title'),
+  title: ticket.value ? formatMessage(t, 'ticketDetail.shareTitle', { title: ticket.value.title ?? '' }) : t('ticketDetail.title'),
   path: `/subPages/module_system/ticket-detail/index?id=${ticketId.value}`,
 }))
 
@@ -257,7 +258,7 @@ onLoad((options) => {
 
       <!-- Comments -->
       <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
-        <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.comments', { count: commentTotal })" bold />
+        <wd-text class="wot-text-text-main block text-3.5" :text="formatMessage(t, 'ticketDetail.comments', { count: commentTotal })" bold />
         <view class="mt-3">
           <wd-loading v-if="commentsLoading && comments.length === 0" size="20px" class="mx-auto my-4 block" />
           <view v-else-if="commentsError" class="flex flex-col items-center gap-2 py-4">
