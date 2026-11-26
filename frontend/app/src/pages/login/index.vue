@@ -251,10 +251,12 @@ async function handleOAuth(provider: OAuthProvider) {
     <!-- Brand area -->
     <view class="login-brand">
       <image class="brand-logo" :src="brandLogo" mode="aspectFit" />
-      <text class="brand-title">
-        {{ brandTitle }}
-      </text>
-      <wd-text class="brand-subtitle" :text="brandSubtitle" />
+      <view class="login-brand__text">
+        <text class="brand-title">
+          {{ brandTitle }}
+        </text>
+        <wd-text class="brand-subtitle" :text="brandSubtitle" />
+      </view>
     </view>
 
     <!-- Form card -->
@@ -403,8 +405,8 @@ async function handleOAuth(provider: OAuthProvider) {
   /* #ifndef H5 */
   height: 100vh;
   /* #endif */
-  padding: 40rpx 64rpx 0;
-  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+  padding: 24rpx 64rpx 0;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
   /* 接入全局水滴渐变（--drop-bg 由 App.vue 按主题色定义，暗色回退纯色由下方规则接管） */
   background: var(--drop-bg, #F9F9F9);
   overflow-x: hidden;
@@ -420,20 +422,31 @@ async function handleOAuth(provider: OAuthProvider) {
 /* ===== Brand ===== */
 .login-brand {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding-top: 48rpx;
-  padding-bottom: 32rpx;
-  gap: 10rpx;
+  justify-content: flex-start;
+  width: 100%;
+  padding-top: 8rpx;
+  padding-bottom: 16rpx;
+  gap: 20rpx;
   flex-shrink: 0;
 
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2rpx;
+    min-width: 0;
+  }
+
   .brand-logo {
-    width: 104rpx;
-    height: 104rpx;
+    width: 80rpx;
+    height: 80rpx;
+    flex-shrink: 0;
   }
 
   .brand-title {
-    font-size: var(--font-3xl, 48rpx);
+    font-size: var(--font-xl, 40rpx);
+    line-height: 1.15;
     font-weight: 700;
     /* 亮色下使用主题色渐变文字，品牌识别度更高（background-clip 不生效时回退主题主色） */
     background: linear-gradient(135deg, var(--fa-brand-blue, #4F6BFF) 0%, var(--fa-brand-violet, #6D5BFF) 100%);
@@ -453,7 +466,8 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   .brand-subtitle {
-    font-size: var(--font-md, 28rpx);
+    font-size: var(--font-xs, 24rpx);
+    line-height: 1.3;
     @apply wot-text-text-auxiliary;
 
     /* 暗黑下提亮到 --text-color-2，避免 #9CA3AF 在深底上偏暗 */
@@ -469,7 +483,7 @@ async function handleOAuth(provider: OAuthProvider) {
   /* 亮色下默认带主题色最浅阶，避免一片纯白；--card-bg-color 可被外部覆盖 */
   background: var(--card-bg-color, var(--wot-primary-1, #F5F8FF));
   border-radius: var(--fa-radius-md, 24rpx);
-  padding: 32rpx;
+  padding: 24rpx;
   /* 与 Web 卡片一致：中性描边，不跟随主题色 */
   border: 2rpx solid var(--fa-border, #E6E8EC);
   box-shadow: var(--shadow-md, 0 8rpx 32rpx rgba(15, 23, 42, 0.04));
@@ -485,10 +499,10 @@ async function handleOAuth(provider: OAuthProvider) {
 
   &__title {
     display: block;
-    font-size: var(--font-xl, 36rpx);
+    font-size: var(--font-lg, 32rpx);
     font-weight: 600;
     @apply wot-text-text-main;
-    margin-bottom: 18rpx;
+    margin-bottom: 10rpx;
 
     /* 暗黑模式下使用纯白，提升卡片标题醒目度 */
     .wot-theme-dark & {
@@ -499,6 +513,8 @@ async function handleOAuth(provider: OAuthProvider) {
 
 .login-submit :deep(.wd-button) {
   border-radius: var(--fa-radius-sm, 16rpx);
+  height: 88rpx;
+  font-size: var(--font-md, 28rpx);
 }
 
 .login-submit {
@@ -585,7 +601,7 @@ async function handleOAuth(provider: OAuthProvider) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16rpx;
+  margin-bottom: 8rpx;
 }
 
 .forgot-link {
@@ -595,8 +611,12 @@ async function handleOAuth(provider: OAuthProvider) {
 /* ===== OAuth Section ===== */
 .oauth-section {
   width: 100%;
-  margin-top: 8rpx;
+  margin-top: 0;
   flex-shrink: 0;
+
+  :deep(.wd-divider) {
+    margin: 8rpx 0;
+  }
 
   /* 去掉宫格项默认填充背景，仅保留图标/文字与轻量点击反馈 */
   :deep(.wd-grid-item) {
@@ -615,9 +635,9 @@ async function handleOAuth(provider: OAuthProvider) {
 }
 
 .oauth-btn__icon {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 36rpx;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 30rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -629,7 +649,7 @@ async function handleOAuth(provider: OAuthProvider) {
 }
 
 .oauth-btn__label {
-  font-size: var(--font-xs, 24rpx);
+  font-size: 22rpx;
   @apply wot-text-text-auxiliary;
 }
 
@@ -640,16 +660,16 @@ async function handleOAuth(provider: OAuthProvider) {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  padding: 12rpx 0 0;
+  padding: 4rpx 0 0;
   flex-shrink: 0;
 
   &__text {
-    font-size: var(--font-md, 28rpx);
+    font-size: var(--font-xs, 24rpx);
     @apply wot-text-text-auxiliary;
   }
 
   &__link {
-    font-size: var(--font-md, 28rpx);
+    font-size: var(--font-xs, 24rpx);
   }
 }
 
@@ -658,5 +678,24 @@ async function handleOAuth(provider: OAuthProvider) {
    本页 form-item 无 title/label/prefix 内容，隐藏 left 安全，保证输入框与登录按钮同宽 */
 .login-card :deep(.wd-form-item .wd-cell__left) {
   display: none;
+}
+
+/* 紧凑登录：表单行距与验证码高度收紧，保证 390×844 一屏放得下 */
+.login-card :deep(.wd-form-item) {
+  margin-bottom: 8rpx;
+}
+
+.login-card :deep(.fa-puzzle) {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.login-card :deep(.fa-puzzle__stage) {
+  height: 140px;
+  padding-bottom: 0;
+}
+
+.login-card :deep(.fa-puzzle__track) {
+  height: 44px;
 }
 </style>

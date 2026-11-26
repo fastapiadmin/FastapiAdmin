@@ -7,6 +7,31 @@ page,
   --font-lg: 32rpx;
   --font-xl: 40rpx;
   --font-3xl: 56rpx;
+
+  /* 统一按钮：Web 端 control 40px，移动端保持 44px 触控下限 */
+  --wot-button-radius-main: 16rpx;
+  --wot-button-height-mini: 32px;
+  --wot-button-height-small: 44px;
+  --wot-button-height-medium: 44px;
+  --wot-button-height-large: 48px;
+  --wot-button-font-size-mini: 24rpx;
+  --wot-button-font-size-small: 28rpx;
+  --wot-button-font-size-medium: 28rpx;
+  --wot-button-font-size-large: 30rpx;
+
+  /* 与 Web --fa-text-* 对齐的文字层级 */
+  --fa-text-1: #111827;
+  --fa-text-2: #4b5563;
+  --fa-text-3: #6b7280;
+
+  /* 与 Web 端一致的无衬线字体栈（H5 默认会退到 Times New Roman） */
+  --fa-font-sans: Inter, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+
+page,
+body,
+.uni-page-body {
+  font-family: var(--fa-font-sans);
 }
 
 /* 辅助文字在亮色主题下加深：原 #868A9C 白底仅 3.43:1，不满足 WCAG AA */
@@ -63,6 +88,9 @@ page.wot-theme-light,
    若需恢复光晕效果，应改为伪元素 inset:0 不溢出，并给容器加 overflow:hidden 裁剪 */
 /* 暗色模式：保持纯色背景，避免渐变在深色背景下突兀 */
 .wot-theme-dark {
+  --fa-text-1: #E5E7EB;
+  --fa-text-2: #A3AAB8;
+  --fa-text-3: #8B93A1;
   /* tabbar 背景跟随暗色页面背景，避免与内容区断层 */
   --wot-tabbar-bg: var(--wot-filled-content);
   /* 卡片表面与 Web 深色卡片一致，形成层级差 */
