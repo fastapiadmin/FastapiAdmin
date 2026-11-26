@@ -127,7 +127,9 @@
     "wxOnly": "This feature is only available in the WeChat Mini Program",
     "wxAuthFailed": "WeChat login authorization failed",
     "phoneCodeFailed": "Failed to get phone number authorization code",
-    "puzzleText": "Drag the slider to fit the piece into the gap"
+    "puzzleText": "Drag the slider to fit the piece into the gap",
+    "securityVerify": "Security check",
+    "securityVerifyTip": "Drag the slider to verify, then sign in automatically"
   },
   "register": {
     "navTitle": "Register",

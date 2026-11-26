@@ -17,6 +17,7 @@ useI18nNavTitle('login.navTitle')
 const { t } = useI18n()
 const loginFormRef = ref()
 const sliderCaptchaRef = ref<{ reset?: () => void }>()
+const captchaVisible = ref(false)
 const loading = ref(false)
 const userStore = useUserStore()
 const configStore = useConfigStore()
@@ -140,6 +141,8 @@ async function handleSliderSuccess(position: number) {
     if (result?.verified) {
       sliderPassed.value = true
       loginFormData.captcha = 'verified' // 占位值，后端只校验 captcha_key 状态
+      captchaVisible.value = false
+      await doLogin()
     }
     else {
       uni.showToast({ title: t('login.sliderFailed'), icon: 'none' })
@@ -173,24 +176,33 @@ onLoad((options) => {
   configStore.getConfig()
 })
 
-/** 登录提交 — 防抖 + 字段验证 + 滑块校验 + 错误提示 + 记住密码 */
+/** 登录提交 — 字段验证 → 需要时弹出安全验证 → 自动登录 */
 async function handleSubmit() {
   if (loading.value)
     return
 
-  // 滑块验证前置校验
+  const { valid } = await loginFormRef.value.validate()
+  if (!valid)
+    return
+
   if (captchaState.enable && !sliderPassed.value) {
-    uni.showToast({ title: t('login.sliderRequired'), icon: 'none' })
+    openCaptcha()
     return
   }
 
+  await doLogin()
+}
+
+/** 打开安全验证：每次打开都取一张新验证码，避免 60 秒过期 */
+async function openCaptcha() {
+  captchaVisible.value = true
+  await getLoginCaptcha()
+}
+
+/** 实际登录请求 */
+async function doLogin() {
   loading.value = true
   try {
-    const { valid } = await loginFormRef.value.validate()
-    if (!valid) {
-      loading.value = false
-      return
-    }
     await userStore.login(loginFormData)
     // 登录成功后处理记住密码：仅存储用户名，不存储密码
     if (loginFormData.remember) {
@@ -204,8 +216,10 @@ async function handleSubmit() {
   catch {
     uni.showToast({ title: t('login.loginFailed'), icon: 'none', duration: 2500 })
     // 登录失败后自动刷新验证码并重置滑块
-    if (captchaState.enable)
-      getLoginCaptcha()
+    if (captchaState.enable) {
+      void getLoginCaptcha()
+      captchaVisible.value = true
+    }
   }
   finally {
     loading.value = false
@@ -297,25 +311,6 @@ async function handleOAuth(provider: OAuthProvider) {
           />
         </wd-form-item>
 
-        <!-- Slider Captcha — wd-slide-verify 滑块拖动验证（条件显示） -->
-        <wd-form-item v-if="captchaState.enable" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
-          <FaPuzzleCaptcha
-            ref="sliderCaptchaRef"
-            :bg-image="captchaState.img_base"
-            :piece-image="captchaState.piece_base"
-            :piece-y="captchaState.piece_y"
-            :piece-width="captchaState.piece_width"
-            :piece-height="captchaState.piece_height"
-            :bg-width="captchaState.bg_width"
-            :bg-height="captchaState.bg_height"
-            :passed="sliderPassed"
-            :loading="loading"
-            :text="t('login.puzzleText')"
-            :success-text="t('login.sliderSuccessText')"
-            @verify="handleSliderSuccess"
-            @refresh="getLoginCaptcha"
-          />
-        </wd-form-item>
 
         <!-- 记住密码 + 忘记密码 -->
         <view class="login-options">
@@ -390,6 +385,47 @@ async function handleOAuth(provider: OAuthProvider) {
         <wd-text class="login-footer__link" :text="t('login.toRegister')" type="primary" />
       </view>
     </view>
+
+    <!-- 安全验证弹层：点击登录后出现，验证码按需生成，避免长时间未操作过期 -->
+    <wd-popup
+      v-model="captchaVisible"
+      position="bottom"
+      :safe-area-inset-bottom="true"
+      custom-style="border-radius: 24rpx 24rpx 0 0; padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom));"
+    >
+      <view class="captcha-popup">
+        <view class="captcha-popup__head">
+          <view class="captcha-popup__titles">
+            <text class="captcha-popup__title">{{ t('login.securityVerify') }}</text>
+            <text class="captcha-popup__tip">{{ t('login.securityVerifyTip') }}</text>
+          </view>
+          <view
+            class="tap-target captcha-popup__close"
+            aria-role="button"
+            :aria-label="t('common.close')"
+            @click="captchaVisible = false"
+          >
+            <wd-icon name="close" size="20px" />
+          </view>
+        </view>
+        <FaPuzzleCaptcha
+          ref="sliderCaptchaRef"
+          :bg-image="captchaState.img_base"
+          :piece-image="captchaState.piece_base"
+          :piece-y="captchaState.piece_y"
+          :piece-width="captchaState.piece_width"
+          :piece-height="captchaState.piece_height"
+          :bg-width="captchaState.bg_width"
+          :bg-height="captchaState.bg_height"
+          :passed="sliderPassed"
+          :loading="loading"
+          :text="t('login.puzzleText')"
+          :success-text="t('login.sliderSuccessText')"
+          @verify="handleSliderSuccess"
+          @refresh="getLoginCaptcha"
+        />
+      </view>
+    </wd-popup>
   </view>
 </template>
 
@@ -685,17 +721,44 @@ async function handleOAuth(provider: OAuthProvider) {
   margin-bottom: 8rpx;
 }
 
-.login-card :deep(.fa-puzzle) {
-  max-width: 300px;
-  margin: 0 auto;
-}
+/* 安全验证弹层 */
+.captcha-popup {
+  width: 100%;
+  padding-top: 4rpx;
 
-.login-card :deep(.fa-puzzle__stage) {
-  height: 140px;
-  padding-bottom: 0;
-}
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16rpx;
+    margin-bottom: 12rpx;
+  }
 
-.login-card :deep(.fa-puzzle__track) {
-  height: 44px;
+  &__titles {
+    display: flex;
+    flex-direction: column;
+    gap: 4rpx;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: var(--font-lg, 32rpx);
+    font-weight: 600;
+    @apply wot-text-text-main;
+  }
+
+  &__tip {
+    font-size: var(--font-xs, 24rpx);
+    @apply wot-text-text-auxiliary;
+  }
+
+  &__close {
+    margin: -8rpx -8rpx 0 0;
+    color: var(--wot-text-auxiliary);
+  }
+
+  :deep(.fa-puzzle) {
+    margin: 4rpx auto 0;
+  }
 }
 </style>

@@ -127,7 +127,9 @@
     "wxOnly": "请在微信小程序中使用此功能",
     "wxAuthFailed": "微信登录授权失败",
     "phoneCodeFailed": "手机号授权码获取失败",
-    "puzzleText": "拖动滑块，使图块与缺口重合"
+    "puzzleText": "拖动滑块，使图块与缺口重合",
+    "securityVerify": "安全验证",
+    "securityVerifyTip": "拖动滑块完成验证，验证通过后自动登录"
   },
   "register": {
     "navTitle": "注册",
