@@ -31,7 +31,6 @@ declare module 'vue' {
     WdCollapse: typeof import('@wot-ui/ui/components/wd-collapse/wd-collapse.vue')['WdCollapse']
     WdCollapseItem: typeof import('@wot-ui/ui/components/wd-collapse-item/wd-collapse-item.vue')['WdCollapseItem']
     WdConfigProvider: typeof import('@wot-ui/ui/components/wd-config-provider/wd-config-provider.vue')['WdConfigProvider']
-    WdCountTo: typeof import('@wot-ui/ui/components/wd-count-to/wd-count-to.vue')['WdCountTo']
     WdDialog: typeof import('@wot-ui/ui/components/wd-dialog/wd-dialog.vue')['WdDialog']
     WdDropMenu: typeof import('@wot-ui/ui/components/wd-drop-menu/wd-drop-menu.vue')['WdDropMenu']
     WdDropMenuItem: typeof import('@wot-ui/ui/components/wd-drop-menu-item/wd-drop-menu-item.vue')['WdDropMenuItem']
