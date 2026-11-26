@@ -380,7 +380,7 @@ function getGreeting() {
     />
 
     <!-- 轮播 Banner -->
-    <view class="mx-4 mb-4">
+    <view class="mx-4 mb-6">
       <wd-swiper
         :list="banners"
         height="120"
@@ -441,7 +441,7 @@ function getGreeting() {
     </view>
 
     <!-- 快捷入口 -->
-    <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-2">
+    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-3">
       <wd-grid :column="4" :border="false" clickable>
         <wd-grid-item
           v-for="item in NAV_LIST"
@@ -468,7 +468,7 @@ function getGreeting() {
       <view class="wot-bg-primary-6 h-3.5 w-1 rounded-full" />
       <wd-text class="wot-text-text-main text-3.5" :text="t('index.opsOverview')" bold />
     </view>
-    <view v-if="statsError" class="home-error mx-4 mb-4">
+    <view v-if="statsError" class="home-error mx-4 mb-6">
       <text class="home-error__text">
         {{ t('index.loadFailed') }}
       </text>
@@ -546,7 +546,7 @@ function getGreeting() {
       </view>
 
       <!-- 登录趋势折线图 -->
-      <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <view class="mb-4 flex items-center gap-2">
           <wd-text class="wot-text-text-main text-3.5" :text="t('index.loginTrend')" bold />
         </view>
@@ -597,7 +597,7 @@ function getGreeting() {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 12px 16px;
   border-radius: var(--fa-radius-sm, 12px);
   background: var(--wot-danger-surface, #FFF0EE);
   color: #B42318;

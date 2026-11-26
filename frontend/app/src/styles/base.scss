@@ -1,6 +1,12 @@
 /* 设计 token：字号统一走 CSS 变量，避免各页裸写 rpx 后无法统一调整 */
 page,
 :root {
+  --fa-space-1: 4px;
+  --fa-space-2: 8px;
+  --fa-space-3: 12px;
+  --fa-space-4: 16px;
+  --fa-space-5: 20px;
+  --fa-space-6: 24px;
   --font-xs: 24rpx;
   --font-sm: 26rpx;
   --font-md: 28rpx;

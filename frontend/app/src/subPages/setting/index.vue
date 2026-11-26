@@ -169,7 +169,7 @@ function handleNavigate(url: string) {
       <wd-text class="wot-text-text-secondary mb-4 block text-left" size="30rpx" line-height="1.6" :text="brandDesc" />
     </view>
 
-    <view class="mx-4 mb-4 mt-3">
+    <view class="mx-4 mb-6 mt-3">
       <view class="wot-text-text-main mb-2 px-1 text-3.5 font-bold">
         {{ t('setting.basic') }}
       </view>

@@ -79,7 +79,7 @@ const filteredGroups = computed(() => {
 <template>
   <view class="tabbar-wraper py-3">
     <!-- 用户信息卡（品牌渐变 + 极光装饰圆环） -->
-    <view class="user-info-card mx-4 mb-4 flex items-center gap-4 rounded-3 px-5 py-6">
+    <view class="user-info-card mx-4 mb-6 flex items-center gap-4 rounded-3 px-5 py-6">
       <wd-avatar
         size="64px"
         round
@@ -97,7 +97,7 @@ const filteredGroups = computed(() => {
     </view>
 
     <!-- 工单概览 -->
-    <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4 active:opacity-80" aria-role="button" :aria-label="t('work.viewAll')" @click="navigateTo('work-tickets')">
+    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4 active:opacity-80" aria-role="button" :aria-label="t('work.viewAll')" @click="navigateTo('work-tickets')">
       <view class="flex items-center justify-between">
         <wd-text class="wot-text-text-main text-3.5" :text="t('work.ticketOverview')" bold />
         <view class="flex items-center gap-1">
@@ -121,7 +121,7 @@ const filteredGroups = computed(() => {
     </view>
 
     <!-- 模块搜索 -->
-    <view class="mx-4 mb-4">
+    <view class="mx-4 mb-6">
       <wd-search v-model="keyword" class="work-search" :placeholder="t('work.searchPlaceholder')" variant="light" hide-cancel />
     </view>
 
@@ -136,7 +136,7 @@ const filteredGroups = computed(() => {
         <view
           v-for="item in group.items"
           :key="item.name"
-          class="wot-bg-filled-oppo rounded-3 p-3.5 active:opacity-80"
+          class="wot-bg-filled-oppo rounded-3 p-4 active:opacity-80"
           aria-role="button"
           :aria-label="t(item.titleKey)"
           @click="navigateTo(item.name)"

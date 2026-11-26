@@ -49,7 +49,7 @@ function handleNavigate(url: string) {
 <template>
   <view class="page-wraper box-border py-3">
     <!-- 头部介绍 -->
-    <view class="mx-4 mb-4">
+    <view class="mx-4 mb-6">
       <view class="wot-bg-filled-oppo rounded-3 px-5 py-8 text-center">
         <view class="mb-4 text-10">
           👋

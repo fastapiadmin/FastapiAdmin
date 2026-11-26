@@ -519,7 +519,7 @@ async function handleOAuth(provider: OAuthProvider) {
   z-index: 1;
   flex: 0 0 276px;
   width: 100%;
-  padding: 36px 24px 0;
+  padding: 32px 24px 0;
   overflow: hidden;
   box-sizing: border-box;
   color: #FFFFFF;
@@ -552,7 +552,7 @@ async function handleOAuth(provider: OAuthProvider) {
     align-items: center;
     gap: 16px;
     max-width: 100%;
-    margin-top: 94px;
+    margin-top: 96px;
     animation: login-brand-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 }
@@ -619,17 +619,17 @@ async function handleOAuth(provider: OAuthProvider) {
   flex-direction: column;
   width: 100%;
   min-height: 0;
-  margin-top: -26px;
-  padding: 26px 24px calc(14px + env(safe-area-inset-bottom));
+  margin-top: -24px;
+  padding: 24px 24px calc(16px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #FFFFFF;
-  border-radius: 28px 28px 0 0;
+  border-radius: 24px 24px 0 0;
   box-shadow: 0 -12px 34px rgb(24 34 92 / 16%);
   animation: login-panel-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 
   &__head {
     flex-shrink: 0;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
   }
 
   &__title {
@@ -643,7 +643,7 @@ async function handleOAuth(provider: OAuthProvider) {
 
   &__subtitle {
     display: block;
-    margin-top: 6px;
+    margin-top: 8px;
     font-size: 13px;
     line-height: 1.45;
     color: #5B6472;
@@ -681,7 +681,7 @@ async function handleOAuth(provider: OAuthProvider) {
 }
 
 .form-field {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 
   &--last {
     margin-bottom: 0;
@@ -689,7 +689,7 @@ async function handleOAuth(provider: OAuthProvider) {
 
   &__label {
     display: block;
-    margin: 0 0 6px 2px;
+    margin: 0 0 8px;
     font-size: 12px;
     font-weight: 600;
     line-height: 1.5;
@@ -725,7 +725,7 @@ async function handleOAuth(provider: OAuthProvider) {
 }
 
 .login-form :deep(.wd-form-item__error-message) {
-  margin: 5px 0 0 2px;
+  margin: 8px 0 0;
   font-size: 12px;
   line-height: 1.4;
   color: #D92D20;
@@ -743,11 +743,11 @@ async function handleOAuth(provider: OAuthProvider) {
   --wot-input-icon-margin: 10px;
 
   height: 50px;
-  padding: 0 14px;
+  padding: 0 16px;
   box-sizing: border-box;
   background: #F4F6FB;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 12px;
   transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -824,7 +824,7 @@ async function handleOAuth(provider: OAuthProvider) {
 /* ===== Primary CTA ===== */
 .login-submit {
   flex-shrink: 0;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -837,7 +837,7 @@ async function handleOAuth(provider: OAuthProvider) {
   color: #FFFFFF;
   background: linear-gradient(135deg, #4055E6 0%, #5A49E0 100%);
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 10px 24px rgb(64 85 230 / 26%);
 }
 
@@ -860,7 +860,7 @@ async function handleOAuth(provider: OAuthProvider) {
   color: #FFFFFF;
   background: linear-gradient(135deg, #4055E6 0%, #5A49E0 100%);
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 10px 24px rgb(64 85 230 / 26%);
 }
 
@@ -886,7 +886,7 @@ async function handleOAuth(provider: OAuthProvider) {
 /* ===== Third-party ===== */
 .login-oauth {
   flex-shrink: 0;
-  margin-top: 14px;
+  margin-top: 8px;
 
   &__head {
     display: flex;
@@ -914,7 +914,7 @@ async function handleOAuth(provider: OAuthProvider) {
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
-    margin-top: 10px;
+    margin-top: 12px;
   }
 }
 
@@ -951,7 +951,7 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   &__label {
-    margin-top: 6px;
+    margin-top: 8px;
     font-size: 12px;
     line-height: 16px;
     color: #5B6472;
@@ -1083,7 +1083,7 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   .login-panel__head {
-    margin-bottom: 18px;
+    margin-bottom: 24px;
   }
 
   .login-panel__title {
@@ -1103,7 +1103,7 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   .login-submit {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   .login-oauth__row {
@@ -1178,7 +1178,7 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   .login-oauth__row {
-    margin-top: 6px;
+    margin-top: 8px;
   }
 
   .login-oauth__head {
@@ -1224,7 +1224,7 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   .login-hero {
-    border-radius: 28px 28px 0 0;
+    border-radius: 24px 24px 0 0;
   }
 
   .wot-theme-dark .login-page {

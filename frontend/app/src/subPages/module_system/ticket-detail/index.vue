@@ -190,7 +190,7 @@ onLoad((options) => {
 
     <template v-else-if="ticket">
       <!-- Ticket Header -->
-      <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-4" :text="ticket.title || t('ticketDetail.unnamed')" bold />
         <view class="mt-3 flex gap-2">
           <wd-tag size="small" round :bg-color="getTypeBg(ticket.ticket_type)" :color="getTypeColor(ticket.ticket_type)">
@@ -203,7 +203,7 @@ onLoad((options) => {
       </view>
 
       <!-- Ticket Status Steps -->
-      <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <wd-text class="wot-text-text-main mb-4 block text-3.5" :text="t('ticketDetail.progress')" bold />
         <wd-steps :active="Number(ticket.status ?? 0)" align-center>
           <wd-step :title="t('common.status.pending')" />
@@ -214,7 +214,7 @@ onLoad((options) => {
       </view>
 
       <!-- Ticket Info -->
-      <view class="mx-4 mb-4">
+      <view class="mx-4 mb-6">
         <wd-cell-group border custom-class="rounded-3! overflow-hidden">
           <wd-cell :title="t('ticketDetail.createdAt')" :value="ticket.created_time || '—'" />
           <wd-cell :title="t('ticketDetail.handler')" :value="ticket.assigned_by?.name || t('ticketDetail.unassigned')" />
@@ -223,7 +223,7 @@ onLoad((options) => {
       </view>
 
       <!-- Ticket Content -->
-      <view v-if="ticket.ticket_content || ticket.summary" class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view v-if="ticket.ticket_content || ticket.summary" class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.content')" bold />
         <view class="mt-3">
           <mp-html :content="ticket.summary || ticket.ticket_content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
@@ -231,7 +231,7 @@ onLoad((options) => {
       </view>
 
       <!-- Images -->
-      <view v-if="parseImages(ticket.images).length > 0" class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view v-if="parseImages(ticket.images).length > 0" class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.attachments')" bold />
         <view class="mt-3 flex flex-wrap gap-3">
           <wd-img
@@ -249,7 +249,7 @@ onLoad((options) => {
       </view>
 
       <!-- Reply -->
-      <view v-if="ticket.reply" class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view v-if="ticket.reply" class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.replies')" bold />
         <view class="wot-bg-primary-1 mt-3 rounded-lg p-3">
           <mp-html :content="ticket.reply" markdown :tag-style="MARKDOWN_TAG_STYLE" />
@@ -257,7 +257,7 @@ onLoad((options) => {
       </view>
 
       <!-- Comments -->
-      <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="formatMessage(t, 'ticketDetail.comments', { count: commentTotal })" bold />
         <view class="mt-3">
           <wd-loading v-if="commentsLoading && comments.length === 0" size="20px" class="mx-auto my-4 block" />

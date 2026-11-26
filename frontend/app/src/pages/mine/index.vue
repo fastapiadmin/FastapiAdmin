@@ -132,7 +132,7 @@ async function handleSubmitPassword() {
 <template>
   <view class="tabbar-wraper py-3">
     <!-- 用户信息卡（品牌渐变 + 极光装饰圆环，与工作台一致） -->
-    <view class="user-info-card mx-4 mb-4 flex items-center gap-4 rounded-3 px-5 py-6">
+    <view class="user-info-card mx-4 mb-6 flex items-center gap-4 rounded-3 px-5 py-6">
       <wd-avatar
         size="64px"
         round
@@ -160,7 +160,7 @@ async function handleSubmitPassword() {
     </view>
 
     <!-- 工单统计 -->
-    <view class="mx-4 mb-4">
+    <view class="mx-4 mb-6">
       <wd-row :gutter="12">
         <wd-col :span="8">
           <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.pendingTickets')" @click="navigateTo('work-tickets')">
@@ -196,7 +196,7 @@ async function handleSubmitPassword() {
     </view>
 
     <!-- 快捷入口 -->
-    <view class="wot-bg-filled-oppo mx-4 mb-4 rounded-3 p-2">
+    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-3">
       <wd-grid :column="4" :border="false" clickable>
         <wd-grid-item
           v-for="item in quickLinks"
@@ -217,7 +217,7 @@ async function handleSubmitPassword() {
     </view>
 
     <!-- 设置列表 -->
-    <view class="mx-4 mb-4">
+    <view class="mx-4 mb-6">
       <view class="mb-2 mt-1 flex items-center gap-2 px-3">
         <view class="wot-bg-primary-6 h-3.5 w-1 rounded-full" />
         <wd-text class="wot-text-text-main text-3.5" :text="t('common.settings')" bold />
