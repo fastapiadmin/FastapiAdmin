@@ -550,7 +550,7 @@ async function handleOAuth(provider: OAuthProvider) {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
     max-width: 100%;
     margin-top: 94px;
     animation: login-brand-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -561,20 +561,20 @@ async function handleOAuth(provider: OAuthProvider) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 66px;
+  height: 66px;
   padding: 4px;
   flex-shrink: 0;
   box-sizing: border-box;
   background: #FFFFFF;
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: 0 12px 26px rgb(23 32 90 / 28%);
 
   &__logo {
     display: block;
-    width: 50px;
-    height: 50px;
-    border-radius: 15px;
+    width: 58px;
+    height: 58px;
+    border-radius: 17px;
   }
 }
 
@@ -586,7 +586,7 @@ async function handleOAuth(provider: OAuthProvider) {
   &__name {
     display: block;
     overflow: hidden;
-    font-size: 23px;
+    font-size: 24px;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.015em;
@@ -1127,9 +1127,9 @@ async function handleOAuth(provider: OAuthProvider) {
   }
 
   .brand-mark {
-    width: 50px;
-    height: 50px;
-    border-radius: 15px;
+    width: 56px;
+    height: 56px;
+    border-radius: 17px;
   }
 
   .brand-mark__logo {
