@@ -262,6 +262,7 @@ async function handleOAuth(provider: OAuthProvider) {
 
 <template>
   <view class="login-page">
+    <view class="login-shell">
     <!-- Brand area -->
     <view class="login-brand">
       <image class="brand-logo" :src="brandLogo" mode="aspectFit" />
@@ -426,11 +427,13 @@ async function handleOAuth(provider: OAuthProvider) {
         />
       </view>
     </wd-popup>
+    </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .login-page {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -450,6 +453,40 @@ async function handleOAuth(provider: OAuthProvider) {
   box-sizing: border-box;
 }
 
+/* 背景光晕：不占布局，只给浅色登录页增加一点品牌氛围 */
+.login-page::before,
+.login-page::after {
+  position: absolute;
+  z-index: 0;
+  width: 320rpx;
+  height: 320rpx;
+  content: '';
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.login-page::before {
+  top: -120rpx;
+  right: -100rpx;
+  background: radial-gradient(circle, rgb(79 107 255 / 14%) 0%, rgb(79 107 255 / 0%) 70%);
+}
+
+.login-page::after {
+  bottom: -140rpx;
+  left: -120rpx;
+  background: radial-gradient(circle, rgb(168 85 247 / 10%) 0%, rgb(168 85 247 / 0%) 70%);
+}
+
+.login-shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: auto 0;
+}
+
 /* 暗黑模式下整页背景变深，消除白色断层（wot 根类为 wot-theme-dark） */
 .wot-theme-dark .login-page {
   @apply wot-bg-filled-bottom;
@@ -462,9 +499,10 @@ async function handleOAuth(provider: OAuthProvider) {
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  padding-top: 8rpx;
-  padding-bottom: 16rpx;
-  gap: 20rpx;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 20rpx;
+  gap: 18rpx;
   flex-shrink: 0;
 
   &__text {
