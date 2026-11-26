@@ -3,6 +3,7 @@ import type { SwiperItem } from '@wot-ui/ui/components/wd-swiper/types'
 import type { DashboardStats, LoginTrendItem } from '@/api/module_monitor/dashboard'
 import type { NoticeItem } from '@/api/module_system/notice'
 import { onPullDownRefresh, onReady } from '@dcloudio/uni-app'
+import { nextTick } from 'vue'
 import { LineChart } from 'echarts/charts'
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import * as echarts from 'echarts/core'
@@ -85,8 +86,32 @@ const noticeBarStyle = computed(() => {
 
 /** 页面滚动距离（供 wd-backtop 判断显示） */
 const scrollTop = ref(0)
+/** 趋势图是原生 canvas，滚动到 tabbar 下方时会盖住导航；完全进入可视区才渲染 */
+const chartSafe = ref(true)
+const chartBox = ref({ top: 0, height: 0 })
+
+function measureChartBox() {
+  nextTick(() => {
+    const query = uni.createSelectorQuery()
+    query.select('#monitor-chart').boundingClientRect((rect) => {
+      const box = rect as UniApp.NodeInfo | null
+      if (box) {
+        chartBox.value = {
+          top: (box.top ?? 0) + scrollTop.value,
+          height: box.height ?? 0,
+        }
+      }
+    }).exec()
+  })
+}
+
 onPageScroll((e) => {
   scrollTop.value = e.scrollTop
+  if (chartBox.value.height > 0) {
+    const chartBottom = chartBox.value.top + chartBox.value.height - e.scrollTop
+    const windowHeight = uni.getSystemInfoSync().windowHeight
+    chartSafe.value = chartBottom <= windowHeight - 60
+  }
 })
 
 const NAV_LIST = [
@@ -279,6 +304,7 @@ async function loadData() {
     if (statsRes.status === 'fulfilled') {
       dashboardStats.value = statsRes.value
       loginTrend.value = statsRes.value.login_trend || []
+      measureChartBox()
     }
     if (ticketRes.status === 'fulfilled')
       pendingTickets.value = ticketRes.value.total || 0
@@ -523,7 +549,9 @@ function getGreeting() {
         <view class="mb-4 flex items-center gap-2">
           <wd-text class="wot-text-text-main text-3.5" :text="t('index.loginTrend')" bold />
         </view>
-        <uni-echarts custom-class="h-52 w-full" :option="loginTrendOption" />
+        <view id="monitor-chart" class="h-52 w-full">
+          <uni-echarts v-if="chartSafe" custom-class="h-full w-full" :option="loginTrendOption" />
+        </view>
       </view>
     </view>
 
