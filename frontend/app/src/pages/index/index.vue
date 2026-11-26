@@ -89,29 +89,26 @@ const noticeBarStyle = computed(() => {
 const scrollTop = ref(0)
 /** 趋势图是原生 canvas，滚动到 tabbar 下方时会盖住导航；完全进入可视区才渲染 */
 const chartSafe = ref(true)
-const chartBox = ref({ top: 0, height: 0 })
+const windowHeight = ref(0)
+let lastChartCheck = 0
 
-function measureChartBox() {
-  nextTick(() => {
-    const query = uni.createSelectorQuery()
-    query.select('#monitor-chart').boundingClientRect((rect) => {
-      const box = rect as UniApp.NodeInfo | null
-      if (box) {
-        chartBox.value = {
-          top: (box.top ?? 0) + scrollTop.value,
-          height: box.height ?? 0,
-        }
-      }
-    }).exec()
-  })
+/** 原生 canvas 会盖住 tabbar：用视口坐标判断，进入底部 60px 区域前移除 canvas */
+function updateChartSafe() {
+  const query = uni.createSelectorQuery()
+  query.select('#monitor-chart').boundingClientRect((rect) => {
+    const box = rect as UniApp.NodeInfo | null
+    if (!box || !windowHeight.value)
+      return
+    chartSafe.value = (box.bottom ?? 0) <= windowHeight.value - 60
+  }).exec()
 }
 
 onPageScroll((e) => {
   scrollTop.value = e.scrollTop
-  if (chartBox.value.height > 0) {
-    const chartBottom = chartBox.value.top + chartBox.value.height - e.scrollTop
-    const windowHeight = uni.getSystemInfoSync().windowHeight
-    chartSafe.value = chartBottom <= windowHeight - 60
+  const now = Date.now()
+  if (now - lastChartCheck > 100) {
+    lastChartCheck = now
+    updateChartSafe()
   }
 })
 
@@ -305,7 +302,7 @@ async function loadData() {
     if (statsRes.status === 'fulfilled') {
       dashboardStats.value = statsRes.value
       loginTrend.value = statsRes.value.login_trend || []
-      measureChartBox()
+      nextTick(updateChartSafe)
     }
     if (ticketRes.status === 'fulfilled')
       pendingTickets.value = ticketRes.value.total || 0
@@ -325,6 +322,8 @@ async function loadNotices() {
 }
 
 onReady(() => {
+  const info = typeof (uni as any).getWindowInfo === 'function' ? (uni as any).getWindowInfo() : uni.getSystemInfoSync()
+  windowHeight.value = info.windowHeight ?? 0
   Promise.all([loadData(), loadNotices()])
 })
 
