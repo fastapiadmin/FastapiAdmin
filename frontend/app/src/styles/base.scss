@@ -15,7 +15,7 @@ page,
   --font-3xl: 56rpx;
 
   /* 统一按钮：Web 端 control 40px，移动端保持 44px 触控下限 */
-  --wot-button-radius-main: 16rpx;
+  --wot-button-radius-main: 24rpx;
   --wot-button-height-mini: 32px;
   --wot-button-height-small: 44px;
   --wot-button-height-medium: 44px;
@@ -40,20 +40,190 @@ body,
   font-family: var(--fa-font-sans);
 }
 
-/* 辅助文字在亮色主题下加深：原 #868A9C 白底仅 3.43:1，不满足 WCAG AA */
+/* 辅助文字在亮色主题下加深：Wot 默认 #868A9C 白底仅 3.43:1，不满足 WCAG AA。
+   Wot 的主题变量块带 [data-v-*] 作用域（0,2,0），这里必须 !important 才能覆盖。 */
 page.wot-theme-light,
 .wot-theme-light {
-  --wot-text-auxiliary: #5B6472;
-  --wot-icon-auxiliary: #5B6472;
+  --wot-text-auxiliary: #5B6472 !important;
+  --wot-icon-auxiliary: #5B6472 !important;
+  --wot-text-placeholder: #6B7280 !important;
 }
 
 /* 表单可见 label：登录/注册/找回密码页使用，避免只靠 placeholder */
 .form-field-label {
   display: block;
-  margin-bottom: 8rpx;
+  margin-bottom: 8px;
   font-size: var(--font-xs, 24rpx);
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--wot-text-secondary);
+  color: var(--fa-text-2);
+}
+
+/* 品牌浅色底：主色阶 1 在暗色主题下不会反转，单独提供随主题变化的柔和底 */
+page {
+  --fa-brand-soft: var(--wot-primary-1, #EEF1FF);
+}
+
+.wot-theme-dark {
+  --fa-brand-soft: rgba(79, 107, 255, 0.16);
+}
+
+.fa-soft {
+  background-color: var(--fa-brand-soft, var(--wot-primary-1, #EEF1FF));
+}
+
+/* 品牌紫的柔和底，同样需要随主题切换 */
+page {
+  --fa-violet-soft: var(--wot-purple-1, #F3EEFF);
+}
+
+.wot-theme-dark {
+  --fa-violet-soft: rgba(109, 91, 255, 0.18);
+}
+
+.fa-soft-violet {
+  background-color: var(--fa-violet-soft, var(--wot-purple-1, #F3EEFF));
+}
+
+/* 图标色：暗色下用更亮的品牌色阶，保证在深色卡片上的可辨识度 */
+page {
+  --fa-icon-blue: var(--fa-brand-blue, #4F6BFF);
+  --fa-icon-violet: var(--fa-brand-violet, #6D5BFF);
+}
+
+.wot-theme-dark {
+  --fa-icon-blue: var(--wot-primary-4, #7CA4FF);
+  --fa-icon-violet: var(--wot-purple-4, #B197FC);
+}
+
+/* 语义色用作文字/图标时改用更深/更亮的色阶，保证 4.5:1（大字 3:1） */
+page {
+  --fa-warning-text: var(--wot-orange-7, #D05706);
+  --fa-success-text: var(--wot-green-7, #0F956C);
+  --fa-info-text: var(--wot-blue-7, #164ED1);
+}
+
+.wot-theme-dark {
+  --fa-warning-text: var(--wot-orange-5, #FFA94D);
+  --fa-success-text: var(--wot-green-5, #59CDAA);
+  --fa-info-text: var(--wot-primary-4, #7CA4FF);
+}
+
+.fa-text-warning {
+  color: var(--fa-warning-text);
+}
+
+.fa-text-success {
+  color: var(--fa-success-text);
+}
+
+.fa-text-info {
+  color: var(--fa-info-text);
+}
+
+/* 统一区块标题：与页面 16px 栅格对齐，左侧 3px 品牌色竖条 */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px var(--fa-page-padding, 16px) 8px;
+}
+
+.section-head--between {
+  justify-content: space-between;
+}
+
+/* 放在已有左右内边距的容器（mx-4 等）内时，去掉自身横向外边距 */
+.section-head--flush {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.section-head__bar {
+  flex-shrink: 0;
+  width: 6rpx;
+  height: 26rpx;
+  border-radius: 999px;
+  background: var(--wot-primary-6);
+}
+
+.section-head__title {
+  flex: 0 1 auto;
+  min-width: 0;
+  color: var(--fa-text-1);
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.section-head__extra {
+  flex-shrink: 0;
+  color: var(--fa-text-3);
+  font-size: var(--font-xs, 24rpx);
+}
+
+/* wd-text 默认色是 auxiliary，且 .wd-text.is-default 的优先级高于工具类，
+   导致页面里 wot-text-text-* 全部被渲染成灰色；这里按工具类语义纠正。 */
+.wd-text.wot-text-text-main {
+  color: var(--wot-text-main) !important;
+}
+
+.wd-text.wot-text-text-secondary {
+  color: var(--wot-text-secondary) !important;
+}
+
+.wd-text.wot-text-text-auxiliary {
+  color: var(--wot-text-auxiliary) !important;
+}
+
+/* wd-text 自带 14px 字号且优先级高于 UnoCSS 工具类，这里按工具类语义还原字号 */
+.wd-text[class~="text-3"] {
+  font-size: 24rpx !important;
+}
+
+.wd-text[class~="text-3.5"] {
+  font-size: 28rpx !important;
+}
+
+.wd-text[class~="text-4"] {
+  font-size: 32rpx !important;
+}
+
+/* 暗色下主色/危险色文本需要更亮的色阶才能达到 AA */
+.wot-theme-dark .wd-text.is-primary {
+  color: var(--wot-primary-4, #7CA4FF) !important;
+}
+
+.wot-theme-dark .wd-text.is-error {
+  color: var(--wot-danger-4, #FF8A80) !important;
+}
+
+/* 搜索框与页面栅格对齐：去掉 wd-search 自带整宽底色，改成卡片内的输入面 */
+.fa-search {
+  padding: 0 !important;
+  background: transparent !important;
+  --wot-search-bg: transparent;
+  --wot-search-light-bg: transparent;
+  --wot-search-input-bg: var(--wot-filled-oppo);
+  --wot-search-light-block-bg: var(--wot-filled-oppo);
+  --wot-search-cover-bg: transparent;
+  --wot-search-light-cover-bg: transparent;
+  --wot-search-input-radius: 12px;
+  --wot-search-input-height: 42px;
+}
+
+.fa-search .wd-search__block {
+  min-height: 44px;
+  border: 1px solid var(--wot-border-main);
+}
+
+.fa-search .wd-search__field {
+  padding: 0 12px;
+}
+
+.wot-theme-dark .fa-search .wd-search__block {
+  border-color: var(--wot-border-main);
+  background-color: #191D24;
 }
 
 /* 纯图标操作：视觉 18-20px，热区 44px；负 margin 避免撑开紧凑行 */
@@ -146,6 +316,15 @@ page.wot-theme-light,
     height: 160rpx;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* 默认头像在品牌渐变上换成白底 + 品牌色图标，避免灰色占位块 */
+  .wd-avatar {
+    background: rgba(255, 255, 255, 0.94) !important;
+  }
+
+  .wd-avatar__icon {
+    color: var(--fa-brand-blue, #4F6BFF) !important;
   }
 }
 

@@ -321,7 +321,7 @@ onLoad(() => {
               class="max-w-[72%] break-words px-3 py-2"
               :class="msg.role === 'user' ? 'wot-bg-primary-6 wot-text-text-white' : 'wot-bg-filled-oppo wot-text-text-main wot-border-border-main'"
               :style="{
-                borderRadius: msg.role === 'user' ? '16rpx 16rpx 4rpx 16rpx' : '16rpx 16rpx 16rpx 4rpx',
+                borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
                 border: msg.role === 'user' ? 'none' : '1px solid var(--wot-border-main)',
               }"
             >
@@ -331,7 +331,7 @@ onLoad(() => {
                 <mp-html v-else :content="msg.content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
               </template>
               <wd-text v-else style="white-space:pre-wrap;font-size:var(--font-sm);line-height:1.7;" :text="msg.content" />
-              <wd-text v-if="msg.time" style="font-size:var(--font-xs);opacity:0.75;margin-top:8rpx;display:block;" :style="msg.role === 'user' ? 'text-align:right' : 'text-align:left'" :text="msg.time" />
+              <wd-text v-if="msg.time" style="font-size:12px;opacity:0.85;margin-top:8rpx;display:block;" :style="msg.role === 'user' ? 'text-align:right' : 'text-align:left'" :text="msg.time" />
             </view>
           </view>
         </view>
@@ -341,7 +341,15 @@ onLoad(() => {
     <!-- Input -->
     <view class="wot-bg-filled-oppo wot-border-border-main wot-p-tight" style="border-top:1px solid;padding-bottom:calc(24rpx + env(safe-area-inset-bottom, 0px));">
       <view class="flex items-center gap-sm">
-        <wd-input v-model="inputText" :placeholder="t('chat.inputPlaceholder')" :disabled="streaming" class="flex-1" confirm-type="send" @confirm="sendMessage" />
+        <wd-input
+          v-model="inputText"
+          :placeholder="t('chat.inputPlaceholder')"
+          :disabled="streaming"
+          class="flex-1"
+          confirm-type="send"
+          custom-style="background: var(--wot-filled-content); border: 1px solid var(--wot-border-main); border-radius: 12px; padding: 0 12px;"
+          @confirm="sendMessage"
+        />
         <wd-button v-if="streaming" type="danger" variant="plain" @click="stopGenerate">
           {{ t('chat.stop') }}
         </wd-button>
@@ -364,11 +372,11 @@ onLoad(() => {
 }
 
 .chat-toolbar__action {
-  gap: 6px;
+  gap: 8px;
 }
 
 .chat-toolbar__label {
-  font-size: var(--font-xs);
+  font-size: 14px;
   color: var(--wot-text-secondary);
 }
 

@@ -149,7 +149,7 @@ function goLogin() {
       <view class="register-form">
         <wd-form ref="registerFormRef" :model="registerForm" :schema="registerSchema">
           <text class="form-field-label">{{ t('common.form.username') }}</text>
-          <wd-form-item prop="username" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
+          <wd-form-item prop="username" title-width="0" custom-style="margin-bottom: 16px; padding: 0;">
             <wd-input
               v-model="registerForm.username"
               :aria-label="t('common.form.username')"
@@ -160,7 +160,7 @@ function goLogin() {
             />
           </wd-form-item>
           <text class="form-field-label">{{ t('common.form.nickname') }}</text>
-          <wd-form-item prop="name" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
+          <wd-form-item prop="name" title-width="0" custom-style="margin-bottom: 16px; padding: 0;">
             <wd-input
               v-model="registerForm.name"
               :aria-label="t('common.form.nickname')"
@@ -171,7 +171,7 @@ function goLogin() {
             />
           </wd-form-item>
           <text class="form-field-label">{{ t('common.form.password') }}</text>
-          <wd-form-item prop="password" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
+          <wd-form-item prop="password" title-width="0" custom-style="margin-bottom: 16px; padding: 0;">
             <wd-input
               v-model="registerForm.password"
               :aria-label="t('common.form.password')"
@@ -183,7 +183,7 @@ function goLogin() {
             />
           </wd-form-item>
           <text class="form-field-label">{{ t('common.form.confirmPassword') }}</text>
-          <wd-form-item prop="confirmPassword" title-width="0" custom-style="margin-bottom: 14rpx; padding-left: 0; padding-right: 0;">
+          <wd-form-item prop="confirmPassword" title-width="0" custom-style="margin-bottom: 16px; padding: 0;">
             <wd-input
               v-model="registerForm.confirmPassword"
               :aria-label="t('common.form.confirmPassword')"
@@ -206,7 +206,7 @@ function goLogin() {
           </view>
         </view>
 
-        <wd-button type="primary" round block :loading="submitting" @click="handleSubmit">
+        <wd-button type="primary" block custom-style="height: 48px; border-radius: 12px; font-size: 16px;" :loading="submitting" @click="handleSubmit">
           {{ submitting ? t('register.submitting') : t('register.submit') }}
         </wd-button>
       </view>
@@ -233,8 +233,8 @@ function goLogin() {
   /* #ifndef H5 */
   height: 100vh;
   /* #endif */
-  padding: 0 64rpx;
-  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+  padding: 0 32rpx;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
   /* 接入全局水滴渐变（--drop-bg 由 App.vue 按主题色定义，暗色回退纯色由下方规则接管） */
   background: var(--drop-bg, #F9F9F9);
   overflow-x: hidden;
@@ -249,27 +249,28 @@ function goLogin() {
 
 .register-card {
   width: 100%;
-  margin-top: 120rpx;
-  /* 亮色下默认带主题色最浅阶，避免一片纯白；--card-bg-color 可被外部覆盖 */
-  background: var(--card-bg-color, var(--wot-primary-1, #FFFFFF));
-  border-radius: var(--fa-radius-md, 24rpx);
-  padding: 40rpx 36rpx;
-  /* 边框跟随主题色浅阶，替代中性灰，让卡片更有主题感 */
-  border: 2rpx solid var(--fa-border, #E6E8EC);
-  box-shadow: var(--shadow-md, 0 8rpx 32rpx rgba(15, 23, 42, 0.04));
+  box-sizing: border-box;
+  margin-top: 48rpx;
+  /* 与登录页的白色纸面保持同一语言：白卡 + 中性描边 + 轻阴影 */
+  background: var(--wot-filled-oppo, #FFFFFF);
+  border-radius: var(--fa-radius-lg, 16px);
+  padding: 40rpx 40rpx 48rpx;
+  border: 1px solid var(--wot-border-main);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 
   .wot-theme-dark & {
     @apply wot-bg-filled-content;
     border-color: var(--border-color, #2C2C2E);
-    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
 
   &__title {
     display: block;
-    font-size: var(--font-xl, 36rpx);
+    font-size: var(--font-xl, 40rpx);
+    line-height: 1.4;
     font-weight: 600;
     @apply wot-text-text-main;
-    margin-bottom: 28rpx;
+    margin-bottom: 24px;
 
     /* 暗黑模式下使用纯白，提升卡片标题醒目度 */
     .wot-theme-dark & {
@@ -279,26 +280,29 @@ function goLogin() {
 }
 
 .register-form {
+  /* 与登录页一致的填充式输入：灰底、12px 圆角、无边框 */
   :deep(.wd-input) {
-    border-radius: var(--fa-radius-sm, 16rpx);
-    /* 亮色下主题色浅阶边框与卡片边框呼应，白色底在淡色卡片上形成浮层 */
-    border: 2rpx solid var(--wot-primary-2, var(--wot-border-main, #EAECF0));
-    box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.05);
+    height: 50px;
+    box-sizing: border-box;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: var(--fa-radius-md, 12px);
+    background: var(--wot-filled-content, #F5F6F8);
   }
 
   /* H5 聚焦态：主题色描边 + 淡色光晕（MP 端不支持 :focus-within，跳过） */
   /* #ifdef H5 */
   :deep(.wd-input:focus-within) {
     border-color: var(--wot-primary-6, #1C64FD);
-    box-shadow: 0 0 0 4rpx var(--wot-primary-1, #F5F8FF);
+    background: var(--wot-filled-oppo, #FFFFFF);
+    box-shadow: 0 0 0 3px var(--wot-primary-1, #EEF1FF);
   }
   /* #endif */
 
-  /* 去掉 wd-cell 自带左右内边距，使输入框与登录按钮同宽（与登录页一致） */
+  /* 去掉 wd-cell 自带内边距，字段之间统一 16px */
   :deep(.wd-form-item) {
-    margin-bottom: 14rpx;
-    padding-left: 0;
-    padding-right: 0;
+    margin-bottom: 16px;
+    padding: 0;
   }
 }
 
@@ -310,23 +314,22 @@ function goLogin() {
 
 .wot-theme-dark .register-page :deep(.wd-input) {
   /* 比卡片背景（filled-content）亮一档，输入框在暗色卡片上凸起有层次 */
-  --wot-input-bg: var(--wot-coolgrey-8, var(--wot-filled-content));
+  background: var(--wot-filled-content, #15181E);
   border-color: var(--wot-border-main, #2C2C2E);
-  box-shadow: none;
 }
 
 .register-agreement {
   display: flex;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin: 4px 0 24px;
 
   :deep(.wd-checkbox__label) {
-    font-size: var(--font-md, 28rpx);
-    @apply wot-text-text-auxiliary;
+    font-size: 13px;
+    @apply wot-text-text-secondary;
   }
 
   &__link {
-    font-size: var(--font-md, 28rpx);
+    font-size: 13px;
   }
 }
 
@@ -334,16 +337,16 @@ function goLogin() {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8rpx;
-  margin-top: 32rpx;
+  gap: 8px;
+  margin-top: 24px;
 
   &__text {
-    font-size: var(--font-md, 28rpx);
-    @apply wot-text-text-auxiliary;
+    font-size: 13px;
+    @apply wot-text-text-secondary;
   }
 
   &__link {
-    font-size: var(--font-md, 28rpx);
+    font-size: 13px;
   }
 }
 

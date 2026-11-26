@@ -64,10 +64,10 @@ const settingsList = [
 ]
 
 const quickLinks = [
-  { titleKey: 'common.nav.notices', name: 'work-notices', icon: 'notification', color: 'var(--fa-brand-blue)', soft: 'wot-bg-primary-1' },
-  { titleKey: 'common.nav.tickets', name: 'work-tickets', icon: 'message', color: 'var(--fa-brand-violet)', soft: 'wot-bg-purple-1' },
-  { titleKey: 'common.nav.aiChat', name: 'work-chat', icon: 'interaction', color: 'var(--fa-brand-blue)', soft: 'wot-bg-primary-1' },
-  { titleKey: 'common.nav.aiModels', name: 'work-ai-models', icon: 'robot', color: 'var(--fa-brand-violet)', soft: 'wot-bg-purple-1' },
+  { titleKey: 'common.nav.notices', name: 'work-notices', icon: 'notification', color: 'var(--fa-icon-blue)', soft: 'fa-soft' },
+  { titleKey: 'common.nav.tickets', name: 'work-tickets', icon: 'message', color: 'var(--fa-icon-violet)', soft: 'fa-soft-violet' },
+  { titleKey: 'common.nav.aiChat', name: 'work-chat', icon: 'interaction', color: 'var(--fa-icon-blue)', soft: 'fa-soft' },
+  { titleKey: 'common.nav.aiModels', name: 'work-ai-models', icon: 'robot', color: 'var(--fa-icon-violet)', soft: 'fa-soft-violet' },
 ]
 
 /** 修改密码弹窗（内嵌于「我的」页，免跳转） */
@@ -132,7 +132,7 @@ async function handleSubmitPassword() {
 <template>
   <view class="tabbar-wraper py-3">
     <!-- 用户信息卡（品牌渐变 + 极光装饰圆环，与工作台一致） -->
-    <view class="user-info-card mx-4 mb-6 flex items-center gap-4 rounded-3 px-5 py-6">
+    <view class="user-info-card mx-4 mb-6 flex items-center gap-4 rounded-4 px-5 py-6">
       <wd-avatar
         size="64px"
         round
@@ -163,8 +163,8 @@ async function handleSubmitPassword() {
     <view class="mx-4 mb-6">
       <wd-row :gutter="12">
         <wd-col :span="8">
-          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.pendingTickets')" @click="navigateTo('work-tickets')">
-            <view class="wot-text-warning-main text-5 font-bold">
+          <view class="wot-bg-filled-oppo rounded-4 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.pendingTickets')" @click="navigateTo('work-tickets')">
+            <view class="fa-text-warning text-5 font-bold">
               {{ pendingTickets ?? '-' }}
             </view>
             <view class="wot-text-text-secondary mt-1 text-3">
@@ -173,8 +173,8 @@ async function handleSubmitPassword() {
           </view>
         </wd-col>
         <wd-col :span="8">
-          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.processingTickets')" @click="navigateTo('work-tickets')">
-            <view class="wot-text-primary-6 text-5 font-bold">
+          <view class="wot-bg-filled-oppo rounded-4 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.processingTickets')" @click="navigateTo('work-tickets')">
+            <view class="fa-text-info text-5 font-bold">
               {{ processingTickets ?? '-' }}
             </view>
             <view class="wot-text-text-secondary mt-1 text-3">
@@ -183,8 +183,8 @@ async function handleSubmitPassword() {
           </view>
         </wd-col>
         <wd-col :span="8">
-          <view class="wot-bg-filled-oppo rounded-3 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.doneTickets')" @click="navigateTo('work-tickets')">
-            <view class="wot-text-success-main text-5 font-bold">
+          <view class="wot-bg-filled-oppo rounded-4 p-4 text-center active:opacity-70" aria-role="button" :aria-label="t('mine.doneTickets')" @click="navigateTo('work-tickets')">
+            <view class="fa-text-success text-5 font-bold">
               {{ doneTickets ?? '-' }}
             </view>
             <view class="wot-text-text-secondary mt-1 text-3">
@@ -196,7 +196,7 @@ async function handleSubmitPassword() {
     </view>
 
     <!-- 快捷入口 -->
-    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-3">
+    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-3">
       <wd-grid :column="4" :border="false" clickable>
         <wd-grid-item
           v-for="item in quickLinks"
@@ -218,11 +218,11 @@ async function handleSubmitPassword() {
 
     <!-- 设置列表 -->
     <view class="mx-4 mb-6">
-      <view class="mb-2 mt-1 flex items-center gap-2 px-3">
-        <view class="wot-bg-primary-6 h-3.5 w-1 rounded-full" />
-        <wd-text class="wot-text-text-main text-3.5" :text="t('common.settings')" bold />
+      <view class="section-head section-head--flush">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('common.settings') }}</text>
       </view>
-      <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+      <wd-cell-group border custom-class="rounded-4! overflow-hidden">
         <wd-cell
           v-for="item in settingsList"
           :key="item.name"
@@ -259,7 +259,7 @@ async function handleSubmitPassword() {
           clearable
           :placeholder="t('account.oldPlaceholder')"
         />
-        <view class="h-3" />
+        <view class="h-4" />
         <wd-input
           v-model="passwordForm.new_password"
           :label="t('account.newPassword')"
@@ -267,7 +267,7 @@ async function handleSubmitPassword() {
           clearable
           :placeholder="t('common.form.newPasswordPlaceholder')"
         />
-        <view class="h-3" />
+        <view class="h-4" />
         <wd-input
           v-model="passwordForm.confirm_password"
           :label="t('account.confirmPassword')"
@@ -276,12 +276,11 @@ async function handleSubmitPassword() {
           :placeholder="t('common.form.confirmNewPlaceholder')"
         />
         <view class="mt-5">
-          <wd-button type="primary" round block :loading="submitting" @click="handleSubmitPassword">
+          <wd-button type="primary" block :loading="submitting" @click="handleSubmitPassword">
             {{ t('account.submit') }}
           </wd-button>
         </view>
       </view>
-      <wd-gap :height="20" />
     </wd-popup>
   </view>
 </template>
@@ -289,9 +288,13 @@ async function handleSubmitPassword() {
 <style lang="scss">
 /* global logout：uni-button 自定义标签不受 scoped 样式作用域约束 */
 .wd-button.logout-btn {
-  color: var(--wot-danger-main) !important;
-  background: transparent !important;
-  border: 2rpx solid var(--wot-danger-main) !important;
-  border-radius: var(--fa-radius-sm, 16rpx) !important;
+  color: var(--wot-danger-clicked) !important;
+  background: var(--wot-filled-oppo) !important;
+  border: 1px solid var(--wot-border-main) !important;
+  border-radius: var(--fa-radius-md, 12px) !important;
+}
+
+.wot-theme-dark .wd-button.logout-btn {
+  background: #191D24 !important;
 }
 </style>

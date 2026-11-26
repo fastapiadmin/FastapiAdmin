@@ -113,10 +113,10 @@ onPageScroll((e) => {
 })
 
 const NAV_LIST = [
-  { icon: 'notification', titleKey: 'common.nav.notices', name: 'work-notices', color: 'var(--fa-brand-blue)', soft: 'wot-bg-primary-1' },
-  { icon: 'message', titleKey: 'common.nav.tickets', name: 'work-tickets', color: 'var(--fa-brand-violet)', soft: 'wot-bg-purple-1' },
-  { icon: 'interaction', titleKey: 'common.nav.aiChat', name: 'work-chat', color: 'var(--fa-brand-blue)', soft: 'wot-bg-primary-1' },
-  { icon: 'robot', titleKey: 'common.nav.aiModels', name: 'work-ai-models', color: 'var(--fa-brand-violet)', soft: 'wot-bg-purple-1' },
+  { icon: 'notification', titleKey: 'common.nav.notices', name: 'work-notices', color: 'var(--fa-icon-blue)', soft: 'fa-soft' },
+  { icon: 'message', titleKey: 'common.nav.tickets', name: 'work-tickets', color: 'var(--fa-icon-violet)', soft: 'fa-soft-violet' },
+  { icon: 'interaction', titleKey: 'common.nav.aiChat', name: 'work-chat', color: 'var(--fa-icon-blue)', soft: 'fa-soft' },
+  { icon: 'robot', titleKey: 'common.nav.aiModels', name: 'work-ai-models', color: 'var(--fa-icon-violet)', soft: 'fa-soft-violet' },
 ]
 
 /** 轮播 Banner 条目 */
@@ -195,8 +195,8 @@ const loginTrendOption = computed(() => {
   const primaryColor = themeStore.currentThemeColor.primaryShades.primary6
   /** 暗色模式下图表文字/网格线换亮色，保证深色卡片上可读 */
   const isDark = themeStore.isDark
-  const axisTextColor = isDark ? '#8A94A6' : '#999'
-  const legendTextColor = isDark ? '#B0B8C4' : '#909399'
+  const axisTextColor = isDark ? '#A3AAB8' : '#6B7280'
+  const legendTextColor = isDark ? '#C3C9D3' : '#4B5563'
   const splitLineColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(128, 128, 128, 0.12)'
   return {
     tooltip: {
@@ -209,7 +209,7 @@ const loginTrendOption = computed(() => {
       itemWidth: 10,
       itemHeight: 10,
       itemGap: 8,
-      textStyle: { fontSize: 10, color: legendTextColor },
+      textStyle: { fontSize: 12, color: legendTextColor },
       data: [t('index.loginCount'), t('index.visitor'), t('index.newUser')],
     },
     grid: { left: 8, right: 8, top: 34, bottom: 0, containLabel: true },
@@ -219,13 +219,13 @@ const loginTrendOption = computed(() => {
       data: days,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { fontSize: 10, color: axisTextColor },
+      axisLabel: { fontSize: 12, color: axisTextColor },
     },
     yAxis: {
       type: 'value',
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { fontSize: 10, color: axisTextColor },
+      axisLabel: { fontSize: 12, color: axisTextColor },
       splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } },
     },
     series: [
@@ -365,26 +365,28 @@ function getGreeting() {
 </script>
 
 <template>
-  <view class="tabbar-wraper">
+  <view class="tabbar-wraper pt-3">
     <!-- 顶部通知栏：接入最新一条公告（无公告自动隐藏），点击进入公告列表 -->
-    <wd-notice-bar
-      :text="latestNotice"
-      closable
-      type="info"
-      prefix="notification"
-      custom-class="home-notice"
-      custom-style="margin-bottom: 24px; border-radius: 12px;"
-      :color="noticeBarColors.color"
-      :background-color="noticeBarColors.background"
-      @click="navigateTo('work-notices')"
-    />
+    <view class="mx-4">
+      <wd-notice-bar
+        :text="latestNotice"
+        closable
+        type="info"
+        prefix="notification"
+        custom-class="home-notice"
+        custom-style="margin-bottom: 24px; border-radius: 12px;"
+        :color="noticeBarColors.color"
+        :background-color="noticeBarColors.background"
+        @click="navigateTo('work-notices')"
+      />
+    </view>
 
     <!-- 轮播 Banner -->
     <view class="mx-4 mb-6">
       <wd-swiper
         :list="banners"
         height="120"
-        radius="14"
+        radius="16"
         :interval="4500"
         :autoplay="!bannerPaused"
         :loop="true"
@@ -441,7 +443,7 @@ function getGreeting() {
     </view>
 
     <!-- 快捷入口 -->
-    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-3">
+    <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-3">
       <wd-grid :column="4" :border="false" clickable>
         <wd-grid-item
           v-for="item in NAV_LIST"
@@ -464,9 +466,9 @@ function getGreeting() {
     </view>
 
     <!-- 运营概览 -->
-    <view class="mb-2 mt-4 flex items-center gap-2 px-3">
-      <view class="wot-bg-primary-6 h-3.5 w-1 rounded-full" />
-      <wd-text class="wot-text-text-main text-3.5" :text="t('index.opsOverview')" bold />
+    <view class="section-head">
+      <view class="section-head__bar" />
+      <text class="section-head__title">{{ t('index.opsOverview') }}</text>
     </view>
     <view v-if="statsError" class="home-error mx-4 mb-6">
       <text class="home-error__text">
@@ -486,8 +488,8 @@ function getGreeting() {
       <wd-row :gutter="12">
         <wd-col :span="8">
           <view class="stat-card wot-bg-filled-oppo">
-            <view class="stat-card__icon wot-bg-primary-6">
-              <wd-icon name="user-group" size="18px" color="#FFFFFF" />
+            <view class="stat-card__icon fa-soft">
+              <wd-icon name="user-group" size="20px" color="var(--wot-primary-6)" />
             </view>
             <text v-if="dashboardStats?.total_users != null" class="stat-count wot-text-primary-6">{{ dashboardStats.total_users }}</text>
             <view v-else class="wot-text-text-main text-5 font-bold">
@@ -503,10 +505,10 @@ function getGreeting() {
         </wd-col>
         <wd-col :span="8">
           <view class="stat-card wot-bg-filled-oppo">
-            <view class="stat-card__icon wot-bg-success-main">
-              <wd-icon name="eye" size="18px" color="#FFFFFF" />
+            <view class="stat-card__icon wot-bg-success-surface">
+              <wd-icon name="eye" size="20px" color="var(--fa-success-text)" />
             </view>
-            <text v-if="dashboardStats?.online_users != null" class="stat-count wot-text-success-main">{{ dashboardStats.online_users }}</text>
+            <text v-if="dashboardStats?.online_users != null" class="stat-count fa-text-success">{{ dashboardStats.online_users }}</text>
             <view v-else class="wot-text-text-main text-5 font-bold">
               -
             </view>
@@ -520,10 +522,10 @@ function getGreeting() {
         </wd-col>
         <wd-col :span="8">
           <view class="stat-card wot-bg-filled-oppo">
-            <view class="stat-card__icon wot-bg-warning-main">
-              <wd-icon name="clock-circle" size="18px" color="#FFFFFF" />
+            <view class="stat-card__icon wot-bg-warning-surface">
+              <wd-icon name="clock-circle" size="20px" color="var(--fa-warning-text)" />
             </view>
-            <text v-if="dashboardStats?.today_login_count != null" class="stat-count wot-text-warning-main">{{ dashboardStats.today_login_count }}</text>
+            <text v-if="dashboardStats?.today_login_count != null" class="stat-count fa-text-warning">{{ dashboardStats.today_login_count }}</text>
             <view v-else class="wot-text-text-main text-5 font-bold">
               -
             </view>
@@ -539,14 +541,14 @@ function getGreeting() {
     </view>
 
     <!-- 系统监控（原数据概览 dashboard 合并，Banner 点击可滚动到此区块） -->
-    <view v-if="loginTrend.length" id="monitor-section" class="mt-4">
-      <view class="mb-2 flex items-center gap-2 px-3">
-        <view class="wot-bg-danger-main h-3.5 w-1 rounded-full" />
-        <wd-text class="wot-text-text-main text-3.5" :text="t('index.sysMonitor')" bold />
+    <view v-if="loginTrend.length" id="monitor-section" class="mt-2">
+      <view class="section-head">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('index.sysMonitor') }}</text>
       </view>
 
       <!-- 登录趋势折线图 -->
-      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <view class="mb-4 flex items-center gap-2">
           <wd-text class="wot-text-text-main text-3.5" :text="t('index.loginTrend')" bold />
         </view>
@@ -557,10 +559,10 @@ function getGreeting() {
     </view>
 
     <!-- 最新公告 -->
-    <view v-if="recentNotices.length > 0" class="mb-2 mt-4 flex items-center justify-between px-3">
-      <view class="flex items-center gap-2">
-        <view class="wot-bg-success-main h-3.5 w-1 rounded-full" />
-        <wd-text class="wot-text-text-main text-3.5" :text="t('index.latestNotice')" bold />
+    <view v-if="recentNotices.length > 0" class="section-head section-head--between">
+      <view class="flex min-w-0 items-center gap-2">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('index.latestNotice') }}</text>
       </view>
       <view
         class="tap-target"
@@ -572,7 +574,7 @@ function getGreeting() {
       </view>
     </view>
     <view v-if="recentNotices.length > 0" class="mx-4">
-      <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+      <wd-cell-group border custom-class="rounded-4! overflow-hidden">
         <wd-cell
           v-for="item in recentNotices"
           :key="item.id"
@@ -581,7 +583,9 @@ function getGreeting() {
           @click="navigateTo('work-notices')"
         >
           <template #label>
-            <wd-text class="wot-text-text-auxiliary text-3" :text="item.created_time || ''" />
+            <view class="wot-text-text-auxiliary mt-1 text-3">
+              {{ item.created_time || '' }}
+            </view>
           </template>
         </wd-cell>
       </wd-cell-group>
@@ -598,7 +602,7 @@ function getGreeting() {
   justify-content: space-between;
   gap: 8px;
   padding: 12px 16px;
-  border-radius: var(--fa-radius-sm, 12px);
+  border-radius: var(--fa-radius-md, 12px);
   background: var(--wot-danger-surface, #FFF0EE);
   color: #B42318;
   font-size: 12px;
@@ -619,8 +623,9 @@ function getGreeting() {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24rpx;
-  border-radius: var(--fa-radius-md, 24rpx);
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: var(--fa-radius-lg, 16px);
   overflow: hidden;
 
   /* 图标徽章 */
@@ -628,10 +633,10 @@ function getGreeting() {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 56rpx;
-    height: 56rpx;
-    border-radius: 16rpx;
-    margin-bottom: 20rpx;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    margin-bottom: 12px;
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   }
 
@@ -640,19 +645,6 @@ function getGreeting() {
     font-size: 40rpx;
     font-weight: 700;
     line-height: 1.2;
-  }
-
-  /* 右下角装饰浅圆（增强层次，暗黑下自动降低存在感） */
-  &::after {
-    content: '';
-    position: absolute;
-    right: -40rpx;
-    bottom: -40rpx;
-    width: 120rpx;
-    height: 120rpx;
-    border-radius: 50%;
-    @apply wot-bg-primary-6;
-    opacity: 0.06;
   }
 }
 

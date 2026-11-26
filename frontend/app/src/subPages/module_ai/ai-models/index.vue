@@ -152,7 +152,7 @@ onLoad(() => {
 </script>
 
 <template>
-  <view class="page-wraper">
+  <view class="page-wraper py-3">
     <!-- List -->
     <SkeletonPage v-if="loading && models.length === 0" :rows="3" />
     <view v-else-if="loadError && models.length === 0" class="mx-4 flex flex-col items-center gap-3 py-12">
@@ -165,33 +165,37 @@ onLoad(() => {
     <template v-else>
       <view class="mx-4">
         <wd-empty v-if="!loading && models.length === 0" :tip="t('aiModels.empty')" />
-        <wd-cell-group v-else border custom-class="rounded-3! overflow-hidden">
-          <wd-cell :title="t('aiModels.groupTitle')" :value="formatMessage(t, 'aiModels.count', { count: models.length })" border />
-          <wd-cell v-for="model in models" :key="model.config_id" center>
-            <template #title>
-              <wd-text class="wot-text-text-main truncate text-3.5 font-medium" :text="model.name || t('aiModels.unnamed')" />
-            </template>
-            <template #label>
-              <view class="flex flex-col">
-                <wd-text class="wot-text-text-auxiliary truncate text-3" :text="`${model.model_id} · ${t('aiModels.temperature')} ${model.temperature ?? '—'}`" />
-                <wd-text class="wot-text-text-auxiliary truncate text-3" :text="model.base_url" />
+        <view v-else class="model-list wot-bg-filled-oppo overflow-hidden rounded-4">
+          <view class="model-list__head flex items-center justify-between">
+            <text class="model-list__title">{{ t('aiModels.groupTitle') }}</text>
+            <text class="model-list__count">{{ formatMessage(t, 'aiModels.count', { count: models.length }) }}</text>
+          </view>
+          <view v-for="model in models" :key="model.config_id" class="model-row">
+            <view class="flex items-start justify-between gap-3">
+              <view class="min-w-0 flex-1">
+                <view class="flex min-w-0 items-center gap-2">
+                  <text class="model-name truncate">{{ model.name || t('aiModels.unnamed') }}</text>
+                  <wd-tag v-if="model.config_id === activeId" size="small" type="success" round>
+                    {{ t('aiModels.inUse') }}
+                  </wd-tag>
+                  <view
+                    v-else
+                    class="tap-target shrink-0"
+                    aria-role="button"
+                    :aria-label="t('aiModels.activate')"
+                    @click.stop="handleActivate(model.config_id)"
+                  >
+                    <wd-text class="text-3" :text="t('aiModels.activate')" type="primary" />
+                  </view>
+                </view>
+                <view class="model-meta">
+                  {{ model.model_id }} · {{ t('aiModels.temperature') }} {{ model.temperature ?? '—' }}
+                </view>
+                <view class="model-meta">
+                  {{ model.base_url }}
+                </view>
               </view>
-            </template>
-            <template #default>
-              <view class="flex items-center gap-2">
-                <wd-tag v-if="model.config_id === activeId" size="small" type="success" round>
-                  {{ t('aiModels.inUse') }}
-                </wd-tag>
-                <wd-button
-                  v-else
-                  size="small"
-                  type="primary"
-                  variant="plain"
-                  custom-style="min-height: 44px;"
-                  @click.stop="handleActivate(model.config_id)"
-                >
-                  {{ t('aiModels.activate') }}
-                </wd-button>
+              <view class="flex shrink-0 items-center">
                 <view class="icon-action" aria-role="button" :aria-label="t('common.edit')" @click.stop="openEdit(model)">
                   <wd-icon name="edit" size="18px" color="var(--wot-text-auxiliary)" />
                 </view>
@@ -199,9 +203,9 @@ onLoad(() => {
                   <wd-icon name="delete" size="18px" color="var(--wot-danger-main)" />
                 </view>
               </view>
-            </template>
-          </wd-cell>
-        </wd-cell-group>
+            </view>
+          </view>
+        </view>
       </view>
     </template>
 
@@ -210,9 +214,9 @@ onLoad(() => {
 
     <!-- Form Popup -->
     <wd-popup v-model="showForm" position="bottom" round custom-style="max-height: 80vh; overflow-y: auto;" @close="showForm = false">
-      <view class="p-xl">
+      <view class="px-4 pb-4 pt-2">
         <wd-navbar :title="formTitle" left-arrow @click-left="showForm = false" />
-        <wd-form :model="form" class="mt-lg">
+        <wd-form :model="form" class="mt-4">
           <wd-collapse v-model="activeCollapse" :border="false">
             <wd-collapse-item :title="t('aiModels.basic')" name="basic" :border="false">
               <wd-form-item :label="t('aiModels.name')" border>
@@ -238,7 +242,7 @@ onLoad(() => {
             </wd-collapse-item>
           </wd-collapse>
         </wd-form>
-        <view class="mt-xl flex gap-3">
+        <view class="mt-4 flex gap-3">
           <wd-button variant="plain" block @click="showForm = false">
             {{ t('common.cancel') }}
           </wd-button>
@@ -250,3 +254,51 @@ onLoad(() => {
     </wd-popup>
   </view>
 </template>
+
+<style lang="scss" scoped>
+/* 模型行：文字列与操作列分离，长文本单行省略，不再被操作按钮挤到断词 */
+.model-list {
+  border: 1px solid var(--wot-border-main);
+}
+
+.model-list__head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--wot-border-main);
+}
+
+.model-list__title {
+  color: var(--fa-text-1);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.model-list__count {
+  color: var(--fa-text-3);
+  font-size: 12.5px;
+}
+
+.model-row {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--wot-border-main);
+}
+
+.model-row:last-child {
+  border-bottom: none;
+}
+
+.model-name {
+  min-width: 0;
+  color: var(--fa-text-1);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.model-meta {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--fa-text-3);
+  font-size: 12.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+</style>

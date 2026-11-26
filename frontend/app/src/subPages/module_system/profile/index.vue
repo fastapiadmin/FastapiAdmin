@@ -222,19 +222,27 @@ onLoad(() => {
 
       <!-- 资料列表 -->
       <view class="mx-4 mb-6">
-        <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+        <wd-cell-group border custom-class="rounded-4! overflow-hidden">
           <wd-cell :title="t('profile.nickname')" is-link @click="openEdit('name')">
-            <wd-text class="wot-text-text-secondary" :text="userProfile?.name || t('profile.notSet')" />
+            <view class="profile-value">
+              <wd-text class="wot-text-text-secondary block truncate" :text="userProfile?.name || t('profile.notSet')" />
+            </view>
           </wd-cell>
           <wd-cell :title="t('profile.gender')" is-link @click="openEdit('gender')">
-            <wd-text class="wot-text-text-secondary" :text="genderText" />
+            <view class="profile-value">
+              <wd-text class="wot-text-text-secondary block truncate" :text="genderText" />
+            </view>
           </wd-cell>
           <wd-cell :title="t('profile.username')" :value="userProfile?.username || '-'" />
           <wd-cell :title="t('profile.mobile')">
-            <wd-text class="wot-text-text-secondary" :text="userProfile?.mobile || t('profile.notBound')" />
+            <view class="profile-value">
+              <wd-text class="wot-text-text-secondary block truncate" :text="userProfile?.mobile || t('profile.notBound')" />
+            </view>
           </wd-cell>
           <wd-cell :title="t('profile.email')">
-            <wd-text class="wot-text-text-secondary" :text="userProfile?.email || t('profile.notBound')" />
+            <view class="profile-value">
+              <wd-text class="wot-text-text-secondary block truncate" :text="userProfile?.email || t('profile.notBound')" />
+            </view>
           </wd-cell>
           <wd-cell :title="t('profile.dept')" :value="deptText" />
           <wd-cell :title="t('profile.roles')" :value="roleText" />
@@ -267,13 +275,32 @@ onLoad(() => {
             </wd-radio>
           </wd-radio-group>
           <view class="mt-4">
-            <wd-button type="primary" round block :loading="saving" @click="handleEditSubmit">
+            <wd-button type="primary" block :loading="saving" @click="handleEditSubmit">
               {{ t('common.save') }}
             </wd-button>
           </view>
         </view>
-        <wd-gap :height="20" />
       </wd-popup>
     </template>
   </view>
 </template>
+
+<style lang="scss" scoped>
+/* 资料值过长时省略（如邮箱），避免换行把行高撑开 */
+.profile-value {
+  max-width: 62%;
+  margin-left: auto;
+  overflow: hidden;
+  text-align: right;
+}
+
+/* 邮箱等长值单行省略，避免把单元格撑成两行破坏行高节奏 */
+.profile-value :deep(.wd-text) {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 26rpx;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+</style>

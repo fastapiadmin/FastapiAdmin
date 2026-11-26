@@ -182,28 +182,32 @@ onLoad(() => {
 </script>
 
 <template>
-  <view class="page-wraper">
-    <!-- 搜索栏（微信原生风格） -->
-    <wd-search
-      v-model="searchTitle"
-      :placeholder="t('notices.searchPlaceholder')"
-      hide-cancel
-      @search="onSearch"
-      @clear="onReset"
-    />
+  <view class="page-wraper pb-6">
+    <!-- 搜索栏（与页面 16px 栅格对齐） -->
+    <view class="mx-4 mt-3">
+      <wd-search
+        v-model="searchTitle"
+        class="fa-search"
+        :placeholder="t('notices.searchPlaceholder')"
+        hide-cancel
+        placeholder-left
+        @search="onSearch"
+        @clear="onReset"
+      />
+    </view>
 
     <!-- 列表头部：总数 -->
-    <view class="mx-4 mb-2 mt-3 flex items-center justify-between px-1">
+    <view class="mx-4 mb-2 mt-3 flex items-center justify-between">
       <wd-text class="wot-text-text-secondary text-3" :text="formatMessage(t, 'notices.count', { count: total })" />
       <view v-if="unreadCount > 0" class="flex items-center gap-3">
-        <wd-text class="wot-text-danger-main text-3" :text="formatMessage(t, 'notices.unreadCount', { count: unreadCount })" />
+        <text class="notice-unread">{{ formatMessage(t, 'notices.unreadCount', { count: unreadCount }) }}</text>
         <view class="tap-target" aria-role="button" :aria-label="t('notices.markAllRead')" @click="markAllRead">
-          <wd-text class="wot-text-primary-6 text-3" :text="t('notices.markAllRead')" />
+          <wd-text class="text-3" :text="t('notices.markAllRead')" type="primary" />
         </view>
       </view>
     </view>
 
-    <SkeletonPage v-if="loading && list.length === 0" :rows="5" search />
+    <SkeletonPage v-if="loading && list.length === 0" :rows="5" />
     <template v-else>
       <view class="mx-4">
         <view v-if="error && !loading && list.length === 0" class="flex flex-col items-center gap-3 py-12">
@@ -214,7 +218,7 @@ onLoad(() => {
           </wd-button>
         </view>
         <wd-empty v-else-if="!loading && list.length === 0" :tip="searchTitle ? t('notices.emptyWithFilter') : t('notices.empty')" />
-        <view v-else class="notice-list overflow-hidden rounded-3">
+        <view v-else class="notice-list overflow-hidden rounded-4">
           <wd-swipe-action
             v-for="(item, index) in list"
             :key="item.id"
@@ -313,6 +317,15 @@ onLoad(() => {
 .notice-list {
   background: var(--wot-filled-content);
   border: 1px solid var(--wot-border-main);
+}
+
+.notice-unread {
+  color: var(--wot-red-8, var(--wot-danger-clicked));
+  font-size: var(--font-xs, 24rpx);
+}
+
+.wot-theme-dark .notice-unread {
+  color: var(--wot-red-4, #FFA8A8);
 }
 
 .notice-row {

@@ -185,12 +185,12 @@ onLoad((options) => {
 </script>
 
 <template>
-  <view class="page-wraper" style="padding-bottom: calc(140rpx + env(safe-area-inset-bottom));">
+  <view class="page-wraper" style="padding-bottom: calc(84px + env(safe-area-inset-bottom));">
     <SkeletonPage v-if="loading && !ticket" :rows="5" />
 
     <template v-else-if="ticket">
       <!-- Ticket Header -->
-      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <wd-text class="wot-text-text-main block text-4" :text="ticket.title || t('ticketDetail.unnamed')" bold />
         <view class="mt-3 flex gap-2">
           <wd-tag size="small" round :bg-color="getTypeBg(ticket.ticket_type)" :color="getTypeColor(ticket.ticket_type)">
@@ -203,7 +203,7 @@ onLoad((options) => {
       </view>
 
       <!-- Ticket Status Steps -->
-      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <wd-text class="wot-text-text-main mb-4 block text-3.5" :text="t('ticketDetail.progress')" bold />
         <wd-steps :active="Number(ticket.status ?? 0)" align-center>
           <wd-step :title="t('common.status.pending')" />
@@ -215,7 +215,7 @@ onLoad((options) => {
 
       <!-- Ticket Info -->
       <view class="mx-4 mb-6">
-        <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+        <wd-cell-group border custom-class="rounded-4! overflow-hidden">
           <wd-cell :title="t('ticketDetail.createdAt')" :value="ticket.created_time || '—'" />
           <wd-cell :title="t('ticketDetail.handler')" :value="ticket.assigned_by?.name || t('ticketDetail.unassigned')" />
           <wd-cell :title="t('ticketDetail.updatedAt')" :value="ticket.updated_time || '—'" />
@@ -223,7 +223,7 @@ onLoad((options) => {
       </view>
 
       <!-- Ticket Content -->
-      <view v-if="ticket.ticket_content || ticket.summary" class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view v-if="ticket.ticket_content || ticket.summary" class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.content')" bold />
         <view class="mt-3">
           <mp-html :content="ticket.summary || ticket.ticket_content" markdown :tag-style="MARKDOWN_TAG_STYLE" />
@@ -231,7 +231,7 @@ onLoad((options) => {
       </view>
 
       <!-- Images -->
-      <view v-if="parseImages(ticket.images).length > 0" class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view v-if="parseImages(ticket.images).length > 0" class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.attachments')" bold />
         <view class="mt-3 flex flex-wrap gap-3">
           <wd-img
@@ -249,15 +249,15 @@ onLoad((options) => {
       </view>
 
       <!-- Reply -->
-      <view v-if="ticket.reply" class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view v-if="ticket.reply" class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="t('ticketDetail.replies')" bold />
-        <view class="wot-bg-primary-1 mt-3 rounded-lg p-3">
+        <view class="fa-soft mt-3 rounded-lg p-3">
           <mp-html :content="ticket.reply" markdown :tag-style="MARKDOWN_TAG_STYLE" />
         </view>
       </view>
 
       <!-- Comments -->
-      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-3 p-4">
+      <view class="wot-bg-filled-oppo mx-4 mb-6 rounded-4 p-4">
         <wd-text class="wot-text-text-main block text-3.5" :text="formatMessage(t, 'ticketDetail.comments', { count: commentTotal })" bold />
         <view class="mt-3">
           <wd-loading v-if="commentsLoading && comments.length === 0" size="20px" class="mx-auto my-4 block" />
@@ -317,14 +317,15 @@ onLoad((options) => {
     <!-- Comment Input -->
     <view
       v-if="ticket"
-      class="wot-bg-filled-oppo fixed inset-x-0 bottom-0 flex items-center gap-3 px-4 py-3"
-      style="z-index: 100; border-top: 1rpx solid var(--wot-border-main, #EAECF0); padding-bottom: calc(12px + env(safe-area-inset-bottom));"
+      class="wot-bg-filled-oppo comment-bar fixed inset-x-0 bottom-0 flex items-center gap-3 px-4 py-3"
+      style="z-index: 100; padding-bottom: calc(12px + env(safe-area-inset-bottom));"
     >
       <wd-input
         v-model="commentText"
         :placeholder="t('ticketDetail.commentPlaceholder')"
         clearable
         class="flex-1"
+        custom-style="background: var(--wot-filled-content); border: 1px solid var(--wot-border-main); border-radius: 12px; padding: 0 12px;"
       />
       <wd-button
         size="small"
@@ -338,3 +339,10 @@ onLoad((options) => {
     </view>
   </view>
 </template>
+
+<style lang="scss">
+/* 评论输入条固定在页面底部：与内容区用统一的分隔线 */
+.comment-bar {
+  border-top: 1px solid var(--wot-border-main);
+}
+</style>

@@ -161,24 +161,25 @@ function handleNavigate(url: string) {
 </script>
 
 <template>
-  <view class="page-wraper box-border py-3">
-    <view class="wot-bg-filled-oppo mx-4 box-border rounded-3 px-4 py-6 text-center">
-      <text class="wot-text-text-main mb-4 block text-left text-5 font-bold">
+  <view class="page-wraper box-border pb-6 pt-3">
+    <view class="wot-bg-filled-oppo mx-4 box-border rounded-4 px-5 py-5">
+      <text class="wot-text-text-main mb-2 block text-5 font-bold">
         {{ brandTitle }}
       </text>
-      <wd-text class="wot-text-text-secondary mb-4 block text-left" size="30rpx" line-height="1.6" :text="brandDesc" />
+      <wd-text class="wot-text-text-secondary block" size="14px" line-height="1.6" :text="brandDesc" />
     </view>
 
-    <view class="mx-4 mb-6 mt-3">
-      <view class="wot-text-text-main mb-2 px-1 text-3.5 font-bold">
-        {{ t('setting.basic') }}
+    <view class="mx-4">
+      <view class="section-head section-head--flush">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('setting.basic') }}</text>
       </view>
-      <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+      <wd-cell-group border custom-class="rounded-4! overflow-hidden">
         <wd-cell :title="t('setting.darkMode')">
-          <wd-switch v-model="isDark" size="18px" custom-style="padding: 13px 0;" />
+          <wd-switch v-model="isDark" size="20px" />
         </wd-cell>
         <wd-cell :title="t('setting.followSystem')">
-          <wd-switch :model-value="followSystem" size="18px" custom-style="padding: 13px 0;" @change="handleFollowSystemChange" />
+          <wd-switch :model-value="followSystem" size="20px" @change="handleFollowSystemChange" />
         </wd-cell>
         <wd-cell :title="t('setting.themeColor')" is-link @click="openThemeColorPicker">
           <view class="flex items-center justify-end gap-2">
@@ -195,7 +196,7 @@ function handleNavigate(url: string) {
         <wd-cell :title="t('setting.watermark')" :is-link="false">
           <wd-switch
             v-model="watermarkSwitch"
-            size="18px"
+            size="20px"
             @change="handleWatermarkChange"
           />
         </wd-cell>
@@ -203,20 +204,22 @@ function handleNavigate(url: string) {
     </view>
 
     <view class="mx-4">
-      <view class="wot-text-text-main mb-2 px-1 text-3.5 font-bold">
-        {{ t('setting.links') }}
+      <view class="section-head section-head--flush">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('setting.links') }}</text>
       </view>
-      <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+      <wd-cell-group border custom-class="rounded-4! overflow-hidden">
         <wd-cell :title="t('common.docs')" is-link @click="handleNavigate(helpDoc)" />
         <wd-cell :title="t('common.github')" is-link @click="handleNavigate(gitCode)" />
       </wd-cell-group>
     </view>
 
-    <view class="mx-4 mt-3">
-      <view class="wot-text-text-main mb-2 px-1 text-3.5 font-bold">
-        {{ t('setting.general') }}
+    <view class="mx-4">
+      <view class="section-head section-head--flush">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('setting.general') }}</text>
       </view>
-      <wd-cell-group border custom-class="rounded-3! overflow-hidden">
+      <wd-cell-group border custom-class="rounded-4! overflow-hidden">
         <wd-cell :title="t('setting.version')" :is-link="false">
           <wd-text class="wot-text-text-secondary text-3" :text="`v${version || '--'}`" />
         </wd-cell>
@@ -239,7 +242,7 @@ function handleNavigate(url: string) {
         <view
           v-for="option in themeColorOptions"
           :key="option.value"
-          class="wot-border-border-main flex items-center justify-between border-b py-3 last:border-b-0"
+          class="wot-border-border-main flex min-h-11 items-center justify-between border-b py-3 last:border-b-0"
           @click="handleThemeColorSelect(option)"
         >
           <view class="flex items-center gap-3">
@@ -271,7 +274,7 @@ function handleNavigate(url: string) {
         <view
           v-for="option in langOptions"
           :key="option.value"
-          class="wot-border-border-main flex items-center justify-between border-b py-3 last:border-b-0"
+          class="wot-border-border-main flex min-h-11 items-center justify-between border-b py-3 last:border-b-0"
           @click="handleLangSelect(option)"
         >
           <wd-text :text="t(option.labelKey)" class="wot-text-text-main text-4" />

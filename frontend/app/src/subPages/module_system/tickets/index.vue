@@ -183,35 +183,32 @@ onLoad(() => loadData())
 </script>
 
 <template>
-  <view class="page-wraper">
-    <!-- 查询区：搜索 + 类型下拉 / 状态筛选 -->
-    <wd-row :gutter="24">
-      <wd-col :span="24">
-        <wd-search
-          v-model="searchTitle"
-          :placeholder="t('tickets.searchPlaceholder')"
-          custom-class="w-full"
-          @search="onSearch"
-          @clear="onClearSearch"
-        >
-          <template #suffix>
-            <wd-drop-menu custom-class="inline-block! w-auto!" :z-index="20">
-              <wd-drop-menu-item v-model="typeFilter" :options="TYPE_FILTER_OPTIONS" :title="t('tickets.typeFilter')" @change="handleTypeFilter" />
-            </wd-drop-menu>
-          </template>
-        </wd-search>
-      </wd-col>
-      <wd-col :span="24">
-        <wd-tabs v-model="activeTab" line-theme="text" sticky :offset-top="0" class="ticket-tabs" @change="handleTabChange">
-          <wd-tab v-for="opt in TAB_OPTIONS" :key="opt.titleKey" :title="t(opt.titleKey)" />
-        </wd-tabs>
-      </wd-col>
-    </wd-row>
+  <view class="page-wraper pb-6">
+    <!-- 查询区：搜索 + 类型下拉 / 状态筛选（不再用 wd-row，避免负外边距撑出横向滚动） -->
+    <view class="mx-4 pt-3">
+      <wd-search
+        v-model="searchTitle"
+        class="fa-search"
+        :placeholder="t('tickets.searchPlaceholder')"
+        placeholder-left
+        @search="onSearch"
+        @clear="onClearSearch"
+      >
+        <template #suffix>
+          <wd-drop-menu custom-class="ticket-type-filter" :z-index="20">
+            <wd-drop-menu-item v-model="typeFilter" :options="TYPE_FILTER_OPTIONS" :title="t('tickets.typeFilter')" @change="handleTypeFilter" />
+          </wd-drop-menu>
+        </template>
+      </wd-search>
+    </view>
+    <wd-tabs v-model="activeTab" line-theme="text" sticky :offset-top="0" class="ticket-tabs mt-3" @change="handleTabChange">
+      <wd-tab v-for="opt in TAB_OPTIONS" :key="opt.titleKey" :title="t(opt.titleKey)" />
+    </wd-tabs>
 
     <!-- 卡片列表（左滑删除） -->
-    <SkeletonPage v-if="loading && list.length === 0" :rows="5" search />
+    <SkeletonPage v-if="loading && list.length === 0" :rows="5" />
     <template v-else>
-      <view class="mt-2 px-3">
+      <view class="mx-4 mt-3">
         <view v-if="error && !loading && list.length === 0" class="flex flex-col items-center gap-3 py-12">
           <wd-icon name="no-result" size="48px" color="var(--wot-text-auxiliary)" />
           <wd-text class="wot-text-text-secondary text-3" :text="t('common.loadFailed')" />
@@ -220,7 +217,7 @@ onLoad(() => loadData())
           </wd-button>
         </view>
         <wd-empty v-else-if="!loading && list.length === 0" :tip="hasFilter ? t('tickets.emptyWithFilter') : t('tickets.empty')" />
-        <view v-else class="ticket-list overflow-hidden rounded-3">
+        <view v-else class="ticket-list overflow-hidden rounded-4">
           <wd-swipe-action
             v-for="(item, index) in list"
             :key="item.id"
@@ -312,9 +309,24 @@ onLoad(() => loadData())
 
 <style lang="scss">
 /* 工单状态页签：5 个状态在 375px 下保持单行可读 */
+/* 类型筛选：与搜索框同高同圆角的独立胶囊按钮，避免出现第二块白色方块 */
+.ticket-type-filter {
+  display: inline-flex;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 12px;
+  margin-left: 8px;
+  background: var(--wot-filled-oppo);
+  border: 1px solid var(--wot-border-main);
+  border-radius: 12px;
+}
+
 .ticket-tabs {
   --wot-tabs-nav-item-font-size: 13px;
   --wot-tabs-nav-item-padding: 13px 6px;
+  border-bottom: 1px solid var(--wot-border-main);
 }
 
 .ticket-list {
