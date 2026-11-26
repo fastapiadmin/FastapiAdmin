@@ -353,7 +353,7 @@ async function handleOAuth(provider: OAuthProvider) {
         block
         @click="handleSubmit"
       >
-        <text class="login-submit__text">{{ loading ? t('login.submitting') : t('login.submit') }}</text>
+        <text class="login-submit__text" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important;">{{ loading ? t('login.submitting') : t('login.submit') }}</text>
       </wd-button>
 
       <!-- 第三方登录：低饱和，不与主 CTA 抢层级 -->
@@ -598,7 +598,7 @@ async function handleOAuth(provider: OAuthProvider) {
   &__line {
     display: -webkit-box;
     overflow: hidden;
-    max-width: 210px;
+    max-width: 244px;
     margin-top: 5px;
     font-size: 12px;
     font-weight: 400;
@@ -1056,6 +1056,12 @@ async function handleOAuth(provider: OAuthProvider) {
 }
 
 /* ===== 小屏收紧（高度断点，不改横向布局） ===== */
+@media (max-width: 360px) {
+  .brand-copy__line {
+    max-width: 190px;
+  }
+}
+
 @media (max-height: 820px) {
   .login-hero {
     flex-basis: 246px;
