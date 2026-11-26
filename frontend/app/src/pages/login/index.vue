@@ -886,7 +886,7 @@ async function handleOAuth(provider: OAuthProvider) {
 /* ===== Third-party ===== */
 .login-oauth {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 14px;
 
   &__head {
     display: flex;

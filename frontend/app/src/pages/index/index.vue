@@ -373,7 +373,7 @@ function getGreeting() {
       type="info"
       prefix="notification"
       custom-class="home-notice"
-      class="mb-4"
+      class="mb-6"
       :style="noticeBarStyle"
       @click="navigateTo('work-notices')"
     />
