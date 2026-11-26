@@ -550,7 +550,7 @@ function getGreeting() {
           <wd-text class="wot-text-text-main text-3.5" :text="t('index.loginTrend')" bold />
         </view>
         <view id="monitor-chart" class="h-52 w-full">
-          <uni-echarts v-if="chartSafe" custom-class="h-full w-full" :option="loginTrendOption" />
+          <uni-echarts v-show="chartSafe" custom-class="h-full w-full" :option="loginTrendOption" />
         </view>
       </view>
     </view>
