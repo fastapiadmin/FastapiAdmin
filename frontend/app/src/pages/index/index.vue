@@ -76,12 +76,12 @@ const recentNotices = ref<NoticeItem[]>([])
 const latestNotice = computed(() => recentNotices.value[0]?.notice_title || t('index.welcomeDefault'))
 
 /** 通知栏背景/文字跟随主题色（CSS 变量无法直接取主色透明值，用 JS 计算） */
-const noticeBarStyle = computed(() => {
+const noticeBarColors = computed(() => {
   const shades = themeStore.currentThemeColor.primaryShades
   const main = themeStore.isDark ? shades.primary5 : shades.primary6
   return {
-    '--wot-notice-bar-info-bg': hexToRgba(main, themeStore.isDark ? 0.16 : 0.1),
-    '--wot-notice-bar-info-color': main,
+    color: main,
+    background: hexToRgba(main, themeStore.isDark ? 0.16 : 0.1),
   }
 })
 
@@ -373,8 +373,9 @@ function getGreeting() {
       type="info"
       prefix="notification"
       custom-class="home-notice"
-      class="mb-6"
-      :style="noticeBarStyle"
+      custom-style="margin-bottom: 24px; border-radius: 12px;"
+      :color="noticeBarColors.color"
+      :background-color="noticeBarColors.background"
       @click="navigateTo('work-notices')"
     />
 
