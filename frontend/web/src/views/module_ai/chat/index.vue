@@ -38,6 +38,7 @@
         </div>
         <div class="chat-footer">
           <FaChatInput
+            v-model:use-tools="useTools"
             :disabled="!isConnected"
             :sending="sending"
             :is-connected="isConnected"
@@ -71,7 +72,7 @@ import FaAiModelConfigPanel from "./components/FaAiModelConfigPanel.vue";
 // 状态
 const messages = ref<ChatMessage[]>([]);
 const sending = ref(false);
-// 是否启用 AI 只读工具（默认关闭：不改变原有对话行为）
+const useTools = ref(false);
 const isConnected = ref(false);
 const connectionStatus = ref<"connected" | "connecting" | "disconnected">("disconnected");
 const error = ref("");
@@ -250,6 +251,7 @@ const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
         JSON.stringify({
           message,
           session_id: currentSessionId.value,
+          use_tools: useTools.value,
           files: files?.map((f) => ({ name: f.name, type: f.type, size: f.size })),
         })
       );

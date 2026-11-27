@@ -54,7 +54,8 @@ def test_agno_factory_defaults_and_runtime_config(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(ai_factory, "OpenAILike", FakeModel)
     factory = ai_factory.AgnoFactory()
     factory.create_agent("u1", "t1", "s1")
-    assert captured["agent"]["id"] == "u1"
+    assert "agent" not in captured
+    assert captured["team"]["members"] == []
     assert captured["team"]["id"] == "t1"
     assert captured["model"]["temperature"] == factory.AGENT_TEMPERATURE
 
@@ -66,5 +67,13 @@ def test_agno_factory_defaults_and_runtime_config(monkeypatch: pytest.MonkeyPatc
         model_config={"base_url": "http://x", "api_key": "k", "model_id": "m", "temperature": 0.2},
         tools=[lambda: None],
     )
-    assert captured["model"] == {"id": "m", "api_key": "k", "base_url": "http://x", "temperature": 0.2, "timeout": factory.REQUEST_TIMEOUT}
+    assert captured["model"] == {
+        "id": "m",
+        "api_key": "k",
+        "base_url": "http://x",
+        "temperature": 0.2,
+        "timeout": factory.REQUEST_TIMEOUT,
+    }
+    assert captured["agent"]["id"] == "u2"
+    assert captured["agent"]["model"] is captured["team"]["model"]
     assert len(captured["agent"]["tools"]) == 1

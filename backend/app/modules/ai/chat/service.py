@@ -8,7 +8,13 @@ from datetime import datetime
 from typing import Any
 
 import httpx
+from agno.run.team import ModelRequestStartedEvent as TeamModelRequestStartedEvent
+from agno.run.team import RunContentCompletedEvent as TeamRunContentCompletedEvent
+from agno.run.team import RunContentEvent as TeamRunContentEvent
+from agno.run.team import RunCancelledEvent as TeamRunCancelledEvent
+from agno.run.team import RunErrorEvent as TeamRunErrorEvent
 from agno.run.team import TeamRunOutput
+from agno.run.team import ToolCallStartedEvent as TeamToolCallStartedEvent
 from agno.session.team import TeamSession
 from redis.asyncio import Redis
 
@@ -187,20 +193,36 @@ class ChatService:
         logger.info("开始流式生成: session_id={} message={!r}", session_id, message[:80])
         chunk_count = 0
         try:
-            stream = agent.arun(input=message, stream=True)
+            stream = agent.arun(input=message, stream=True, stream_events=True)
             if hasattr(stream, "__aiter__"):
-                async for chunk in stream:  # type: ignore[union-attr]
+                pending_text: list[str] = []
+                async for chunk in stream:
                     if stop_event is not None and stop_event.is_set():
-                        logger.info("用户主动停止生成: session_id={}", session_id)
                         return
-                    if chunk and getattr(chunk, "content", None):
-                        chunk_count += 1
-                        yield str(chunk.content)
+                    if isinstance(chunk, TeamRunCancelledEvent):
+                        raise asyncio.CancelledError
+                    if isinstance(chunk, TeamRunErrorEvent):
+                        raise RuntimeError("AI 运行失败")
+                    if getattr(chunk, "parent_run_id", None):
+                        continue
+                    if isinstance(chunk, (TeamModelRequestStartedEvent, TeamToolCallStartedEvent)):
+                        pending_text.clear()
+                    elif isinstance(chunk, TeamRunContentEvent) and chunk.content:
+                        # 调用工具前也可能先生成正文，等 Team 确认正文结束再发送。
+                        pending_text.append(str(chunk.content))
+                    elif isinstance(chunk, TeamRunContentCompletedEvent):
+                        for text in pending_text:
+                            if stop_event is not None and stop_event.is_set():
+                                return
+                            chunk_count += 1
+                            yield text
+                        pending_text.clear()
             else:
-                # 兼容非流式直接返回结果的场景
-                result: Any = stream
-                if result and getattr(result, "content", None):
-                    yield str(result.content)
+                if isinstance(stream, TeamRunOutput) and stream.status == "CANCELLED":
+                    raise asyncio.CancelledError
+                if isinstance(stream, TeamRunOutput) and stream.status != "ERROR" and stream.content:
+                    chunk_count += 1
+                    yield str(stream.content)
         except asyncio.CancelledError:
             logger.info("生成任务被取消: session_id={}", session_id)
             raise

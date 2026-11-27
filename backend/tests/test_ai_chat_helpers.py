@@ -5,6 +5,9 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+from agno.run.team import RunContentCompletedEvent as TeamRunContentCompletedEvent
+from agno.run.team import RunContentEvent as TeamRunContentEvent
+from agno.run.team import TeamRunOutput
 
 from app.core.exceptions import CustomException
 from app.modules.ai.chat.service import AiModelConfigService, ChatService
@@ -182,9 +185,10 @@ async def test_chat_query_stream_branches(monkeypatch: pytest.MonkeyPatch) -> No
     assert await _collect(svc(None).chat_query(ChatQuerySchema(message=" "))) == ["请输入消息内容"]
     async def chunks():
         for c in ("a","b"):
-            yield SimpleNamespace(content=c)
+            yield TeamRunContentEvent(content=c)
+        yield TeamRunContentCompletedEvent()
     assert await _collect(svc(chunks()).chat_query(ChatQuerySchema(message="hi"))) == ["a","b"]
-    assert await _collect(svc(SimpleNamespace(content="z")).chat_query(ChatQuerySchema(message="hi"))) == ["z"]
+    assert await _collect(svc(TeamRunOutput(content="z")).chat_query(ChatQuerySchema(message="hi"))) == ["z"]
     async def bad():
         raise RuntimeError()
         yield

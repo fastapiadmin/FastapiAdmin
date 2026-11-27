@@ -76,6 +76,13 @@
                 </ElDropdownMenu>
               </template>
             </ElDropdown>
+            <ElSwitch
+              v-model="useTools"
+              :disabled="sending"
+              active-text="只读工具"
+              aria-label="只读工具"
+              size="small"
+            />
           </div>
           <div class="input-actions">
             <ElUpload
@@ -154,6 +161,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+const useTools = defineModel<boolean>("useTools", { required: true });
 
 // ============ 模型选择器 ============ //
 const dropdownVisible = ref(false);
@@ -397,12 +405,14 @@ defineExpose({
 
       .input-footer {
         display: flex;
+        gap: 8px;
         align-items: center;
         justify-content: space-between;
         padding-top: 8px;
 
         .input-footer-left {
           display: flex;
+          flex-wrap: wrap;
           gap: 8px;
           align-items: center;
         }
@@ -466,6 +476,7 @@ defineExpose({
 
         .input-actions {
           display: flex;
+          flex-shrink: 0;
           gap: 10px;
           align-items: center;
 

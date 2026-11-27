@@ -1,8 +1,10 @@
+from inspect import getdoc
 from typing import Any
 
 from agno.agent import Agent
 from agno.models.openai.like import OpenAILike
 from agno.team import Team
+from agno.utils.team import get_member_id
 
 from app.config.setting import settings
 
@@ -28,7 +30,7 @@ class AgnoFactory:
         model_config: dict[str, Any] | None = None,
         tools: list[Any] | None = None,
     ) -> Team:
-        """创建带 Agent 的 Team 实例。
+        """创建 Team，仅在提供工具时加入成员 Agent。
 
         参数:
         - user_id (str): 用户标识。
@@ -55,32 +57,49 @@ class AgnoFactory:
             if isinstance(model_config.get("temperature"), (int, float)):
                 temperature = float(model_config["temperature"])
 
-        # 创建 Agent
-        fastapiadmin_agent = Agent(
-            id=user_id,
-            name="fastapiadmin_agent",
-            role="You are a helpful AI assistant",
-            description=self.AGENT_DESCRIPTION,
-            tools=list(tools or []),
+        model = OpenAILike(
+            id=model_id,
+            api_key=api_key,
+            base_url=base_url,
+            temperature=temperature,
+            timeout=self.REQUEST_TIMEOUT,
         )
+        members: list[Agent | Team] = []
+        instructions = list(self.AGENT_INSTRUCTIONS)
+        if tools:
+            fastapiadmin_agent = Agent(
+                model=model,
+                id=user_id,
+                name="fastapiadmin_agent",
+                role="You are a helpful AI assistant",
+                description=self.AGENT_DESCRIPTION,
+                tools=list(tools),
+            )
+            members.append(fastapiadmin_agent)
+            tool_descriptions = []
+            for tool in tools:
+                name = getattr(tool, "__name__", None)
+                description = getdoc(tool)
+                if name and description:
+                    tool_descriptions.append(f"{name}：{description}")
+            if tool_descriptions:
+                # 使用 Agno 委派时匹配的 ID，它可能与用户名或成员名称不同。
+                member_id = get_member_id(fastapiadmin_agent)
+                instructions.append(f"委派工具的 member_id 参数使用成员实际 ID {member_id}。")
+                instructions.append(f"成员 {member_id} 可使用的只读工具：\n" + "\n".join(tool_descriptions))
 
         # 创建 Team
         fastapiadmin_team = Team(
             id=team_id,
             user_id=user_id,
             session_id=session_id,
-            model=OpenAILike(
-                id=model_id,
-                api_key=api_key,
-                base_url=base_url,
-                temperature=temperature,
-                timeout=self.REQUEST_TIMEOUT,
-            ),
-            members=[fastapiadmin_agent],
-            instructions=self.AGENT_INSTRUCTIONS,
+            model=model,
+            members=members,
+            instructions=instructions,
             expected_output=self.AGENT_EXPECTED_OUTPUT,
             add_datetime_to_context=True,
             add_history_to_context=True,
+            add_member_tools_to_context=bool(tools),
             markdown=True,
             num_history_runs=self.NUM_HISTORY_RUNS,
             input_schema=None,
