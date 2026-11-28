@@ -176,6 +176,7 @@
               </p>
             </div>
             <ElButton
+              v-if="canBrowseRedis"
               v-hasPerm="['module_monitor:cache:query']"
               plain
               aria-label="打开键空间浏览"
@@ -579,10 +580,13 @@ import CacheAPI, {
 import { echarts } from "@/plugins/echarts";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
+import { useUserStore } from "@/store/modules/user.store";
 
 // 与菜单 route_name 一致：KeepAlive 的 include/exclude 按组件 name 匹配
 defineOptions({ name: "MonitorCache" });
 
+const userStore = useUserStore();
+const canBrowseRedis = computed(() => userStore.basicInfo.is_superuser === true);
 const activeTab = ref("0");
 const keyspaceVisible = ref(false);
 
