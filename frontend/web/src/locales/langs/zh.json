@@ -217,7 +217,6 @@
       "generator": "代码生成",
       "ai": "AI管理",
       "task": "任务管理",
-      "ops": "运维管理",
       "menu": "菜单管理",
       "dict": "字典管理",
       "params": "参数管理",
@@ -238,8 +237,6 @@
       "node": "节点管理",
       "transfer": "传输任务",
       "workflow": "流程管理",
-      "ssh": "SSH 运维",
-      "sql": "SQL 控制台",
       "profile": "个人中心"
     },
     "success": "成功",
@@ -305,34 +302,6 @@
     "noOutputHint": "（双击左侧主机，或选择主机后点「打开终端」）",
     "cmdPlaceholder": "输入命令后回车（↑/↓ 翻历史）",
     "commonCommands": "常用命令",
-    "db": {
-      "databaseConnections": "数据库连接",
-      "noConnection": "暂无连接",
-      "noConnectionDesc": "新增一个数据库连接",
-      "dbTables": "数据库对象",
-      "selectConnectionFirst": "先选择一个连接",
-      "schemaLabel": "数据库",
-      "tablesLabel": "表",
-      "selectDbHint": "选择数据库后查看表",
-      "sqlConsole": "SQL 控制台",
-      "noConnectionSelected": "未选择连接",
-      "allowWrite": "允许写操作",
-      "history": "历史",
-      "execute": "执行",
-      "clear": "清空",
-      "sqlPlaceholder": "select * from ...（只读语句自动校验；写语句需先开启「允许写操作」）",
-      "ctrlEnter": "Ctrl + Enter 执行",
-      "readOnlyQuery": "只读查询",
-      "writeOperation": "写操作",
-      "masked": "已脱敏",
-      "truncatedRows": "已截断 200 行",
-      "exportCsv": "导出 CSV",
-      "noResult": "执行 SQL 后在此显示结果",
-      "lastRun": "上次执行",
-      "noTablesHint": "该数据库暂无表",
-      "noDatabaseHint": "当前连接没有可用数据库",
-      "insertTableHint": "点击表名可填入查询"
-    },
     "params": {
       "groupTitle": "参数分组",
       "brand": "品牌标识",
@@ -423,11 +392,20 @@
     "title": "界面设置",
     "menuType": {
       "title": "菜单布局",
-      "list": ["垂直", "水平", "混合", "双列"]
+      "list": [
+        "垂直",
+        "水平",
+        "混合",
+        "双列"
+      ]
     },
     "theme": {
       "title": "主题风格",
-      "list": ["浅色", "深色", "系统"]
+      "list": [
+        "浅色",
+        "深色",
+        "系统"
+      ]
     },
     "menu": {
       "title": "菜单风格"
@@ -437,11 +415,17 @@
     },
     "box": {
       "title": "盒子样式",
-      "list": ["边框", "阴影"]
+      "list": [
+        "边框",
+        "阴影"
+      ]
     },
     "container": {
       "title": "容器宽度",
-      "list": ["铺满", "定宽"]
+      "list": [
+        "铺满",
+        "定宽"
+      ]
     },
     "basics": {
       "title": "基础配置",
@@ -495,11 +479,20 @@
   "settings": {
     "menuType": {
       "title": "菜单布局",
-      "list": ["垂直", "水平", "混合", "双列"]
+      "list": [
+        "垂直",
+        "水平",
+        "混合",
+        "双列"
+      ]
     },
     "theme": {
       "title": "主题风格",
-      "list": ["浅色", "深色", "系统"]
+      "list": [
+        "浅色",
+        "深色",
+        "系统"
+      ]
     },
     "menu": {
       "title": "菜单风格"
@@ -509,11 +502,17 @@
     },
     "box": {
       "title": "盒子样式",
-      "list": ["边框", "阴影"]
+      "list": [
+        "边框",
+        "阴影"
+      ]
     },
     "container": {
       "title": "容器宽度",
-      "list": ["铺满", "定宽"]
+      "list": [
+        "铺满",
+        "定宽"
+      ]
     },
     "basics": {
       "title": "基础配置",
@@ -606,9 +605,15 @@
   "notice": {
     "title": "通知",
     "btnRead": "标为已读",
-    "bar": ["通知", "消息", "待办"],
+    "bar": [
+      "通知",
+      "消息",
+      "待办"
+    ],
     "empty": "暂无通知",
-    "text": ["暂无"],
+    "text": [
+      "暂无"
+    ],
     "viewAll": "查看全部"
   },
   "worktab": {

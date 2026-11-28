@@ -4,7 +4,6 @@ from sqlalchemy.engine import make_url
 
 from app.config.db_url import build_redis_url
 from app.config.setting import Settings
-from app.modules.ops.dbconsole.service import build_url
 
 
 def test_settings_url_handles_password_special_chars() -> None:
@@ -23,13 +22,6 @@ def test_settings_url_handles_password_special_chars() -> None:
     assert parsed.password == "p@ss!word#1/中文"
     assert parsed.database == "fastapiadmin"
     assert "%40" in url and "%21" in url
-
-
-def test_dbconsole_url_handles_password_special_chars() -> None:
-    url = build_url("mysql", "db.internal", 3306, "user@corp", "p@ss!word", "fastapiadmin")
-    parsed = make_url(url)
-    assert parsed.username == "user@corp"
-    assert parsed.password == "p@ss!word"
 
 
 def test_redis_url_handles_password_special_chars() -> None:

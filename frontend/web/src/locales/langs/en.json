@@ -217,7 +217,6 @@
       "generator": "Generator",
       "ai": "AI",
       "task": "Task",
-      "ops": "Ops",
       "menu": "Menu",
       "dict": "Dictionary",
       "params": "Parameters",
@@ -238,8 +237,6 @@
       "node": "Nodes",
       "transfer": "Transfers",
       "workflow": "Workflows",
-      "ssh": "SSH",
-      "sql": "SQL Console",
       "profile": "Profile"
     },
     "success": "Success",
@@ -305,34 +302,6 @@
     "noOutputHint": "(Double-click a host, or select one and click Open terminal)",
     "cmdPlaceholder": "Type a command and press Enter (↑/↓ history)",
     "commonCommands": "Common commands",
-    "db": {
-      "databaseConnections": "Database connections",
-      "noConnection": "No connections",
-      "noConnectionDesc": "Add a database connection",
-      "dbTables": "Database objects",
-      "selectConnectionFirst": "Select a connection first",
-      "schemaLabel": "Databases",
-      "tablesLabel": "Tables",
-      "selectDbHint": "Select a database to view tables",
-      "sqlConsole": "SQL console",
-      "noConnectionSelected": "No connection selected",
-      "allowWrite": "Allow writes",
-      "history": "History",
-      "execute": "Run",
-      "clear": "Clear",
-      "sqlPlaceholder": "select * from ... (read-only is validated; enable Allow writes for writes)",
-      "ctrlEnter": "Ctrl + Enter to run",
-      "readOnlyQuery": "Read-only query",
-      "writeOperation": "Write operation",
-      "masked": "Masked",
-      "truncatedRows": "Truncated to 200 rows",
-      "exportCsv": "Export CSV",
-      "noResult": "Run SQL to see results",
-      "lastRun": "Last run",
-      "noTablesHint": "No tables in this database",
-      "noDatabaseHint": "No databases available",
-      "insertTableHint": "Click a table name to insert it into the query"
-    },
     "params": {
       "groupTitle": "Parameter groups",
       "brand": "Branding",
@@ -423,11 +392,20 @@
     "title": "Interface settings",
     "menuType": {
       "title": "Menu Layout",
-      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+      "list": [
+        "Vertical",
+        "Horizontal",
+        "Mixed",
+        "Dual"
+      ]
     },
     "theme": {
       "title": "Theme Style",
-      "list": ["Light", "Dark", "System"]
+      "list": [
+        "Light",
+        "Dark",
+        "System"
+      ]
     },
     "menu": {
       "title": "Menu Style"
@@ -437,11 +415,17 @@
     },
     "box": {
       "title": "Box Style",
-      "list": ["Border", "Shadow"]
+      "list": [
+        "Border",
+        "Shadow"
+      ]
     },
     "container": {
       "title": "Container Width",
-      "list": ["Full", "Boxed"]
+      "list": [
+        "Full",
+        "Boxed"
+      ]
     },
     "basics": {
       "title": "Basic Config",
@@ -495,11 +479,20 @@
   "settings": {
     "menuType": {
       "title": "Menu Layout",
-      "list": ["Vertical", "Horizontal", "Mixed", "Dual"]
+      "list": [
+        "Vertical",
+        "Horizontal",
+        "Mixed",
+        "Dual"
+      ]
     },
     "theme": {
       "title": "Theme Style",
-      "list": ["Light", "Dark", "System"]
+      "list": [
+        "Light",
+        "Dark",
+        "System"
+      ]
     },
     "menu": {
       "title": "Menu Style"
@@ -509,11 +502,17 @@
     },
     "box": {
       "title": "Box Style",
-      "list": ["Border", "Shadow"]
+      "list": [
+        "Border",
+        "Shadow"
+      ]
     },
     "container": {
       "title": "Container Width",
-      "list": ["Full", "Boxed"]
+      "list": [
+        "Full",
+        "Boxed"
+      ]
     },
     "basics": {
       "title": "Basic Config",
@@ -606,9 +605,15 @@
   "notice": {
     "title": "Notice",
     "btnRead": "Mark as read",
-    "bar": ["Notice", "Message", "Todo"],
+    "bar": [
+      "Notice",
+      "Message",
+      "Todo"
+    ],
     "empty": "No notifications",
-    "text": ["No"],
+    "text": [
+      "No"
+    ],
     "viewAll": "View all"
   },
   "worktab": {

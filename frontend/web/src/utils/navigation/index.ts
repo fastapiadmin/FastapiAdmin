@@ -40,7 +40,6 @@ const MENU_TITLE_KEYS: Record<string, string> = {
   代码生成: "common.menuTitle.generator",
   AI管理: "common.menuTitle.ai",
   任务管理: "common.menuTitle.task",
-  运维管理: "common.menuTitle.ops",
   菜单管理: "common.menuTitle.menu",
   字典管理: "common.menuTitle.dict",
   参数管理: "common.menuTitle.params",
@@ -61,8 +60,6 @@ const MENU_TITLE_KEYS: Record<string, string> = {
   节点管理: "common.menuTitle.node",
   传输任务: "common.menuTitle.transfer",
   流程管理: "common.menuTitle.workflow",
-  "SSH 运维": "common.menuTitle.ssh",
-  "SQL 控制台": "common.menuTitle.sql",
   个人中心: "common.menuTitle.profile",
 };
 
