@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { UserAPI } from "@/api/module_system/user";
+import WorkflowDesigner from "./components/WorkflowDesigner.vue";
 import WorkflowAPI, {
   type WorkflowForm,
   type WorkflowInstance,
@@ -23,14 +24,11 @@ const query = reactive({ page_no: 1, page_size: 10, name: "" });
 const total = ref(0);
 
 const editorVisible = ref(false);
-const editingId = ref<number | null>(null);
-const form = reactive<WorkflowForm>({ name: "", description: "", status: 0, steps: [] });
+const editingWorkflow = ref<WorkflowItem | null>(null);
 
 const runVisible = ref(false);
 const runningWorkflow = ref<WorkflowItem | null>(null);
 const runContext = ref('{\n  "amount": 1000,\n  "department": "技术部"\n}');
-
-const canEdit = computed(() => form.steps.some((step) => step.type === "approval"));
 
 function statusText(status: number) {
   return status === 0 ? "启用" : "停用";
@@ -78,57 +76,22 @@ async function refresh() {
   await Promise.all([loadWorkflows(), loadInstances(), loadPending()]);
 }
 
-function blankStep(type: WorkflowStep["type"]): WorkflowStep {
-  return type === "approval"
-    ? { type, name: "审批", assignee_id: null }
-    : { type, name: "条件判断", field: "amount", operator: "gte", value: 1000 };
-}
-
 function openCreate() {
-  editingId.value = null;
-  Object.assign(form, { name: "", description: "", status: 0, steps: [blankStep("approval")] });
+  editingWorkflow.value = null;
   editorVisible.value = true;
 }
 
 function openEdit(row: any) {
-  editingId.value = row.id;
-  Object.assign(form, {
-    name: row.name,
-    description: row.description ?? "",
-    status: row.status,
-    steps: JSON.parse(JSON.stringify(row.steps ?? [])),
-  });
+  editingWorkflow.value = JSON.parse(JSON.stringify(row)) as WorkflowItem;
   editorVisible.value = true;
 }
 
-function addStep(type: WorkflowStep["type"]) {
-  form.steps.push(blankStep(type));
-}
-
-function moveStep(index: number, delta: number) {
-  const target = index + delta;
-  if (target < 0 || target >= form.steps.length) return;
-  const [step] = form.steps.splice(index, 1);
-  if (step) form.steps.splice(target, 0, step);
-}
-
-async function saveWorkflow() {
-  if (!form.name.trim()) return ElMessage.warning("请填写流程名称");
-  if (!canEdit.value) return ElMessage.warning("至少需要一个审批步骤");
+async function saveWorkflow(payload: WorkflowForm) {
   saving.value = true;
   try {
-    const payload: WorkflowForm = {
-      name: form.name.trim(),
-      description: form.description,
-      status: form.status,
-      steps: form.steps.map((step) => ({
-        ...step,
-        assignee_id: step.type === "approval" ? step.assignee_id || null : null,
-      })),
-    };
-    if (editingId.value) await WorkflowAPI.update(editingId.value, payload);
+    if (editingWorkflow.value?.id) await WorkflowAPI.update(editingWorkflow.value.id, payload);
     else await WorkflowAPI.create(payload);
-    ElMessage.success(editingId.value ? "流程已更新" : "流程已创建");
+    ElMessage.success(editingWorkflow.value?.id ? "流程已更新" : "流程已创建");
     editorVisible.value = false;
     await refresh();
   } finally {
@@ -260,70 +223,12 @@ onMounted(async () => {
       </el-table>
     </el-card>
 
-    <el-dialog v-model="editorVisible" :title="editingId ? '编辑流程' : '新建流程'" width="720px" destroy-on-close>
-      <el-form label-width="86px">
-        <el-form-item label="流程名称" required>
-          <el-input v-model="form.name" maxlength="64" placeholder="如：采购审批" />
-        </el-form-item>
-        <el-form-item label="流程说明">
-          <el-input v-model="form.description" type="textarea" :rows="2" maxlength="500" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="form.status" :active-value="0" :inactive-value="1" active-text="启用" inactive-text="停用" />
-        </el-form-item>
-      </el-form>
-
-      <div class="step-head">
-        <span>步骤（按顺序执行）</span>
-        <div>
-          <el-button size="small" @click="addStep('approval')">+ 审批</el-button>
-          <el-button size="small" @click="addStep('condition')">+ 条件</el-button>
-        </div>
-      </div>
-
-      <div v-for="(step, index) in form.steps" :key="index" class="step-card">
-        <div class="step-index">{{ index + 1 }}</div>
-        <div class="step-body">
-          <div class="step-row">
-            <el-select v-model="step.type" style="width: 110px">
-              <el-option label="审批" value="approval" />
-              <el-option label="条件" value="condition" />
-            </el-select>
-            <el-input v-model="step.name" placeholder="步骤名称" style="flex: 1" />
-            <el-button link :disabled="index === 0" @click="moveStep(index, -1)">上移</el-button>
-            <el-button link :disabled="index === form.steps.length - 1" @click="moveStep(index, 1)">下移</el-button>
-            <el-button link type="danger" @click="form.steps.splice(index, 1)">删除</el-button>
-          </div>
-          <div v-if="step.type === 'approval'" class="step-row mt-2">
-            <span class="step-label">审批人</span>
-            <el-select v-model="step.assignee_id" clearable filterable placeholder="默认发起人" style="width: 260px">
-              <el-option v-for="user in userOptions" :key="user.value" :label="user.label" :value="user.value" />
-            </el-select>
-          </div>
-          <div v-else class="step-row mt-2">
-            <span class="step-label">条件</span>
-            <el-input v-model="step.field" placeholder="字段，如 amount" style="width: 160px" />
-            <el-select v-model="step.operator" style="width: 110px">
-              <el-option label="等于" value="eq" />
-              <el-option label="不等于" value="ne" />
-              <el-option label="大于" value="gt" />
-              <el-option label="大于等于" value="gte" />
-              <el-option label="小于" value="lt" />
-              <el-option label="小于等于" value="lte" />
-              <el-option label="包含" value="contains" />
-            </el-select>
-            <el-input v-model="step.value" placeholder="比较值" style="width: 140px" />
-            <span class="step-hint">不满足时流程直接拒绝</span>
-          </div>
-        </div>
-      </div>
-      <el-empty v-if="!form.steps.length" description="至少添加一个审批步骤" :image-size="56" />
-
-      <template #footer>
-        <el-button @click="editorVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="saveWorkflow">保存</el-button>
-      </template>
-    </el-dialog>
+    <WorkflowDesigner
+      v-model="editorVisible"
+      :workflow="editingWorkflow"
+      :users="userOptions"
+      @save="saveWorkflow"
+    />
 
     <el-dialog v-model="runVisible" :title="`发起：${runningWorkflow?.name ?? ''}`" width="520px" destroy-on-close>
       <p class="run-tip">上下文用于条件判断，必须是 JSON 对象；审批任务会进入审批人的待办。</p>
