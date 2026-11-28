@@ -25,4 +25,22 @@ const nodePanelRef = ref<{ refreshData: () => Promise<void> }>();
   flex: 1;
   min-height: 0;
 }
+
+@media (width <= 768px) {
+  .cronjob-page :deep(.fa-table__mobile-cards) {
+    font-size: 13px;
+  }
+
+  .cronjob-page :deep(.fa-table__mobile-cards .text-sm) {
+    font-size: 13px;
+  }
+
+  .cronjob-page :deep(.fa-table__mobile-cards .text-xs) {
+    font-size: 11px;
+  }
+
+  .cronjob-page :deep(.el-pagination) {
+    font-size: 12px;
+  }
+}
 </style>

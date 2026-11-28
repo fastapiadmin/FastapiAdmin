@@ -162,4 +162,25 @@ onUnmounted(() => {
   gap: 8px;
   align-items: center;
 }
+
+@media (width <= 640px) {
+  .scheduler-bar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .scheduler-bar__caption {
+    font-size: 11px;
+  }
+
+  .scheduler-bar__count {
+    font-size: 16px;
+  }
+
+  .scheduler-bar__actions :deep(.el-button) {
+    margin-left: 0;
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}
 </style>
