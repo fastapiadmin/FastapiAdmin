@@ -169,7 +169,7 @@ def test_agno_factory_injects_tools(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_chat_service_tools_switch_off_keeps_behavior() -> None:
     service = ChatService.__new__(ChatService)
-    setattr(service, "auth", None)
+    setattr(service, "auth", SimpleNamespace(user=SimpleNamespace(is_superuser=True, username="root")))
     setattr(service, "redis", None)
     assert service._chat_tools(False) == []
     enabled = service._chat_tools(True)

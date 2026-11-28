@@ -6,8 +6,8 @@ from datetime import date, datetime, time
 
 import pytest
 
-from app.core.exceptions import CustomException
 from app.core import validator as V
+from app.core.exceptions import CustomException
 
 
 def test_datetime_date_time_validators() -> None:
@@ -64,7 +64,10 @@ def test_role_permission_validator() -> None:
     from types import SimpleNamespace
     role = SimpleNamespace(data_scope=3, role_ids=[1])
     assert V.role_permission_request_validator(role) is role
-    with pytest.raises(CustomException):
-        V.role_permission_request_validator(SimpleNamespace(data_scope=9, role_ids=[1]))
+    for unsupported_scope in (4, 5, 9):
+        with pytest.raises(CustomException):
+            V.role_permission_request_validator(
+                SimpleNamespace(data_scope=unsupported_scope, role_ids=[1])
+            )
     with pytest.raises(CustomException):
         V.role_permission_request_validator(SimpleNamespace(data_scope=1, role_ids=[]))

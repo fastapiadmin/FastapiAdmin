@@ -20,13 +20,21 @@ def test_extract_json_and_navigation_action() -> None:
 
 def test_chat_tools_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
     svc = ChatService.__new__(ChatService)
-    svc.auth = object(); svc.redis = None
+    svc.auth = SimpleNamespace(user=SimpleNamespace(is_superuser=True, username="root"))
+    svc.redis = None
     assert svc._chat_tools(False) == []
     import app.modules.ai.tools.registry as reg
     class Spec:
         def __init__(self, func): self.func = func
     monkeypatch.setattr(reg, "build_readonly_tools", lambda auth, redis: [Spec("fn")])
     assert svc._chat_tools(True) == ["fn"]
+
+
+def test_chat_tools_require_superuser() -> None:
+    svc = ChatService.__new__(ChatService)
+    svc.auth = SimpleNamespace(user=SimpleNamespace(is_superuser=False, username="normal"))
+    svc.redis = None
+    assert svc._chat_tools(True) == []
 
 
 async def test_model_config_service(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -162,6 +170,7 @@ async def _collect(gen):
 
 async def test_chat_query_stream_branches(monkeypatch: pytest.MonkeyPatch) -> None:
     import asyncio
+
     import app.modules.ai.chat.service as mod
     from app.modules.ai.chat.schema import ChatQuerySchema
     async def ensure(crud,sid): return "s"
@@ -263,6 +272,7 @@ async def test_ai_probe(monkeypatch: pytest.MonkeyPatch) -> None:
 
 async def test_ai_config_storage_reads(monkeypatch: pytest.MonkeyPatch) -> None:
     import json
+
     import app.modules.ai.chat.service as mod
     class R:
         def __init__(self,v): self.v=v
@@ -302,8 +312,8 @@ async def test_ai_config_lock(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 async def test_ai_config_crud_storage(monkeypatch: pytest.MonkeyPatch) -> None:
-    import json
     from contextlib import asynccontextmanager
+
     import app.modules.ai.chat.service as mod
     from app.modules.ai.chat.schema import AiModelConfigSchema
     @asynccontextmanager
@@ -328,6 +338,7 @@ async def test_ai_config_crud_storage(monkeypatch: pytest.MonkeyPatch) -> None:
 
 async def test_ai_active_config(monkeypatch: pytest.MonkeyPatch) -> None:
     import json
+
     import app.modules.ai.chat.service as mod
     class R:
         def __init__(self,d): self.d=d
@@ -348,8 +359,8 @@ async def test_ai_active_config(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_session_format_helpers() -> None:
-    import json
     from types import SimpleNamespace
+
     import app.modules.ai.chat.service as mod
     assert mod._session_to_dict({"a":1})=={"a":1}
     assert mod._session_to_dict(SimpleNamespace(to_dict=lambda:{"b":2}))=={"b":2}
@@ -366,6 +377,7 @@ def test_session_format_helpers() -> None:
 
 def test_format_session_data() -> None:
     import json
+
     import app.modules.ai.chat.service as mod
     session={"session_id":"abcdef1234","runs":[{"messages":[{"role":"user","content":"q"}]}],"session_data":json.dumps({"session_name":"T"}),"summary":{"summary":"S"},"created_at":1}
     out=mod._format_session_data(session)
@@ -382,7 +394,9 @@ async def test_ensure_session_and_tools(monkeypatch: pytest.MonkeyPatch) -> None
     class C:
         async def create(self,data): return SimpleNamespace(session_id="new")
     assert await mod._ensure_session(C(),None)=="new"
-    s=ChatService.__new__(ChatService); s.auth=object(); s.redis=None
+    s = ChatService.__new__(ChatService)
+    s.auth = SimpleNamespace(user=SimpleNamespace(is_superuser=True, username="root"))
+    s.redis = None
     assert s._chat_tools(False)==[]
     import app.modules.ai.tools.registry as reg
     monkeypatch.setattr(reg,"build_readonly_tools",lambda auth,redis: [SimpleNamespace(func="f")])

@@ -212,8 +212,20 @@ class ChatService:
         logger.info("流式生成结束: session_id={} chunk_count={}", session_id, chunk_count)
 
     def _chat_tools(self, enabled: bool) -> list[Any]:
-        """按开关构造只读工具（关闭时返回空列表，零行为变化）。"""
+        """按开关构造只读工具（关闭时返回空列表，零行为变化）。
+
+        只读工具会暴露服务器状态、存储源/文件、定时任务和 Redis 键名，
+        属于运维敏感能力，当前仅允许超级管理员使用；普通用户即使请求
+        携带 use_tools=true 也不会获得任何工具。
+        """
         if not enabled:
+            return []
+        user = getattr(self.auth, "user", None) if self.auth is not None else None
+        if user is None or not bool(getattr(user, "is_superuser", False)):
+            logger.warning(
+                "AI 只读工具仅超管可用，已拒绝: user={}",
+                getattr(user, "username", None),
+            )
             return []
         from app.modules.ai.tools.registry import build_readonly_tools
 

@@ -1,7 +1,7 @@
 import re
 from datetime import UTC, date, datetime, time
-from zoneinfo import ZoneInfo
 from typing import Annotated, Any
+from zoneinfo import ZoneInfo
 
 from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
 
@@ -11,6 +11,7 @@ from app.config.setting import settings
 from app.core.exceptions import CustomException
 from app.core.logger import logger
 from app.utils.password_util import PwdUtil
+
 
 # 自定义日期时间字符串类型
 def to_local_datetime(value: datetime | None) -> datetime | None:
@@ -337,12 +338,12 @@ def role_permission_request_validator(data: Any) -> Any:
     异常:
     - CustomException: 请求数据无效时抛出。
     """
+    # 与 RoleModel.data_scope / Permission 常量保持一致：1=本人，2=本部门及以下，3=全部。
+    # 自定义数据权限（4/5）当前未实现，不能放行，否则会被 Permission 误判为全部数据。
     data_scopes = {
         1: "仅本人数据权限",
-        2: "本部门数据权限",
-        3: "本部门及以下数据权限",
-        4: "全部数据权限",
-        5: "自定义数据权限",
+        2: "本部门及以下数据权限",
+        3: "全部数据权限",
     }
 
     if data.data_scope not in data_scopes:
