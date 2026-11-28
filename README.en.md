@@ -38,6 +38,18 @@ English | [简体中文](./README.md)
 
 </div>
 
+<p align="center">
+  <img src="./docs/assets/demo.gif" alt="30-second demo: one table to Web / H5 / mini program CRUD" width="880" />
+</p>
+<p align="center">
+  <b>30 seconds: one table → typed backend + frontend code → Web / H5 / mini program</b><br/>
+  <a href="https://service.fastapiadmin.com/web">Live demo</a> ·
+  <a href="https://service.fastapiadmin.com">Docs</a> ·
+  <a href="https://github.com/fastapiadmin/FastapiAdmin">GitHub</a>
+</p>
+
+> If this project saves you time, please give it a ⭐ Star so more developers can find it.
+
 ## 🖥️ Screenshots
 
 **Web**

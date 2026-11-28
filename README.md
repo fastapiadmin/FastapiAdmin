@@ -38,6 +38,18 @@
 
 </div>
 
+<p align="center">
+  <img src="./docs/assets/demo.gif" alt="30 秒演示：一张表生成 Web / H5 / 小程序三端 CRUD" width="880" />
+</p>
+<p align="center">
+  <b>30 秒看懂：一张表 → 前后端代码 → Web / H5 / 小程序</b><br/>
+  <a href="https://service.fastapiadmin.com/web">在线体验</a> ·
+  <a href="https://service.fastapiadmin.com">官方文档</a> ·
+  <a href="https://github.com/fastapiadmin/FastapiAdmin">GitHub</a>
+</p>
+
+> 如果这个项目帮你节省了时间，点一个 ⭐ Star，让更多人看到。
+
 ## 🤖 让 AI 在这个项目里干活
 
 把这个仓库交给 AI 时，先让它读根目录的 [`SKILL.md`](./SKILL.md)：
