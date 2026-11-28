@@ -23,10 +23,7 @@ from app.modules.system.user.controller import UserRouter
 from app.modules.system.versions.controller import VersionRouter
 from app.modules.task.cronjob.job.controller import CronJobRouter
 from app.modules.task.cronjob.node.controller import CronJobNodeRouter
-from app.modules.task.storage.browse.controller import StorageBrowseRouter
-from app.modules.task.storage.node.controller import StorageNodeRouter
-from app.modules.task.storage.transfer.controller import StorageTransferRouter
-from app.modules.task.storage.workflow.controller import StorageWorkflowRouter
+from app.modules.task.workflow.controller import WorkflowRouter
 
 # 域前缀 → 该域 controller 清单（唯一路由事实来源）
 DOMAIN_CONTROLLERS: dict[str, list[APIRouter]] = {
@@ -53,10 +50,7 @@ DOMAIN_CONTROLLERS: dict[str, list[APIRouter]] = {
     "/task": [
         CronJobRouter,
         CronJobNodeRouter,
-        StorageBrowseRouter,
-        StorageNodeRouter,
-        StorageTransferRouter,
-        StorageWorkflowRouter,
+        WorkflowRouter,
     ],
     "/ai": [ChatRouter],
     "/generator": [GenRouter],

@@ -1,10 +1,13 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.base_schema import AuthSchema, PageResultSchema
 from app.core.exceptions import CustomException
+from app.modules.system.notice.model import NoticeModel
 from app.utils.common_util import search_to_dict
 
 from .crud import VersionCRUD
+from .model import VersionModel
 from .schema import (
     VersionCreateSchema,
     VersionOutSchema,
@@ -43,8 +46,39 @@ class VersionService:
             out_schema=VersionOutSchema,
         )
 
+    async def _sync_release_notice(self, version: VersionModel) -> None:
+        """Publish one release notice for a published version; keep it idempotent."""
+        if version.status != 1:
+            return
+        title = f"{version.version} 版本更新"
+        result = await self.db.execute(
+            select(NoticeModel).where(
+                NoticeModel.notice_title == title,
+                NoticeModel.is_deleted.is_(False),
+            )
+        )
+        notice = result.scalar_one_or_none()
+        content = version.content or version.description or version.title
+        if notice is None:
+            notice = NoticeModel(
+                notice_title=title,
+                notice_type="2",
+                notice_content=content,
+                status=1,
+                description=f"版本发布自动生成（{version.version}）",
+                created_id=self.auth.user.id if self.auth.user else None,
+                updated_id=self.auth.user.id if self.auth.user else None,
+            )
+            self.db.add(notice)
+        else:
+            notice.notice_content = content
+            notice.status = 1
+            notice.updated_id = self.auth.user.id if self.auth.user else None
+        await self.db.commit()
+
     async def create(self, data: VersionCreateSchema) -> VersionOutSchema:
         obj = await VersionCRUD(self.auth, self.db).create(data=data)
+        await self._sync_release_notice(obj)
         return VersionOutSchema.model_validate(obj)
 
     async def update(self, id: int, data: VersionUpdateSchema) -> VersionOutSchema:
@@ -52,6 +86,7 @@ class VersionService:
         if not obj:
             raise CustomException(msg="更新失败，该数据不存在")
         obj = await VersionCRUD(self.auth, self.db).update(id=id, data=data)
+        await self._sync_release_notice(obj)
         return VersionOutSchema.model_validate(obj)
 
     async def delete(self, ids: list[int]) -> None:
@@ -66,6 +101,7 @@ class VersionService:
 
     async def set_status(self, id: int, data: VersionStatusSchema) -> VersionOutSchema:
         obj = await VersionCRUD(self.auth, self.db).update(id=id, data={"status": data.status})
+        await self._sync_release_notice(obj)
         return VersionOutSchema.model_validate(obj)
 
     async def get_published(self) -> list[VersionOutSchema]:

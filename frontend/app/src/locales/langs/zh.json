@@ -175,7 +175,8 @@
     "navTitle": "关于",
     "currentVersion": "当前版本 v{version}",
     "moreInfo": "更多信息",
-    "copied": "链接已复制到剪贴板"
+    "copied": "链接已复制到剪贴板",
+    "changelog": "更新日志"
   },
   "mine": {
     "navTitle": "我的",

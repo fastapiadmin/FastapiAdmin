@@ -19,7 +19,6 @@ from app.modules.system.role.model import RoleModel
 from app.modules.system.user.model import UserModel, UserRolesModel
 from app.modules.system.versions.model import VersionModel
 from app.modules.task.cronjob.node.model import NodeModel
-from app.modules.task.storage.node.model import StorageNodeModel
 from app.utils.import_util import ImportUtil
 
 # 导入全部模型：与 alembic env.py 保持一致，确保全局 MapperRegistry 的 FK 引用可完整解析
@@ -41,7 +40,6 @@ class InitializeData:
         UserRolesModel,
         VersionModel,
         NodeModel,
-        StorageNodeModel,
     ]
 
     # 树形模型：JSON 含嵌套 children，需递归创建对象

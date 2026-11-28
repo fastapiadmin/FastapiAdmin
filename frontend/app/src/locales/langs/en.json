@@ -175,7 +175,8 @@
     "navTitle": "About",
     "currentVersion": "Version v{version}",
     "moreInfo": "More Info",
-    "copied": "Link copied to clipboard"
+    "copied": "Link copied to clipboard",
+    "changelog": "Changelog"
   },
   "mine": {
     "navTitle": "Me",

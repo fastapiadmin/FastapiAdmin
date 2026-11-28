@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { formatMessage } from '@/locales/format'
 import { useI18nNavTitle } from '@/composables/useI18nNavTitle'
 import { useConfigStore } from '@/store/configStore'
+import { VersionAPI, type VersionItem } from '@/api/module_system/version'
 
 const { t } = useI18n()
 
@@ -15,6 +16,16 @@ definePage({
 useI18nNavTitle('about.navTitle')
 
 const configStore = useConfigStore()
+const versions = ref<VersionItem[]>([])
+
+onMounted(async () => {
+  try {
+    versions.value = (await VersionAPI.getPublished()).slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id)
+  }
+  catch {
+    versions.value = []
+  }
+})
 // 拉取系统参数（系统名称/版本/版权/链接），幂等 + 本地持久化缓存
 configStore.getConfig()
 
@@ -87,6 +98,24 @@ function handleNavigate(url: string) {
       </wd-cell-group>
     </view>
 
+    <!-- 更新日志 -->
+    <view v-if="versions.length" class="mx-4 mt-6">
+      <view class="section-head section-head--flush">
+        <view class="section-head__bar" />
+        <text class="section-head__title">{{ t('about.changelog') }}</text>
+      </view>
+      <view class="changelog-list">
+        <view v-for="item in versions" :key="item.id" class="changelog-item">
+          <view class="changelog-item__head">
+            <text class="changelog-item__version">{{ item.version.startsWith('v') ? item.version : `v${item.version}` }}</text>
+            <text class="changelog-item__date">{{ item.date }}</text>
+          </view>
+          <view class="changelog-item__title">{{ item.title }}</view>
+          <rich-text v-if="item.content" class="changelog-item__content" :nodes="item.content" />
+        </view>
+      </view>
+    </view>
+
     <!-- 版权信息 -->
     <view v-if="copyright" class="mx-4 mt-6 text-center">
       <wd-text class="wot-text-text-auxiliary text-3" :text="copyright" />
@@ -114,6 +143,51 @@ function handleNavigate(url: string) {
     display: block;
     width: 72px;
     height: 72px;
+  }
+}
+.changelog-list {
+  overflow: hidden;
+  background: var(--wot-bg-filled-oppo, #fff);
+  border-radius: 16px;
+}
+
+.changelog-item {
+  padding: 16px;
+
+  & + & {
+    border-top: 1px solid var(--wot-border-main, #eef0f4);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  &__version {
+    color: var(--wot-primary-main, #4f6bff);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  &__date {
+    color: var(--wot-text-auxiliary, #8a94a6);
+    font-size: 12px;
+  }
+
+  &__title {
+    color: var(--wot-text-main, #1f2d3d);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  &__content {
+    display: block;
+    margin-top: 6px;
+    color: var(--wot-text-secondary, #5b6472);
+    font-size: 13px;
+    line-height: 1.7;
   }
 }
 </style>

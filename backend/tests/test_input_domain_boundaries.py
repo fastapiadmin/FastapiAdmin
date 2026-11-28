@@ -12,7 +12,6 @@ import pytest
 from pydantic import ValidationError
 
 from app.core.exceptions import CustomException
-
 from app.modules.system.dept.schema import DeptCreateSchema
 from app.modules.system.menu.schema import MenuCreateSchema
 from app.modules.system.notice.schema import NoticeCreateSchema
@@ -21,7 +20,6 @@ from app.modules.system.position.schema import PositionCreateSchema
 from app.modules.system.role.schema import RoleCreateSchema
 from app.modules.system.user.schema import UserCreateSchema, UserUpdateSchema
 from app.modules.task.cronjob.node.schema import NodeCreateSchema
-from app.modules.task.storage.node.schema import StorageNodeConfigSchema
 
 
 def _invalid(schema: type, data: dict[str, Any]) -> None:
@@ -275,34 +273,6 @@ def test_cron_boundary(case: str, data: dict[str, Any], ok: bool) -> None:
         _valid(NodeCreateSchema, data)
     else:
         _invalid(NodeCreateSchema, data)
-
-
-# ── 存储源：协议必填、分片边界、编码、路径穿越 ──
-@pytest.mark.parametrize(
-    ("case", "data", "ok"),
-    [
-        ("STORAGE-S3-001", {"protocol": "s3", "bucket": "b", "endpoint": "https://s3.example.com"}, True),
-        ("STORAGE-S3-002", {"protocol": "s3", "endpoint": "https://s3.example.com"}, False),
-        ("STORAGE-S3-003", {"protocol": "s3", "bucket": "b"}, False),
-        ("STORAGE-LOCAL-001", {"protocol": "local", "host": "static/upload"}, True),
-        ("STORAGE-LOCAL-002", {"protocol": "local"}, False),
-        ("STORAGE-PART-001", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_part_size": 4}, False),
-        ("STORAGE-PART-002", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_part_size": 5}, True),
-        ("STORAGE-PART-003", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_part_size": 5000}, True),
-        ("STORAGE-PART-004", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_part_size": 5001}, False),
-        ("STORAGE-CONC-001", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_concurrency": 0}, False),
-        ("STORAGE-CONC-002", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_concurrency": 64}, True),
-        ("STORAGE-CONC-003", {"protocol": "s3", "bucket": "b", "endpoint": "https://e", "multipart_concurrency": 65}, False),
-        ("STORAGE-PREFIX-001", {"protocol": "local", "host": "x", "path_prefix": "../etc"}, False),
-        ("STORAGE-ENCODING-001", {"protocol": "local", "host": "x", "encoding": "gbk"}, True),
-        ("STORAGE-ENCODING-002", {"protocol": "local", "host": "x", "encoding": "not-a-codec"}, False),
-    ],
-)
-def test_storage_boundary(case: str, data: dict[str, Any], ok: bool) -> None:
-    if ok:
-        _valid(StorageNodeConfigSchema, data)
-    else:
-        _invalid(StorageNodeConfigSchema, data)
 
 
 def test_excel_export_handles_aware_datetime() -> None:
