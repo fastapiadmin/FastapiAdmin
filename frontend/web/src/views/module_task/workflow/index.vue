@@ -310,8 +310,8 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .workflow-page {
-  padding: 20px 24px 32px;
-  background: var(--el-bg-color-page);
+  padding: 0;
+  background: transparent;
   min-height: 100%;
 }
 
@@ -565,7 +565,7 @@ onMounted(async () => {
 
 @media (max-width: 720px) {
   .workflow-page {
-    padding: 14px;
+    padding: 0;
   }
 
   .wf-hero {
