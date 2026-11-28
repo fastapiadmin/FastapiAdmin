@@ -2,7 +2,7 @@
      <p align="center">
           <img src="./frontend/web/public/logo.png" width="150" height="150" alt="logo" />
      </p>
-     <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v3.0.0</sup></h1>
+     <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v3.4.1</sup></h1>
      <h3>🚀 一套代码交付 Web / H5 / 小程序，AI 代码生成 + RBAC + Docker 开箱即用</h3>
      <p>基于 <b>FastAPI + Vue3 + TypeScript</b> 的企业级全栈底座：类型共享、权限完整、三端同源</p>
      <p align="center">

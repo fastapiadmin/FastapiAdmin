@@ -2,7 +2,7 @@
      <p align="center">
           <img src="./frontend/web/public/logo.png" width="150" height="150" alt="logo" />
      </p>
-     <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v3.0.0</sup></h1>
+     <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v3.4.1</sup></h1>
      <h3>🚀 One codebase for Web, H5 and Mini Program — AI code generation + RBAC + Docker, ready to ship</h3>
      <p>An enterprise full-stack foundation built on <b>FastAPI + Vue3 + TypeScript</b>: shared types, complete permissions, one source for all surfaces.</p>
      <p align="center">
