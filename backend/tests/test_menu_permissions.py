@@ -37,14 +37,27 @@ def test_app_menu_scope_matches_mobile_tabs() -> None:
     assert [n.get("route_name") for n in app_menus] == ["AppHome", "AppWork", "AppMine"]
 
 
-def test_swagger_is_external_link_not_embedded_page() -> None:
+def test_official_site_is_external_link_not_embedded_page() -> None:
     seed = json.loads(MENU_SEED.read_text(encoding="utf-8"))
     nodes = list(_walk(seed))
     assert not any(n.get("component_path") == "module_swagger/docs/index" for n in nodes)
-    api_docs = next(n for n in nodes if n.get("route_name") == "ApiDocs")
-    assert api_docs["type"] == 4
-    assert api_docs["link"].endswith("/docs")
-    assert api_docs["is_iframe"] is False
+    official = next(n for n in nodes if n.get("route_name") == "OfficialSite")
+    assert official["type"] == 4
+    assert official["link"] == "https://service.fastapiadmin.com/"
+    assert official["is_iframe"] is False
+
+
+def test_cronjob_menu_is_merged() -> None:
+    seed = json.loads(MENU_SEED.read_text(encoding="utf-8"))
+    cronjob = next(n for n in _walk(seed) if n.get("route_name") == "Cronjob")
+    assert cronjob["type"] == 2
+    assert cronjob["component_path"] == "module_task/cronjob/index"
+    assert cronjob["permission"] is None
+    assert cronjob["redirect"] is None
+    assert not any(n.get("route_name") in {"Job", "Node"} for n in _walk(seed))
+    permissions = {n.get("permission") for n in cronjob["children"]}
+    assert "module_task:cronjob:job:query" in permissions
+    assert "module_task:cronjob:node:create" in permissions
 
 
 def test_system_menu_is_grouped() -> None:
