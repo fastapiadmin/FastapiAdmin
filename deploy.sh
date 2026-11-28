@@ -256,6 +256,12 @@ print(\"    自检通过:\", len(mods), \"个 ${db} 驱动\")
     chown -R 1000:1000 backend/static/upload
     docker tag backend:3.0.0 backend:prev 2>/dev/null || true
     docker tag ${tag} backend:3.0.0
+    # docker-compose.yaml 从 .env 读取 BACKEND_IMAGE_TAG；不同步会导致新镜像不被使用
+    if grep -q '^BACKEND_IMAGE_TAG=' .env; then
+      sed -i 's/^BACKEND_IMAGE_TAG=.*/BACKEND_IMAGE_TAG=${tag#backend:}/' .env
+    else
+      echo 'BACKEND_IMAGE_TAG=${tag#backend:}' >> .env
+    fi
     docker compose up -d --force-recreate backend
     for i in 1 2 3 4 5 6 7; do
       sleep 15
