@@ -57,6 +57,8 @@
       />
     </ElCard>
 
+    <NodeLogDrawer v-model:visible="logVisible" :job-name="logJobName" />
+
     <FaDialog
       v-model="dialogVisible.visible"
       :title="dialogVisible.title"
@@ -347,6 +349,7 @@ import FaDialog from "@/components/modal/fa-dialog/index.vue";
 import { renderTableOperationCell, resolveStatusColumns, type TableOperationAction } from "@utils";
 import { Delete, Plus } from "@element-plus/icons-vue";
 import FaCron from "@/components/others/fa-cron/index.vue";
+import NodeLogDrawer from "@/views/module_task/cronjob/components/NodeLogDrawer.vue";
 import Codemirror, { CmComponentRef } from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 import "codemirror/mode/python/python.js";
@@ -452,6 +455,8 @@ const nodeSearchItems = computed<SearchFormItem[]>(() => [
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const selectedRows = ref<NodeTable[]>([]);
+const logVisible = ref(false);
+const logJobName = ref("");
 const selectedIds = computed(() =>
   selectedRows.value.map((r) => r.id).filter((id): id is number => typeof id === "number")
 );
@@ -497,6 +502,18 @@ function buildNodeRowActions(row: NodeTable): TableOperationAction[] {
       perm: "module_task:cronjob:node:update",
       run: () => {
         if (row.id != null) void handleToggleRowStatus(row);
+      },
+    },
+    {
+      key: "logs",
+      label: "执行记录",
+      artType: "more",
+      icon: "ri:file-list-3-line",
+      iconColor: "var(--el-color-info)",
+      perm: "module_task:cronjob:job:query",
+      run: () => {
+        logJobName.value = row.name;
+        logVisible.value = true;
       },
     },
     {
@@ -1148,6 +1165,8 @@ const handleIntervalConfirm = (value: string) => {
 watch(openCron, (val) => {
   if (val) cronTempValue.value = formData.value.trigger_args || "";
 });
+
+defineExpose({ refreshData });
 </script>
 
 <style scoped lang="scss">

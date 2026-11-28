@@ -1,35 +1,28 @@
-<!-- 定时任务：调度器监控与节点管理合并为同一页面 -->
+<!-- 定时任务：调度器状态 + 任务节点，单页管理 -->
 <template>
   <div class="cronjob-page fa-full-height">
-    <ElTabs v-model="activeTab" class="fa-tabs-fill">
-      <ElTabPane label="调度器监控" name="job">
-        <JobPanel />
-      </ElTabPane>
-      <ElTabPane label="节点管理" name="node">
-        <NodePanel />
-      </ElTabPane>
-    </ElTabs>
+    <SchedulerBar @refresh="nodePanelRef?.refreshData()" />
+    <NodePanel ref="nodePanelRef" class="cronjob-node" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
-import JobPanel from "./job/index.vue";
+import SchedulerBar from "./components/SchedulerBar.vue";
 import NodePanel from "./node/index.vue";
 
 defineOptions({ name: "Cronjob" });
 
-const route = useRoute();
-const router = useRouter();
-const activeTab = ref(route.query.tab === "node" ? "node" : "job");
-
-watch(activeTab, (value) => {
-  router.replace({ query: { ...route.query, tab: value } });
-});
+const nodePanelRef = ref<{ refreshData: () => Promise<void> }>();
 </script>
 
 <style scoped lang="scss">
 .cronjob-page {
+  min-height: 0;
   overflow: hidden;
+}
+
+.cronjob-node {
+  flex: 1;
+  min-height: 0;
 }
 </style>
