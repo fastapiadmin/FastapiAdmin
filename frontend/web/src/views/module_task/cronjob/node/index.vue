@@ -221,19 +221,96 @@
         </div>
 
         <div class="h-full min-w-0 flex-1">
-          <div class="flex flex-col h-full pl-4">
+          <div class="flex flex-col h-full gap-3 pl-4">
             <div class="flex items-center justify-between py-2.5">
               <span class="text-sm font-semibold">处理器</span>
-              <span class="text-xs">定义 handler(*args, **kwargs) 函数</span>
+              <ElRadioGroup v-if="codeExecEnabled" v-model="handlerMode" size="small">
+                <ElRadioButton value="builtin">内置处理器</ElRadioButton>
+                <ElRadioButton value="code">自定义代码</ElRadioButton>
+              </ElRadioGroup>
             </div>
-            <Codemirror
-              ref="codeEditorRef"
-              v-model:value="formData.func"
-              :options="codeEditorOptions"
-              border
-              height="calc(100% - 40px)"
-              width="100%"
-            />
+
+            <template v-if="handlerMode === 'builtin'">
+              <ElSelect
+                v-model="selectedHandlerKey"
+                placeholder="请选择内置处理器"
+                filterable
+                style="width: 100%"
+                @change="handleHandlerChange"
+              >
+                <ElOption
+                  v-for="item in handlers"
+                  :key="item.key"
+                  :label="item.label"
+                  :value="item.key"
+                />
+              </ElSelect>
+              <div v-if="selectedHandler" class="rounded-lg bg-[var(--el-fill-color-light)] p-3">
+                <div class="text-sm font-medium">{{ selectedHandler.label }}</div>
+                <div class="mt-1 text-xs text-[var(--el-text-color-secondary)]">
+                  {{ selectedHandler.description }}
+                </div>
+              </div>
+              <ElScrollbar v-if="selectedHandler?.params.length" class="min-h-0 flex-1">
+                <ElForm label-width="110px" class="pt-1">
+                  <ElFormItem
+                    v-for="param in selectedHandler.params"
+                    :key="param.name"
+                    :label="param.label"
+                    :required="param.required"
+                  >
+                    <ElInputNumber
+                      v-if="param.type === 'int' || param.type === 'float'"
+                      :model-value="Number(handlerParams[param.name] ?? param.default ?? 0)"
+                      :min="param.minimum ?? undefined"
+                      :max="param.maximum ?? undefined"
+                      :precision="param.type === 'float' ? 2 : 0"
+                      controls-position="right"
+                      style="width: 100%"
+                      @update:model-value="(value: number | undefined) => (handlerParams[param.name] = value)"
+                    />
+                    <ElSwitch
+                      v-else-if="param.type === 'bool'"
+                      :model-value="Boolean(handlerParams[param.name] ?? param.default ?? false)"
+                      @update:model-value="(value: string | number | boolean) => (handlerParams[param.name] = Boolean(value))"
+                    />
+                    <ElInput
+                      v-else
+                      :model-value="String(handlerParams[param.name] ?? param.default ?? '')"
+                      :placeholder="param.description || `请输入${param.label}`"
+                      @update:model-value="(value: string) => (handlerParams[param.name] = value)"
+                    />
+                    <div v-if="param.description" class="mt-1 text-xs text-[var(--el-text-color-secondary)]">
+                      {{ param.description }}
+                    </div>
+                  </ElFormItem>
+                </ElForm>
+              </ElScrollbar>
+              <ElEmpty v-else description="该处理器不需要参数" :image-size="72" />
+            </template>
+
+            <template v-else>
+              <ElAlert
+                v-if="!codeExecEnabled"
+                type="warning"
+                :closable="false"
+                show-icon
+                title="服务端已禁用自定义代码块"
+                description="该任务包含 Python 代码块，当前不会执行。请改用内置处理器；如确需代码块，请由开发人员在服务端显式开启 SCHEDULER_ALLOW_CODE_EXEC。"
+              />
+              <Codemirror
+                v-else
+                ref="codeEditorRef"
+                v-model:value="formData.func"
+                :options="codeEditorOptions"
+                border
+                height="calc(100% - 40px)"
+                width="100%"
+              />
+              <ElScrollbar v-if="!codeExecEnabled" class="min-h-0 flex-1">
+                <pre class="readonly-code">{{ formData.func }}</pre>
+              </ElScrollbar>
+            </template>
           </div>
         </div>
       </div>
@@ -241,7 +318,7 @@
       <template #footer>
         <div class="dialog-footer">
           <ElButton @click="handleCloseDialog">取消</ElButton>
-          <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">确定</ElButton>
+          <ElButton type="primary" :loading="submitLoading" :disabled="selectedHandlerReadonly" @click="handleSubmit">确定</ElButton>
         </div>
       </template>
     </FaDialog>
@@ -254,7 +331,11 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import NodeAPI, { type NodeTable, type NodeForm } from "@/api/module_task/cronjob/node";
+import NodeAPI, {
+  type HandlerSpec,
+  type NodeForm,
+  type NodeTable,
+} from "@/api/module_task/cronjob/node";
 import { confirmToggleStatus } from "@/hooks/core/useConfirm";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import FaForm from "@/components/forms/fa-form/index.vue";
@@ -631,6 +712,69 @@ const confirmCron = () => {
 const openInterval = ref(false);
 const codeEditorRef = ref<CmComponentRef>();
 
+type HandlerMode = "builtin" | "code";
+const handlerMode = ref<HandlerMode>("builtin");
+const codeExecEnabled = ref(false);
+const handlers = ref<HandlerSpec[]>([]);
+const selectedHandlerKey = ref("");
+const handlerParams = ref<Record<string, unknown>>({});
+const selectedHandler = computed(() => handlers.value.find((item) => item.key === selectedHandlerKey.value));
+const selectedHandlerReadonly = computed(() => handlerMode.value === "code" && !codeExecEnabled.value);
+
+async function loadHandlers() {
+  if (handlers.value.length) return;
+  try {
+    const response = await NodeAPI.getHandlers();
+    codeExecEnabled.value = Boolean(response.data.data.code_exec_enabled);
+    handlers.value = response.data.data.items || [];
+    if (!selectedHandlerKey.value && handlers.value.length) {
+      selectedHandlerKey.value = handlers.value[0]?.key || "";
+      applyHandlerDefaults();
+    }
+  } catch {
+    handlers.value = [];
+  }
+}
+
+function applyHandlerDefaults(overwrite = false) {
+  const spec = selectedHandler.value;
+  if (!spec) return;
+  const next: Record<string, unknown> = overwrite ? {} : { ...handlerParams.value };
+  for (const param of spec.params) {
+    if (next[param.name] === undefined) {
+      next[param.name] = param.default ?? (param.type === "bool" ? false : param.type === "int" || param.type === "float" ? 0 : "");
+    }
+  }
+  handlerParams.value = next;
+}
+
+function handleHandlerChange() {
+  applyHandlerDefaults(true);
+}
+
+function syncHandlerFromFunc(func?: string) {
+  const value = (func || "").trim();
+  if (value.startsWith("builtin:")) {
+    handlerMode.value = "builtin";
+    selectedHandlerKey.value = value.slice("builtin:".length);
+    try {
+      const parsed = formData.value.kwargs ? JSON.parse(formData.value.kwargs) : {};
+      handlerParams.value = parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      handlerParams.value = {};
+    }
+    applyHandlerDefaults();
+  } else {
+    handlerMode.value = "code";
+  }
+}
+
+function pickHandler() {
+  if (handlerMode.value === "builtin" && selectedHandler.value) {
+    formData.value.func = `builtin:${selectedHandler.value.key}`;
+  }
+}
+
 const defaultCodeBlock = `def handler(*args, **kwargs):
     """
     Demo: 调用工程中的方法处理数据
@@ -642,7 +786,7 @@ const defaultCodeBlock = `def handler(*args, **kwargs):
     """
 
     # 从工程中导入方法
-    from app.plugin.module_task.cronjob.node.handlers.demo_handler import (
+    from app.modules.task.cronjob.node.handlers.demo_handler import (
         demo_handler,
         process_data
     )
@@ -808,6 +952,7 @@ const nodeDialogFormItems = computed<FormItem[]>(() => {
       type: "input",
       span: 24,
       placeholder: "",
+      hidden: handlerMode.value === "builtin",
     },
     {
       label: "关键字参数",
@@ -815,6 +960,7 @@ const nodeDialogFormItems = computed<FormItem[]>(() => {
       type: "input",
       span: 24,
       placeholder: "",
+      hidden: handlerMode.value === "builtin",
     },
     {
       label: "合并运行",
@@ -843,7 +989,7 @@ const initialFormData: Partial<NodeForm> = {
   code: undefined,
   jobstore: "default",
   executor: "default",
-  func: defaultCodeBlock,
+  func: "",
   args: undefined,
   kwargs: undefined,
   coalesce: false,
@@ -880,6 +1026,7 @@ async function handleAdd() {
 
 async function handleOpenDialog(type: "create" | "update", id?: number) {
   dialogVisible.type = type;
+  await loadHandlers();
   if (id) {
     const response = await NodeAPI.detailNode(id);
     dialogVisible.title = "修改节点";
@@ -892,11 +1039,18 @@ async function handleOpenDialog(type: "create" | "update", id?: number) {
           value: String(value),
         }))
       : [];
+    syncHandlerFromFunc(data.func);
   } else {
     dialogVisible.title = "新增节点";
     formData.value.id = undefined;
     argsList.value = [];
     kwargsList.value = [];
+    handlerMode.value = "builtin";
+    if (handlers.value.length) {
+      selectedHandlerKey.value = handlers.value[0]?.key || "";
+      applyHandlerDefaults();
+      pickHandler();
+    }
   }
   nodeFormRenderKey.value += 1;
   dialogVisible.visible = true;
@@ -918,6 +1072,21 @@ async function handleSubmit() {
       const trig = formData.value.trigger;
       const kvList = kwargsList.value.filter((v) => v.key.trim());
       try {
+        if (handlerMode.value === "builtin") {
+          const spec = selectedHandler.value;
+          if (!spec) {
+            ElMessage.warning("请选择内置处理器");
+            return;
+          }
+          const missing = spec.params
+            .filter((param) => param.required)
+            .filter((param) => handlerParams.value[param.name] === undefined || handlerParams.value[param.name] === "");
+          if (missing.length) {
+            ElMessage.warning(`请填写：${missing.map((item) => item.label).join("、")}`);
+            return;
+          }
+          pickHandler();
+        }
         // 显式组装：执行计划随节点定义一起保存，trigger 为空则不排程
         const submitData = {
           name: formData.value.name,
@@ -927,11 +1096,18 @@ async function handleSubmit() {
           func: formData.value.func,
           coalesce: formData.value.coalesce,
           max_instances: formData.value.max_instances,
-          args: argsList.value.filter((v) => v.trim()).join(",") || undefined,
+          args:
+            handlerMode.value === "builtin"
+              ? undefined
+              : argsList.value.filter((v) => v.trim()).join(",") || undefined,
           kwargs:
-            kvList.length > 0
-              ? JSON.stringify(Object.fromEntries(kvList.map((v) => [v.key, v.value])))
-              : undefined,
+            handlerMode.value === "builtin"
+              ? Object.keys(handlerParams.value).length > 0
+                ? JSON.stringify(handlerParams.value)
+                : undefined
+              : kvList.length > 0
+                ? JSON.stringify(Object.fromEntries(kvList.map((v) => [v.key, v.value])))
+                : undefined,
           trigger: trig || undefined,
           trigger_args: trig ? formData.value.trigger_args || undefined : undefined,
           start_date:

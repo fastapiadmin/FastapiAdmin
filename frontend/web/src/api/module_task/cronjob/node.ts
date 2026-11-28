@@ -3,6 +3,13 @@ import { request } from "@utils";
 const API_PATH = "/task/cronjob/node";
 
 const NodeAPI = {
+  getHandlers() {
+    return request<ApiResponse<HandlerList>>({
+      url: `${API_PATH}/handlers`,
+      method: "get",
+    });
+  },
+
   getNodeTypeOptions() {
     return request<ApiResponse<NodeType[]>>({
       url: `${API_PATH}/options`,
@@ -134,4 +141,28 @@ export interface NodeType {
   func?: string;
   args?: string;
   kwargs?: string;
+}
+
+
+export interface HandlerParam {
+  name: string;
+  label: string;
+  type: "string" | "int" | "float" | "bool" | "json";
+  required: boolean;
+  default?: unknown;
+  description?: string;
+  minimum?: number | null;
+  maximum?: number | null;
+}
+
+export interface HandlerSpec {
+  key: string;
+  label: string;
+  description: string;
+  params: HandlerParam[];
+}
+
+export interface HandlerList {
+  code_exec_enabled: boolean;
+  items: HandlerSpec[];
 }

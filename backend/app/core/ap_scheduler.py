@@ -725,6 +725,53 @@ class SchedulerUtil:
         return handler
 
     @classmethod
+    def list_builtin_handlers(cls) -> dict[str, Any]:
+        """列出可用的内置处理器及其参数描述。
+
+        只扫描 handlers 包内显式声明了 HANDLER_SPECS 的模块，并逐个用内置解析器
+        校验，避免前端拿到不可执行的选项。
+
+        返回:
+        - dict: {"code_exec_enabled": bool, "items": [...]}。
+        """
+        import importlib
+        import pkgutil
+
+        package = importlib.import_module(cls.BUILTIN_HANDLERS_MODULE)
+        items: list[dict[str, Any]] = []
+        for module_info in pkgutil.iter_modules(package.__path__):
+            if module_info.name.startswith("_") or module_info.name == "base":
+                continue
+            module = importlib.import_module(f"{cls.BUILTIN_HANDLERS_MODULE}.{module_info.name}")
+            for spec in getattr(module, "HANDLER_SPECS", ()) or ():
+                try:
+                    cls.resolve_builtin_handler(f"{cls.BUILTIN_PREFIX}{spec.key}")
+                except ValueError:
+                    continue
+                items.append(
+                    {
+                        "key": spec.key,
+                        "label": spec.label,
+                        "description": spec.description,
+                        "params": [
+                            {
+                                "name": param.name,
+                                "label": param.label,
+                                "type": param.type,
+                                "required": param.required,
+                                "default": param.default,
+                                "description": param.description,
+                                "minimum": param.minimum,
+                                "maximum": param.maximum,
+                            }
+                            for param in spec.params
+                        ],
+                    }
+                )
+        items.sort(key=lambda item: (item["label"], item["key"]))
+        return {"code_exec_enabled": bool(settings.SCHEDULER_ALLOW_CODE_EXEC), "items": items}
+
+    @classmethod
     def _task_wrapper(cls, job_id: str | int, code_block: str | None, *args, **kwargs):
         """任务执行包装器，执行自定义代码块（同步版本，用于 ThreadPoolExecutor）
 

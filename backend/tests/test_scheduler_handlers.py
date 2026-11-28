@@ -33,6 +33,16 @@ def test_builtin_registry() -> None:
     assert SchedulerUtil.resolve_builtin_handler("builtin:system_log.cleanup_expired_logs") is not None
 
 
+def test_list_builtin_handlers() -> None:
+    data = SchedulerUtil.list_builtin_handlers()
+    assert data["code_exec_enabled"] is False
+    keys = {item["key"] for item in data["items"]}
+    assert "system_log.cleanup_expired_logs" in keys
+    system_log = next(item for item in data["items"] if item["key"] == "system_log.cleanup_expired_logs")
+    assert system_log["params"][0]["name"] == "days"
+    assert system_log["params"][0]["default"] == 90
+
+
 def test_job_code_and_unschedulable(monkeypatch: pytest.MonkeyPatch) -> None:
     assert SchedulerUtil.job_code_block(None) is None
     assert SchedulerUtil.job_code_block(SimpleNamespace(args=[1])) is None

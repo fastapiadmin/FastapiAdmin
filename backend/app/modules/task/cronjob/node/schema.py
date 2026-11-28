@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -7,6 +8,35 @@ from app.core.validator import datetime_validator
 
 # 节点可持久化的触发方式（"立即执行"不在其中，属于手动执行、不占用计划）
 NODE_TRIGGER_TYPES = {"cron", "interval", "date"}
+
+
+class HandlerParamSchema(BaseModel):
+    """内置处理器参数描述"""
+
+    name: str
+    label: str
+    type: str = "string"
+    required: bool = False
+    default: Any = None
+    description: str = ""
+    minimum: int | float | None = None
+    maximum: int | float | None = None
+
+
+class HandlerSpecSchema(BaseModel):
+    """内置处理器描述"""
+
+    key: str
+    label: str
+    description: str
+    params: list[HandlerParamSchema] = Field(default_factory=list)
+
+
+class HandlerListSchema(BaseModel):
+    """内置处理器列表与代码块开关"""
+
+    code_exec_enabled: bool = False
+    items: list[HandlerSpecSchema] = Field(default_factory=list)
 
 
 class NodeCreateSchema(BaseModel):

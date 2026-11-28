@@ -5,6 +5,8 @@
 
 from datetime import datetime
 
+from .base import HandlerSpec
+
 
 def demo_handler(*args, **kwargs) -> dict:
     """示例处理器（演示节点调用形态）。
@@ -47,3 +49,13 @@ def process_data(data: list, operation: str = "sum") -> dict:
         return {"error": f"不支持的操作: {operation}"}
 
     return {"operation": operation, "result": result}
+
+
+
+HANDLER_SPECS = (
+    HandlerSpec(
+        key="demo_handler.demo_handler",
+        label="示例：Hello",
+        description="示例内置处理器，不接受参数，仅用于验证定时任务链路。",
+    ),
+)

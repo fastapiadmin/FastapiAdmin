@@ -5,14 +5,30 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core.ap_scheduler import SchedulerUtil
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema, PaginationQueryParam
 from app.core.dependencies import AuthPermission, db_getter
 from app.core.router_class import OperationLogRoute
 
-from .schema import NodeCreateSchema, NodeOutSchema, NodeQueryParam, NodeRunResultSchema, NodeUpdateSchema
+from .schema import (
+    HandlerListSchema,
+    NodeCreateSchema,
+    NodeOutSchema,
+    NodeQueryParam,
+    NodeRunResultSchema,
+    NodeUpdateSchema,
+)
 from .service import NodeService
 
 CronJobNodeRouter = APIRouter(route_class=OperationLogRoute, prefix="/cronjob/node", tags=["定时任务节点管理"])
+
+
+@CronJobNodeRouter.get("/handlers", summary="获取内置任务处理器列表", response_model=ResponseSchema[HandlerListSchema])
+async def get_node_handlers_controller(
+    auth: Annotated[AuthSchema, Security(AuthPermission(["module_task:cronjob:node:query"]))],
+) -> JSONResponse:
+    result = SchedulerUtil.list_builtin_handlers()
+    return SuccessResponse(data=HandlerListSchema.model_validate(result), msg="获取任务处理器列表成功")
 
 
 @CronJobNodeRouter.get("/options", summary="获取定时任务节点列表", response_model=ResponseSchema[list[NodeOutSchema]])

@@ -15,6 +15,8 @@ from app.core.database import engine
 from app.core.logger import logger
 from app.modules.system.log.model import LoginLogModel, OperationLogModel
 
+from .base import HandlerParam, HandlerSpec
+
 
 def cleanup_expired_logs(days: int = 90) -> dict:
     """物理清理过期操作日志/登录日志。
@@ -44,3 +46,25 @@ def cleanup_expired_logs(days: int = 90) -> dict:
         f"日志保留清理完成（保留 {days} 天）: 操作日志 {stats['operation_deleted']} 条，登录日志 {stats['login_deleted']} 条"
     )
     return stats
+
+
+
+HANDLER_SPECS = (
+    HandlerSpec(
+        key="system_log.cleanup_expired_logs",
+        label="清理过期日志",
+        description="物理删除超过保留天数的操作日志与登录日志。",
+        params=(
+            HandlerParam(
+                name="days",
+                label="保留天数",
+                type="int",
+                required=True,
+                default=90,
+                minimum=1,
+                maximum=3650,
+                description="早于该天数的日志会被删除，默认 90 天。",
+            ),
+        ),
+    ),
+)
