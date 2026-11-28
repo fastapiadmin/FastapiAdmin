@@ -91,7 +91,7 @@ class WorkflowService:
             updated_id=self._user_id,
         )
         self.db.add(obj)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(obj)
         return WorkflowOutSchema.model_validate(obj)
 
@@ -102,7 +102,7 @@ class WorkflowService:
         obj.status = data.status
         obj.steps = [step.model_dump() for step in data.steps]
         obj.updated_id = self._user_id
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(obj)
         return WorkflowOutSchema.model_validate(obj)
 
@@ -116,7 +116,7 @@ class WorkflowService:
             row.is_deleted = True
             row.deleted_id = self._user_id
             row.deleted_time = datetime.now(UTC)
-        await self.db.commit()
+        await self.db.flush()
 
     async def execute(self, id: int, data: WorkflowRunSchema) -> WorkflowInstanceOutSchema:
         workflow = await self._get_workflow(id)
@@ -135,7 +135,7 @@ class WorkflowService:
         self.db.add(instance)
         await self.db.flush()
         await self._advance(instance)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(instance)
         return WorkflowInstanceOutSchema.model_validate(instance)
 
@@ -187,7 +187,7 @@ class WorkflowService:
             instance.status = "rejected"
             instance.error = data.comment or f"{task.step_name} 未通过"
             instance.updated_id = self._user_id
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(task)
         return WorkflowTaskOutSchema.model_validate(task)
 

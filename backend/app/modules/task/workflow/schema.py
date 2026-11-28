@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.core.base_schema import BaseQueryParam, BaseSchema, UserByQueryParam, UserBySchema
+from app.core.base_schema import BaseQueryParam, BaseSchema
 
 StepType = Literal["approval", "condition"]
 ConditionOperator = Literal["eq", "ne", "gt", "gte", "lt", "lte", "contains"]
@@ -51,7 +51,7 @@ class WorkflowActionSchema(BaseModel):
     comment: str | None = Field(default=None, max_length=500)
 
 
-class WorkflowOutSchema(BaseSchema, UserBySchema):
+class WorkflowOutSchema(BaseSchema):
     model_config = ConfigDict(from_attributes=True)
 
     name: str | None = None
@@ -60,7 +60,7 @@ class WorkflowOutSchema(BaseSchema, UserBySchema):
     steps: list[dict] = Field(default_factory=list)
 
 
-class WorkflowInstanceOutSchema(BaseSchema, UserBySchema):
+class WorkflowInstanceOutSchema(BaseSchema):
     model_config = ConfigDict(from_attributes=True)
 
     workflow_id: int
@@ -72,7 +72,7 @@ class WorkflowInstanceOutSchema(BaseSchema, UserBySchema):
     error: str | None = None
 
 
-class WorkflowTaskOutSchema(BaseSchema, UserBySchema):
+class WorkflowTaskOutSchema(BaseSchema):
     model_config = ConfigDict(from_attributes=True)
 
     instance_id: int
@@ -84,7 +84,7 @@ class WorkflowTaskOutSchema(BaseSchema, UserBySchema):
     acted_at: datetime | None = None
 
 
-class WorkflowQueryParam(BaseQueryParam, UserByQueryParam):
+class WorkflowQueryParam(BaseQueryParam):
     name: str | None = Field(None, description="流程名称", json_schema_extra={"q": "like"})
     status: int | None = Field(None, ge=0, le=1, json_schema_extra={"q": "eq"})
 
